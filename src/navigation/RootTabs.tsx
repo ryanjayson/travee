@@ -2,7 +2,9 @@ import * as React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabNavigationOptions } from "@react-navigation/bottom-tabs";
+import { TravelProvider } from "../context/TravelContext";
 
+import TravelCatalog from "../features/Travel/screens/TravelCatalog";
 import { TripsScreen } from "../screens/TripsScreen";
 import { ExploreScreen } from "../screens/ExploreScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
@@ -46,7 +48,14 @@ export function RootTabs() {
         ),
       })}
     >
-      <Tab.Screen name="Trips" component={TripsScreen} />
+      <Tab.Screen
+        name="Trips"
+        component={() => (
+          <TravelProvider>
+            <TravelCatalog />
+          </TravelProvider>
+        )}
+      />
       <Tab.Screen name="Explore" component={ExploreScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
