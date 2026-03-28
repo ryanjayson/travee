@@ -6,6 +6,7 @@ import { AppNavigator } from "./src/navigation/AppNavigator";
 import { theme } from "./src/theme/theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider, useAuth } from "./src/features/Auth/hooks/AuthContext";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const queryClient = new QueryClient();
 
@@ -14,8 +15,10 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <PaperProvider theme={theme}>
+          {/* <GestureHandlerRootView style={{ flex: 1 }}> */}
           <StatusBar style="auto" />
           <AppNavigator />
+          {/* </GestureHandlerRootView> */}
         </PaperProvider>
       </AuthProvider>
     </QueryClientProvider>

@@ -29,6 +29,7 @@ interface TravelPageProps {
 
 type TravelTabType = "upcoming" | "past";
 
+//TODO: rename to TravelDashboard and cleanup
 const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
   const [activeTab, setActiveTab] = useState<TravelTabType>("upcoming");

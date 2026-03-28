@@ -5,13 +5,12 @@ import type { BottomTabNavigationOptions } from "@react-navigation/bottom-tabs";
 import { TravelProvider } from "../context/TravelContext";
 
 import TravelCatalog from "../features/Travel/screens/TravelCatalog";
-import { TripsScreen } from "../screens/TripsScreen";
 import { ExploreScreen } from "../screens/ExploreScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 
 export type RootTabsParamList = {
-  Trips: undefined;
+  Travels: undefined;
   Explore: undefined;
   Profile: undefined;
   Settings: undefined;
@@ -21,7 +20,7 @@ const Tab = createBottomTabNavigator<RootTabsParamList>();
 
 function iconForRoute(routeName: keyof RootTabsParamList, focused: boolean) {
   switch (routeName) {
-    case "Trips":
+    case "Travels":
       return focused ? "map" : "map-outline";
     case "Explore":
       return focused ? "compass" : "compass-outline";
@@ -31,11 +30,18 @@ function iconForRoute(routeName: keyof RootTabsParamList, focused: boolean) {
       return focused ? "settings" : "settings-outline";
   }
 }
+const TravelTab = () => {
+  return (
+    <TravelProvider>
+      <TravelCatalog />
+    </TravelProvider>
+  );
+};
 
-export function RootTabs() {
+export function RootTabs() { 
   return (
     <Tab.Navigator
-      initialRouteName="Trips"
+      initialRouteName="Travels"
       screenOptions={({ route }): BottomTabNavigationOptions => ({
         headerTitleAlign: "center",
         tabBarLabelPosition: "below-icon",
@@ -48,15 +54,8 @@ export function RootTabs() {
         ),
       })}
     >
-      <Tab.Screen
-        name="Trips"
-        component={() => (
-          <TravelProvider>
-            <TravelCatalog />
-          </TravelProvider>
-        )}
-      />
-      <Tab.Screen name="Explore" component={ExploreScreen} />
+      <Tab.Screen name="Travels" component={TravelTab} />
+      <Tab.Screen name="Explore" component={ExploreScreen} />        
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>

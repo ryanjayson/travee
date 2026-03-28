@@ -5,6 +5,8 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
 import { TravelMenuAction } from "../../../../types/enums";
 import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "../../../../navigation/navigation.types";
 import { useTravelPlan } from "../../hooks/useTravel";
 import { useTravelContext } from "../../../../context/TravelContext";
 
@@ -14,6 +16,9 @@ interface ViewTripModalProps {
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+//Modal for the Travel View page
+//ViewTravel is the actual component
+
 const ViewTripModal = ({
   travelId,
   showModal = false,
@@ -21,7 +26,8 @@ const ViewTripModal = ({
 }: ViewTripModalProps) => {
   const [showTravelNavigationModal, setShowTravelNavigationModal] =
     useState<boolean>(false);
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { selectedTravelPlan, clearTravelPlan } = useTravelContext();
 
   const {
@@ -44,10 +50,10 @@ const ViewTripModal = ({
 
   const handleSelectNavigationMenu = (menuAction: TravelMenuAction) => {
     if (menuAction === TravelMenuAction.EditTravel) {
-      (navigation as any).navigate("EditTravelPlan", {
-        travelId: travelPlan?.travel?.id,
-        //TODO: add userid
-      });
+      const id = travelPlan?.travel?.id;
+      if (id != null) {
+        navigation.navigate("EditTravelPlan", { travelId: id });
+      }
     }
   };
 
