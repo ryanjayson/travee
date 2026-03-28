@@ -43,6 +43,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
   const { selectedTravelPlan } = useTravelContext();
 
   const handleSaveSection = async (itinerarySectionData: ItinerarySection) => {
+    debugger;
     if (itinerarySectionData?.travelId && itinerarySectionData?.travelId > 0) {
       await updateMutation.mutateAsync(itinerarySectionData);
       onClose();

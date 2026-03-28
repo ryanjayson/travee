@@ -35,6 +35,7 @@ interface EditActivityProps {
   onClose: () => void;
 }
 
+//Edit page for activity
 const TravelSchema = Yup.object().shape({
   title: Yup.string().required("Title is required").min(2),
 });
@@ -53,9 +54,8 @@ const EditActivity = ({
     useDeleteActivityMutation();
 
   const handleSaveActivity = async (
-    itineraryActivityData: ItineraryActivity
+    itineraryActivityData: ItineraryActivity,
   ) => {
-    debugger;
     if (
       itineraryActivityData?.sectionId &&
       selectedTravelPlan &&

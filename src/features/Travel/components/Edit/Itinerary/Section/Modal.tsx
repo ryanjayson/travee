@@ -25,6 +25,7 @@ interface SectionModalProps {
 
 const { height: screenHeight } = Dimensions.get("window");
 
+//Modal for editing a section
 const SectionModal = ({
   visible,
   onClose,
@@ -53,7 +54,7 @@ const SectionModal = ({
         const newHeight = modalHeight - dragDistance;
         const clampedHeight = Math.max(
           screenHeight * 0.4,
-          Math.min(screenHeight * 0.8, newHeight)
+          Math.min(screenHeight * 0.8, newHeight),
         );
         setModalHeight(clampedHeight);
       }

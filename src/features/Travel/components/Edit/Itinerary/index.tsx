@@ -61,7 +61,7 @@ const EditTravelItinerary = ({
     useState<ItinerarySection | null>(null);
   const [editSectionModalVisible, setEditSectionModalVisible] = useState(false);
   const [editingSection, setEditingSection] = useState<ItinerarySection | null>(
-    null
+    null,
   );
   const [editActivityModalVisible, setEditActivityModalVisible] =
     useState(false);
@@ -74,7 +74,7 @@ const EditTravelItinerary = ({
     number | null
   >(null);
   const [expandedSectionIds, setExpandedSectionIds] = useState<Set<number>>(
-    new Set()
+    new Set(),
   );
 
   const [refreshing, setRefreshing] = useState(false);
@@ -91,12 +91,12 @@ const EditTravelItinerary = ({
         itineraryActivity: (section.itineraryActivity ?? []).map(
           (activity) => ({
             ...activity,
-          })
+          }),
         ),
         isCollapsed: expandedSectionIds.has(section.id || 0)
           ? true
           : section.isCollapsed,
-      })) ?? []
+      })) ?? [],
     );
   }, [travelSections]);
 
@@ -166,8 +166,8 @@ const EditTravelItinerary = ({
         sections.map((section) =>
           section.id === sectionId
             ? { ...section, isCollapsed: !section.isCollapsed }
-            : section
-        )
+            : section,
+        ),
     );
 
     setExpandedSectionIds((prev) => {
@@ -191,7 +191,7 @@ const EditTravelItinerary = ({
 
   const handleSectionActivityPress = (
     activity: ItineraryActivity,
-    sectionId: number
+    sectionId: number,
   ) => {
     debugger;
     setEditingActivity(activity);
@@ -221,7 +221,7 @@ const EditTravelItinerary = ({
   const handleSectionActivityDragEnd = (
     sectionId: number,
     fromIndex: number,
-    toIndex: number
+    toIndex: number,
   ) => {
     setSections(
       sections &&
@@ -233,7 +233,7 @@ const EditTravelItinerary = ({
             return { ...section, activities: newActivities };
           }
           return section;
-        })
+        }),
     );
     setSectionDragState(null);
   };
@@ -263,7 +263,7 @@ const EditTravelItinerary = ({
       setCurrentSectionId(currentSectionForMenu.id ?? 0);
     } else {
       setCurrentSectionId(
-        travelSections?.find((section) => section.isDefaultSection)?.id || 0
+        travelSections?.find((section) => section.isDefaultSection)?.id || 0,
       );
     }
     setModalVisible(true);
@@ -277,9 +277,9 @@ const EditTravelItinerary = ({
       setSelectedSection(
         (travelSections &&
           travelSections.find(
-            (section: ItinerarySection) => section.id == sectionId
+            (section: ItinerarySection) => section.id == sectionId,
           )) ||
-          null
+          null,
       );
     }
     setSectionMenuVisible(false);
@@ -307,7 +307,8 @@ const EditTravelItinerary = ({
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Activities</Text>
 
-        {sections && sections.length > 0 ? (
+        {sections &&
+          sections.length > 0 &&
           sections
             .find((section) => section.isDefaultSection == true)
             ?.itineraryActivity?.map((activity, index) => (
@@ -331,15 +332,15 @@ const EditTravelItinerary = ({
                   listLength={10}
                 />
               </TouchableOpacity>
-            ))
-        ) : (
-          <Text style={styles.emptyText}>Add Activity</Text>
-        )}
+            ))}
 
         <TouchableOpacity
           onPress={() => {
             setModalVisible(true);
-            setCurrentSectionId(null);
+            const defaultSection = sections.find(
+              (section) => section.isDefaultSection == true,
+            );
+            setCurrentSectionId(defaultSection?.id || null);
           }}
           style={{
             backgroundColor: "#eee",
@@ -352,7 +353,7 @@ const EditTravelItinerary = ({
         >
           <Text>
             <Icon name="add" size={20} color={"#475467"} />
-            Add Activity
+            Add Activity Default
           </Text>
         </TouchableOpacity>
       </View>
@@ -436,7 +437,7 @@ const EditTravelItinerary = ({
                             onPress={() =>
                               handleSectionActivityPress(
                                 activity,
-                                section.id || 0
+                                section.id || 0,
                               )
                             }
                             activeOpacity={0.7}
@@ -453,14 +454,14 @@ const EditTravelItinerary = ({
                               onDragStart={(idx: number) =>
                                 handleSectionActivityDragStart(
                                   section.id || 0,
-                                  idx
+                                  idx,
                                 )
                               }
                               onDragEnd={(fromIdx: number, toIdx: number) =>
                                 handleSectionActivityDragEnd(
                                   section.id || 0,
                                   fromIdx,
-                                  toIdx
+                                  toIdx,
                                 )
                               }
                               isDragging={
@@ -560,7 +561,7 @@ const EditTravelItinerary = ({
         itineraryActivity={editingActivity}
       />
 
-      <SectionModal //AADD
+      <SectionModal //ADD
         visible={sectionModalVisible}
         onClose={() => setSectionModalVisible(false)}
         itinerarySection={null}

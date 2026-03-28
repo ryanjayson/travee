@@ -50,7 +50,7 @@ export const useUpdateSectionMutation = () => {
         if (response.status !== 204) {
           const errorBody = await response.json();
           throw new Error(
-            errorBody.message || "Failed to update itinerary section."
+            errorBody.message || "Failed to update itinerary section.",
           );
         }
       }
@@ -69,6 +69,9 @@ export const useUpdateSectionMutation = () => {
 
     // 5. Implement robust cache invalidation
     onSuccess: (data: MutationData, variables: MutationVariables) => {
+      console.log("data", data);
+      console.log("var", variables);
+
       // Invalidate the broader itinerary query key to refetch the entire trip data
       // This ensures all related screens update with the new section
       // queryClient.invalidateQueries({
@@ -148,7 +151,7 @@ export const useUpdateSectionMutation = () => {
             ...oldData,
             itinerarySection: newSections,
           };
-        }
+        },
       );
     },
 
@@ -177,7 +180,7 @@ export const useDeleteSectionMutation = () => {
         {
           method: "DELETE", // Use the DELETE method
           headers: options.headers,
-        }
+        },
       );
 
       if (!response.ok) {
@@ -202,7 +205,7 @@ export const useDeleteSectionMutation = () => {
     // --- B. Handle Cache Update on Success ---
     onSuccess: (
       data: void, // data is void/undefined since we expect 204
-      variables: DeleteVariables
+      variables: DeleteVariables,
     ) => {
       // Use the sectionId from 'variables' to remove the item from the cache
 
@@ -213,7 +216,7 @@ export const useDeleteSectionMutation = () => {
 
           // Filter out the deleted section by ID
           const newSections = oldData.itinerarySection?.filter(
-            (s) => s.id !== variables.sectionId
+            (s) => s.id !== variables.sectionId,
           );
 
           // Return the new TravelPlan object
@@ -221,7 +224,7 @@ export const useDeleteSectionMutation = () => {
             ...oldData,
             itinerarySection: newSections,
           };
-        }
+        },
       );
 
       console.log(`Successfully deleted section ID: ${variables.sectionId}`);
