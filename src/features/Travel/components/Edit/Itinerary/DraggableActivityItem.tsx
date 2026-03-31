@@ -5,7 +5,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 interface DraggableActivityItemProps {
   id?: number;
   title: string;
-  description: string;
+  description?: string;
   location: string;
   index: number;
   onDragStart: (index: number) => void;
@@ -38,6 +38,8 @@ const DraggableActivityItem = ({
     onMoveShouldSetPanResponder: (evt, gestureState) => {
       return Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2;
     },
+    onMoveShouldSetPanResponderCapture: () => true,
+    onPanResponderTerminationRequest: () => false,
     onPanResponderGrant: () => {
       setIsActive(true);
       onDragStart(index);

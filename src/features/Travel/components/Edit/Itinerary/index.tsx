@@ -21,6 +21,8 @@ import DraggableActivityItem from "./DraggableActivityItem";
 import SlideModal from "../../../../../components/molecules/SlideModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useDeleteSectionMutation } from "../../../hooks/useSection";
+import { useUpdateActivitySortOrderMutation } from "../../../hooks/useActivity";
+import { UpdateSortVariables } from "../../../types/ActivityDto";
 
 import {
   Travel,
@@ -80,6 +82,11 @@ const EditTravelItinerary = ({
   const [refreshing, setRefreshing] = useState(false);
   const { mutate: deleteSectionMutation, isPending } =
     useDeleteSectionMutation();
+
+  const {
+    mutate: updateActivitySortMutation,
+    isPending: isPendingActivitySort,
+  } = useUpdateActivitySortOrderMutation();
 
   useEffect(() => {
     setSections(
@@ -182,7 +189,6 @@ const EditTravelItinerary = ({
   };
 
   const handleActivityPress = (activity: ItineraryActivity) => {
-    debugger;
     setEditingActivity(activity);
     setEditingActivityType("general");
     setEditingActivitySectionId(null);
@@ -193,7 +199,6 @@ const EditTravelItinerary = ({
     activity: ItineraryActivity,
     sectionId: number,
   ) => {
-    debugger;
     setEditingActivity(activity);
     setEditingActivityType("section");
     setCurrentSectionId(sectionId);
@@ -220,21 +225,52 @@ const EditTravelItinerary = ({
 
   const handleSectionActivityDragEnd = (
     sectionId: number,
+    activity: ItineraryActivity,
     fromIndex: number,
     toIndex: number,
   ) => {
-    setSections(
-      sections &&
-        sections.map((section) => {
-          if (section.id === sectionId && section.itineraryActivity) {
-            const newActivities = [...section.itineraryActivity];
-            const [movedActivity] = newActivities.splice(fromIndex, 1);
-            newActivities.splice(toIndex, 0, movedActivity);
-            return { ...section, activities: newActivities };
-          }
+    setSections((prevSections) =>
+      prevSections.map((section) => {
+        if (section.id !== sectionId || !section.itineraryActivity) {
           return section;
-        }),
+        }
+        const newActivities = [...section.itineraryActivity];
+        const [movedActivity] = newActivities.splice(fromIndex, 1);
+        newActivities.splice(toIndex, 0, movedActivity);
+
+        // Neighbors after move (useful for sort-order persistence)
+        const previousNeighbor = newActivities[toIndex - 1] ?? null;
+        const nextNeighbor = newActivities[toIndex + 1] ?? null;
+
+        console.log("previousNeighbor", previousNeighbor);
+        console.log("nextNeighbor", nextNeighbor);
+        debugger;
+        if (sectionId && activity) {
+          const updateSort: UpdateSortVariables = {
+            id: activity?.id ?? 0,
+            prevSortOrder: previousNeighbor && previousNeighbor.sortOrder,
+            nextSortOrder: nextNeighbor && nextNeighbor.sortOrder,
+          };
+          updateActivitySortMutation(updateSort);
+        }
+
+        // Keep selected section in sync with the latest activity order
+        // setSelectedSection((prevSelected) => {
+        //   if (!prevSelected || prevSelected.id !== sectionId)
+        //     return prevSelected;
+        //   return {
+        //     ...prevSelected,
+        //     itineraryActivity: newActivities,
+        //   };
+        // });
+
+        void previousNeighbor;
+        void nextNeighbor;
+
+        return { ...section, itineraryActivity: newActivities };
+      }),
     );
+
     setSectionDragState(null);
   };
 
@@ -295,6 +331,7 @@ const EditTravelItinerary = ({
     <ScrollView
       style={styles.formContainer}
       showsVerticalScrollIndicator={false}
+      scrollEnabled={!isDragging && !sectionDragState?.isDragging}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -445,9 +482,7 @@ const EditTravelItinerary = ({
                             <DraggableActivityItem
                               id={activity.id}
                               title={activity.title}
-                              description={
-                                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-                              }
+                              description={activity.description}
                               location={""}
                               index={index}
                               listLength={10}
@@ -460,6 +495,7 @@ const EditTravelItinerary = ({
                               onDragEnd={(fromIdx: number, toIdx: number) =>
                                 handleSectionActivityDragEnd(
                                   section.id || 0,
+                                  activity,
                                   fromIdx,
                                   toIdx,
                                 )

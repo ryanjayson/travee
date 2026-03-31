@@ -8,6 +8,7 @@ import {
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { fetchItineraryActivity } from "../../../services/api/itinerary";
 import { ApiResponse } from "../../../types/api";
+import { UpdateSortVariables } from "../types/ActivityDto";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
 const ITINERARY_QUERY_KEY = ["itineraryActivity"];
@@ -31,7 +32,6 @@ export const useUpdateActivityMutation = () => {
     MutationVariables
   >({
     mutationFn: async (activity) => {
-      console.log("ACTIVITY", activity);
       const options = postRequestOptions("");
       const response = await fetch(ACTIVITY_ENDPOINT, {
         method: activity.id && activity.id > 0 ? "PUT" : "POST",
@@ -114,7 +114,6 @@ export const useUpdateActivityMutation = () => {
         },
       );
     },
-
     // 6. Keep error handling concise
     onError: (error) => {
       // Log the error for development/monitoring
@@ -219,5 +218,59 @@ export const useItineraryActivity = (activityId: number) => {
     queryKey: [ITINERARY_QUERY_KEY, activityId],
     queryFn: () => fetchItineraryActivity(activityId),
     enabled: !!activityId,
+  });
+};
+
+export const useUpdateActivitySortOrderMutation = () => {
+  return useMutation({
+    mutationFn: async (variables: UpdateSortVariables): Promise<void> => {
+      const options = postRequestOptions("");
+
+      console.log("VAR", variables);
+      const response = await fetch(`${ACTIVITY_ENDPOINT}/move`, {
+        method: "POST",
+        headers: options.headers,
+        body: JSON.stringify(variables),
+      });
+
+      if (!response.ok) {
+        if (response.status !== 204) {
+          const errorBody = await response.json();
+          throw new Error(
+            errorBody.message || "Failed to update itinerary section.",
+          );
+        }
+      }
+
+      if (response.status === 204) {
+        return;
+      }
+      return response.json();
+    },
+    onSuccess: (
+      data: void, // data is void/undefined since we expect 204
+      variables: UpdateSortVariables,
+    ) => {
+      // queryClient.setQueryData<TravelPlan | undefined>(
+      //   SELECTED_TRAVEL_PLAN_QUERY_KEY,
+      //   (oldData) => {
+      //     if (!oldData) return oldData;
+
+      //     // Filter out the deleted section by ID
+      //     const newSections = oldData.itinerarySection?.filter(
+      //       (s) => s.id !== variables.sectionId,
+      //     );
+
+      //     // Return the new TravelPlan object
+      //     return {
+      //       ...oldData,
+      //       itinerarySection: newSections,
+      //     };
+      //   },
+      // );
+
+      console.log(`Successfully deleted section ID: ${variables.id}`);
+    },
+    onSettled: (data, error, variables) => {},
   });
 };
