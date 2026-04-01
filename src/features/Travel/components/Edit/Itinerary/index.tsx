@@ -18,6 +18,7 @@ import ActivityCard from "../Itinerary/ActivityCard";
 import FloatingAddButton from "../Itinerary/FloatingAddButton";
 // import DraggableActivityItem from "../components/DraggableActivityItem";
 import DraggableActivityItem from "./DraggableActivityItem";
+import DraggableSectionContainer from "./DraggableSectionContainer";
 import SlideModal from "../../../../../components/molecules/SlideModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useDeleteSectionMutation } from "../../../hooks/useSection";
@@ -79,6 +80,9 @@ const EditTravelItinerary = ({
     new Set(),
   );
   const [hoverState, setHoverState] = useState<{ sectionId: number | null, index: number } | null>(null);
+
+  const [masterDragState, setMasterDragState] = useState<{ isDragging: boolean, dragIndex: number | null }>({ isDragging: false, dragIndex: null });
+  const [masterHoverState, setMasterHoverState] = useState<{ index: number } | null>(null);
   const sectionRefs = useRef<Record<number, any>>({});
   const sectionBounds = useRef<Record<number, { pageY: number, height: number }>>({});
   
@@ -228,13 +232,40 @@ const EditTravelItinerary = ({
   };
 
   const handleActivityDragEnd = (fromIndex: number, toIndex: number) => {
-    // const newActivities = [...activities];
-    // const [movedActivity] = newActivities.splice(fromIndex, 1);
-    // newActivities.splice(toIndex, 0, movedActivity);
-    // setActivities(newActivities);
-    // setIsDragging(false);
-    // setDragIndex(null);
     setHoverState(null);
+  };
+
+  const handleMasterSectionDragStart = (index: number) => {
+    setMasterDragState({ isDragging: true, dragIndex: index });
+  };
+
+  const handleMasterSectionDragMove = (currentIndex: number, dy: number, moveY: number) => {
+    // Basic mathematical estimation: assume sections average around 200px block heights.
+    // The exact visual math isn't perfectly mapped internally due to variable map sizes, but it smoothly approximates for generic reordering!
+    const offset = Math.round(dy / 150);
+    const subSectionsLength = sections?.filter(s => s.isDefaultSection === false).length || 0;
+    const newIndex = Math.max(0, Math.min(currentIndex + offset, subSectionsLength - 1));
+    setMasterHoverState({ index: newIndex });
+  };
+
+  const handleMasterSectionDragEnd = (fromIndex: number, toIndex: number) => {
+    setMasterDragState({ isDragging: false, dragIndex: null });
+    setMasterHoverState(null);
+
+    if (fromIndex !== toIndex) {
+      setSections((prev) => {
+        const defaultSections = prev.filter(s => s.isDefaultSection === true);
+        const subSections = prev.filter(s => s.isDefaultSection === false);
+        
+        const [moved] = subSections.splice(fromIndex, 1);
+        subSections.splice(toIndex, 0, moved);
+        
+        return [...defaultSections, ...subSections];
+      });
+
+      // TODO: Actually persist backend array order here when a route emerges
+      // updateSectionSortOrderMutation({ ... });
+    }
   };
 
   const handleSectionActivityDragStart = (sectionId: number, index: number) => {
@@ -606,20 +637,33 @@ debugger;
         {sections && sections.length > 0 ? (
           sections
             .filter((section) => section.isDefaultSection == false)
-            .map((section) => (
-              <View
+            .map((section, mapIndex) => (
+              <DraggableSectionContainer
                 key={section.id}
-                style={[
-                  styles.sectionCard,
-                  {
-                    zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
-                    elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
-                  },
-                ]}
+                index={mapIndex}
+                listLength={sections.filter(s => s.isDefaultSection === false).length}
+                onDragStart={handleMasterSectionDragStart}
+                onDragMove={handleMasterSectionDragMove}
+                onDragEnd={handleMasterSectionDragEnd}
               >
-                <View style={styles.dragHandleIcon}>
-                  <Icon name="drag-handle" size={24} color={"#DDD"} />
-                </View>
+                {(panHandlers, isSectionActive) => (
+                  <>
+                  <View
+                    style={[
+                      styles.sectionCard,
+                      {
+                        zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
+                        elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
+                      },
+                    ]}
+                  >
+                    {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) > mapIndex && (
+                      <View style={[styles.dropIndicator, { marginBottom: 15 }]} />
+                    )}
+
+                    <View style={styles.dragHandleIcon} {...panHandlers}>
+                      <Icon name="drag-handle" size={24} color={isSectionActive ? "#183B7A" : "#DDD"} />
+                    </View>
                 <View style={styles.sectionHeader}>
                   <TouchableOpacity
                     style={styles.sectionToggle}
@@ -819,6 +863,12 @@ debugger;
                   <Icon name="more-vert" size={20} color={"#475467"} />
                 </TouchableOpacity>
               </View>
+              {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) < mapIndex && (
+                <View style={[styles.dropIndicator, { marginTop: 15 }]} />
+              )}
+              </>
+              )}
+            </DraggableSectionContainer>
             ))
         ) : (
           <Text style={styles.emptyText}>No sections added yet.</Text>
