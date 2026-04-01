@@ -78,7 +78,7 @@ const EditTravelItinerary = ({
   const [expandedSectionIds, setExpandedSectionIds] = useState<Set<number>>(
     new Set(),
   );
-
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const { mutate: deleteSectionMutation, isPending } =
     useDeleteSectionMutation();
@@ -217,6 +217,7 @@ const EditTravelItinerary = ({
     // setActivities(newActivities);
     // setIsDragging(false);
     // setDragIndex(null);
+    setHoverIndex(null);
   };
 
   const handleSectionActivityDragStart = (sectionId: number, index: number) => {
@@ -244,7 +245,7 @@ const EditTravelItinerary = ({
 
         console.log("previousNeighbor", previousNeighbor);
         console.log("nextNeighbor", nextNeighbor);
-        debugger;
+
         if (sectionId && activity) {
           const updateSort: UpdateSortVariables = {
             id: activity?.id ?? 0,
@@ -253,17 +254,6 @@ const EditTravelItinerary = ({
           };
           updateActivitySortMutation(updateSort);
         }
-
-        // Keep selected section in sync with the latest activity order
-        // setSelectedSection((prevSelected) => {
-        //   if (!prevSelected || prevSelected.id !== sectionId)
-        //     return prevSelected;
-        //   return {
-        //     ...prevSelected,
-        //     itineraryActivity: newActivities,
-        //   };
-        // });
-
         void previousNeighbor;
         void nextNeighbor;
 
@@ -272,6 +262,7 @@ const EditTravelItinerary = ({
     );
 
     setSectionDragState(null);
+    setHoverIndex(null);
   };
 
   const handleMenuAddActivity = () => {
@@ -327,19 +318,29 @@ const EditTravelItinerary = ({
     }
   };
 
+  const handleDragMove = (
+    currentIndex: number,
+    dy: number,
+    listLength: number,
+  ) => {
+    const offset = Math.round(dy / 70);
+    const target = Math.max(0, Math.min(currentIndex + offset, listLength - 1));
+    setHoverIndex(target);
+  };
+
   return (
     <ScrollView
       style={styles.formContainer}
       showsVerticalScrollIndicator={false}
       scrollEnabled={!isDragging && !sectionDragState?.isDragging}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          // onRefresh={handleRefresh}
-          colors={["#183B7A"]}
-          tintColor="#183B7A"
-        />
-      }
+      // refreshControl={
+      //   <RefreshControl
+      //     refreshing={refreshing}
+      //     // onRefresh={handleRefresh}
+      //     colors={["#183B7A"]}
+      //     tintColor="#183B7A"
+      //   />
+      // }
     >
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Activities</Text>
@@ -356,6 +357,10 @@ const EditTravelItinerary = ({
                   handleSectionActivityPress(activity, activity.sectionId || 0)
                 }
                 activeOpacity={0.7}
+                style={{
+                  zIndex: isDragging && dragIndex === index ? 9999 : 1,
+                  elevation: isDragging && dragIndex === index ? 10 : 1,
+                }}
               >
                 <ActivityCard
                   title={activity.title}
@@ -366,7 +371,10 @@ const EditTravelItinerary = ({
                   onDragEnd={handleActivityDragEnd}
                   isDragging={isDragging}
                   dragIndex={dragIndex}
-                  listLength={10}
+                  listLength={
+                    sections.find((section) => section.isDefaultSection == true)
+                      ?.itineraryActivity?.length || 0
+                  }
                 />
               </TouchableOpacity>
             ))}
@@ -389,8 +397,8 @@ const EditTravelItinerary = ({
           }}
         >
           <Text>
-            <Icon name="add" size={20} color={"#475467"} />
-            Add Activity Default
+            <Icon name="add" size={22} color={"#475467"} />
+            Add Activity
           </Text>
         </TouchableOpacity>
       </View>
@@ -478,14 +486,40 @@ const EditTravelItinerary = ({
                               )
                             }
                             activeOpacity={0.7}
+                            style={{
+                              zIndex:
+                                sectionDragState?.sectionId === section.id &&
+                                sectionDragState?.dragIndex === index
+                                  ? 9999
+                                  : 1,
+                              elevation:
+                                sectionDragState?.sectionId === section.id &&
+                                sectionDragState?.dragIndex === index
+                                  ? 10
+                                  : 1,
+                            }}
                           >
+                            {hoverIndex === index &&
+                              sectionDragState?.sectionId === section.id &&
+                              sectionDragState?.dragIndex !== index &&
+                              (sectionDragState?.dragIndex ?? -1) > index && (
+                                <View style={styles.dropIndicator} />
+                              )}
+
                             <DraggableActivityItem
                               id={activity.id}
                               title={activity.title}
                               description={activity.description}
                               location={""}
                               index={index}
-                              listLength={10}
+                              listLength={section.itineraryActivity.length}
+                              onDragMove={(currentIndex, dy) =>
+                                handleDragMove(
+                                  currentIndex,
+                                  dy,
+                                  section.itineraryActivity?.length || 0,
+                                )
+                              }
                               onDragStart={(idx: number) =>
                                 handleSectionActivityDragStart(
                                   section.id || 0,
@@ -512,6 +546,13 @@ const EditTravelItinerary = ({
                                   : null
                               }
                             />
+                            
+                            {hoverIndex === index &&
+                              sectionDragState?.sectionId === section.id &&
+                              sectionDragState?.dragIndex !== index &&
+                              (sectionDragState?.dragIndex ?? -1) < index && (
+                                <View style={styles.dropIndicator} />
+                              )}
                           </TouchableOpacity>
                         ))}
                       </View>
@@ -858,6 +899,7 @@ const styles = StyleSheet.create({
   },
   sectionActivities: {
     marginTop: 12,
+    zIndex: 0,
   },
   sectionActivityCard: {
     backgroundColor: "#F0F0F0",
@@ -907,6 +949,14 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  dropIndicator: {
+    height: 2,
+    backgroundColor: "#183B7A",
+    borderRadius: 2,
+    marginVertical: 4,
+    width: "80%",
+    alignSelf: "center",
   },
 });
 

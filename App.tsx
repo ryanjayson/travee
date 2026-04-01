@@ -15,10 +15,10 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <PaperProvider theme={theme}>
-          {/* <GestureHandlerRootView style={{ flex: 1 }}> */}
-          <StatusBar style="auto" />
-          <AppNavigator />
-          {/* </GestureHandlerRootView> */}
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <StatusBar style="auto" />
+            <AppNavigator />
+          </GestureHandlerRootView>
         </PaperProvider>
       </AuthProvider>
     </QueryClientProvider>
