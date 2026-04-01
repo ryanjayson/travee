@@ -81,6 +81,20 @@ const EditTravelItinerary = ({
   const [hoverState, setHoverState] = useState<{ sectionId: number | null, index: number } | null>(null);
   const sectionRefs = useRef<Record<number, any>>({});
   const sectionBounds = useRef<Record<number, { pageY: number, height: number }>>({});
+  
+  // Auto-scrolling Refs
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollOffset = useRef(0);
+  const initialScrollY = useRef(0);
+  const dragMoveY = useRef(0);
+  const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
+
+  const sectionsRef = useRef(sections);
+  useEffect(() => { sectionsRef.current = sections; }, [sections]);
+
+  const sectionDragStateRef = useRef(sectionDragState);
+  useEffect(() => { sectionDragStateRef.current = sectionDragState; }, [sectionDragState]);
+
   const [refreshing, setRefreshing] = useState(false);
   const { mutate: deleteSectionMutation, isPending } =
     useDeleteSectionMutation();
@@ -225,6 +239,7 @@ const EditTravelItinerary = ({
 
   const handleSectionActivityDragStart = (sectionId: number, index: number) => {
     // Measure all visible sections
+    initialScrollY.current = scrollOffset.current;
     Object.entries(sectionRefs.current).forEach(([idStr, ref]) => {
       if (ref && ref.measure) {
         ref.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
@@ -299,6 +314,10 @@ debugger;
 
     setSectionDragState(null);
     setHoverState(null);
+    if (autoScrollInterval.current) {
+      clearInterval(autoScrollInterval.current);
+      autoScrollInterval.current = null;
+    }
   };
 
   const handleMenuAddActivity = () => {
@@ -354,38 +373,95 @@ debugger;
     }
   };
 
+  const computeIntersection = (moveY: number) => {
+    let targetSectionId = sectionDragStateRef.current?.sectionId || null;
+    let targetIndex = 0;
+    
+    const scrollDelta = scrollOffset.current - initialScrollY.current;
+
+    let foundIntersection = false;
+    for (const [idStr, bounds] of Object.entries(sectionBounds.current) as [string, { pageY: number, height: number }][]) {
+      const id = Number(idStr);
+      const shiftedTop = bounds.pageY - scrollDelta;
+      const shiftedBottom = shiftedTop + bounds.height;
+
+      if (moveY >= shiftedTop - 40 && moveY <= shiftedBottom + 40) {
+        targetSectionId = id;
+        const relY = moveY - shiftedTop;
+        const newTargetIndex = Math.max(0, Math.round(relY / 70));
+        
+        const targetSection = sectionsRef.current?.find(s => s.id === id);
+        const targetLen = targetSection?.itineraryActivity?.length || 0;
+        targetIndex = Math.max(0, Math.min(newTargetIndex, targetLen));
+        foundIntersection = true;
+        break;
+      }
+    }
+
+    if (foundIntersection) {
+      setHoverState(prev => {
+        if (prev?.sectionId === targetSectionId && prev?.index === targetIndex) return prev;
+        return { sectionId: targetSectionId, index: targetIndex };
+      });
+    }
+  };
+
   const handleDragMove = (
     currentIndex: number,
     dy: number,
     listLength: number,
     moveY?: number,
   ) => {
-    let targetSectionId = sectionDragState?.sectionId || null;
-    let targetIndex = Math.max(0, Math.min(currentIndex + Math.round(dy / 70), listLength - 1));
+    if (moveY) {
+      dragMoveY.current = moveY;
+      const { height: screenHeight } = Dimensions.get("window");
+      const topBoundary = 150;
+      const bottomBoundary = screenHeight - 150;
 
-    if (moveY && sectionDragState?.sectionId) {
-      // Find which section this moveY corresponds to
-      for (const [idStr, bounds] of Object.entries(sectionBounds.current) as [string, { pageY: number, height: number }][]) {
-        const id = Number(idStr);
-        // Add a buffer so it doesn't strictly drop out if slightly above top or below bottom
-        if (moveY >= bounds.pageY - 40 && moveY <= bounds.pageY + bounds.height + 40) {
-          targetSectionId = id;
-          const relY = moveY - bounds.pageY;
-          const newTargetIndex = Math.max(0, Math.round(relY / 70));
-          
-          const targetSection = sections?.find(s => s.id === id);
-          const targetLen = targetSection?.itineraryActivity?.length || 0;
-          targetIndex = Math.max(0, Math.min(newTargetIndex, targetLen));
-          break;
+      if (moveY < topBoundary || moveY > bottomBoundary) {
+        if (!autoScrollInterval.current) {
+          autoScrollInterval.current = setInterval(() => {
+            const y = dragMoveY.current;
+            const scrollSpeed = 15;
+            let increment = 0;
+
+            if (y < topBoundary) {
+              increment = -scrollSpeed;
+            } else if (y > bottomBoundary) {
+              increment = scrollSpeed;
+            } else {
+              if (autoScrollInterval.current) {
+                clearInterval(autoScrollInterval.current);
+                autoScrollInterval.current = null;
+              }
+              return;
+            }
+
+            const newScrollY = Math.max(0, scrollOffset.current + increment);
+            scrollViewRef.current?.scrollTo({ y: newScrollY, animated: false });
+            scrollOffset.current = newScrollY;
+
+            computeIntersection(y);
+          }, 16);
+        }
+      } else {
+        if (autoScrollInterval.current) {
+          clearInterval(autoScrollInterval.current);
+          autoScrollInterval.current = null;
         }
       }
-    }
 
-    setHoverState({ sectionId: targetSectionId, index: targetIndex });
+      computeIntersection(moveY);
+    }
   };
 
   return (
     <ScrollView
+      ref={scrollViewRef}
+      onScroll={(e) => {
+        scrollOffset.current = e.nativeEvent.contentOffset.y;
+      }}
+      scrollEventThrottle={16}
       style={styles.formContainer}
       showsVerticalScrollIndicator={false}
       scrollEnabled={!isDragging && !sectionDragState?.isDragging}
@@ -465,7 +541,16 @@ debugger;
           sections
             .filter((section) => section.isDefaultSection == false)
             .map((section) => (
-              <View key={section.id} style={styles.sectionCard}>
+              <View
+                key={section.id}
+                style={[
+                  styles.sectionCard,
+                  {
+                    zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
+                    elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
+                  },
+                ]}
+              >
                 <View style={styles.dragHandleIcon}>
                   <Icon name="drag-handle" size={24} color={"#DDD"} />
                 </View>
@@ -529,16 +614,21 @@ debugger;
                 </View>
 
                 <View>
-                  {!section.isCollapsed &&
-                    section.itineraryActivity &&
-                    section.itineraryActivity.length > 0 && (
+                  {!section.isCollapsed && (
                       <View 
-                        style={styles.sectionActivities}
+                        style={[
+                          styles.sectionActivities,
+                          {
+                            zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
+                            elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
+                            paddingBottom: (!section.itineraryActivity || section.itineraryActivity.length === 0) ? 20 : 0
+                          }
+                        ]}
                         ref={(ref) => {
                           if (ref && section.id) sectionRefs.current[section.id] = ref;
                         }}
                       >
-                        {section.itineraryActivity.map((activity, index) => (
+                        {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
                           <TouchableOpacity
                             key={activity.id}
                             onPress={() =>
@@ -619,7 +709,16 @@ debugger;
                                 <View style={styles.dropIndicator} />
                               )}
                           </TouchableOpacity>
-                        ))}
+                        )) : (
+                          // Render invisible or subtle drop zone for empty sections
+                          <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
+                             <Text style={{ color: "#aaa" }}>Drop activities here</Text>
+
+                             {hoverState?.sectionId === section.id && (
+                               <View style={[styles.dropIndicator, { position: "absolute", top: "50%", width: "100%" }]} />
+                             )}
+                          </View>
+                        )}
                       </View>
                     )}
                 </View>
