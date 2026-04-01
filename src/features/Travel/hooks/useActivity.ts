@@ -69,33 +69,30 @@ export const useUpdateActivityMutation = () => {
 
           if (sectionIndex > -1) {
             newSections = sections.map((s, index) => {
+              // Update target section
               if (index === sectionIndex) {
                 let newActivities: typeof s.itineraryActivity;
-
                 const activities = s.itineraryActivity || [];
-
                 const activityIndex = activities.findIndex(
                   (activity) => activity.id === variables.id,
                 );
 
                 if (activityIndex > -1) {
-                  newActivities = activities.map((activity, index) => {
-                    if (index === activityIndex) {
+                  newActivities = activities.map((activity, idx) => {
+                    if (idx === activityIndex) {
                       return {
                         ...activity,
-                        title: variables.title,
+                        ...variables,
                       };
                     }
                     return activity;
                   });
                 } else {
                   const activityId = data.data?.id || variables.id;
-
                   const addedActivity = {
                     ...variables,
                     id: activityId,
                   };
-
                   newActivities = [...activities, addedActivity];
                 }
 
@@ -104,6 +101,15 @@ export const useUpdateActivityMutation = () => {
                   itineraryActivity: newActivities,
                 };
               }
+
+              // Remove from source section (if moved cross-section)
+              if (s.itineraryActivity?.some((a) => a.id === variables.id)) {
+                return {
+                  ...s,
+                  itineraryActivity: s.itineraryActivity.filter((a) => a.id !== variables.id),
+                };
+              }
+
               return s;
             });
           }

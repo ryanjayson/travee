@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -21,7 +21,7 @@ import DraggableActivityItem from "./DraggableActivityItem";
 import SlideModal from "../../../../../components/molecules/SlideModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useDeleteSectionMutation } from "../../../hooks/useSection";
-import { useUpdateActivitySortOrderMutation } from "../../../hooks/useActivity";
+import { useUpdateActivitySortOrderMutation, useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { UpdateSortVariables } from "../../../types/ActivityDto";
 
 import {
@@ -78,10 +78,13 @@ const EditTravelItinerary = ({
   const [expandedSectionIds, setExpandedSectionIds] = useState<Set<number>>(
     new Set(),
   );
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [hoverState, setHoverState] = useState<{ sectionId: number | null, index: number } | null>(null);
+  const sectionRefs = useRef<Record<number, any>>({});
+  const sectionBounds = useRef<Record<number, { pageY: number, height: number }>>({});
   const [refreshing, setRefreshing] = useState(false);
   const { mutate: deleteSectionMutation, isPending } =
     useDeleteSectionMutation();
+  const { mutate: updateActivityMutation } = useUpdateActivityMutation();
 
   const {
     mutate: updateActivitySortMutation,
@@ -217,52 +220,85 @@ const EditTravelItinerary = ({
     // setActivities(newActivities);
     // setIsDragging(false);
     // setDragIndex(null);
-    setHoverIndex(null);
+    setHoverState(null);
   };
 
   const handleSectionActivityDragStart = (sectionId: number, index: number) => {
+    // Measure all visible sections
+    Object.entries(sectionRefs.current).forEach(([idStr, ref]) => {
+      if (ref && ref.measure) {
+        ref.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
+          sectionBounds.current[Number(idStr)] = { pageY, height };
+        });
+      }
+    });
     setSectionDragState({ sectionId, isDragging: true, dragIndex: index });
   };
 
   const handleSectionActivityDragEnd = (
-    sectionId: number,
+    sourceSectionId: number,
     activity: ItineraryActivity,
     fromIndex: number,
-    toIndex: number,
+    _: number,
   ) => {
-    setSections((prevSections) =>
-      prevSections.map((section) => {
-        if (section.id !== sectionId || !section.itineraryActivity) {
+
+debugger;
+
+    const targetSectionId =  hoverState?.sectionId ?? sourceSectionId;
+    const toIndex = hoverState?.index ?? fromIndex;
+
+    setSections((prevSections) => {
+      let movedActivity: ItineraryActivity | null = null;
+      // 1. Remove from source section
+      const afterRemoval = prevSections.map((section) => {
+        if (section.id === sourceSectionId && section.itineraryActivity) {
+          const newActivities = [...section.itineraryActivity];
+          movedActivity = newActivities.splice(fromIndex, 1)[0];
+          return { ...section, itineraryActivity: newActivities };
+        }
+        return section;
+      });
+
+      // 2. Insert into target section
+      if (movedActivity) {
+        const updatedActivity = { ...movedActivity, sectionId: targetSectionId };
+
+        const finalSections = afterRemoval.map((section) => {
+          if (section.id === targetSectionId) {
+            const newActivities = [...(section.itineraryActivity || [])];
+            const safeToIndex = Math.min(toIndex, newActivities.length);
+            
+            newActivities.splice(safeToIndex, 0, updatedActivity);
+
+            const previousNeighbor = newActivities[safeToIndex - 1] ?? null;
+            const nextNeighbor = newActivities[safeToIndex + 1] ?? null;
+
+            if (updatedActivity.id) {
+              const updateSort: UpdateSortVariables = {
+                id: updatedActivity.id,
+                prevSortOrder: previousNeighbor && previousNeighbor.sortOrder,
+                nextSortOrder: nextNeighbor && nextNeighbor.sortOrder,
+              };
+              updateActivitySortMutation(updateSort);
+
+              if (targetSectionId !== sourceSectionId) {
+                updateActivityMutation(updatedActivity);
+              }
+            }
+
+            return { ...section, itineraryActivity: newActivities };
+          }
           return section;
-        }
-        const newActivities = [...section.itineraryActivity];
-        const [movedActivity] = newActivities.splice(fromIndex, 1);
-        newActivities.splice(toIndex, 0, movedActivity);
+        });
 
-        // Neighbors after move (useful for sort-order persistence)
-        const previousNeighbor = newActivities[toIndex - 1] ?? null;
-        const nextNeighbor = newActivities[toIndex + 1] ?? null;
+        return finalSections;
+      }
 
-        console.log("previousNeighbor", previousNeighbor);
-        console.log("nextNeighbor", nextNeighbor);
-
-        if (sectionId && activity) {
-          const updateSort: UpdateSortVariables = {
-            id: activity?.id ?? 0,
-            prevSortOrder: previousNeighbor && previousNeighbor.sortOrder,
-            nextSortOrder: nextNeighbor && nextNeighbor.sortOrder,
-          };
-          updateActivitySortMutation(updateSort);
-        }
-        void previousNeighbor;
-        void nextNeighbor;
-
-        return { ...section, itineraryActivity: newActivities };
-      }),
-    );
+      return afterRemoval;
+    });
 
     setSectionDragState(null);
-    setHoverIndex(null);
+    setHoverState(null);
   };
 
   const handleMenuAddActivity = () => {
@@ -322,10 +358,30 @@ const EditTravelItinerary = ({
     currentIndex: number,
     dy: number,
     listLength: number,
+    moveY?: number,
   ) => {
-    const offset = Math.round(dy / 70);
-    const target = Math.max(0, Math.min(currentIndex + offset, listLength - 1));
-    setHoverIndex(target);
+    let targetSectionId = sectionDragState?.sectionId || null;
+    let targetIndex = Math.max(0, Math.min(currentIndex + Math.round(dy / 70), listLength - 1));
+
+    if (moveY && sectionDragState?.sectionId) {
+      // Find which section this moveY corresponds to
+      for (const [idStr, bounds] of Object.entries(sectionBounds.current) as [string, { pageY: number, height: number }][]) {
+        const id = Number(idStr);
+        // Add a buffer so it doesn't strictly drop out if slightly above top or below bottom
+        if (moveY >= bounds.pageY - 40 && moveY <= bounds.pageY + bounds.height + 40) {
+          targetSectionId = id;
+          const relY = moveY - bounds.pageY;
+          const newTargetIndex = Math.max(0, Math.round(relY / 70));
+          
+          const targetSection = sections?.find(s => s.id === id);
+          const targetLen = targetSection?.itineraryActivity?.length || 0;
+          targetIndex = Math.max(0, Math.min(newTargetIndex, targetLen));
+          break;
+        }
+      }
+    }
+
+    setHoverState({ sectionId: targetSectionId, index: targetIndex });
   };
 
   return (
@@ -424,6 +480,7 @@ const EditTravelItinerary = ({
                         ellipsizeMode="tail"
                         style={styles.sectionTitle}
                       >
+                        {section.id}.  
                         {section.title}
                       </Text>
 
@@ -475,7 +532,12 @@ const EditTravelItinerary = ({
                   {!section.isCollapsed &&
                     section.itineraryActivity &&
                     section.itineraryActivity.length > 0 && (
-                      <View style={styles.sectionActivities}>
+                      <View 
+                        style={styles.sectionActivities}
+                        ref={(ref) => {
+                          if (ref && section.id) sectionRefs.current[section.id] = ref;
+                        }}
+                      >
                         {section.itineraryActivity.map((activity, index) => (
                           <TouchableOpacity
                             key={activity.id}
@@ -499,10 +561,11 @@ const EditTravelItinerary = ({
                                   : 1,
                             }}
                           >
-                            {hoverIndex === index &&
-                              sectionDragState?.sectionId === section.id &&
-                              sectionDragState?.dragIndex !== index &&
-                              (sectionDragState?.dragIndex ?? -1) > index && (
+                            {hoverState?.index === index &&
+                              hoverState?.sectionId === section.id &&
+                              (sectionDragState?.sectionId !== section.id ||
+                                (sectionDragState?.dragIndex !== index &&
+                                 (sectionDragState?.dragIndex ?? -1) > index)) && (
                                 <View style={styles.dropIndicator} />
                               )}
 
@@ -513,11 +576,12 @@ const EditTravelItinerary = ({
                               location={""}
                               index={index}
                               listLength={section.itineraryActivity.length}
-                              onDragMove={(currentIndex, dy) =>
+                              onDragMove={(currentIndex, dy, moveY) =>
                                 handleDragMove(
                                   currentIndex,
                                   dy,
                                   section.itineraryActivity?.length || 0,
+                                  moveY
                                 )
                               }
                               onDragStart={(idx: number) =>
@@ -547,7 +611,8 @@ const EditTravelItinerary = ({
                               }
                             />
                             
-                            {hoverIndex === index &&
+                            {hoverState?.index === index &&
+                              hoverState?.sectionId === section.id &&
                               sectionDragState?.sectionId === section.id &&
                               sectionDragState?.dragIndex !== index &&
                               (sectionDragState?.dragIndex ?? -1) < index && (

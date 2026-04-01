@@ -14,7 +14,7 @@ interface DraggableActivityItemProps {
   dragIndex: number | null;
   listLength: number;
   itemHeight?: number;
-  onDragMove?: (index: number, dy: number) => void;
+  onDragMove?: (index: number, dy: number, moveY?: number) => void;
 }
 
 // const DraggableActivityItem = ({
@@ -116,10 +116,10 @@ const DraggableActivityItem = ({
   const [isActive, setIsActive] = useState(false);
 
   // Use a Ref to store changing props so the PanResponder always has latest values
-  const propsRef = useRef({ index, listLength, itemHeight, onDragMove });
+  const propsRef = useRef({ index, listLength, itemHeight, onDragMove, onDragEnd });
   useEffect(() => {
-    propsRef.current = { index, listLength, itemHeight, onDragMove };
-  }, [index, listLength, itemHeight, onDragMove]);
+    propsRef.current = { index, listLength, itemHeight, onDragMove, onDragEnd };
+  }, [index, listLength, itemHeight, onDragMove, onDragEnd]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -136,7 +136,11 @@ const DraggableActivityItem = ({
       },
       onPanResponderMove: (e, gestureState) => {
         if (propsRef.current.onDragMove) {
-          propsRef.current.onDragMove(propsRef.current.index, gestureState.dy);
+          propsRef.current.onDragMove(
+            propsRef.current.index,
+            gestureState.dy,
+            gestureState.moveY
+          );
         }
         Animated.event([null, { dx: pan.x, dy: pan.y }], {
           useNativeDriver: false,
@@ -158,7 +162,7 @@ const DraggableActivityItem = ({
         );
 
         // Trigger the reorder
-        onDragEnd(currentIndex, targetIndex);
+        propsRef.current.onDragEnd(currentIndex, targetIndex);
 
         // Snap back to original position (the list will re-render with new data)
         Animated.spring(pan, {
