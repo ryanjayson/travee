@@ -477,39 +477,105 @@ debugger;
       <View style={styles.inputGroup}>
         <Text style={styles.label}>Activities</Text>
 
-        {sections &&
-          sections.length > 0 &&
-          sections
-            .find((section) => section.isDefaultSection == true)
-            ?.itineraryActivity?.map((activity, index) => (
+        {sections && sections.length > 0 && sections.filter(section => section.isDefaultSection == true).map((section) => (
+          <View
+            key={section.id}
+            style={[
+              {
+                zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
+                elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
+                paddingBottom: (!section.itineraryActivity || section.itineraryActivity.length === 0) ? 20 : 0
+              }
+            ]}
+            ref={(ref) => {
+              if (ref && section.id) sectionRefs.current[section.id] = ref;
+            }}
+          >
+            {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
               <TouchableOpacity
                 key={activity.id}
-                // onPress={() => handleActivityPress(activity)}
-                onPress={() =>
-                  handleSectionActivityPress(activity, activity.sectionId || 0)
-                }
-                activeOpacity={0.7}
+                onPress={() => handleSectionActivityPress(activity, section.id || 0)}
+                activeOpacity={1}
                 style={{
-                  zIndex: isDragging && dragIndex === index ? 9999 : 1,
-                  elevation: isDragging && dragIndex === index ? 10 : 1,
+                  zIndex:
+                    sectionDragState?.dragIndex === index &&
+                    sectionDragState?.sectionId === section.id
+                      ? 9999
+                      : 1,
+                  elevation:
+                    sectionDragState?.dragIndex === index &&
+                    sectionDragState?.sectionId === section.id
+                      ? 10
+                      : 1,
                 }}
               >
-                <ActivityCard
+                {hoverState?.index === index &&
+                  hoverState?.sectionId === section.id &&
+                  (sectionDragState?.sectionId !== section.id ||
+                    (sectionDragState?.dragIndex !== index &&
+                      (sectionDragState?.dragIndex ?? -1) > index)) && (
+                    <View style={styles.dropIndicator} />
+                  )}
+
+                <DraggableActivityItem
                   title={activity.title}
                   description={""}
                   location={""}
                   index={index}
-                  onDragStart={handleActivityDragStart}
-                  onDragEnd={handleActivityDragEnd}
-                  isDragging={isDragging}
-                  dragIndex={dragIndex}
-                  listLength={
-                    sections.find((section) => section.isDefaultSection == true)
-                      ?.itineraryActivity?.length || 0
+                  listLength={section.itineraryActivity?.length || 0}
+                  onDragMove={(currentIndex, dy, moveY) =>
+                    handleDragMove(
+                      currentIndex,
+                      dy,
+                      section.itineraryActivity?.length || 0,
+                      moveY
+                    )
+                  }
+                  onDragStart={(idx: number) =>
+                    handleSectionActivityDragStart(
+                      section.id || 0,
+                      idx,
+                    )
+                  }
+                  onDragEnd={(fromIdx: number, _: number) =>
+                    handleSectionActivityDragEnd(
+                      section.id || 0,
+                      activity,
+                      fromIdx,
+                      0,
+                    )
+                  }
+                  isDragging={
+                    sectionDragState?.sectionId != undefined &&
+                    sectionDragState?.sectionId === section.id &&
+                    sectionDragState?.isDragging
+                  }
+                  dragIndex={
+                    sectionDragState?.sectionId != undefined &&
+                    sectionDragState?.sectionId === section.id
+                      ? sectionDragState.dragIndex
+                      : null
                   }
                 />
+                
+                {hoverState?.index === index &&
+                  hoverState?.sectionId === section.id &&
+                  sectionDragState?.sectionId === section.id &&
+                  sectionDragState?.dragIndex !== index &&
+                  (sectionDragState?.dragIndex ?? -1) < index && (
+                    <View style={styles.dropIndicator} />
+                  )}
               </TouchableOpacity>
-            ))}
+            )) : (
+              <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
+                 <Text style={{ color: "#aaa" }}>Drop activities here</Text>
+                 {hoverState?.sectionId === section.id && (
+                   <View style={[styles.dropIndicator, { position: "absolute", top: "50%", width: "100%" }]} />
+                 )}
+              </View>
+            )}
+          </View>
+        ))}
 
         <TouchableOpacity
           onPress={() => {
