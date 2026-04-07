@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   TextInput,
   Modal,
   StatusBar,
 } from "react-native";
+import { Calendar } from "react-native-calendars";
 import { Travel, CreateTravelData } from "../../../../types/TravelDto";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import DestinationSelector from "../../../DestinationSelector";
@@ -21,6 +20,7 @@ import { useUpdateActivityMutation } from "../../../../hooks/useActivity";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useDeleteActivityMutation } from "../../../../hooks/useActivity";
 import { ActivityType } from "../../../../../../types/enums";
+import { Divider, Text, Switch } from 'react-native-paper';
 
 interface Place {
   id: string;
@@ -47,6 +47,10 @@ const EditActivity = ({
 }: EditActivityProps) => {
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
+  const [showPrimaryTypeModal, setShowPrimaryTypeModal] = useState<boolean>(false);
+  const [isAllDay, setIsAllDay] = useState<boolean>(true);
+  const [showTimePickerFor, setShowTimePickerFor] = useState<"startTime" | "endTime" | null>(null);
+  const [showCalendarFor, setShowCalendarFor] = useState<"startDate" | "endDate" | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const updateMutation = useUpdateActivityMutation();
   const { selectedTravelPlan } = useTravelContext();
@@ -63,8 +67,7 @@ const EditActivity = ({
     ) {
       // const primaryActivityType: ActivityType =
       //   itineraryActivityData.primaryType as ActivityType;
-      itineraryActivityData.primaryType = ActivityType.flight;
-      debugger;
+      itineraryActivityData.primaryType = Number(itineraryActivityData.primaryType) || ActivityType.none;
       await updateMutation.mutateAsync(itineraryActivityData);
       onClose();
     }
@@ -91,6 +94,11 @@ const EditActivity = ({
         title: itineraryActivity?.title || "",
         description: itineraryActivity?.description || "",
         primaryType: itineraryActivity?.primaryType || ActivityType.none,
+        sortOrder: itineraryActivity?.sortOrder || "",
+        startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : "",
+        startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : "08:00",
+        endDate: itineraryActivity?.endDate ? new Date(itineraryActivity.endDate).toISOString().split('T')[0] : "",
+        endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? new Date(itineraryActivity.endDate).toISOString().substring(11, 16) : "09:00",
       }}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}
@@ -106,152 +114,53 @@ const EditActivity = ({
       }) => {
         useEffect(() => {}, []);
         return (
-          <View style={styles.screenContainer}>
+          <View className="flex-1 bg-white">
             <StatusBar barStyle={"dark-content"} />
-            <Text>{errors.title}</Text>
+            {/* <Text>{errors.title}</Text>
             <Text>{errors.description}</Text>
             <Text>{errors.primaryType}</Text>
-            <Text>{errors.travelId}</Text>
-            <Text>{errors.sectionId}</Text>
+            <Text>{errors.sectionId}</Text> */}
 
             <ScrollView
-              style={{ flex: 1 }}
+              className="flex-1"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 100 }}
             >
-              <View>
-                <TouchableOpacity
-                  onPress={() =>
-                    handleDeleteActivity(itineraryActivity?.id || 0)
-                  }
-                  disabled={isPending}
-                >
-                  <Icon name="delete-outline" size={24} color={"#c93030"} />
-                </TouchableOpacity>
+              <View className="items-end p-2.5">
+               
               </View>
-              <View style={{ padding: 10, marginLeft: 0 }}>
+              <View className="px-2.5 pb-2.5">                
                 <TextInput
-                  style={{ fontSize: 20, fontWeight: 500 }}
+                  className="text-2xl font-medium pr-12"
                   placeholder="Add title"
                   onChangeText={handleChange("title")}
                   onBlur={handleBlur("title")}
                   value={values.title}
                 />
                 {errors.title && touched.title && (
-                  <Text style={styles.error}>{errors.title}</Text>
+                  <Text className="text-red-500 text-sm">{errors.title}</Text>
                 )}
                 <TouchableOpacity
-                  style={{
-                    display: "none",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 4,
-                    borderColor: "#0C4C8A",
-                    backgroundColor: "#0C4C8B",
-                    borderWidth: 1,
-                    padding: 4,
-                    borderRadius: 10,
-                    alignContent: "center",
-                  }}
+                  className="hidden flex-row items-center gap-1 border border-primary bg-primary p-1 rounded-md"
                   onPress={() => setShowDestinationModal(true)}
                 >
                   <Icon name="explore" size={20} color={"#FFF"} />
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={{ fontSize: 12, fontWeight: "600", color: "#FFF" }}
-                    >
+                  <View className="flex-1">
+                    <Text className="text-xs font-semibold text-white">
                       Explore
                     </Text>
                   </View>
                 </TouchableOpacity>
               </View>
-
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  borderColor: "#ddd",
-                  paddingVertical: 20,
-                  paddingHorizontal: 10,
-                }}
-              >
-                <TouchableOpacity
-                  style={{
-                    flex: 1,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                  onPress={() => setShowDestinationModal(true)}
-                >
-                  <View style={{}}>
-                    <Icon name="public" size={28} color={"#B3B3B3"} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 16 }}>
-                      {selectedPlace ? selectedPlace.name : "Add location"}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-              <View
-                style={{
-                  borderTopWidth: 1,
-                  borderColor: "#ddd",
-                  paddingVertical: 20,
-                  paddingHorizontal: 10,
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "flex-start",
-                  gap: 10,
-                }}
-              >
-                <View>
-                  <Icon name="date-range" size={28} color={"#B3B3B3"} />
-                </View>
-                <View>
-                  <Text style={{}}>Start Date *</Text>
-                  <TextInput
-                    style={{}}
-                    placeholder="YYYY-MM-DD"
-                    // value={startDate}
-                    // onChangeText={setStartDate}
-                    // editable={!isSaving}
-                  />
-
-                  <Text style={{}}>End Date *</Text>
-                  <TextInput
-                    style={{}}
-                    placeholder="YYYY-MM-DD"
-                    // value={endDate}
-                    // onChangeText={setEndDate}
-                    // editable={!isSaving}
-                  />
-
-                  <Text>Timezone here</Text>
-                </View>
-              </View>
-
-              <View
-                style={{
-                  paddingVertical: 20,
-                  paddingHorizontal: 10,
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "flex-start",
-                  gap: 10,
-                  borderTopWidth: 1,
-                  borderColor: "#ddd",
-                }}
-              >
+              <Divider/>
+              <View className="py-5 px-2.5 flex-1 flex-row items-center gap-2.5">
                 <View>
                   <Icon name="notes" size={28} color={"#B3B3B3"} />
                 </View>
-
-                <View>
+                <View className="flex-1">
                   <TextInput
-                    style={{ paddingTop: 0, fontSize: 14 }}
-                    placeholder="Add Description"
+                    className={`${values.description ? "pt-0" : ""} text-base`}
+                    placeholder="Add Details"
                     multiline
                     numberOfLines={4}
                     onChangeText={handleChange("description")}
@@ -260,36 +169,121 @@ const EditActivity = ({
                   />
                 </View>
               </View>
-
-              <View
-                style={{
-                  paddingVertical: 20,
-                  paddingHorizontal: 10,
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "flex-start",
-                  gap: 10,
-                  borderTopWidth: 1,
-                  borderColor: "#ddd",
-                }}
-              >
+              <Divider/>
+              <View className="px-2.5 flex-1 flex-row items-start gap-2.5 py-7">
+                  <View>
+                    <Icon name="public" size={28} color={"#B3B3B3"} />
+                  </View>
+                  <View className="flex-1">
+                     <TouchableOpacity
+                        className="flex-1 flex-row items-center gap-2.5"
+                        onPress={() => setShowDestinationModal(true)}
+                      >
+                    <Text className="text-base">
+                      {selectedPlace ? selectedPlace.name : "Add location"}
+                    </Text>
+                  </TouchableOpacity>
+                  </View>
+                
+              </View>
+              <Divider/>
+              <View className="py-5 px-2.5 flex-1 flex-row items-start gap-2.5">
                 <View>
-                  <Icon name="notes" size={28} color={"#B3B3B3"} />
+                  <Icon name="date-range" size={28} color={"#B3B3B3"} />
                 </View>
+                <View className="flex-1">
+                  <View className="flex-row items-center justify-between">
+                    <Text>Date</Text>
+                    <View className="flex-row items-center gap-2">
+                       <Text>All Day</Text>
+                       <Switch value={isAllDay} onValueChange={setIsAllDay} color="#0C4C8A" />
+                    </View>
+                  </View>
+                  
+                  <View className="flex-row items-center gap-4">
+                    <TouchableOpacity onPress={() => setShowCalendarFor("startDate")}>
+                      <Text className="text-base text-primary py-2 font-medium">
+                        {values.startDate ? String(values.startDate) : "YYYY-MM-DD"}
+                      </Text>
+                    </TouchableOpacity>
+                    {!isAllDay && (
+                      <TouchableOpacity onPress={() => setShowTimePickerFor("startTime")}>
+                        <Text className="text-base text-primary py-2 font-medium">
+                          {String((values as any).startTime)}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
 
-                <View>
-                  <TextInput
-                    style={{ paddingTop: 0, fontSize: 14 }}
-                    placeholder="Add Primary Type"
-                    onChangeText={handleChange("primaryType")}
-                    onBlur={handleBlur("primaryType")}
-                    value={String(values.primaryType)}
-                  />
+                  <Text className="mt-4">End Date</Text>
+                  <View className="flex-row items-center gap-4">
+                    <TouchableOpacity onPress={() => setShowCalendarFor("endDate")}>
+                      <Text className="text-base text-primary py-2 font-medium">
+                        {values.endDate ? String(values.endDate) : "YYYY-MM-DD"}
+                      </Text>
+                    </TouchableOpacity>
+                    {!isAllDay && (
+                      <TouchableOpacity onPress={() => setShowTimePickerFor("endTime")}>
+                        <Text className="text-base text-primary py-2 font-medium">
+                          {String((values as any).endTime)}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+
+                  <Text className="mt-2 text-xs text-gray-500">Timezone processing...</Text>
                 </View>
               </View>
+              <Divider/>
+              <View className="py-5 px-2.5 flex-1 flex-row items-center gap-2.5">
+                <View>
+                  <Icon name="style" size={28} color={"#B3B3B3"} />
+                </View>
+
+                <View className="flex-1">
+                  <TouchableOpacity onPress={() => setShowPrimaryTypeModal(true)}>
+                    <Text className="text-base py-2 capitalize font-medium">
+                      {values.primaryType != null && values.primaryType !== ActivityType.none
+                        ? String(ActivityType[values.primaryType as number]).replace(/([A-Z])/g, ' $1').trim()
+                        : "Select Activity Type"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+ {itineraryActivity?.id && itineraryActivity?.id > 0 && (
+                 <>
+                 <Divider/>
+              <View className="py-5 px-2.5 flex-1 flex-row items-center gap-2.5">
+                <View>
+                <Icon name="delete-outline" size={32} color={"#c93030"} />
+                </View>
+
+                <View className="flex-1">
+                  <TouchableOpacity 
+                   onPress={() =>
+                      handleDeleteActivity(itineraryActivity?.id || 0)
+                    }
+                    disabled={isPending}
+                      >
+                    <Text className="text-base py-2 capitalize font-medium !text-danger">
+                     Delete Activity
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+                 </>
+                        
+
+
+                )}
+
+
+
+            
             </ScrollView>
 
-            <View style={styles.footerButtonContainer}>
+            <View className="absolute left-0 right-0 bottom-0 p-2.5 ">
               <TouchButton
                 buttonText={
                   itineraryActivity?.id && itineraryActivity?.id > 0
@@ -314,6 +308,127 @@ const EditActivity = ({
                 }}
               />
             </Modal>
+
+            <Modal
+              visible={showCalendarFor !== null}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setShowCalendarFor(null)}
+            >
+              <View className="flex-1 justify-center bg-black/50 p-5">
+                <View className="bg-white rounded-[30px] overflow-hidden shadow-lg p-2">
+                  <View className="flex-row justify-between items-center px-4 py-2 bg-white">
+                    <Text className="text-lg font-bold text-primary">
+                      Select {showCalendarFor === "startDate" ? "Start Date" : "End Date"}
+                    </Text>
+                    <TouchableOpacity onPress={() => setShowCalendarFor(null)}>
+                      <Icon name="close" size={24} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+                  
+                  <Calendar
+                    onDayPress={(day: any) => {
+                      if (showCalendarFor === "startDate") {
+                        setValues({ ...values, startDate: day.dateString });
+                      } else {
+                        setValues({ ...values, endDate: day.dateString });
+                      }
+                      setShowCalendarFor(null);
+                    }}
+                    markedDates={{
+                      [String(showCalendarFor === "startDate" ? values.startDate : values.endDate)]: { selected: true, selectedColor: '#0C4C8A' }
+                    }}
+                    theme={{
+                      todayTextColor: '#0C4C8A',
+                      arrowColor: '#0C4C8A',
+                    }}
+                  />
+                </View>
+              </View>
+            </Modal>
+
+            <Modal
+              visible={showPrimaryTypeModal}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setShowPrimaryTypeModal(false)}
+            >
+              <View className="flex-1 justify-center items-center bg-black/50 p-5">
+                <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[80%] overflow-hidden">
+                  <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
+                    <Text className="text-lg font-bold text-primary">
+                      Select Activity Type
+                    </Text>
+                    <TouchableOpacity onPress={() => setShowPrimaryTypeModal(false)}>
+                      <Icon name="close" size={24} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView>
+                    {Object.keys(ActivityType)
+                      .filter((key) => isNaN(Number(key)))
+                      .map((key) => (
+                        <TouchableOpacity
+                          key={key}
+                          className="p-4 border-b border-gray-100 flex-row items-center"
+                          onPress={() => {
+                            setValues({
+                              ...values,
+                              primaryType: ActivityType[key as keyof typeof ActivityType],
+                            });
+                            setShowPrimaryTypeModal(false);
+                          }}
+                        >
+                          <Text className="text-base text-gray-800 capitalize">
+                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                  </ScrollView>
+                </View>
+              </View>
+            </Modal>
+
+            <Modal
+              visible={showTimePickerFor !== null}
+              transparent={true}
+              animationType="fade"
+              onRequestClose={() => setShowTimePickerFor(null)}
+            >
+              <View className="flex-1 justify-center items-center bg-black/50 p-5">
+                <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[60%] overflow-hidden">
+                  <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
+                    <Text className="text-lg font-bold text-primary">
+                      Select Time
+                    </Text>
+                    <TouchableOpacity onPress={() => setShowTimePickerFor(null)}>
+                      <Icon name="close" size={24} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView>
+                    {Array.from({ length: 48 }, (_, i) => {
+                      const h = Math.floor(i / 2).toString().padStart(2, '0');
+                      const m = i % 2 === 0 ? '00' : '30';
+                      return `${h}:${m}`;
+                    }).map((time) => (
+                      <TouchableOpacity
+                        key={time}
+                        className="p-4 border-b border-gray-100 items-center justify-center"
+                        onPress={() => {
+                          if (showTimePickerFor === "startTime") {
+                            setValues({ ...values, startTime: time } as any);
+                          } else {
+                            setValues({ ...values, endTime: time } as any);
+                          }
+                          setShowTimePickerFor(null);
+                        }}
+                      >
+                        <Text className="text-base text-gray-800">{time}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </View>
+            </Modal>
           </View>
         );
       }}
@@ -323,221 +438,4 @@ const EditActivity = ({
 
 export default EditActivity;
 
-const styles = StyleSheet.create({
-  inputGroup: {
-    marginBottom: 20,
-  },
-  screenContainer: {
-    flex: 1,
-    backgroundColor: "#FFF",
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#FFF",
-  },
-  header: {
-    backgroundColor: "wrhite",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#183B7A",
-    textAlign: "center",
-  },
-  tabContainer: {
-    flexDirection: "row",
-    backgroundColor: "white",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderRadius: 8,
-    marginHorizontal: 4,
-  },
-  activeTab: {
-    backgroundColor: "#183B7A",
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#666",
-  },
-  activeTabText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  tabContent: {
-    flex: 1,
-    padding: 20,
-  },
-  content: {
-    flex: 1,
-  },
-  travelCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    elevation: 1,
-  },
 
-  travelCardDetail: {
-    padding: 10,
-  },
-  travelCardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 12,
-  },
-  travelDestination: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#183B7A",
-    flex: 1,
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  upcomingBadge: {
-    backgroundColor: "#E8F5E8",
-  },
-  pastBadge: {
-    backgroundColor: "#F0F0F0",
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  upcomingText: {
-    color: "#2E7D32",
-  },
-  pastText: {
-    color: "#666",
-  },
-  travelDates: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  dateLabel: {
-    fontSize: 14,
-    color: "#666",
-    marginRight: 8,
-  },
-  dateText: {
-    fontSize: 14,
-    color: "#183B7A",
-    fontWeight: "500",
-  },
-  secondaryButton: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "#183B7A",
-  },
-  actionButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  secondaryButtonText: {
-    color: "#183B7A",
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 60,
-  },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#183B7A",
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 60,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: "#666",
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 60,
-  },
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#183B7A",
-    marginBottom: 8,
-  },
-  errorMessage: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 20,
-  },
-  retryButton: {
-    backgroundColor: "#183B7A",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "500",
-  },
-
-  image: {
-    width: "auto",
-    height: 200,
-    resizeMode: "cover",
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    // Add resizeMode if needed (e.g., 'contain', 'cover', 'stretch')
-  },
-  error: { color: "red", fontSize: 14 },
-  footerButtonContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    padding: 10,
-    backgroundColor: "#FFF",
-    borderTopWidth: 1,
-    borderColor: "#ddd",
-  },
-});

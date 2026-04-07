@@ -100,27 +100,27 @@ const ActivityModal = ({
     <Modal visible={visible} transparent animationType="none">
       <View style={styles.overlay}>
         <Animated.View
+          className="rounded-t-[30px] bg-white"
           style={[
-            styles.modalContainer,
             { height: modalHeight },
             { paddingTop: keyboardVisible ? 40 : 0 },
           ]}
         >
-          <StatusBar barStyle={"light-content"} />
-          <View style={styles.handleContainer}>
+          <StatusBar barStyle={"dark-content"} />
+          {/* <View style={styles.handleContainer}>
             <Animated.View {...panResponder.panHandlers}>
               <View style={styles.handleBar} />
             </Animated.View>
-          </View>
+          </View> */}
 
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>
+          <View style={styles.header} className="py-2.5">
+            <Text className="tracking-wider uppercase text-sm text-gray-500">
               {itineraryActivity?.id && itineraryActivity?.id > 0
                 ? "Edit Activity"
                 : "Add Activity"}
             </Text>
             <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-              <Icon name="clear" size={36} color={"#333"} />
+              <Icon name="clear" size={36} color={"#333"} className="opacity-50"/>
             </TouchableOpacity>
           </View>
 

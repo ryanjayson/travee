@@ -5,19 +5,19 @@ export enum IconSetProvider {
 }
 
 export enum ActivityType {
-  none,
-  flight,
-  checkIn,
-  checkOut,
-  taxi,
-  cafe,
-  food,
-  walk,
-  sightseeing,
-  shopping,
-  preparation,
-  ride,
-  rest,
+  none = 0,
+  flight = 1,
+  checkIn = 2,
+  checkOut = 3,
+  taxi = 4,
+  cafe = 5,
+  food = 6,
+  walk = 7,
+  sightseeing = 8,
+  shopping = 9,
+  preparation = 10,
+  ride = 11,
+  rest = 12,
 }
 
 export enum StatusType {

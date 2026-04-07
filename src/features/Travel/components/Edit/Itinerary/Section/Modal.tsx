@@ -122,54 +122,6 @@ const SectionModal = ({
               itinerarySection={itinerarySection}
               onClose={onClose}
             />
-            {/* <View style={styles.inputGroup}>
-              <Text style={styles.label}>Section Title *</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="e.g., Day 1, Morning Activities, Evening Plans"
-                value={title}
-                onChangeText={setTitle}
-                editable={!isSaving}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Description *</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                placeholder="Describe what this section contains, any notes or context..."
-                value={description}
-                onChangeText={setDescription}
-                multiline
-                numberOfLines={6}
-                editable={!isSaving}
-              />
-            </View>
-
-            <TouchableOpacity
-              style={[
-                styles.saveButton,
-                (!isFormValid || isSaving) && styles.saveButtonDisabled,
-              ]}
-              onPress={handleSave}
-              disabled={!isFormValid || isSaving}
-            >
-              {isSaving ? (
-                <View style={styles.savingContainer}>
-                  <ActivityIndicator size="small" color="white" />
-                  <Text style={styles.savingText}>Saving...</Text>
-                </View>
-              ) : (
-                <Text
-                  style={[
-                    styles.saveButtonText,
-                    (!isFormValid || isSaving) && styles.saveButtonTextDisabled,
-                  ]}
-                >
-                  {isEditing ? "Update Section" : "Save Section"}
-                </Text>
-              )}
-            </TouchableOpacity> */}
           </View>
         </Animated.View>
       </View>

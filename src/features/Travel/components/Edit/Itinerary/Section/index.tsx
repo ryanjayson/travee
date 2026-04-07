@@ -130,6 +130,20 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                     onPress={() => setShowDestinationModal(true)}
                   >
                     <View>
+                      <Icon name="pin-drop" size={28} color={"#B3B3B3"} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-sm">Location</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
+                 <View className="border-t border-[#ddd] py-5 px-2.5">
+                  <TouchableOpacity
+                    className="flex-1 flex-row items-center gap-2.5"
+                    onPress={() => setShowDestinationModal(true)}
+                  >
+                    <View>
                       <Icon name="text-fields" size={28} color={"#B3B3B3"} />
                     </View>
                     <View className="flex-1">
@@ -143,7 +157,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
             <View className="absolute left-0 right-0 bottom-0 p-2.5 bg-white border-t border-[#ddd]">
               <TouchableOpacity
                 activeOpacity={0.7}
-                className="p-4 items-center rounded-full bg-[#0C4C8A]"
+                className="p-4 items-center rounded-full bg-button-primary"
                 style={{ opacity: (isSubmitting || updateMutation.isPending) ? 0.5 : 1 }}
                 disabled={isSubmitting || updateMutation.isPending}
                 onPressIn={() => {

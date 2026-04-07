@@ -1,41 +1,46 @@
-import React from "react";
-import { TouchableOpacity, StyleSheet, Text } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import React, { useState } from "react";
+import { StyleSheet } from "react-native";
+import { FAB, Portal } from "react-native-paper";
 
 interface FloatingAddButtonProps {
-  onPress: () => void;
+  onAddSection: () => void;
+  onAddActivity: () => void;
 }
 
-const FloatingAddButton = ({ onPress }: FloatingAddButtonProps) => {
+const FloatingAddButton = ({
+  onAddSection,
+  onAddActivity,
+}: FloatingAddButtonProps) => {
+  const [open, setOpen] = useState(false);
+
   return (
-    <TouchableOpacity style={styles.floatingButton} onPress={onPress}>
-      <Icon name="add" size={32} color={"#FFF"} />
-    </TouchableOpacity>
+    <FAB.Group
+        open={open}
+        visible
+        icon={open ? "close" : "plus"}
+        color="white"
+        style={{ position: 'absolute', bottom: 100, right: 0 }}
+        fabStyle={{ backgroundColor: "#0C4C8A", borderRadius: 30 }}
+        actions={[
+          {
+            icon: "map-marker-plus",
+            label: "Add Activity",
+            onPress: onAddActivity,
+          },
+          {
+            icon: "view-list",
+            label: "Add Section",
+            onPress: onAddSection,
+          },
+        ]}
+        onStateChange={({ open }) => setOpen(open)}
+        onPress={() => {
+          if (open) {
+            // Do nothing if it's already open
+          }
+        }}
+      />
   );
 };
-
-const styles = StyleSheet.create({
-  floatingButton: {
-    position: "absolute",
-    bottom: 10,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    backgroundColor: "#183B7A",
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  plusIcon: {
-    color: "white",
-    fontSize: 32,
-    fontWeight: "bold",
-  },
-});
 
 export default FloatingAddButton;

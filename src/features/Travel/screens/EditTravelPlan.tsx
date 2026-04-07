@@ -260,16 +260,16 @@ const EditTravelPlan = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        {/* <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <Text style={styles.backText}>← Back</Text>
-        <Text style={styles.headerTitle}>{travelPlan?.travel.title}</Text>
+    <View className="flex-1 bg-white pt-[40px]">
+      <View className="flex-row justify-between items-center px-5 py-5 bg-white ">
+        {/* <TouchableOpacity onPress={() => onBack()} className="p-[10px]">
+          <Text className="text-[#183B7A] text-base">← Back</Text>
+        <Text className="text-lg font-bold text-[#183B7A]">{travelPlan?.travel.title}</Text>
         </TouchableOpacity> */}
-        <Text style={styles.headerTitle}>{selectedTravelPlan?.id}</Text>
-        <Text style={styles.headerTitle}>{travelPlan?.travel.title}</Text>
-        {/* <TouchableOpacity style={styles.moreButton}>
-          <Text style={styles.moreText}>⋮</Text>
+        {/* <Text className="text-lg font-bold text-[#183B7A]">{selectedTravelPlan?.id}</Text> */}
+        <Text className="text-lg font-bold text-[#183B7A]">{travelPlan?.travel.title}</Text>
+        {/* <TouchableOpacity className="p-[10px]">
+          <Text className="text-[20px] text-[#183B7A]">⋮</Text>
         </TouchableOpacity> */}
 
         <TouchableOpacity onPress={() => handleMenuPress}>
@@ -277,7 +277,7 @@ const EditTravelPlan = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.tabContainer}>
+      <View className="flex-1 border-b border-[#DDD] bg-gray-100">
         <Tabs tabs={tabData} initialActiveTabId="itinerary" />
       </View>
       {/* 
@@ -404,61 +404,55 @@ const TripChecklistTab = ({
   const totalCount = checklistItems.length;
 
   return (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <View style={styles.detailSection}>
-        <View style={styles.checklistHeader}>
-          <Text style={styles.sectionTitle}>Checklist</Text>
-          <Text style={styles.checklistProgress}>
+    <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
+      <View className="mb-6">
+        <View className="flex-row justify-between items-center mb-4">
+          <Text className="text-lg font-bold text-[#183B7A] mb-3">Checklist</Text>
+          <Text className="text-sm text-[#666] font-medium">
             {completedCount}/{totalCount} completed
           </Text>
         </View>
 
-        <View style={styles.addItemContainer}>
+        <View className="flex-row mb-4">
           <TextInput
-            style={styles.addItemInput}
+            className="flex-1 bg-white rounded-lg px-[15px] py-3 text-base border border-[#E0E0E0] mr-2.5"
             placeholder="Add new checklist item..."
             value={newItemText}
             onChangeText={setNewItemText}
             onSubmitEditing={addItem}
           />
-          <TouchableOpacity style={styles.addItemButton} onPress={addItem}>
-            <Text style={styles.addItemButtonText}>+</Text>
+          <TouchableOpacity className="bg-[#183B7A] rounded-lg w-11 h-11 justify-center items-center" onPress={addItem}>
+            <Text className="text-white text-xl font-bold">+</Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.checklistContainer}>
+        <View className="bg-white rounded-xl shadow-sm shadow-black/10 elevation-3">
           {checklistItems.length > 0 ? (
             checklistItems.map((item) => (
-              <View key={item.id} style={styles.checklistItem}>
+              <View key={item.id} className="flex-row items-center py-3 px-4 border-b border-[#F0F0F0]">
                 <TouchableOpacity
-                  style={[
-                    styles.checkbox,
-                    item.completed && styles.checkboxChecked,
-                  ]}
+                  className={`w-5 h-5 rounded border-2 border-[#183B7A] mr-3 justify-center items-center ${item.completed ? 'bg-[#183B7A]' : ''}`}
                   onPress={() => toggleItem(item.id)}
                 >
-                  {item.completed && <Text style={styles.checkmark}>✓</Text>}
+                  {item.completed && <Text className="text-white text-xs font-bold">✓</Text>}
                 </TouchableOpacity>
                 <Text
-                  style={[
-                    styles.checklistItemText,
-                    item.completed && styles.checklistItemCompleted,
-                  ]}
+                  className={`flex-1 text-base text-[#183B7A] ${item.completed ? 'line-through text-[#999]' : ''}`}
                 >
                   {item.text}
                 </Text>
                 <TouchableOpacity
-                  style={styles.deleteButton}
+                  className="p-2"
                   onPress={() => deleteItem(item.id)}
                 >
-                  <Text style={styles.deleteButtonText}>×</Text>
+                  <Text className="text-[#FF3B30] text-lg font-bold">×</Text>
                 </TouchableOpacity>
               </View>
             ))
           ) : (
-            <View style={styles.emptyChecklist}>
-              <Text style={styles.emptyText}>No checklist items yet.</Text>
-              <Text style={styles.emptySubtext}>
+            <View className="p-10 items-center">
+              <Text className="text-[#888] italic text-center mb-4">No checklist items yet.</Text>
+              <Text className="text-[#999] text-sm text-center mt-2">
                 Add items to keep track of your trip preparations!
               </Text>
             </View>
@@ -472,33 +466,33 @@ const TripChecklistTab = ({
 // Trip Detail Tab Component
 const TripDetailTab = ({ tripData }: { tripData: any }) => {
   return (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <View style={styles.detailSection}>
-        <Text style={styles.sectionTitle}>Trip Information</Text>
-        <View style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Destination:</Text>
-            <Text style={styles.infoValue}>{tripData.destination}</Text>
+    <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
+      <View className="mb-6">
+        <Text className="text-lg font-bold text-[#183B7A] mb-3">Trip Information</Text>
+        <View className="bg-white rounded-xl p-4 shadow-sm shadow-black/10 elevation-3">
+          <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
+            <Text className="text-sm text-[#666] font-medium">Destination:</Text>
+            <Text className="text-sm text-[#183B7A] font-bold">{tripData.destination}</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Start Date:</Text>
-            <Text style={styles.infoValue}>{tripData.startDate}</Text>
+          <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
+            <Text className="text-sm text-[#666] font-medium">Start Date:</Text>
+            <Text className="text-sm text-[#183B7A] font-bold">{tripData.startDate}</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>End Date:</Text>
-            <Text style={styles.infoValue}>{tripData.endDate}</Text>
+          <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
+            <Text className="text-sm text-[#666] font-medium">End Date:</Text>
+            <Text className="text-sm text-[#183B7A] font-bold">{tripData.endDate}</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Budget:</Text>
-            <Text style={styles.infoValue}>{tripData.budget}</Text>
+          <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
+            <Text className="text-sm text-[#666] font-medium">Budget:</Text>
+            <Text className="text-sm text-[#183B7A] font-bold">{tripData.budget}</Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.detailSection}>
-        <Text style={styles.sectionTitle}>Notes</Text>
-        <View style={styles.notesCard}>
-          <Text style={styles.notesText}>
+      <View className="mb-6">
+        <Text className="text-lg font-bold text-[#183B7A] mb-3">Notes</Text>
+        <View className="bg-white rounded-xl p-4 shadow-sm shadow-black/10 elevation-3">
+          <Text className="text-sm text-[#666] leading-5">
             {tripData.notes || "No notes added yet."}
           </Text>
         </View>
@@ -516,34 +510,34 @@ const TripMembersTab = ({
   onAddMember: () => void;
 }) => {
   return (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <View style={styles.detailSection}>
-        <Text style={styles.sectionTitle}>Trip Members</Text>
-        <View style={styles.membersCard}>
+    <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
+      <View className="mb-6">
+        <Text className="text-lg font-bold text-[#183B7A] mb-3">Trip Members</Text>
+        <View className="bg-white rounded-xl p-4 shadow-sm shadow-black/10 elevation-3 items-center">
           {tripMembers.length > 0 ? (
             <>
               {tripMembers.map((member) => (
-                <View key={member.id} style={styles.memberItem}>
-                  <View style={styles.memberAvatar}>
-                    <Text style={styles.memberAvatarText}>
+                <View key={member.id} className="flex-row items-center py-3 px-4 border-b border-[#F0F0F0] w-full">
+                  <View className="w-10 h-10 rounded-full bg-[#183B7A] justify-center items-center mr-3">
+                    <Text className="text-white text-lg font-bold">
                       {member.name.charAt(0)}
                     </Text>
                   </View>
-                  <View style={styles.memberDetails}>
-                    <Text style={styles.memberName}>{member.name}</Text>
-                    <Text style={styles.memberEmail}>{member.email}</Text>
+                  <View className="flex-1">
+                    <Text className="text-base font-bold text-[#183B7A]">{member.name}</Text>
+                    <Text className="text-sm text-[#666]">{member.email}</Text>
                   </View>
                 </View>
               ))}
-              <TouchableOpacity style={styles.addButton} onPress={onAddMember}>
-                <Text style={styles.addButtonText}>Add More Members</Text>
+              <TouchableOpacity className="bg-[#183B7A] rounded-lg px-5 py-2.5 mt-4" onPress={onAddMember}>
+                <Text className="text-white text-sm font-bold">Add More Members</Text>
               </TouchableOpacity>
             </>
           ) : (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No members added yet.</Text>
-              <TouchableOpacity style={styles.addButton} onPress={onAddMember}>
-                <Text style={styles.addButtonText}>Add Member</Text>
+            <View className="items-center py-5 w-full">
+              <Text className="text-[#888] italic text-center mb-4">No members added yet.</Text>
+              <TouchableOpacity className="bg-[#183B7A] rounded-lg px-5 py-2.5" onPress={onAddMember}>
+                <Text className="text-white text-sm font-bold">Add Member</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -556,27 +550,27 @@ const TripMembersTab = ({
 // Trip Settings Tab Component
 const TripSettingsTab = () => {
   return (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <View style={styles.detailSection}>
-        <Text style={styles.sectionTitle}>Trip Settings</Text>
-        <View style={styles.settingsCard}>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Edit Trip</Text>
-            <Text style={styles.settingArrow}>›</Text>
+    <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
+      <View className="mb-6">
+        <Text className="text-lg font-bold text-[#183B7A] mb-3">Trip Settings</Text>
+        <View className="bg-white rounded-xl shadow-sm shadow-black/10 elevation-3">
+          <TouchableOpacity className="flex-row justify-between items-center py-4 px-4 border-b border-[#F0F0F0]">
+            <Text className="text-base text-[#183B7A]">Edit Trip</Text>
+            <Text className="text-lg text-[#999]">›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Share Trip</Text>
-            <Text style={styles.settingArrow}>›</Text>
+          <TouchableOpacity className="flex-row justify-between items-center py-4 px-4 border-b border-[#F0F0F0]">
+            <Text className="text-base text-[#183B7A]">Share Trip</Text>
+            <Text className="text-lg text-[#999]">›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Export Itinerary</Text>
-            <Text style={styles.settingArrow}>›</Text>
+          <TouchableOpacity className="flex-row justify-between items-center py-4 px-4 border-b border-[#F0F0F0]">
+            <Text className="text-base text-[#183B7A]">Export Itinerary</Text>
+            <Text className="text-lg text-[#999]">›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.settingItem, styles.dangerItem]}>
-            <Text style={[styles.settingLabel, styles.dangerText]}>
+          <TouchableOpacity className="flex-row justify-between items-center py-4 px-4 border-t border-[#F0F0F0]">
+            <Text className="text-base text-[#FF3B30]">
               Delete Trip
             </Text>
-            <Text style={styles.settingArrow}>›</Text>
+            <Text className="text-lg text-[#999]">›</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -586,320 +580,4 @@ const TripSettingsTab = () => {
 
 export default EditTravelPlan;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFF",
-    paddingTop: 60,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
-    backgroundColor: "white",
-    borderBottomColor: "#E0E0E0",
-  },
-  backButton: {
-    padding: 10,
-  },
-  backText: {
-    color: "#183B7A",
-    fontSize: 16,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#183B7A",
-  },
-  moreButton: {
-    padding: 10,
-  },
-  moreText: {
-    fontSize: 20,
-    color: "#183B7A",
-  },
-  tabContainer: {
-    borderBottomWidth: 1,
-    borderColor: "#DDD",
-    flex: 1,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  activeTab: {
-    borderBottomColor: "#183B7A",
-  },
-  tabText: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-  },
-  activeTabText: {
-    color: "#183B7A",
-    fontWeight: "bold",
-  },
-  content: {
-    flex: 1,
-  },
-  tabContent: {
-    flex: 1,
-    padding: 20,
-  },
-  detailSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#183B7A",
-    marginBottom: 12,
-  },
-  infoCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-  },
-  infoValue: {
-    fontSize: 14,
-    color: "#183B7A",
-    fontWeight: "bold",
-  },
-  notesCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  notesText: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 20,
-  },
-  membersCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: "#888",
-    fontStyle: "italic",
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  addButton: {
-    backgroundColor: "#183B7A",
-    borderRadius: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  addButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  settingsCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  settingItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  },
-  settingLabel: {
-    fontSize: 16,
-    color: "#183B7A",
-  },
-  settingArrow: {
-    fontSize: 18,
-    color: "#999",
-  },
-  dangerItem: {
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-  },
-  dangerText: {
-    color: "#FF3B30",
-  },
-  // Checklist styles
-  checklistHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  checklistProgress: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
-  },
-  addItemContainer: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  addItemInput: {
-    flex: 1,
-    backgroundColor: "white",
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    marginRight: 10,
-  },
-  addItemButton: {
-    backgroundColor: "#183B7A",
-    borderRadius: 8,
-    width: 44,
-    height: 44,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  addItemButtonText: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  checklistContainer: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  checklistItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#183B7A",
-    marginRight: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checkboxChecked: {
-    backgroundColor: "#183B7A",
-  },
-  checkmark: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "bold",
-  },
-  checklistItemText: {
-    flex: 1,
-    fontSize: 16,
-    color: "#183B7A",
-  },
-  checklistItemCompleted: {
-    textDecorationLine: "line-through",
-    color: "#999",
-  },
-  deleteButton: {
-    padding: 8,
-  },
-  deleteButtonText: {
-    color: "#FF3B30",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  emptyChecklist: {
-    padding: 40,
-    alignItems: "center",
-  },
-  emptySubtext: {
-    color: "#999",
-    fontSize: 14,
-    textAlign: "center",
-    marginTop: 8,
-  },
-  memberItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  },
-  memberAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#183B7A",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  memberAvatarText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  memberDetails: {
-    flex: 1,
-  },
-  memberName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#183B7A",
-  },
-  memberEmail: {
-    fontSize: 14,
-    color: "#666",
-  },
-  emptyState: {
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-});
+

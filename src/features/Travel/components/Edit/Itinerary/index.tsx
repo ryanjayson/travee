@@ -266,7 +266,6 @@ const EditTravelItinerary = ({
 
       const prevSortOrder = subSections[toIndex - 1]?.sortOrder;
       const nextSortOrder = subSections[toIndex + 1]?.sortOrder;
-debugger;
       if (moved.id) {
         updateSectionSortOrderMutation({
           id: moved.id,
@@ -496,7 +495,8 @@ debugger;
   };
 
   return (
-    <ScrollView
+    <View className="flex-1">
+     <ScrollView
       ref={scrollViewRef}
       onScroll={(e) => {
         scrollOffset.current = e.nativeEvent.contentOffset.y;
@@ -629,7 +629,7 @@ debugger;
             setCurrentSectionId(defaultSection?.id || null);
           }}
          
-          className="mt-2 bg-gray-200 p-2 rounded-3xl h-[50px] flex items-center justify-center flex-row text-right mx-4"
+          className="mt-2 bg-primary-light p-2 rounded-3xl h-[50px] flex items-center justify-center flex-row text-right mx-4"
         >
             <Icon name="add" size={22} color={"#475467"} />
             <Text className="tracking-wider flex items-center text-gray-800">
@@ -655,7 +655,7 @@ debugger;
                 {(panHandlers, isSectionActive) => (
                   <>
                   <View
-                    className="bg-white rounded-lg p-2.5 mb-3 border border-[#DDD] flex-1"
+                    className="bg-white rounded-lg p-2.5 border border-[#DDD] flex-1 mb-4"
                     style={[
                       {
                         zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
@@ -845,7 +845,7 @@ debugger;
                       setModalVisible(true);
                       setCurrentSectionId(section.id);
                     }}
-                    className="mt-2 bg-gray-200 p-2 rounded-3xl h-[44px] flex items-center justify-center flex-row"
+                    className="mt-2 h-[44px] flex items-center justify-center flex-row"
                   >
                      <Icon name="add" size={24} color={"#475467"} 
                        className="opacity-50"/>
@@ -873,27 +873,21 @@ debugger;
         ) : (
           <Text className="text-[#888] italic text-center p-5">No sections added yet.</Text>
         )}
-          <View>
+          <View className="mb-5">
             <TouchableOpacity
               onPress={() => {
                 setSectionModalVisible(true);
               }}
-              className="mt-2 bg-gray-200 p-2 rounded-3xl h-[50px] flex items-center justify-center flex-row mx-4"
+              className="mt-2 p-2 rounded-full h-[50px] flex items-center justify-center flex-row mx-4"
             >
               <Icon name="add" size={24} color={"#475467"} 
                 className="opacity-50"/>
-              <Text className="tracking-wider flex items-center text-gray-800">
-                Add Section
+              <Text className="tracking-wider flex items-center ">
+                Add New Section
               </Text>
             </TouchableOpacity>
         </View>
-      </View>
-      {/* 
-      <FloatingAddButton
-        onPress={() => {
-          setMenuVisible(true);
-        }}
-      /> */}
+      </View>           
 
       <ActivityModal //ADD
         visible={modalVisible}
@@ -927,7 +921,6 @@ debugger;
       <SectionModal //EDIT
         visible={editSectionModalVisible}
         onClose={() => {
-          debugger;
           setEditSectionModalVisible(false);
           setEditingSection(null);
         }}
@@ -1048,6 +1041,13 @@ debugger;
         </View>
       </SlideModal>
     </ScrollView>
+
+      <FloatingAddButton
+        onAddSection={handleMenuAddSection}
+        onAddActivity={handleMenuAddActivity}
+      />
+    </View>
+   
   );
 };
 

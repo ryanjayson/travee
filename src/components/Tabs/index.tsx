@@ -3,11 +3,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   ScrollView,
   PanResponder,
 } from "react-native";
-import { TabStyle } from "../../styles/common";
 
 // --- Types ---
 interface TabItem {
@@ -57,11 +55,11 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId }) => {
     return (
       <TouchableOpacity
         key={tab.id}
-        style={[TabStyle.tabButton, isActive && TabStyle.activeTabButton]}
+        className={`p-4 items-center justify-center ${isActive ? 'text-primary border-b-4 border-primary' : ''}`}
         onPress={() => setActiveTabId(tab.id)}
         activeOpacity={0.8}
       >
-        <Text style={[TabStyle.tabText, isActive && TabStyle.activeTabText]}>
+        <Text className={`text-base ${isActive ? 'font-bold text-primary ' : 'text-[#666]'}`}>
           {tab.title}
         </Text>
       </TouchableOpacity>
@@ -69,18 +67,21 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId }) => {
   };
 
   return (
-    <View>
+    <View >
       {/* Tab Header */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={TabStyle.tabHeader}>{tabs.map(renderTabButton)}</View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="bg-white">
+        <View className="flex-row border-b border-[#eee] mx-2.5  ">
+          {tabs.map(renderTabButton)}
+        </View>
       </ScrollView>
 
       {/* Tab Content with swipe */}
-      <ScrollView style={styles.tabContent} {...panResponder.panHandlers}>
+      <ScrollView 
+        {...panResponder.panHandlers}>
         {activeTab ? (
           activeTab.content
         ) : (
-          <Text style={styles.noContentText}>No content found.</Text>
+          <Text className="text-[#999] text-center mt-5">No content found.</Text>
         )}
       </ScrollView>
     </View>
@@ -89,13 +90,4 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId }) => {
 
 export default Tabs;
 
-const styles = StyleSheet.create({
-  tabContent: {
-    backgroundColor: "#f9f9f9",
-  },
-  noContentText: {
-    color: "#999",
-    textAlign: "center",
-    marginTop: 20,
-  },
-});
+
