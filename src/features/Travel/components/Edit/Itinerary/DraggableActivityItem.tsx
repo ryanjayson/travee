@@ -195,15 +195,21 @@ const DraggableActivityItem = ({
       style={[styles.card, animatedStyle]}
       collapsable={false} // Prevents UI flattening on Android
     >
-      <View style={styles.dragHandle} {...panResponder.panHandlers}>
+      <View style={styles.dragHandle} {...panResponder.panHandlers}
+        className="flex items-center flex-row h-[50px]"
+      >
         <Icon
           name="drag-handle"
           size={24}
           color={isActive ? "#183B7A" : "#CCC"}
+          className="mr-2"
         />
       </View>
-      <View style={styles.content}>
-        <Text style={styles.title}>{title}</Text>
+      <View className="flex items-center flex-row h-full w-[90%]"
+      >
+        <Text numberOfLines={1}
+              ellipsizeMode="tail"
+              style={styles.title}>{title}</Text>
         {/* ... rest of your content */}
       </View>
     </Animated.View>
@@ -231,24 +237,24 @@ const styles = StyleSheet.create({
     alignContent: "center",
   },
   dragHandle: {
-    marginRight: 8,
-    width: 28,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
+    // marginRight: 8,
+    // width: 28,
+    // alignItems: "center",
+    // justifyContent: "center",
+    // paddingVertical: 8,
   },
   dragIcon: {
     fontSize: 18,
     color: "#999",
   },
-  content: {
-    flex: 1,
-  },
+  // content: {
+  //   flex: 1,
+  // },
   title: {
     fontSize: 16,
     fontWeight: "600",
     color: "#183B7A",
-    marginBottom: 4,
+    // marginBottom: 4,
   },
   desc: {
     fontSize: 12,

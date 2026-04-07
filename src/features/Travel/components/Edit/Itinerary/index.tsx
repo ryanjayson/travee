@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   Animated,
@@ -16,7 +15,6 @@ import ActivityModal from "./Activity/Modal";
 import AddActivityModal from "../../Edit/Itinerary/AddActivityModal";
 import ActivityCard from "../Itinerary/ActivityCard";
 import FloatingAddButton from "../Itinerary/FloatingAddButton";
-// import DraggableActivityItem from "../components/DraggableActivityItem";
 import DraggableActivityItem from "./DraggableActivityItem";
 import DraggableSectionContainer from "./DraggableSectionContainer";
 import SlideModal from "../../../../../components/molecules/SlideModal";
@@ -30,7 +28,7 @@ import {
   ItinerarySection,
   ItineraryActivity,
 } from "../../../types/TravelDto";
-import { MenuStyle } from "../../../../../styles/common";
+
 
 interface EditTravelItineraryProps {
   travelSections: ItinerarySection[] | null;
@@ -504,8 +502,9 @@ debugger;
         scrollOffset.current = e.nativeEvent.contentOffset.y;
       }}
       scrollEventThrottle={16}
-      style={styles.formContainer}
+      className="flex-1 p-2.5 w-full pb-12"
       showsVerticalScrollIndicator={false}
+      // keyboardShouldPersistTaps="always"
       scrollEnabled={!isDragging && !sectionDragState?.isDragging}
       // refreshControl={
       //   <RefreshControl
@@ -516,8 +515,10 @@ debugger;
       //   />
       // }
     >
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Activities</Text>
+      <View className="mb-5">
+        <Text
+        className="tracking-widest text-gray-400 mb-2 text-base"
+        >Activities</Text>
 
         {sections && sections.length > 0 && sections.filter(section => section.isDefaultSection == true).map((section) => (
           <View
@@ -556,7 +557,7 @@ debugger;
                   (sectionDragState?.sectionId !== section.id ||
                     (sectionDragState?.dragIndex !== index &&
                       (sectionDragState?.dragIndex ?? -1) > index)) && (
-                    <View style={styles.dropIndicator} />
+                    <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
                   )}
 
                 <DraggableActivityItem
@@ -605,14 +606,14 @@ debugger;
                   sectionDragState?.sectionId === section.id &&
                   sectionDragState?.dragIndex !== index &&
                   (sectionDragState?.dragIndex ?? -1) < index && (
-                    <View style={styles.dropIndicator} />
+                    <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
                   )}
               </TouchableOpacity>
             )) : (
               <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
                  <Text style={{ color: "#aaa" }}>Drop activities here</Text>
                  {hoverState?.sectionId === section.id && (
-                   <View style={[styles.dropIndicator, { position: "absolute", top: "50%", width: "100%" }]} />
+                   <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
                  )}
               </View>
             )}
@@ -627,24 +628,18 @@ debugger;
             );
             setCurrentSectionId(defaultSection?.id || null);
           }}
-          style={{
-            backgroundColor: "#eee",
-            padding: 10,
-            borderRadius: 8,
-            height: 60,
-            alignItems: "center",
-            alignContent: "center",
-          }}
+         
+          className="mt-2 bg-gray-200 p-2 rounded-3xl h-[50px] flex items-center justify-center flex-row text-right mx-4"
         >
-          <Text>
             <Icon name="add" size={22} color={"#475467"} />
+            <Text className="tracking-wider flex items-center text-gray-800">
             Add Activity
           </Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.inputGroup}>
-        <Text style={styles.label}>Sections</Text>
+      <View className="mb-5">
+        <Text className="tracking-widest text-gray-400 mb-2 text-base">Sections</Text>
         {sections && sections.length > 0 ? (
           sections
             .filter((section) => section.isDefaultSection == false)
@@ -660,8 +655,8 @@ debugger;
                 {(panHandlers, isSectionActive) => (
                   <>
                   <View
+                    className="bg-white rounded-lg p-2.5 mb-3 border border-[#DDD] flex-1"
                     style={[
-                      styles.sectionCard,
                       {
                         zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
                         elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
@@ -669,22 +664,22 @@ debugger;
                     ]}
                   >
                     {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) > mapIndex && (
-                      <View style={[styles.dropIndicator, { marginBottom: 15 }]} />
+                      <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center mb-[15px]" />
                     )}
 
-                    <View style={styles.dragHandleIcon} {...panHandlers}>
+                    <View className="absolute top-[10px] left-[6px]" {...panHandlers}>
                       <Icon name="drag-handle" size={24} color={isSectionActive ? "#183B7A" : "#DDD"} />
                     </View>
-                <View style={styles.sectionHeader}>
+                <View className="mx-[18px]">
                   <TouchableOpacity
-                    style={styles.sectionToggle}
+                    className="px-2 flex-1 flex-row"
                     onPress={() => toggleSectionCollapse(section.id || 0)}
                   >
-                    <View style={styles.sectionContent}>
+                    <View className="flex-1">
                       <Text
                         numberOfLines={section.isCollapsed ? 1 : 10}
                         ellipsizeMode="tail"
-                        style={styles.sectionTitle}
+                        className="text-lg font-bold text-[#183B7A] mb-1.5"
                       >
                         {section.title}
                       </Text>
@@ -693,14 +688,14 @@ debugger;
                         <Text
                           numberOfLines={section.isCollapsed ? 2 : 10}
                           ellipsizeMode="tail"
-                          style={styles.sectionDesc}
+                          className="mb-0 text-xs text-[#6c757d]"
                         >
                           {section.description}
                         </Text>
                       )}
 
                       <View style={{ flex: 1, flexDirection: "row" }}>
-                        <Text style={styles.sectionToggleIcon}>
+                        <Text className="pt-1" >
                           {section.isCollapsed ? (
                             <Icon
                               name="keyboard-arrow-down"
@@ -717,14 +712,14 @@ debugger;
                         </Text>
                         {section.itineraryActivity &&
                         section.itineraryActivity.length > 0 ? (
-                          <Text style={styles.sectionActivityCount}>
+                          <Text className="text-xs text-[#888] mt-1.5">
                             {section.itineraryActivity.length} Activi
                             {section.itineraryActivity.length !== 1
                               ? "ties"
                               : "ty"}
                           </Text>
                         ) : (
-                          <Text style={styles.sectionActivityCount}>
+                          <Text className="text-xs text-[#888] mt-1.5">
                             No activity yet
                           </Text>
                         )}
@@ -736,8 +731,8 @@ debugger;
                 <View>
                   {!section.isCollapsed && (
                       <View 
+                        className="mt-3 z-0"
                         style={[
-                          styles.sectionActivities,
                           {
                             zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
                             elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
@@ -776,7 +771,7 @@ debugger;
                               (sectionDragState?.sectionId !== section.id ||
                                 (sectionDragState?.dragIndex !== index &&
                                  (sectionDragState?.dragIndex ?? -1) > index)) && (
-                                <View style={styles.dropIndicator} />
+                                <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
                               )}
 
                             <DraggableActivityItem
@@ -826,7 +821,7 @@ debugger;
                               sectionDragState?.sectionId === section.id &&
                               sectionDragState?.dragIndex !== index &&
                               (sectionDragState?.dragIndex ?? -1) < index && (
-                                <View style={styles.dropIndicator} />
+                                <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
                               )}
                           </TouchableOpacity>
                         )) : (
@@ -835,7 +830,7 @@ debugger;
                              <Text style={{ color: "#aaa" }}>Drop activities here</Text>
 
                              {hoverState?.sectionId === section.id && (
-                               <View style={[styles.dropIndicator, { position: "absolute", top: "50%", width: "100%" }]} />
+                               <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
                              )}
                           </View>
                         )}
@@ -850,45 +845,47 @@ debugger;
                       setModalVisible(true);
                       setCurrentSectionId(section.id);
                     }}
-                    className="bg-gray-200 p-2 rounded-lg h-[60px] flex items-center justify-center flex-row"
+                    className="mt-2 bg-gray-200 p-2 rounded-3xl h-[44px] flex items-center justify-center flex-row"
                   >
-                    <Text>
-                      <Icon name="add" size={20} color={"#475467"} />
+                     <Icon name="add" size={24} color={"#475467"} 
+                       className="opacity-50"/>
+                    <Text className="tracking-wider flex items-center text-gray-800">
                       Add Activity
                     </Text>
                   </TouchableOpacity>
                 )}
 
                 <TouchableOpacity
-                  style={styles.sectionMenuButton}
+                  className="p-2 absolute right-0 top-3"
                   onPress={() => handleSectionMenuPress(section)}
                 >
-                  <Icon name="more-vert" size={20} color={"#475467"} />
+                  <Icon name="more-vert" size={20} color={"#475467"} 
+                  className="opacity-50" />
                 </TouchableOpacity>
               </View>
               {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) < mapIndex && (
-                <View style={[styles.dropIndicator, { marginTop: 15 }]} />
+                <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center mt-[15px]" />
               )}
               </>
               )}
             </DraggableSectionContainer>
             ))
         ) : (
-          <Text style={styles.emptyText}>No sections added yet.</Text>
+          <Text className="text-[#888] italic text-center p-5">No sections added yet.</Text>
         )}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
+          <View>
             <TouchableOpacity
-              style={styles.sectionToggle}
               onPress={() => {
                 setSectionModalVisible(true);
               }}
+              className="mt-2 bg-gray-200 p-2 rounded-3xl h-[50px] flex items-center justify-center flex-row mx-4"
             >
-              <View style={styles.sectionContent}>
-                <Text>Add Section</Text>
-              </View>
+              <Icon name="add" size={24} color={"#475467"} 
+                className="opacity-50"/>
+              <Text className="tracking-wider flex items-center text-gray-800">
+                Add Section
+              </Text>
             </TouchableOpacity>
-          </View>
         </View>
       </View>
       {/* 
@@ -939,8 +936,9 @@ debugger;
       />
 
       {/* Main Menu Modal */}
+      {/* TODO move this to component */}
       <SlideModal visible={menuVisible} onClose={() => setMenuVisible(false)}>
-        <View style={styles.overlay}>
+        <View className="flex-1 bg-white">
           <View
             style={{
               padding: 6,
@@ -965,32 +963,33 @@ debugger;
 
           <View style={{ paddingVertical: 8 }}>
             <TouchableOpacity
-              style={[MenuStyle.menuItem]}
+              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
               activeOpacity={0.7}
               onPress={handleMenuAddSection}
             >
               <Icon name="grading" size={24} color={"#183B7A"} />
-              <Text style={[MenuStyle.menuItemText]}>Add Section</Text>
+              <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Add Section</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={MenuStyle.menuItem}
+              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
               activeOpacity={0.7}
               onPress={handleSectionMenuAddActivity}
             >
               <Icon name="new-label" size={24} color={"#183B7A"} />
-              <Text style={MenuStyle.menuItemText}>Add Activity</Text>
+              <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Add Activity</Text>
             </TouchableOpacity>
           </View>
         </View>
       </SlideModal>
 
       {/* Section Menu Modal */}
+      {/* TODO move this to component */}
       <SlideModal
         visible={sectionMenuVisible}
         onClose={() => setSectionMenuVisible(false)}
       >
-        <View style={styles.overlay}>
+        <View className="flex-1 bg-white">
           <View
             style={{
               padding: 6,
@@ -1015,33 +1014,33 @@ debugger;
 
           <View style={{ paddingVertical: 8 }}>
             <TouchableOpacity
-              style={[MenuStyle.menuItem]}
+              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
               activeOpacity={0.7}
               onPress={() =>
                 handleSectionMenuEditSection(selectedSection?.id || 0)
               }
             >
               <Icon name="segment" size={24} color={"#183B7A"} />
-              <Text style={[MenuStyle.menuItemText]}>Edit Section</Text>
+              <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Edit Section</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={MenuStyle.menuItem}
+              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
               activeOpacity={0.7}
               onPress={handleSectionMenuAddActivity}
             >
               <Icon name="new-label" size={24} color={"#183B7A"} />
-              <Text style={MenuStyle.menuItemText}>Add Activity</Text>
+              <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Add Activity</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={MenuStyle.menuItem}
+              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
               activeOpacity={0.7}
               onPress={() => handleSectionMenuDelete(selectedSection?.id || 0)}
               disabled={isPending}
             >
               <Icon name="delete-outline" size={24} color={"#c93030"} />
-              <Text style={[MenuStyle.menuItemText, { color: "#c93030" }]}>
+              <Text className="flex-1 ml-3 text-base text-[#c93030] font-medium">
                 Delete Section
               </Text>
             </TouchableOpacity>
@@ -1051,196 +1050,5 @@ debugger;
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F6F8FC",
-  },
-  dragHandleIcon: {
-    //   flex: 1,
-    //   backgroundColor: "#F6F8FC",
-    //   verticalAlign: "middle",
-    position: "absolute",
-    top: 10,
-    left: 6,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: "white",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#183B7A",
-  },
-  headerRight: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  refreshIndicator: {
-    marginRight: 10,
-  },
-  menuButton: {
-    padding: 8,
-  },
-  menuIcon: {
-    fontSize: 20,
-    color: "#183B7A",
-    fontWeight: "bold",
-  },
-  formContainer: {
-    flex: 1,
-    padding: 10,
-    width: "100%",
-    paddingBottom: 50,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 12,
-    color: "#183B7A",
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: "white",
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  textArea: {
-    height: 120,
-    textAlignVertical: "top",
-  },
-  activitiesContainer: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-  },
-  emptyText: {
-    color: "#888",
-    fontStyle: "italic",
-    textAlign: "center",
-    padding: 20,
-  },
-  sectionCard: {
-    backgroundColor: "#FFF",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#DDD",
-    flex: 1,
-    // shadowColor: "#000",
-    // shadowOffset: { width: 0, height: 1 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 2,
-    // elevation: 0.4,
-  },
-  sectionHeader: {
-    marginHorizontal: 18,
-  },
-  sectionContent: {
-    flex: 1,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#183B7A",
-    marginBottom: 6,
-  },
-  sectionDesc: {
-    marginBottom: 0,
-    fontSize: 12,
-    color: "#6c757d",
-  },
-  sectionDescription: {
-    fontSize: 14,
-    color: "#666",
-    lineHeight: 20,
-  },
-  sectionMenuButton: {
-    padding: 8,
-    position: "absolute",
-    right: 0,
-    top: 12,
-  },
-  sectionMenuIcon: {
-    fontSize: 20,
-    color: "#183B7A",
-    fontWeight: "bold",
-  },
-  sectionActivities: {
-    marginTop: 12,
-    zIndex: 0,
-  },
-  sectionActivityCard: {
-    backgroundColor: "#F0F0F0",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-  },
-  sectionActivityTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#183B7A",
-    marginBottom: 4,
-  },
-  sectionActivityDescription: {
-    fontSize: 12,
-    color: "#666",
-  },
-  sectionToggle: {
-    paddingHorizontal: 8,
-    flex: 1,
-    flexDirection: "row",
-  },
-  sectionToggleIcon: {
-    paddingTop: 5,
-    // position: "absolute",
-  },
-  sectionActivityCount: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 6,
-  },
-  // Menu styles
-  menuOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-start",
-    alignItems: "flex-end",
-  },
-  menuContainer: {
-    backgroundColor: "white",
-    width: "100%",
-    height: "100%",
-    paddingTop: 100,
-    paddingHorizontal: 20,
-  },
-
-  overlay: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  dropIndicator: {
-    height: 2,
-    backgroundColor: "#183B7A",
-    borderRadius: 2,
-    marginVertical: 4,
-    width: "80%",
-    alignSelf: "center",
-  },
-});
 
 export default EditTravelItinerary;
