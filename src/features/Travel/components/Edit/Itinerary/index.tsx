@@ -850,14 +850,7 @@ debugger;
                       setModalVisible(true);
                       setCurrentSectionId(section.id);
                     }}
-                    style={{
-                      backgroundColor: "#eee",
-                      padding: 10,
-                      borderRadius: 8,
-                      height: 60,
-                      alignItems: "center",
-                      alignContent: "center",
-                    }}
+                    className="bg-gray-200 p-2 rounded-lg h-[60px] flex items-center justify-center flex-row"
                   >
                     <Text>
                       <Icon name="add" size={20} color={"#475467"} />
