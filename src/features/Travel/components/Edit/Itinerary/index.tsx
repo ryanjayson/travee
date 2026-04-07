@@ -21,7 +21,7 @@ import DraggableActivityItem from "./DraggableActivityItem";
 import DraggableSectionContainer from "./DraggableSectionContainer";
 import SlideModal from "../../../../../components/molecules/SlideModal";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { useDeleteSectionMutation } from "../../../hooks/useSection";
+import { useDeleteSectionMutation, useUpdateSectionSortOrderMutation, UpdateSectionSortVariables } from "../../../hooks/useSection";
 import { useUpdateActivitySortOrderMutation, useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { UpdateSortVariables } from "../../../types/ActivityDto";
 
@@ -108,6 +108,10 @@ const EditTravelItinerary = ({
     mutate: updateActivitySortMutation,
     isPending: isPendingActivitySort,
   } = useUpdateActivitySortOrderMutation();
+  
+  const {
+    mutate: updateSectionSortOrderMutation,
+  } = useUpdateSectionSortOrderMutation();
 
   useEffect(() => {
     setSections(
@@ -115,6 +119,7 @@ const EditTravelItinerary = ({
         id: section.id,
         title: section.title,
         description: section.description,
+        sortOrder: section.sortOrder,
         isDefaultSection: section.isDefaultSection,
         itineraryActivity: (section.itineraryActivity ?? []).map(
           (activity) => ({
@@ -252,19 +257,25 @@ const EditTravelItinerary = ({
     setMasterDragState({ isDragging: false, dragIndex: null });
     setMasterHoverState(null);
 
-    if (fromIndex !== toIndex) {
-      setSections((prev) => {
-        const defaultSections = prev.filter(s => s.isDefaultSection === true);
-        const subSections = prev.filter(s => s.isDefaultSection === false);
-        
-        const [moved] = subSections.splice(fromIndex, 1);
-        subSections.splice(toIndex, 0, moved);
-        
-        return [...defaultSections, ...subSections];
-      });
+    if (fromIndex !== toIndex && sections) {
+      const defaultSections = sections.filter(s => s.isDefaultSection === true);
+      const subSections = sections.filter(s => s.isDefaultSection === false);
+      
+      const [moved] = subSections.splice(fromIndex, 1);
+      subSections.splice(toIndex, 0, moved);
+      
+      setSections([...defaultSections, ...subSections]);
 
-      // TODO: Actually persist backend array order here when a route emerges
-      // updateSectionSortOrderMutation({ ... });
+      const prevSortOrder = subSections[toIndex - 1]?.sortOrder;
+      const nextSortOrder = subSections[toIndex + 1]?.sortOrder;
+debugger;
+      if (moved.id) {
+        updateSectionSortOrderMutation({
+          id: moved.id,
+          prevSortOrder,
+          nextSortOrder,
+        });
+      }
     }
   };
 
@@ -675,7 +686,6 @@ debugger;
                         ellipsizeMode="tail"
                         style={styles.sectionTitle}
                       >
-                        {section.id}.  
                         {section.title}
                       </Text>
 
@@ -715,7 +725,7 @@ debugger;
                           </Text>
                         ) : (
                           <Text style={styles.sectionActivityCount}>
-                            No Activity yet
+                            No activity yet
                           </Text>
                         )}
                       </View>

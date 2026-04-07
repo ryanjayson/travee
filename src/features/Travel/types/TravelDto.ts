@@ -36,6 +36,7 @@ export interface ItinerarySection {
   isDefaultSection?: boolean;
   isCollapsed?: boolean;
   travelId?: number;
+  sortOrder: string;
 }
 
 export interface ItineraryActivity {

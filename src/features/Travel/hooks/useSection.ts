@@ -8,9 +8,14 @@ import { ApiResponse } from "../../../types/api";
 
 // 1. Define the API endpoint constant for clarity and reuse
 const ACTIVITY_SECTIONS_ENDPOINT = `${API_BASE_URL}/itinerarySection`;
-// 2. Define a common key for sections, often grouped under a trip ID
 const ITINERARY_SECTION_QUERY_KEY = ["itinerarySection"];
 const SELECTED_TRAVEL_PLAN_QUERY_KEY = ["selectedTravelPlan"];
+
+export type UpdateSectionSortVariables = {
+  id: number;
+  prevSortOrder?: string;
+  nextSortOrder?: string;
+};
 
 // -------------------------------------------------------------
 // 3. Define Types for the Mutation
@@ -238,6 +243,42 @@ export const useDeleteSectionMutation = () => {
       // Invalidate the main query to force a refetch if needed,
       // though setQueryData usually makes this unnecessary for UI consistency.
       // queryClient.invalidateQueries({ queryKey: travelQueryKey });
+    },
+  });
+};
+
+export const useUpdateSectionSortOrderMutation = () => {
+  return useMutation({
+    mutationFn: async (variables: UpdateSectionSortVariables): Promise<void> => {
+      const options = postRequestOptions("");
+
+      console.log("SECTION_VAR", variables);
+      const response = await fetch(`${ACTIVITY_SECTIONS_ENDPOINT}/move`, {
+        method: "POST",
+        headers: options.headers,
+        body: JSON.stringify(variables),
+      });
+
+      if (!response.ok) {
+        if (response.status !== 204) {
+          const errorBody = await response.json();
+          throw new Error(
+            errorBody.message || "Failed to update section sort order.",
+          );
+        }
+      }
+
+      if (response.status === 204) {
+        return;
+      }
+      return response.json();
+    },
+    onSuccess: (
+      data: void,
+      variables: UpdateSectionSortVariables,
+    ) => {
+      // Invalidate or update query cache if needed. Since LexoRank is evaluated implicitly on array order on the UI instantly, we can rely securely on the local `setSections` mapping for visual smoothness, and optionally invalidate the primary query.
+      // queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
     },
   });
 };
