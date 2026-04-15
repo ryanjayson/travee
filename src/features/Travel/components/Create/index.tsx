@@ -55,8 +55,8 @@ const Create = ({ onClose }: AddTravelModalProps) => {
       title: "",
       destination: "",
       description: "",
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: null as Date | null,
+      endDate: null as Date | null,
       budget: "",
       notes: "",
     },
@@ -68,8 +68,8 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         title: values.title.trim(),
         description: values.description.trim(),
         destination: values.destination.trim(),
-        startDate: values.startDate,
-        endDate: values.endDate,
+        startDate: values.startDate || undefined,
+        endDate: values.endDate || undefined,
         budget: values.budget,
         notes: values.notes,
         status: TravelStatus.Draft,
@@ -94,8 +94,8 @@ const Create = ({ onClose }: AddTravelModalProps) => {
     onClose();
   };
 
-  const formattedStartDate = formik.values.startDate.toLocaleDateString();
-  const formattedEndDate = formik.values.endDate.toLocaleDateString();
+  const formattedStartDate = formik.values.startDate ? formik.values.startDate.toLocaleDateString() : "Select Start Date";
+  const formattedEndDate = formik.values.endDate ? formik.values.endDate.toLocaleDateString() : "Select End Date";
 
   return (
     <View className="flex-1 justify-end bg-white rounded-t-[20px]">
@@ -166,11 +166,11 @@ const Create = ({ onClose }: AddTravelModalProps) => {
             <View pointerEvents="none">
               <TextInput
                 mode="outlined"
-                label="Start Date *"
-                className="bg-white"
+                label="Start Date"
+                className="bg-white my-1"
                 value={formattedStartDate}
                 editable={false}
-                right={<TextInput.Icon icon="calendar" />}
+                   left={<TextInput.Icon icon="calendar" />}
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
               />
@@ -188,9 +188,9 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                     formik.setFieldValue("startDate", new Date(day.timestamp));
                     setShowStartDatePicker(false);
                   }}
-                  markedDates={{
+                  markedDates={formik.values.startDate ? {
                     [formik.values.startDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
-                  }}
+                  } : undefined}
                   theme={{
                     todayTextColor: '#0C4C8A',
                     arrowColor: '#0C4C8A',
@@ -207,31 +207,31 @@ const Create = ({ onClose }: AddTravelModalProps) => {
               <TextInput
                 mode="outlined"
                 label="End Date"
-                className="bg-white"
+                className="bg-white my-1"
                 value={formattedEndDate}
                 editable={false}
-                right={<TextInput.Icon icon="calendar" />}
+                left={<TextInput.Icon icon="calendar" />}
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
               />
             </View>
           </TouchableOpacity>
-          <Modal visible={showEndDatePicker} transparent={true} animationType="fade">
+          <Modal visible={showEndDatePicker} transparent={true} animationType="fade" >
             <TouchableOpacity 
               className="flex-1 bg-black/50 justify-center items-center px-5" 
               activeOpacity={1} 
               onPress={() => setShowEndDatePicker(false)}
             >
-              <View className="w-full bg-white rounded-xl overflow-hidden" onStartShouldSetResponder={() => true}>
+              <View className="w-full bg-white verflow-hidden rounded-[50px] " onStartShouldSetResponder={() => true}>
                 <Calendar
                   onDayPress={(day: any) => {
                     formik.setFieldValue("endDate", new Date(day.timestamp));
                     setShowEndDatePicker(false);
                   }}
-                  markedDates={{
+                  markedDates={formik.values.endDate ? {
                     [formik.values.endDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
-                  }}
-                  minDate={formik.values.startDate.toISOString().split('T')[0]}
+                  } : undefined}
+                  minDate={formik.values.startDate ? formik.values.startDate.toISOString().split('T')[0] : undefined}
                   theme={{
                     todayTextColor: '#0C4C8A',
                     arrowColor: '#0C4C8A',
