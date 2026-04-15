@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   Image,
   ScrollView,
   TouchableOpacity,
@@ -13,7 +12,6 @@ import { TravelPlan } from "../../../Travel/types/TravelDto";
 import StatusTag from "../../../../components/StatusTag";
 import Tabs from "../../../../components/Tabs";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { Typography, Color } from "../../../../styles/common";
 
 interface ViewTravelProps {
   travelPlan: TravelPlan;
@@ -21,9 +19,7 @@ interface ViewTravelProps {
 }
 
 const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
-  const [showActivityViewModal, setShowActivityViewModal] =
-    useState<boolean>(false);
-  // const [travelPlan, setTravelPlan] = useState<Travel>(sampleTravel[0]);
+  const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
 
   const TabItinerary = () => (
     <View>
@@ -40,7 +36,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       {travelPlan.itinerarySection ? (
         <SectionAccordion iterarysections={travelPlan.itinerarySection} />
       ) : (
-        <Text style={styles.contentText}>No Checklist item added.</Text>
+        <Text className="text-sm text-[#555] leading-5">No Checklist item added.</Text>
       )}
     </View>
   );
@@ -50,7 +46,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       {travelPlan.itinerarySection ? (
         <SectionAccordion iterarysections={travelPlan.itinerarySection} />
       ) : (
-        <Text style={styles.contentText}>No note added.</Text>
+        <Text className="text-sm text-[#555] leading-5">No note added.</Text>
       )}
     </View>
   );
@@ -58,13 +54,13 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   const TabDetailsContent = () => (
     <View>
       <View>
-        <Text style={styles.contentText}>20 - Total Activity </Text>
+        <Text className="text-sm text-[#555] leading-5">20 - Total Activity </Text>
       </View>
       <View>
-        <Text style={styles.contentText}>10 - Paticipants</Text>
+        <Text className="text-sm text-[#555] leading-5">10 - Paticipants</Text>
       </View>
       <View>
-        <Text style={styles.contentText}>$1000 - Running Expenses</Text>
+        <Text className="text-sm text-[#555] leading-5">$1000 - Running Expenses</Text>
       </View>
     </View>
   );
@@ -73,18 +69,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
     <View>
       <TouchableOpacity
         activeOpacity={0.8}
-        style={{
-          backgroundColor: "#000",
-          width: 32,
-          height: 32,
-          padding: 6,
-          borderRadius: 50,
-          opacity: 0.8,
-          position: "absolute",
-          right: 60,
-          top: 20,
-          zIndex: 1,
-        }}
+        className="bg-black/80 w-8 h-8 rounded-full absolute right-[60px] top-5 z-10 items-center justify-center"
       >
         <Animated.View>
           <Icon name="map" size={20} color={"#FFF"} />
@@ -92,18 +77,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       </TouchableOpacity>
       <TouchableOpacity
         activeOpacity={0.8}
-        style={{
-          backgroundColor: "#000",
-          width: 32,
-          height: 32,
-          padding: 6,
-          borderRadius: 50,
-          opacity: 0.8,
-          position: "absolute",
-          right: 20,
-          top: 20,
-          zIndex: 1,
-        }}
+        className="bg-black/80 w-8 h-8 rounded-full absolute right-5 top-5 z-10 items-center justify-center"
       >
         <Animated.View>
           <Icon name="group" size={20} color={"#FFF"} />
@@ -114,45 +88,43 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
 
   const HeaderSection = () => (
     <View>
-      <View style={{ flex: 1 }}>
+      <View className="flex-1">
         <Toolbar />
-        <View style={styles.container}>
+        <View className="flex-1 bg-white pt-2.5 px-2.5">
           <Image
             source={require("../../../../assets/images/japan.jpg")}
-            style={styles.imageBanner}
+            className="w-full h-[200px] rounded-xl"
+            style={{ resizeMode: "cover" }}
           />
         </View>
       </View>
 
-      <View style={{ flex: 2, backgroundColor: "#FFF" }}>
-        <View style={styles.travelCardDetail}>
-          <View style={styles.travelCardHeader}>
-            <Text style={[Typography.h1, {}]}>{travelPlan?.travel.title}</Text>
+      <View className="flex-[2] bg-white">
+        <View className="p-4">
+          <View className="flex-row justify-between items-start">
+            <Text className="text-2xl font-bold text-[#183B7A] mb-2 flex-1 mr-4">
+              {travelPlan?.travel.title}
+            </Text>
             <StatusTag type={1} status={travelPlan.travel.status!} />
           </View>
-          <View style={{ flexDirection: "row", rowGap: 10 }}>
-            <TouchableOpacity
-              style={{
-                flexDirection: "row",
-                marginVertical: 4,
-              }}
-            >
+          <View className="flex-row items-center flex-wrap">
+            <TouchableOpacity className="flex-row items-center my-1 mr-2">
               <Icon name="location-pin" size={20} color={"red"} />
-              <Text style={[Color.primary]}>
+              <Text className="text-[#183B7A] font-medium ml-1">
                 {travelPlan.travel.destination}
               </Text>
             </TouchableOpacity>
-            <View style={styles.travelDates}>
-              <Text style={styles.dateLabel}>
+            <View className="flex-row items-center my-1">
+              <Text className="text-sm text-[#666] px-2 mx-2 border-x border-[#DDD]">
                 {travelPlan.travel.startDate?.toDateString()}
               </Text>
-              <Text>3 Day</Text>
+              <Text className="text-sm text-[#666]">3 Day</Text>
             </View>
           </View>
 
-          <View>
-            <Text style={[Typography.body, { marginTop: 10 }]}>
-              {travelPlan.travel.description}
+          <View className="mt-2.5">
+            <Text className="text-base text-[#666] leading-6">
+              {travelPlan.travel.description || "No description added yet."}
             </Text>
           </View>
         </View>
@@ -180,7 +152,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   };
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView className="flex-1 bg-[#F9F9F9]" showsVerticalScrollIndicator={false}>
       <HeaderSection />
       <View>
         <Tabs tabs={tabData} initialActiveTabId="itinerary" />
@@ -190,66 +162,3 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
 };
 
 export default ViewTravel;
-
-const styles = StyleSheet.create({
-  //containers
-  contentText: {
-    fontSize: 14,
-    color: "#555",
-    lineHeight: 20,
-  },
-  scrollView: {
-    flex: 1,
-    backgroundColor: "#f9f9f9",
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#FFF",
-  },
-
-  travelCard: {
-    backgroundColor: "white",
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    elevation: 1,
-  },
-
-  travelCardDetail: {
-    padding: 10,
-  },
-  travelCardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  travelDates: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 4,
-  },
-  dateLabel: {
-    fontSize: 14,
-    color: "#665",
-    marginHorizontal: 8,
-    paddingHorizontal: 8,
-    borderEndWidth: 1,
-    borderStartWidth: 1,
-    borderColor: "#DDD",
-  },
-  dateText: {
-    fontSize: 14,
-    color: "#183B7A",
-    fontWeight: "500",
-  },
-
-  imageBanner: {
-    width: "auto",
-    height: 200,
-    resizeMode: "cover",
-    margin: 10,
-    borderRadius: 10,
-  },
-});
