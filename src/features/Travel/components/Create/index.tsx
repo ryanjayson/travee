@@ -1,59 +1,35 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
-  TextInput,
   TouchableOpacity,
-  ActivityIndicator,
   ScrollView,
-  Platform,
+  Modal,
 } from "react-native";
-// import Datetimepicker, {
-//   DateTimePickerEvent,
-// } from "@react-native-community/datetimepicker";
+import { TextInput, Button } from "react-native-paper";
+import { Calendar } from "react-native-calendars";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
-
-import { travelService } from "../../../../services/travel/travelApi";
-import {
-  Travel,
-  // TravelStatus,
-  CreateTravelData,
-  UpdateTravelData,
-} from "../../types/TravelDto";
+import { useUpdateTravel } from "../../hooks/useTravel";
+import { CreateTravelData } from "../../types/TravelDto";
+import { TravelStatus } from "../../../../types/enums";
 
 interface AddTravelModalProps {
   onClose: () => void;
-  // onSave: (travelData: Travel) => void;
 }
 
+const TravelSchema = Yup.object().shape({
+  title: Yup.string().required("Title is required"),
+  destination: Yup.string().required("Destination is required"),
+});
+
 const Create = ({ onClose }: AddTravelModalProps) => {
-  const [destination, setDestination] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [budget, setBudget] = useState("");
-  const [notes, setNotes] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
   const [error, setError] = useState<string | null>(null);
-  const isSavingRef = useRef(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
-  const [showStartDatePicker, setShowStartDatePicker] =
-    useState<boolean>(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
-
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(null);
-  const [items, setItems] = useState([
-    { label: "Ride", value: "ride" },
-    { label: "Camp", value: "camp" },
-    { label: "Hike", value: "hike" },
-    { label: "Event", value: "event" },
-  ]);
-
-  // --- Sample Data Type (copied here for context) ---
-  // type CheckboxOption = { id: string; label: string; selected: boolean; };
   const destinationTypeOptions = [
     { id: "1", label: "Domestic", selected: false },
     { id: "2", label: "Local", selected: false },
@@ -73,394 +49,265 @@ const Create = ({ onClose }: AddTravelModalProps) => {
     { id: "11", label: "Symposium", selected: false },
     { id: "12", label: "Colloquium", selected: false },
   ];
-  // ----------------------------------------------------
 
-  const handleSave = async () => {
-    // Prevent multiple simultaneous saves using ref
-    if (isSavingRef.current) {
-      return;
-    }
-
-    if (!destination.trim()) {
-      setError("Please fill in all required fields");
-      return;
-    }
-
-    try {
-      isSavingRef.current = true;
-      setIsSaving(true);
+  const formik = useFormik({
+    initialValues: {
+      title: "",
+      destination: "",
+      description: "",
+      startDate: new Date(),
+      endDate: new Date(),
+      budget: "",
+      notes: "",
+    },
+    validationSchema: TravelSchema,
+    onSubmit: (values) => {
       setError(null);
 
       const travelData: CreateTravelData = {
-        title: title.trim(),
-        description: description.trim(),
-        destination: destination.trim(),
-        // startDate: startDate,
-        // endDate: endDate,
-        // budget: budget.trim() || undefined,
-        // notes: notes.trim() || undefined,
-        // status: TravelStatus.Draft,
+        title: values.title.trim(),
+        description: values.description.trim(),
+        destination: values.destination.trim(),
+        startDate: values.startDate,
+        endDate: values.endDate,
+        budget: values.budget,
+        notes: values.notes,
+        status: TravelStatus.Draft,
       };
 
-      console.log("Saving travel to API:", travelData);
-      const savedTravel = await travelService.createTravel(travelData);
-      console.log("Travel saved successfully:", savedTravel);
-
-      // Call the parent's onSave callback with the saved data
-      // onSave(travelData);
-      handleCancel();
-    } catch (err) {
-      console.error("Failed to save travel:", err);
-      setError("Failed to save travel. Please try again.");
-    } finally {
-      isSavingRef.current = false;
-      setIsSaving(false);
-    }
-  };
+      createTravel(travelData, {
+        onSuccess: () => {
+          formik.resetForm();
+          onClose();
+        },
+        onError: (err: any) => {
+          console.error("Failed to save travel:", err);
+          setError("Failed to save travel. Please try again.");
+        },
+      });
+    },
+  });
 
   const handleCancel = () => {
-    setDestination("");
-    setTitle("");
-    setDescription("");
-    setStartDate(new Date());
-    setEndDate(new Date());
-    setBudget("");
-    setNotes("");
+    formik.resetForm();
     setError(null);
-    setIsSaving(false);
-    isSavingRef.current = false;
     onClose();
   };
 
-  const handleShowStartDatePicker = () => {
-    setShowStartDatePicker(true);
-  };
-
-  const handleShowEndDatePicker = () => {
-    setShowEndDatePicker(true);
-  };
-
-  // const handleOnChanageStartDate = (
-  //   event: DateTimePickerEvent,
-  //   selectedDate?: Date
-  // ) => {
-  //   if (event.type === "set" || Platform.OS === "ios") {
-  //     const currendDate = selectedDate || startDate;
-
-  //     if (Platform.OS === "android") {
-  //       setShowStartDatePicker(false);
-  //     }
-  //     setStartDate(currendDate);
-  //   } else if (event.type === "dismissed") {
-  //     setShowStartDatePicker(false);
-  //   }
-  // };
-
-  // const handleOnChanageEndDate = (
-  //   event: DateTimePickerEvent,
-  //   selectedDate?: Date
-  // ) => {
-  //   if (event.type === "set" || Platform.OS === "ios") {
-  //     const currendDate = selectedDate || endDate;
-
-  //     if (Platform.OS === "android") {
-  //       setShowEndDatePicker(false);
-  //     }
-  //     setEndDate(currendDate);
-  //   } else if (event.type === "dismissed") {
-  //     setShowEndDatePicker(false);
-  //   }
-  // };
-
-  const formattedStartDate = startDate.toLocaleDateString();
-  const formattedEndDate = endDate.toLocaleDateString();
-
-  const isFormValid = destination.trim();
+  const formattedStartDate = formik.values.startDate.toLocaleDateString();
+  const formattedEndDate = formik.values.endDate.toLocaleDateString();
 
   return (
-    <View style={styles.overlay}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Create Travel Plan</Text>
+    <View className="flex-1 justify-end bg-white rounded-t-[20px]">
+      <View className="flex-row justify-between items-center px-5 py-4 border-b border-[#E0E0E0]">
+        <Text className="text-lg font-bold text-primary">Create Travel Plan</Text>
         <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-          <Text style={[styles.cancelText, isSaving && styles.disabledText]}>
+          <Text className={`text-base ${isSaving ? "text-[#999]" : "text-primary"}`}>
             Cancel
           </Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView
-        style={styles.formContainer}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView className="flex-1 p-[15px] mb-[15px]" showsVerticalScrollIndicator={false}>
         {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
+          <View className="bg-[#FFEBEE] rounded-lg p-3 mb-4 border border-[#FFCDD2]">
+            <Text className="text-[#D32F2F] text-sm">{error}</Text>
           </View>
         )}
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Title *</Text>
+        <View className="mb-5">
           <TextInput
-            style={styles.input}
+            mode="outlined"
+            label="Title *"
+            className="bg-white"
             placeholder="Travel title"
-            value={title}
-            onChangeText={setTitle}
-            editable={!isSaving}
+            value={formik.values.title}
+            onChangeText={formik.handleChange("title")}
+            onBlur={formik.handleBlur("title")}
+            error={formik.touched.title && Boolean(formik.errors.title)}
+            disabled={isSaving}
+            outlineColor="#E0E0E0"
+            activeOutlineColor="#0C4C8A"
           />
+          {formik.touched.title && formik.errors.title && (
+            <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.title as string}</Text>
+          )}
         </View>
 
-        {/* <View style={styles.inputGroup}>
-              <Text style={styles.label}>Type *</Text>
-              <DropDownPicker
-                open={open}
-                value={value}
-                items={items}
-                setOpen={setOpen}
-                setValue={setValue}
-                setItems={setItems}
-                placeholder="Select travel type"
-                style={styles.input}
-              />
-            </View> */}
-
-        <View style={styles.inputGroup}>
-          <CheckboxGroup
-            initialOptions={destinationTypeOptions}
-            title="Choose Destination type/s"
-          />
+        <View className="mb-5 z-10">
+          <CheckboxGroup initialOptions={destinationTypeOptions} title="Choose Destination type/s" />
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Destination *</Text>
+        <View className="mb-5">
           <TextInput
-            style={styles.input}
+            mode="outlined"
+            label="Destination *"
+            className="bg-white"
             placeholder="e.g., Paris, France"
-            value={destination}
-            onChangeText={setDestination}
-            editable={!isSaving}
+            value={formik.values.destination}
+            onChangeText={formik.handleChange("destination")}
+            onBlur={formik.handleBlur("destination")}
+            error={formik.touched.destination && Boolean(formik.errors.destination)}
+            disabled={isSaving}
+            outlineColor="#E0E0E0"
+            activeOutlineColor="#0C4C8A"
           />
+          {formik.touched.destination && formik.errors.destination && (
+            <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.destination as string}</Text>
+          )}
         </View>
 
-        <View style={styles.inputGroup}>
+        <View className="mb-5 z-10">
           <CheckboxGroup initialOptions={activityOptions} title="Activities" />
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Start Date *</Text>
-          <TouchableOpacity onPress={handleShowStartDatePicker}>
-            <Text style={[styles.input]}>{formattedStartDate}</Text>
+        <View className="mb-5">
+          <TouchableOpacity activeOpacity={0.7} onPress={() => { setShowStartDatePicker(!showStartDatePicker); setShowEndDatePicker(false); }}>
+            <View pointerEvents="none">
+              <TextInput
+                mode="outlined"
+                label="Start Date *"
+                className="bg-white"
+                value={formattedStartDate}
+                editable={false}
+                right={<TextInput.Icon icon="calendar" />}
+                outlineColor="#E0E0E0"
+                activeOutlineColor="#0C4C8A"
+              />
+            </View>
           </TouchableOpacity>
-
-          {showStartDatePicker && (
-            // <Datetimepicker
-            //   style={styles.input}
-            //   is24Hour={true}
-            //   mode="date"
-            //   value={startDate}
-            //   disabled={!isSaving}
-            //   display="default"
-            //   onChange={handleOnChanageStartDate}
-            // />
-
-            <View></View>
-          )}
+          <Modal visible={showStartDatePicker} transparent={true} animationType="fade">
+            <TouchableOpacity 
+              className="flex-1 bg-black/50 justify-center items-center px-5" 
+              activeOpacity={1} 
+              onPress={() => setShowStartDatePicker(false)}
+            >
+              <View className="w-full bg-white rounded-xl overflow-hidden" onStartShouldSetResponder={() => true}>
+                <Calendar
+                  onDayPress={(day: any) => {
+                    formik.setFieldValue("startDate", new Date(day.timestamp));
+                    setShowStartDatePicker(false);
+                  }}
+                  markedDates={{
+                    [formik.values.startDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
+                  }}
+                  theme={{
+                    todayTextColor: '#0C4C8A',
+                    arrowColor: '#0C4C8A',
+                  }}
+                />
+              </View>
+            </TouchableOpacity>
+          </Modal>
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>End Date</Text>
-          <TouchableOpacity onPress={handleShowEndDatePicker}>
-            <Text style={[styles.input]}>{formattedEndDate}</Text>
+        <View className="mb-5">
+          <TouchableOpacity activeOpacity={0.7} onPress={() => { setShowEndDatePicker(!showEndDatePicker); setShowStartDatePicker(false); }}>
+            <View pointerEvents="none">
+              <TextInput
+                mode="outlined"
+                label="End Date"
+                className="bg-white"
+                value={formattedEndDate}
+                editable={false}
+                right={<TextInput.Icon icon="calendar" />}
+                outlineColor="#E0E0E0"
+                activeOutlineColor="#0C4C8A"
+              />
+            </View>
           </TouchableOpacity>
-          {showEndDatePicker && (
-            // <Datetimepicker
-            //   style={styles.input}
-            //   is24Hour={true}
-            //   mode="date"
-            //   value={endDate}
-            //   disabled={!isSaving}
-            //   display="default"
-            //   onChange={handleOnChanageEndDate}
-            // />
-            <View></View>
-          )}
+          <Modal visible={showEndDatePicker} transparent={true} animationType="fade">
+            <TouchableOpacity 
+              className="flex-1 bg-black/50 justify-center items-center px-5" 
+              activeOpacity={1} 
+              onPress={() => setShowEndDatePicker(false)}
+            >
+              <View className="w-full bg-white rounded-xl overflow-hidden" onStartShouldSetResponder={() => true}>
+                <Calendar
+                  onDayPress={(day: any) => {
+                    formik.setFieldValue("endDate", new Date(day.timestamp));
+                    setShowEndDatePicker(false);
+                  }}
+                  markedDates={{
+                    [formik.values.endDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
+                  }}
+                  minDate={formik.values.startDate.toISOString().split('T')[0]}
+                  theme={{
+                    todayTextColor: '#0C4C8A',
+                    arrowColor: '#0C4C8A',
+                  }}
+                />
+              </View>
+            </TouchableOpacity>
+          </Modal>
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Description</Text>
+        <View className="mb-5">
           <TextInput
-            style={[styles.input, styles.textArea]}
+            mode="outlined"
+            label="Description"
+            className="bg-white"
             placeholder="Description"
-            value={description}
-            onChangeText={setDescription}
+            value={formik.values.description}
+            onChangeText={formik.handleChange("description")}
+            onBlur={formik.handleBlur("description")}
             multiline
             numberOfLines={4}
-            editable={!isSaving}
+            disabled={isSaving}
+            outlineColor="#E0E0E0"
+            activeOutlineColor="#0C4C8A"
           />
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Budget</Text>
+        <View className="mb-5">
           <TextInput
-            style={styles.input}
+            mode="outlined"
+            label="Budget"
+            className="bg-white"
             placeholder="e.g., 2,000"
-            value={budget}
-            onChangeText={setBudget}
+            value={formik.values.budget}
+            onChangeText={formik.handleChange("budget")}
+            onBlur={formik.handleBlur("budget")}
             keyboardType="numeric"
-            editable={!isSaving}
+            disabled={isSaving}
+            outlineColor="#E0E0E0"
+            activeOutlineColor="#0C4C8A"
           />
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Notes</Text>
+        <View className="mb-5">
           <TextInput
-            style={[styles.input, styles.textArea]}
+            mode="outlined"
+            label="Notes"
+            className="bg-white"
             placeholder="Any additional notes about your travel..."
-            value={notes}
-            onChangeText={setNotes}
+            value={formik.values.notes}
+            onChangeText={formik.handleChange("notes")}
+            onBlur={formik.handleBlur("notes")}
             multiline
             numberOfLines={4}
-            editable={!isSaving}
+            disabled={isSaving}
+            outlineColor="#E0E0E0"
+            activeOutlineColor="#0C4C8A"
           />
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[
-            styles.saveButton,
-            (!isFormValid || isSaving) && styles.saveButtonDisabled,
-          ]}
-          onPress={handleSave}
-          disabled={!isFormValid || isSaving}
+      <View className="px-5 py-4 border-t border-[#E0E0E0]">
+        <Button
+          mode="contained"
+          onPress={() => formik.handleSubmit()}
+          disabled={!formik.isValid || !formik.dirty || isSaving}
+          loading={isSaving}
+          className="rounded-lg py-1"
+          buttonColor="#0C4C8A"
+          textColor="white"
         >
-          {isSaving ? (
-            <View style={styles.savingContainer}>
-              <ActivityIndicator size="small" color="white" />
-              <Text style={styles.savingText}>Saving...</Text>
-            </View>
-          ) : (
-            <Text
-              style={[
-                styles.saveButtonText,
-                (!isFormValid || isSaving) && styles.saveButtonTextDisabled,
-              ]}
-            >
-              Create Travel
-            </Text>
-          )}
-        </TouchableOpacity>
+          Create Travel
+        </Button>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-
-  modalContainer: {
-    backgroundColor: "white",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    flex: 1,
-  },
-
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#183B7A",
-  },
-  cancelText: {
-    color: "#183B7A",
-    fontSize: 16,
-  },
-  disabledText: {
-    color: "#999",
-  },
-  formContainer: {
-    flex: 1,
-    padding: 15,
-    marginBottom: 15,
-  },
-  errorContainer: {
-    backgroundColor: "#FFEBEE",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#FFCDD2",
-  },
-  errorText: {
-    color: "#D32F2F",
-    fontSize: 14,
-  },
-  inputGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#183B7A",
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: "#F6F8FC",
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: "top",
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E0E0E0",
-  },
-  saveButton: {
-    backgroundColor: "#183B7A",
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  saveButtonDisabled: {
-    backgroundColor: "#E0E0E0",
-  },
-  saveButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  saveButtonTextDisabled: {
-    color: "#999",
-  },
-  savingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  savingText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginLeft: 8,
-  },
-});
 
 export default Create;

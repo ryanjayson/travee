@@ -68,11 +68,11 @@ export interface CreateTravelData {
   title: string;
   description?: string;
   destination?: string;
-  // startDate?: Date;
-  // endDate?: Date;
-  // budget?: string;
-  // notes?: string;
-  // status?: number;
+  startDate?: Date;
+  endDate?: Date;
+  budget?: string;
+  notes?: string;
+  status?: TravelStatus;
 }
 
 export interface UpdateTravelData {
