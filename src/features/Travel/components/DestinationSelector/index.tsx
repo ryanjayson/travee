@@ -1,17 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  ScrollView,
-  FlatList,
-} from "react-native";
-
-import { Travel } from "../../types/TravelDto";
+import React from "react";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+// @ts-ignore
+import { GOOGLE_MAPS_API_KEY } from "@env";
 
 interface Place {
   id: string;
@@ -25,177 +17,75 @@ interface AddTravelModalProps {
   onSelect: (selectedPlace: Place) => void;
 }
 
-// Mock places data - in a real app, this would come from Google Places API
-const mockPlaces: Place[] = [
-  {
-    id: "1",
-    name: "Eiffel Tower",
-    address: "Champ de Mars, 5 Avenue Anatole France, 75007 Paris, France",
-    type: "Tourist Attraction",
-  },
-  {
-    id: "2",
-    name: "Louvre Museum",
-    address: "Rue de Rivoli, 75001 Paris, France",
-    type: "Museum",
-  },
-  {
-    id: "3",
-    name: "Notre-Dame Cathedral",
-    address: "6 Parvis Notre-Dame - Pl. Jean-Paul II, 75004 Paris, France",
-    type: "Religious Site",
-  },
-  {
-    id: "4",
-    name: "Arc de Triomphe",
-    address: "Place Charles de Gaulle, 75008 Paris, France",
-    type: "Monument",
-  },
-  {
-    id: "5",
-    name: "Champs-Élysées",
-    address: "Avenue des Champs-Élysées, 75008 Paris, France",
-    type: "Shopping Street",
-  },
-  {
-    id: "6",
-    name: "Sacre-Coeur Basilica",
-    address: "35 Rue du Chevalier de la Barre, 75018 Paris, France",
-    type: "Religious Site",
-  },
-  {
-    id: "7",
-    name: "Palace of Versailles",
-    address: "Place d'Armes, 78000 Versailles, France",
-    type: "Palace",
-  },
-  {
-    id: "8",
-    name: "Montmartre",
-    address: "75018 Paris, France",
-    type: "Neighborhood",
-  },
-  {
-    id: "9",
-    name: "Seine River Cruise",
-    address: "Various locations along Seine River, Paris",
-    type: "Activity",
-  },
-  {
-    id: "10",
-    name: "Musée d'Orsay",
-    address: "1 Rue de la Légion d'Honneur, 75007 Paris, France",
-    type: "Museum",
-  },
-];
-
 const DestinationSelector = ({ onClose, onSelect }: AddTravelModalProps) => {
-  const [destination, setDestination] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const isSavingRef = useRef(false);
-  useState<boolean>(false);
-  const [location, setLocation] = useState("");
-  const [locationQuery, setLocationQuery] = useState("");
-  const [showLocationResults, setShowLocationResults] = useState(false);
-  const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
-
-  useEffect(() => {
-    if (locationQuery.trim()) {
-      const filtered = mockPlaces.filter(
-        (place) =>
-          place.name.toLowerCase().includes(locationQuery.toLowerCase()) ||
-          place.address.toLowerCase().includes(locationQuery.toLowerCase()) ||
-          place.type.toLowerCase().includes(locationQuery.toLowerCase())
-      );
-      setFilteredPlaces(filtered);
-      setShowLocationResults(true);
-    } else {
-      setShowLocationResults(false);
-      setFilteredPlaces([]);
-    }
-  }, [locationQuery]);
-
-  const handleCancel = () => {
-    setDestination("");
-    setError(null);
-    setIsSaving(false);
-    isSavingRef.current = false;
-    onClose();
-  };
-
-  const handleLocationSelect = (place: Place) => {
-    onSelect(place);
-
-    setLocationQuery(place.name);
-    setShowLocationResults(false);
-    onClose();
-  };
-
-  const handleLocationFocus = () => {
-    if (locationQuery.trim()) {
-      setShowLocationResults(true);
-    }
-  };
-
-  const renderPlaceItem = ({ item }: { item: Place }) => (
-    <TouchableOpacity
-      style={styles.placeItem}
-      onPress={() => handleLocationSelect(item)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.placeInfo}>
-        <Text style={styles.placeName}>{item.name}</Text>
-        <Text style={styles.placeAddress}>{item.address}</Text>
-        <Text style={styles.placeType}>{item.type}</Text>
-      </View>
-      <Text style={styles.placeIcon}>📍</Text>
-    </TouchableOpacity>
-  );
-
   return (
     <View style={styles.overlay}>
-      <View
-        style={{
-          padding: 6,
-          borderBottomWidth: 1,
-          borderColor: "#eee",
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-      >
+      <View style={styles.header}>
         <TouchableOpacity
-          style={{ paddingRight: 6 }}
-          onPress={handleCancel}
+          style={styles.backButton}
+          onPress={onClose}
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Icon name="keyboard-arrow-left" size={36} color={"#DDD"} />
         </TouchableOpacity>
-        <View>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter place or location"
-            value={locationQuery}
-            onChangeText={setLocationQuery}
-            editable={!isSaving}
-            onFocus={handleLocationFocus}
-          />
-        </View>
-      </View>
-
-      <View style={styles.locationResultsContainer}>
-        <FlatList
-          data={filteredPlaces}
-          renderItem={renderPlaceItem}
-          keyExtractor={(item) => item.id}
-          style={styles.placesList}
-          showsVerticalScrollIndicator={false}
-          // ListHeaderComponent={
-          //   <View style={styles.locationResultsHeader}>
-          //     <Text style={styles.locationResultsTitle}>Search Results</Text>
-          //   </View>
-          // }
+        
+        <GooglePlacesAutocomplete
+          placeholder="Enter place or location"
+          fetchDetails={true}
+          onPress={(data, details = null) => {
+            debugger;
+            if (data && details) {
+              const place: Place = {
+                id: data.place_id,
+                name: details.name || data.structured_formatting?.main_text || data.description,
+                address: details.formatted_address || data.structured_formatting?.secondary_text || data.description,
+                type: data.types?.[0] ? data.types[0].replace(/_/g, " ") : "Location",
+              };
+              onSelect(place);
+            }
+          }}
+          query={{
+            key: GOOGLE_MAPS_API_KEY || "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao", // Must be provided in .env
+            language: "en",
+          }}
+          styles={{
+            container: {
+              flex: 1,
+            },
+            textInputContainer: {
+              backgroundColor: "transparent",
+              borderTopWidth: 0,
+              borderBottomWidth: 0,
+              paddingHorizontal: 0,
+              paddingVertical: 4,
+            },
+            textInput: {
+              backgroundColor: "transparent",
+              fontSize: 20,
+              height: 50,
+              color: "#333",
+              paddingHorizontal: 0,
+              margin: 0,
+            },
+            listView: {
+              backgroundColor: "white",
+            },
+            row: {
+              padding: 15,
+              flexDirection: "row",
+              borderBottomWidth: 1,
+              borderBottomColor: "#eee",
+            },
+            description: {
+              fontSize: 16,
+              color: "#183B7A",
+            },
+          }}
+          enablePoweredByContainer={false}
+          textInputProps={{
+            autoFocus: true,
+          }}
         />
       </View>
     </View>
@@ -207,173 +97,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-
-  modalContainer: {
-    backgroundColor: "white",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    flex: 1,
-  },
-
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    paddingTop: 10,
+    flex: 1, // Let Google Places expand downwards
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#183B7A",
-  },
-  cancelText: {
-    color: "#183B7A",
-    fontSize: 16,
-  },
-  disabledText: {
-    color: "#999",
-  },
-  formContainer: {
-    flex: 1,
-    padding: 15,
-    marginBottom: 15,
-  },
-  errorContainer: {
-    backgroundColor: "#FFEBEE",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#FFCDD2",
-  },
-  errorText: {
-    color: "#D32F2F",
-    fontSize: 14,
-  },
-
-  label: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#183B7A",
-    marginBottom: 8,
-  },
-  input: {
-    paddingHorizontal: 0,
-    paddingVertical: 12,
-    fontSize: 20,
-    height: 60,
-    width: 300,
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: "top",
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E0E0E0",
-  },
-  saveButton: {
-    backgroundColor: "#183B7A",
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  saveButtonDisabled: {
-    backgroundColor: "#E0E0E0",
-  },
-  saveButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  saveButtonTextDisabled: {
-    color: "#999",
-  },
-  savingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  savingText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginLeft: 8,
-  },
-  placesList: {
-    flex: 1,
-  },
-  placeItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  },
-  placeInfo: {
-    flex: 1,
-  },
-  placeName: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#183B7A",
-  },
-  placeAddress: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 2,
-  },
-  placeType: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 2,
-  },
-  placeIcon: {
-    fontSize: 20,
-    marginLeft: 10,
-  },
-  selectedLocationContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#E8F5E8",
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: "#4CAF50",
-  },
-  removeLocationText: {
-    fontSize: 16,
-    color: "#2E7D32",
-    fontWeight: "bold",
-    marginLeft: 10,
-  },
-  locationResultsContainer: {
-    flex: 1,
-  },
-  locationResultsHeader: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  locationResultsTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#183B7A",
-  },
-  selectedLocationText: {
-    fontSize: 16,
-    color: "#2E7D32",
-    fontWeight: "bold",
+  backButton: {
+    paddingLeft: 6,
+    paddingRight: 6,
+    paddingTop: 10, // Align with the input text
   },
 });
 
