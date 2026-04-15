@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
   Button,
 } from "react-native";
-import EditTravelItinerary from "../components/Edit/Itinerary";
+import EditTravelItinerary, { EditTravelItineraryRef } from "../components/Edit/Itinerary";
+import FloatingAddButton from "../components/Edit/Itinerary/FloatingAddButton";
 // import AddMemberModal from "../components/AddMemberModal";
 import { sampleFriends, Friend } from "../../../data/sampleFriends";
 // import {
@@ -58,7 +59,7 @@ const EditTravelPlan = () => {
 
   // const EditTravelPlan = ({ tripData, onBack }: TripDetailPageProps) => {
   const [travelData, setTravelData] = useState<Travel>(sampleTravel[0]);
-  const [activeTab, setActiveTab] = useState<TabType>("detail");
+  const [activeTab, setActiveTab] = useState<TabType>("itinerary");
   const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
   const [newItemText, setNewItemText] = useState("");
   const [addMemberModalVisible, setAddMemberModalVisible] = useState(false);
@@ -71,6 +72,11 @@ const EditTravelPlan = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const { selectedTravelPlan, selectTravelPlan, clearTravelPlan } =
     useTravelContext();
+
+  const itineraryRef = useRef<EditTravelItineraryRef>(null);
+
+  const handleAddSection = () => itineraryRef.current?.handleAddSection();
+  const handleAddActivity = () => itineraryRef.current?.handleAddActivity();
 
   const {
     data: travelPlan,
@@ -191,6 +197,7 @@ const EditTravelPlan = () => {
       title: "Itinerary",
       content: (
         <EditTravelItinerary
+          ref={itineraryRef}
           travelSections={travelPlan?.itinerarySection ?? null}
           onSave={() => {}}
           onBack={() => {}}
@@ -278,7 +285,11 @@ const EditTravelPlan = () => {
       </View>
 
       <View className="flex-1 border-b border-[#DDD] bg-gray-100">
-        <Tabs tabs={tabData} initialActiveTabId="itinerary" />
+        <Tabs 
+          tabs={tabData} 
+          initialActiveTabId="itinerary" 
+          onTabChange={(id) => setActiveTab(id as TabType)} 
+        />
       </View>
       {/* 
       <View style={styles.tabContainer}>
@@ -360,6 +371,13 @@ const EditTravelPlan = () => {
         onAddMembers={handleAddMembers}
         friends={sampleFriends}
       /> */}
+
+      {activeTab === "itinerary" && (
+        <FloatingAddButton
+          onAddSection={handleAddSection}
+          onAddActivity={handleAddActivity}
+        />
+      )}
     </View>
   );
 };

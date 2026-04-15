@@ -17,10 +17,11 @@ interface TabItem {
 interface TabsProps {
   tabs: TabItem[];
   initialActiveTabId?: string;
+  onTabChange?: (tabId: string) => void;
 }
 
 // --- Component ---
-const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId }) => {
+const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, onTabChange }) => {
   const [activeTabId, setActiveTabId] = useState(
     initialActiveTabId || tabs[0]?.id
   );
@@ -30,7 +31,9 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId }) => {
 
   const switchTab = (newIndex: number) => {
     if (newIndex !== currentIndex && tabs[newIndex]) {
-      setActiveTabId(tabs[newIndex].id);
+      const newId = tabs[newIndex].id;
+      setActiveTabId(newId);
+      if (onTabChange) onTabChange(newId);
     }
   };
 
@@ -56,7 +59,10 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId }) => {
       <TouchableOpacity
         key={tab.id}
         className={`p-4 items-center justify-center ${isActive ? 'text-primary border-b-4 border-primary' : ''}`}
-        onPress={() => setActiveTabId(tab.id)}
+        onPress={() => {
+          setActiveTabId(tab.id);
+          if (onTabChange) onTabChange(tab.id);
+        }}
         activeOpacity={0.8}
       >
         <Text className={`text-base ${isActive ? 'font-bold text-primary ' : 'text-[#666]'}`}>

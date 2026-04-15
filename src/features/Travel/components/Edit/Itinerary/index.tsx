@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import {
   View,
   Text,
@@ -14,7 +14,6 @@ import SectionModal from "./Section/Modal";
 import ActivityModal from "./Activity/Modal";
 import AddActivityModal from "../../Edit/Itinerary/AddActivityModal";
 import ActivityCard from "../Itinerary/ActivityCard";
-import FloatingAddButton from "../Itinerary/FloatingAddButton";
 import DraggableActivityItem from "./DraggableActivityItem";
 import DraggableSectionContainer from "./DraggableSectionContainer";
 import SlideModal from "../../../../../components/molecules/SlideModal";
@@ -30,19 +29,29 @@ import {
 } from "../../../types/TravelDto";
 
 
-interface EditTravelItineraryProps {
+export interface EditTravelItineraryRef {
+  handleAddSection: () => void;
+  handleAddActivity: () => void;
+}
+
+export interface EditTravelItineraryProps {
   travelSections: ItinerarySection[] | null;
   onSave: (itineraryData: any) => void;
   onBack: () => void;
   onRefresh?: () => void;
 }
 
-const EditTravelItinerary = ({
+const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItineraryProps>(({
   travelSections,
   onSave,
   onBack,
   onRefresh,
-}: EditTravelItineraryProps) => {
+}, ref) => {
+  useImperativeHandle(ref, () => ({
+    handleAddSection: handleMenuAddSection,
+    handleAddActivity: handleMenuAddActivity,
+  }));
+
   const [selectedSection, setSelectedSection] =
     useState<ItinerarySection | null>(null);
   const [sections, setSections] = useState<ItinerarySection[]>([]);
@@ -1042,13 +1051,9 @@ debugger;
       </SlideModal>
     </ScrollView>
 
-      <FloatingAddButton
-        onAddSection={handleMenuAddSection}
-        onAddActivity={handleMenuAddActivity}
-      />
     </View>
    
   );
-};
+});
 
 export default EditTravelItinerary;

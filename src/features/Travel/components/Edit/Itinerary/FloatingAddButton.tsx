@@ -14,12 +14,13 @@ const FloatingAddButton = ({
   const [open, setOpen] = useState(false);
 
   return (
-    <FAB.Group
+    <Portal>
+      <FAB.Group
         open={open}
         visible
         icon={open ? "close" : "plus"}
         color="white"
-        style={{ position: 'absolute', bottom: 100, right: 0 }}
+        style={{ position: 'absolute', bottom: 0, right: 0 }}
         fabStyle={{ backgroundColor: "#0C4C8A", borderRadius: 30 }}
         actions={[
           {
@@ -40,6 +41,7 @@ const FloatingAddButton = ({
           }
         }}
       />
+    </Portal>
   );
 };
 
