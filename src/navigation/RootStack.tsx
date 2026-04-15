@@ -11,7 +11,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator id="RootStack">
       <Stack.Screen
         name="Main"
         component={RootTabs}

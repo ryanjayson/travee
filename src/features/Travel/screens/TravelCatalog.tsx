@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   RefreshControl,
   StatusBar,
-  Button,
 } from "react-native";
 import CreateTravelModal from "../components/Create/Modal";
 import TravelDetailPage from "./TravelDetail";
@@ -18,23 +17,19 @@ import { useTravels } from "../hooks/useTravel";
 import { useTravelContext } from "../../../context/TravelContext";
 import { FAB, Portal } from "react-native-paper";
 import { useIsFocused } from "@react-navigation/native";
+import Tabs from "../../../components/Tabs";
 
 interface TravelPageProps {
   onBack?: () => void;
   onAddTravel?: () => void;
 }
 
-type TravelTabType = "upcoming" | "past";
-
 const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
-  const [activeTab, setActiveTab] = useState<TravelTabType>("upcoming");
   const [visibleCreateTravelModal, setVisibleCreateTravelModal] = useState<boolean>(false);
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [selectedTravel, setSelectedTravel] = useState<Travel | null>(null);
   const [showTravelDetail, setShowTravelDetail] = useState(false);
-  const [upcomingTravels, setUpcomingTravels] = useState<Travel[]>([]);
-  const [pastTravels, setPastTravels] = useState<Travel[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   
   const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
@@ -46,15 +41,9 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
     setRefreshing(false);
   };
 
-  useEffect(() => {
-    if (travels && travels.length > 0) {
-      setUpcomingTravels(travels.filter((travel) => travel.status === TravelStatus.Upcoming));
-      setPastTravels(travels.filter((travel) => travel.status === TravelStatus.Draft));
-    } else {
-      setUpcomingTravels([]);
-      setPastTravels([]);
-    }
-  }, [travels]);
+  const getTravelsByStatus = (status: TravelStatus) => {
+    return travels?.filter(t => t.status === status) || [];
+  };
 
   const handleViewModeTravel = (travel: Travel) => {
     if (travel && travel.id) {
@@ -74,46 +63,60 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
     refetch();
   };
 
-  const renderTravelCard = (travel: Travel) => (
-    <View key={travel.id} className="bg-white rounded-xl mb-4 shadow-sm shadow-black/10 elevation-1">
-      <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
-        <View className="flex-1 bg-white"></View>
-        <View className="p-2.5">
-          <View className="flex-row justify-between items-start mb-3">
-            <View className="flex-1">
-              <Text className="text-lg font-bold text-primary">{travel.title}</Text>
-              <Text className="text-lg font-bold text-primary">{travel.destination}</Text>
-            </View>
-            <View
-              className={`px-2 py-1 rounded-xl ${
-                travel.status === TravelStatus.Upcoming ? "bg-[#E8F5E8]" : "bg-[#F0F0F0]"
-              }`}
-            >
-              <Text
-                className={`text-xs font-medium ${
-                  travel.status === TravelStatus.Upcoming ? "text-[#2E7D32]" : "text-[#666]"
-                }`}
-              >
-                {travel.status === TravelStatus.Draft ? "Draft" : "Past"}
-              </Text>
-            </View>
-          </View>
-          <View className="flex-row items-center mb-4">
-            <Text className="text-sm text-[#666] mr-2">3 Days | 12-20-2025</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </View>
-  );
+  const getStatusLabelText = (status: TravelStatus | undefined) => {
+    switch (status) {
+      case TravelStatus.Draft: return "Draft";
+      case TravelStatus.Ongoing: return "Ongoing";
+      case TravelStatus.Upcoming: return "Upcoming";
+      case TravelStatus.Completed: return "Completed";
+      case TravelStatus.Archieved: return "Archived";
+      case TravelStatus.Cancelled: return "Cancelled";
+      default: return "Unknown";
+    }
+  };
 
-  const renderTabContent = () => {
-    const isUpcoming = activeTab === "upcoming";
-    const data = isUpcoming ? upcomingTravels : pastTravels;
+  const getStatusLabelStyling = (status: TravelStatus | undefined) => {
+    if (status === TravelStatus.Ongoing || status === TravelStatus.Upcoming) return "bg-[#E8F5E8] text-[#2E7D32]";
+    if (status === TravelStatus.Cancelled || status === TravelStatus.Archieved) return "bg-[#FFEBEE] text-[#D32F2F]";
+    return "bg-[#E0E0E0] text-[#666]";
+  };
+
+  const renderTravelCard = (travel: Travel) => {
+    const styling = getStatusLabelStyling(travel.status);
+    const bgStyle = styling.split(' ')[0];
+    const textStyle = styling.split(' ')[1];
 
     return (
+      <View key={travel.id} className="bg-white rounded-xl mb-4 shadow-sm shadow-black/10 elevation-1 mx-5 mt-2 overflow-hidden">
+        <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
+          <View className="flex-1 bg-white"></View>
+          <View className="p-4 border border-[#E0E0E0] rounded-xl">
+            <View className="flex-row justify-between items-start mb-3">
+              <View className="flex-1">
+                <Text className="text-lg font-bold text-primary">{travel.title}</Text>
+                <Text className="text-sm font-medium text-[#666]">{travel.destination}</Text>
+              </View>
+              <View className={`px-2 py-1 rounded-xl ${bgStyle}`}>
+                <Text className={`text-xs font-bold ${textStyle}`}>
+                  {getStatusLabelText(travel.status)}
+                </Text>
+              </View>
+            </View>
+            <View className="flex-row items-center mt-1">
+              <Text className="text-xs font-medium text-[#999]">3 Days | 12-20-2025</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderContentForStatus = (status: TravelStatus, emptyIcon: string, emptyTitle: string, emptySubtitle: string) => {
+    const data = getTravelsByStatus(status);
+    return (
       <ScrollView
-        className="flex-1 p-5"
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: 10 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -127,20 +130,51 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
           data.map(renderTravelCard)
         ) : (
           <View className="flex-1 justify-center items-center py-[60px]">
-            <Text className="text-5xl mb-4">{isUpcoming ? "✈️" : "📸"}</Text>
+            <Text className="text-5xl mb-4">{emptyIcon}</Text>
             <Text className="text-xl font-bold text-primary mb-2">
-              {isUpcoming ? "No Upcoming Travel" : "No Past Travels"}
+              {emptyTitle}
             </Text>
-            <Text className="text-base text-[#666] text-center">
-              {isUpcoming
-                ? "Start planning your next adventure!"
-                : "Your travel memories will appear here"}
+            <Text className="text-base text-[#666] text-center px-10">
+              {emptySubtitle}
             </Text>
           </View>
         )}
       </ScrollView>
     );
   };
+
+  const tabsData = [
+    {
+      id: "ongoing",
+      title: `Ongoing (${getTravelsByStatus(TravelStatus.Ongoing).length})`,
+      content: renderContentForStatus(TravelStatus.Ongoing, "🌍", "No Ongoing Travels", "Your active travels will appear here!"),
+    },
+    {
+      id: "upcoming",
+      title: `Upcoming (${getTravelsByStatus(TravelStatus.Upcoming).length})`,
+      content: renderContentForStatus(TravelStatus.Upcoming, "✈️", "No Upcoming Travels", "Start planning your next adventure!"),
+    },
+    {
+      id: "draft",
+      title: `Draft (${getTravelsByStatus(TravelStatus.Draft).length})`,
+      content: renderContentForStatus(TravelStatus.Draft, "📝", "No Drafts", "Your saved drafts will appear here"),
+    },
+    {
+      id: "completed",
+      title: `Completed (${getTravelsByStatus(TravelStatus.Completed).length})`,
+      content: renderContentForStatus(TravelStatus.Completed, "📸", "No Completed Travels", "Your travel memories will appear here"),
+    },
+    {
+      id: "archived",
+      title: `Archived (${getTravelsByStatus(TravelStatus.Archieved).length})`,
+      content: renderContentForStatus(TravelStatus.Archieved, "📦", "No Archived Travels", "Your archived travels will appear here"),
+    },
+    {
+      id: "cancelled",
+      title: `Cancelled (${getTravelsByStatus(TravelStatus.Cancelled).length})`,
+      content: renderContentForStatus(TravelStatus.Cancelled, "❌", "No Cancelled Travels", "Your cancelled travels will appear here"),
+    },
+  ];
 
   if (showTravelDetail && selectedTravel) {
     return (
@@ -152,46 +186,8 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
   }
 
   return (
-    <View className="flex-1 bg-white pt-10">
+    <View className="flex-1 bg-[#F6F8FC]">
       <StatusBar barStyle={"dark-content"} />
-
-      <View className="bg-white px-5 py-4 border-b border-[#E0E0E0]">
-        <Text className="text-2xl font-bold text-primary text-center">
-          My Travels {travels?.length != null ? `(${travels.length})` : ""}
-        </Text>
-      </View>
-
-      <View className="flex-row bg-white px-5 py-2">
-        <TouchableOpacity
-          className={`flex-1 py-3 items-center rounded-lg mx-1 ${
-            activeTab === "upcoming" ? "bg-primary" : ""
-          }`}
-          onPress={() => setActiveTab("upcoming")}
-        >
-          <Text
-            className={`text-base ${
-              activeTab === "upcoming" ? "text-white font-bold" : "font-medium text-[#666]"
-            }`}
-          >
-            Upcoming ({upcomingTravels?.length || 0})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          className={`flex-1 py-3 items-center rounded-lg mx-1 ${
-            activeTab === "past" ? "bg-primary" : ""
-          }`}
-          onPress={() => setActiveTab("past")}
-        >
-          <Text
-            className={`text-base ${
-              activeTab === "past" ? "text-white font-bold" : "font-medium text-[#666]"
-            }`}
-          >
-            Past ({pastTravels?.length || 0})
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       <View className="flex-1">
         {isLoading ? (
           <View className="flex-1 justify-center items-center">
@@ -203,12 +199,12 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
             <Text className="text-5xl mb-4">⚠️</Text>
             <Text className="text-xl font-bold text-primary mb-2">Something went wrong</Text>
             <Text className="text-red-500 m-2.5">{error?.message}</Text>
-            <TouchableOpacity className="bg-primary px-5 py-2.5 rounded-lg" onPress={() => refetch()}>
+            <TouchableOpacity className="bg-primary px-5 py-2.5 rounded-lg mt-2" onPress={() => refetch()}>
               <Text className="text-white text-base font-medium">Try Again</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          renderTabContent()
+          <Tabs tabs={tabsData} />
         )}
       </View>
 

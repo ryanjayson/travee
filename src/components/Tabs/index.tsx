@@ -58,7 +58,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, onTabChange }) => {
     return (
       <TouchableOpacity
         key={tab.id}
-        className={`p-4 items-center justify-center ${isActive ? 'text-primary border-b-4 border-primary' : ''}`}
+        className={`py-3 px-4 items-center justify-center ${isActive ? 'text-primary border-b-4 border-primary' : ''}`}
         onPress={() => {
           setActiveTabId(tab.id);
           if (onTabChange) onTabChange(tab.id);

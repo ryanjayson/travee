@@ -40,10 +40,12 @@ const TravelTab = () => {
 
 export function RootTabs() { 
   return (
-    <Tab.Navigator
+    <Tab.Navigator 
+      id="RootTabs"
       initialRouteName="Travels"
       screenOptions={({ route }): BottomTabNavigationOptions => ({
-        headerTitleAlign: "center",
+        headerTitleAlign: "left",
+        headerShadowVisible: false,
         tabBarLabelPosition: "below-icon",
         tabBarIcon: ({ color, size, focused }) => (
           <Ionicons
