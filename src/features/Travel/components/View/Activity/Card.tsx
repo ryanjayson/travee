@@ -1,10 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   Animated,
-  StyleSheet,
   Image,
 } from "react-native";
 import ViewActivityModal from "./Modal";
@@ -18,6 +17,7 @@ interface ItineraryActivityProps {
   isFirstItem?: boolean;
   isLastItem?: boolean;
 }
+
 const ActivityItemCard = ({
   itineraryActivity,
   isFirstItem,
@@ -36,138 +36,70 @@ const ActivityItemCard = ({
 
   return (
     <Animated.View>
-      <View
-        style={{
-          paddingHorizontal: 8,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          // paddingVertical: 2,
-          backgroundColor: "#fff",
-        }}
-      >
+      <View className="px-2 flex-row justify-between items-center bg-white relative">
         {!isLastItem ? (
-          <View
-            style={{
-              width: 6,
-              alignItems: "center",
-              height: "100%",
-              position: "absolute",
-            }}
-          >
+          <View className="w-1.5 items-center h-full absolute">
             {isFirstItem ? (
-              <View
-                style={{
-                  position: "absolute",
-                  height: "50%",
-                  width: 1,
-                  top: "50%",
-                  left: 20,
-                  zIndex: 0,
-                  borderWidth: 1,
-                  borderStyle: "dashed",
-                  borderColor: "#ccc",
-                }}
-              ></View>
+              <View className="absolute h-1/2 w-[1px] top-1/2 left-5 z-0 border-l border-dashed border-[#ccc]"></View>
             ) : (
-              <View
-                style={{
-                  position: "absolute",
-                  height: "100%",
-                  width: 1,
-                  left: 20,
-                  zIndex: 0,
-                  borderWidth: 1,
-                  borderStyle: "dashed",
-                  borderColor: "#ccc",
-                }}
-              ></View>
+              <View className="absolute h-full w-[1px] left-5 z-0 border-l border-dashed border-[#ccc]"></View>
             )}
           </View>
         ) : (
-          <View
-            style={{
-              width: 6,
-              alignItems: "center",
-              height: "100%",
-              position: "absolute",
-            }}
-          >
-            <View
-              style={{
-                position: "absolute",
-                height: "50%",
-                width: 1,
-                left: 20,
-                zIndex: 0,
-                borderWidth: 1,
-                borderStyle: "dashed",
-                borderColor: "#ccc",
-              }}
-            ></View>
+          <View className="w-1.5 items-center h-full absolute">
+            {isFirstItem && isLastItem ? (
+              <></>
+            ) : (
+              <View className="absolute h-1/2 w-[1px] left-5 top-0 z-0 border-l border-dashed border-[#ccc]"></View>
+            )}
           </View>
         )}
-
-        <View>
+        <View className="z-10 bg-white items-center justify-center rounded-full">
           <ActivityIcon
-            type={itineraryEventActivity.primaryType!}
+            type={itineraryEventActivity.type!}
             size={24}
             color="#dc3545"
           />
         </View>
+
         <TouchableOpacity
           onPress={() => handleViewModeActivity(itineraryEventActivity.id!)}
-          style={styles.container}
+          className="w-[100px] border border-solid border-[#e0e0e0] rounded-xl bg-white p-2.5 flex-grow ml-3 my-1"
         >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: 4,
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontWeight: "600",
-                color: "#333",
-                lineHeight: 20,
-              }}
-            >
+          <View className="flex-row justify-between items-start mb-1 gap-x-2">
+            <Text className="text-base font-semibold text-[#333] leading-5 flex-1 break-words">
               {itineraryEventActivity.title}
             </Text>
             <View>
-              <Text style={Typography.small}>
+              <Text className="text-xs text-[#555] text-right">
                 {itineraryEventActivity.startDate?.toDateString()} 11:00AM
               </Text>
             </View>
           </View>
 
           {itineraryEventActivity && itineraryEventActivity.images && (
-            <View style={{ marginVertical: 4 }}>
+            <View className="my-1">
               <Image
                 src={itineraryEventActivity.images[0].url}
-                style={styles.imageBanner}
+                className="h-[120px] w-full rounded"
+                style={{ resizeMode: "cover" }}
               />
             </View>
           )}
-          <Text
-            style={{
-              fontSize: 14,
-              color: "#555",
-              lineHeight: 20,
-              marginBottom: 6,
-            }}
-          >
-            <TextLimiter text={itineraryEventActivity.description!} />
-          </Text>
+
+            <Text className="text-sm text-[#555] leading-5 mb-1.5 mt-1" 
+              numberOfLines={2}
+              ellipsizeMode="tail">
+              {itineraryEventActivity.description} 
+            </Text>
+
           <Text style={Typography.small}>
             {itineraryEventActivity.commentsCount} Comments |{" "}
             {itineraryEventActivity.notesCount} Notes
           </Text>
         </TouchableOpacity>
       </View>
+
       <ViewActivityModal
         id={itineraryEventActivity.id!}
         showModal={showActivityViewModal}
@@ -176,26 +108,5 @@ const ActivityItemCard = ({
     </Animated.View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: 100,
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: "#e0e0e0",
-    backgroundColor: "#fff",
-    padding: 10,
-    flexGrow: 1,
-    marginStart: 12,
-    marginVertical: 4,
-  },
-  imageBanner: {
-    height: 120,
-    width: "100%",
-    resizeMode: "cover",
-    borderRadius: 4,
-  },
-});
 
 export default ActivityItemCard;

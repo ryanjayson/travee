@@ -88,6 +88,7 @@ const EditTravelPlan = () => {
   } = useTravelPlan(travelId); // Pass the required ID
 
   useEffect(() => {
+    debugger;
     const setTravelContext = async () => {
       if (travelPlan && travelPlan?.travel.id) {
         clearTravelPlan();

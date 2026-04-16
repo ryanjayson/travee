@@ -67,7 +67,7 @@ const EditActivity = ({
     ) {
       // const primaryActivityType: ActivityType =
       //   itineraryActivityData.primaryType as ActivityType;
-      itineraryActivityData.primaryType = Number(itineraryActivityData.primaryType) || ActivityType.none;
+      itineraryActivityData.type = Number(itineraryActivityData.type ) || ActivityType.none;
       await updateMutation.mutateAsync(itineraryActivityData);
       onClose();
     }
@@ -93,11 +93,11 @@ const EditActivity = ({
         id: itineraryActivity?.id,
         title: itineraryActivity?.title || "",
         description: itineraryActivity?.description || "",
-        primaryType: itineraryActivity?.primaryType || ActivityType.none,
+        type: itineraryActivity?.type || ActivityType.none,
         sortOrder: itineraryActivity?.sortOrder || "",
-        startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : "",
+        startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : null,
         startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : "08:00",
-        endDate: itineraryActivity?.endDate ? new Date(itineraryActivity.endDate).toISOString().split('T')[0] : "",
+        endDate: itineraryActivity?.endDate ? new Date(itineraryActivity.endDate).toISOString().split('T')[0] : null,
         endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? new Date(itineraryActivity.endDate).toISOString().substring(11, 16) : "09:00",
       }}
       validationSchema={TravelSchema}
@@ -129,7 +129,8 @@ const EditActivity = ({
               <View className="items-end p-2.5">
                
               </View>
-              <View className="px-2.5 pb-2.5">                
+              <View className="px-2.5 pb-2.5">            
+                <Text>{values.type}</Text>    
                 <TextInput
                   className="text-2xl font-medium pr-12"
                   placeholder="Add title"
@@ -243,8 +244,8 @@ const EditActivity = ({
                 <View className="flex-1">
                   <TouchableOpacity onPress={() => setShowPrimaryTypeModal(true)}>
                     <Text className="text-base py-2 capitalize font-medium">
-                      {values.primaryType != null && values.primaryType !== ActivityType.none
-                        ? String(ActivityType[values.primaryType as number]).replace(/([A-Z])/g, ' $1').trim()
+                      {values.type != null && values.type !== ActivityType.none
+                        ? String(ActivityType[values.type as number]).replace(/([A-Z])/g, ' $1').trim()
                         : "Select Activity Type"}
                     </Text>
                   </TouchableOpacity>
@@ -373,7 +374,7 @@ const EditActivity = ({
                           onPress={() => {
                             setValues({
                               ...values,
-                              primaryType: ActivityType[key as keyof typeof ActivityType],
+                              type: ActivityType[key as keyof typeof ActivityType],
                             });
                             setShowPrimaryTypeModal(false);
                           }}

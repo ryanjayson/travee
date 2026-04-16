@@ -121,6 +121,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   } = useUpdateSectionSortOrderMutation();
 
   useEffect(() => {
+    debugger;
     setSections(
       travelSections?.map((section) => ({
         id: section.id,
@@ -232,6 +233,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     activity: ItineraryActivity,
     sectionId: number,
   ) => {
+    debugger;
     setEditingActivity(activity);
     setEditingActivityType("section");
     setCurrentSectionId(sectionId);

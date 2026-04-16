@@ -41,13 +41,14 @@ export interface ItinerarySection {
 
 export interface ItineraryActivity {
   //TODO might use ItineraryEvent for both section and event
+  //TODO change id to type to UUID
   id?: number;
   sectionId?: number;
   title: string;
   description?: string;
   destination?: string;
-  startDate?: Date;
-  endDate?: Date;
+  startDate?: Date | null;
+  endDate?: Date | null;
   budget?: string;
   notes?: string;
   createdAt?: string;
@@ -55,7 +56,7 @@ export interface ItineraryActivity {
   commentsCount?: number;
   notesCount?: number;
   sortOrder: string;
-  primaryType?: ActivityType;
+  type?: ActivityType | number;
   secondaryType?: ActivityType[];
   images?: Images[];
 }

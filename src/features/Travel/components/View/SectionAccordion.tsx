@@ -47,17 +47,20 @@ const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
                     title={section.title}
                     headerStyle={{ backgroundColor: "#FFF" }}
                   >
-                    <View style={{ backgroundColor: "#FFF" }}>
-                      <Text className="text-sm text-[#555] leading-5 p-2.5">
-                        {section.description}
-                      </Text>
-                      {section.itineraryActivity &&
+                    <View style={{ backgroundColor: "#FFF" }} className="">
+                      {section.description && section.description.trim() !== "" && (
+                        <Text className="text-sm text-[#555] leading-5 p-2">
+                          {section.description}
+                        </Text>
+                      )}
+
+
+                      {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                         section.itineraryActivity.map(
                           (eventActivity, index, array) => {
                             const isFirstEvent = index === 0;
                             const isLastEvent = array.length - 1 === index;
-                            console.log("eventActivity", eventActivity);
-                            eventActivity.primaryType = ActivityType.flight;
+                            eventActivity.type = ActivityType.flight;
                             return (
                               <ActivityItemCard
                                 key={eventActivity.id || index}
@@ -67,6 +70,10 @@ const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
                               />
                             );
                           }
+                        )) : (
+                          <Text className="text-sm text-[#555] leading-5 p-2 text-center">
+                            No activities found
+                          </Text>
                         )}
                     </View>
                   </Accordion>

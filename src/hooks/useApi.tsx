@@ -9,6 +9,7 @@ async function fetcher<TResult>(
   const apiResponse: ApiResponse<TResult> = await response.json();
 
   if (apiResponse.isSuccess) {
+    console.log("API RESPONSE", apiResponse.data);
     return apiResponse.data as TResult;
   } else {
     throw new Error(
