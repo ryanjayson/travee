@@ -21,6 +21,7 @@ import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useDeleteActivityMutation } from "../../../../hooks/useActivity";
 import { ActivityType } from "../../../../../../types/enums";
 import { Divider, Text, Switch } from 'react-native-paper';
+import ActivityIcon from "../../../../../../components/ActivityIcon";
 
 interface Place {
   id: string;
@@ -35,10 +36,23 @@ interface EditActivityProps {
   onClose: () => void;
 }
 
-//Edit page for activity
 const TravelSchema = Yup.object().shape({
   title: Yup.string().required("Title is required").min(2),
 });
+
+export interface ActivityFormValues {
+  travelId?: number;
+  sectionId?: number;
+  id?: number;
+  title: string;
+  description: string;
+  type?: ActivityType | number;
+  sortOrder?: string;
+  startDate: string | null;
+  startTime: string;
+  endDate: string | null;
+  endTime: string;
+}
 
 const EditActivity = ({
   itinerarySectionId,
@@ -58,17 +72,37 @@ const EditActivity = ({
     useDeleteActivityMutation();
 
   const handleSaveActivity = async (
-    itineraryActivityData: ItineraryActivity,
+    values: ActivityFormValues,
   ) => {
     if (
-      itineraryActivityData?.sectionId &&
+      values?.sectionId &&
       selectedTravelPlan &&
       selectedTravelPlan?.id > 0
     ) {
-      // const primaryActivityType: ActivityType =
-      //   itineraryActivityData.primaryType as ActivityType;
-      itineraryActivityData.type = Number(itineraryActivityData.type ) || ActivityType.none;
-      await updateMutation.mutateAsync(itineraryActivityData);
+      // Build proper Date objects from strings
+      let finalStartDate: Date | undefined = undefined;
+      if (values.startDate) {
+        finalStartDate = new Date(`${values.startDate}T${values.startTime}:00`);
+      }
+
+      let finalEndDate: Date | undefined = undefined;
+      if (values.endDate) {
+        finalEndDate = new Date(`${values.endDate}T${values.endTime}:00`);
+      }
+
+      const payload: ItineraryActivity = {
+        id: values.id,
+        travelId: values.travelId,
+        sectionId: values.sectionId,
+        title: values.title,
+        description: values.description,
+        sortOrder: values.sortOrder || "",
+        type: values.type,
+        startDate: finalStartDate,
+        endDate: finalEndDate,
+      };
+
+      await updateMutation.mutateAsync(payload);
       onClose();
     }
   };
@@ -86,14 +120,14 @@ const EditActivity = ({
   };
 
   return (
-    <Formik
+    <Formik<ActivityFormValues>
       initialValues={{
         travelId: selectedTravelPlan?.id,
         sectionId: itinerarySectionId,
         id: itineraryActivity?.id,
         title: itineraryActivity?.title || "",
         description: itineraryActivity?.description || "",
-        type: itineraryActivity?.type || ActivityType.none,
+        type: itineraryActivity?.type ?? ActivityType.none,
         sortOrder: itineraryActivity?.sortOrder || "",
         startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : null,
         startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : "08:00",
@@ -130,7 +164,6 @@ const EditActivity = ({
                
               </View>
               <View className="px-2.5 pb-2.5">            
-                <Text>{values.type}</Text>    
                 <TextInput
                   className="text-2xl font-medium pr-12"
                   placeholder="Add title"
@@ -274,14 +307,7 @@ const EditActivity = ({
                 </View>
               </View>
                  </>
-                        
-
-
                 )}
-
-
-
-            
             </ScrollView>
 
             <View className="absolute left-0 right-0 bottom-0 p-2.5 ">
@@ -370,7 +396,7 @@ const EditActivity = ({
                       .map((key) => (
                         <TouchableOpacity
                           key={key}
-                          className="p-4 border-b border-gray-100 flex-row items-center"
+                          className="p-4 border-b border-gray-100 flex-row items-center gap-3"
                           onPress={() => {
                             setValues({
                               ...values,
@@ -379,6 +405,7 @@ const EditActivity = ({
                             setShowPrimaryTypeModal(false);
                           }}
                         >
+                          <ActivityIcon type={ActivityType[key as keyof typeof ActivityType]} size={24} color="#183B7A" />
                           <Text className="text-base text-gray-800 capitalize">
                             {key.replace(/([A-Z])/g, ' $1').trim()}
                           </Text>

@@ -60,7 +60,6 @@ const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
                           (eventActivity, index, array) => {
                             const isFirstEvent = index === 0;
                             const isLastEvent = array.length - 1 === index;
-                            eventActivity.type = ActivityType.flight;
                             return (
                               <ActivityItemCard
                                 key={eventActivity.id || index}

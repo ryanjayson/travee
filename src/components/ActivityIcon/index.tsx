@@ -18,50 +18,91 @@ type ActivityTypeProps = {
 };
 
 const activityIcons: ActivityIcon[] = [
-  //TODO: move and add more
   {
     iconSet: IconSetProvider.ionic,
     activityType: ActivityType.none,
-    name: "default",
+    name: ActivityType.none,
     iconName: "ellipse",
   },
   {
     iconSet: IconSetProvider.ionic,
     activityType: ActivityType.flight,
-    name: "flight",
+    name: ActivityType.flight,
     iconName: "airplane",
   },
   {
     iconSet: IconSetProvider.ionic,
     activityType: ActivityType.checkIn,
-    name: "checkIn",
+    name: ActivityType.checkIn,
     iconName: "bag-check",
   },
   {
     iconSet: IconSetProvider.ionic,
-    activityType: ActivityType.walk,
-    name: "checkIn",
-    iconName: "bag-check",
+    activityType: ActivityType.checkOut,
+    name: ActivityType.checkOut,
+    iconName: "bag-remove",
+  },
+  {
+    iconSet: IconSetProvider.material,
+    activityType: ActivityType.taxi,
+    name: ActivityType.taxi,
+    iconName: "local-taxi",
   },
   {
     iconSet: IconSetProvider.ionic,
     activityType: ActivityType.sightseeing,
-    name: "sightseeing",
+    name: ActivityType.sightseeing,
     iconName: "glasses",
   },
   {
     iconSet: IconSetProvider.material,
     activityType: ActivityType.shopping,
-    name: "shopping",
+    name: ActivityType.shopping,
     iconName: "shopping-cart",
+  },
+  {
+    iconSet: IconSetProvider.material,
+    activityType: ActivityType.cafe,
+    name: ActivityType.cafe,
+    iconName: "local-cafe",
+  },
+  {
+    iconSet: IconSetProvider.material,
+    activityType: ActivityType.food,
+    name: ActivityType.food,
+    iconName: "restaurant",
+  },
+  {
+    iconSet: IconSetProvider.ionic,
+    activityType: ActivityType.walk,
+    name: ActivityType.walk,
+    iconName: "walk",
+  },
+  {
+    iconSet: IconSetProvider.material,
+    activityType: ActivityType.preparation,
+    name: ActivityType.preparation,
+    iconName: "build",
+  },
+  {
+    iconSet: IconSetProvider.material,
+    activityType: ActivityType.ride,
+    name: ActivityType.ride,
+    iconName: "directions-car",
+  },
+  {
+    iconSet: IconSetProvider.material,
+    activityType: ActivityType.rest,
+    name: ActivityType.rest,
+    iconName: "hotel",
   },
 ];
 
 interface ActivityIcon {
   iconSet: IconSetProvider;
-  iconName: FeatherGlyphs | IoniconsGlyphs;
+  iconName: any;
   activityType: ActivityType;
-  name: string;
+  name: ActivityType;
 }
 
 const getIcon = (type: number): ActivityIcon => {
@@ -81,16 +122,13 @@ const ActivityIcon = ({
     getIcon(type)
   );
 
-  const featherIconName = activityIcon.iconName as FeatherGlyphs;
-  const ioniconName = activityIcon.iconName as IoniconsGlyphs;
-
   const getIconDisplay = (activityIcon: ActivityIcon) => {
     if (activityIcon.iconSet == IconSetProvider.feather) {
-      return <Feather name={featherIconName} size={size} color={color} />;
+      return <Feather name={activityIcon.iconName as any} size={size} color={color} />;
     } else if (activityIcon.iconSet == IconSetProvider.ionic) {
-      return <Ionicons name={ioniconName} size={size} color={color} />;
+      return <Ionicons name={activityIcon.iconName as any} size={size} color={color} />;
     } else if (activityIcon.iconSet == IconSetProvider.material) {
-      return <Icon name={activityIcon.iconName} size={size} color={color} />;
+      return <Icon name={activityIcon.iconName as any} size={size} color={color} />;
     }
   };
 

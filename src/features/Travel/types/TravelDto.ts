@@ -56,7 +56,7 @@ export interface ItineraryActivity {
   commentsCount?: number;
   notesCount?: number;
   sortOrder: string;
-  type?: ActivityType | number;
+  type?: ActivityType;
   secondaryType?: ActivityType[];
   images?: Images[];
 }
