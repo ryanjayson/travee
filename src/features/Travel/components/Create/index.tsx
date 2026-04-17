@@ -12,8 +12,9 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
 import { useUpdateTravel } from "../../hooks/useTravel";
-import { CreateTravelData } from "../../types/TravelDto";
+import { CreateTravelData, DestinationDto } from "../../types/TravelDto";
 import { TravelStatus } from "../../../../types/enums";
+import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 
 interface AddTravelModalProps {
   onClose: () => void;
@@ -29,6 +30,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
   const [error, setError] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showDestinationModal, setShowDestinationModal] = useState(false);
 
   const destinationTypeOptions = [
     { id: "1", label: "Domestic", selected: false },
@@ -53,8 +55,9 @@ const Create = ({ onClose }: AddTravelModalProps) => {
   const formik = useFormik({
     initialValues: {
       title: "",
-      destination: "",
       description: "",
+      destination: "",
+      destinationData: null as DestinationDto | null,
       startDate: null as Date | null,
       endDate: null as Date | null,
       budget: "",
@@ -68,6 +71,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         title: values.title.trim(),
         description: values.description.trim(),
         destination: values.destination.trim(),
+        destinationData: values.destinationData || undefined,
         startDate: values.startDate || undefined,
         endDate: values.endDate || undefined,
         budget: values.budget,
@@ -134,28 +138,60 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           )}
         </View>
 
+         <View className="mb-5">
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setShowDestinationModal(true)}
+            disabled={isSaving}
+          >
+            <View pointerEvents="none">
+              <TextInput
+                mode="outlined"
+                label="Destination *"
+                className="bg-white"
+                placeholder="Search city or country..."
+                value={formik.values.destination}
+                editable={false}
+                error={formik.touched.destination && Boolean(formik.errors.destination)}
+                outlineColor="#E0E0E0"
+                activeOutlineColor="#0C4C8A"
+                left={<TextInput.Icon icon="map-marker" />}
+                right={<TextInput.Icon icon="magnify" />}
+              />
+            </View>
+          </TouchableOpacity>
+          {formik.touched.destination && formik.errors.destination && (
+            <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.destination as string}</Text>
+          )}
+
+          <Modal
+            visible={showDestinationModal}
+            animationType="slide"
+            onRequestClose={() => setShowDestinationModal(false)}
+          >
+            <MapboxDestinationSelector
+              onClose={() => setShowDestinationModal(false)}
+              onSelect={(place: MapboxPlace) => {
+                formik.setFieldValue("destination", place.fullName);
+                formik.setFieldValue("destinationData", {
+                  id: place.id,
+                  coordinates: {
+                    longitude: place.coordinates.longitude,
+                    latitude: place.coordinates.latitude,
+                  },
+                } as DestinationDto);
+                setShowDestinationModal(false);
+              }}
+              initialValue={formik.values.destination}
+            />
+          </Modal>
+        </View>
+
         <View className="mb-5 z-10">
           <CheckboxGroup initialOptions={destinationTypeOptions} title="Choose Destination type/s" />
         </View>
 
-        <View className="mb-5">
-          <TextInput
-            mode="outlined"
-            label="Destination *"
-            className="bg-white"
-            placeholder="e.g., Paris, France"
-            value={formik.values.destination}
-            onChangeText={formik.handleChange("destination")}
-            onBlur={formik.handleBlur("destination")}
-            error={formik.touched.destination && Boolean(formik.errors.destination)}
-            disabled={isSaving}
-            outlineColor="#E0E0E0"
-            activeOutlineColor="#0C4C8A"
-          />
-          {formik.touched.destination && formik.errors.destination && (
-            <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.destination as string}</Text>
-          )}
-        </View>
+       
 
         <View className="mb-5 z-10">
           <CheckboxGroup initialOptions={activityOptions} title="Activities" />

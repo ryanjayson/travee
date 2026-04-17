@@ -69,11 +69,22 @@ export interface CreateTravelData {
   title: string;
   description?: string;
   destination?: string;
+  destinationData?: DestinationDto;
   startDate?: Date;
   endDate?: Date;
   budget?: string;
   notes?: string;
   status?: TravelStatus;
+}
+
+export interface DestinationDto {
+  id: string;
+  coordinates: CoordinatesDto;
+}
+
+export interface CoordinatesDto {
+  longitude: number;
+  latitude: number;
 }
 
 export interface UpdateTravelData {
