@@ -176,18 +176,19 @@ const Create = ({ onClose }: AddTravelModalProps) => {
               />
             </View>
           </TouchableOpacity>
-          <Modal visible={showStartDatePicker} transparent={true} animationType="fade">
+          <Modal visible={showStartDatePicker} transparent={true} animationType="fade" >
             <TouchableOpacity 
               className="flex-1 bg-black/50 justify-center items-center px-5" 
               activeOpacity={1} 
               onPress={() => setShowStartDatePicker(false)}
             >
-              <View className="w-full bg-white rounded-xl overflow-hidden" onStartShouldSetResponder={() => true}>
+              <View className="w-full bg-white p-5 rounded-[40px] overflow-hidden" onStartShouldSetResponder={() => true}>
                 <Calendar
                   onDayPress={(day: any) => {
                     formik.setFieldValue("startDate", new Date(day.timestamp));
                     setShowStartDatePicker(false);
                   }}
+                  minDate={new Date().toISOString().split('T')[0]}
                   markedDates={formik.values.startDate ? {
                     [formik.values.startDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
                   } : undefined}
@@ -222,7 +223,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
               activeOpacity={1} 
               onPress={() => setShowEndDatePicker(false)}
             >
-              <View className="w-full bg-white verflow-hidden rounded-[50px] " onStartShouldSetResponder={() => true}>
+              <View className="w-full bg-white verflow-hidden p-5 rounded-[40px] " onStartShouldSetResponder={() => true}>
                 <Calendar
                   onDayPress={(day: any) => {
                     formik.setFieldValue("endDate", new Date(day.timestamp));

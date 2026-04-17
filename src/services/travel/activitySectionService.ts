@@ -5,7 +5,7 @@ import {
   UpdateActivitySectionData,
 } from "../../dtos/ItineraryDto";
 // API base URL
-const API_BASE_URL = "http://192.168.254.126:33548/api";
+const API_BASE_URL = "http://192.168.254.107:33548/api";
 
 // Helper function to make HTTP requests
 const makeRequest = async (endpoint: string, options: RequestInit = {}) => {
