@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, Button, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import TouchButton from "../components/atoms/TouchButton";
 import { useAuth } from "../features/Auth/hooks/AuthContext";
 import TravelCatalog from "../features/Travel/screens/TravelCatalog";
 import CreateTravelPlan from "../features/Travel/screens/CreateTravelPlan";
@@ -16,15 +17,15 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => (
   <View style={styles.container}>
     <Text style={styles.title}>Home Dashboard!</Text>
     <Text>View your main feed here.</Text>
-    <Button
-      title="Add Travel Plan"
+    <TouchButton
+      buttonText="Add Travel Plan"
       onPress={() => navigation.navigate("CreateTravelPlan")}
     />
 
     <Text>Edit test travel.</Text>
 
-    <Button
-      title="Edit Travel Plan"
+    <TouchButton
+      buttonText="Edit Travel Plan"
       onPress={() => navigation.navigate("EditTravelPlan")}
     />
   </View>
@@ -45,7 +46,7 @@ export const SettingsScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Settings</Text>
-      <Button title="Logout" onPress={signOut} color="red" />
+      <TouchButton buttonText="Logout" onPress={signOut} />
     </View>
   );
 };

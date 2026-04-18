@@ -32,8 +32,7 @@ export const useUpdateTravel = () => {
   >({
     mutationFn: async (travel) => {
       const options = postRequestOptions("");
-
-      console.log("TRAVEL", travel);
+      console.log("PAYLOAD", JSON.stringify(travel));
       const response = await fetch(TRAVEL_ENDPOINT, {
         method: "POST",
         headers: options.headers,

@@ -7,8 +7,8 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
-  Button,
 } from "react-native";
+import TouchButton from "../../../components/atoms/TouchButton";
 import EditTravelItinerary, { EditTravelItineraryRef } from "../components/Edit/Itinerary";
 import FloatingAddButton from "../components/Edit/Itinerary/FloatingAddButton";
 // import AddMemberModal from "../components/AddMemberModal";
@@ -258,8 +258,8 @@ const EditTravelPlan = () => {
     return (
       <View>
         <Text>Error loading travel data: {error.message}</Text>
-        <Button
-          title={isRefetching ? "Retrying..." : "Try Again"}
+        <TouchButton
+          buttonText={isRefetching ? "Retrying..." : "Try Again"}
           onPress={() => refetch()}
           disabled={isRefetching}
         />

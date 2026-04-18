@@ -1,16 +1,16 @@
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet, ViewStyle } from "react-native";
+import { TouchableOpacity, Text } from "react-native";
 
 type TouchButtonProps = {
   buttonText: string;
   disabled?: boolean;
-  customStyle?: ViewStyle;
+  className?: string;
   onPress: () => void;
 };
 
 const TouchButton: React.FC<TouchButtonProps> = ({
   buttonText,
-  customStyle,
+  className,
   disabled,
   onPress,
 }) => {
@@ -18,33 +18,13 @@ const TouchButton: React.FC<TouchButtonProps> = ({
     <TouchableOpacity
       onPress={disabled ? undefined : onPress}
       activeOpacity={disabled ? 1 : 0.7}
-      style={[
-        styles.button,
-        customStyle,
-        disabled && styles.buttonDisabled, // Apply dimmed style
-      ]}
+      className={`p-4 items-center rounded-[30px] bg-[#0C4C8A] ${disabled ? "opacity-50" : ""} ${className ?? ""}`}
+      accessibilityRole="button"
       accessibilityState={{ disabled: disabled }}
     >
-      <Text style={styles.text}>{buttonText}</Text>
+      <Text className="text-white font-semibold text-base">{buttonText}</Text>
     </TouchableOpacity>
   );
 };
 
 export default TouchButton;
-
-const styles = StyleSheet.create({
-  button: {
-    padding: 16,
-    alignItems: "center",
-    borderRadius: 30,
-    backgroundColor: "#0C4C8A",
-  },
-  text: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-});

@@ -6,7 +6,8 @@ import {
   ScrollView,
   Modal,
 } from "react-native";
-import { TextInput, Button } from "react-native-paper";
+import { TextInput } from "react-native-paper";
+import TouchButton from "../../../../components/atoms/TouchButton";
 import { Calendar } from "react-native-calendars";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -330,18 +331,13 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </View>
       </ScrollView>
 
-      <View className="px-5 py-4 border-t border-[#E0E0E0]">
-        <Button
-          mode="contained"
+      <View className="px-5 py-1">
+        <TouchButton
+          buttonText="Create Trip"
           onPress={() => formik.handleSubmit()}
           disabled={!formik.isValid || !formik.dirty || isSaving}
-          loading={isSaving}
-          className="rounded-lg py-1"
-          buttonColor="#0C4C8A"
-          textColor="white"
-        >
-          Create Travel
-        </Button>
+          className="h-[60px] py-2 rounded-[80px]"
+        />
       </View>
     </View>
   );

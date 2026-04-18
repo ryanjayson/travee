@@ -43,7 +43,7 @@ const Login = () => {
           <TouchButton
             onPress={signIn}
             buttonText="Login"
-            customStyle={{ minWidth: "90%" }}
+            className="min-w-[90%]"
           />
         </View>
       </View>

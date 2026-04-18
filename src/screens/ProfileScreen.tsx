@@ -1,6 +1,7 @@
 import * as React from "react";
 import { View } from "react-native";
-import { Button, Card, Text } from "react-native-paper";
+import { Card, Text } from "react-native-paper";
+import TouchButton from "../components/atoms/TouchButton";
 
 export function ProfileScreen() {
   return (
@@ -11,9 +12,7 @@ export function ProfileScreen() {
         <Card.Title title="Account" />
         <Card.Content style={{ gap: 6 }}>
           <Text variant="bodyMedium">Signed out</Text>
-          <Button mode="contained" onPress={() => {}}>
-            Sign in
-          </Button>
+          <TouchButton buttonText="Sign in" onPress={() => {}} />
         </Card.Content>
       </Card>
     </View>

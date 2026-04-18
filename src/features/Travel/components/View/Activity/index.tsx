@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   FlatList,
   TextInput,
-  Button,
 } from "react-native";
+import TouchButton from "../../../../../components/atoms/TouchButton";
 import { ItineraryActivity } from "../../../types/TravelDto";
 import Tabs from "../../../../../components/Tabs";
 import CommentSection from "../../CommentSection";
@@ -53,7 +53,7 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
           <Text style={styles.errorText}>
             Error: {error?.message || "Failed to load activity."}
           </Text>
-          <Button title="Retry" onPress={() => refetch()} />
+          <TouchButton buttonText="Retry" onPress={() => refetch()} />
         </View>
       );
     }

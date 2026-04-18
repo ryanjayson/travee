@@ -100,12 +100,12 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       </View>
 
       <View className="flex-[2] bg-white">
-        <View className="p-4">
+        <View className="p-4 pb-2">
           <View className="flex-row justify-between items-start">
             <Text className="text-2xl font-bold text-[#183B7A] mb-2 flex-1 mr-4">
               {travelPlan?.travel.title}
             </Text>
-            <StatusTag type={1} status={travelPlan.travel.status!} />
+            <StatusTag type={2} status={travelPlan.travel.status!} />
           </View>
           <View className="flex-row items-center flex-wrap">
             <TouchableOpacity className="flex-row items-center my-1 mr-2">
@@ -115,16 +115,20 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
               </Text>
             </TouchableOpacity>
             <View className="flex-row items-center my-1">
-              <Text className="text-sm text-[#666] px-2 mx-2 border-x border-[#DDD]">
-                {travelPlan.travel.startDate?.toDateString()}
+              <Text className="text-sm text-[#666] px-2 mx-2 border-l border-[#DDD]">
+                {travelPlan.travel?.startOrDepartureDate
+                  ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "2-digit", year: "numeric" })
+                  : ""}
+                {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
+                  ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
+                  : ""}
               </Text>
-              <Text className="text-sm text-[#666]">3 Day</Text>
             </View>
           </View>
 
           <View className="mt-2.5">
             <Text className="text-base text-[#666] leading-6">
-              {travelPlan.travel.description || "No description added yet."}
+              {travelPlan.travel.description || null}
             </Text>
           </View>
         </View>
