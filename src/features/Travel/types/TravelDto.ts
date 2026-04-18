@@ -11,6 +11,7 @@ export interface Travel {
   title: string;
   description?: string;
   destination?: string;
+  destinationData?: DestinationDto;
   startOrDepartureDate?: Date;
   endOrReturnDate?: Date;
   status?: TravelStatus;

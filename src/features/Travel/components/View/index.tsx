@@ -12,6 +12,8 @@ import { TravelPlan } from "../../../Travel/types/TravelDto";
 import StatusTag from "../../../../components/StatusTag";
 import Tabs from "../../../../components/Tabs";
 import Icon from "react-native-vector-icons/MaterialIcons";
+// @ts-ignore
+import { MAPBOX_ACCESS_TOKEN } from "@env";
 
 interface ViewTravelProps {
   travelPlan: TravelPlan;
@@ -91,11 +93,21 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       <View className="flex-1">
         <Toolbar />
         <View className="flex-1 bg-white pt-2.5 px-2.5">
-          <Image
-            source={require("../../../../assets/images/japan.jpg")}
-            className="w-full h-[200px] rounded-xl"
-            style={{ resizeMode: "cover" }}
-          />
+          {travelPlan.travel.destinationData?.coordinates ? (
+            <Image
+              source={{
+                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0C4C8A(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
+              }}
+              className="w-full h-[200px] rounded-xl"
+              style={{ resizeMode: "cover" }}
+            />
+          ) : (
+            <Image
+              source={require("../../../../assets/images/japan.jpg")}
+              className="w-full h-[200px] rounded-xl"
+              style={{ resizeMode: "cover" }}
+            />
+          )}
         </View>
       </View>
 
@@ -109,7 +121,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
           </View>
           <View className="flex-row items-center flex-wrap">
             <TouchableOpacity className="flex-row items-center my-1 mr-2">
-              <Icon name="location-pin" size={20} color={"red"} />
+              <Icon name="location-pin" size={16} color={"red"} />
               <Text className="text-[#183B7A] font-medium ml-1">
                 {travelPlan.travel.destination}
               </Text>

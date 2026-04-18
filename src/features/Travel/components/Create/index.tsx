@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  Image,
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import TouchButton from "../../../../components/atoms/TouchButton";
@@ -16,6 +17,8 @@ import { useUpdateTravel } from "../../hooks/useTravel";
 import { CreateTravelData, DestinationDto } from "../../types/TravelDto";
 import { TravelStatus } from "../../../../types/enums";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
+import { MAPBOX_ACCESS_TOKEN } from "@env";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface AddTravelModalProps {
   onClose: () => void;
@@ -105,7 +108,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
   return (
     <View className="flex-1 justify-end bg-white rounded-t-[20px]">
       <View className="flex-row justify-between items-center px-5 py-4 border-b border-[#E0E0E0]">
-        <Text className="text-lg font-bold text-primary">Create Travel Plan</Text>
+        <Text className="text-lg font-bold text-primary">Create Next Trip</Text>
         <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
           <Text className={`text-base ${isSaving ? "text-[#999]" : "text-primary"}`}>
             Cancel
@@ -113,7 +116,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 p-[15px] mb-[15px]" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 p-[15px] mb-[15px] bg-gray-50" showsVerticalScrollIndicator={false}>
         {error && (
           <View className="bg-[#FFEBEE] rounded-lg p-3 mb-4 border border-[#FFCDD2]">
             <Text className="text-[#D32F2F] text-sm">{error}</Text>
@@ -121,11 +124,11 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         )}
 
         <View className="mb-5">
+          <Text className="text-md tracking-wide">Title</Text>
           <TextInput
             mode="outlined"
-            label="Title *"
-            className="bg-white"
-            placeholder="Travel title"
+            className="bg-white !h-[64px] !rounded-2xl p-4 border-2 border-[#E0E0E0] mt-2"
+            placeholder="Your trip name"
             value={formik.values.title}
             onChangeText={formik.handleChange("title")}
             onBlur={formik.handleBlur("title")}
@@ -133,6 +136,23 @@ const Create = ({ onClose }: AddTravelModalProps) => {
             disabled={isSaving}
             outlineColor="#E0E0E0"
             activeOutlineColor="#0C4C8A"
+            outlineStyle={{
+              borderWidth: 0,
+              backgroundColor: "transparent",
+              padding: 0,
+              margin: 0,
+            }}
+            style={{
+              // height: 64,
+              // backgroundColor: "#FFFFFF",
+              // borderColor: "#E0E0E0",
+              borderWidth: 0
+            }}
+            // contentStyle={{
+            //   borderRadius: 30,
+            //   borderColor: "red",
+            //   borderWidth: 0,
+            // }}
           />
           {formik.touched.title && formik.errors.title && (
             <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.title as string}</Text>
@@ -140,30 +160,60 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </View>
 
          <View className="mb-5">
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setShowDestinationModal(true)}
-            disabled={isSaving}
-          >
-            <View pointerEvents="none">
-              <TextInput
-                mode="outlined"
-                label="Destination *"
-                className="bg-white"
-                placeholder="Search city or country..."
-                value={formik.values.destination}
-                editable={false}
-                error={formik.touched.destination && Boolean(formik.errors.destination)}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
-                left={<TextInput.Icon icon="map-marker" />}
-                right={<TextInput.Icon icon="magnify" />}
-              />
-            </View>
-          </TouchableOpacity>
-          {formik.touched.destination && formik.errors.destination && (
-            <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.destination as string}</Text>
-          )}
+          <Text className="text-md tracking-wide">Destination</Text>
+
+          {!formik.values.destinationData?.coordinates ? (
+            <>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setShowDestinationModal(true)}
+                disabled={isSaving}
+              >
+                <View pointerEvents="none">
+                  <TextInput
+                    mode="outlined"
+                    className="bg-white"
+                    placeholder="Search city or country..."
+                    value={formik.values.destination}
+                    editable={false}
+                    error={formik.touched.destination && Boolean(formik.errors.destination)}
+                    outlineColor="#E0E0E0"
+                    activeOutlineColor="#0C4C8A"
+                    left={<TextInput.Icon icon="map-marker" />}
+                    right={<TextInput.Icon icon="magnify" />}
+                  />
+                </View>
+              </TouchableOpacity>
+              {formik.touched.destination && formik.errors.destination && (
+                <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.destination as string}</Text>
+              )}
+            </>
+          ) : (() => {
+            const { longitude, latitude } = formik.values.destinationData.coordinates;
+            const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0C4C8A(${longitude},${latitude})/${longitude},${latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+            return (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => setShowDestinationModal(true)}
+                disabled={isSaving}
+              >
+                <View className="mt-2 rounded-2xl overflow-hidden">
+                  <Image
+                    source={{ uri: mapUrl }}
+                    style={{ width: '100%', height: 160, borderRadius: 16 }}
+                    resizeMode="cover"
+                  />
+                  <View className="absolute bottom-2 left-2 bg-black/50 px-3 py-1 rounded-full flex-row items-center">
+                    <Icon name="location-on" size={14} color="#FFF" />
+                    <Text className="text-white text-xs ml-1">{formik.values.destination}</Text>
+                  </View>
+                  <View className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded-full">
+                    <Text className="text-white text-[10px]">Tap to change</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })()}
 
           <Modal
             visible={showDestinationModal}
@@ -336,7 +386,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           buttonText="Create Trip"
           onPress={() => formik.handleSubmit()}
           disabled={!formik.isValid || !formik.dirty || isSaving}
-          className="h-[60px] py-2 rounded-[80px]"
+          className="h-[60px] p-5"
         />
       </View>
     </View>
