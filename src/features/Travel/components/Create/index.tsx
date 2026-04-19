@@ -127,7 +127,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           <Text className="text-md tracking-wide">Title</Text>
           <TextInput
             mode="outlined"
-            className="bg-white !h-[64px] !rounded-2xl p-4 border-2 border-[#E0E0E0] mt-2"
+            className="bg-white !h-[64px] !rounded-2xl border-2 border-[#E0E0E0] mt-2"
             placeholder="Your trip name"
             value={formik.values.title}
             onChangeText={formik.handleChange("title")}
@@ -136,6 +136,11 @@ const Create = ({ onClose }: AddTravelModalProps) => {
             disabled={isSaving}
             outlineColor="#E0E0E0"
             activeOutlineColor="#0C4C8A"
+            theme={{
+              colors: {
+                onSurfaceVariant: '#888', 
+              },
+            }}
             outlineStyle={{
               borderWidth: 0,
               backgroundColor: "transparent",
@@ -161,7 +166,6 @@ const Create = ({ onClose }: AddTravelModalProps) => {
 
          <View className="mb-5">
           <Text className="text-md tracking-wide">Destination</Text>
-
           {!formik.values.destinationData?.coordinates ? (
             <>
               <TouchableOpacity
@@ -172,15 +176,29 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                 <View pointerEvents="none">
                   <TextInput
                     mode="outlined"
-                    className="bg-white"
+                    className="!h-[64px] py-4"
                     placeholder="Search city or country..."
                     value={formik.values.destination}
                     editable={false}
                     error={formik.touched.destination && Boolean(formik.errors.destination)}
                     outlineColor="#E0E0E0"
                     activeOutlineColor="#0C4C8A"
-                    left={<TextInput.Icon icon="map-marker" />}
-                    right={<TextInput.Icon icon="magnify" />}
+                    // left={<TextInput.Icon icon="map-marker" className="opacity-50" />}
+                    // theme={{
+                    //   colors: {
+                    //     onSurfaceVariant: '#888', 
+                    //   },
+                    // }}
+                    // outlineStyle={{
+                    //   borderWidth: 2,
+                    //   borderColor: "#E0E0E0",
+                    //   borderRadius: 16,
+                    //   backgroundColor: "white",
+                    // }}
+                    // style={{
+                    //   marginTop: 8,
+                    //   height: 64,
+                    // }}
                   />
                 </View>
               </TouchableOpacity>
@@ -243,92 +261,124 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </View>
 
        
+        <View className="flex-row mb-5 gap-3">
+          <View className="flex-1">
+            <TouchableOpacity activeOpacity={0.7} onPress={() => { setShowStartDatePicker(!showStartDatePicker); setShowEndDatePicker(false); }}>
+              <View pointerEvents="none">
+                <TextInput
+                  mode="outlined"
+                  label={"Departure"}
+                  placeholder="Departure Date"
+                  value={formattedStartDate}
+                  editable={false}
+                  // left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor="#0C4C8A"
+                  //  theme={{
+                  //     colors: {
+                  //       onSurfaceVariant: '#888', 
+                  //     },
+                  //   }}
+                  //   outlineStyle={{
+                  //     borderWidth: 2,
+                  //     borderColor: "#E0E0E0",
+                  //     borderRadius: 16,
+                  //     backgroundColor: "white",
+                  //   }}
+                  //   style={{
+                  //     marginTop: 8,
+                  //     height: 64,
+                  //   }}
+                />
+              </View>
+            </TouchableOpacity>
+            <Modal visible={showStartDatePicker} transparent={true} animationType="fade">
+              <TouchableOpacity
+                className="flex-1 bg-black/50 justify-center items-center px-5"
+                activeOpacity={1}
+                onPress={() => setShowStartDatePicker(false)}
+              >
+                <View className="w-full bg-white p-5 rounded-[40px] overflow-hidden" onStartShouldSetResponder={() => true}>
+                  <Calendar
+                    onDayPress={(day: any) => {
+                      formik.setFieldValue("startDate", new Date(day.timestamp));
+                      setShowStartDatePicker(false);
+                    }}
+                    minDate={new Date().toISOString().split('T')[0]}
+                    markedDates={formik.values.startDate ? {
+                      [formik.values.startDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
+                    } : undefined}
+                    theme={{
+                      todayTextColor: '#0C4C8A',
+                      arrowColor: '#0C4C8A',
+                    }}
+                  />
+                </View>
+              </TouchableOpacity>
+            </Modal>
+          </View>
+
+          <View className="flex-1">
+            <TouchableOpacity activeOpacity={0.7} onPress={() => { setShowEndDatePicker(!showEndDatePicker); setShowStartDatePicker(false); }}>
+              <View pointerEvents="none">
+                <TextInput
+                  mode="outlined"
+                  label={"Return"}
+                  placeholder="Search city or country..."
+                  value={formattedEndDate}
+                  editable={false}
+                  // left={<TextInput.Icon icon="calendar"  class Name="opacity-50"/>}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor="#0C4C8A"
+                  //  theme={{
+                  //     colors: {
+                  //       onSurfaceVariant: '#888', 
+                  //     },
+                  //   }}
+                  //   outlineStyle={{
+                  //     borderWidth: 2,
+                  //     borderColor: "#E0E0E0",
+                  //     borderRadius: 16,
+                  //     backgroundColor: "white",
+                  //   }}
+                  //   style={{
+                  //     marginTop: 8,
+                  //     height: 64,
+                  //   }}
+                />
+              </View>
+            </TouchableOpacity>
+            <Modal visible={showEndDatePicker} transparent={true} animationType="fade">
+              <TouchableOpacity
+                className="flex-1 bg-black/50 justify-center items-center px-5"
+                activeOpacity={1}
+                onPress={() => setShowEndDatePicker(false)}
+              >
+                <View className="w-full bg-white verflow-hidden p-5 rounded-[40px] " onStartShouldSetResponder={() => true}>
+                  <Calendar
+                    onDayPress={(day: any) => {
+                      formik.setFieldValue("endDate", new Date(day.timestamp));
+                      setShowEndDatePicker(false);
+                    }}
+                    markedDates={formik.values.endDate ? {
+                      [formik.values.endDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
+                    } : undefined}
+                    minDate={formik.values.startDate ? formik.values.startDate.toISOString().split('T')[0] : undefined}
+                    theme={{
+                      todayTextColor: '#0C4C8A',
+                      arrowColor: '#0C4C8A',
+                    }}
+                  />
+                </View>
+              </TouchableOpacity>
+            </Modal>
+          </View>
+        </View>
 
         <View className="mb-5 z-10">
           <CheckboxGroup initialOptions={activityOptions} title="Activities" />
         </View>
 
-        <View className="mb-5">
-          <TouchableOpacity activeOpacity={0.7} onPress={() => { setShowStartDatePicker(!showStartDatePicker); setShowEndDatePicker(false); }}>
-            <View pointerEvents="none">
-              <TextInput
-                mode="outlined"
-                label="Start Date"
-                className="bg-white my-1"
-                value={formattedStartDate}
-                editable={false}
-                   left={<TextInput.Icon icon="calendar" />}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
-              />
-            </View>
-          </TouchableOpacity>
-          <Modal visible={showStartDatePicker} transparent={true} animationType="fade" >
-            <TouchableOpacity 
-              className="flex-1 bg-black/50 justify-center items-center px-5" 
-              activeOpacity={1} 
-              onPress={() => setShowStartDatePicker(false)}
-            >
-              <View className="w-full bg-white p-5 rounded-[40px] overflow-hidden" onStartShouldSetResponder={() => true}>
-                <Calendar
-                  onDayPress={(day: any) => {
-                    formik.setFieldValue("startDate", new Date(day.timestamp));
-                    setShowStartDatePicker(false);
-                  }}
-                  minDate={new Date().toISOString().split('T')[0]}
-                  markedDates={formik.values.startDate ? {
-                    [formik.values.startDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
-                  } : undefined}
-                  theme={{
-                    todayTextColor: '#0C4C8A',
-                    arrowColor: '#0C4C8A',
-                  }}
-                />
-              </View>
-            </TouchableOpacity>
-          </Modal>
-        </View>
-
-        <View className="mb-5">
-          <TouchableOpacity activeOpacity={0.7} onPress={() => { setShowEndDatePicker(!showEndDatePicker); setShowStartDatePicker(false); }}>
-            <View pointerEvents="none">
-              <TextInput
-                mode="outlined"
-                label="End Date"
-                className="bg-white my-1"
-                value={formattedEndDate}
-                editable={false}
-                left={<TextInput.Icon icon="calendar" />}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
-              />
-            </View>
-          </TouchableOpacity>
-          <Modal visible={showEndDatePicker} transparent={true} animationType="fade" >
-            <TouchableOpacity 
-              className="flex-1 bg-black/50 justify-center items-center px-5" 
-              activeOpacity={1} 
-              onPress={() => setShowEndDatePicker(false)}
-            >
-              <View className="w-full bg-white verflow-hidden p-5 rounded-[40px] " onStartShouldSetResponder={() => true}>
-                <Calendar
-                  onDayPress={(day: any) => {
-                    formik.setFieldValue("endDate", new Date(day.timestamp));
-                    setShowEndDatePicker(false);
-                  }}
-                  markedDates={formik.values.endDate ? {
-                    [formik.values.endDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
-                  } : undefined}
-                  minDate={formik.values.startDate ? formik.values.startDate.toISOString().split('T')[0] : undefined}
-                  theme={{
-                    todayTextColor: '#0C4C8A',
-                    arrowColor: '#0C4C8A',
-                  }}
-                />
-              </View>
-            </TouchableOpacity>
-          </Modal>
-        </View>
 
         <View className="mb-5">
           <TextInput

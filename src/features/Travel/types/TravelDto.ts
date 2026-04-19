@@ -1,4 +1,3 @@
-import { NumberLiteralType } from "typescript";
 import { ActivityType, TravelStatus } from "../../../types/enums";
 
 export interface TravelPlan {
@@ -96,10 +95,4 @@ export interface UpdateTravelData {
   notes?: string;
 }
 
-export interface UpdateTravelData {
-  destination?: string;
-  startDate?: string;
-  endDate?: string;
-  budget?: string;
-  notes?: string;
-}
+
