@@ -102,8 +102,8 @@ const Create = ({ onClose }: AddTravelModalProps) => {
     onClose();
   };
 
-  const formattedStartDate = formik.values.startDate ? formik.values.startDate.toLocaleDateString() : "Select Start Date";
-  const formattedEndDate = formik.values.endDate ? formik.values.endDate.toLocaleDateString() : "Select End Date";
+  const formattedStartDate = formik.values.startDate ? formik.values.startDate.toLocaleDateString() : "";
+  const formattedEndDate = formik.values.endDate ? formik.values.endDate.toLocaleDateString() : "";
 
   return (
     <View className="flex-1 justify-end bg-white rounded-t-[20px]">
@@ -127,7 +127,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           <Text className="text-md tracking-wide">Title</Text>
           <TextInput
             mode="outlined"
-            className="bg-white !h-[64px] !rounded-2xl border-2 border-[#E0E0E0] mt-2"
+            className="!h-[64px]"
             placeholder="Your trip name"
             value={formik.values.title}
             onChangeText={formik.handleChange("title")}
@@ -142,22 +142,16 @@ const Create = ({ onClose }: AddTravelModalProps) => {
               },
             }}
             outlineStyle={{
-              borderWidth: 0,
-              backgroundColor: "transparent",
-              padding: 0,
-              margin: 0,
+              borderWidth: 2,
+              backgroundColor: "#FFFFFF",
+              borderRadius: 16,
             }}
             style={{
-              // height: 64,
-              // backgroundColor: "#FFFFFF",
-              // borderColor: "#E0E0E0",
-              borderWidth: 0
+             marginTop: 6,
             }}
-            // contentStyle={{
-            //   borderRadius: 30,
-            //   borderColor: "red",
-            //   borderWidth: 0,
-            // }}
+            contentStyle={{
+              backgroundColor: "transparent",
+            }}
           />
           {formik.touched.title && formik.errors.title && (
             <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.title as string}</Text>
@@ -176,29 +170,30 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                 <View pointerEvents="none">
                   <TextInput
                     mode="outlined"
-                    className="!h-[64px] py-4"
+                    className="!h-[64px]"
                     placeholder="Search city or country..."
                     value={formik.values.destination}
                     editable={false}
                     error={formik.touched.destination && Boolean(formik.errors.destination)}
                     outlineColor="#E0E0E0"
                     activeOutlineColor="#0C4C8A"
-                    // left={<TextInput.Icon icon="map-marker" className="opacity-50" />}
-                    // theme={{
-                    //   colors: {
-                    //     onSurfaceVariant: '#888', 
-                    //   },
-                    // }}
-                    // outlineStyle={{
-                    //   borderWidth: 2,
-                    //   borderColor: "#E0E0E0",
-                    //   borderRadius: 16,
-                    //   backgroundColor: "white",
-                    // }}
-                    // style={{
-                    //   marginTop: 8,
-                    //   height: 64,
-                    // }}
+                    left={<TextInput.Icon icon="map-marker" className="opacity-50 mt-2" />}
+                    theme={{
+                      colors: {
+                        onSurfaceVariant: '#888', 
+                      },
+                    }}
+                    outlineStyle={{
+                      borderWidth: 2,
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 16,
+                    }}
+                    style={{
+                    marginTop: 6,
+                    }}
+                    contentStyle={{
+                      backgroundColor: "transparent",
+                    }}
                   />
                 </View>
               </TouchableOpacity>
@@ -260,7 +255,6 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           <CheckboxGroup initialOptions={destinationTypeOptions} title="Choose Destination type/s" />
         </View>
 
-       
         <View className="flex-row mb-5 gap-3">
           <View className="flex-1">
             <TouchableOpacity activeOpacity={0.7} onPress={() => { setShowStartDatePicker(!showStartDatePicker); setShowEndDatePicker(false); }}>
@@ -268,27 +262,29 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                 <TextInput
                   mode="outlined"
                   label={"Departure"}
-                  placeholder="Departure Date"
+                  placeholder="Departure Date."
                   value={formattedStartDate}
                   editable={false}
-                  // left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
+                  left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#0C4C8A"
-                  //  theme={{
-                  //     colors: {
-                  //       onSurfaceVariant: '#888', 
-                  //     },
-                  //   }}
-                  //   outlineStyle={{
-                  //     borderWidth: 2,
-                  //     borderColor: "#E0E0E0",
-                  //     borderRadius: 16,
-                  //     backgroundColor: "white",
-                  //   }}
-                  //   style={{
-                  //     marginTop: 8,
-                  //     height: 64,
-                  //   }}
+                  theme={{
+                      colors: {
+                        onSurfaceVariant: '#888', 
+                      },
+                    }}
+                    outlineStyle={{
+                      borderWidth: 2,
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 16,
+                    }}
+                    style={{
+                       marginTop: 6,
+                      height: 64,
+                    }}
+                    contentStyle={{
+                      backgroundColor: "transparent",
+                    }}
                 />
               </View>
             </TouchableOpacity>
@@ -327,24 +323,26 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                   placeholder="Search city or country..."
                   value={formattedEndDate}
                   editable={false}
-                  // left={<TextInput.Icon icon="calendar"  class Name="opacity-50"/>}
+                  left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#0C4C8A"
-                  //  theme={{
-                  //     colors: {
-                  //       onSurfaceVariant: '#888', 
-                  //     },
-                  //   }}
-                  //   outlineStyle={{
-                  //     borderWidth: 2,
-                  //     borderColor: "#E0E0E0",
-                  //     borderRadius: 16,
-                  //     backgroundColor: "white",
-                  //   }}
-                  //   style={{
-                  //     marginTop: 8,
-                  //     height: 64,
-                  //   }}
+                  theme={{
+                      colors: {
+                        onSurfaceVariant: '#888', 
+                      },
+                    }}
+                    outlineStyle={{
+                      borderWidth: 2,
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 16,
+                    }}
+                    style={{
+                      marginTop: 6,
+                      height: 64,
+                    }}
+                    contentStyle={{
+                      backgroundColor: "transparent",
+                    }}
                 />
               </View>
             </TouchableOpacity>
@@ -375,42 +373,79 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           </View>
         </View>
 
-        <View className="mb-5 z-10">
-          <CheckboxGroup initialOptions={activityOptions} title="Activities" />
-        </View>
-
-
-        <View className="mb-5">
+      <View className="mb-5">
+          <Text className="text-md tracking-wide">Description</Text>
           <TextInput
             mode="outlined"
-            label="Description"
-            className="bg-white"
-            placeholder="Description"
+            placeholder="Describe your next trip"
             value={formik.values.description}
             onChangeText={formik.handleChange("description")}
             onBlur={formik.handleBlur("description")}
+            error={formik.touched.description && Boolean(formik.errors.description)}
+            disabled={isSaving}
+            outlineColor="#E0E0E0"
+            activeOutlineColor="#0C4C8A"
             multiline
             numberOfLines={4}
-            disabled={isSaving}
-            outlineColor="#E0E0E0"
-            activeOutlineColor="#0C4C8A"
+            theme={{
+                  colors: {
+                    onSurfaceVariant: '#888', 
+                  },
+                }}
+                outlineStyle={{
+                  borderWidth: 2,
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 16,
+                }}
+                style={{
+                  marginTop: 6,
+                  height: 120,
+                  fontSize: 14,
+                  paddingTop: 0,
+                }}
+                contentStyle={{
+                  backgroundColor: "transparent",
+                }}
           />
+          {formik.touched.description && formik.errors.description && (
+            <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.description as string}</Text>
+          )}
         </View>
 
+      <View className="mb-5 z-10">
+          <CheckboxGroup initialOptions={activityOptions} title="Activities" />
+        </View>
+
+{/* 
         <View className="mb-5">
-          <TextInput
-            mode="outlined"
-            label="Budget"
-            className="bg-white"
-            placeholder="e.g., 2,000"
-            value={formik.values.budget}
-            onChangeText={formik.handleChange("budget")}
-            onBlur={formik.handleBlur("budget")}
-            keyboardType="numeric"
-            disabled={isSaving}
-            outlineColor="#E0E0E0"
+          <Text className="text-md tracking-wide">Budget</Text>
+           <TextInput
+                  mode="outlined"
+                  placeholder="e.g., 2,000"
+                  value={formik.values.budget}
+                  onChangeText={formik.handleChange("budget")}
+                  onBlur={formik.handleBlur("budget")}
+                  left={<TextInput.Icon icon="currency-php" className="opacity-50"/>}
+                  keyboardType="numeric"
+                      outlineColor="#E0E0E0"
             activeOutlineColor="#0C4C8A"
-          />
+                   theme={{
+                      colors: {
+                        onSurfaceVariant: '#888', 
+                      },
+                    }}
+                    outlineStyle={{
+                      borderWidth: 2,
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 16,
+                    }}
+                    style={{
+                      height: 64,
+                    }}
+                    contentStyle={{
+                      backgroundColor: "transparent",
+                    }}
+                />
         </View>
 
         <View className="mb-5">
@@ -428,7 +463,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
             outlineColor="#E0E0E0"
             activeOutlineColor="#0C4C8A"
           />
-        </View>
+        </View> */}
       </ScrollView>
 
       <View className="px-5 py-1">
@@ -436,7 +471,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           buttonText="Create Trip"
           onPress={() => formik.handleSubmit()}
           disabled={!formik.isValid || !formik.dirty || isSaving}
-          className="h-[60px] p-5"
+          className="h-[64px] p-6"
         />
       </View>
     </View>
