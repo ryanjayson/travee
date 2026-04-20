@@ -28,12 +28,16 @@ import { sampleTravel, sampleActivities } from "../../../data/travels";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { TabStyle } from "../../../styles/common";
 import Tabs from "../../../components/Tabs";
-import { useRoute } from "@react-navigation/native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { useTravelPlan } from "../hooks/useTravel";
 import {
   TravelProvider,
   useTravelContext,
 } from "../../../context/TravelContext";
+import TripDetail from "../components/Forms/TripDetail";
+import TripChecklist, { ChecklistItem } from "../components/Forms/TripChecklist";
+import TripMembers from "../components/Forms/TripMembers";
+import TripSettings from "../components/Forms/TripSettings";
 
 interface TripDetailPageProps {
   tripData: any;
@@ -42,11 +46,7 @@ interface TripDetailPageProps {
 
 type TabType = "detail" | "itinerary" | "checklist" | "members" | "settings";
 
-interface ChecklistItem {
-  id: string;
-  text: string;
-  completed: boolean;
-}
+
 
 // interface EditTravelProps {
 //   travelId: number;
@@ -54,6 +54,7 @@ interface ChecklistItem {
 
 const EditTravelPlan = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   // @ts-ignore
   const { travelId } = route.params || {};
 
@@ -88,7 +89,6 @@ const EditTravelPlan = () => {
   } = useTravelPlan(travelId); // Pass the required ID
 
   useEffect(() => {
-    debugger;
     const setTravelContext = async () => {
       if (travelPlan && travelPlan?.travel.id) {
         clearTravelPlan();
@@ -193,6 +193,11 @@ const EditTravelPlan = () => {
   // };
 
   const tabData = [
+      {
+      id: "detail",
+      title: "Details",
+      content: <TripDetail tripData={travelPlan!.travel} />,
+    },
     {
       id: "itinerary",
       title: "Itinerary",
@@ -207,15 +212,10 @@ const EditTravelPlan = () => {
       ),
     },
     {
-      id: "detail",
-      title: "Details",
-      content: <TripDetailTab tripData={travelData} />,
-    },
-    {
       id: "checklist",
       title: "Checklist",
       content: (
-        <TripChecklistTab
+        <TripChecklist
           checklistItems={checklistItems}
           setChecklistItems={setChecklistItems}
           newItemText={newItemText}
@@ -227,7 +227,7 @@ const EditTravelPlan = () => {
       id: "participant",
       title: "Participants",
       content: (
-        <TripMembersTab
+        <TripMembers
           tripMembers={tripMembers}
           onAddMember={handleOpenAddMemberModal}
         />
@@ -237,10 +237,7 @@ const EditTravelPlan = () => {
       id: "setting",
       title: "Settings",
       content: (
-        <TripMembersTab
-          tripMembers={tripMembers}
-          onAddMember={handleOpenAddMemberModal}
-        />
+        <TripSettings />
       ),
     },
   ];
@@ -269,23 +266,22 @@ const EditTravelPlan = () => {
 
   return (
     <View className="flex-1 bg-white pt-[40px]">
-      <View className="flex-row justify-between items-center px-5 py-5 bg-white ">
+      <View className="flex-row justify-between items-center px-5 pt-5 bg-white ">
         {/* <TouchableOpacity onPress={() => onBack()} className="p-[10px]">
           <Text className="text-[#183B7A] text-base">← Back</Text>
         <Text className="text-lg font-bold text-[#183B7A]">{travelPlan?.travel.title}</Text>
         </TouchableOpacity> */}
         {/* <Text className="text-lg font-bold text-[#183B7A]">{selectedTravelPlan?.id}</Text> */}
-        <Text className="text-lg font-bold text-[#183B7A]">{travelPlan?.travel.title}</Text>
-        {/* <TouchableOpacity className="p-[10px]">
-          <Text className="text-[20px] text-[#183B7A]">⋮</Text>
-        </TouchableOpacity> */}
-
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Icon name="close" size={28} color={"#666"} />
+        </TouchableOpacity>
+        <Text className="text-2xl tracking-wider font-bold">{travelPlan?.travel.title}</Text>
         <TouchableOpacity onPress={() => handleMenuPress}>
-          <Icon name="more-vert" size={24} color={"#000"} />
+          <Icon name="more-horiz" size={28} color={"#666"} />
         </TouchableOpacity>
       </View>
 
-      <View className="flex-1 border-b border-[#DDD] bg-gray-100">
+      <View className="flex-1 bg-gray-100">
         <Tabs 
           tabs={tabData} 
           initialActiveTabId="itinerary" 
@@ -383,219 +379,7 @@ const EditTravelPlan = () => {
   );
 };
 
-// Trip Checklist Tab Component
-const TripChecklistTab = ({
-  checklistItems,
-  setChecklistItems,
-  newItemText,
-  setNewItemText,
-}: {
-  checklistItems: ChecklistItem[];
-  setChecklistItems: (items: ChecklistItem[]) => void;
-  newItemText: string;
-  setNewItemText: (text: string) => void;
-}) => {
-  const addItem = () => {
-    if (newItemText.trim()) {
-      const newItem: ChecklistItem = {
-        id: Date.now().toString(),
-        text: newItemText.trim(),
-        completed: false,
-      };
-      setChecklistItems([...checklistItems, newItem]);
-      setNewItemText("");
-    }
-  };
 
-  const toggleItem = (id: string) => {
-    setChecklistItems(
-      checklistItems.map((item) =>
-        item.id === id ? { ...item, completed: !item.completed } : item,
-      ),
-    );
-  };
-
-  const deleteItem = (id: string) => {
-    setChecklistItems(checklistItems.filter((item) => item.id !== id));
-  };
-
-  const completedCount = checklistItems.filter((item) => item.completed).length;
-  const totalCount = checklistItems.length;
-
-  return (
-    <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
-      <View className="mb-6">
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-lg font-bold text-[#183B7A] mb-3">Checklist</Text>
-          <Text className="text-sm text-[#666] font-medium">
-            {completedCount}/{totalCount} completed
-          </Text>
-        </View>
-
-        <View className="flex-row mb-4">
-          <TextInput
-            className="flex-1 bg-white rounded-lg px-[15px] py-3 text-base border border-[#E0E0E0] mr-2.5"
-            placeholder="Add new checklist item..."
-            value={newItemText}
-            onChangeText={setNewItemText}
-            onSubmitEditing={addItem}
-          />
-          <TouchableOpacity className="bg-[#183B7A] rounded-lg w-11 h-11 justify-center items-center" onPress={addItem}>
-            <Text className="text-white text-xl font-bold">+</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View className="bg-white rounded-xl shadow-sm shadow-black/10 elevation-3">
-          {checklistItems.length > 0 ? (
-            checklistItems.map((item) => (
-              <View key={item.id} className="flex-row items-center py-3 px-4 border-b border-[#F0F0F0]">
-                <TouchableOpacity
-                  className={`w-5 h-5 rounded border-2 border-[#183B7A] mr-3 justify-center items-center ${item.completed ? 'bg-[#183B7A]' : ''}`}
-                  onPress={() => toggleItem(item.id)}
-                >
-                  {item.completed && <Text className="text-white text-xs font-bold">✓</Text>}
-                </TouchableOpacity>
-                <Text
-                  className={`flex-1 text-base text-[#183B7A] ${item.completed ? 'line-through text-[#999]' : ''}`}
-                >
-                  {item.text}
-                </Text>
-                <TouchableOpacity
-                  className="p-2"
-                  onPress={() => deleteItem(item.id)}
-                >
-                  <Text className="text-[#FF3B30] text-lg font-bold">×</Text>
-                </TouchableOpacity>
-              </View>
-            ))
-          ) : (
-            <View className="p-10 items-center">
-              <Text className="text-[#888] italic text-center mb-4">No checklist items yet.</Text>
-              <Text className="text-[#999] text-sm text-center mt-2">
-                Add items to keep track of your trip preparations!
-              </Text>
-            </View>
-          )}
-        </View>
-      </View>
-    </ScrollView>
-  );
-};
-
-// Trip Detail Tab Component
-const TripDetailTab = ({ tripData }: { tripData: any }) => {
-  return (
-    <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
-      <View className="mb-6">
-        <Text className="text-lg font-bold text-[#183B7A] mb-3">Trip Information</Text>
-        <View className="bg-white rounded-xl p-4 shadow-sm shadow-black/10 elevation-3">
-          <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
-            <Text className="text-sm text-[#666] font-medium">Destination:</Text>
-            <Text className="text-sm text-[#183B7A] font-bold">{tripData.destination}</Text>
-          </View>
-          <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
-            <Text className="text-sm text-[#666] font-medium">Start Date:</Text>
-            <Text className="text-sm text-[#183B7A] font-bold">{tripData.startDate}</Text>
-          </View>
-          <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
-            <Text className="text-sm text-[#666] font-medium">End Date:</Text>
-            <Text className="text-sm text-[#183B7A] font-bold">{tripData.endDate}</Text>
-          </View>
-          <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
-            <Text className="text-sm text-[#666] font-medium">Budget:</Text>
-            <Text className="text-sm text-[#183B7A] font-bold">{tripData.budget}</Text>
-          </View>
-        </View>
-      </View>
-
-      <View className="mb-6">
-        <Text className="text-lg font-bold text-[#183B7A] mb-3">Notes</Text>
-        <View className="bg-white rounded-xl p-4 shadow-sm shadow-black/10 elevation-3">
-          <Text className="text-sm text-[#666] leading-5">
-            {tripData.notes || "No notes added yet."}
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
-  );
-};
-
-// Trip Members Tab Component
-const TripMembersTab = ({
-  tripMembers,
-  onAddMember,
-}: {
-  tripMembers: Friend[];
-  onAddMember: () => void;
-}) => {
-  return (
-    <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
-      <View className="mb-6">
-        <Text className="text-lg font-bold text-[#183B7A] mb-3">Trip Members</Text>
-        <View className="bg-white rounded-xl p-4 shadow-sm shadow-black/10 elevation-3 items-center">
-          {tripMembers.length > 0 ? (
-            <>
-              {tripMembers.map((member) => (
-                <View key={member.id} className="flex-row items-center py-3 px-4 border-b border-[#F0F0F0] w-full">
-                  <View className="w-10 h-10 rounded-full bg-[#183B7A] justify-center items-center mr-3">
-                    <Text className="text-white text-lg font-bold">
-                      {member.name.charAt(0)}
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className="text-base font-bold text-[#183B7A]">{member.name}</Text>
-                    <Text className="text-sm text-[#666]">{member.email}</Text>
-                  </View>
-                </View>
-              ))}
-              <TouchableOpacity className="bg-[#183B7A] rounded-lg px-5 py-2.5 mt-4" onPress={onAddMember}>
-                <Text className="text-white text-sm font-bold">Add More Members</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <View className="items-center py-5 w-full">
-              <Text className="text-[#888] italic text-center mb-4">No members added yet.</Text>
-              <TouchableOpacity className="bg-[#183B7A] rounded-lg px-5 py-2.5" onPress={onAddMember}>
-                <Text className="text-white text-sm font-bold">Add Member</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
-      </View>
-    </ScrollView>
-  );
-};
-
-// Trip Settings Tab Component
-const TripSettingsTab = () => {
-  return (
-    <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
-      <View className="mb-6">
-        <Text className="text-lg font-bold text-[#183B7A] mb-3">Trip Settings</Text>
-        <View className="bg-white rounded-xl shadow-sm shadow-black/10 elevation-3">
-          <TouchableOpacity className="flex-row justify-between items-center py-4 px-4 border-b border-[#F0F0F0]">
-            <Text className="text-base text-[#183B7A]">Edit Trip</Text>
-            <Text className="text-lg text-[#999]">›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="flex-row justify-between items-center py-4 px-4 border-b border-[#F0F0F0]">
-            <Text className="text-base text-[#183B7A]">Share Trip</Text>
-            <Text className="text-lg text-[#999]">›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="flex-row justify-between items-center py-4 px-4 border-b border-[#F0F0F0]">
-            <Text className="text-base text-[#183B7A]">Export Itinerary</Text>
-            <Text className="text-lg text-[#999]">›</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="flex-row justify-between items-center py-4 px-4 border-t border-[#F0F0F0]">
-            <Text className="text-base text-[#FF3B30]">
-              Delete Trip
-            </Text>
-            <Text className="text-lg text-[#999]">›</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ScrollView>
-  );
-};
 
 export default EditTravelPlan;
 

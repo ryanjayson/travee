@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   ScrollView,
   Modal,
@@ -19,6 +18,7 @@ import { TravelStatus } from "../../../../types/enums";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { Divider, Text } from 'react-native-paper';
 
 interface AddTravelModalProps {
   onClose: () => void;
@@ -83,7 +83,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         status: TravelStatus.Draft,
       };
 
-      createTravel(travelData, {
+      createTravel({ data: travelData }, {
         onSuccess: () => {
           formik.resetForm();
           onClose();
@@ -142,7 +142,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
               },
             }}
             outlineStyle={{
-              borderWidth: 2,
+              borderWidth: 1,
               backgroundColor: "#FFFFFF",
               borderRadius: 16,
             }}
@@ -184,7 +184,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                       },
                     }}
                     outlineStyle={{
-                      borderWidth: 2,
+                      borderWidth: 1,
                       backgroundColor: "#FFFFFF",
                       borderRadius: 16,
                     }}
@@ -274,7 +274,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                       },
                     }}
                     outlineStyle={{
-                      borderWidth: 2,
+                      borderWidth: 1,
                       backgroundColor: "#FFFFFF",
                       borderRadius: 16,
                     }}
@@ -332,7 +332,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                       },
                     }}
                     outlineStyle={{
-                      borderWidth: 2,
+                      borderWidth: 1,
                       backgroundColor: "#FFFFFF",
                       borderRadius: 16,
                     }}
@@ -393,7 +393,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                   },
                 }}
                 outlineStyle={{
-                  borderWidth: 2,
+                  borderWidth: 1,
                   backgroundColor: "#FFFFFF",
                   borderRadius: 16,
                 }}
@@ -466,7 +466,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </View> */}
       </ScrollView>
 
-      <View className="px-5 py-1">
+      <View className="px-5 py-1 border-t border-gray-200">
         <TouchButton
           buttonText="Create Trip"
           onPress={() => formik.handleSubmit()}

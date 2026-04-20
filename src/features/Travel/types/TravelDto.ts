@@ -88,9 +88,12 @@ export interface CoordinatesDto {
 }
 
 export interface UpdateTravelData {
+  title?: string;
+  description?: string;
   destination?: string;
-  startDate?: string;
-  endDate?: string;
+  destinationData?: DestinationDto;
+  startDate?: Date;
+  endDate?: Date;
   budget?: string;
   notes?: string;
 }

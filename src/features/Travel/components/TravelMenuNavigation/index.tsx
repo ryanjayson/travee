@@ -1,9 +1,9 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import SlideModal from "../../../../components/molecules/SlideModal";
 import { TravelMenuAction } from "../../../../types/enums";
-import { MenuStyle } from "../../../../styles/common";
+import { Divider, Text } from 'react-native-paper';
 
 interface TravelMenuNavigationProps {
   showModal: boolean;
@@ -16,82 +16,72 @@ const TravelMenuNavigation = ({
   setShowModal,
   onSelect,
 }: TravelMenuNavigationProps) => {
-  const handleCancel = () => {
-    setShowModal(false);
-  };
-
   return (
-    <SlideModal visible={showModal} onClose={() => setShowModal(false)}>
-      <View style={styles.overlay}>
-        <View
-          style={{
-            padding: 6,
-            borderBottomWidth: 1,
-            borderColor: "#eee",
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <TouchableOpacity
-            style={{ paddingRight: 6 }}
-            onPress={handleCancel}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Icon name="keyboard-arrow-left" size={36} color={"#DDD"} />
-          </TouchableOpacity>
-          <Text style={{ fontSize: 18, color: "#333", fontWeight: "600" }}>
-            Menu
-          </Text>
-        </View>
+    <SlideModal 
+      visible={showModal} 
+      onClose={() => setShowModal(false)}
+      direction="bottom"
+      height="300"
+    >
+      <View className="flex-1">
+        {/* Drag Handle Indicator */}
+        <View className="w-10 h-[4px] bg-[#E0E0E0] rounded-[2.5px] self-center mt-1 mb-[15px]" />
 
-        <View style={{ paddingVertical: 8 }}>
+        <View className="gap-3">
           <TouchableOpacity
-            style={[MenuStyle.menuItem]}
+            className="flex-row items-center justify-between px-4 py-2"
             activeOpacity={0.7}
             onPress={() => {
               onSelect(TravelMenuAction.EditTravel);
               setShowModal(false);
             }}
           >
-            <Icon name="edit-note" size={24} color={"#183B7A"} />
-            <Text style={[MenuStyle.menuItemText]}>Edit</Text>
+            <View className="w-10 h-10 justify-center items-center mr-3">
+              <Icon name="edit-note" size={24} color={"#183B7A"} />
+            </View>
+            <Text className="flex-1 ml-3 text-base font-medium">Edit Trip</Text>
           </TouchableOpacity>
-
+          <Divider/>
           <TouchableOpacity
-            style={[MenuStyle.menuItem]}
+            className="flex-row items-center justify-between px-4 py-2 "
             activeOpacity={0.7}
             onPress={() => {
               onSelect(TravelMenuAction.Clone);
               setShowModal(false);
             }}
           >
-            <Icon name="file-copy" size={24} color={"#183B7A"} />
-            <Text style={[MenuStyle.menuItemText]}>Clone</Text>
+            <View className="w-10 h-10 justify-center items-center mr-3">
+              <Icon name="file-copy" size={24} color={"#183B7A"} />
+            </View>
+            <Text className="flex-1 ml-3 text-base font-medium">Duplicate Trip</Text>
           </TouchableOpacity>
-
+          <Divider/>
           <TouchableOpacity
-            style={[MenuStyle.menuItem]}
+            className="flex-row items-center justify-between px-4 py-2 "
             activeOpacity={0.7}
             onPress={() => {
               onSelect(TravelMenuAction.Archive);
               setShowModal(false);
             }}
           >
-            <Icon name="archive" size={24} color={"#183B7A"} />
-            <Text style={[MenuStyle.menuItemText]}>Archive</Text>
+            <View className="w-10 h-10 justify-center items-center mr-3">
+              <Icon name="archive" size={24} color={"#183B7A"} />
+            </View>
+            <Text className="flex-1 ml-3 text-base  font-medium">Archive</Text>
           </TouchableOpacity>
-
+          <Divider/>
           <TouchableOpacity
-            style={[MenuStyle.menuItem]}
+            className="flex-row items-center justify-between px-4 "
             activeOpacity={0.7}
             onPress={() => {
               onSelect(TravelMenuAction.Print);
               setShowModal(false);
             }}
           >
-            <Icon name="print" size={24} color={"#183B7A"} />
-            <Text style={[MenuStyle.menuItemText]}>Print</Text>
+            <View className="w-10 justify-center items-center mr-3">
+              <Icon name="print" size={24} color={"#183B7A"} />
+            </View>
+            <Text className="flex-1 ml-3 text-base font-medium">Generate PDF</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -100,10 +90,3 @@ const TravelMenuNavigation = ({
 };
 
 export default TravelMenuNavigation;
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-});

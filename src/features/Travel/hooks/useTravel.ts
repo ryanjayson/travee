@@ -28,30 +28,38 @@ export const useUpdateTravel = () => {
   const updateTravelMutation = useMutation<
     MutationData,
     MutationError,
-    MutationVariables
+    { id?: number; data: CreateTravelData | UpdateTravelData }
   >({
-    mutationFn: async (travel) => {
+    mutationFn: async ({ id, data }) => {
       const options = postRequestOptions("");
-      console.log("PAYLOAD", JSON.stringify(travel));
-      const response = await fetch(TRAVEL_ENDPOINT, {
-        method: "POST",
+      const url = id ? `${TRAVEL_ENDPOINT}/${id}` : TRAVEL_ENDPOINT;
+      const method = id ? "PUT" : "POST";
+
+      console.log(`${method} PAYLOAD to ${url}`, JSON.stringify(data));
+      const response = await fetch(url, {
+        method: method,
         headers: options.headers,
-        body: JSON.stringify(travel),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         const errorBody = await response.json();
-        throw new Error(errorBody.message || `Failed to Create Travel`);
+        throw new Error(errorBody.message || `Failed to ${id ? "Update" : "Create"} Travel`);
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: TRAVEL_QUERY_KEY,
       });
+      if (variables.id) {
+        queryClient.invalidateQueries({
+          queryKey: [TRAVEL_QUERY_KEY, variables.id],
+        });
+      }
     },
     onError: (error) => {
-      console.error("Travel Update Error:", error);
+      console.error("Travel Mutation Error:", error);
     },
   });
 
