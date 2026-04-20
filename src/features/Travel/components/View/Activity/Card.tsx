@@ -130,6 +130,7 @@ const ActivityItemCard = ({
           onClose={() => setShowMapModal(false)}
           coordinates={itineraryEventActivity.destinationData.coordinates}
           title={itineraryEventActivity.destination || "Location"}
+          zoom={12}
         />
       )}
     </Animated.View>

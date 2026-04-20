@@ -15,11 +15,17 @@ import { MAPBOX_ACCESS_TOKEN } from "@env";
 interface MapViewerProps {
   visible: boolean;
   onClose: () => void;
-  coordinates: {
+  coordinates?: {
     latitude: number;
     longitude: number;
   };
   title: string;
+  zoom?: number;
+  markers?: Array<{
+    latitude: number;
+    longitude: number;
+    title: string;
+  }>;
 }
 
 const MapViewer = ({
@@ -27,6 +33,8 @@ const MapViewer = ({
   onClose,
   coordinates,
   title,
+  zoom,
+  markers,
 }: MapViewerProps) => {
   const mapHTML = `
     <!DOCTYPE html>
@@ -48,14 +56,34 @@ const MapViewer = ({
         const map = new mapboxgl.Map({
           container: 'map',
           style: 'mapbox://styles/mapbox/streets-v12',
-          center: [${coordinates.longitude}, ${coordinates.latitude}],
-          zoom: 14,
+          center: [${(markers?.[0] || coordinates)?.longitude || 0}, ${(markers?.[0] || coordinates)?.latitude || 0}],
+          zoom: ${zoom || 6},
           attributionControl: false,
         });
 
-        new mapboxgl.Marker({ color: '#0C4C8A' })
-          .setLngLat([${coordinates.longitude}, ${coordinates.latitude}])
-          .addTo(map);
+        const renderedMarkers = ${JSON.stringify(markers || [])};
+        if (renderedMarkers.length > 0) {
+          const bounds = new mapboxgl.LngLatBounds();
+          renderedMarkers.forEach(m => {
+            new mapboxgl.Marker({ color: '#0C4C8A' })
+              .setLngLat([m.longitude, m.latitude])
+              .addTo(map);
+            bounds.extend([m.longitude, m.latitude]);
+          });
+          
+          if (renderedMarkers.length > 1) {
+            map.fitBounds(bounds, { padding: 50, linear: true });
+          } else {
+            map.setCenter([renderedMarkers[0].longitude, renderedMarkers[0].latitude]);
+            map.setZoom(${zoom || 14});
+          }
+        } else if (${!!coordinates}) {
+          new mapboxgl.Marker({ color: '#0C4C8A' })
+            .setLngLat([${coordinates?.longitude}, ${coordinates?.latitude}])
+            .addTo(map);
+          map.setCenter([${coordinates?.longitude}, ${coordinates?.latitude}]);
+          map.setZoom(${zoom || 14});
+        }
       </script>
     </body>
     </html>
@@ -93,7 +121,12 @@ const MapViewer = ({
           <View style={styles.locationInfo}>
             <Icon name="location-on" size={20} color="#0C4C8A" />
             <Text style={styles.coordinateText}>
-              {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}
+              {markers && markers.length > 0 
+                ? `${markers.length} Locations pinned`
+                : coordinates 
+                  ? `${coordinates.latitude.toFixed(6)}, ${coordinates.longitude.toFixed(6)}`
+                  : ""
+              }
             </Text>
           </View>
         </View>

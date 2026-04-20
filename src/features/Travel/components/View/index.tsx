@@ -12,6 +12,7 @@ import { TravelPlan } from "../../../Travel/types/TravelDto";
 import StatusTag from "../../../../components/StatusTag";
 import Tabs from "../../../../components/Tabs";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import MapViewer from "../MapViewer";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -22,6 +23,8 @@ interface ViewTravelProps {
 
 const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
+  const [showMapModal, setShowMapModal] = useState<boolean>(false);
+  const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
 
   const TabItinerary = () => (
     <View>
@@ -67,10 +70,39 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
     </View>
   );
 
+  const getAllMarkers = () => {
+    const markers: Array<{ latitude: number; longitude: number; title: string }> = [];
+    if (travelPlan.travel.destinationData?.coordinates) {
+      markers.push({
+        latitude: travelPlan.travel.destinationData.coordinates.latitude,
+        longitude: travelPlan.travel.destinationData.coordinates.longitude,
+        title: travelPlan.travel.destination || "Trip Destination",
+      });
+    }
+
+    !showDestinationOnlyMap && travelPlan.itinerarySection?.forEach((section) => {
+      section.itineraryActivity?.forEach((activity) => {
+        if (activity.destinationData?.coordinates && activity.destinationData.coordinates.latitude !== 0 && activity.destinationData.coordinates.longitude !== 0) {
+          markers.push({
+            latitude: activity.destinationData.coordinates.latitude,
+            longitude: activity.destinationData.coordinates.longitude,
+            title: activity.title || "Activity",
+          });
+        }
+      });
+    });
+
+    console.log(markers);
+    return markers;
+  };
+
   const Toolbar = () => (
     <View>
       <TouchableOpacity
         activeOpacity={0.8}
+        onPress={() => {
+          setShowDestinationOnlyMap(false)
+          setShowMapModal(true)}}
         className="bg-black/80 w-8 h-8 rounded-full absolute right-[60px] top-5 z-10 items-center justify-center"
       >
         <Animated.View>
@@ -94,13 +126,19 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         <Toolbar />
         <View className="flex-1 bg-white pt-2.5 px-2.5">
           {travelPlan.travel.destinationData?.coordinates ? (
-            <Image
-              source={{
-                uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0C4C8A(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
-              }}
-              className="w-full h-[200px] rounded-xl"
-              style={{ resizeMode: "cover" }}
-            />
+            <TouchableOpacity 
+              activeOpacity={0.9} 
+              onPress={() => setShowMapModal(true)}
+              className="w-full"
+            >
+              <Image
+                source={{
+                  uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0C4C8A(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
+                }}
+                className="w-full h-[200px] rounded-xl"
+                style={{ resizeMode: "cover" }}
+              />
+            </TouchableOpacity>
           ) : (
             <Image
               source={require("../../../../assets/images/japan.jpg")}
@@ -120,7 +158,10 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
             <StatusTag type={2} status={travelPlan.travel.status!} />
           </View>
           <View className="flex-row items-center flex-wrap">
-            <TouchableOpacity className="flex-row items-center my-1 mr-2">
+            <TouchableOpacity 
+              className="flex-row items-center my-1 mr-2"
+              onPress={() => travelPlan.travel.destinationData?.coordinates && setShowMapModal(true)}
+            >
               <Icon name="location-pin" size={16} color={"red"} />
               <Text className="text-[#183B7A] font-medium ml-1">
                 {travelPlan.travel.destination}
@@ -173,6 +214,16 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       <View>
         <Tabs tabs={tabData} initialActiveTabId="itinerary" />
       </View>
+
+      {setShowMapModal && (
+        <MapViewer
+          visible={showMapModal}
+          onClose={() => setShowMapModal(false)}
+          markers={getAllMarkers()}
+          title={travelPlan.travel.title || "Trip Map"}
+          zoom={showDestinationOnlyMap ? 6 : null}
+        />
+      )}
     </ScrollView>
   );
 };
