@@ -135,7 +135,6 @@ const ActivityIcon = ({
   return (
     <View
       style={{
-        backgroundColor: "#FFF",
         borderWidth: 1,
         borderColor: "#FFF",
         borderRadius: 50,

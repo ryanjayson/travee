@@ -59,6 +59,7 @@ export interface ItineraryActivity {
   type?: ActivityType;
   secondaryType?: ActivityType[];
   images?: Images[];
+  destinationData?: DestinationDto;
 }
 export interface Images {
   title: string;

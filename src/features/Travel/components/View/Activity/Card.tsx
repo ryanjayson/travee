@@ -11,6 +11,8 @@ import ActivityIcon from "../../../../../components/ActivityIcon";
 import TextLimiter from "../../../../../components/atoms/TextLimiter";
 import { ItineraryActivity } from "../../../types/TravelDto";
 import { Typography } from "../../../../../styles/common";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import MapViewer from "../../MapViewer";
 
 interface ItineraryActivityProps {
   itineraryActivity: ItineraryActivity;
@@ -28,6 +30,7 @@ const ActivityItemCard = ({
 
   const [showActivityViewModal, setShowActivityViewModal] =
     useState<boolean>(false);
+  const [showMapModal, setShowMapModal] = useState<boolean>(false);
 
   const handleViewModeActivity = (id: number) => {
     console.log(id);
@@ -36,11 +39,11 @@ const ActivityItemCard = ({
 
   return (
     <Animated.View>
-      <View className="px-2 flex-row justify-between items-center bg-white relative">
+      <View className="px-2 flex-row justify-between items-center relative">
         {!isLastItem ? (
           <View className="w-1.5 items-center h-full absolute">
             {isFirstItem ? (
-              <View className="absolute h-1/2 w-[1px] top-1/2 left-5 z-0 border-l border-dashed border-[#ccc]"></View>
+              <View className="absolute h-1/2 w-[1px] top-1/2 left-5 z-0 border-l border-dashed border-gray-300"></View>
             ) : (
               <View className="absolute h-full w-[1px] left-5 z-0 border-l border-dashed border-[#ccc]"></View>
             )}
@@ -54,7 +57,7 @@ const ActivityItemCard = ({
             )}
           </View>
         )}
-        <View className="z-10 bg-white items-center justify-center rounded-full">
+        <View className="z-10 items-center justify-center ">
           <ActivityIcon
             type={itineraryEventActivity.type!}
             size={24}
@@ -87,6 +90,21 @@ const ActivityItemCard = ({
             </View>
           )}
 
+          {itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
+            <TouchableOpacity 
+              className="flex-row items-center my-1 mr-2 w-full text-ellipsis"
+              onPress={() => setShowMapModal(true)}
+            >
+                <Text className="text-xs opacity-70 bg-gray-100 rounded-sm p-1 pb-2"
+              ellipsizeMode="tail"
+              numberOfLines={1}>
+              <Icon name="location-pin" size={16} color={"#555"} />
+                {itineraryEventActivity.destination}
+              </Text>
+            </TouchableOpacity>
+          )} 
+ 
+
             <Text className="text-sm text-[#555] leading-5 mb-1.5 mt-1" 
               numberOfLines={2}
               ellipsizeMode="tail">
@@ -105,6 +123,15 @@ const ActivityItemCard = ({
         showModal={showActivityViewModal}
         setShowModal={setShowActivityViewModal}
       />
+
+      {itineraryEventActivity.destinationData?.coordinates && (
+        <MapViewer
+          visible={showMapModal}
+          onClose={() => setShowMapModal(false)}
+          coordinates={itineraryEventActivity.destinationData.coordinates}
+          title={itineraryEventActivity.destination || "Location"}
+        />
+      )}
     </Animated.View>
   );
 };

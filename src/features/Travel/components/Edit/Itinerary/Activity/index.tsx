@@ -22,6 +22,10 @@ import { useDeleteActivityMutation } from "../../../../hooks/useActivity";
 import { ActivityType } from "../../../../../../types/enums";
 import { Divider, Text, Switch } from 'react-native-paper';
 import ActivityIcon from "../../../../../../components/ActivityIcon";
+import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
+import { MAPBOX_ACCESS_TOKEN } from "@env";
+import { Image } from "react-native";
+import { DestinationDto } from "../../../../types/TravelDto";
 
 interface Place {
   id: string;
@@ -48,10 +52,10 @@ export interface ActivityFormValues {
   description: string;
   type?: ActivityType | number;
   sortOrder?: string;
-  startDate: string | null;
-  startTime: string;
   endDate: string | null;
   endTime: string;
+  destination: string;
+  destinationData?: DestinationDto;
 }
 
 const EditActivity = ({
@@ -100,6 +104,8 @@ const EditActivity = ({
         type: values.type,
         startDate: finalStartDate,
         endDate: finalEndDate,
+        destination: values.destination,
+        destinationData: values.destinationData,
       };
 
       await updateMutation.mutateAsync(payload);
@@ -133,6 +139,8 @@ const EditActivity = ({
         startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : "08:00",
         endDate: itineraryActivity?.endDate ? new Date(itineraryActivity.endDate).toISOString().split('T')[0] : null,
         endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? new Date(itineraryActivity.endDate).toISOString().substring(11, 16) : "09:00",
+        destination: itineraryActivity?.destination || (itineraryActivity?.id ? "" : selectedTravelPlan?.destination || ""),
+        destinationData: itineraryActivity?.destinationData || (itineraryActivity?.id ? undefined : selectedTravelPlan?.destinationData),
       }}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}
@@ -204,21 +212,37 @@ const EditActivity = ({
                 </View>
               </View>
               <Divider/>
-              <View className="px-2.5 flex-1 flex-row items-start gap-2.5 py-7">
-                  <View>
+              <View className="px-2.5 flex-1 items-start gap-2.5 py-4">
+                  <View className="flex-row items-start gap-2.5 w-full">
                     <Icon name="public" size={28} color={"#B3B3B3"} />
+                    <View className="flex-1">
+                      {values.destinationData ? (() => {
+                        const { longitude, latitude } = values.destinationData.coordinates;
+                        const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0C4C8A(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+                        return (
+                          <TouchableOpacity 
+                            activeOpacity={0.8} 
+                            onPress={() => setShowDestinationModal(true)}
+                          >
+                            <View className="rounded-2xl overflow-hidden border border-gray-100">
+                              <Image source={{ uri: mapUrl }} style={{ width: '100%', height: 120, borderRadius: 16 }} resizeMode="cover" />
+                              <View className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded-full flex-row items-center">
+                                <Icon name="location-on" size={12} color="#FFF" />
+                                <Text className="text-white text-[10px] ml-1">{values.destination}</Text>
+                              </View>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })() : (
+                        <TouchableOpacity
+                          className="flex-1"
+                          onPress={() => setShowDestinationModal(true)}
+                        >
+                          <Text className="text-base text-gray-400">Add location</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
-                  <View className="flex-1">
-                     <TouchableOpacity
-                        className="flex-1 flex-row items-center gap-2.5"
-                        onPress={() => setShowDestinationModal(true)}
-                      >
-                    <Text className="text-base">
-                      {selectedPlace ? selectedPlace.name : "Add location"}
-                    </Text>
-                  </TouchableOpacity>
-                  </View>
-                
               </View>
               <Divider/>
               <View className="py-5 px-2.5 flex-1 flex-row items-start gap-2.5">
@@ -324,14 +348,24 @@ const EditActivity = ({
             <Modal
               visible={showDestinationModal}
               animationType="slide"
-              transparent={true}
+              transparent={false}
               onRequestClose={() => setShowDestinationModal(false)}
             >
-              <DestinationSelector
+              <MapboxDestinationSelector
                 onClose={() => setShowDestinationModal(false)}
-                onSelect={(selectedPlace) => {
-                  console.log(selectedPlace);
-                  setSelectedPlace(selectedPlace);
+                onSelect={(place: MapboxPlace) => {
+                  setValues({
+                    ...values,
+                    destination: place.fullName,
+                    destinationData: {
+                      id: place.id,
+                      coordinates: {
+                        longitude: place.coordinates.longitude,
+                        latitude: place.coordinates.latitude,
+                      },
+                    } as DestinationDto
+                  });
+                  setShowDestinationModal(false);
                 }}
               />
             </Modal>

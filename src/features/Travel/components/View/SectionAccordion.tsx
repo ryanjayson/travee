@@ -17,11 +17,9 @@ const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
           {iterarysections &&
             iterarysections.map((section) => {
               const isDefaultSection = section.isDefaultSection;
-
               if (isDefaultSection) {
                 return (
                   <View key={section.id}>
-                    <Text>DEFAULT</Text>
                     {section.itineraryActivity &&
                       section.itineraryActivity
                         // .filter((activity) => activity.sectionId === section.id)

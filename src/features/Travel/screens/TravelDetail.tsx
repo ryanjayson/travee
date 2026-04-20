@@ -143,7 +143,7 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
 
       <View className="flex-row bg-white border-b border-[#E0E0E0]">
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {(["detail", "itinerary", "checklist", "members", "settings"] as TabType[]).map((tab) => (
+          {(["itinerary", "checklist", "members", "settings"] as TabType[]).map((tab) => (
             <TouchableOpacity
               key={tab}
               className={`py-4 px-5 items-center justify-center ${activeTab === tab ? "border-b-2 border-primary" : ""}`}

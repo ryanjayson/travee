@@ -122,7 +122,7 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
           outlineColor="#E0E0E0"
           activeOutlineColor="#0C4C8A"
           theme={{ colors: { onSurfaceVariant: '#888' } }}
-          outlineStyle={{ borderWidth: 2, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
           style={{ marginTop: 6 }}
           contentStyle={{ backgroundColor: "transparent" }}
         />
@@ -148,7 +148,7 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
                   activeOutlineColor="#0C4C8A"
                   left={<TextInput.Icon icon="map-marker" className="opacity-50 mt-2" />}
                   theme={{ colors: { onSurfaceVariant: '#888' } }}
-                  outlineStyle={{ borderWidth: 2, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                  outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                   style={{ marginTop: 6 }}
                   contentStyle={{ backgroundColor: "transparent" }}
                 />
@@ -194,7 +194,7 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
       </View>
 
       <View className="mb-5 z-10">
-        <CheckboxGroup initialOptions={destinationTypeOptions} title="Choose Destination type/s" />
+        <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
       </View>
 
       <View className="flex-row mb-5 gap-3">
@@ -211,7 +211,7 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
-                outlineStyle={{ borderWidth: 2, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6, height: 64 }}
                 contentStyle={{ backgroundColor: "transparent" }}
               />
@@ -247,7 +247,7 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
-                outlineStyle={{ borderWidth: 2, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6, height: 64 }}
                 contentStyle={{ backgroundColor: "transparent" }}
               />
@@ -285,7 +285,7 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
           multiline
           numberOfLines={4}
           theme={{ colors: { onSurfaceVariant: '#888' } }}
-          outlineStyle={{ borderWidth: 2, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
           style={{ marginTop: 6, height: 100, fontSize: 14 }}
           contentStyle={{ backgroundColor: "transparent" }}
         />
@@ -305,7 +305,7 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
           outlineColor="#E0E0E0"
           activeOutlineColor="#0C4C8A"
           theme={{ colors: { onSurfaceVariant: '#888' } }}
-          outlineStyle={{ borderWidth: 2, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
           style={{ marginTop: 6, height: 60 }}
           contentStyle={{ backgroundColor: "transparent" }}
         />
@@ -325,7 +325,7 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
           multiline
           numberOfLines={3}
           theme={{ colors: { onSurfaceVariant: '#888' } }}
-          outlineStyle={{ borderWidth: 2, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
           style={{ marginTop: 6, height: 80, fontSize: 14 }}
           contentStyle={{ backgroundColor: "transparent" }}
         />
@@ -335,11 +335,11 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
         <CheckboxGroup initialOptions={activityOptions} title="Activities" />
       </View>
 
-      <View className="mb-10">
+      <View className="mb-16">
         <TouchButton
           buttonText={isSaving ? "Saving..." : "Save Changes"}
           onPress={() => formik.handleSubmit()}
-          disabled={!formik.isValid || !formik.dirty || isSaving}
+          disabled={isSaving}
           className="h-[64px] p-6"
         />
       </View>

@@ -526,10 +526,9 @@ debugger;
       // }
     >
       <View className="mb-5">
-        <Text
-        className="tracking-widest text-gray-400 mb-2 text-base"
-        >Activities</Text>
-
+        {!sections && (
+        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Activities</Text>
+        )}
         {sections && sections.length > 0 && sections.filter(section => section.isDefaultSection == true).map((section) => (
           <View
             key={section.id}
@@ -649,7 +648,9 @@ debugger;
       </View>
 
       <View className="mb-5">
-        <Text className="tracking-widest text-gray-400 mb-2 text-base">Sections</Text>
+        {sections && sections.length > 0 && (
+        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Sections</Text>
+        )}
         {sections && sections.length > 0 ? (
           sections
             .filter((section) => section.isDefaultSection == false)
