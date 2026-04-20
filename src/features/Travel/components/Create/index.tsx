@@ -37,8 +37,8 @@ const Create = ({ onClose }: AddTravelModalProps) => {
   const [showDestinationModal, setShowDestinationModal] = useState(false);
 
   const destinationTypeOptions = [
-    { id: "1", label: "Domestic", selected: false },
-    { id: "2", label: "Local", selected: false },
+    { id: "1", label: "Local", selected: false },
+    { id: "2", label: "Domestic", selected: false },
     { id: "3", label: "International", selected: false },
   ];
 
@@ -108,7 +108,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
   return (
     <View className="flex-1 justify-end bg-white rounded-t-[20px]">
       <View className="flex-row justify-between items-center px-5 py-4 border-b border-[#E0E0E0]">
-        <Text className="text-lg font-bold text-primary">Create Next Trip</Text>
+        <Text className="text-xl text-gray-900 font-bold">Create Next Trip</Text>
         <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
           <Text className={`text-base ${isSaving ? "text-[#999]" : "text-primary"}`}>
             Cancel
@@ -124,7 +124,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         )}
 
         <View className="mb-5">
-          <Text className="text-md tracking-wide">Title</Text>
+          <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
           <TextInput
             mode="outlined"
             className="!h-[64px]"
@@ -159,7 +159,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </View>
 
          <View className="mb-5">
-          <Text className="text-md tracking-wide">Destination</Text>
+          <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Destination</Text>
           {!formik.values.destinationData?.coordinates ? (
             <>
               <TouchableOpacity
@@ -374,7 +374,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </View>
 
       <View className="mb-5">
-          <Text className="text-md tracking-wide">Description</Text>
+          <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Description</Text>
           <TextInput
             mode="outlined"
             placeholder="Describe your next trip"
@@ -411,10 +411,10 @@ const Create = ({ onClose }: AddTravelModalProps) => {
             <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.description as string}</Text>
           )}
         </View>
-
+{/* 
       <View className="mb-5 z-10">
           <CheckboxGroup initialOptions={activityOptions} title="Activities" />
-        </View>
+        </View> */}
 
 {/* 
         <View className="mb-5">

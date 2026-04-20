@@ -18,15 +18,14 @@ const CheckboxGroup = ({ title, initialOptions }: CheckboxGroupProps) => {
     return options.filter(option => option.selected).map(option => option.id);
   };
 
-  React.useEffect(() => {
-    console.log("Selected IDs:", getSelectedIds());
-  }, [options]);
+  // React.useEffect(() => {
+  //   console.log("Selected IDs:", getSelectedIds());
+  // }, [options]);
 
   return (
-    <View className="p-3 border border-[#ddd] rounded-lg">
-      <Text className="text-base font-medium text-primary">{title}</Text>
-      <Text className="text-xs text-gray-400 mb-2.5">Select options below</Text>
-      <View className="flex-row flex-wrap">
+    <View className=" rounded-lg">
+      <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{title}</Text>
+      <View className="flex-row flex-wrap mt-1">
         {options.map((option) => (
           <CheckboxItem
             key={option.id}
