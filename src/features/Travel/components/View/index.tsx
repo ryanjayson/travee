@@ -71,7 +71,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   );
 
   const getAllMarkers = () => {
-    const markers: Array<{ latitude: number; longitude: number; title: string }> = [];
+    const markers: Array<{ latitude: number; longitude: number; title: string , type?: number}> = [];
     if (travelPlan.travel.destinationData?.coordinates) {
       markers.push({
         latitude: travelPlan.travel.destinationData.coordinates.latitude,
@@ -87,6 +87,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
             latitude: activity.destinationData.coordinates.latitude,
             longitude: activity.destinationData.coordinates.longitude,
             title: activity.title || "Activity",
+            type: activity.type,
           });
         }
       });
@@ -128,7 +129,9 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
           {travelPlan.travel.destinationData?.coordinates ? (
             <TouchableOpacity 
               activeOpacity={0.9} 
-              onPress={() => setShowMapModal(true)}
+              onPress={() => {
+                setShowDestinationOnlyMap(true)
+                setShowMapModal(true)}}
               className="w-full"
             >
               <Image

@@ -25,6 +25,7 @@ interface MapViewerProps {
     latitude: number;
     longitude: number;
     title: string;
+    type?: string | number;
   }>;
 }
 
@@ -43,15 +44,50 @@ const MapViewer = ({
       <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
       <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
       <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
       <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { overflow: hidden; }
         #map { width: 100%; height: 100vh; }
+        .custom-marker {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: #dc3545;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          cursor: pointer;
+        }
+        .custom-marker ion-icon, .custom-marker .material-icons {
+          font-size: 24px;
+          color: #FFF;
+        }
       </style>
     </head>
     <body>
       <div id="map"></div>
       <script>
+        function getIconHTML(type) {
+          switch(Number(type)) {
+            case 1: return '<ion-icon name="airplane"></ion-icon>';
+            case 2: return '<ion-icon name="bag-check"></ion-icon>';
+            case 3: return '<ion-icon name="bag-remove"></ion-icon>';
+            case 4: return '<i class="material-icons">local_taxi</i>';
+            case 5: return '<ion-icon name="glasses"></ion-icon>';
+            case 6: return '<i class="material-icons">shopping_cart</i>';
+            case 7: return '<i class="material-icons">local_cafe</i>';
+            case 8: return '<i class="material-icons">restaurant</i>';
+            case 9: return '<ion-icon name="walk"></ion-icon>';
+            case 10: return '<i class="material-icons">build</i>';
+            case 11: return '<i class="material-icons">directions_car</i>';
+            case 12: return '<i class="material-icons">hotel</i>';
+            default: return '<ion-icon name="location-outline"></ion-icon>';
+          }
+        }
+
         mapboxgl.accessToken = '${MAPBOX_ACCESS_TOKEN}';
         const map = new mapboxgl.Map({
           container: 'map',
@@ -65,8 +101,13 @@ const MapViewer = ({
         if (renderedMarkers.length > 0) {
           const bounds = new mapboxgl.LngLatBounds();
           renderedMarkers.forEach(m => {
-            new mapboxgl.Marker({ color: '#0C4C8A' })
+            const el = document.createElement('div');
+            el.className = 'custom-marker';
+            el.innerHTML = getIconHTML(m.type);
+
+            new mapboxgl.Marker(el)
               .setLngLat([m.longitude, m.latitude])
+              .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML('<h3>' + m.title + '</h3>'))
               .addTo(map);
             bounds.extend([m.longitude, m.latitude]);
           });
