@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  Animated,
   Image,
 } from "react-native";
 import { TextInput } from "react-native-paper";
@@ -231,9 +232,11 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           <Modal
             visible={showDestinationModal}
             animationType="slide"
+            transparent
             onRequestClose={() => setShowDestinationModal(false)}
           >
-            <MapboxDestinationSelector
+             <Animated.View className="bg-white flex-1">
+                         <MapboxDestinationSelector
               onClose={() => setShowDestinationModal(false)}
               onSelect={(place: MapboxPlace) => {
                 formik.setFieldValue("destination", place.fullName);
@@ -248,6 +251,8 @@ const Create = ({ onClose }: AddTravelModalProps) => {
               }}
               initialValue={formik.values.destination}
             />
+                    </Animated.View>
+       
           </Modal>
         </View>
 

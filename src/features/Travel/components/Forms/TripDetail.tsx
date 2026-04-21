@@ -177,7 +177,9 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
           );
         })()}
 
-        <Modal visible={showDestinationModal} animationType="slide" onRequestClose={() => setShowDestinationModal(false)}>
+        <Modal visible={showDestinationModal} 
+          transparent
+          animationType="slide" onRequestClose={() => setShowDestinationModal(false)}>
           <MapboxDestinationSelector
             onClose={() => setShowDestinationModal(false)}
             onSelect={(place: MapboxPlace) => {

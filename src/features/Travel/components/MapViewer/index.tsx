@@ -131,7 +131,7 @@ const MapViewer = ({
   `;
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.container}>
         <StatusBar barStyle="dark-content" />
         {/* Header */}

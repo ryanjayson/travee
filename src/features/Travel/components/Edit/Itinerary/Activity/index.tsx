@@ -348,7 +348,7 @@ const EditActivity = ({
             <Modal
               visible={showDestinationModal}
               animationType="slide"
-              transparent={false}
+              transparent
               onRequestClose={() => setShowDestinationModal(false)}
             >
               <MapboxDestinationSelector
