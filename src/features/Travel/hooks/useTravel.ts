@@ -3,10 +3,10 @@ import { API_BASE_URL } from "@env";
 import { CreateTravelData, Travel, TravelPlan } from "../types/TravelDto";
 import { postRequestOptions } from "../../../utils/apiUtils";
 import {
-  fetchTravelPlan,
   fetchTravels,
   fetchTravel,
 } from "../../../services/api/travel";
+import { saveTravelLocally, getTravelsLocally } from "../../../services/local/travelService";
 
 const TRAVEL_ENDPOINT = `${API_BASE_URL}/travel`;
 const TRAVEL_QUERY_KEY = ["travel"];
@@ -31,6 +31,17 @@ export const useUpdateTravel = () => {
     { id?: number; data: CreateTravelData | UpdateTravelData }
   >({
     mutationFn: async ({ id, data }) => {
+
+      if (data.isOffline || true) { // Forced true as per user request
+      console.log('isOfflineSaving')
+
+        try {
+          await saveTravelLocally(data, id);
+        } catch (err) {
+          console.error("Local Save Error:", err);
+        }
+      }
+
       const options = postRequestOptions("");
       const url = id ? `${TRAVEL_ENDPOINT}/${id}` : TRAVEL_ENDPOINT;
       const method = id ? "PUT" : "POST";
@@ -39,7 +50,7 @@ export const useUpdateTravel = () => {
       const response = await fetch(url, {
         method: method,
         headers: options.headers,
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, isOffline: true }),
       });
 
       if (!response.ok) {
@@ -98,7 +109,21 @@ export const useTravels = () => {
   // The hook expects to return an array of Travel objects
   return useQuery<Travel[], Error>({
     queryKey: TRAVELS_QUERY_KEY,
-    queryFn: fetchTravels,
+    queryFn: async () => {
+      let apiTravels: Travel[] = [];
+      try {
+        apiTravels = await fetchTravels();
+      } catch (err) {
+        console.warn("Failed to fetch travels from API, falling back to local only", err);
+      }
+
+      const localTravels = await getTravelsLocally();
+
+      // Merge local and API travels.
+      // Prioritize local offline travels to appear at the top, or simply concatenate.
+      // If we implement sync later, we should filter duplicates here based on ID matching.
+      return [...localTravels, ...apiTravels];
+    },
     // Configuration: Data is stale quickly since the list changes frequently
     staleTime: 60 * 1000, // 1 minute
   });

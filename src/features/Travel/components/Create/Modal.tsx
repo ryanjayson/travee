@@ -26,7 +26,7 @@ const CreateTripModal = ({
       animationType="slide"
       onRequestClose={handleCancel}
     >
-      <View className="flex-1 bg-black/50 justify-end">
+      <View className="flex-1 bg-black/50 justify-end my-10">
         <Animated.View className="bg-white flex-1" style={{ height: modalHeight }}>
           <Create onClose={handleCancel} />
         </Animated.View>

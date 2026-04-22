@@ -80,9 +80,11 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         startDate: values.startDate || undefined,
         endDate: values.endDate || undefined,
         budget: values.budget,
-        notes: values.notes,
+        notes: values.notes, 
         status: TravelStatus.Draft,
+        isOffline: true,
       };
+        console.log(travelData);
 
       createTravel({ data: travelData }, {
         onSuccess: () => {

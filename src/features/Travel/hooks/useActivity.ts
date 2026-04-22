@@ -8,6 +8,7 @@ import {
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { fetchItineraryActivity } from "../../../services/api/itinerary";
 import { ApiResponse } from "../../../types/api";
+import { saveActivityLocally } from "../../../services/local/travelService";
 import { UpdateSortVariables } from "../types/ActivityDto";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
@@ -32,11 +33,18 @@ export const useUpdateActivityMutation = () => {
     MutationVariables
   >({
     mutationFn: async (activity) => {
+      // Forced true as per user request to save locally
+      try {
+        await saveActivityLocally(activity, activity.id && activity.id > 0 ? activity.id : undefined);
+      } catch (err) {
+        console.error("Local Save Error (Activity):", err);
+      }
+
       const options = postRequestOptions("");
       const response = await fetch(ACTIVITY_ENDPOINT, {
         method: activity.id && activity.id > 0 ? "PUT" : "POST",
         headers: options.headers,
-        body: JSON.stringify(activity),
+        body: JSON.stringify({ ...activity, isOffline: true }),
       });
 
       if (!response.ok) {

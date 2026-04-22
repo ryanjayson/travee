@@ -5,6 +5,7 @@ import { postRequestOptions } from "../../../utils/apiUtils";
 import { Travel } from "../../../dtos/TravelDto";
 import { TravelPlan } from "../types/TravelDto";
 import { ApiResponse } from "../../../types/api";
+import { saveSectionLocally } from "../../../services/local/travelService";
 
 // 1. Define the API endpoint constant for clarity and reuse
 const ACTIVITY_SECTIONS_ENDPOINT = `${API_BASE_URL}/itinerarySection`;
@@ -39,16 +40,19 @@ export const useUpdateSectionMutation = () => {
     MutationVariables
   >({
     mutationFn: async (section) => {
-      // mutationFn: async (
-      //   section: ItinerarySection
-      // ): Promise<ApiResponse<ItinerarySection>> => {
-      // mutationFn: async (section) => {
+      // Forced true as per user request to save locally
+      try {
+        await saveSectionLocally(section, section.id && section.id > 0 ? section.id : undefined);
+      } catch (err) {
+        console.error("Local Save Error (Section):", err);
+      }
+
       const options = postRequestOptions("");
 
       const response = await fetch(ACTIVITY_SECTIONS_ENDPOINT, {
         method: section.id && section.id > 0 ? "PUT" : "POST",
         headers: options.headers,
-        body: JSON.stringify(section),
+        body: JSON.stringify({ ...section, isOffline: true }),
       });
 
       if (!response.ok) {

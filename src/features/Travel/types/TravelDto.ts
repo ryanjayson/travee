@@ -19,6 +19,7 @@ export interface Travel {
   createdAt?: string;
   updatedAt?: string;
   itinerarySection?: ItinerarySection[];
+  isOffline?: boolean;
 }
 
 export interface ItinerarySection {
@@ -37,6 +38,7 @@ export interface ItinerarySection {
   isCollapsed?: boolean;
   travelId?: number;
   sortOrder: string;
+  isOffline?: boolean;
 }
 
 export interface ItineraryActivity {
@@ -60,6 +62,7 @@ export interface ItineraryActivity {
   secondaryType?: ActivityType[];
   images?: Images[];
   destinationData?: DestinationDto;
+  isOffline?: boolean;
 }
 export interface Images {
   title: string;
@@ -76,6 +79,7 @@ export interface CreateTravelData {
   budget?: string;
   notes?: string;
   status?: TravelStatus;
+  isOffline?: boolean;
 }
 
 export interface DestinationDto {
