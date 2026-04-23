@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Animated, PanResponder } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface DraggableActivityItemProps {
-  id?: number;
+  id?: string;
   title: string;
   description?: string;
   location: string;

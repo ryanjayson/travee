@@ -13,8 +13,8 @@ const NotesTab = ({ travelPlan }: NotesTabProps) => {
       {travelPlan.itinerarySection && travelPlan.itinerarySection.length > 0 ? (
         <SectionAccordion iterarysections={travelPlan.itinerarySection} />
       ) : (
-        <View className="flex-1 bg-black items-center justify-center h-[200px]">
-          <Text className="text-base tracking-widest text-gray-500">No note added.</Text>
+        <View className="flex-1 items-center justify-center h-[300px]">
+          <Text className="text-sm text-[#555] tracking-wider leading-5">No note added.</Text>
         </View>
       )}
     </View>

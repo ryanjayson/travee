@@ -11,7 +11,7 @@ import {
   Portal,
 } from "react-native-paper";
 import SectionAccordion from "./SectionAccordion";
-import { TravelPlan } from "../../../Travel/types/TravelDto";
+import { TravelPlan, ItineraryExpense } from "../../../Travel/types/TravelDto";
 import StatusTag from "../../../../components/StatusTag";
 import Tabs from "../../../../components/Tabs";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -21,6 +21,7 @@ import ChecklistTab from "./Tabs/ChecklistTab";
 import NotesTab from "./Tabs/NotesTab";
 import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
+import ExpenseModal from "../Forms/Expense/Modal";
 import TravelActionFAB from "./TravelActionFAB";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
@@ -34,6 +35,8 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
   const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
+  const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
+  const [selectedExpense, setSelectedExpense] = useState<ItineraryExpense | null>(null);
 
   const getAllMarkers = () => {
     const markers: Array<{ latitude: number; longitude: number; title: string , type?: number}> = [];
@@ -204,7 +207,16 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       <TravelActionFAB 
         onAddNote={() => console.log('Add Note')}
         onAddChecklist={() => console.log('Add Checklist')}
-        onAddExpense={() => console.log('Add Expense')}
+        onAddExpense={() => {
+          setSelectedExpense(null);
+          setShowExpenseModal(true);
+        }}
+      />
+
+      <ExpenseModal
+        visible={showExpenseModal}
+        itineraryExpense={selectedExpense}
+        onClose={() => setShowExpenseModal(false)}
       />
     </Portal.Host>
   );

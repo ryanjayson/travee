@@ -13,18 +13,18 @@ import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import TouchButton from "../../../../../../components/atoms/TouchButton";
-import { ItineraryActivity } from "../../../../types/TravelDto";
-import { useUpdateActivityMutation } from "../../../../hooks/useActivity";
-import { useTravelContext } from "../../../../../../context/TravelContext";
-import { useDeleteActivityMutation } from "../../../../hooks/useActivity";
-import { ActivityType } from "../../../../../../types/enums";
+import TouchButton from "../../../../components/atoms/TouchButton";
+import { ItineraryActivity } from "../../types/TravelDto";
+import { useUpdateActivityMutation } from "../../hooks/useActivity";
+import { useTravelContext } from "../../../../context/TravelContext";
+import { useDeleteActivityMutation } from "../../hooks/useActivity";
+import { ActivityType } from "../../../../types/enums";
 import { Divider, Text, Switch } from 'react-native-paper';
-import ActivityIcon from "../../../../../../components/ActivityIcon";
-import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
+import ActivityIcon from "../../../../components/ActivityIcon";
+import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Image } from "react-native";
-import { DestinationDto } from "../../../../types/TravelDto";
+import { DestinationDto } from "../../types/TravelDto";
 
 interface Place {
   id: string;
