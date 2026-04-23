@@ -3,6 +3,20 @@ import { ActivityType, TravelStatus } from "../../../types/enums";
 export interface TravelPlan {
   travel: Travel;
   itinerarySection?: ItinerarySection[];
+  itineraryExpense?: ItineraryExpense[];
+}
+
+export interface ItineraryExpense {
+  id?: string;
+  travelId?: string;
+  activityId?: string;
+  title: string;
+  amount: number;
+  dateTime: Date;
+  currency?: string;
+  category?: string;
+  notes?: string;
+  isOffline?: boolean;
 }
 
 export interface Travel {
@@ -64,6 +78,7 @@ export interface ItineraryActivity {
   destinationData?: DestinationDto;
   isOffline?: boolean;
   travelId?: string;
+  isDone?: boolean;
 }
 export interface Images {
   title: string;

@@ -14,8 +14,7 @@ export const fetchTravel = async (travelId: string): Promise<Travel> => {
   if (!travelId) {
     throw new Error("Travel ID is required for fetching a single itinerary.");
   }
-  console.log("TRAVEL_ENDPOINT", TRAVEL_ENDPOINT);
-
+  
   const url = `${TRAVEL_ENDPOINT}/${travelId}`;
   const response = await fetch(url, {
     method: "GET",

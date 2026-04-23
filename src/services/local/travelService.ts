@@ -66,6 +66,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         type: a.type,
         secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
         images: a.images ? JSON.parse(a.images) : undefined,
+        isDone: a.isDone,
       }));
 
       return {
@@ -195,6 +196,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           type: activityData.type,
           secondaryType: JSON.stringify(activityData.secondaryType),
           images: JSON.stringify(activityData.images),
+          isDone: activityData.isDone || false,
           isDeleted: false,
           isDefaultSection: activityData.isDefaultSection,
         });
@@ -219,8 +221,35 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           type: activityData.type,
           secondaryType: JSON.stringify(activityData.secondaryType),
           images: JSON.stringify(activityData.images),
+          isDone: activityData.isDone || false,
         });
       });
     }
   });
+};
+
+export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
+  try {
+    const a = await database.get<Activity>("itinerary_activities").find(id);
+    return {
+      id: a.id,
+      sectionId: a.section.id,
+      title: a.title,
+      description: a.description,
+      destination: a.destination,
+      destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
+      startDate: a.startDate,
+      endDate: a.endDate,
+      budget: a.budget,
+      notes: a.notes,
+      isOffline: a.isOffline,
+      sortOrder: a.sortOrder,
+      type: a.type,
+      secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
+      images: a.images ? JSON.parse(a.images) : undefined,
+      isDone: a.isDone,
+    };
+  } catch (err) {
+    throw new Error(`Itinerary Activity not found locally with ID: ${id}`);
+  }
 };

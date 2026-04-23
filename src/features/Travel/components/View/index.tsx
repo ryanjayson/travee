@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import {
   Text,
+  Portal,
 } from "react-native-paper";
 import SectionAccordion from "./SectionAccordion";
 import { TravelPlan } from "../../../Travel/types/TravelDto";
@@ -20,6 +21,7 @@ import ChecklistTab from "./Tabs/ChecklistTab";
 import NotesTab from "./Tabs/NotesTab";
 import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
+import TravelActionFAB from "./TravelActionFAB";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -179,23 +181,32 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
     setShowActivityViewModal(true);
   };
 
-  return (
-    <ScrollView className="flex-1 bg-[#F9F9F9]" showsVerticalScrollIndicator={false}>
-      <HeaderSection />
-      <View>
-        <Tabs tabs={tabData} initialActiveTabId="itinerary" />
-      </View>
 
-      {setShowMapModal && (
-        <MapViewer
-          visible={showMapModal}
-          onClose={() => setShowMapModal(false)}
-          markers={getAllMarkers()}
-          title={travelPlan.travel.title || "Trip Map"}
-          zoom={showDestinationOnlyMap ? 6 : null}
-        />
-      )}
-    </ScrollView>
+  return (
+    <Portal.Host>
+      <ScrollView className="flex-1 bg-[#F9F9F9]" showsVerticalScrollIndicator={false}>
+        <HeaderSection /> 
+        <View>
+          <Tabs tabs={tabData} initialActiveTabId="itinerary" />
+        </View>
+
+        {setShowMapModal && (
+          <MapViewer
+            visible={showMapModal}
+            onClose={() => setShowMapModal(false)}
+            markers={getAllMarkers()}
+            title={travelPlan.travel.title || "Trip Map"}
+            zoom={showDestinationOnlyMap ? 6 : null}
+          />
+        )}
+      </ScrollView>
+
+      <TravelActionFAB 
+        onAddNote={() => console.log('Add Note')}
+        onAddChecklist={() => console.log('Add Checklist')}
+        onAddExpense={() => console.log('Add Expense')}
+      />
+    </Portal.Host>
   );
 };
 

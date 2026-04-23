@@ -8,7 +8,7 @@ import {
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { fetchItineraryActivity } from "../../../services/api/itinerary";
 import { ApiResponse } from "../../../types/api";
-import { saveActivityLocally, saveSectionLocally } from "../../../services/local/travelService";
+import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity } from "../../../services/local/travelService";
 import { UpdateSortVariables } from "../types/ActivityDto";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
@@ -268,7 +268,17 @@ export const useDeleteActivityMutation = () => {
 export const useItineraryActivity = (activityId: string) => {
   return useQuery<ItineraryActivity, Error>({
     queryKey: [ITINERARY_QUERY_KEY, activityId],
-    queryFn: () => fetchItineraryActivity(activityId),
+    queryFn: async () => {
+       try {
+         const isLocalId = activityId && isNaN(Number(activityId));
+         if (isLocalId) {
+             return await fetchLocalItineraryActivity(activityId);
+         }
+         return await fetchItineraryActivity(activityId);
+       } catch (err) {
+         return await fetchLocalItineraryActivity(activityId);
+       }
+    },
     enabled: !!activityId,
   });
 };
@@ -278,7 +288,6 @@ export const useUpdateActivitySortOrderMutation = () => {
     mutationFn: async (variables: UpdateSortVariables): Promise<void> => {
       const options = postRequestOptions("");
 
-      console.log("VAR", variables);
       const response = await fetch(`${ACTIVITY_ENDPOINT}/move`, {
         method: "POST",
         headers: options.headers,

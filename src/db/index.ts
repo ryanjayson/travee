@@ -5,6 +5,7 @@ import { schema } from "./schema";
 import Travel from "./models/Travel";
 import Section from "./models/Section";
 import Activity from "./models/Activity";
+import Expense from "./models/Expense";
 
 const adapter = new SQLiteAdapter({
   schema,
@@ -20,5 +21,5 @@ const adapter = new SQLiteAdapter({
 
 export const database = new Database({
   adapter,
-  modelClasses: [Travel, Section, Activity],
+  modelClasses: [Travel, Section, Activity, Expense],
 });

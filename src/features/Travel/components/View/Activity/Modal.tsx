@@ -39,7 +39,8 @@ const ViewActivityModal = ({
       <View className="flex-1 bg-white justify-start">
         <Animated.View 
           className="bg-white rounded-t-xl overflow-hidden" 
-          style={{ height: modalHeight }}
+          style={{ height: modalHeight, paddingTop: 40 }}
+
         >
           <View className="p-1.5 flex-row items-center border-b border-gray-100">
             <TouchableOpacity
@@ -48,12 +49,12 @@ const ViewActivityModal = ({
               activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Icon name="keyboard-arrow-left" size={36} color="#777" />
+              <Icon name="close" size={36} color="#777" />
             </TouchableOpacity>
  
             <Text className="text-xl font-medium">{selectedTravelPlan?.title}</Text>
           </View>
- 
+
           <Activity id={id} onClose={handleCancel} />
         </Animated.View>
       </View>

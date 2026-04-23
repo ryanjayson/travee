@@ -5,11 +5,13 @@ import {
   TouchableOpacity,
   Animated,
   Image,
+  Alert,
 } from "react-native";
 import ViewActivityModal from "./Modal";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import TextLimiter from "../../../../../components/atoms/TextLimiter";
 import { ItineraryActivity } from "../../../types/TravelDto";
+import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { Typography } from "../../../../../styles/common";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import MapViewer from "../../MapViewer";
@@ -31,15 +33,48 @@ const ActivityItemCard = ({
   const [showActivityViewModal, setShowActivityViewModal] =
     useState<boolean>(false);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
+  const updateMutation = useUpdateActivityMutation();
 
-  const handleViewModeActivity = (id: number) => {
-    console.log(id);
+  const handleToggleDone = () => {
+    const nextStatus = !itineraryEventActivity.isDone;
+    Alert.alert(
+      "Confirmation",
+      `Are you sure you want to mark this activity as ${nextStatus ? 'done' : 'undone'}?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: async () => {
+            try {
+              const updatedPayload = {
+                ...itineraryEventActivity,
+                isDone: nextStatus,
+                isOffline: true,
+              };
+              
+              await updateMutation.mutateAsync(updatedPayload);
+              setItineraryEventActivity(updatedPayload);
+            } catch (err) {
+              console.error("Failed to update activity status:", err);
+              Alert.alert("Error", "Failed to update activity status.");
+            }
+          },
+        },
+      ],
+    );
+  };
+
+  const handleViewModeActivity = (id: string) => {
+    console.log("ID", id);
     setShowActivityViewModal(true);
   };
 
   return (
     <Animated.View>
-      <View className="px-2 flex-row justify-between items-center relative">
+      <View className={`px-2 flex-row justify-between items-center relative ${itineraryEventActivity.isDone ? 'opacity-50' : ''}`}>
         {!isLastItem ? (
           <View className="w-1.5 items-center h-full absolute">
             {isFirstItem ? (
@@ -69,16 +104,40 @@ const ActivityItemCard = ({
           onPress={() => handleViewModeActivity(itineraryEventActivity.id!)}
           className="w-[100px] border border-solid border-[#e0e0e0] rounded-xl bg-white p-2.5 flex-grow ml-3 my-1"
         >
+
+            
           <View className="flex-row justify-between items-start mb-1 gap-x-2">
-            <Text className="text-base font-semibold text-[#333] leading-5 flex-1 break-words">
-              {itineraryEventActivity.title}
+ <Text className="text-xs font-semibold text-[#606060] leading-5 flex-1 break-words">
+              11:00 AM
             </Text>
-            <View>
-              <Text className="text-xs text-[#555] text-right">
-                {itineraryEventActivity.startDate?.toDateString()} 11:00AM
-              </Text>
+
+               <View>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={handleToggleDone}
+                className="flex-row items-center gap-1.5"
+              >
+                <Text className="text-[10px] text-[#888] font-medium uppercase tracking-tight">
+                  {itineraryEventActivity.isDone ? "Done" : "Mark as done"}
+                </Text>
+                  {itineraryEventActivity.isDone ? 
+                      (<Icon name="check" size={20} color="#0C4C8A" />)
+                      : (<Icon name="check-box-outline-blank" size={20} color="#777" />)}
+
+              
+              </TouchableOpacity>
             </View>
           </View>
+
+          <View className="flex-row justify-between items-start mb-1 gap-x-2">
+            <Text className="text-lg font-semibold text-[#333] leading-5 flex-1 break-words">
+              {itineraryEventActivity.title}
+            </Text>
+         
+ 
+          </View>
+
+         
 
           {itineraryEventActivity && itineraryEventActivity.images && (
             <View className="my-1">
