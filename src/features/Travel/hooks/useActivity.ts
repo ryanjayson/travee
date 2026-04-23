@@ -34,10 +34,13 @@ export const useUpdateActivityMutation = () => {
   >({
     mutationFn: async (activity) => {
       // Offline-first check: Detect alphanumeric WatermelonDB string IDs or inherited offline status
-      const hasStringId = activity.id && isNaN(Number(activity.id));
-      if (activity.isOffline || hasStringId) {
+      if (activity.isOffline) {
         try {
           const localActivityId = activity.id ? activity.id : undefined;
+        activity.sectionId = activity.sectionId ? activity.sectionId : "default";
+
+        console.log("activity",activity)
+
           const localActivity = await saveActivityLocally(activity, localActivityId);
           return { data: localActivity, isSuccess: true };
         } catch (err) {

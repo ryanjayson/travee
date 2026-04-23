@@ -111,12 +111,12 @@ const Create = ({ onClose }: AddTravelModalProps) => {
   const formattedEndDate = formik.values.endDate ? formik.values.endDate.toLocaleDateString() : "";
 
   return (
-    <View className="flex-1 justify-end bg-white rounded-t-[20px]">
+    <View className="flex-1 justify-end bg-white">
       <View className="flex-row justify-between items-center px-5 py-4 border-b border-[#E0E0E0]">
         <Text className="text-xl text-gray-900 font-bold">Create next trip</Text>
         <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
           <Text className={`text-base ${isSaving ? "text-[#999]" : "text-primary"}`}>
-            Cancel
+            <Icon name="clear" size={28} color={"#333"} />
           </Text>
         </TouchableOpacity>
       </View>

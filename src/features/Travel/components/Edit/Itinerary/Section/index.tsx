@@ -14,7 +14,7 @@ import {
 import { TextInput } from "react-native-paper";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import DestinationSelector from "../../../DestinationSelector";
-import { Formik } from "formik";
+import { useFormik } from "formik";
 import * as Yup from "yup";
 import TouchButton from "../../../../../../components/atoms/TouchButton";
 import { ItinerarySection } from "../../../../types/TravelDto";
@@ -41,7 +41,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
-  const updateMutation = useUpdateSectionMutation();
+  const { mutate: updateMutation, isPending: isUpdating } = useUpdateSectionMutation();
   const { mutate: deleteSectionMutation, isPending: isDeleting } = useDeleteSectionMutation();
   const { selectedTravelPlan } = useTravelContext();
 
@@ -57,70 +57,45 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
     }
   };
 
-  const handleSaveSection = async (itinerarySectionData: ItinerarySection) => {
-
-    
-    const isValidId = !!itinerarySectionData?.travelId;
-    
-    if (isValidId) {
-      itinerarySectionData.isOffline = isNaN(Number(itinerarySectionData.travelId));
-      await updateMutation.mutateAsync(itinerarySectionData);
-      onClose();
-    }
-    //Throw error here
-  };
+  const formik = useFormik({
+    initialValues: {
+      id: itinerarySection?.id,
+      travelId: selectedTravelPlan?.id,
+      title: itinerarySection?.title || "",
+      description: itinerarySection?.description || "",
+      sortOrder: itinerarySection?.sortOrder || "",
+      notes: itinerarySection?.notes || "",
+    },
+    validationSchema: TravelSchema,
+    onSubmit: async (values) => {
+      const isValidId = !!values?.travelId;
+      if (isValidId) {
+        const sectionData: ItinerarySection = {
+          ...values,
+          isOffline: isNaN(Number(values.travelId)),
+        };
+        await updateMutation(sectionData);
+        onClose();
+      }
+    },
+  });
 
   return (
-    <Formik
-      initialValues={{
-        id: itinerarySection?.id,
-        travelId: selectedTravelPlan?.id,
-        title: itinerarySection?.title || "",
-        description: itinerarySection?.description || "",
-        // primaryType: itinerarySection?.primaryType || 1,
-        sortOrder: itinerarySection?.sortOrder || "",
-        notes: itinerarySection?.notes || "",
-      }}
-      validationSchema={TravelSchema}
-      onSubmit={handleSaveSection}
-    >
-      {({
-        handleChange,
-        handleBlur,
-        handleSubmit,
-        values,
-        errors,
-        touched,
-        setValues,
-        isSubmitting,
-      }) => {
-
-        return (
-          <View className="flex-1 justify-end bg-white rounded-t-[20px]">
+    <View className="flex-1 justify-end bg-white rounded-t-[20px]">
              <StatusBar barStyle={"dark-content"} />
-             
-             {/* Header */}
-             {/* <View className="flex-row justify-between items-center px-5 py-4 border-b border-[#E0E0E0]">
-               <Text className="text-xl text-gray-900 font-bold">{itinerarySection?.id ? "Edit Section" : "Add Section"}</Text>
-               <TouchableOpacity onPress={onClose} disabled={isSubmitting || updateMutation.isPending}>
-                 <Text className={`text-base ${isSubmitting || updateMutation.isPending ? "text-[#999]" : "text-primary"}`}>
-                   Cancel
-                 </Text>
-               </TouchableOpacity>
-             </View> */}
 
-             <ScrollView className="flex-1 p-[15px] bg-gray-50" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+             <ScrollView className="flex-1 p-[15px] bg-gray-50 pb-[100px]" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
                 <View className="mb-5">
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
                   <TextInput
                     mode="outlined"
                     className="!h-[64px]"
                     placeholder="Section title"
-                    value={values.title}
-                    onChangeText={handleChange("title")}
-                    onBlur={handleBlur("title")}
-                    error={touched.title && Boolean(errors.title)}
-                    disabled={isSubmitting || updateMutation.isPending}
+                    value={formik.values.title}
+                    onChangeText={formik.handleChange("title")}
+                    onBlur={formik.handleBlur("title")}
+                    error={formik.touched.title && Boolean(formik.errors.title)}
+                    disabled={isUpdating}
                     outlineColor="#E0E0E0"
                     activeOutlineColor="#0C4C8A"
                     theme={{ colors: { onSurfaceVariant: '#888' } }}
@@ -128,8 +103,8 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                     style={{ marginTop: 6 }}
                     contentStyle={{ backgroundColor: "transparent" }}
                   />
-                  {touched.title && errors.title && (
-                    <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title as string}</Text>
+                  {formik.touched.title && formik.errors.title && (
+                    <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.title as string}</Text>
                   )}
                 </View>
 
@@ -140,11 +115,11 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                     placeholder="Section description"
                     multiline
                     numberOfLines={4}
-                    value={values.description}
-                    onChangeText={handleChange("description")}
-                    onBlur={handleBlur("description")}
-                    error={touched.description && Boolean(errors.description)}
-                    disabled={isSubmitting || updateMutation.isPending}
+                    value={formik.values.description}
+                    onChangeText={formik.handleChange("description")}
+                    onBlur={formik.handleBlur("description")}
+                    error={formik.touched.description && Boolean(formik.errors.description)}
+                    disabled={isUpdating}
                     outlineColor="#E0E0E0"
                     activeOutlineColor="#0C4C8A"
                      theme={{
@@ -174,7 +149,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => setShowDestinationModal(true)}
-                    disabled={isSubmitting || updateMutation.isPending}
+                    disabled={isUpdating}
                   >
                     <View pointerEvents="none">
                       <TextInput
@@ -228,22 +203,16 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                 )}
              </ScrollView>
 
-             <View className="px-5 py-4 border-t border-gray-200">
+             <View className="px-5 py-4 border-t border-gray-200 ">
                <TouchButton
                  buttonText={itinerarySection?.id ? "Update Section" : "Add Section"}
-                 onPress={() => {
-                   Keyboard.dismiss();
-                   handleSubmit();
-                 }}
-                 isLoading={isSubmitting || updateMutation.isPending}
-                 variant="primary"
+                  onPress={() => formik.handleSubmit()}
+                  disabled={!formik.isValid || !formik.dirty || isUpdating}
+                 className="h-[64px] p-6"
                />
               </View>
           </View>
         );
-      }}
-    </Formik>
-  );
 };
 
 export default EditSection;

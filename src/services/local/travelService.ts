@@ -195,6 +195,8 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           type: activityData.type,
           secondaryType: JSON.stringify(activityData.secondaryType),
           images: JSON.stringify(activityData.images),
+          isDeleted: false,
+          isDefaultSection: activityData.isDefaultSection,
         });
       });
       return activity;

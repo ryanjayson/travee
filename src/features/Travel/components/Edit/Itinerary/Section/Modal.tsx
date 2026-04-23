@@ -94,28 +94,29 @@ const SectionModal = ({
   return (
     <Modal visible={visible} transparent animationType="none">
       <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "padding"} 
-        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+        style={{ flex: 1, paddingBottom: 10}}
       >
         <View className="flex-1 bg-black/50 justify-end">
           <Animated.View
-            className="rounded-t-[30px] bg-white"
-            // style={[
-            //   { height: keyboardVisible ? screenHeight * 0.8 : modalHeight },
-            // ]}
-             style={[
+            className="rounded-t-[30px] bg-white "
+            style={[
               { height: modalHeight },
+              {
+                paddingTop:  keyboardVisible ? 40 : 10,
+              }
             ]}
           >
             <StatusBar barStyle={"light-content"} />
-            <View className="items-center py-2.5">
-              <Animated.View {...panResponder.panHandlers}>
+            {/* <View className="items-center py-2.5">
+              <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
                 <View className="w-[30px] h-1 bg-[#999] rounded-sm" />
-              </Animated.View>
-            </View>
+              </TouchableOpacity>
 
-            <View className="flex-row justify-between items-center px-5">
-              <Text className="tracking-wider uppercase text-sm text-gray-500">
+            </View> */}
+
+            <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
+              <Text className="tracking-wider uppercase text-base text-gray-500 font-medium">
                 {itinerarySection?.id && itinerarySection?.id !== ""
                   ? "Edit Section"
                   : "Add Section"}
@@ -125,7 +126,7 @@ const SectionModal = ({
               </TouchableOpacity>
             </View>
 
-            <View className="flex-1 px-2.5">
+            <View className="flex-1">
               <EditSection
                 itinerarySection={itinerarySection}
                 onClose={onClose}

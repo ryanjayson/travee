@@ -100,14 +100,17 @@ const ActivityModal = ({
   return (
     <Modal visible={visible} transparent animationType="none">
       <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "padding"} 
-        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+        style={{ flex: 1, paddingBottom: 10}}
       >
         <View style={styles.overlay}>
           <Animated.View
             className="rounded-t-[30px] bg-white"
             style={[
               { height: modalHeight },
+              {
+                paddingTop:  keyboardVisible ? 40 : 10,
+              }
             ]}
           >
             <StatusBar barStyle={"dark-content"} />
@@ -116,6 +119,15 @@ const ActivityModal = ({
                 <View style={styles.handleBar} />
               </Animated.View>
             </View> */}
+
+              <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
+                  <Text className="tracking-wider uppercase text-base text-gray-500 font-medium">
+                  {itineraryActivity?.id ? "Edit Activity" : "Add Activity"}
+                  </Text>
+                  <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
+                    <Icon name="clear" size={36} color={"#333"} />
+                  </TouchableOpacity>
+                </View>
 
             <View className="flex-1">
               <EditActivity

@@ -27,7 +27,7 @@ const CreateTripModal = ({
       onRequestClose={handleCancel}
     >
       <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        behavior={Platform.OS === "ios" ? "padding" : undefined} 
         style={{ flex: 1, paddingTop: 40, paddingBottom: 10 }}
       >
         <View className="flex-1 bg-black/50 justify-end">

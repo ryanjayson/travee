@@ -232,7 +232,6 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     activity: ItineraryActivity,
     sectionId: string,
   ) => {
-    debugger;
     setEditingActivity(activity);
     setEditingActivityType("section");
     setCurrentSectionId(sectionId);
@@ -647,7 +646,8 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
         {sections && sections.length > 0 && (
         <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Sections</Text>
         )}
-        {sections && sections.length > 0 ? (
+        
+        {sections && sections.length > 0 && (
           sections
             .filter((section) => section.isDefaultSection == false)
             .map((section, mapIndex) => (
@@ -877,10 +877,10 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
               )}
             </DraggableSectionContainer>
             ))
-        ) : (
-          <Text className="text-[#888] italic text-center p-5">No sections added yet.</Text>
         )}
-          <View className="mb-5">
+      
+       {sections && sections.length > 0 && (
+         <View className="mb-5">
             <TouchableOpacity
               onPress={() => {
                 setSectionModalVisible(true);
@@ -894,6 +894,8 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
               </Text>
             </TouchableOpacity>
         </View>
+        )}
+  
       </View>           
 
       <ActivityModal //ADD

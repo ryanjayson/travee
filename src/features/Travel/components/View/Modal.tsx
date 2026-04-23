@@ -91,6 +91,8 @@ const ViewTripModal = ({
             <ViewTravel travelPlan={travelPlan} onClose={handleCancel} />
           )}
         </View>
+
+        
       </View>
 
       <TravelMenuNavigation

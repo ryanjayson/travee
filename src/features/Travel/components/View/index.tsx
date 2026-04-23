@@ -1,18 +1,25 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   Image,
   ScrollView,
   TouchableOpacity,
   Animated,
 } from "react-native";
+import {
+  Text,
+} from "react-native-paper";
 import SectionAccordion from "./SectionAccordion";
 import { TravelPlan } from "../../../Travel/types/TravelDto";
 import StatusTag from "../../../../components/StatusTag";
 import Tabs from "../../../../components/Tabs";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import MapViewer from "../MapViewer";
+import ItineraryTab from "./Tabs/ItineraryTab";
+import ChecklistTab from "./Tabs/ChecklistTab";
+import NotesTab from "./Tabs/NotesTab";
+import DetailsTab from "./Tabs/DetailsTab";
+import ExpensesTab from "./Tabs/ExpensesTab";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -25,50 +32,6 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
   const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
-
-  const TabItinerary = () => (
-    <View>
-      {travelPlan.itinerarySection ? (
-        <SectionAccordion iterarysections={travelPlan.itinerarySection} />
-      ) : (
-        <Text>No itinerary Added</Text>
-      )}
-    </View>
-  );
-
-  const TabChecklistContent = () => (
-    <View>
-      {travelPlan.itinerarySection ? (
-        <SectionAccordion iterarysections={travelPlan.itinerarySection} />
-      ) : (
-        <Text className="text-sm text-[#555] leading-5">No Checklist item added.</Text>
-      )}
-    </View>
-  );
-
-  const TabNotesContent = () => (
-    <View>
-      {travelPlan.itinerarySection ? (
-        <SectionAccordion iterarysections={travelPlan.itinerarySection} />
-      ) : (
-        <Text className="text-sm text-[#555] leading-5">No note added.</Text>
-      )}
-    </View>
-  );
-
-  const TabDetailsContent = () => (
-    <View>
-      <View>
-        <Text className="text-sm text-[#555] leading-5">20 - Total Activity </Text>
-      </View>
-      <View>
-        <Text className="text-sm text-[#555] leading-5">10 - Paticipants</Text>
-      </View>
-      <View>
-        <Text className="text-sm text-[#555] leading-5">$1000 - Running Expenses</Text>
-      </View>
-    </View>
-  );
 
   const getAllMarkers = () => {
     const markers: Array<{ latitude: number; longitude: number; title: string , type?: number}> = [];
@@ -93,7 +56,6 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       });
     });
 
-    console.log(markers);
     return markers;
   };
 
@@ -160,13 +122,14 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
             </Text>
             <StatusTag type={2} status={travelPlan.travel.status!} />
           </View>
-          <View className="flex-row items-center flex-wrap">
+          <View className="flex-row items-center flex-wrap ">
             <TouchableOpacity 
-              className="flex-row items-center my-1 mr-2"
+              activeOpacity={0.8}
+              className="flex-row items-center my-1 mr-2 !w-[200px]"
               onPress={() => travelPlan.travel.destinationData?.coordinates && setShowMapModal(true)}
             >
               <Icon name="location-pin" size={16} color={"red"} />
-              <Text className="text-[#183B7A] font-medium ml-1">
+              <Text className="text-[#183B7A] font-medium ml-1 " numberOfLines={1} ellipsizeMode="tail">
                 {travelPlan.travel.destination}
               </Text>
             </TouchableOpacity>
@@ -193,17 +156,22 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   );
 
   const tabData = [
-    { id: "itinerary", title: "Itinerary", content: <TabItinerary /> },
-    { id: "notes", title: "Notes", content: <TabNotesContent /> },
+    { id: "itinerary", title: "Itinerary", content: <ItineraryTab travelPlan={travelPlan} /> },
+    { id: "notes", title: "Notes", content: <NotesTab travelPlan={travelPlan} /> },
     {
       id: "checklist",
       title: "Checklist",
-      content: <TabChecklistContent />,
+      content: <ChecklistTab travelPlan={travelPlan} />,
     },
     {
       id: "details",
       title: "Details",
-      content: <TabDetailsContent />,
+      content: <DetailsTab travelPlan={travelPlan} />,
+    },
+     {
+      id: "expenses",
+      title: "Expenses",
+      content: <ExpensesTab travelPlan={travelPlan} />,
     },
   ];
 

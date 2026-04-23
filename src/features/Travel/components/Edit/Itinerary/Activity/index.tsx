@@ -80,10 +80,10 @@ const EditActivity = ({
     values: ActivityFormValues,
   ) => {
     if (
-      values?.sectionId &&
       selectedTravelPlan &&
       selectedTravelPlan?.id
     ) {
+debugger;
       // Build proper Date objects from strings
       let finalStartDate: Date | undefined = undefined;
       if (values.startDate) {
@@ -97,7 +97,7 @@ const EditActivity = ({
 
       const payload: ItineraryActivity = {
         id: values.id,
-        sectionId: values.sectionId,
+        sectionId: values.sectionId || "",
         title: values.title,
         description: values.description,
         sortOrder: values.sortOrder || "",
@@ -106,7 +106,7 @@ const EditActivity = ({
         endDate: finalEndDate,
         destination: values.destination,
         destinationData: values.destinationData,
-        isOffline: isNaN(Number(selectedTravelPlan?.id)),
+        isOffline: true,
       };
 
       await updateMutation.mutateAsync(payload);
@@ -160,16 +160,6 @@ const EditActivity = ({
           <View className="flex-1 bg-white rounded-t-[20px] overflow-hidden">
             <StatusBar barStyle={"dark-content"} />
 
-             {/* Header */}
-             <View className="flex-row justify-between items-center px-5 py-4 border-b border-[#E0E0E0]">
-               <Text className="text-xl text-gray-900 font-bold">{itineraryActivity?.id ? "Edit Activity" : "Add Activity"}</Text>
-               <TouchableOpacity onPress={onClose} disabled={isPending}>
-                 <Text className={`text-base ${isPending ? "text-[#999]" : "text-primary"}`}>
-                   Cancel
-                 </Text>
-               </TouchableOpacity>
-             </View>
-
             <ScrollView
               className="flex-1 p-[15px] bg-gray-50"
               showsVerticalScrollIndicator={false}
@@ -177,6 +167,17 @@ const EditActivity = ({
               keyboardShouldPersistTaps="handled"
             >
                 <View className="mb-5">
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.title}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.description}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.destination}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.endDate}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.startDate}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.endTime}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.startTime}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.sectionId}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.travelId}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.type}</Text>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.sortOrder}</Text>
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
                   <TextInput
                     mode="outlined"
@@ -197,6 +198,8 @@ const EditActivity = ({
                     <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
                   )}
                 </View>
+                    <Text className="text-red-500 text-xs mt-1 ml-1">Travel ID - {values.travelId}</Text>
+                    <Text className="text-red-500 text-xs mt-1 ml-1">Section ID - {values.sectionId}</Text>
 
                 <View className="mb-5">
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Description</Text>
@@ -319,12 +322,12 @@ const EditActivity = ({
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Activity Type</Text>
                   <TouchableOpacity 
                     onPress={() => setShowPrimaryTypeModal(true)}
-                    className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
+                    className="border rounded-2xl h-[64px] border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
                   >
                     {values.type != null && values.type !== ActivityType.none ? (
-                      <ActivityIcon type={values.type as number} size={20} color="#183B7A" />
+                      <ActivityIcon type={values.type as number} size={32} color="#183B7A" />
                     ) : (
-                      <Icon name="style" size={20} color={"#B3B3B3"} />
+                      <Icon name="style" size={32} color={"#B3B3B3"} />
                     )}
                     <Text className="text-base text-gray-800 capitalize font-medium">
                       {values.type != null && values.type !== ActivityType.none
@@ -333,6 +336,7 @@ const EditActivity = ({
                     </Text>
                   </TouchableOpacity>
                 </View>
+
 
                 {itineraryActivity?.id && (
                   <View className="mt-5 pt-5 border-t border-[#E0E0E0]">
@@ -354,8 +358,8 @@ const EditActivity = ({
                <TouchButton
                  buttonText={itineraryActivity?.id ? "Update Activity" : "Add Activity"}
                  onPress={() => handleSubmit()}
-                 isLoading={isPending}
-                 variant="primary"
+                 disabled={isPending}
+                 className="h-[64px] p-6"
                />
              </View>
 
