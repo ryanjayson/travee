@@ -214,7 +214,7 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
       />
 
       <ViewTravelModal
-        travelId={selectedTravelPlan?.id || 0}
+        travelId={selectedTravelPlan?.id || ""}
         showModal={showTravelViewModal}
         setShowModal={setShowTravelViewModal}
       />

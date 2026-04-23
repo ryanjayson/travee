@@ -12,7 +12,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import { useTravelContext } from "../../../../../context/TravelContext";
 
 interface ViewActivityModalProps {
-  id: number;
+  id: string;
   showModal?: boolean;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
 }

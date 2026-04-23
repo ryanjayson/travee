@@ -47,7 +47,7 @@ class TravelService {
 
 
   // Get travel itinerary
-  async getTravelItinerary(travelId: number): Promise<ActivitySection[]> {
+  async getTravelItinerary(travelId: string): Promise<ActivitySection[]> {
     try {
       
       const itineraries = await makeRequest(`/${travelId}/sections`);

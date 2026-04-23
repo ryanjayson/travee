@@ -18,7 +18,7 @@ import { Typography } from "../../../../../styles/common";
 import { useItineraryActivity } from "../../../hooks/useActivity";
 
 interface ViewTripActivityProps {
-  id: number;
+  id: string;
   onClose: () => void;
 }
 

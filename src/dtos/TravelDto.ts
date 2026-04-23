@@ -1,5 +1,5 @@
 export interface Travel {
-  id?: number;
+  id?: string;
   title: string;
   description?: string;
   destination?: string;
@@ -14,7 +14,7 @@ export interface Travel {
 }
 
 export interface ItinerarySection {
-  id?: number;
+  id?: string;
   title: string;
   description?: string;
   destination?: string;

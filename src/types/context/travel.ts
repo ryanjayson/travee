@@ -1,5 +1,5 @@
 export interface TravelPlanDetail {
-  id: number;
+  id: string;
   title: string;
 }
 

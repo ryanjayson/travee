@@ -6,7 +6,7 @@ const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
 const TRAVELS_LIST_ENDPOINT = `${API_BASE_URL}/travel/catalog`;
 
 export const fetchItineraryActivity = async (
-  activityId: number
+  activityId: string
 ): Promise<ItineraryActivity> => {
   // Implicitly return the awaited promise result
   const url = `${ACTIVITY_ENDPOINT}/${activityId}`;

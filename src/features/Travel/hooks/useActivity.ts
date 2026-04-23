@@ -20,8 +20,8 @@ type MutationVariables = ItineraryActivity;
 type MutationData = ApiResponse<ItineraryActivity>;
 type MutationError = Error;
 type DeleteVariables = {
-  sectionId: number;
-  activityId: number;
+  sectionId: string;
+  activityId: string;
 };
 
 export const useUpdateActivityMutation = () => {
@@ -33,16 +33,22 @@ export const useUpdateActivityMutation = () => {
     MutationVariables
   >({
     mutationFn: async (activity) => {
-      // Forced true as per user request to save locally
-      try {
-        await saveActivityLocally(activity, activity.id && activity.id > 0 ? activity.id : undefined);
-      } catch (err) {
-        console.error("Local Save Error (Activity):", err);
+      // Offline-first check: Detect alphanumeric WatermelonDB string IDs or inherited offline status
+      const hasStringId = activity.id && isNaN(Number(activity.id));
+      if (activity.isOffline || hasStringId) {
+        try {
+          const localActivityId = activity.id ? activity.id : undefined;
+          const localActivity = await saveActivityLocally(activity, localActivityId);
+          return { data: localActivity, isSuccess: true };
+        } catch (err) {
+          console.error("Local Save Error (Activity):", err);
+          throw new Error("Failed to save activity locally.");
+        }
       }
 
       const options = postRequestOptions("");
       const response = await fetch(ACTIVITY_ENDPOINT, {
-        method: activity.id && activity.id > 0 ? "PUT" : "POST",
+        method: activity.id ? "PUT" : "POST",
         headers: options.headers,
         body: JSON.stringify({ ...activity, isOffline: true }),
       });
@@ -62,6 +68,11 @@ export const useUpdateActivityMutation = () => {
       return response.json();
     },
     onSuccess: (data: MutationData, variables: MutationVariables) => {
+      // Invalidate broader queries to trigger refetch instantly on save
+      queryClient.invalidateQueries({
+        queryKey: ["travel"],
+      });
+      
       //TODO: might separatte POST and PUT for clarity
       queryClient.setQueryData(
         ["selectedTravelPlan"],
@@ -227,7 +238,7 @@ export const useDeleteActivityMutation = () => {
   });
 };
 
-export const useItineraryActivity = (activityId: number) => {
+export const useItineraryActivity = (activityId: string) => {
   return useQuery<ItineraryActivity, Error>({
     queryKey: [ITINERARY_QUERY_KEY, activityId],
     queryFn: () => fetchItineraryActivity(activityId),

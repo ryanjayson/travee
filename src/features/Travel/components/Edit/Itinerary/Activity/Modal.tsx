@@ -23,7 +23,7 @@ interface ActivityModalProps {
   onClose: () => void;
   // onSave: (title: string, description: string) => void;
   itineraryActivity: ItineraryActivity | null;
-  itinerarySectionId?: number;
+  itinerarySectionId?: string;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -115,7 +115,7 @@ const ActivityModal = ({
 
           <View style={styles.header} className="py-2.5">
             <Text className="tracking-wider uppercase text-sm text-gray-500">
-              {itineraryActivity?.id && itineraryActivity?.id > 0
+              {itineraryActivity?.id 
                 ? "Edit Activity"
                 : "Add Activity"}
             </Text>

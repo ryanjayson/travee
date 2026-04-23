@@ -5,8 +5,9 @@ import { postRequestOptions } from "../../../utils/apiUtils";
 import {
   fetchTravels,
   fetchTravel,
+  fetchTravelPlan,
 } from "../../../services/api/travel";
-import { saveTravelLocally, getTravelsLocally } from "../../../services/local/travelService";
+import { saveTravelLocally, getTravelsLocally, getTravelPlanLocally } from "../../../services/local/travelService";
 
 const TRAVEL_ENDPOINT = `${API_BASE_URL}/travel`;
 const TRAVEL_QUERY_KEY = ["travel"];
@@ -28,17 +29,17 @@ export const useUpdateTravel = () => {
   const updateTravelMutation = useMutation<
     MutationData,
     MutationError,
-    { id?: number; data: CreateTravelData | UpdateTravelData }
+    { id?: string; data: CreateTravelData | UpdateTravelData }
   >({
     mutationFn: async ({ id, data }) => {
 
-      if (data.isOffline || true) { // Forced true as per user request
-      console.log('isOfflineSaving')
-
+      if (data.isOffline) { // Forced true as per user request on v1
         try {
-          await saveTravelLocally(data, id);
+          const localTravel = await saveTravelLocally(data, id);
+          return { data: localTravel, isSuccess: true };
         } catch (err) {
           console.error("Local Save Error:", err);
+          throw new Error("Failed to save travel locally.");
         }
       }
 
@@ -81,27 +82,45 @@ export const useUpdateTravel = () => {
  * Custom hook to fetch a travel itinerary by ID using React Query.
  * @param travelId The ID of the travel itinerary to fetch.
  */
-export const useTravel = (travelId: number) => {
+export const useTravel = (travelId: string) => {
   return useQuery<Travel, Error>({
-    // The query key is an array containing the base key and the dynamic ID
     queryKey: [TRAVEL_QUERY_KEY, travelId],
-
-    // The queryFn must be passed a function that takes the ID
-    queryFn: () => fetchTravel(travelId),
-
-    // Only run the query if a valid travelId is provided (prevents unnecessary fetching)
+    queryFn: async () => {
+      if (isNaN(Number(travelId))) {
+        // Purely string IDs belong exclusively to local WatermelonDB creations
+        const localData = await getTravelPlanLocally(travelId);
+        return localData.travel;
+      }
+      try {
+        return await fetchTravel(travelId);
+      } catch (apiError) {
+        console.warn("API fetch failed, attempting local fallback.");
+        const localData = await getTravelPlanLocally(travelId);
+        return localData.travel;
+      }
+    },
     enabled: !!travelId,
-
-    staleTime: 5 * 60 * 1000, // Data is considered fresh for 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 };
 
-export const useTravelPlan = (travelId: number) => {
+export const useTravelPlan = (travelId: string) => {
   return useQuery<TravelPlan, Error>({
-    queryKey: ["selectedTravelPlan"],
-    queryFn: () => fetchTravelPlan(travelId),
+    queryKey: ["selectedTravelPlan", travelId],
+    queryFn: async () => {
+      // If it's a string, it generated locally and offline
+      if (travelId) {
+        return await getTravelPlanLocally(travelId);
+      }
+      
+      try {
+        return await fetchTravelPlan(travelId);
+      } catch (err) {
+        console.warn("API fetch failed for travel plan, falling back to local database", err);
+        return await getTravelPlanLocally(travelId);
+      }
+    },
     enabled: !!travelId,
-    // staleTime: 5 * 60 * 1000,
   });
 };
 

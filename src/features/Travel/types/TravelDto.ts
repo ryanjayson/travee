@@ -6,7 +6,7 @@ export interface TravelPlan {
 }
 
 export interface Travel {
-  id?: number;
+  id?: string;
   title: string;
   description?: string;
   destination?: string;
@@ -23,7 +23,7 @@ export interface Travel {
 }
 
 export interface ItinerarySection {
-  id?: number;
+  id?: string;
   title: string;
   description?: string;
   destination?: string;
@@ -36,7 +36,7 @@ export interface ItinerarySection {
   itineraryActivity?: ItineraryActivity[];
   isDefaultSection?: boolean;
   isCollapsed?: boolean;
-  travelId?: number;
+  travelId?: string;
   sortOrder: string;
   isOffline?: boolean;
 }
@@ -44,8 +44,8 @@ export interface ItinerarySection {
 export interface ItineraryActivity {
   //TODO might use ItineraryEvent for both section and event
   //TODO change id to type to UUID
-  id?: number;
-  sectionId?: number;
+  id?: string;
+  sectionId?: string;
   title: string;
   description?: string;
   destination?: string;

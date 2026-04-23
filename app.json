@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "travee",
-    "slug": "travee",
+    "name": "travie",
+    "slug": "travie",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -22,7 +22,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.travee"
+      "package": "com.anonymous.travie"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -1,5 +1,5 @@
 export type UpdateSortVariables = {
-  id: number;
+  id: string;
   prevSortOrder?: string;
   nextSortOrder?: string;
 };

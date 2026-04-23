@@ -8,12 +8,9 @@ import {
   StatusBar,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { Travel, CreateTravelData } from "../../../../types/TravelDto";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import DestinationSelector from "../../../DestinationSelector";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { ButtonStyle } from "../../../../../../styles/common";
 import TouchButton from "../../../../../../components/atoms/TouchButton";
 import { ItineraryActivity } from "../../../../types/TravelDto";
 import { useUpdateActivityMutation } from "../../../../hooks/useActivity";
@@ -35,7 +32,7 @@ interface Place {
 }
 
 interface EditActivityProps {
-  itinerarySectionId?: number;
+  itinerarySectionId?: string;
   itineraryActivity: ItineraryActivity | null;
   onClose: () => void;
 }
@@ -45,13 +42,15 @@ const TravelSchema = Yup.object().shape({
 });
 
 export interface ActivityFormValues {
-  travelId?: number;
-  sectionId?: number;
-  id?: number;
+  travelId?: string;
+  sectionId?: string;
+  id?: string;
   title: string;
   description: string;
   type?: ActivityType | number;
   sortOrder?: string;
+  startDate: string | null;
+  startTime: string;
   endDate: string | null;
   endTime: string;
   destination: string;
@@ -81,7 +80,7 @@ const EditActivity = ({
     if (
       values?.sectionId &&
       selectedTravelPlan &&
-      selectedTravelPlan?.id > 0
+      selectedTravelPlan?.id
     ) {
       // Build proper Date objects from strings
       let finalStartDate: Date | undefined = undefined;
@@ -96,16 +95,16 @@ const EditActivity = ({
 
       const payload: ItineraryActivity = {
         id: values.id,
-        travelId: values.travelId,
         sectionId: values.sectionId,
         title: values.title,
         description: values.description,
         sortOrder: values.sortOrder || "",
-        type: values.type,
+        type: values.type as ActivityType,
         startDate: finalStartDate,
         endDate: finalEndDate,
         destination: values.destination,
         destinationData: values.destinationData,
+        isOffline: isNaN(Number(selectedTravelPlan?.id)),
       };
 
       await updateMutation.mutateAsync(payload);
@@ -113,8 +112,8 @@ const EditActivity = ({
     }
   };
 
-  const handleDeleteActivity = (activityId: number) => {
-    if (itinerarySectionId && itinerarySectionId > 0 && activityId > 0) {
+  const handleDeleteActivity = (activityId: string) => {
+    if (itinerarySectionId && activityId) {
       deleteActivityMutation({
         sectionId: itinerarySectionId,
         activityId: activityId,
@@ -139,8 +138,8 @@ const EditActivity = ({
         startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : "08:00",
         endDate: itineraryActivity?.endDate ? new Date(itineraryActivity.endDate).toISOString().split('T')[0] : null,
         endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? new Date(itineraryActivity.endDate).toISOString().substring(11, 16) : "09:00",
-        destination: itineraryActivity?.destination || (itineraryActivity?.id ? "" : selectedTravelPlan?.destination || ""),
-        destinationData: itineraryActivity?.destinationData || (itineraryActivity?.id ? undefined : selectedTravelPlan?.destinationData),
+        destination: itineraryActivity?.destination || (itineraryActivity?.id ? "" : itineraryActivity?.destination || ""),
+        destinationData: itineraryActivity?.destinationData || (itineraryActivity?.id ? undefined : itineraryActivity?.destinationData),
       }}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}
@@ -309,7 +308,7 @@ const EditActivity = ({
                 </View>
               </View>
 
- {itineraryActivity?.id && itineraryActivity?.id > 0 && (
+ {itineraryActivity?.id && (
                  <>
                  <Divider/>
               <View className="py-5 px-2.5 flex-1 flex-row items-center gap-2.5">
@@ -320,7 +319,7 @@ const EditActivity = ({
                 <View className="flex-1">
                   <TouchableOpacity 
                    onPress={() =>
-                      handleDeleteActivity(itineraryActivity?.id || 0)
+                      handleDeleteActivity(itineraryActivity?.id || "")
                     }
                     disabled={isPending}
                       >
@@ -337,7 +336,7 @@ const EditActivity = ({
             <View className="absolute left-0 right-0 bottom-0 p-2.5 ">
               <TouchButton
                 buttonText={
-                  itineraryActivity?.id && itineraryActivity?.id > 0
+                  itineraryActivity?.id
                     ? "Update Activity"
                     : "Add Activity"
                 }

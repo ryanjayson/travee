@@ -24,7 +24,78 @@ export const getTravelsLocally = async (): Promise<any[]> => {
   }));
 };
 
-export const saveTravelLocally = async (travelData: any, id?: number) => {
+export const getTravelPlanLocally = async (id: number | string): Promise<any> => {
+  try {
+    const t = await database.get<Travel>("travels").find(id.toString());
+    const travelDto = {
+      id: t.id,
+      title: t.title,
+      description: t.description,
+      destination: t.destination,
+      destinationData: t.destinationData ? JSON.parse(t.destinationData) : undefined,
+      startDate: t.startDate,
+      endDate: t.endDate,
+      status: t.status,
+      budget: t.budget,
+      notes: t.notes,
+      isOffline: t.isOffline,
+    };
+
+    const sections = await database.get<Section>("itinerary_sections").query(
+      Q.where("travel_id", id.toString())
+    ).fetch();
+
+    const itinerarySection = await Promise.all(sections.map(async (s) => {
+      const activities = await database.get<Activity>("itinerary_activities").query(
+        Q.where("section_id", s.id)
+      ).fetch();
+
+      const itineraryActivity = activities.map((a) => ({
+        id: a.id,
+        sectionId: s.id,
+        title: a.title,
+        description: a.description,
+        destination: a.destination,
+        destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
+        startDate: a.startDate,
+        endDate: a.endDate,
+        budget: a.budget,
+        notes: a.notes,
+        isOffline: a.isOffline,
+        sortOrder: a.sortOrder,
+        type: a.type,
+        secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
+        images: a.images ? JSON.parse(a.images) : undefined,
+      }));
+
+      return {
+        id: s.id,
+        title: s.title,
+        description: s.description,
+        destination: s.destination,
+        startDate: s.startDate,
+        endDate: s.endDate,
+        budget: s.budget,
+        notes: s.notes,
+        isOffline: s.isOffline,
+        sortOrder: s.sortOrder,
+        isDefaultSection: s.isDefaultSection,
+        isCollapsed: s.isCollapsed,
+        travelId: t.id,
+        itineraryActivity,
+      };
+    }));
+
+    return {
+      travel: travelDto,
+      itinerarySection,
+    };
+  } catch (err) {
+    throw new Error(`Travel Plan not found locally with ID: ${id}`);
+  }
+};
+
+export const saveTravelLocally = async (travelData: any, id?: string) => {
   return await database.write(async () => {
     if (id) {
       const travel = await database.get<Travel>("travels").find(id.toString());
@@ -62,7 +133,7 @@ export const saveTravelLocally = async (travelData: any, id?: number) => {
   });
 };
 
-export const saveSectionLocally = async (sectionData: any, id?: number) => {
+export const saveSectionLocally = async (sectionData: any, id?: string) => {
   return await database.write(async () => {
     if (id) {
       const section = await database.get<Section>("itinerary_sections").find(id.toString());
@@ -85,7 +156,7 @@ export const saveSectionLocally = async (sectionData: any, id?: number) => {
     } else {
       return await database.get<Section>("itinerary_sections").create((s) => {
         if (sectionData.travelId) {
-          s._raw.set("travel_id", sectionData.travelId.toString());
+          s.travel.id = sectionData.travelId.toString();
         }
         Object.assign(s, {
           title: sectionData.title,
@@ -105,7 +176,7 @@ export const saveSectionLocally = async (sectionData: any, id?: number) => {
   });
 };
 
-export const saveActivityLocally = async (activityData: any, id?: number) => {
+export const saveActivityLocally = async (activityData: any, id?: string) => {
   return await database.write(async () => {
     if (id) {
       const activity = await database.get<Activity>("itinerary_activities").find(id.toString());
@@ -130,7 +201,7 @@ export const saveActivityLocally = async (activityData: any, id?: number) => {
     } else {
       return await database.get<Activity>("itinerary_activities").create((a) => {
         if (activityData.sectionId) {
-          a._raw.set("section_id", activityData.sectionId.toString());
+          a.section.id = activityData.sectionId.toString();
         }
         Object.assign(a, {
           title: activityData.title,

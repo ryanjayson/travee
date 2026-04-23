@@ -10,7 +10,7 @@ const TRAVELS_LIST_ENDPOINT = `${API_BASE_URL}/travel/catalog`;
  * @param travelId The ID of the travel itinerary to fetch.
  * @returns A promise that resolves to the Travel object.
  */
-export const fetchTravel = async (travelId: number): Promise<Travel> => {
+export const fetchTravel = async (travelId: string): Promise<Travel> => {
   if (!travelId) {
     throw new Error("Travel ID is required for fetching a single itinerary.");
   }
@@ -84,7 +84,7 @@ export const fetchTravels = async (): Promise<Travel[]> => {
 };
 
 export const fetchTravelPlan = async (
-  travelId: number,
+  travelId: string,
 ): Promise<TravelPlan> => {
   // Implicitly return the awaited promise result
   const url = `${TRAVEL_ENDPOINT}/${travelId}`;

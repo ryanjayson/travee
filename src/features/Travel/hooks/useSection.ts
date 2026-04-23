@@ -13,7 +13,7 @@ const ITINERARY_SECTION_QUERY_KEY = ["itinerarySection"];
 const SELECTED_TRAVEL_PLAN_QUERY_KEY = ["selectedTravelPlan"];
 
 export type UpdateSectionSortVariables = {
-  id: number;
+  id: string;
   prevSortOrder?: string;
   nextSortOrder?: string;
 };
@@ -26,7 +26,7 @@ type MutationVariables = ItinerarySection;
 type MutationData = ApiResponse<ItinerarySection>;
 type MutationError = Error; // Standard Error object
 type DeleteVariables = {
-  sectionId: number;
+  sectionId: string;
 };
 
 // -------------------------------------------------------------
@@ -40,17 +40,23 @@ export const useUpdateSectionMutation = () => {
     MutationVariables
   >({
     mutationFn: async (section) => {
-      // Forced true as per user request to save locally
-      try {
-        await saveSectionLocally(section, section.id && section.id > 0 ? section.id : undefined);
-      } catch (err) {
-        console.error("Local Save Error (Section):", err);
+      // Offline-first check: Detect alphanumeric WatermelonDB string IDs or inherited offline status
+      const hasStringId = section.id && isNaN(Number(section.id));
+      if (section.isOffline || hasStringId) {
+        try {
+          const localSectionId = section.id ? section.id : undefined;
+          const localSection = await saveSectionLocally(section, localSectionId);
+          return { data: localSection, isSuccess: true };
+        } catch (err) {
+          console.error("Local Save Error (Section):", err);
+          throw new Error("Failed to save section locally.");
+        }
       }
 
       const options = postRequestOptions("");
 
       const response = await fetch(ACTIVITY_SECTIONS_ENDPOINT, {
-        method: section.id && section.id > 0 ? "PUT" : "POST",
+        method: section.id ? "PUT" : "POST",
         headers: options.headers,
         body: JSON.stringify({ ...section, isOffline: true }),
       });
@@ -82,14 +88,9 @@ export const useUpdateSectionMutation = () => {
       console.log("var", variables);
 
       // Invalidate the broader itinerary query key to refetch the entire trip data
-      // This ensures all related screens update with the new section
-      // queryClient.invalidateQueries({
-      //   queryKey: ITINERARY_QUERY_KEY,
-      // });
-
-      // queryClient.invalidateQueries({
-      //   queryKey: ["travel"],
-      // });
+      queryClient.invalidateQueries({
+        queryKey: ["travel"],
+      });
 
       // Example: Manual update for a specific section within a trip // Optional: Manual update for better UI speed (if you have the full itinerary key)
       // queryClient.setQueryData(

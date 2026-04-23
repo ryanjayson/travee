@@ -44,7 +44,11 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
 
   const handleSaveSection = async (itinerarySectionData: ItinerarySection) => {
     debugger;
-    if (itinerarySectionData?.travelId && itinerarySectionData?.travelId > 0) {
+    
+    const isValidId = !!itinerarySectionData?.travelId;
+    
+    if (isValidId) {
+      itinerarySectionData.isOffline = isNaN(Number(itinerarySectionData.travelId));
       await updateMutation.mutateAsync(itinerarySectionData);
       onClose();
     }
@@ -170,7 +174,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                 <Text className="text-white font-semibold text-base">
                   {isSubmitting || updateMutation.isPending
                     ? "Saving..."
-                    : itinerarySection?.id && itinerarySection?.id > 0
+                    : itinerarySection?.id
                     ? "Update Section"
                     : "Add Section"}
                 </Text>

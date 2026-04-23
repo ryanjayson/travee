@@ -57,12 +57,12 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   const [sections, setSections] = useState<ItinerarySection[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [sectionModalVisible, setSectionModalVisible] = useState(false);
-  const [currentSectionId, setCurrentSectionId] = useState<number | null>(null);
+  const [currentSectionId, setCurrentSectionId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [sectionDragState, setSectionDragState] = useState<{
-    sectionId: number;
+    sectionId: string;
     isDragging: boolean;
     dragIndex: number | null;
   } | null>(null);
@@ -81,17 +81,17 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     "general" | "section" | null
   >(null);
   const [editingActivitySectionId, setEditingActivitySectionId] = useState<
-    number | null
+    string | null
   >(null);
-  const [expandedSectionIds, setExpandedSectionIds] = useState<Set<number>>(
+  const [expandedSectionIds, setExpandedSectionIds] = useState<Set<string>>(
     new Set(),
   );
-  const [hoverState, setHoverState] = useState<{ sectionId: number | null, index: number } | null>(null);
+  const [hoverState, setHoverState] = useState<{ sectionId: string | null, index: number } | null>(null);
 
   const [masterDragState, setMasterDragState] = useState<{ isDragging: boolean, dragIndex: number | null }>({ isDragging: false, dragIndex: null });
   const [masterHoverState, setMasterHoverState] = useState<{ index: number } | null>(null);
-  const sectionRefs = useRef<Record<number, any>>({});
-  const sectionBounds = useRef<Record<number, { pageY: number, height: number }>>({});
+  const sectionRefs = useRef<Record<string, any>>({});
+  const sectionBounds = useRef<Record<string, { pageY: number, height: number }>>({});
   
   // Auto-scrolling Refs
   const scrollViewRef = useRef<ScrollView>(null);
@@ -133,7 +133,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
             ...activity,
           }),
         ),
-        isCollapsed: expandedSectionIds.has(section.id || 0)
+        isCollapsed: expandedSectionIds.has(section.id || "")
           ? true
           : section.isCollapsed,
       })) ?? [],
@@ -200,7 +200,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   //   }
   // };
 
-  const toggleSectionCollapse = (sectionId: number) => {
+  const toggleSectionCollapse = (sectionId: string) => {
     setSections(
       sections &&
         sections.map((section) =>
@@ -230,7 +230,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
 
   const handleSectionActivityPress = (
     activity: ItineraryActivity,
-    sectionId: number,
+    sectionId: string,
   ) => {
     debugger;
     setEditingActivity(activity);
@@ -286,13 +286,13 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     }
   };
 
-  const handleSectionActivityDragStart = (sectionId: number, index: number) => {
+  const handleSectionActivityDragStart = (sectionId: string, index: number) => {
     // Measure all visible sections
     initialScrollY.current = scrollOffset.current;
     Object.entries(sectionRefs.current).forEach(([idStr, ref]) => {
       if (ref && ref.measure) {
         ref.measure((x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
-          sectionBounds.current[Number(idStr)] = { pageY, height };
+          sectionBounds.current[idStr] = { pageY, height };
         });
       }
     });
@@ -300,7 +300,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   };
 
   const handleSectionActivityDragEnd = (
-    sourceSectionId: number,
+    sourceSectionId: string,
     activity: ItineraryActivity,
     fromIndex: number,
     _: number,
@@ -376,7 +376,7 @@ debugger;
   };
   const handleMenuAddSection = () => {
     debugger;
-    setCurrentSectionId(0);
+    setCurrentSectionId(null);
     setSectionModalVisible(true);
     setMenuVisible(false);
   };
@@ -391,17 +391,17 @@ debugger;
     debugger;
 
     if (currentSectionForMenu) {
-      setCurrentSectionId(currentSectionForMenu.id ?? 0);
+      setCurrentSectionId(currentSectionForMenu.id ?? null);
     } else {
       setCurrentSectionId(
-        travelSections?.find((section) => section.isDefaultSection)?.id || 0,
+        travelSections?.find((section) => section.isDefaultSection)?.id || null,
       );
     }
     setModalVisible(true);
     setSectionMenuVisible(false);
   };
 
-  const handleSectionMenuEditSection = (sectionId: number) => {
+  const handleSectionMenuEditSection = (sectionId: string) => {
     if (currentSectionForMenu) {
       setEditingSection(currentSectionForMenu);
       setEditSectionModalVisible(true);
@@ -416,8 +416,8 @@ debugger;
     setSectionMenuVisible(false);
   };
 
-  const handleSectionMenuDelete = (sectionId: number) => {
-    if (sectionId > 0) {
+  const handleSectionMenuDelete = (sectionId: string) => {
+    if (sectionId) {
       deleteSectionMutation({ sectionId });
     }
   };
@@ -430,7 +430,7 @@ debugger;
 
     let foundIntersection = false;
     for (const [idStr, bounds] of Object.entries(sectionBounds.current) as [string, { pageY: number, height: number }][]) {
-      const id = Number(idStr);
+      const id = idStr;
       const shiftedTop = bounds.pageY - scrollDelta;
       const shiftedBottom = shiftedTop + bounds.height;
 
@@ -546,7 +546,7 @@ debugger;
             {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
               <TouchableOpacity
                 key={activity.id}
-                onPress={() => handleSectionActivityPress(activity, section.id || 0)}
+                onPress={() => handleSectionActivityPress(activity, section.id || "")}
                 activeOpacity={1}
                 style={{
                   zIndex:
@@ -585,13 +585,13 @@ debugger;
                   }
                   onDragStart={(idx: number) =>
                     handleSectionActivityDragStart(
-                      section.id || 0,
+                      section.id || "",
                       idx,
                     )
                   }
                   onDragEnd={(fromIdx: number, _: number) =>
                     handleSectionActivityDragEnd(
-                      section.id || 0,
+                      section.id || "",
                       activity,
                       fromIdx,
                       0,
@@ -684,7 +684,7 @@ debugger;
                 <View className="mx-[18px]">
                   <TouchableOpacity
                     className="px-2 flex-1 flex-row"
-                    onPress={() => toggleSectionCollapse(section.id || 0)}
+                    onPress={() => toggleSectionCollapse(section.id || "")}
                   >
                     <View className="flex-1">
                       <Text
@@ -760,7 +760,7 @@ debugger;
                             onPress={() =>
                               handleSectionActivityPress(
                                 activity,
-                                section.id || 0,
+                                section.id || "",
                               )
                             }
                             activeOpacity={0.7}
@@ -802,13 +802,13 @@ debugger;
                               }
                               onDragStart={(idx: number) =>
                                 handleSectionActivityDragStart(
-                                  section.id || 0,
+                                  section.id || "",
                                   idx,
                                 )
                               }
                               onDragEnd={(fromIdx: number, toIdx: number) =>
                                 handleSectionActivityDragEnd(
-                                  section.id || 0,
+                                  section.id || "",
                                   activity,
                                   fromIdx,
                                   toIdx,
@@ -1021,7 +1021,7 @@ debugger;
               className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
               activeOpacity={0.7}
               onPress={() =>
-                handleSectionMenuEditSection(selectedSection?.id || 0)
+                handleSectionMenuEditSection(selectedSection?.id || "")
               }
             >
               <Icon name="segment" size={24} color={"#183B7A"} />
@@ -1040,7 +1040,7 @@ debugger;
             <TouchableOpacity
               className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
               activeOpacity={0.7}
-              onPress={() => handleSectionMenuDelete(selectedSection?.id || 0)}
+              onPress={() => handleSectionMenuDelete(selectedSection?.id || "")}
               disabled={isPending}
             >
               <Icon name="delete-outline" size={24} color={"#c93030"} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
+import { View, Text, TouchableOpacity, Modal } from "react-native";
 import ViewTravel from ".";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
@@ -11,7 +11,7 @@ import { useTravelPlan } from "../../hooks/useTravel";
 import { useTravelContext } from "../../../../context/TravelContext";
 
 interface ViewTripModalProps {
-  travelId: number;
+  travelId: string;
   showModal?: boolean;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -64,34 +64,21 @@ const ViewTripModal = ({
       animationType="slide"
       onRequestClose={handleCancel}
     >
-      <View style={styles.overlay}>
-        <View
-          style={{
-            padding: 6,
-            borderBottomWidth: 1,
-            borderColor: "#eee",
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
+      <View className="flex-1 bg-white justify-end pt-10">
+        <View className="p-1.5 border-b border-[#eee] flex-row items-center">
           <TouchableOpacity
-            style={{ paddingRight: 14, padding: 2 }}
+            className="pr-3.5 p-0.5"
             onPress={handleCancel}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
             <Icon name="keyboard-arrow-left" size={36} color={"#000"} />
           </TouchableOpacity>
-          <Text style={{ fontSize: 20, fontWeight: "500" }}>
+          <Text className="text-xl font-medium">
             {travelPlan && <Text>{selectedTravelPlan?.title}</Text>}
           </Text>
           <TouchableOpacity
-            style={{
-              paddingRight: 14,
-              padding: 2,
-              position: "absolute",
-              right: 0,
-            }}
+            className="pr-3.5 p-0.5 absolute right-0"
             onPress={() => setShowTravelNavigationModal(true)}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -99,7 +86,7 @@ const ViewTripModal = ({
             <Icon name="more-vert" size={24} color={"#000"} />
           </TouchableOpacity>
         </View>
-        <View style={styles.modalContainer}>
+        <View className="bg-white flex-1">
           {travelPlan && (
             <ViewTravel travelPlan={travelPlan} onClose={handleCancel} />
           )}
@@ -116,15 +103,3 @@ const ViewTripModal = ({
 };
 
 export default ViewTripModal;
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "#fff",
-    justifyContent: "flex-end",
-  },
-  modalContainer: {
-    backgroundColor: "white",
-    flex: 1,
-  },
-});

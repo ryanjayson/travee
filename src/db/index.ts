@@ -9,7 +9,7 @@ import Activity from "./models/Activity";
 const adapter = new SQLiteAdapter({
   schema,
   // (Optional) Database name
-  dbName: "travee_db",
+  dbName: "travie_db",
   // (Recommended) Setting this to false might improve performance
   jsi: false,
   onSetUpError: (error) => {
