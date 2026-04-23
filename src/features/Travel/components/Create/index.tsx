@@ -6,6 +6,8 @@ import {
   Modal,
   Animated,
   Image,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import TouchButton from "../../../../components/atoms/TouchButton";
@@ -111,7 +113,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
   return (
     <View className="flex-1 justify-end bg-white rounded-t-[20px]">
       <View className="flex-row justify-between items-center px-5 py-4 border-b border-[#E0E0E0]">
-        <Text className="text-xl text-gray-900 font-bold">Create Next Trip</Text>
+        <Text className="text-xl text-gray-900 font-bold">Create next trip</Text>
         <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
           <Text className={`text-base ${isSaving ? "text-[#999]" : "text-primary"}`}>
             Cancel
@@ -119,7 +121,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 p-[15px] mb-[15px] bg-gray-50" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 p-[15px] bg-gray-50" showsVerticalScrollIndicator={false}>
         {error && (
           <View className="bg-[#FFEBEE] rounded-lg p-3 mb-4 border border-[#FFCDD2]">
             <Text className="text-[#D32F2F] text-sm">{error}</Text>
@@ -408,8 +410,8 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                   marginTop: 6,
                   height: 120,
                   fontSize: 14,
-                  paddingTop: 0,
                 }}
+                textAlignVertical="top"
                 contentStyle={{
                   backgroundColor: "transparent",
                 }}
@@ -473,7 +475,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </View> */}
       </ScrollView>
 
-      <View className="px-5 py-1 border-t border-gray-200">
+      <View className="px-5 py-4 border-t border-gray-200">
         <TouchButton
           buttonText="Create Trip"
           onPress={() => formik.handleSubmit()}

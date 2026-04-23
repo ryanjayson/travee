@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Modal, Animated, Dimensions } from "react-native";
+import { View, Modal, Animated, Dimensions, KeyboardAvoidingView, Platform } from "react-native";
 import Create from ".";
 
 interface AddTripModalProps {
@@ -26,11 +26,16 @@ const CreateTripModal = ({
       animationType="slide"
       onRequestClose={handleCancel}
     >
-      <View className="flex-1 bg-black/50 justify-end my-10">
-        <Animated.View className="bg-white flex-1" style={{ height: modalHeight }}>
-          <Create onClose={handleCancel} />
-        </Animated.View>
-      </View>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        style={{ flex: 1, paddingTop: 40, paddingBottom: 10 }}
+      >
+        <View className="flex-1 bg-black/50 justify-end">
+          <Animated.View className="bg-white flex-1">
+            <Create onClose={handleCancel} />
+          </Animated.View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
