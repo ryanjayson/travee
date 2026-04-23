@@ -84,12 +84,19 @@ export const useUpdateSectionMutation = () => {
 
     // 5. Implement robust cache invalidation
     onSuccess: (data: MutationData, variables: MutationVariables) => {
-      console.log("data", data);
-      console.log("var", variables);
-
       // Invalidate the broader itinerary query key to refetch the entire trip data
       queryClient.invalidateQueries({
         queryKey: ["travel"],
+      });
+
+      if (variables.travelId) {
+        queryClient.invalidateQueries({
+          queryKey: ["travel", variables.travelId],
+        });
+      }
+
+      queryClient.invalidateQueries({
+        queryKey: ["selectedTravelPlan"],
       });
 
       // Example: Manual update for a specific section within a trip // Optional: Manual update for better UI speed (if you have the full itinerary key)

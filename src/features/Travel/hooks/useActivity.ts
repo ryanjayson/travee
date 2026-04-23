@@ -8,7 +8,7 @@ import {
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { fetchItineraryActivity } from "../../../services/api/itinerary";
 import { ApiResponse } from "../../../types/api";
-import { saveActivityLocally } from "../../../services/local/travelService";
+import { saveActivityLocally, saveSectionLocally } from "../../../services/local/travelService";
 import { UpdateSortVariables } from "../types/ActivityDto";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
@@ -37,9 +37,16 @@ export const useUpdateActivityMutation = () => {
       if (activity.isOffline) {
         try {
           const localActivityId = activity.id ? activity.id : undefined;
-        activity.sectionId = activity.sectionId ? activity.sectionId : "default";
-
-        console.log("activity",activity)
+          
+          if (!activity.sectionId || activity.sectionId === "") {
+             const defaultSection = await saveSectionLocally({
+                title: "Activities",
+                isDefaultSection: true,
+                travelId: activity.travelId,
+                sortOrder: "0",
+             });
+             activity.sectionId = defaultSection.id;
+          }
 
           const localActivity = await saveActivityLocally(activity, localActivityId);
           return { data: localActivity, isSuccess: true };
@@ -75,8 +82,25 @@ export const useUpdateActivityMutation = () => {
       queryClient.invalidateQueries({
         queryKey: ["travel"],
       });
+
+      if (variables.travelId) {
+        queryClient.invalidateQueries({
+          queryKey: ["travel", variables.travelId],
+        });
+      }
+
+      queryClient.invalidateQueries({
+        queryKey: ["selectedTravelPlan"],
+      });
+
+      if (variables.id) {
+        queryClient.invalidateQueries({
+          queryKey: [ITINERARY_QUERY_KEY, variables.id],
+        });
+      }
       
-      //TODO: might separatte POST and PUT for clarity
+      // Keep manual update logic for performance, but invalidate is the source of truth
+      // TODO: might separate POST and PUT for clarity
       queryClient.setQueryData(
         ["selectedTravelPlan"],
         (oldData: TravelPlan | undefined) => {

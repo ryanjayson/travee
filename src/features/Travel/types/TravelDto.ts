@@ -63,6 +63,7 @@ export interface ItineraryActivity {
   images?: Images[];
   destinationData?: DestinationDto;
   isOffline?: boolean;
+  travelId?: string;
 }
 export interface Images {
   title: string;

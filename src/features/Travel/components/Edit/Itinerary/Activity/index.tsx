@@ -107,6 +107,7 @@ debugger;
         destination: values.destination,
         destinationData: values.destinationData,
         isOffline: true,
+        travelId: values.travelId,
       };
 
       await updateMutation.mutateAsync(payload);
@@ -167,17 +168,6 @@ debugger;
               keyboardShouldPersistTaps="handled"
             >
                 <View className="mb-5">
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.title}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.description}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.destination}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.endDate}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.startDate}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.endTime}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.startTime}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.sectionId}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.travelId}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.type}</Text>
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{errors.sortOrder}</Text>
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
                   <TextInput
                     mode="outlined"
@@ -198,9 +188,6 @@ debugger;
                     <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
                   )}
                 </View>
-                    <Text className="text-red-500 text-xs mt-1 ml-1">Travel ID - {values.travelId}</Text>
-                    <Text className="text-red-500 text-xs mt-1 ml-1">Section ID - {values.sectionId}</Text>
-
                 <View className="mb-5">
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Description</Text>
                   <TextInput

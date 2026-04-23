@@ -112,7 +112,7 @@ const ActivityItemCard = ({
             </Text>
 
           <Text style={Typography.small}>
-            {itineraryEventActivity.commentsCount} Comments |{" "}
+            {/* {itineraryEventActivity.commentsCount} Comments |{" "} */}
             {itineraryEventActivity.notesCount} Notes
           </Text>
         </TouchableOpacity>
