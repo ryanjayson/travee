@@ -323,7 +323,7 @@ const MapboxDestinationSelector = ({
   );
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white pt-[40px]">
       {/* Header */}
       <View className="flex-row items-center px-3 pt-3 pb-2 border-b border-gray-200 bg-white z-20">
         <TouchableOpacity

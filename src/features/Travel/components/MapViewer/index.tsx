@@ -132,22 +132,15 @@ const MapViewer = ({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.container}>
+      <View className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.backButton}>
-            <Icon name="arrow-back" size={24} color="#183B7A" />
-          </TouchableOpacity>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title} numberOfLines={1}>
-              {title}
-            </Text>
-          </View>
-        </View>
-
+   
         {/* Map */}
-        <View style={styles.mapContainer}>
+        <View className="flex-1">
+           <TouchableOpacity onPress={onClose} className="absolute top-[40px] left-5 z-50">
+            <Icon name="close" size={32} color="#555" />
+          </TouchableOpacity>
           <WebView
             source={{ html: mapHTML }}
             javaScriptEnabled
@@ -157,11 +150,22 @@ const MapViewer = ({
           />
         </View>
 
+        <View className="flex-row items-center pt-2.5 pb-2.5 rounded-t-xl pl-4">
+          <View className="flex-1 mr-4">
+            <Text className="text-2xl font-medium">
+              Activity Name
+            </Text>
+            <Text className="text-base">
+              {title}
+            </Text>
+          </View>
+        </View>
+
         {/* Footer info/controls if needed */}
-        <View style={styles.footer}>
-          <View style={styles.locationInfo}>
+        <View className="p-5 bg-white border-t border-[#eee]">
+          <View className="flex-row items-center">
             <Icon name="location-on" size={20} color="#0C4C8A" />
-            <Text style={styles.coordinateText}>
+            <Text className="ml-2 text-sm text-[#666] font-mono">
               {markers && markers.length > 0 
                 ? `${markers.length} Locations pinned`
                 : coordinates 
@@ -175,52 +179,5 @@ const MapViewer = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: 10,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    backgroundColor: "#fff",
-  },
-  backButton: {
-    padding: 15,
-  },
-  titleContainer: {
-    flex: 1,
-    marginRight: 15,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#183B7A",
-  },
-  mapContainer: {
-    flex: 1,
-  },
-  footer: {
-    padding: 20,
-    backgroundColor: "#fff",
-    borderTopWidth: 1,
-    borderTopColor: "#eee",
-  },
-  locationInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  coordinateText: {
-    marginLeft: 8,
-    fontSize: 14,
-    color: "#666",
-    fontFamily: "monospace",
-  },
-});
 
 export default MapViewer;
