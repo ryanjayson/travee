@@ -12,6 +12,8 @@ import {
   ActivityIndicator,
   StatusBar,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import EditActivity from "../Activity";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -88,7 +90,6 @@ const ActivityModal = ({
   });
 
   const handleCancel = () => {
-    debugger;
     Keyboard.dismiss();
     setError(null);
     setIsSaving(false);
@@ -98,41 +99,34 @@ const ActivityModal = ({
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <View style={styles.overlay}>
-        <Animated.View
-          className="rounded-t-[30px] bg-white"
-          style={[
-            { height: modalHeight },
-            { paddingTop: keyboardVisible ? 40 : 0 },
-          ]}
-        >
-          <StatusBar barStyle={"dark-content"} />
-          {/* <View style={styles.handleContainer}>
-            <Animated.View {...panResponder.panHandlers}>
-              <View style={styles.handleBar} />
-            </Animated.View>
-          </View> */}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "padding"} 
+        style={{ flex: 1 }}
+      >
+        <View style={styles.overlay}>
+          <Animated.View
+            className="rounded-t-[30px] bg-white"
+            style={[
+              { height: modalHeight },
+            ]}
+          >
+            <StatusBar barStyle={"dark-content"} />
+            {/* <View style={styles.handleContainer}>
+              <Animated.View {...panResponder.panHandlers}>
+                <View style={styles.handleBar} />
+              </Animated.View>
+            </View> */}
 
-          <View style={styles.header} className="py-2.5">
-            <Text className="tracking-wider uppercase text-sm text-gray-500">
-              {itineraryActivity?.id 
-                ? "Edit Activity"
-                : "Add Activity"}
-            </Text>
-            <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-              <Icon name="clear" size={36} color={"#333"} className="opacity-50"/>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.formContainer}>
-            <EditActivity
-              itinerarySectionId={itinerarySectionId}
-              itineraryActivity={itineraryActivity}
-              onClose={onClose}
-            />
-          </View>
-        </Animated.View>
-      </View>
+            <View className="flex-1">
+              <EditActivity
+                itinerarySectionId={itinerarySectionId}
+                itineraryActivity={itineraryActivity}
+                onClose={onClose}
+              />
+            </View>
+          </Animated.View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

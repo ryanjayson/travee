@@ -913,7 +913,6 @@ debugger;
       <ActivityModal //EDIT
         visible={editActivityModalVisible}
         onClose={() => {
-          debugger;
           setEditActivityModalVisible(false);
           setEditingActivity(null);
           // setEditingActivityType(null);

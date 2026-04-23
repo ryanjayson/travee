@@ -10,6 +10,8 @@ import {
   Dimensions,
   ActivityIndicator,
   StatusBar,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import EditSection from "../Section";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -91,40 +93,47 @@ const SectionModal = ({
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <View className="flex-1 bg-black/50 justify-end">
-        <Animated.View
-          className="rounded-t-[30px] bg-white"
-          style={[
-            { height: modalHeight },
-            { paddingTop: keyboardVisible ? 30 : 0 },
-          ]}
-        >
-          <StatusBar barStyle={"light-content"} />
-          <View className="items-center py-2.5">
-            <Animated.View {...panResponder.panHandlers}>
-              <View className="w-[30px] h-1 bg-[#999] rounded-sm" />
-            </Animated.View>
-          </View>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "padding"} 
+        style={{ flex: 1 }}
+      >
+        <View className="flex-1 bg-black/50 justify-end">
+          <Animated.View
+            className="rounded-t-[30px] bg-white"
+            // style={[
+            //   { height: keyboardVisible ? screenHeight * 0.8 : modalHeight },
+            // ]}
+             style={[
+              { height: modalHeight },
+            ]}
+          >
+            <StatusBar barStyle={"light-content"} />
+            <View className="items-center py-2.5">
+              <Animated.View {...panResponder.panHandlers}>
+                <View className="w-[30px] h-1 bg-[#999] rounded-sm" />
+              </Animated.View>
+            </View>
 
-          <View className="flex-row justify-between items-center px-5">
-            <Text className="tracking-wider uppercase text-sm text-gray-500">
-              {itinerarySection?.id && itinerarySection?.id > 0
-                ? "Edit Section"
-                : "Add Section"}
-            </Text>
-            <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-              <Icon name="clear" size={36} color={"#333"} />
-            </TouchableOpacity>
-          </View>
+            <View className="flex-row justify-between items-center px-5">
+              <Text className="tracking-wider uppercase text-sm text-gray-500">
+                {itinerarySection?.id && itinerarySection?.id !== ""
+                  ? "Edit Section"
+                  : "Add Section"}
+              </Text>
+              <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
+                <Icon name="clear" size={36} color={"#333"} />
+              </TouchableOpacity>
+            </View>
 
-          <View className="flex-1 px-2.5">
-            <EditSection
-              itinerarySection={itinerarySection}
-              onClose={onClose}
-            />
-          </View>
-        </Animated.View>
-      </View>
+            <View className="flex-1 px-2.5">
+              <EditSection
+                itinerarySection={itinerarySection}
+                onClose={onClose}
+              />
+            </View>
+          </Animated.View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

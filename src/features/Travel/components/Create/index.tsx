@@ -260,9 +260,9 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           </Modal>
         </View>
 
-        <View className="mb-5 z-10">
+        {/* <View className="mb-5 z-10">
           <CheckboxGroup initialOptions={destinationTypeOptions} title="Choose Destination type/s" />
-        </View>
+        </View> */}
 
         <View className="flex-row mb-5 gap-3">
           <View className="flex-1">

@@ -89,19 +89,13 @@ const EditTravelPlan = () => {
   } = useTravelPlan(travelId); // Pass the required ID
 
   useEffect(() => {
-    const setTravelContext = async () => {
-      if (travelPlan && travelPlan?.travel.id) {
-        clearTravelPlan();
-        const updatedTravelDetails = {
-          id: travelPlan.travel.id,
-          title: travelPlan.travel.title,
-        };
-        selectTravelPlan(updatedTravelDetails);
-      }
-    };
-
-    setTravelContext();
-  }, [travelPlan]);
+    if (travelPlan?.travel?.id && (selectedTravelPlan?.id !== travelPlan.travel.id || selectedTravelPlan?.title !== travelPlan.travel.title)) {
+      selectTravelPlan({
+        id: travelPlan.travel.id,
+        title: travelPlan.travel.title,
+      });
+    }
+  }, [travelPlan?.travel?.id, travelPlan?.travel?.title]);
 
   const handleAddMembers = (selectedFriends: Friend[]) => {
     setTripMembers([...tripMembers, ...selectedFriends]);
