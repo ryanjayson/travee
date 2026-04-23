@@ -306,8 +306,6 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     _: number,
   ) => {
 
-debugger;
-
     const targetSectionId =  hoverState?.sectionId ?? sourceSectionId;
     const toIndex = hoverState?.index ?? fromIndex;
 
@@ -388,8 +386,6 @@ debugger;
   };
 
   const handleSectionMenuAddActivity = () => {
-    debugger;
-
     if (currentSectionForMenu) {
       setCurrentSectionId(currentSectionForMenu.id ?? null);
     } else {

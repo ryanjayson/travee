@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  PanResponder,
 } from "react-native";
 
 // --- Types ---
@@ -29,28 +28,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, onTabChange }) => {
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
   const currentIndex = tabs.findIndex((tab) => tab.id === activeTabId);
 
-  const switchTab = (newIndex: number) => {
-    if (newIndex !== currentIndex && tabs[newIndex]) {
-      const newId = tabs[newIndex].id;
-      setActiveTabId(newId);
-      if (onTabChange) onTabChange(newId);
-    }
-  };
 
-  // Swipe navigation
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gesture) =>
-        Math.abs(gesture.dx) > Math.abs(gesture.dy) &&
-        Math.abs(gesture.dx) > 20,
-
-      onPanResponderRelease: (_, gesture) => {
-        const threshold = 50;
-        if (gesture.dx > threshold) switchTab(currentIndex - 1); // swipe right
-        else if (gesture.dx < -threshold) switchTab(currentIndex + 1); // swipe left
-      },
-    })
-  ).current;
 
   const renderTabButton = (tab: TabItem) => {
     const isActive = tab.id === activeTabId;
@@ -82,8 +60,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, onTabChange }) => {
       </ScrollView>
 
       {/* Tab Content with swipe */}
-      <ScrollView 
-        {...panResponder.panHandlers}>
+      <ScrollView>
         {activeTab ? (
           activeTab.content
         ) : (
