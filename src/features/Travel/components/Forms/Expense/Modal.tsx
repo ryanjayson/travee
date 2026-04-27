@@ -18,13 +18,14 @@ import {
 import EditExpense from "./index";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
-import { ItineraryExpense } from "../../../types/TravelDto";
+import { ItineraryExpense, ItineraryActivity } from "../../../types/TravelDto";
 
 interface ExpenseModalProps {
   visible: boolean;
   onClose: () => void;
   itineraryExpense: ItineraryExpense | null;
   activityId?: string;
+  activities?: ItineraryActivity[];
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -34,6 +35,7 @@ const ExpenseModal = ({
   onClose,
   itineraryExpense,
   activityId,
+  activities,
 }: ExpenseModalProps) => {
   const pan = useRef(new Animated.ValueXY()).current;
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.6);
@@ -74,6 +76,7 @@ const ExpenseModal = ({
               <EditExpense
                 itineraryExpense={itineraryExpense}
                 activityId={activityId}
+                activities={activities}
                 onClose={onClose}
               />
             </View>

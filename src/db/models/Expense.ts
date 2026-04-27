@@ -16,6 +16,8 @@ export default class Expense extends Model {
   @date("date_time") dateTime!: Date;
   @text("currency") currency!: string | null;
   @text("category") category!: string | null;
+  @field("expense_category") expenseCategory!: number | null;
+  @text("user_id") userId!: string | null;
   @text("notes") notes!: string | null;
   @field("is_offline") isOffline!: boolean;
   

@@ -13,8 +13,14 @@ export const saveExpenseLocally = async (expenseData: ItineraryExpense): Promise
         record.dateTime = expenseData.dateTime;
         record.currency = expenseData.currency || null;
         record.category = expenseData.category || null;
+        record.expenseCategory = expenseData.expenseCategory ?? null;
+        record.userId = expenseData.userId || null;
         record.notes = expenseData.notes || null;
         record.isOffline = true;
+        // @ts-ignore
+        record.travel.id = expenseData.travelId;
+        // @ts-ignore
+        record.activity.id = expenseData.activityId || null;
       });
     } else {
       return await database.get<Expense>("itinerary_expenses").create((record) => {
@@ -23,6 +29,8 @@ export const saveExpenseLocally = async (expenseData: ItineraryExpense): Promise
         record.dateTime = expenseData.dateTime;
         record.currency = expenseData.currency || null;
         record.category = expenseData.category || null;
+        record.expenseCategory = expenseData.expenseCategory ?? null;
+        record.userId = expenseData.userId || null;
         record.notes = expenseData.notes || null;
         record.isOffline = true;
         // @ts-ignore
@@ -51,7 +59,11 @@ export const fetchLocalExpenses = async (travelId: string): Promise<ItineraryExp
     dateTime: e.dateTime,
     currency: e.currency || undefined,
     category: e.category || undefined,
+    expenseCategory: e.expenseCategory || undefined,
+    userId: e.userId || undefined,
     notes: e.notes || undefined,
     isOffline: e.isOffline,
+    createdAt: e.createdAt,
+    updatedAt: e.updatedAt,
   }));
 };
