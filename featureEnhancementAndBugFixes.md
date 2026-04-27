@@ -1,4 +1,4 @@
-- [x] copy the expense implementation to notes
-- [x] add tables, dto and service for notes
-- [x] add image upload for notes
-- [x] in notes tab, show the notes in card style ui
+- in edit/forms/TripChecklist.tsx add form to add checklist group in modal pop up like form in expense
+- add searchbar for autocomplete of checklist group and activity in TripChecklist
+- add in autocomplete icon for group and activity
+- in checklist title, make it a card, that has title and optional description when clicked it save and add to appropriate checklist group or activity beased on the selected in item no.2 

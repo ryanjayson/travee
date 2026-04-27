@@ -35,7 +35,7 @@ import {
   useTravelContext,
 } from "../../../context/TravelContext";
 import TripDetail from "../components/Forms/TripDetail";
-import TripChecklist, { ChecklistItem } from "../components/Forms/TripChecklist";
+import TripChecklist from "../components/Forms/TripChecklist";
 import TripMembers from "../components/Forms/TripMembers";
 import TripSettings from "../components/Forms/TripSettings";
 
@@ -61,8 +61,7 @@ const EditTravelPlan = () => {
   // const EditTravelPlan = ({ tripData, onBack }: TripDetailPageProps) => {
   const [travelData, setTravelData] = useState<Travel>(sampleTravel[0]);
   const [activeTab, setActiveTab] = useState<TabType>("itinerary");
-  const [checklistItems, setChecklistItems] = useState<ChecklistItem[]>([]);
-  const [newItemText, setNewItemText] = useState("");
+
   const [addMemberModalVisible, setAddMemberModalVisible] = useState(false);
   const [tripMembers, setTripMembers] = useState<Friend[]>([]);
   const [itineraryData, setItineraryData] = useState<{
@@ -210,10 +209,7 @@ const EditTravelPlan = () => {
       title: "Checklist",
       content: (
         <TripChecklist
-          checklistItems={checklistItems}
-          setChecklistItems={setChecklistItems}
-          newItemText={newItemText}
-          setNewItemText={setNewItemText}
+          activities={travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
         />
       ),
     },
@@ -351,7 +347,7 @@ const EditTravelPlan = () => {
           >
             Settings
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity>ƒ
       </View> */}
 
       {/* <View style={styles.content}>{renderTabContent()}</View> */}

@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 7,
+  version: 8,
   tables: [
     tableSchema({
       name: "travels",
@@ -88,6 +88,39 @@ export const schema = appSchema({
         { name: "content", type: "string", isOptional: true },
         { name: "images", type: "string", isOptional: true }, // JSON array of URIs
         { name: "user_id", type: "string", isOptional: true },
+        { name: "is_offline", type: "boolean" },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "checklist_groups",
+      columns: [
+        { name: "travel_id", type: "string", isIndexed: true },
+        { name: "title", type: "string" },
+        { name: "description", type: "string", isOptional: true },
+        { name: "sort_order", type: "string" },
+        { name: "user_id", type: "string", isOptional: true },
+        { name: "is_offline", type: "boolean" },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "checklist_items",
+      columns: [
+        { name: "travel_id", type: "string", isIndexed: true },
+        { name: "activity_id", type: "string", isOptional: true, isIndexed: true },
+        { name: "checklist_group_id", type: "string", isOptional: true, isIndexed: true },
+        { name: "title", type: "string" },
+        { name: "description", type: "string", isOptional: true },
+        { name: "sort_order", type: "string" },
+        { name: "is_done", type: "boolean" },
+        { name: "user_id", type: "string", isOptional: true },
+        { name: "checked_by", type: "string", isOptional: true },
+        { name: "checked_at", type: "number", isOptional: true },
+        { name: "uncheck_by", type: "string", isOptional: true },
+        { name: "uncheck_at", type: "number", isOptional: true },
         { name: "is_offline", type: "boolean" },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },

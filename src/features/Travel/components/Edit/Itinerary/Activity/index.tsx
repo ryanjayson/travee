@@ -7,6 +7,9 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  TextInput as RNTextInput,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import { Calendar } from "react-native-calendars";
@@ -25,6 +28,8 @@ import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinati
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Image } from "react-native";
 import { DestinationDto } from "../../../../types/TravelDto";
+import { useSaveChecklistItemMutation, useChecklistItems, useToggleChecklistItemMutation, useDeleteChecklistItemMutation } from "../../../../hooks/useChecklist";
+import { useAuth } from "../../../../../Auth/hooks/AuthContext";
 
 interface Place {
   id: string;
@@ -73,8 +78,60 @@ const EditActivity = ({
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const updateMutation = useUpdateActivityMutation();
   const { selectedTravelPlan } = useTravelContext();
+  const { userToken } = useAuth();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
+
+  // Checklist state
+  const [newCheckTitle, setNewCheckTitle] = useState("");
+  const [newCheckDescription, setNewCheckDescription] = useState("");
+  const [showCheckDescription, setShowCheckDescription] = useState(false);
+  const saveChecklistItem = useSaveChecklistItemMutation();
+  const deleteChecklistItem = useDeleteChecklistItemMutation();
+  const toggleChecklistItem = useToggleChecklistItemMutation();
+  const travelId = selectedTravelPlan?.id || "";
+  const activityId = itineraryActivity?.id;
+  const { data: checklistItems = [] } = useChecklistItems(travelId);
+  const activityChecklistItems = checklistItems.filter(
+    (i) => activityId && i.activityId === activityId
+  );
+
+  const handleAddChecklistItem = async () => {
+    if (!newCheckTitle.trim() || !activityId || !travelId) return;
+    await saveChecklistItem.mutateAsync({
+      travelId,
+      activityId,
+      title: newCheckTitle.trim(),
+      description: newCheckDescription.trim() || undefined,
+      sortOrder: String(Date.now()),
+      isDone: false,
+      userId: userToken || "user",
+      isOffline: true,
+    });
+    setNewCheckTitle("");
+    setNewCheckDescription("");
+    setShowCheckDescription(false);
+  };
+
+  const handleToggleChecklistItem = async (item: any) => {
+    await toggleChecklistItem.mutateAsync({
+      id: item.id,
+      isDone: !item.isDone,
+      userId: userToken || "user",
+      travelId,
+    });
+  };
+
+  const handleDeleteChecklistItem = (item: any) => {
+    Alert.alert("Remove Item", `Remove "${item.title}"?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove",
+        style: "destructive",
+        onPress: () => deleteChecklistItem.mutate({ id: item.id, travelId }),
+      },
+    ]);
+  };
 
   const handleSaveActivity = async (
     values: ActivityFormValues,
@@ -324,6 +381,114 @@ debugger;
                   </TouchableOpacity>
                 </View>
 
+                {/* ─── Checklist Items for this Activity ──────────────────── */}
+                <View className="mb-5">
+                  <View className="flex-row items-center gap-2 mb-2">
+                    <Icon name="playlist-add-check" size={18} color="#0C4C8A" />
+                    <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase flex-1">
+                      Checklist Items
+                    </Text>
+                    {activityId && (
+                      <Text className="text-xs text-gray-400">
+                        {activityChecklistItems.filter(i => i.isDone).length}/{activityChecklistItems.length} done
+                      </Text>
+                    )}
+                  </View>
+
+                  {/* Existing items */}
+                  {activityChecklistItems.length > 0 && (
+                    <View className="bg-white rounded-[16px] border border-gray-100 shadow-sm mb-3 overflow-hidden">
+                      {activityChecklistItems.map((item) => (
+                        <View
+                          key={item.id}
+                          className="flex-row items-center gap-3 px-4 py-3 border-b border-gray-50"
+                        >
+                          <TouchableOpacity
+                            accessibilityRole="checkbox"
+                            onPress={() => handleToggleChecklistItem(item)}
+                            className={`w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0 ${
+                              item.isDone ? "bg-[#0C4C8A] border-[#0C4C8A]" : "border-[#0C4C8A]"
+                            }`}
+                          >
+                            {item.isDone && <Icon name="check" size={14} color="#FFF" />}
+                          </TouchableOpacity>
+                          <View className="flex-1">
+                            <Text className={`text-base ${item.isDone ? "line-through text-gray-400" : "text-gray-800 font-medium"}`}>
+                              {item.title}
+                            </Text>
+                            {item.description ? (
+                              <Text className="text-xs text-gray-400 mt-0.5">{item.description}</Text>
+                            ) : null}
+                          </View>
+                          <TouchableOpacity
+                            accessibilityRole="button"
+                            accessibilityLabel="Remove checklist item"
+                            onPress={() => handleDeleteChecklistItem(item)}
+                            className="p-1 opacity-40"
+                          >
+                            <Icon name="delete-outline" size={18} color="#c93030" />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Add new item card — only shown for existing activities */}
+                  {activityId ? (
+                    <View className="bg-white border border-dashed border-[#0C4C8A]/40 rounded-[16px] p-4">
+                      <RNTextInput
+                        className="border border-[#E0E0E0] rounded-[12px] px-4 py-3 text-base text-gray-800 bg-gray-50 mb-2"
+                        placeholder="New checklist item..."
+                        value={newCheckTitle}
+                        onChangeText={setNewCheckTitle}
+                        onSubmitEditing={handleAddChecklistItem}
+                        returnKeyType="done"
+                      />
+                      {showCheckDescription ? (
+                        <RNTextInput
+                          className="border border-[#E0E0E0] rounded-[12px] px-4 py-2 text-sm text-gray-700 bg-gray-50 mb-3"
+                          placeholder="Optional description..."
+                          value={newCheckDescription}
+                          onChangeText={setNewCheckDescription}
+                          multiline
+                        />
+                      ) : (
+                        <TouchableOpacity
+                          accessibilityRole="button"
+                          onPress={() => setShowCheckDescription(true)}
+                          className="mb-3"
+                        >
+                          <Text className="text-xs text-[#0C4C8A] font-medium">+ Add description</Text>
+                        </TouchableOpacity>
+                      )}
+                      <TouchableOpacity
+                        accessibilityRole="button"
+                        onPress={handleAddChecklistItem}
+                        disabled={!newCheckTitle.trim() || saveChecklistItem.isPending}
+                        className={`flex-row items-center justify-center gap-2 py-2.5 rounded-[12px] ${
+                          newCheckTitle.trim() ? "bg-[#0C4C8A]" : "bg-gray-200"
+                        }`}
+                      >
+                        {saveChecklistItem.isPending ? (
+                          <ActivityIndicator size="small" color="#FFF" />
+                        ) : (
+                          <>
+                            <Icon name="add" size={18} color={newCheckTitle.trim() ? "#FFF" : "#AAA"} />
+                            <Text className={`text-sm font-semibold ${
+                              newCheckTitle.trim() ? "text-white" : "text-gray-400"
+                            }`}>Add Item</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View className="bg-gray-50 border border-dashed border-gray-200 rounded-[16px] p-4 items-center">
+                      <Text className="text-xs text-gray-400 text-center">
+                        Save the activity first to add checklist items.
+                      </Text>
+                    </View>
+                  )}
+                </View>
 
                 {itineraryActivity?.id && (
                   <View className="mt-5 pt-5 border-t border-[#E0E0E0]">

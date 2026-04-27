@@ -36,6 +36,37 @@ export interface ItineraryNote {
   updatedAt?: string | Date;
 }
 
+export interface ChecklistGroup {
+  id?: string;
+  travelId?: string;
+  title: string;
+  description?: string;
+  sortOrder: string;
+  userId?: string;
+  isOffline?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface ChecklistItem {
+  id?: string;
+  travelId?: string;
+  activityId?: string;
+  checklistGroupId?: string;
+  title: string;
+  description?: string;
+  sortOrder: string;
+  isDone: boolean;
+  userId?: string;
+  checkedBy?: string;
+  checkedAt?: Date | string;
+  uncheckBy?: string;
+  uncheckAt?: Date | string;
+  isOffline?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
 export interface Travel {
   id?: string;
   title: string;

@@ -181,7 +181,12 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
     {
       id: "checklist",
       title: "Checklist",
-      content: <ChecklistTab travelPlan={travelPlan} />,
+      content: (
+        <ChecklistTab
+          travelPlan={travelPlan}
+          activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
+        />
+      ),
     },
     {
       id: "details",

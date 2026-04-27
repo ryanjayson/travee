@@ -8,6 +8,8 @@ import Section from "./models/Section";
 import Activity from "./models/Activity";
 import Expense from "./models/Expense";
 import Note from "./models/Note";
+import ChecklistGroup from "./models/ChecklistGroup";
+import ChecklistItem from "./models/ChecklistItem";
 
 const adapter = new SQLiteAdapter({
   schema,
@@ -24,5 +26,5 @@ const adapter = new SQLiteAdapter({
 
 export const database = new Database({
   adapter,
-  modelClasses: [Travel, Section, Activity, Expense, Note],
+  modelClasses: [Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem],
 });
