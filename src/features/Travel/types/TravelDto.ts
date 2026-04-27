@@ -1,4 +1,4 @@
-import { ActivityType, TravelStatus } from "../../../types/enums";
+import { ActivityType, TravelStatus, ExpenseCategory } from "../../../types/enums";
 
 export interface TravelPlan {
   travel: Travel;
@@ -15,8 +15,25 @@ export interface ItineraryExpense {
   dateTime: Date;
   currency?: string;
   category?: string;
+  expenseCategory?: ExpenseCategory;
+  userId?: string;
   notes?: string;
   isOffline?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface ItineraryNote {
+  id?: string;
+  travelId?: string;
+  activityId?: string;
+  title: string;
+  content?: string;
+  images?: string[];
+  userId?: string;
+  isOffline?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface Travel {
@@ -118,5 +135,3 @@ export interface UpdateTravelData {
   budget?: string;
   notes?: string;
 }
-
-

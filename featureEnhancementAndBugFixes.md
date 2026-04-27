@@ -1,0 +1,4 @@
+- [x] copy the expense implementation to notes
+- [x] add tables, dto and service for notes
+- [x] add image upload for notes
+- [x] in notes tab, show the notes in card style ui

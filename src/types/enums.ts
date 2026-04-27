@@ -40,3 +40,15 @@ export enum TravelMenuAction {
   Archive,
   Print,
 }
+
+export enum ExpenseCategory {
+  None = 0,
+  FoodAndDining = 1,
+  Transportation = 2,
+  Accommodation = 3,
+  Shopping = 4,
+  Entertainment = 5,
+  Sightseeing = 6,
+  HealthAndWellness = 7,
+  Others = 8,
+}

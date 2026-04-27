@@ -40,5 +40,46 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 5,
+      steps: [
+        addColumns({
+          table: "itinerary_expenses",
+          columns: [
+            { name: "expense_category", type: "number", isOptional: true },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 6,
+      steps: [
+        addColumns({
+          table: "itinerary_expenses",
+          columns: [
+            { name: "user_id", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 7,
+      steps: [
+        createTable({
+          name: "itinerary_notes",
+          columns: [
+            { name: "travel_id", type: "string", isIndexed: true },
+            { name: "activity_id", type: "string", isOptional: true, isIndexed: true },
+            { name: "title", type: "string" },
+            { name: "content", type: "string", isOptional: true },
+            { name: "images", type: "string", isOptional: true },
+            { name: "user_id", type: "string", isOptional: true },
+            { name: "is_offline", type: "boolean" },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
   ],
 });

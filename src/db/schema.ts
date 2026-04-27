@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 4,
+  version: 7,
   tables: [
     tableSchema({
       name: "travels",
@@ -71,7 +71,23 @@ export const schema = appSchema({
         { name: "date_time", type: "number" },
         { name: "currency", type: "string", isOptional: true },
         { name: "category", type: "string", isOptional: true },
+        { name: "expense_category", type: "number", isOptional: true },
+        { name: "user_id", type: "string", isOptional: true },
         { name: "notes", type: "string", isOptional: true },
+        { name: "is_offline", type: "boolean" },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "itinerary_notes",
+      columns: [
+        { name: "travel_id", type: "string", isIndexed: true },
+        { name: "activity_id", type: "string", isOptional: true, isIndexed: true },
+        { name: "title", type: "string" },
+        { name: "content", type: "string", isOptional: true },
+        { name: "images", type: "string", isOptional: true }, // JSON array of URIs
+        { name: "user_id", type: "string", isOptional: true },
         { name: "is_offline", type: "boolean" },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },

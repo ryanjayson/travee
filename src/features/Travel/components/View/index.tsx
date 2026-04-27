@@ -22,6 +22,7 @@ import NotesTab from "./Tabs/NotesTab";
 import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
 import ExpenseModal from "../Forms/Expense/Modal";
+import NoteModal from "../Forms/Note/Modal";
 import TravelActionFAB from "./TravelActionFAB";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
@@ -37,6 +38,8 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
   const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
   const [selectedExpense, setSelectedExpense] = useState<ItineraryExpense | null>(null);
+  const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
+  const [selectedNote, setSelectedNote] = useState<any | null>(null);
 
   const getAllMarkers = () => {
     const markers: Array<{ latitude: number; longitude: number; title: string , type?: number}> = [];
@@ -162,7 +165,19 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
 
   const tabData = [
     { id: "itinerary", title: "Itinerary", content: <ItineraryTab travelPlan={travelPlan} /> },
-    { id: "notes", title: "Notes", content: <NotesTab travelPlan={travelPlan} /> },
+    {
+      id: "notes",
+      title: "Notes",
+      content: (
+        <NotesTab
+          travelPlan={travelPlan}
+          onEditNote={(note) => {
+            setSelectedNote(note);
+            setShowNoteModal(true);
+          }}
+        />
+      ),
+    },
     {
       id: "checklist",
       title: "Checklist",
@@ -176,7 +191,15 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
      {
       id: "expenses",
       title: "Expenses",
-      content: <ExpensesTab travelPlan={travelPlan} />,
+      content: (
+        <ExpensesTab 
+          travelPlan={travelPlan} 
+          onEditExpense={(expense) => {
+            setSelectedExpense(expense);
+            setShowExpenseModal(true);
+          }}
+        />
+      ),
     },
   ];
 
@@ -205,7 +228,10 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       </ScrollView>
 
       <TravelActionFAB 
-        onAddNote={() => console.log('Add Note')}
+        onAddNote={() => {
+          setSelectedNote(null);
+          setShowNoteModal(true);
+        }}
         onAddChecklist={() => console.log('Add Checklist')}
         onAddExpense={() => {
           setSelectedExpense(null);
@@ -216,7 +242,15 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       <ExpenseModal
         visible={showExpenseModal}
         itineraryExpense={selectedExpense}
+        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
         onClose={() => setShowExpenseModal(false)}
+      />
+
+      <NoteModal
+        visible={showNoteModal}
+        itineraryNote={selectedNote}
+        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
+        onClose={() => setShowNoteModal(false)}
       />
     </Portal.Host>
   );
