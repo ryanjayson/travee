@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Modal } from "react-native";
 import ViewTravel from ".";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
 import { TravelMenuAction } from "../../../../types/enums";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
 import { useTravelPlan } from "../../hooks/useTravel";
@@ -26,8 +26,11 @@ const ViewTripModal = ({
 }: ViewTripModalProps) => {
   const [showTravelNavigationModal, setShowTravelNavigationModal] =
     useState<boolean>(false);
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  // useContext never throws — returns null if outside NavigationContainer
+  const navContext = useContext(NavigationContext);
+  const navigation = navContext as NativeStackNavigationProp<RootStackParamList> | null;
+
   const { selectedTravelPlan, clearTravelPlan } = useTravelContext();
 
   const {
@@ -51,7 +54,7 @@ const ViewTripModal = ({
   const handleSelectNavigationMenu = (menuAction: TravelMenuAction) => {
     if (menuAction === TravelMenuAction.EditTravel) {
       const id = travelPlan?.travel?.id;
-      if (id != null) {
+      if (id != null && navigation) {
         navigation.navigate("EditTravelPlan", { travelId: id });
       }
     }

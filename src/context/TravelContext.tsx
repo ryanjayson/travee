@@ -12,7 +12,7 @@ import { TravelPlanDetail, TravelContextType } from "../types/context/travel";
 
 const initialContextValue: TravelContextType = {
   selectedTravelPlan: null,
-  selectTravelPlan: () => {}, // placeholder function
+  selectTravelPlan: (travelData: TravelPlanDetail) => {},
   clearTravelPlan: () => {}, // placeholder function
 };
 

@@ -311,7 +311,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
 
         <View className="flex-row mb-5 gap-3">
           <View className="flex-1">
-            <View className="relative mt-[6px] h-[64px]">
+            <View className="relative mt-[6px]">
               <TextInput
                 mode="outlined"
                 label={"Departure"}
@@ -358,6 +358,13 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                       formik.setFieldValue("startOrDepartureDate", new Date(day.timestamp));
                       setShowStartDatePicker(false);
                     }}
+                  renderArrow={(direction: string) => (
+                      <Icon
+                        name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
+                        size={32}
+                        color="#0C4C8A"
+                      />
+                    )}
                     // minDate={new Date().toISOString().split('T')[0]}
                     markedDates={formik.values.startOrDepartureDate ? {
                       [formik.values.startOrDepartureDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
@@ -373,7 +380,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           </View>
 
           <View className="flex-1">
-            <View className="relative mt-[6px] h-[64px]">
+            <View className="relative mt-[6px]">
               <TextInput
                 mode="outlined"
                 label={"Return"}
@@ -397,6 +404,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                   style={{
                     height: 64,
                     flex: 1,
+                    marginTop: 1,
                   }}
                   contentStyle={{
                     backgroundColor: "transparent",
@@ -420,6 +428,13 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                       formik.setFieldValue("endOrReturnDate", new Date(day.timestamp));
                       setShowEndDatePicker(false);
                     }}
+                    renderArrow={(direction: string) => (
+                      <Icon
+                        name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
+                        size={32}
+                        color="#0C4C8A"
+                      />
+                    )}
                     markedDates={formik.values.endOrReturnDate ? {
                       [formik.values.endOrReturnDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
                     } : undefined}

@@ -126,7 +126,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         <View className="p-4 pb-2">
           <View className="flex-row justify-between items-start">
             <Text className="text-2xl font-bold text-[#183B7A] mb-2 flex-1 mr-4">
-              {travelPlan?.travel.title} - {travelPlan.travel.status}
+              {travelPlan?.travel.title}
             </Text>
             <StatusTag type={1} status={travelPlan.travel.status!} />
           </View>
@@ -143,7 +143,6 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
             </TouchableOpacity>
             <View className="flex-row items-center my-1">
               <Text className="text-sm text-[#666] px-2 mx-2 border-l border-[#DDD]">
-                {new Date(travelPlan.travel?.startOrDepartureDate).toISOString()}
                 {travelPlan.travel?.startOrDepartureDate
                   ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "2-digit", year: "numeric" })
                   : ""}

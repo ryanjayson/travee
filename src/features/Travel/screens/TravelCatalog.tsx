@@ -16,15 +16,16 @@ import { TravelStatus } from "../../../types/enums";
 import { useTravels } from "../hooks/useTravel";
 import { useTravelContext } from "../../../context/TravelContext";
 import { FAB, Portal } from "react-native-paper";
-import { useIsFocused } from "@react-navigation/native";
 import Tabs from "../../../components/Tabs";
+import { Calendar } from "react-native-calendars";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
-interface TravelPageProps {
-  onBack?: () => void;
-  onAddTravel?: () => void;
-}
+// interface TravelPageProps {
+//   onBack?: () => void;
+//   onAddTravel?: () => void;
+// }
 
-const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
+const TravelCatalog = () => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
   const [visibleCreateTravelModal, setVisibleCreateTravelModal] = useState<boolean>(false);
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
@@ -33,7 +34,6 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
   const [refreshing, setRefreshing] = useState(false);
   
   const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
-  const isFocused = useIsFocused();
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -42,7 +42,6 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
   };
 
   const getEffectiveStatus = (travel: Travel): TravelStatus => {
-    // If it's a "terminal" status, return it as is
     if (travel.status === TravelStatus.Completed || 
         travel.status === TravelStatus.Archieved || 
         travel.status === TravelStatus.Cancelled) {
@@ -119,13 +118,13 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
     const bgStyle = styling.split(' ')[0];
     const textStyle = styling.split(' ')[1];
 
-    const formatDate = (dateString: string | undefined) => {
-      if (!dateString) return "";
-      const date = new Date(dateString);
+    const formatDate = (dateValue: Date | string | undefined) => {
+      if (!dateValue) return "";
+      const date = new Date(dateValue);
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
-    const getDuration = (start: string | undefined, end: string | undefined) => {
+    const getDuration = (start: Date | string | undefined, end: Date | string | undefined) => {
       if (!start || !end) return "";
       const s = new Date(start);
       const e = new Date(end);
@@ -140,13 +139,13 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
       : travel.startOrDepartureDate ? formatDate(travel.startOrDepartureDate) : "Dates not set";
 
     return (
-      <View key={travel.id} className="bg-white rounded-xl mb-4 shadow-sm shadow-black/10 elevation-1 mx-5 mt-2 overflow-hidden">
+      <View key={travel.id} className="bg-white rounded-xl mb-2 shadow-sm shadow-black/10 elevation-1 mx-4 overflow-hidden">
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
           <View className="p-4 border border-[#E0E0E0] rounded-xl">
             <View className="flex-row justify-between items-start mb-3">
               <View className="flex-1">
-                <Text className="text-lg font-bold text-primary">{travel.title}</Text>
-                <Text className="text-sm font-medium text-[#666]">{travel.destination}</Text>
+                <Text className="text-lg font-medium text-primary">{travel.title}</Text>
+                <Text className="text-sm  text-[#666]">{travel.destination}</Text>
               </View>
               <View className={`px-3 py-1 rounded-full ${bgStyle}`}>
                 <Text className={`text-[10px] font-bold ${textStyle}`}>
@@ -197,7 +196,108 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
     );
   };
 
-  const tabsData = [
+  const renderCalendarView = () => {
+    const ongoingTrips = getTravelsByStatus(TravelStatus.Ongoing);
+    const upcomingTrips = getTravelsByStatus(TravelStatus.Upcoming);
+    const activeTrips = [...ongoingTrips, ...upcomingTrips];
+
+    // Build marked dates for each trip's date range
+    const markedDates: Record<string, any> = {};
+    const today = new Date().toISOString().split('T')[0];
+
+    activeTrips.forEach((travel) => {
+      if (!travel.startOrDepartureDate) return;
+
+      const color = getEffectiveStatus(travel) === TravelStatus.Ongoing ? '#0C4C8A' : '#2E7D32';
+
+      // Use UTC dates to avoid timezone shift bugs
+      const startMs = new Date(travel.startOrDepartureDate).setHours(0, 0, 0, 0);
+      const endMs = travel.endOrReturnDate
+        ? new Date(travel.endOrReturnDate).setHours(0, 0, 0, 0)
+        : startMs;
+
+      const startDateStr = new Date(startMs).toISOString().split('T')[0];
+      const endDateStr = new Date(endMs).toISOString().split('T')[0];
+
+      const MS_PER_DAY = 86400000;
+      const maxDays = 365; // safety cap
+      let day = 0;
+
+      for (let curMs = startMs; curMs <= endMs && day < maxDays; curMs += MS_PER_DAY, day++) {
+        const dateStr = new Date(curMs).toISOString().split('T')[0];
+        markedDates[dateStr] = {
+          color,
+          textColor: '#fff',
+          startingDay: dateStr === startDateStr,
+          endingDay: dateStr === endDateStr,
+        };
+      }
+    });
+
+    return (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={["#0C4C8A"]} tintColor="#0C4C8A" />
+        }
+      >
+        <View className="flex-row items-center py-3 px-5 mt-4 gap-4">
+          <View className="flex-row items-center gap-2">
+            <View className="w-3 h-3 rounded-full bg-[#0C4C8A]" />
+            <Text className="text-xs text-[#666]">Ongoing</Text>
+          </View>
+          <View className="flex-row items-center gap-2">
+            <View className="w-3 h-3 rounded-full bg-[#2E7D32]" />
+            <Text className="text-xs text-[#666]">Upcoming</Text>
+          </View>
+        </View>
+
+      
+        <View className="bg-white mx-4 mt-3 rounded-2xl shadow-sm shadow-black/10 elevation-1 overflow-hidden">
+          <Calendar
+            markingType="period"
+            markedDates={markedDates}
+            renderArrow={(direction: string) => (
+              <Icon
+                name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
+                size={32}
+                color="#0C4C8A"
+              />
+            )}
+            theme={{
+              todayTextColor: '#0C4C8A',
+              arrowColor: '#0C4C8A',
+              selectedDayBackgroundColor: '#0C4C8A',
+            }}
+          />
+        </View>
+
+
+        {/* Trip list below calendar */}
+        {/* <View className="mt-4">
+          {activeTrips.length > 0 ? (
+            <>
+              <Text className="text-xs text-gray-500 font-semibold tracking-wider uppercase px-5 mb-2">
+                Active Trips
+              </Text>
+              {activeTrips.map(renderTravelCard)}
+            </>
+          ) : (
+            <View className="flex-1 justify-center items-center py-[60px]">
+              <Text className="text-5xl mb-4">🗓️</Text>
+              <Text className="text-xl font-bold text-primary mb-2">No Active Trips</Text>
+              <Text className="text-base text-[#666] text-center px-10">
+                Your ongoing and upcoming travels will appear here.
+              </Text>
+            </View>
+          )}
+        </View> */}
+      </ScrollView>
+    );
+  };
+
+  const listTabsData = [
     {
       id: "ongoing",
       title: `Ongoing (${getTravelsByStatus(TravelStatus.Ongoing).length})`,
@@ -230,6 +330,25 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
     },
   ];
 
+  const renderListView = () => (
+    <View>
+      <Tabs tabs={listTabsData} type="secondary"/>
+    </View>
+  );
+
+  const viewTabsData = [
+    {
+      id: "list",
+      title: "List",
+      content: renderListView(),
+    },
+    {
+      id: "calendar",
+      title: "Calendar",
+      content: renderCalendarView(),
+    },
+  ];
+
   if (showTravelDetail && selectedTravel) {
     return (
       <TravelDetailPage
@@ -240,8 +359,9 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
   }
 
   return (
-    <View className="flex-1 bg-[#F6F8FC]">
+    <View className="flex-1 bg-[#E6E8EB]">
       <StatusBar barStyle={"dark-content"} />
+
       <View className="flex-1">
         {isLoading ? (
           <View className="flex-1 justify-center items-center">
@@ -258,7 +378,7 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
             </TouchableOpacity>
           </View>
         ) : (
-          <Tabs tabs={tabsData} />
+          <Tabs tabs={viewTabsData} />
         )}
       </View>
 
@@ -273,17 +393,15 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
         setShowModal={setShowTravelViewModal}
       />
 
-      {isFocused && (
-        <Portal>
-          <FAB
-            icon="plus"
-            label="Create"
-            color="white"
-            style={{ position: 'absolute', margin: 16, right: 0, bottom: 80, backgroundColor: "#0C4C8A", borderRadius: 30 }}
-            onPress={() => setVisibleCreateTravelModal(true)}
-          />
-        </Portal>
-      )}
+      <Portal>
+        <FAB
+          icon="plus"
+          label="Create"
+          color="white"
+          style={{ position: 'absolute', margin: 16, right: 0, bottom: 80, backgroundColor: "#0C4C8A", borderRadius: 30 }}
+          onPress={() => setVisibleCreateTravelModal(true)}
+        />
+      </Portal>
     </View>
   );
 };
