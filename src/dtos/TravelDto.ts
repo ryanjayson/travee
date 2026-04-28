@@ -3,8 +3,8 @@ export interface Travel {
   title: string;
   description?: string;
   destination?: string;
-  startDate?: Date;
-  endDate?: Date;
+  startOrDepartureDate?: Date;
+  endOrReturnDate?: Date;
   status?: TravelStatus;
   budget?: string;
   notes?: string;
@@ -30,8 +30,8 @@ export interface CreateTravelData {
   title: string;
   description: string;
   destination: string;
-  startDate?: Date;
-  endDate?: Date;
+  startOrDepartureDate?: Date;
+  endOrReturnDate?: Date;
   budget?: string;
   notes?: string;
   status: number;
@@ -39,8 +39,8 @@ export interface CreateTravelData {
 
 export interface UpdateTravelData {
   destination?: string;
-  startDate?: string;
-  endDate?: string;
+  startOrDepartureDate?: string;
+  endOrReturnDate?: string;
   budget?: string;
   notes?: string;
 }
@@ -52,11 +52,3 @@ export enum TravelStatus {
     Archieved = 3,
     Cancelled = 4
 }
-
-export interface UpdateTravelData {
-    destination?: string;
-    startDate?: string;
-    endDate?: string;
-    budget?: string;
-    notes?: string;
-  }

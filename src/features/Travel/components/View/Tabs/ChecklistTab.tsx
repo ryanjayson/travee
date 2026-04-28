@@ -1,12 +1,12 @@
 import React from "react";
 import { View, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Text, useTheme } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialIcons";
 import { TravelPlan, ItineraryActivity } from "../../../../Travel/types/TravelDto";
 import { useChecklistGroups, useChecklistItems, useToggleChecklistItemMutation } from "../../../hooks/useChecklist";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../types/enums";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 interface ChecklistTabProps {
   travelPlan: TravelPlan;
@@ -51,14 +51,14 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       key={item.id}
       accessibilityRole="checkbox"
       onPress={() => handleToggle(item)}
-      className="flex-row items-start gap-3 py-3 px-4 border-b border-gray-50"
+      className="flex-row items-start gap-3 py-3 px-4 "
     >
       <View
-        className={`w-6 h-6 rounded-full border-2 items-center justify-center mt-0.5 flex-shrink-0 ${
-          item.isDone ? "bg-[#0C4C8A] border-[#0C4C8A]" : "border-[#0C4C8A]"
-        }`}
+        className={`items-center justify-center mt-0.5 flex-shrink-0`}
       >
-        {item.isDone && <Icon name="check" size={14} color="#FFF" />}
+        {item.isDone ? (<Icon name="check-box" size={20} color="#0C4C8A" />) : (<Icon name="check-box-outline-blank" size={20} color="#777" />)}
+        
+
       </View>
       <View className="flex-1">
         <Text
@@ -73,9 +73,6 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
             {item.description}
           </Text>
         ) : null}
-        {item.isDone && item.checkedBy && (
-          <Text className="text-[10px] text-gray-400 mt-1">Done by {item.checkedBy}</Text>
-        )}
       </View>
     </TouchableOpacity>
   );

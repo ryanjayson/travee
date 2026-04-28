@@ -72,7 +72,7 @@ const ViewTripModal = ({
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name="keyboard-arrow-left" size={36} color={"#000"} />
+            <Icon name="close" size={32} color={"#000"} />
           </TouchableOpacity>
           <Text className="text-xl font-medium">
             {travelPlan && <Text>{selectedTravelPlan?.title}</Text>}

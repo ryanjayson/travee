@@ -10,6 +10,7 @@ import Itinerary from "../../../components/itinerary";
 import { travelService } from "../../../services/travelService";
 import { ActivitySection } from "../../../dtos/ItineraryDto";
 import { Travel } from "../../Travel/types/TravelDto";
+import { TravelStatus } from "../../../types/enums";
 
 interface TravelDetailPageProps {
   travelData: Travel;
@@ -30,11 +31,11 @@ const TravelDetailTab = ({ travelData }: { travelData: Travel }) => {
           </View>
           <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
             <Text className="text-sm text-[#666] font-medium">Start Date:</Text>
-            {/* <Text className="text-sm text-primary font-bold">{travelData.startDate}</Text> */}
+            {/* <Text className="text-sm text-primary font-bold">{travelData.startOrDepartureDate}</Text> */}
           </View>
           <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
             <Text className="text-sm text-[#666] font-medium">End Date:</Text>
-            {/* <Text className="text-sm text-primary font-bold">{travelData.endDate}</Text> */}
+            {/* <Text className="text-sm text-primary font-bold">{travelData.endOrReturnDate}</Text> */}
           </View>
           <View className="flex-row justify-between py-2 border-b border-[#F0F0F0]">
             <Text className="text-sm text-[#666] font-medium">Budget:</Text>
@@ -59,6 +60,49 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
   const [activeTab, setActiveTab] = useState<TabType>("detail");
   const [itineraryData, setItineraryData] = useState<ActivitySection[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const getEffectiveStatus = (travel: Travel): TravelStatus => {
+    if (travel.status === TravelStatus.Completed || 
+        travel.status === TravelStatus.Archieved || 
+        travel.status === TravelStatus.Cancelled) {
+      return travel.status || TravelStatus.Draft;
+    }
+    if (!travel.startOrDepartureDate || !travel.endOrReturnDate) return TravelStatus.Draft;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const endOrReturnDate = new Date(travel.endOrReturnDate);
+    endOrReturnDate.setHours(0, 0, 0, 0);
+    if (endOrReturnDate < today) return TravelStatus.Completed;
+
+    const startOrDepartureDate = new Date(travel.startOrDepartureDate);
+    startOrDepartureDate.setHours(0, 0, 0, 0);
+    return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
+  };
+
+  const getStatusLabelText = (status: TravelStatus) => {
+    switch (status) {
+      case TravelStatus.Draft: return "Draft";
+      case TravelStatus.Ongoing: return "Ongoing";
+      case TravelStatus.Upcoming: return "Upcoming";
+      case TravelStatus.Completed: return "Completed";
+      case TravelStatus.Archieved: return "Archived";
+      case TravelStatus.Cancelled: return "Cancelled";
+      default: return "Unknown";
+    }
+  };
+
+  const getStatusLabelStyling = (status: TravelStatus) => {
+    if (status === TravelStatus.Ongoing || status === TravelStatus.Upcoming || status === TravelStatus.Completed) 
+      return "bg-[#E8F5E8] text-[#2E7D32]";
+    if (status === TravelStatus.Cancelled || status === TravelStatus.Archieved) return "bg-[#FFEBEE] text-[#D32F2F]";
+    return "bg-[#E0E0E0] text-[#666]";
+  };
+
+  const effectiveStatus = getEffectiveStatus(travelData);
+  const styling = getStatusLabelStyling(effectiveStatus);
+  const bgStyle = styling.split(' ')[0];
+  const textStyle = styling.split(' ')[1];
 
   useEffect(() => {
     const fetchItinerary = async () => {
@@ -135,7 +179,14 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
         <TouchableOpacity onPress={onBack} className="p-2.5">
           <Text className="text-primary text-base">← Back</Text>
         </TouchableOpacity>
-        <Text className="text-lg font-bold text-primary">{travelData.destination}</Text>
+        <View className="flex-1 items-center">
+          <Text className="text-lg font-bold text-primary" numberOfLines={1}>{travelData.destination}</Text>
+          <View className={`px-2 py-0.5 rounded-full mt-1 ${bgStyle}`}>
+            <Text className={`text-[10px] font-bold ${textStyle}`}>
+              {getStatusLabelText(effectiveStatus)}
+            </Text>
+          </View>
+        </View>
         <TouchableOpacity className="p-2.5">
           <Text className="text-primary text-xl">⋮</Text>
         </TouchableOpacity>

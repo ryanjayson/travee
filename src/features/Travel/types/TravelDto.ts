@@ -138,8 +138,8 @@ export interface CreateTravelData {
   description?: string;
   destination?: string;
   destinationData?: DestinationDto;
-  startDate?: Date;
-  endDate?: Date;
+  startOrDepartureDate?: Date;
+  endOrReturnDate?: Date;
   budget?: string;
   notes?: string;
   status?: TravelStatus;
@@ -161,8 +161,9 @@ export interface UpdateTravelData {
   description?: string;
   destination?: string;
   destinationData?: DestinationDto;
-  startDate?: Date;
-  endDate?: Date;
+  startOrDepartureDate?: Date;
+  endOrReturnDate?: Date;
   budget?: string;
   notes?: string;
+  status?: TravelStatus;
 }

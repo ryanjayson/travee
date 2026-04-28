@@ -1,58 +1,42 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 import { StatusType, TravelStatus } from "../../types/enums";
 
 type StatusTagProps = {
-  type: StatusType;
+  type?: StatusType;
   status: TravelStatus;
 };
 
 const StatusTag = ({ type, status }: StatusTagProps) => {
+  const getStatusConfig = (status: TravelStatus) => {
+    switch (status) {
+      case TravelStatus.Draft:
+        return { label: "Draft", style: "bg-[#E0E0E0] text-[#666]" };
+      case TravelStatus.Upcoming:
+        return { label: "Upcoming", style: "bg-[#E8F5E8] text-[#2E7D32]" };
+      case TravelStatus.Ongoing:
+        return { label: "Ongoing", style: "bg-[#E8F5E8] text-[#2E7D32]" };
+      case TravelStatus.Completed:
+        return { label: "Completed", style: "bg-[#E8F5E8] text-[#2E7D32]" };
+      case TravelStatus.Archieved:
+        return { label: "Archived", style: "bg-[#FFEBEE] text-[#D32F2F]" };
+      case TravelStatus.Cancelled:
+        return { label: "Cancelled", style: "bg-[#FFEBEE] text-[#D32F2F]" };
+      default:
+        return { label: "Unknown", style: "bg-[#E0E0E0] text-[#666]" };
+    }
+  };
+
+  const { label, style } = getStatusConfig(status);
+  const [bgStyle, textStyle] = style.split(" ");
+
   return (
-    <View
-      style={[
-        styles.statusBadge,
-        status === TravelStatus.Upcoming
-          ? styles.upcomingBadge
-          : styles.pastBadge,
-      ]}
-    >
-      <Text
-        style={[
-          styles.statusText,
-          status === TravelStatus.Upcoming
-            ? styles.upcomingText
-            : styles.pastText,
-        ]}
-      >
-        {status === TravelStatus.Upcoming ? "Upcoming" : "Past"}
+    <View className={`px-3 py-1 rounded-full ${bgStyle}`}>
+      <Text className={`text-[10px] font-bold ${textStyle}`}>
+        {label}
       </Text>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  upcomingBadge: {
-    backgroundColor: "#E8F5E8",
-  },
-  pastBadge: {
-    backgroundColor: "#F0F0F0",
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  upcomingText: {
-    color: "#2E7D32",
-  },
-  pastText: {
-    color: "#666",
-  },
-});
 
 export default StatusTag;

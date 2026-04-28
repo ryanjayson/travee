@@ -41,8 +41,39 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
     setRefreshing(false);
   };
 
+  const getEffectiveStatus = (travel: Travel): TravelStatus => {
+    // If it's a "terminal" status, return it as is
+    if (travel.status === TravelStatus.Completed || 
+        travel.status === TravelStatus.Archieved || 
+        travel.status === TravelStatus.Cancelled) {
+      return travel.status || TravelStatus.Draft;
+    }
+
+    if (!travel.startOrDepartureDate) {
+      return TravelStatus.Draft;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (travel.endOrReturnDate) {
+      const endDate = new Date(travel.endOrReturnDate);
+      endDate.setHours(0, 0, 0, 0);
+      if (endDate < today) return TravelStatus.Completed;
+    }
+
+    const startDate = new Date(travel.startOrDepartureDate);
+    startDate.setHours(0, 0, 0, 0);
+
+    if (startDate > today) {
+      return TravelStatus.Upcoming;
+    } else {
+      return TravelStatus.Ongoing;
+    }
+  };
+
   const getTravelsByStatus = (status: TravelStatus) => {
-    return travels?.filter(t => t.status === status) || [];
+    return travels?.filter(t => getEffectiveStatus(t) === status) || [];
   };
 
   const handleViewModeTravel = (travel: Travel) => {
@@ -76,34 +107,57 @@ const TravelCatalog = ({ onBack, onAddTravel }: TravelPageProps) => {
   };
 
   const getStatusLabelStyling = (status: TravelStatus | undefined) => {
-    if (status === TravelStatus.Ongoing || status === TravelStatus.Upcoming) return "bg-[#E8F5E8] text-[#2E7D32]";
+    if (status === TravelStatus.Ongoing || status === TravelStatus.Upcoming || status === TravelStatus.Completed) 
+      return "bg-[#E8F5E8] text-[#2E7D32]";
     if (status === TravelStatus.Cancelled || status === TravelStatus.Archieved) return "bg-[#FFEBEE] text-[#D32F2F]";
     return "bg-[#E0E0E0] text-[#666]";
   };
 
   const renderTravelCard = (travel: Travel) => {
-    const styling = getStatusLabelStyling(travel.status);
+    const effectiveStatus = getEffectiveStatus(travel);
+    const styling = getStatusLabelStyling(effectiveStatus);
     const bgStyle = styling.split(' ')[0];
     const textStyle = styling.split(' ')[1];
+
+    const formatDate = (dateString: string | undefined) => {
+      if (!dateString) return "";
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const getDuration = (start: string | undefined, end: string | undefined) => {
+      if (!start || !end) return "";
+      const s = new Date(start);
+      const e = new Date(end);
+      const diffTime = Math.abs(e.getTime() - s.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+      return `${diffDays} Day${diffDays > 1 ? 's' : ''}`;
+    };
+
+    const duration = getDuration(travel.startOrDepartureDate, travel.endOrReturnDate);
+    const dateRange = travel.startOrDepartureDate && travel.endOrReturnDate 
+      ? `${formatDate(travel.startOrDepartureDate)} - ${formatDate(travel.endOrReturnDate)}`
+      : travel.startOrDepartureDate ? formatDate(travel.startOrDepartureDate) : "Dates not set";
 
     return (
       <View key={travel.id} className="bg-white rounded-xl mb-4 shadow-sm shadow-black/10 elevation-1 mx-5 mt-2 overflow-hidden">
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
-          <View className="flex-1 bg-white"></View>
           <View className="p-4 border border-[#E0E0E0] rounded-xl">
             <View className="flex-row justify-between items-start mb-3">
               <View className="flex-1">
                 <Text className="text-lg font-bold text-primary">{travel.title}</Text>
                 <Text className="text-sm font-medium text-[#666]">{travel.destination}</Text>
               </View>
-              <View className={`px-2 py-1 rounded-xl ${bgStyle}`}>
-                <Text className={`text-xs font-bold ${textStyle}`}>
-                  {getStatusLabelText(travel.status)}
+              <View className={`px-3 py-1 rounded-full ${bgStyle}`}>
+                <Text className={`text-[10px] font-bold ${textStyle}`}>
+                  {getStatusLabelText(effectiveStatus)}
                 </Text>
               </View>
             </View>
             <View className="flex-row items-center mt-1">
-              <Text className="text-xs font-medium text-[#999]">3 Days | 12-20-2025</Text>
+              <Text className="text-xs font-medium text-[#999]">
+                {duration ? `${duration} | ` : ""}{dateRange}
+              </Text>
             </View>
           </View>
         </TouchableOpacity>

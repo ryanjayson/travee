@@ -11,8 +11,8 @@ export default class Travel extends Model {
   @text("description") description!: string | null;
   @text("destination") destination!: string | null;
   @text("destination_data") destinationData!: string | null;
-  @date("start_date") startDate!: Date | null;
-  @date("end_date") endDate!: Date | null;
+  @date("start_or_departure_date") startOrDepartureDate!: Date | null;
+  @date("end_or_return_date") endOrReturnDate!: Date | null;
   @field("status") status!: number;
   @text("budget") budget!: string | null;
   @text("notes") notes!: string | null;

@@ -119,5 +119,17 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 9,
+      steps: [
+        addColumns({
+          table: "travels",
+          columns: [
+            { name: "start_or_departure_date", type: "number", isOptional: true },
+            { name: "end_or_return_date", type: "number", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

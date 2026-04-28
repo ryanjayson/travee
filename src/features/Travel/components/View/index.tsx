@@ -126,9 +126,9 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         <View className="p-4 pb-2">
           <View className="flex-row justify-between items-start">
             <Text className="text-2xl font-bold text-[#183B7A] mb-2 flex-1 mr-4">
-              {travelPlan?.travel.title}
+              {travelPlan?.travel.title} - {travelPlan.travel.status}
             </Text>
-            <StatusTag type={2} status={travelPlan.travel.status!} />
+            <StatusTag type={1} status={travelPlan.travel.status!} />
           </View>
           <View className="flex-row items-center flex-wrap ">
             <TouchableOpacity 
@@ -137,12 +137,13 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
               onPress={() => travelPlan.travel.destinationData?.coordinates && setShowMapModal(true)}
             >
               <Icon name="location-pin" size={16} color={"red"} />
-              <Text className="text-[#183B7A] font-medium ml-1 " numberOfLines={1} ellipsizeMode="tail">
+              <Text className="text-[#183B7A] font-medium mx-1 " numberOfLines={1} ellipsizeMode="tail">
                 {travelPlan.travel.destination}
               </Text>
             </TouchableOpacity>
             <View className="flex-row items-center my-1">
               <Text className="text-sm text-[#666] px-2 mx-2 border-l border-[#DDD]">
+                {new Date(travelPlan.travel?.startOrDepartureDate).toISOString()}
                 {travelPlan.travel?.startOrDepartureDate
                   ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "2-digit", year: "numeric" })
                   : ""}
@@ -189,11 +190,6 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       ),
     },
     {
-      id: "details",
-      title: "Details",
-      content: <DetailsTab travelPlan={travelPlan} />,
-    },
-     {
       id: "expenses",
       title: "Expenses",
       content: (
@@ -206,6 +202,12 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         />
       ),
     },
+    {
+      id: "details",
+      title: "Details",
+      content: <DetailsTab travelPlan={travelPlan} />,
+    },
+ 
   ];
 
   const handleViewModeActivity = (id: number) => {
