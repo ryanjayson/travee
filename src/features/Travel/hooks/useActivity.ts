@@ -8,7 +8,7 @@ import {
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { fetchItineraryActivity } from "../../../services/api/itinerary";
 import { ApiResponse } from "../../../types/api";
-import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity } from "../../../services/local/travelService";
+import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity, getAllActivitiesWithDestinationLocally } from "../../../services/local/travelService";
 import { UpdateSortVariables } from "../types/ActivityDto";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
@@ -333,5 +333,19 @@ export const useUpdateActivitySortOrderMutation = () => {
       console.log(`Successfully deleted section ID: ${variables.id}`);
     },
     onSettled: (data, error, variables) => {},
+  });
+};
+
+export const useAllActivitiesWithDestination = () => {
+  return useQuery<ItineraryActivity[], Error>({
+    queryKey: ["allActivitiesWithDestination"],
+    queryFn: async () => {
+      try {
+        return await getAllActivitiesWithDestinationLocally();
+      } catch (err) {
+        console.error("Failed to fetch all activities with destination", err);
+        return [];
+      }
+    },
   });
 };

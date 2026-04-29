@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,8 @@ import { useTravelContext } from "../../../context/TravelContext";
 import { FAB, Portal } from "react-native-paper";
 import Tabs from "../../../components/Tabs";
 import { Calendar } from "react-native-calendars";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 // interface TravelPageProps {
@@ -34,6 +36,21 @@ const TravelCatalog = () => {
   const [refreshing, setRefreshing] = useState(false);
   
   const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity 
+          onPress={() => setVisibleCreateTravelModal(true)}
+          style={{ marginRight: 16 }}
+        >
+          <Ionicons name="add" size={28} color="#0C4C8A" />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -392,16 +409,6 @@ const TravelCatalog = () => {
         showModal={showTravelViewModal}
         setShowModal={setShowTravelViewModal}
       />
-
-      <Portal>
-        <FAB
-          icon="plus"
-          label="Create"
-          color="white"
-          style={{ position: 'absolute', margin: 16, right: 0, bottom: 80, backgroundColor: "#0C4C8A", borderRadius: 30 }}
-          onPress={() => setVisibleCreateTravelModal(true)}
-        />
-      </Portal>
     </View>
   );
 };

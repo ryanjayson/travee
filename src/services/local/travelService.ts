@@ -269,3 +269,25 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
     throw new Error(`Itinerary Activity not found locally with ID: ${id}`);
   }
 };
+
+export const getAllActivitiesWithDestinationLocally = async (): Promise<any[]> => {
+  const activities = await database.get<Activity>("itinerary_activities").query(
+    Q.where("destination_data", Q.notEq(null))
+  ).fetch();
+
+  return activities.map((a) => ({
+    id: a.id,
+    travelId: a.travelId,
+    sectionId: a.sectionId,
+    title: a.title,
+    description: a.description,
+    destination: a.destination,
+    destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
+    startDate: a.startDate,
+    endDate: a.endDate,
+    status: a.status,
+    isOffline: a.isOffline,
+    type: a.type,
+    isDone: a.isDone,
+  }));
+};

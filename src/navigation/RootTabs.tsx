@@ -10,7 +10,7 @@ import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 
 export type RootTabsParamList = {
-  Travels: undefined;
+  Trips: undefined;
   Explore: undefined;
   Profile: undefined;
   Settings: undefined;
@@ -20,7 +20,7 @@ const Tab = createBottomTabNavigator<RootTabsParamList>();
 
 function iconForRoute(routeName: keyof RootTabsParamList, focused: boolean) {
   switch (routeName) {
-    case "Travels":
+    case "Trips":
       return focused ? "map" : "map-outline";
     case "Explore":
       return focused ? "compass" : "compass-outline";
@@ -42,7 +42,7 @@ export function RootTabs() {
   return (
     <Tab.Navigator 
       id="RootTabs"
-      initialRouteName="Travels"
+      initialRouteName="Trips"
       screenOptions={({ route }): BottomTabNavigationOptions => ({
         headerTitleAlign: "left",
         headerShadowVisible: false,
@@ -56,8 +56,9 @@ export function RootTabs() {
         ),
       })}
     >
-      <Tab.Screen name="Travels" component={TravelTab} />
-      <Tab.Screen name="Explore" component={ExploreScreen} />        
+      {/* <Tab.Screen name="Calendar" component={Calendar} /> */}
+      <Tab.Screen name="Explore" component={ExploreScreen} />   
+      <Tab.Screen name="Trips" component={TravelTab} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>

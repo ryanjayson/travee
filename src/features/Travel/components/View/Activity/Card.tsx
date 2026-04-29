@@ -149,7 +149,7 @@ const ActivityItemCard = ({
 
           <Image
               source={require("../../../../../assets/images/japan.jpg")}
-              className="w-full h-[100px] rounded-xl"
+              className="w-full h-[120px] rounded-xl my-2"
               style={{ resizeMode: "cover" }}
             />
 
