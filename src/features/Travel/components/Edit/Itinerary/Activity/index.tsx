@@ -140,7 +140,7 @@ const EditActivity = ({
       selectedTravelPlan &&
       selectedTravelPlan?.id
     ) {
-debugger;
+
       // Build proper Date objects from strings
       let finalStartDate: Date | undefined = undefined;
       if (values.startDate) {
@@ -566,6 +566,13 @@ debugger;
                       }
                       setShowCalendarFor(null);
                     }}
+                    renderArrow={(direction: string) => (
+                      <Icon
+                        name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
+                        size={32}
+                        color="#0C4C8A"
+                      />
+                    )}
                     markedDates={{
                       [String(showCalendarFor === "startDate" ? values.startDate : values.endDate)]: { selected: true, selectedColor: '#0C4C8A' }
                     }}

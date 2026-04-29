@@ -21,13 +21,10 @@ const TravelMenuNavigation = ({
       visible={showModal} 
       onClose={() => setShowModal(false)}
       direction="bottom"
-      height="300"
+      height="266"
     >
       <View className="flex-1">
-        {/* Drag Handle Indicator */}
-        <View className="w-10 h-[4px] bg-[#E0E0E0] rounded-[2.5px] self-center mt-1 mb-[15px]" />
-
-        <View className="gap-3">
+        <View className="gap-4">
           <TouchableOpacity
             className="flex-row items-center justify-between px-4 py-2"
             activeOpacity={0.7}
@@ -39,9 +36,8 @@ const TravelMenuNavigation = ({
             <View className="w-10 h-10 justify-center items-center mr-3">
               <Icon name="edit-note" size={24} color={"#183B7A"} />
             </View>
-            <Text className="flex-1 ml-3 text-base font-medium">Edit Trip</Text>
+            <Text className="flex-1 ml-3 text-lg font-medium">Edit Trip</Text>
           </TouchableOpacity>
-          <Divider/>
           <TouchableOpacity
             className="flex-row items-center justify-between px-4 py-2 "
             activeOpacity={0.7}
@@ -53,9 +49,8 @@ const TravelMenuNavigation = ({
             <View className="w-10 h-10 justify-center items-center mr-3">
               <Icon name="file-copy" size={24} color={"#183B7A"} />
             </View>
-            <Text className="flex-1 ml-3 text-base font-medium">Duplicate Trip</Text>
+            <Text className="flex-1 ml-3 text-lg font-medium">Duplicate Trip</Text>
           </TouchableOpacity>
-          <Divider/>
           <TouchableOpacity
             className="flex-row items-center justify-between px-4 py-2 "
             activeOpacity={0.7}
@@ -67,11 +62,10 @@ const TravelMenuNavigation = ({
             <View className="w-10 h-10 justify-center items-center mr-3">
               <Icon name="archive" size={24} color={"#183B7A"} />
             </View>
-            <Text className="flex-1 ml-3 text-base  font-medium">Archive</Text>
+            <Text className="flex-1 ml-3 text-lg  font-medium">Archive</Text>
           </TouchableOpacity>
-          <Divider/>
           <TouchableOpacity
-            className="flex-row items-center justify-between px-4 "
+            className="flex-row items-center justify-between px-4 py-2 "
             activeOpacity={0.7}
             onPress={() => {
               onSelect(TravelMenuAction.Print);
@@ -81,7 +75,7 @@ const TravelMenuNavigation = ({
             <View className="w-10 justify-center items-center mr-3">
               <Icon name="print" size={24} color={"#183B7A"} />
             </View>
-            <Text className="flex-1 ml-3 text-base font-medium">Generate PDF</Text>
+            <Text className="flex-1 ml-3 text-lg font-medium">Generate PDF</Text>
           </TouchableOpacity>
         </View>
       </View>

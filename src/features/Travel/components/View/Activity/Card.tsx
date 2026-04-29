@@ -35,6 +35,10 @@ const ActivityItemCard = ({
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
   const updateMutation = useUpdateActivityMutation();
 
+  React.useEffect(() => {
+    setItineraryEventActivity(itineraryActivity);
+  }, [itineraryActivity]);
+
   const handleToggleDone = () => {
     const nextStatus = !itineraryEventActivity.isDone;
     Alert.alert(
@@ -74,7 +78,7 @@ const ActivityItemCard = ({
 
   return (
     <Animated.View>
-      <View className={`px-2 flex-row justify-between items-center relative ${itineraryEventActivity.isDone ? 'opacity-50' : ''}`}>
+      <View className={`px-2 flex-row justify-between items-center relative`}>
         {!isLastItem ? (
           <View className="w-1.5 items-center h-full absolute">
             {isFirstItem ? (
@@ -102,16 +106,22 @@ const ActivityItemCard = ({
 
         <TouchableOpacity
           onPress={() => handleViewModeActivity(itineraryEventActivity.id!)}
-          className="w-[100px] border border-solid border-[#e0e0e0] rounded-xl bg-white p-2.5 flex-grow ml-3 my-1"
+          className={`w-[100px] border border-solid border-[#e0e0e0] rounded-xl bg-white p-2.5 flex-grow ml-3 my-1 ${itineraryEventActivity.isDone ? 'opacity-50' : ''}`}
         >
-
-            
-          <View className="flex-row justify-between items-start mb-1 gap-x-2">
- <Text className="text-xs font-semibold text-[#606060] leading-5 flex-1 break-words">
-              11:00 AM
-            </Text>
-
-               <View>
+          <View className="flex-row justify-between items-start gap-x-2 !p-0">
+          {!itineraryEventActivity.startDate ? (
+              <View className="justify-between items-start mb-1 gap-x-2">
+                  <Text className="text-lg font-normal text-[#333] leading-5 flex-1 break-words">
+                      {itineraryEventActivity.title}
+                  </Text>
+              </View>
+          ) : (
+              <Text className="text-xs font-semibold text-[#606060] flex-1 break-words">
+                {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </Text>
+          )}
+          
+            <View>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={handleToggleDone}
@@ -129,15 +139,19 @@ const ActivityItemCard = ({
             </View>
           </View>
 
-          <View className="flex-row justify-between items-start mb-1 gap-x-2">
-            <Text className="text-lg font-semibold text-[#333] leading-5 flex-1 break-words">
-              {itineraryEventActivity.title}
-            </Text>
-         
- 
-          </View>
+          {itineraryEventActivity.startDate && (
+              <View className="flex-row justify-between items-start   mb-1 gap-x-2">
+                  <Text className="text-lg font-normal text-[#333] leading-5 flex-1 break-words">
+                      {itineraryEventActivity.title}
+                  </Text>
+              </View>
+          )}
 
-         
+          <Image
+              source={require("../../../../../assets/images/japan.jpg")}
+              className="w-full h-[100px] rounded-xl"
+              style={{ resizeMode: "cover" }}
+            />
 
           {itineraryEventActivity && itineraryEventActivity.images && (
             <View className="my-1">
@@ -170,10 +184,29 @@ const ActivityItemCard = ({
               {itineraryEventActivity.description} 
             </Text>
 
-          <Text style={Typography.small}>
-            {/* {itineraryEventActivity.commentsCount} Comments |{" "} */}
-            {itineraryEventActivity.notesCount} Notes
-          </Text>
+          <View className="flex-row items-center mt-1 flex-wrap">
+            {itineraryEventActivity.notesCount !== undefined && itineraryEventActivity.notesCount > 0 && (
+              <View className="flex-row items-center mr-3">
+                <Text className="text-xs font-medium text-[#888]">
+                  {itineraryEventActivity.notesCount} {itineraryEventActivity.notesCount === 1 ? 'Note' : 'Notes'}
+                </Text>
+              </View>
+            )}
+            {itineraryEventActivity.expensesCount !== undefined && itineraryEventActivity.expensesCount > 0 && (
+              <View className="flex-row items-center mr-3">
+                <Text className="text-xs font-medium text-[#888]">
+                  {itineraryEventActivity.expensesCount} {itineraryEventActivity.expensesCount === 1 ? 'Expense' : 'Expenses'}
+                </Text>
+              </View>
+            )}
+            {itineraryEventActivity.checklistCount !== undefined && itineraryEventActivity.checklistCount > 0 && (
+              <View className="flex-row items-center">
+                  <Text className="text-xs font-medium text-[#888]">
+                  {itineraryEventActivity.checklistCount} {itineraryEventActivity.checklistCount === 1 ? 'Task' : 'Tasks'}
+                </Text>
+              </View>
+            )}
+          </View>
         </TouchableOpacity>
       </View>
 

@@ -25,6 +25,7 @@ export const useSaveChecklistGroupMutation = () => {
     mutationFn: (data: ChecklistGroup) => saveChecklistGroup(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistGroups", variables.travelId] });
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
     },
   });
 };
@@ -35,6 +36,7 @@ export const useDeleteChecklistGroupMutation = () => {
     mutationFn: ({ id, travelId }: { id: string; travelId: string }) => deleteChecklistGroup(id),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistGroups", variables.travelId] });
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
     },
   });
 };
@@ -54,6 +56,7 @@ export const useSaveChecklistItemMutation = () => {
     mutationFn: (data: ChecklistItem) => saveChecklistItem(data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
     },
   });
 };
@@ -64,6 +67,7 @@ export const useDeleteChecklistItemMutation = () => {
     mutationFn: ({ id, travelId }: { id: string; travelId: string }) => deleteChecklistItem(id),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
     },
   });
 };
@@ -75,6 +79,7 @@ export const useToggleChecklistItemMutation = () => {
       toggleChecklistItem(id, isDone, userId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
     },
   });
 };

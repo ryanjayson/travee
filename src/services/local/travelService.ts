@@ -50,23 +50,32 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         Q.where("section_id", s.id)
       ).fetch();
 
-      const itineraryActivity = activities.map((a) => ({
-        id: a.id,
-        sectionId: s.id,
-        title: a.title,
-        description: a.description,
-        destination: a.destination,
-        destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
-        startDate: a.startDate,
-        endDate: a.endDate,
-        budget: a.budget,
-        notes: a.notes,
-        isOffline: a.isOffline,
-        sortOrder: a.sortOrder,
-        type: a.type,
-        secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
-        images: a.images ? JSON.parse(a.images) : undefined,
-        isDone: a.isDone,
+      const itineraryActivity = await Promise.all(activities.map(async (a) => {
+        const notesCount = await database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount();
+        const expensesCount = await database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount();
+        const checklistCount = await database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount();
+
+        return {
+          id: a.id,
+          sectionId: s.id,
+          title: a.title,
+          description: a.description,
+          destination: a.destination,
+          destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
+          startDate: a.startDate,
+          endDate: a.endDate,
+          budget: a.budget,
+          notes: a.notes,
+          isOffline: a.isOffline,
+          sortOrder: a.sortOrder,
+          type: a.type,
+          secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
+          images: a.images ? JSON.parse(a.images) : undefined,
+          isDone: a.isDone,
+          notesCount,
+          expensesCount,
+          checklistCount,
+        };
       }));
 
       return {
@@ -231,6 +240,10 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
 export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
   try {
     const a = await database.get<Activity>("itinerary_activities").find(id);
+    const notesCount = await database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount();
+    const expensesCount = await database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount();
+    const checklistCount = await database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount();
+
     return {
       id: a.id,
       sectionId: a.section.id,
@@ -248,6 +261,9 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
       secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
       images: a.images ? JSON.parse(a.images) : undefined,
       isDone: a.isDone,
+      notesCount,
+      expensesCount,
+      checklistCount,
     };
   } catch (err) {
     throw new Error(`Itinerary Activity not found locally with ID: ${id}`);

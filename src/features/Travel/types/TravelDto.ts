@@ -119,6 +119,8 @@ export interface ItineraryActivity {
   updatedAt?: string;
   commentsCount?: number;
   notesCount?: number;
+  expensesCount?: number;
+  checklistCount?: number;
   sortOrder: string;
   type?: ActivityType;
   secondaryType?: ActivityType[];
