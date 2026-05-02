@@ -101,7 +101,7 @@ const Accordion: FC<AccordionProps> = ({
         activeOpacity={0.8}
       >
         <Text style={titleStyle} 
-          className="text-base font-semibold text-[#333] "
+          className="text-lg font-semibold text-[#333] "
           numberOfLines={expanded ? 10 : 1}
         >{title}</Text>
 

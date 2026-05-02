@@ -21,7 +21,7 @@ import { TravelStatus } from "../../../../types/enums";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { Divider, Text } from 'react-native-paper';
+import { Divider, Text, Checkbox } from 'react-native-paper';
 
 interface AddTravelModalProps {
   onClose: () => void;
@@ -69,6 +69,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
       endOrReturnDate: null as Date | null,
       budget: "",
       notes: "",
+      createSectionsBasedOnDates: false,
     },
     validationSchema: TravelSchema,
     onSubmit: (values) => {
@@ -95,6 +96,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
           return start > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
         })(),
         isOffline: true,
+        createSectionsBasedOnDates: values.createSectionsBasedOnDates,
       };
         console.log(travelData);
 
@@ -449,6 +451,24 @@ const Create = ({ onClose }: AddTravelModalProps) => {
               </TouchableOpacity>
             </Modal>
           </View>
+        </View>
+
+        <View className="flex-row items-center mb-5 -mt-2 -ml-2">
+           <Checkbox
+             status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
+             onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+             disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+             color="#0C4C8A"
+           />
+           <TouchableOpacity 
+             activeOpacity={0.7}
+             disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+             onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+           >
+             <Text className={`text-sm ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-50' : 'text-gray-700'}`}>
+               Create sections based on dates
+             </Text>
+           </TouchableOpacity>
         </View>
 
       <View className="mb-5">

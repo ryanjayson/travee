@@ -146,6 +146,7 @@ export interface CreateTravelData {
   notes?: string;
   status?: TravelStatus;
   isOffline?: boolean;
+  createSectionsBasedOnDates?: boolean;
 }
 
 export interface DestinationDto {

@@ -47,7 +47,7 @@ const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
                   >
                     <View style={{ backgroundColor: "#FFF" }} className="">
                       {section.description && section.description.trim() !== "" && (
-                        <Text className="text-sm text-[#555] leading-5 p-2">
+                        <Text className="text-sm text-[#555] leading-5 p-2 pt-0">
                           {section.description}
                         </Text>
                       )}

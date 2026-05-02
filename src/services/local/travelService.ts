@@ -125,7 +125,7 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
       });
       return travel;
     } else {
-      return await database.get<Travel>("travels").create((t) => {
+      const newTravel = await database.get<Travel>("travels").create((t) => {
         Object.assign(t, {
           title: travelData.title,
           description: travelData.description,
@@ -139,6 +139,35 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           isOffline: true,
         });
       });
+
+      if (travelData.createSectionsBasedOnDates && travelData.startOrDepartureDate && travelData.endOrReturnDate) {
+        const startDate = new Date(travelData.startOrDepartureDate);
+        const endDate = new Date(travelData.endOrReturnDate);
+        
+        // Reset time to avoid daylight saving or timezone issues during diff
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+
+        const diffTime = endDate.getTime() - startDate.getTime();
+        const diffDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24))) + 1; // +1 to include both start and end days
+
+        for (let i = 0; i < diffDays; i++) {
+          const currentDate = new Date(startDate);
+          currentDate.setDate(startDate.getDate() + i);
+
+          await database.get<Section>("itinerary_sections").create((s) => {
+            s.travel.id = newTravel.id;
+            s.title = `Day ${i + 1}`;
+            s.description = currentDate.toLocaleDateString();
+            s.startDate = currentDate;
+            s.endDate = currentDate;
+            s.sortOrder = String(i + 1);
+            s.isOffline = true;
+          });
+        }
+      }
+
+      return newTravel;
     }
   });
 };
