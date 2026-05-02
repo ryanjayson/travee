@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,6 @@ import {
   RefreshControl,
   StatusBar,
 } from "react-native";
-import CreateTravelModal from "../components/Create/Modal";
 import TravelDetailPage from "./TravelDetail";
 import ViewTravelModal from "../components/View/Modal";
 import { Travel } from "../types/TravelDto";
@@ -16,41 +15,18 @@ import { TravelStatus } from "../../../types/enums";
 import { useTravels } from "../hooks/useTravel";
 import { useTravelContext } from "../../../context/TravelContext";
 import { FAB, Portal } from "react-native-paper";
-import Tabs from "../../../components/Tabs";
+import Tabs from "../../../components/Tabs/index";
 import { Calendar } from "react-native-calendars";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import Icon from "react-native-vector-icons/MaterialIcons";
-
-// interface TravelPageProps {
-//   onBack?: () => void;
-//   onAddTravel?: () => void;
-// }
 
 const TravelCatalog = () => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
-  const [visibleCreateTravelModal, setVisibleCreateTravelModal] = useState<boolean>(false);
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [selectedTravel, setSelectedTravel] = useState<Travel | null>(null);
   const [showTravelDetail, setShowTravelDetail] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   
   const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
-  const navigation = useNavigation();
-  const isFocused = useIsFocused();
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity 
-          onPress={() => setVisibleCreateTravelModal(true)}
-          style={{ marginRight: 16 }}
-        >
-          <Ionicons name="add" size={28} color="#0C4C8A" />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -399,11 +375,6 @@ const TravelCatalog = () => {
         )}
       </View>
 
-      <CreateTravelModal
-        showModal={visibleCreateTravelModal}
-        setShowModal={setVisibleCreateTravelModal}
-      />
-
       <ViewTravelModal
         travelId={selectedTravelPlan?.id || ""}
         showModal={showTravelViewModal}
@@ -414,3 +385,4 @@ const TravelCatalog = () => {
 };
 
 export default TravelCatalog;
+ 

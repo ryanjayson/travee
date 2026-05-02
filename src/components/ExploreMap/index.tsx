@@ -72,11 +72,14 @@ const ExploreMap = ({ markers, viewBy = "country" }: ExploreMapProps) => {
         mapboxgl.accessToken = '${MAPBOX_ACCESS_TOKEN}';
         const map = new mapboxgl.Map({
           container: 'map',
-          style: 'mapbox://styles/mapbox/light-v11', 
+          style: 'mapbox://styles/mapbox/basic-v9', 
           center: [122, 13],
-          zoom: 3,
-          projection: 'naturalEarth', 
+          // minZoom: 3,
+          zoom: 0.7,
+          maxBounds: [[-180, -85], [180, 85]],
           attributionControl: false,
+          renderWorldCopies: true, 
+  projection: 'globe'
         });
 
           map.on('load', () => {
@@ -99,7 +102,7 @@ const ExploreMap = ({ markers, viewBy = "country" }: ExploreMapProps) => {
                 },
                 // Filter to show only primary country polygons (removes many overlaps)
                 filter: ['==', ['get', 'disputed'], 'false'],
-              }, 'admin-1-boundary-bg'); // Places layer behind labels/borders
+              }, 'water'); // Places layer behind labels/borders
 
               // 3. Add white borders to match the reference image
               map.addLayer({
@@ -269,10 +272,8 @@ const ExploreMap = ({ markers, viewBy = "country" }: ExploreMapProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 500,
+    flex: 1,
     width: "100%",
-    borderRadius: 16,
-    overflow: "hidden",
   },
   webview: {
     flex: 1,

@@ -8,6 +8,8 @@ import TravelCatalog from "../features/Travel/screens/TravelCatalog";
 import { ExploreScreen } from "../screens/ExploreScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
+import CreateTravelModal from "../features/Travel/components/Create/Modal";
+import { TouchableOpacity } from "react-native";
 
 export type RootTabsParamList = {
   Trips: undefined;
@@ -30,6 +32,7 @@ function iconForRoute(routeName: keyof RootTabsParamList, focused: boolean) {
       return focused ? "settings" : "settings-outline";
   }
 }
+
 const TravelTab = () => {
   return (
     <TravelProvider>
@@ -39,28 +42,59 @@ const TravelTab = () => {
 };
 
 export function RootTabs() { 
+  const [visibleCreateTravelModal, setVisibleCreateTravelModal] = React.useState(false);
+
   return (
-    <Tab.Navigator 
-      id="RootTabs"
-      initialRouteName="Trips"
-      screenOptions={({ route }): BottomTabNavigationOptions => ({
-        headerTitleAlign: "left",
-        headerShadowVisible: false,
-        tabBarLabelPosition: "below-icon",
-        tabBarIcon: ({ color, size, focused }) => (
-          <Ionicons
-            name={iconForRoute(route.name, focused)}
-            size={size}
-            color={color}
-          />
-        ),
-      })}
-    >
-      {/* <Tab.Screen name="Calendar" component={Calendar} /> */}
-      <Tab.Screen name="Explore" component={ExploreScreen} />   
-      <Tab.Screen name="Trips" component={TravelTab} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
-    </Tab.Navigator>
+    <>
+      <Tab.Navigator 
+        id="RootTabs"
+        initialRouteName="Trips"
+        screenOptions={({ route }): BottomTabNavigationOptions => ({
+          headerTitleAlign: "left",
+          headerShadowVisible: false,
+          tabBarLabelPosition: "below-icon",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={iconForRoute(route.name, focused)}
+              size={24}
+              color={color}
+            />
+          ),
+          tabBarStyle: {
+            elevation: 0, // Removes shadow on Android
+            backgroundColor: '#ffffff',
+            height: 90, 
+        paddingTop: 6,
+          },
+           tabBarLabelStyle: {
+              fontSize: 12,
+              marginTop: 5,
+            },
+        })}
+      >
+        <Tab.Screen name="Explore" component={ExploreScreen} />   
+        <Tab.Screen 
+          name="Trips" 
+          component={TravelTab} 
+          options={{
+            headerRight: () => (
+              <TouchableOpacity 
+                onPress={() => setVisibleCreateTravelModal(true)}
+                style={{ marginRight: 16 }}
+              >
+                <Ionicons name="add" size={28} color="#0C4C8A" />
+              </TouchableOpacity>
+            ),
+          }}
+        />
+        <Tab.Screen name="Profile" component={ProfileScreen} />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
+      </Tab.Navigator>
+
+      <CreateTravelModal
+        showModal={visibleCreateTravelModal}
+        setShowModal={setVisibleCreateTravelModal}
+      />
+    </>
   );
 }

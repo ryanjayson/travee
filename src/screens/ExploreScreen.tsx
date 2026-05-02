@@ -1,12 +1,14 @@
 import * as React from "react";
-import { ScrollView, View, StyleSheet, TouchableOpacity } from "react-native";
-import { Card, Text } from "react-native-paper";
+import { View, TouchableOpacity } from "react-native";
+import { Text } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTravels } from "../features/Travel/hooks/useTravel";
 import { useAllActivitiesWithDestination } from "../features/Travel/hooks/useActivity";
 import { TravelStatus } from "../types/enums";
 import ExploreMap from "../components/ExploreMap";
 
 export function ExploreScreen() {
+  const insets = useSafeAreaInsets();
   const { data: travels, isLoading: isTravelsLoading } = useTravels();
   const { data: activities, isLoading: isActivitiesLoading } = useAllActivitiesWithDestination();
   
@@ -53,147 +55,67 @@ export function ExploreScreen() {
   const isLoading = viewBy === "country" ? isTravelsLoading : isActivitiesLoading;
 
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic">
-      <View style={{ padding: 16, gap: 16 }}>
-        <Text variant="headlineSmall" style={{ fontWeight: "bold" }}>Your Travel Map</Text>
-
-        {/* Filter Toggle - Always visible at the top */}
-        <View style={styles.toggleContainer}>
-          <TouchableOpacity 
-            style={[styles.toggleBtn, filter === "all" && styles.activeBtn]}
-            onPress={() => setFilter("all")}
-          >
-            <Text style={[styles.toggleText, filter === "all" && styles.activeText]}>All</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.toggleBtn, filter === "visited" && styles.activeBtn]}
-            onPress={() => setFilter("visited")}
-          >
-            <Text style={[styles.toggleText, filter === "visited" && styles.activeText]}>Visited</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.toggleBtn, filter === "tovisit" && styles.activeBtn]}
-            onPress={() => setFilter("tovisit")}
-          >
-            <Text style={[styles.toggleText, filter === "tovisit" && styles.activeText]}>To Visit</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* View By Toggle - Below filter */}
-        <View style={styles.viewByContainer}>
-          <TouchableOpacity 
-            style={[styles.viewByBtn, viewBy === "country" && styles.viewByActiveBtn]}
-            onPress={() => setViewBy("country")}
-          >
-            <Text style={[styles.viewByText, viewBy === "country" && styles.viewByActiveText]}>By Country</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.viewByBtn, viewBy === "city" && styles.viewByActiveBtn]}
-            onPress={() => setViewBy("city")}
-          >
-            <Text style={[styles.viewByText, viewBy === "city" && styles.viewByActiveText]}>By City</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Legend */}
-        <View style={styles.legendContainer}>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: "#34699A" }]} />
-            <Text variant="bodySmall">Visited (Completed)</Text>
+    <View className="flex-1 bg-red">
+      {/* Map Backdrop */}
+      <View className="flex-1">
+        {isLoading ? (
+          <View className="flex-1 justify-center items-center">
+            <Text variant="bodyLarge">Loading map data...</Text>
           </View>
-          <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: "#78A2CC" }]} />
-            <Text variant="bodySmall">To Visit (Upcoming/Ongoing)</Text>
-          </View>
-        </View>
-
-        {/* Map */}
-        <Card>
-          {isLoading ? (
-            <Card.Content style={{ height: 350, justifyContent: 'center', alignItems: 'center' }}>
-              <Text>Loading map data...</Text>
-            </Card.Content>
-          ) : (
-            <ExploreMap markers={markers} viewBy={viewBy} />
-          )}
-        </Card>
-
+        ) : (
+          <ExploreMap markers={markers} viewBy={viewBy} />
+        )}
       </View>
-    </ScrollView>
+
+      {/* Overlay UI Controls */}
+      <View 
+        className="absolute w-full px-4" 
+        style={{ top: 10}}
+      >
+        <View className="gap-y-3 bg-white p-3 rounded-lg">
+          {/* Filter Toggle */}
+          <View className="flex-row bg-white/90 rounded-2xl p-1 border border-gray-100">
+            {["all", "visited", "tovisit"].map((f) => (
+              <TouchableOpacity 
+                key={f}
+                className={`flex-1 py-2.5 items-center rounded-xl ${filter === f ? "bg-gray-100" : ""}`}
+                onPress={() => setFilter(f as any)}
+              >
+                <Text className={`font-bold capitalize ${filter === f ? "text-primary" : "text-gray-500"}`}>
+                  {f === "tovisit" ? "To Visit" : f}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* View By Toggle */}
+          <View className="flex-row bg-white/90 rounded-2xl mt-1 p-1  border border-gray-100">
+            {["country", "city"].map((v) => (
+              <TouchableOpacity 
+                key={v}
+                className={`flex-1 py-2.5 items-center rounded-xl ${viewBy === v ? "bg-gray-100" : ""}`}
+                onPress={() => setViewBy(v as any)}
+              >
+                <Text className={`font-bold capitalize ${viewBy === v ? "text-primary" : "text-gray-500"}`}>
+                  By {v}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Legend */}
+          <View className="flex-row gap-x-4 px-1">
+            <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
+              <View className="w-2.5 h-2.5 rounded-full bg-[#34699A]" />
+              <Text className="text-[10px] font-bold text-gray-700">Visited</Text>
+            </View>
+            <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
+              <View className="w-2.5 h-2.5 rounded-full bg-[#78A2CC]" />
+              <Text className="text-[10px] font-bold text-gray-700">To Visit</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  viewByContainer: {
-    flexDirection: "row",
-    backgroundColor: "#e0e0e0",
-    borderRadius: 8,
-    padding: 4,
-    marginBottom: -8,
-  },
-  viewByBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-    borderRadius: 6,
-  },
-  viewByActiveBtn: {
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  viewByText: {
-    fontWeight: "600",
-    color: "#555",
-  },
-  viewByActiveText: {
-    color: "#000",
-    fontWeight: "bold",
-  },
-  toggleContainer: {
-    flexDirection: "row",
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    padding: 4,
-  },
-  toggleBtn: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: "center",
-    borderRadius: 6,
-  },
-  activeBtn: {
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  toggleText: {
-    fontWeight: "500",
-    color: "#666",
-  },
-  activeText: {
-    color: "#000",
-    fontWeight: "bold",
-  },
-  legendContainer: {
-    flexDirection: "row",
-    gap: 16,
-    paddingHorizontal: 4,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-});

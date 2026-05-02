@@ -370,7 +370,7 @@ const MapboxDestinationSelector = ({
 
       {/* Search Results Overlay */}
       {showResults && results.length > 0 && (
-        <View className="absolute top-[60px] left-0 right-0 bg-white z-30 max-h-[300px] rounded-b-xl"
+        <View className="absolute top-[60px] left-0 right-0 bg-white z-30 max-h-[350px] rounded-b-xl"
           style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 8 }}
         >
           {isLoading && (
