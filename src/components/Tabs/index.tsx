@@ -45,8 +45,8 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
         }}
         activeOpacity={0.8}
       >
-        <Text className={`font-semibold ${isActive ? ' text-primary ' : 'text-[#666]'}
-         ${type === "primary" ? "text-base " : "text-sm"}`}>
+        <Text className={`font-bold -tracking-wide ${isActive ? ' text-primary ' : 'text-[#e3e3e3]'}
+         ${type === "primary" ? "text-2xl " : "text-sm"}`}>
           {tab.title}
         </Text>
       </TouchableOpacity>

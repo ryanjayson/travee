@@ -23,7 +23,8 @@ import { Ionicons } from "@expo/vector-icons";
 // Enable LayoutAnimation for Android
 if (
   Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
+  UIManager.setLayoutAnimationEnabledExperimental &&
+  !(global as any).nativeFabricUIManager
 ) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
