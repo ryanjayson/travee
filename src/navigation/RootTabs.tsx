@@ -6,6 +6,7 @@ import { TravelProvider } from "../context/TravelContext";
 
 import TravelCatalog from "../features/Travel/screens/TravelCatalog";
 import { ExploreScreen } from "../screens/ExploreScreen";
+import HomeScreen from "../screens/HomeScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import CreateTravelModal from "../features/Travel/components/Create/Modal";
@@ -108,7 +109,7 @@ const insets = useSafeAreaInsets();
   },
 
       tabBarStyle: {
-         position: 'absolute',
+        position: 'absolute',
         marginLeft: WIDTH - 220 - 140,
         bottom: insets.bottom + 5,
         width: 220,
@@ -127,7 +128,7 @@ const insets = useSafeAreaInsets();
       },
         })}
       >
-        <Tab.Screen name="Home" component={ExploreScreen} />  
+        <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />  
         <Tab.Screen 
           name="Trips" 
           component={TravelTab} 
