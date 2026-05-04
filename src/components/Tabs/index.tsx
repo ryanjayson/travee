@@ -45,7 +45,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
         }}
         activeOpacity={0.8}
       >
-        <Text className={`font-bold -tracking-wide ${isActive ? ' text-primary ' : 'text-[#e3e3e3]'}
+        <Text className={`font-bold  ${isActive ? ' text-primary ' : 'text-gray-800'}
          ${type === "primary" ? "text-2xl " : "text-sm"}`}>
           {tab.title}
         </Text>

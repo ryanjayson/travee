@@ -194,48 +194,9 @@ const TravelCatalog = () => {
     const upcomingTrips = getTravelsByStatus(TravelStatus.Upcoming);
     const activeTrips = [...ongoingTrips, ...upcomingTrips];
 
-    // Build marked dates for each trip's date range
-    const markedDates: Record<string, any> = {};
-    const today = new Date().toISOString().split('T')[0];
-
-    activeTrips.forEach((travel) => {
-      if (!travel.startOrDepartureDate) return;
-
-      const color = getEffectiveStatus(travel) === TravelStatus.Ongoing ? '#0C4C8A' : '#2E7D32';
-
-      // Use UTC dates to avoid timezone shift bugs
-      const startMs = new Date(travel.startOrDepartureDate).setHours(0, 0, 0, 0);
-      const endMs = travel.endOrReturnDate
-        ? new Date(travel.endOrReturnDate).setHours(0, 0, 0, 0)
-        : startMs;
-
-      const startDateStr = new Date(startMs).toISOString().split('T')[0];
-      const endDateStr = new Date(endMs).toISOString().split('T')[0];
-
-      const MS_PER_DAY = 86400000;
-      const maxDays = 365; // safety cap
-      let day = 0;
-
-      for (let curMs = startMs; curMs <= endMs && day < maxDays; curMs += MS_PER_DAY, day++) {
-        const dateStr = new Date(curMs).toISOString().split('T')[0];
-        markedDates[dateStr] = {
-          color,
-          textColor: '#fff',
-          startingDay: dateStr === startDateStr,
-          endingDay: dateStr === endDateStr,
-        };
-      }
-    });
-
     return (
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={["#0C4C8A"]} tintColor="#0C4C8A" />
-        }
-      >
-        <View className="flex-row items-center py-3 px-5 mt-4 gap-4">
+      <View className="flex-1 bg-white">
+        <View className="flex-row items-center py-3 px-5 border-b border-gray-100 gap-4">
           <View className="flex-row items-center gap-2">
             <View className="w-3 h-3 rounded-full bg-[#0C4C8A]" />
             <Text className="text-xs text-[#666]">Ongoing</Text>
@@ -246,47 +207,97 @@ const TravelCatalog = () => {
           </View>
         </View>
 
-      
-        <View className="bg-white mx-4 mt-3 rounded-2xl shadow-sm shadow-black/10 elevation-1 overflow-hidden">
-          <Calendar
-            markingType="period"
-            markedDates={markedDates}
-            renderArrow={(direction: string) => (
-              <Icon
-                name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
-                size={32}
-                color="#0C4C8A"
-              />
-            )}
-            theme={{
-              todayTextColor: '#0C4C8A',
-              arrowColor: '#0C4C8A',
-              selectedDayBackgroundColor: '#0C4C8A',
-            }}
-          />
-        </View>
-
-
-        {/* Trip list below calendar */}
-        {/* <View className="mt-4">
-          {activeTrips.length > 0 ? (
-            <>
-              <Text className="text-xs text-gray-500 font-semibold tracking-wider uppercase px-5 mb-2">
-                Active Trips
-              </Text>
-              {activeTrips.map(renderTravelCard)}
-            </>
-          ) : (
-            <View className="flex-1 justify-center items-center py-[60px]">
-              <Text className="text-5xl mb-4">🗓️</Text>
-              <Text className="text-xl font-bold text-primary mb-2">No Active Trips</Text>
-              <Text className="text-base text-[#666] text-center px-10">
-                Your ongoing and upcoming travels will appear here.
-              </Text>
-            </View>
+        <Calendar
+          style={{ flex: 1 }}
+          enableSwipeMonths={true}
+          theme={{
+            todayTextColor: '#0C4C8A',
+            arrowColor: '#0C4C8A',
+            'stylesheet.calendar.main': {
+              monthView: {
+                flex: 1,
+              },
+              week: {
+                marginTop: 0,
+                marginBottom: 0,
+                flexDirection: 'row',
+                justifyContent: 'space-around',
+                borderBottomWidth: 1,
+                borderBottomColor: '#f0f0f0',
+                flex: 1,
+              },
+            },
+          }}
+          renderArrow={(direction: string) => (
+            <Icon
+              name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
+              size={32}
+              color="#0C4C8A"
+            />
           )}
-        </View> */}
-      </ScrollView>
+          dayComponent={({ date, state }: any) => {
+            const dayStr = date.dateString;
+            const tripsOnDay = activeTrips.filter((trip) => {
+              if (!trip.startOrDepartureDate) return false;
+              const startStr = new Date(trip.startOrDepartureDate).toISOString().split('T')[0];
+              const endStr = trip.endOrReturnDate
+                ? new Date(trip.endOrReturnDate).toISOString().split('T')[0]
+                : startStr;
+              return dayStr >= startStr && dayStr <= endStr;
+            });
+
+            return (
+              <View style={{ height: 90, flex: 1, width: '100%', padding: 2, paddingTop: 4 }}>
+                <Text
+                  style={{
+                    textAlign: 'center',
+                    fontSize: 12,
+                    fontWeight: state === 'today' ? 'bold' : 'normal',
+                    color: state === 'disabled' ? '#d9e1e8' : state === 'today' ? '#0C4C8A' : '#2d4150',
+                    marginBottom: 2,
+                  }}
+                >
+                  {date.day}
+                </Text>
+                <View style={{ gap: 2 }}>
+                  {tripsOnDay.map((trip) => {
+                    const status = getEffectiveStatus(trip);
+                    const color = status === TravelStatus.Ongoing ? '#0C4C8A' : '#2E7D32';
+                    const startStr = new Date(trip.startOrDepartureDate!).toISOString().split('T')[0];
+                    const isStart = dayStr === startStr;
+
+                    return (
+                      <TouchableOpacity
+                        key={trip.id}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          selectTravelPlan(trip);
+                          setShowTravelDetail(true);
+                        }}
+                        style={{
+                          backgroundColor: color,
+                          paddingVertical: 2,
+                          paddingHorizontal: 4,
+                          borderRadius: 3,
+                          opacity: state === 'disabled' ? 0.5 : 1,
+                        }}
+                      >
+                        <Text
+                          style={{ color: '#fff', fontSize: 10, fontWeight: '600' }}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {trip.title}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            );
+          }}
+        />
+      </View>
     );
   };
 
