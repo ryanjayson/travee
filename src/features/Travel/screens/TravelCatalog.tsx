@@ -363,7 +363,7 @@ const TravelCatalog = () => {
   }
 
   return (
-    <View className="flex-1 bg-[#E6E8EB]">
+    <View className="flex-1 pb-10">
       <StatusBar barStyle={"dark-content"} />
 
       <View className="flex-1">

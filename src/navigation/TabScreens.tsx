@@ -3,8 +3,6 @@ import { View, Text, StyleSheet } from "react-native";
 import TouchButton from "../components/atoms/TouchButton";
 import { useAuth } from "../features/Auth/hooks/AuthContext";
 import TravelCatalog from "../features/Travel/screens/TravelCatalog";
-import CreateTravelPlan from "../features/Travel/screens/CreateTravelPlan";
-import Basic from "../features/Travel/screens/Drag";
 import EditTravelPlan from "../features/Travel/screens/EditTravelPlan";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { TravelProvider } from "../context/TravelContext";

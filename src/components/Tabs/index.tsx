@@ -45,7 +45,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
         }}
         activeOpacity={0.8}
       >
-        <Text className={`font-bold  ${isActive ? ' text-primary ' : 'text-gray-800'}
+        <Text className={`font-medium  ${isActive ? ' text-primary ' : 'text-gray-400'}
          ${type === "primary" ? "text-2xl " : "text-sm"}`}>
           {tab.title}
         </Text>
@@ -64,7 +64,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
       </ScrollView>
 
       {/* Tab Content with swipe */}
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         {activeTab ? (
           activeTab.content
         ) : (
