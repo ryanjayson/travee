@@ -59,6 +59,10 @@ const Create = ({ onClose }: AddTravelModalProps) => {
     { id: "12", label: "Colloquium", selected: false },
   ];
 
+  const CreateTripSchema = Yup.object().shape({
+    title: Yup.string().required("Title is required").min(2),
+  });
+
   const formik = useFormik({
     initialValues: {
       title: "",
@@ -71,7 +75,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
       notes: "",
       createSectionsBasedOnDates: false,
     },
-    validationSchema: TravelSchema,
+    validationSchema: CreateTripSchema,
     onSubmit: (values) => {
       setError(null);
 
@@ -158,17 +162,9 @@ const Create = ({ onClose }: AddTravelModalProps) => {
   const textStyle = styling.split(' ')[1];
 
   return (
-    <View className="flex-1 justify-end bg-white">
-      <View className="flex-row justify-between items-center px-5 py-4 border-b border-[#E0E0E0]">
-        <Text className="text-xl text-gray-900 font-bold">Create next trip</Text>
-        <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-          <Text className={`text-base ${isSaving ? "text-[#999]" : "text-primary"}`}>
-            <Icon name="clear" size={28} color={"#333"} />
-          </Text>
-        </TouchableOpacity>
-      </View>
+    <View className="flex-1 bg-gray-100  overflow-hidden ">
 
-      <ScrollView className="flex-1 p-[15px] bg-gray-50" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 p-[15px] pb-20" showsVerticalScrollIndicator={false}>
         {error && (
           <View className="bg-[#FFEBEE] rounded-lg p-3 mb-4 border border-[#FFCDD2]">
             <Text className="text-[#D32F2F] text-sm">{error}</Text>
@@ -206,7 +202,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
             }}
           />
           {formik.touched.title && formik.errors.title && (
-            <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.title as string}</Text>
+            <Text className="text-[#D32F2F] text-sm mt-1 ml-1">{formik.errors.title as string}</Text>
           )}
         </View>
 
@@ -465,7 +461,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
            >
-             <Text className={`text-sm ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-50' : 'text-gray-700'}`}>
+             <Text className={`text-sm ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-700'}`}>
                Create sections based on dates
              </Text>
            </TouchableOpacity>
@@ -573,14 +569,15 @@ const Create = ({ onClose }: AddTravelModalProps) => {
         </View> */}
       </ScrollView>
 
-      <View className="px-5 py-4 border-t border-gray-200">
-        <TouchButton
-          buttonText="Create Trip"
+    <View className="mb-8 mx-5 bg-transparent  ">
+       <TouchButton
+          buttonText="Add trip"
           onPress={() => formik.handleSubmit()}
           disabled={!formik.values.title.trim() || isSaving}
-          className="h-[64px] p-6"
+          className="h-[64px] p-6 "  
         />
-      </View>
+    </View>
+     
     </View>
   );
 };

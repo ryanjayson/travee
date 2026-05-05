@@ -3,7 +3,6 @@ import {
   Modal,
   Animated,
   View,
-  StyleSheet,
   Dimensions,
   TouchableWithoutFeedback,
 } from "react-native";
@@ -14,7 +13,7 @@ interface SlideModalProps extends PropsWithChildren {
   visible: boolean;
   onClose: () => void;
   direction?: "right" | "bottom";
-  height?: string | number;
+  height?: number | `${number}%` | "auto";
 }
 
 export default function SlideModal({
@@ -32,7 +31,7 @@ export default function SlideModal({
     if (visible) {
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 300,
+        duration: 400,
         useNativeDriver: true,
       }).start();
     } else {
@@ -51,22 +50,25 @@ export default function SlideModal({
   return (
     <Modal
       visible={visible}
-      transparent={true}
+      transparent
       animationType="none"
       onRequestClose={onClose}
     >
-      <View style={[styles.backdrop, !isRight && styles.bottomBackdrop]}>
+      <View className={`flex-1 bg-black/40 ${!isRight ? "justify-end" : ""}`}>
         <TouchableWithoutFeedback onPress={onClose}>
-          <View style={StyleSheet.absoluteFill} />
+          <View className="absolute inset-0" />
         </TouchableWithoutFeedback>
-        
+
         <Animated.View
           style={[
-            styles.modalContainer,
-            isRight ? styles.rightContainer : styles.bottomContainer,
             { height: height },
             transformStyle,
           ]}
+          className={`bg-white overflow-hidden ${
+            isRight
+              ? "flex-1"
+              : "w-full rounded-t-[30px] pt-2.5 shadow-xl elevation-20"
+          }`}
         >
           {children}
         </Animated.View>
@@ -74,32 +76,3 @@ export default function SlideModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-  },
-  bottomBackdrop: {
-    justifyContent: "flex-end",
-  },
-  modalContainer: {
-    backgroundColor: "#fff",
-    overflow: "hidden",
-  },
-  rightContainer: {
-    flex: 1,
-  },
-  bottomContainer: {
-    width: "100%",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingTop: 10,
-    // Add shadow for bottom sheet look
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 20,
-  },
-});

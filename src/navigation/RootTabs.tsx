@@ -154,18 +154,18 @@ const insets = useSafeAreaInsets();
         style={{
           position: 'absolute',
           bottom: insets.bottom + 5,
-        left: WIDTH - 130,
+          left: WIDTH - 130,
           width: 70,
           height: 70,
           borderRadius: 35,
           backgroundColor: '#0C4C8A',
           justifyContent: 'center',
           alignItems: 'center',
-          elevation: 15,
-          shadowColor: '#0C4C8A',
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.3,
-          shadowRadius: 12,
+          elevation: 10,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
         }}
         activeOpacity={0.8}
       >

@@ -22,7 +22,7 @@ const TouchButton: React.FC<TouchButtonProps> = ({
       accessibilityRole="button"
       accessibilityState={{ disabled: disabled }}
     >
-      <Text className="text-white font-semibold text-base">{buttonText}</Text>
+      <Text className="text-white font-semibold text-lg">{buttonText}</Text>
     </TouchableOpacity>
   );
 };
