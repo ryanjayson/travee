@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-  StyleSheet,
   StatusBar,
   Alert,
   ActivityIndicator,
@@ -254,13 +253,16 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
       statusBarTranslucent
     >
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      <View style={styles.container}>
+      <View className="flex-1 bg-[#06071a] items-center">
 
         {/* ─── Top bar ───────────────────────────────────────────────────── */}
-        <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
+        <View 
+          className="w-full flex-row items-center justify-between px-4 pb-2"
+          style={{ paddingTop: insets.top + 8 }}
+        >
           <TouchableOpacity
             onPress={onClose}
-            style={styles.iconBtn}
+            className="w-10 h-10 rounded-full bg-white/10 justify-center items-center"
             accessibilityRole="button"
             accessibilityLabel="Close share overlay"
             activeOpacity={0.7}
@@ -268,13 +270,13 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
             <Ionicons name="close" size={24} color="#fff" />
           </TouchableOpacity>
 
-          <Text style={styles.topBarTitle}>Share Trip</Text>
+          <Text className="text-white text-[17px] font-bold tracking-[0.3px]">Share Trip</Text>
 
-          <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View className="flex-row gap-2">
             {/* Photo picker */}
             <TouchableOpacity
               onPress={pickImage}
-              style={styles.iconBtn}
+              className="w-10 h-10 rounded-full bg-white/10 justify-center items-center"
               accessibilityRole="button"
               accessibilityLabel="Add background photo"
               activeOpacity={0.7}
@@ -286,7 +288,7 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
             <TouchableOpacity
               onPress={handleSave}
               disabled={isSaving}
-              style={[styles.iconBtn, isSaving && { opacity: 0.5 }]}
+              className={`w-10 h-10 rounded-full bg-white/10 justify-center items-center ${isSaving ? 'opacity-50' : ''}`}
               accessibilityRole="button"
               accessibilityLabel="Save to photo gallery"
               activeOpacity={0.7}
@@ -299,7 +301,7 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
             {/* Reset position */}
             <TouchableOpacity
               onPress={handleReset}
-              style={styles.iconBtn}
+              className="w-10 h-10 rounded-full bg-white/10 justify-center items-center"
               accessibilityRole="button"
               accessibilityLabel="Reset position and scale"
               activeOpacity={0.7}
@@ -309,49 +311,55 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
           </View>
         </View>
 
-        <Text style={styles.hint}>Drag · Pinch to resize</Text>
+        <Text className="text-white/35 text-[12px] tracking-[0.5px] mb-3.5">Drag · Pinch to resize</Text>
 
         {/* ─── Capturable share card ─────────────────────────────────────── */}
         {/* @ts-ignore */}
         <ViewShot
           ref={viewShotRef}
           options={{ format: 'png', quality: 1.0 }}
-          style={[styles.card, transparentCapture && { backgroundColor: 'transparent' }]}
+          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+          className={`overflow-hidden bg-[#0C2A5A] ${transparentCapture ? 'bg-transparent' : ''}`}
         >
           {/* ── Layer 1: user photo (only when not doing transparent capture) ── */}
           {backgroundImageUri && !transparentCapture ? (
             <Image
               source={{ uri: backgroundImageUri }}
-              style={StyleSheet.absoluteFillObject}
+              className="absolute inset-0"
               resizeMode="cover"
             />
           ) : null}
 
           {/* ── Layer 2: dark colour base ── */}
           {!transparentCapture && (
-            <View style={[styles.cardBg, backgroundImageUri ? { backgroundColor: 'transparent' } : null]} />
+            <View 
+              className={`absolute inset-0 bg-[#0C2A5A] ${backgroundImageUri ? 'bg-transparent' : ''}`} 
+            />
           )}
 
           {/* ── Layer 3: gradient darkening ── */}
           {!transparentCapture && (
             <>
-              <View style={styles.cardGradientTop} />
-              <View style={styles.cardGradientBottom} />
+              <View className="absolute top-0 left-0 right-0 bg-[#0C4C8A]/25" />
+              <View 
+                className="absolute bottom-0 left-0 right-0 bg-black/40"
+                style={{ height: CANVAS_HEIGHT }} 
+              />
             </>
           )}
 
           {/* Draggable + scalable country outline */}
           <Animated.View
-            style={[
-              styles.svgWrapper,
-              {
-                transform: [
-                  { translateX },
-                  { translateY },
-                  { scale },
-                ],
-              },
-            ]}
+            className="absolute top-0 left-0"
+            style={{
+              width: CANVAS_WIDTH,
+              height: CANVAS_HEIGHT,
+              transform: [
+                { translateX },
+                { translateY },
+                { scale },
+              ],
+            }}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             {...panResponder.panHandlers}
@@ -368,30 +376,28 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
 
           {/* ── Draggable trip info block ── */}
           <Animated.View
-            style={[
-              styles.cardText,
-              {
-                transform: [
-                  { translateX: textTranslateX },
-                  { translateY: textTranslateY },
-                ],
-              },
-            ]}
+            className="absolute bottom-0 left-0 right-0 p-6"
+            style={{
+              transform: [
+                { translateX: textTranslateX },
+                { translateY: textTranslateY },
+              ],
+            }}
             {...textPanResponder.panHandlers}
           >
-            <View style={styles.logoRow}>
+            <View className="flex-row items-center mb-2.5">
               <Ionicons name="airplane" size={14} color="rgba(255,255,255,0.65)" />
-              <Text style={styles.logoLabel}>TRAVIE</Text>
+              <Text className="text-white/65 text-[11px] font-bold ml-1.5 tracking-[2px]">TRAVIE</Text>
             </View>
-            <Text style={styles.cardTitle} numberOfLines={2}>{tripTitle}</Text>
-            <Text style={styles.cardDest}>{destination}</Text>
+            <Text className="text-white text-[28px] font-extrabold leading-[34px] mb-1.5" numberOfLines={2}>{tripTitle}</Text>
+            <Text className="text-white/65 text-[15px] font-medium mb-1">{destination}</Text>
 
             {/* Top 3 activity type emoji chips */}
             {topActivityTypes.length > 0 && (
-              <View style={styles.activityIconRow}>
+              <View className="flex-row items-center gap-2 mt-2.5 mb-1">
                 {topActivityTypes.map((type, i) => (
-                  <View key={i} style={styles.activityIconChip}>
-                    <Text style={styles.activityEmoji}>
+                  <View key={i} className="w-8 h-8 rounded-full bg-white/18 border border-white/35 justify-center items-center">
+                    <Text className="text-[16px] leading-5">
                       {ACTIVITY_EMOJI[type] ?? '●'}
                     </Text>
                   </View>
@@ -399,16 +405,19 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
               </View>
             )}
 
-            {dateRange ? <Text style={styles.cardDate}>{dateRange}</Text> : null}
+            {dateRange ? <Text className="text-white/45 text-[13px] font-normal mt-1.5">{dateRange}</Text> : null}
           </Animated.View>
         </ViewShot>
 
         {/* ─── Share button ──────────────────────────────────────────────── */}
-        <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 16 }]}>
+        <View 
+          className="w-full px-6 pt-[18px] items-center"
+          style={{ paddingBottom: insets.bottom + 16 }}
+        >
           <TouchableOpacity
             onPress={handleShare}
             disabled={isSharing}
-            style={[styles.shareBtn, isSharing && { opacity: 0.7 }]}
+            className={`flex-row items-center bg-[#0C4C8A] py-[15px] px-12 rounded-[32px] shadow-lg elevation-10 ${isSharing ? 'opacity-70' : ''}`}
             activeOpacity={0.85}
             accessibilityRole="button"
             accessibilityLabel="Share this trip card"
@@ -417,8 +426,8 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <>
-                <Ionicons name="share-social" size={20} color="#fff" style={{ marginRight: 8 }} />
-                <Text style={styles.shareBtnText}>Share</Text>
+                <Ionicons name="share-social" size={20} color="#fff" className="mr-2" />
+                <Text className="text-white text-base font-bold tracking-[0.5px]">Share</Text>
               </>
             )}
           </TouchableOpacity>
@@ -428,160 +437,5 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
     </Modal>
   );
 };
-
-// ─── Styles ─────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#06071a',
-    alignItems: 'center',
-  },
-  topBar: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-  },
-  iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  topBarTitle: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  hint: {
-    color: 'rgba(255,255,255,0.35)',
-    fontSize: 12,
-    letterSpacing: 0.5,
-    marginBottom: 14,
-  },
-  card: {
-    width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT,
-    overflow: 'hidden',
-    backgroundColor: '#0C2A5A',
-  },
-  cardBg: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0C2A5A',
-  },
-  cardGradientTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    // height: CANVAS_HEIGHT * 0.45,
-    backgroundColor: 'rgba(12, 76, 138, 0.25)',
-  },
-  cardGradientBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: CANVAS_HEIGHT,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-  },
-  svgWrapper: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT,
-  },
-  cardText: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 24,
-  },
-   logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  logoLabel: {
-    color: 'rgba(255,255,255,0.65)',
-    fontSize: 11,
-    fontWeight: '700',
-    marginLeft: 6,
-    letterSpacing: 2,
-  },
-  cardTitle: {
-    color: '#ffffff',
-    fontSize: 28,
-    fontWeight: '800',
-    lineHeight: 34,
-    marginBottom: 6,
-  },
-  cardDest: {
-    color: 'rgba(255,255,255,0.65)',
-    fontSize: 15,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  cardDate: {
-    color: 'rgba(255,255,255,0.45)',
-    fontSize: 13,
-    fontWeight: '400',
-    marginTop: 6,
-  },
-  activityIconRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  activityIconChip: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.35)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  activityEmoji: {
-    fontSize: 16,
-    lineHeight: 20,
-  },
-  bottomBar: {
-    width: '100%',
-    paddingHorizontal: 24,
-    paddingTop: 18,
-    alignItems: 'center',
-  },
-  shareBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0C4C8A',
-    paddingVertical: 15,
-    paddingHorizontal: 48,
-    borderRadius: 32,
-    shadowColor: '#0C4C8A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  shareBtnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-});
 
 export default ShareOverlay;

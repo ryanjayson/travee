@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, StatusBar, TextInput } from 'react-native';
+import { View, Text, ScrollView, FlatList, Image, TouchableOpacity, StatusBar, TextInput, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTravels } from '../features/Travel/hooks/useTravel';
 import { useAllActivitiesWithDestination } from '../features/Travel/hooks/useActivity';
@@ -7,351 +7,337 @@ import { Travel } from '../features/Travel/types/TravelDto';
 import { TravelStatus, ActivityType } from '../types/enums';
 import { Ionicons } from '@expo/vector-icons';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH * 0.8;
+
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const { data: travels, isLoading } = useTravels();
   const { data: allActivities } = useAllActivitiesWithDestination();
 
+  // ─── Stats ───────────────────────────────────────────────────────────────
   const getTripStats = () => {
     if (!travels) return { total: 0, completed: 0, upcoming: 0 };
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let completed = 0;
-    let upcoming = 0;
-
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    let completed = 0, upcoming = 0;
     travels.forEach(t => {
       if (t.status === TravelStatus.Cancelled || t.status === TravelStatus.Archieved) return;
-      
-      if (t.status === TravelStatus.Completed) {
-        completed++;
-      } else if (t.status === TravelStatus.Upcoming) {
-        upcoming++;
-      } else if (t.startOrDepartureDate) {
-        const startDate = new Date(t.startOrDepartureDate);
-        startDate.setHours(0, 0, 0, 0);
-        
-        let endDate = startDate;
-        if (t.endOrReturnDate) {
-          endDate = new Date(t.endOrReturnDate);
-          endDate.setHours(0, 0, 0, 0);
-        }
-
-        if (endDate < today) {
-          completed++;
-        } else if (startDate >= today) {
-          upcoming++;
-        }
+      if (t.status === TravelStatus.Completed) { completed++; return; }
+      if (t.status === TravelStatus.Upcoming)  { upcoming++;  return; }
+      if (t.startOrDepartureDate) {
+        const start = new Date(t.startOrDepartureDate); start.setHours(0, 0, 0, 0);
+        const end   = t.endOrReturnDate ? new Date(t.endOrReturnDate) : start;
+        end.setHours(0, 0, 0, 0);
+        if (end < today) completed++;
+        else if (start >= today) upcoming++;
       }
     });
-
     return { total: travels.length, completed, upcoming };
   };
 
+  // ─── Top activity types ───────────────────────────────────────────────────
   const getTopActivityTypes = () => {
-    if (!allActivities || allActivities.length === 0) return [];
-    
+    if (!allActivities?.length) return [];
     const counts: Record<number, number> = {};
-
-    allActivities.forEach(activity => {
-      const type = activity.type || 0;
-      if (type === 0) return; // skip 'none'
+    allActivities.forEach(a => {
+      const type = a.type || 0;
+      if (type === 0) return;
       counts[type] = (counts[type] || 0) + 1;
     });
-
     return Object.entries(counts)
       .map(([typeStr, count]) => {
         const type = parseInt(typeStr, 10);
         const typeName = ActivityType[type];
-        return {
-          type,
-          typeName: typeName ? typeName.charAt(0).toUpperCase() + typeName.slice(1) : "Unknown",
-          count
-        };
+        return { type, typeName: typeName ? typeName.charAt(0).toUpperCase() + typeName.slice(1) : 'Unknown', count };
       })
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
   };
 
-  const tripStats = getTripStats();
-  const topActivityTypes = getTopActivityTypes();
-  const favoriteActivityName = topActivityTypes.length > 0 ? topActivityTypes[0].typeName : "N/A";
-
-  // Find the next upcoming trip
   const getIconForActivityType = (type?: number) => {
-    switch (type) {
-      case 1: return "airplane";
-      case 2: return "log-in";
-      case 3: return "log-out";
-      case 4: return "car";
-      case 5: return "cafe";
-      case 6: return "restaurant";
-      case 7: return "walk";
-      case 8: return "camera";
-      case 9: return "cart";
-      case 10: return "briefcase";
-      case 11: return "bicycle";
-      case 12: return "bed";
-      default: return "location";
-    }
+    const map: Record<number, string> = {
+      1: 'airplane', 2: 'log-in', 3: 'log-out', 4: 'car',
+      5: 'cafe', 6: 'restaurant', 7: 'walk', 8: 'camera',
+      9: 'cart', 10: 'briefcase', 11: 'bicycle', 12: 'bed',
+    };
+    return (map[type ?? 0] ?? 'location') as any;
   };
-  const getUpcomingTrip = () => {
+
+  // ─── Ongoing trip: status Ongoing OR dates straddle today ─────────────────
+  const getOngoingTrip = (): Travel | null => {
     if (!travels) return null;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const upcomingTravels = travels.filter((t: Travel) => {
-      // Exclude cancelled/archived/completed if status is strictly managed
-      if (t.status === TravelStatus.Cancelled || t.status === TravelStatus.Archieved || t.status === TravelStatus.Completed) {
-        return false;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return travels.find(t => {
+      if ([TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return false;
+      if (t.status === TravelStatus.Ongoing) return true;
+      if (t.startOrDepartureDate && t.endOrReturnDate) {
+        const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);
+        const e = new Date(t.endOrReturnDate);       e.setHours(0, 0, 0, 0);
+        return s <= today && today <= e;
       }
-      if (!t.startOrDepartureDate) return false;
-      
-      const startDate = new Date(t.startOrDepartureDate);
-      startDate.setHours(0, 0, 0, 0);
-      return startDate >= today;
-    });
-
-    if (upcomingTravels.length === 0) return null;
-
-    // Sort by closest date
-    upcomingTravels.sort((a: Travel, b: Travel) => {
-      return new Date(a.startOrDepartureDate!).getTime() - new Date(b.startOrDepartureDate!).getTime();
-    });
-
-    return upcomingTravels[0];
+      return false;
+    }) ?? null;
   };
 
-  const upcomingTrip = getUpcomingTrip();
-
-  const formatDate = (dateValue: Date | string | undefined) => {
-    if (!dateValue) return "";
-    const date = new Date(dateValue);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  // ─── All upcoming trips sorted by start date ──────────────────────────────
+  const getAllUpcomingTrips = (): Travel[] => {
+    if (!travels) return [];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    return travels
+      .filter(t => {
+        if ([TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed, TravelStatus.Ongoing].includes(t.status as TravelStatus)) return false;
+        if (!t.startOrDepartureDate) return false;
+        const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);
+        return s > today;
+      })
+      .sort((a, b) => new Date(a.startOrDepartureDate!).getTime() - new Date(b.startOrDepartureDate!).getTime());
   };
 
-  const getDuration = (start: Date | string | undefined, end: Date | string | undefined) => {
-    if (!start || !end) return "";
-    const s = new Date(start);
-    const e = new Date(end);
-    const diffTime = Math.abs(e.getTime() - s.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    return `${diffDays} Day${diffDays > 1 ? 's' : ''}`;
+  // ─── Derived data ─────────────────────────────────────────────────────────
+  const tripStats          = getTripStats();
+  const topActivityTypes   = getTopActivityTypes();
+  const favoriteActivityName = topActivityTypes[0]?.typeName ?? 'N/A';
+  const ongoingTrip        = getOngoingTrip();
+  const upcomingTrips      = getAllUpcomingTrips();
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+  const formatDate = (v?: Date | string) =>
+    v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+  const getDuration = (s?: Date | string, e?: Date | string) => {
+    if (!s || !e) return '';
+    const days = Math.ceil(Math.abs(new Date(e).getTime() - new Date(s).getTime()) / 86400000) + 1;
+    return `${days} Day${days > 1 ? 's' : ''}`;
   };
 
+  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <View style={{ flex: 1, backgroundColor: '#f9fafb' }}>
+    <View className="flex-1 bg-gray-100">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-        
-        {/* Hero Banner Section */}
-        <View style={{ width: '100%', height: 360, position: 'relative' }}>
-          <Image 
-            source={require('../assets/images/home_hero.png')} 
-            style={{ width: '100%', height: '100%' }}
+
+        {/* ── Hero Banner ─────────────────────────────────────────────── */}
+        <View className="w-full h-[360px] relative">
+          <Image
+            source={require('../assets/images/home_hero.png')}
+            className="w-full h-full"
             resizeMode="cover"
           />
-          {/* Gradient Overlay for Text Readability (optional) */}
-          <View style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.5)'
-          }} />
-          
-          <View style={{
-            position: 'absolute',
-            bottom: 40,
-            left: 20,
-            right: 20,
-          }}>
-            <Text style={{ color: '#ffffff', fontSize: 32, fontWeight: '800', marginBottom: 4, textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: {width: -1, height: 1}, textShadowRadius: 10 }}>
+          <View className="absolute inset-0 bg-black/50" />
+
+          <View className="absolute left-5 right-5" style={{ top: 130 }}>
+            <Text
+              className="text-white text-[32px] font-extrabold mb-1"
+              style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
+            >
               Where to next?
             </Text>
-            <Text style={{ color: '#f3f4f6', fontSize: 16, fontWeight: '500', textShadowColor: 'rgba(0, 0, 0, 0.75)', textShadowOffset: {width: -1, height: 1}, textShadowRadius: 10, marginBottom: 20 }}>
+            <Text
+              className="text-gray-100 text-base font-medium mb-5"
+              style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
+            >
               Plan your next adventure with Travie.
             </Text>
-            
-            {/* Search Box */}
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: '#ffffff',
-              borderRadius: 12,
-              paddingHorizontal: 15,
-              paddingVertical: 12,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.1,
-              shadowRadius: 10,
-              elevation: 5,
-            }}>
+
+            <View className="flex-row items-center bg-white rounded-xl px-4 py-3 shadow-lg elevation-5">
               <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 10 }} />
-              <TextInput 
+              <TextInput
                 placeholder="Search destinations, places..."
                 placeholderTextColor="#9ca3af"
-                style={{ flex: 1, fontSize: 16, color: '#1f2937' }}
+                className="flex-1 text-base text-gray-800"
               />
             </View>
           </View>
         </View>
-        {/* Upcoming Trip Section */}
-        <View style={{ paddingHorizontal: 20, paddingTop: 30 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-            <Text style={{ fontSize: 20, fontWeight: '700', color: '#1f2937' }}>Your Upcoming Trip</Text>
-            {upcomingTrip && (
-              <TouchableOpacity>
-                <Text style={{ fontSize: 14, color: '#0C4C8A', fontWeight: '600' }}>View Details</Text>
-              </TouchableOpacity>
+
+        {/* ── Content sheet sliding over hero ─────────────────────────── */}
+        <View
+          className="bg-gray-100 pt-7"
+          style={{ marginTop: -30, borderTopLeftRadius: 30, borderTopRightRadius: 30 }}
+        >
+
+          {/* ── Ongoing Trip ────────────────────────────────────────────── */}
+          <View className="px-5 mb-6">
+           
+            {isLoading ? (
+              <Text className="text-gray-500 text-sm">Loading...</Text>
+            ) : ongoingTrip ? (
+              <View
+                className="rounded-2xl overflow-hidden elevation-6"
+                style={{ backgroundColor: '#0C4C8A', shadowColor: '#0C4C8A', shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }}
+              >
+                {/* Decorative circles */}
+                <View className="absolute" style={{ width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.06)', top: -40, right: -30 }} />
+                <View className="absolute" style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(255,255,255,0.05)', bottom: -20, left: 20 }} />
+
+                <View className="p-5">
+                  <View className="flex-row items-center gap-2">
+                    <View className="w-2 h-2 rounded-full bg-green-400" />
+                    <Text className="text-green-300 text-[10px] font-bold tracking-widest uppercase">Ongoing</Text>
+                  </View>
+
+                  <Text className="text-white text-2xl font-extrabold mb-1" numberOfLines={1}>
+                    {ongoingTrip.title}
+                  </Text>
+                  <View className="flex-row items-center gap-1.5 mb-4">
+                    <Ionicons name="location" size={13} color="rgba(255,255,255,0.65)" />
+                    <Text className="text-white/65 text-sm font-medium" numberOfLines={1}>
+                      {ongoingTrip.destination}
+                    </Text>
+                  </View>
+
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-1.5">
+                      <Ionicons name="calendar" size={13} color="rgba(255,255,255,0.65)" />
+                      <Text className="text-white/65 text-[13px]">
+                        {formatDate(ongoingTrip.startOrDepartureDate)}
+                        {ongoingTrip.endOrReturnDate ? ` → ${formatDate(ongoingTrip.endOrReturnDate)}` : ''}
+                      </Text>
+                    </View>
+                    {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate) ? (
+                      <View className="bg-white/15 px-3 py-1 rounded-full">
+                        <Text className="text-white text-[12px] font-semibold">
+                          {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate)}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View className="bg-white rounded-2xl px-4 py-5 items-center border border-dashed border-gray-200">
+                <Ionicons name="navigate-circle-outline" size={32} color="#d1d5db" />
+                <Text className="text-gray-400 text-sm font-medium mt-2">No ongoing trip</Text>
+              </View>
             )}
           </View>
 
-          {isLoading ? (
-            <Text style={{ color: '#6b7280' }}>Loading your trips...</Text>
-          ) : upcomingTrip ? (
-            <View style={{
-              backgroundColor: '#ffffff',
-              borderRadius: 16,
-              padding: 16,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.05,
-              shadowRadius: 10,
-              elevation: 3,
-              borderWidth: 1,
-              borderColor: '#f3f4f6'
-            }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '700', color: '#0C4C8A', marginBottom: 4 }}>
-                    {upcomingTrip.title}
-                  </Text>
-                  <Text style={{ fontSize: 14, color: '#4b5563', fontWeight: '500' }}>
-                    {upcomingTrip.destination}
-                  </Text>
-                </View>
-                <View style={{ backgroundColor: '#E8F5E8', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#2E7D32', textTransform: 'uppercase' }}>
-                    Upcoming
-                  </Text>
-                </View>
-              </View>
+          {/* ── Upcoming Trips Carousel ──────────────────────────────────── */}
+          <View className="mb-6">
+            <View className="flex-row items-center justify-between px-5 mb-3">
+              <Text className="text-xl font-bold text-gray-800">Upcoming Trips</Text>
+              {upcomingTrips.length > 0 && (
+                <Text className="text-sm text-[#0C4C8A] font-semibold">
+                  {upcomingTrips.length} trip{upcomingTrips.length > 1 ? 's' : ''}
+                </Text>
+              )}
+            </View>
 
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: '#6b7280' }}>
-                  {getDuration(upcomingTrip.startOrDepartureDate, upcomingTrip.endOrReturnDate) 
-                    ? `${getDuration(upcomingTrip.startOrDepartureDate, upcomingTrip.endOrReturnDate)} | ` 
-                    : ""}
-                  {upcomingTrip.startOrDepartureDate ? formatDate(upcomingTrip.startOrDepartureDate) : "Date TBD"}
+            {isLoading ? (
+              <Text className="text-gray-500 text-sm px-5">Loading...</Text>
+            ) : upcomingTrips.length > 0 ? (
+              <FlatList
+                data={upcomingTrips}
+                keyExtractor={item => String(item.id)}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                snapToInterval={CARD_WIDTH + 16}
+                decelerationRate="fast"
+                contentContainerStyle={{ paddingHorizontal: 20, gap: 16 }}
+                renderItem={({ item, index }) => (
+                  <View
+                    style={{ width: CARD_WIDTH }}
+                    className="bg-white rounded-2xl p-4 shadow-sm elevation-3 border border-gray-100"
+                  >
+                    {/* Index badge */}
+                    <View className="absolute top-3.5 right-4">
+                      <Text className="text-[11px] text-gray-300 font-semibold">#{index + 1}</Text>
+                    </View>
+
+                    {/* Title + destination */}
+                    <View className="mb-3 pr-8">
+                      <Text className="text-lg font-bold text-[#0C4C8A] mb-1" numberOfLines={1}>
+                        {item.title}
+                      </Text>
+                      <View className="flex-row items-center gap-1">
+                        <Ionicons name="location-outline" size={13} color="#9ca3af" />
+                        <Text className="text-sm text-gray-400 font-medium" numberOfLines={1}>
+                          {item.destination || 'Destination TBD'}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View className="border-t border-gray-100 mb-3" />
+
+                    {/* Date + duration */}
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-row items-center gap-1.5">
+                        <Ionicons name="calendar-outline" size={14} color="#9ca3af" />
+                        <Text className="text-[13px] font-semibold text-gray-500">
+                          {item.startOrDepartureDate ? formatDate(item.startOrDepartureDate) : 'Date TBD'}
+                        </Text>
+                      </View>
+                      {getDuration(item.startOrDepartureDate, item.endOrReturnDate) ? (
+                        <View className="bg-blue-50 px-2.5 py-0.5 rounded-full">
+                          <Text className="text-[12px] text-[#0C4C8A] font-semibold">
+                            {getDuration(item.startOrDepartureDate, item.endOrReturnDate)}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  </View>
+                )}
+              />
+            ) : (
+              <View className="mx-5 bg-white rounded-2xl p-6 items-center border border-dashed border-gray-200">
+                <Ionicons name="map-outline" size={32} color="#d1d5db" />
+                <Text className="text-base text-gray-500 font-medium mt-2 mb-1">No upcoming trips planned</Text>
+                <Text className="text-sm text-gray-400 text-center">
+                  Tap the + button below to start planning your next adventure!
                 </Text>
               </View>
-            </View>
-          ) : (
-            <View style={{
-              backgroundColor: '#f3f4f6',
-              borderRadius: 16,
-              padding: 24,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 1,
-              borderColor: '#e5e7eb',
-              borderStyle: 'dashed'
-            }}>
-              <Text style={{ fontSize: 16, color: '#4b5563', fontWeight: '500', marginBottom: 8 }}>No upcoming trips planned</Text>
-              <Text style={{ fontSize: 14, color: '#9ca3af', textAlign: 'center' }}>Tap the + button below to start planning your next adventure!</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Stats Section */}
-        <View style={{ flexDirection: 'row', paddingHorizontal: 20, marginTop: 25, gap: 15 }}>
-          <View style={{
-            flex: 1,
-            backgroundColor: '#ffffff',
-            borderRadius: 16,
-            padding: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.05,
-            shadowRadius: 8,
-            elevation: 2,
-            borderWidth: 1,
-            borderColor: '#f3f4f6'
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <View style={{ backgroundColor: '#E8F5E8', padding: 8, borderRadius: 10, marginRight: 10 }}>
-                <Ionicons name="airplane" size={18} color="#2E7D32" />
-              </View>
-              <Text style={{ fontSize: 14, color: '#6b7280', fontWeight: '500' }}>Total Trips</Text>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-              <Text style={{ fontSize: 24, fontWeight: '800', color: '#1f2937' }}>{tripStats.completed}</Text>
-              <Text style={{ fontSize: 12, color: '#6b7280', fontWeight: '500' }}>Done</Text>
-              <Text style={{ fontSize: 24, fontWeight: '800', color: '#1f2937', marginLeft: 4 }}>{tripStats.upcoming}</Text>
-              <Text style={{ fontSize: 12, color: '#6b7280', fontWeight: '500' }}>Upcoming</Text>
-            </View>
-          </View>
-
-          <View style={{
-            flex: 1,
-            backgroundColor: '#ffffff',
-            borderRadius: 16,
-            padding: 16,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.05,
-            shadowRadius: 8,
-            elevation: 2,
-            borderWidth: 1,
-            borderColor: '#f3f4f6'
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-              <View style={{ backgroundColor: '#E3F2FD', padding: 8, borderRadius: 10, marginRight: 10 }}>
-                <Ionicons name="heart" size={18} color="#0C4C8A" />
-              </View>
-              <Text style={{ fontSize: 14, color: '#6b7280', fontWeight: '500' }}>Favorite</Text>
-            </View>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: '#1f2937' }} numberOfLines={1}>{favoriteActivityName}</Text>
-          </View>
-        </View>
-
-        {/* Top Activities Section */}
-        <View style={{ paddingHorizontal: 0, paddingTop: 30 }}>
-          <Text style={{ fontSize: 20, fontWeight: '700', color: '#1f2937', paddingHorizontal: 20, marginBottom: 15 }}>Your top activities</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 15 }}>
-            {topActivityTypes.length === 0 ? (
-               <Text style={{ color: '#6b7280' }}>No activities logged yet.</Text>
-            ) : (
-               topActivityTypes.map((stat, index) => (
-                 <View key={stat.type || index} style={{
-                   width: 130,
-                   backgroundColor: '#ffffff',
-                   borderRadius: 16,
-                   padding: 15,
-                   shadowColor: '#000',
-                   shadowOffset: { width: 0, height: 2 },
-                   shadowOpacity: 0.05,
-                   shadowRadius: 8,
-                   elevation: 2,
-                   borderWidth: 1,
-                   borderColor: '#f3f4f6',
-                   alignItems: 'center'
-                 }}>
-                   <View style={{ backgroundColor: '#F3F4F6', width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', marginBottom: 12 }}>
-                     <Ionicons name={getIconForActivityType(stat.type)} size={22} color="#0C4C8A" />
-                   </View>
-                   <Text style={{ fontSize: 20, fontWeight: '800', color: '#1f2937', marginBottom: 2 }}>{stat.count}</Text>
-                   <Text style={{ fontSize: 12, color: '#6b7280', fontWeight: '500', textAlign: 'center' }} numberOfLines={1}>{stat.typeName}s</Text>
-                 </View>
-               ))
             )}
-          </ScrollView>
-        </View>
+          </View>
 
+          {/* ── Stats ───────────────────────────────────────────────────── */}
+          <View className="flex-row px-5 mb-6 gap-[15px]">
+            <View className="flex-1 bg-white rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
+              <View className="flex-row items-center mb-2">
+                <View className="bg-[#E8F5E8] p-2 rounded-lg mr-2.5">
+                  <Ionicons name="airplane" size={18} color="#2E7D32" />
+                </View>
+                <Text className="text-sm text-gray-500 font-medium">Total Trips</Text>
+              </View>
+              <View className="flex-row items-baseline gap-1.5">
+                <Text className="text-2xl font-extrabold text-gray-900">{tripStats.completed}</Text>
+                <Text className="text-[12px] text-gray-500 font-medium">Done</Text>
+                <Text className="text-2xl font-extrabold text-gray-900 ml-1">{tripStats.upcoming}</Text>
+                <Text className="text-[12px] text-gray-500 font-medium">Upcoming</Text>
+              </View>
+            </View>
+
+            <View className="flex-1 bg-white rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
+              <View className="flex-row items-center mb-2">
+                <View className="bg-[#E3F2FD] p-2 rounded-lg mr-2.5">
+                  <Ionicons name="heart" size={18} color="#0C4C8A" />
+                </View>
+                <Text className="text-sm text-gray-500 font-medium">Favorite</Text>
+              </View>
+              <Text className="text-xl font-extrabold text-gray-900" numberOfLines={1}>{favoriteActivityName}</Text>
+            </View>
+          </View>
+
+          {/* ── Top Activities ───────────────────────────────────────────── */}
+          <View className="pb-2">
+            <Text className="text-xl font-bold text-gray-800 px-5 mb-[15px]">Your top activities</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 15 }}>
+              {topActivityTypes.length === 0 ? (
+                <Text className="text-gray-500">No activities logged yet.</Text>
+              ) : (
+                topActivityTypes.map((stat, i) => (
+                  <View key={stat.type || i} className="w-[130px] bg-white rounded-2xl p-[15px] shadow-sm elevation-2 border border-gray-100 items-center">
+                    <View className="bg-gray-100 w-11 h-11 rounded-full justify-center items-center mb-3">
+                      <Ionicons name={getIconForActivityType(stat.type)} size={22} color="#0C4C8A" />
+                    </View>
+                    <Text className="text-xl font-extrabold text-gray-900 mb-0.5">{stat.count}</Text>
+                    <Text className="text-[12px] text-gray-500 font-medium text-center" numberOfLines={1}>{stat.typeName}s</Text>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          </View>
+
+        </View>
       </ScrollView>
     </View>
   );
