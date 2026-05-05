@@ -25,6 +25,7 @@ import ExpenseModal from "../Forms/Expense/Modal";
 import NoteModal from "../Forms/Note/Modal";
 import TravelActionFAB from "./TravelActionFAB";
 import ShareOverlay from "../ShareOverlay";
+import type { DoneActivity } from "../ShareOverlay/CountryOutline";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -51,6 +52,21 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
 
   const [selectedNote, setSelectedNote] = useState<any | null>(null);
   const countryName = extractCountryName(travelPlan.travel.destination);
+
+  /** Done activities with valid coordinates — passed to ShareOverlay for SVG pins + icon legend */
+  const doneActivities: DoneActivity[] = (travelPlan.itinerarySection ?? [])
+    .flatMap(s => s.itineraryActivity ?? [])
+    .filter(a =>
+      a.isDone &&
+      a.destinationData?.coordinates &&
+      a.destinationData.coordinates.latitude  !== 0 &&
+      a.destinationData.coordinates.longitude !== 0
+    )
+    .map(a => ({
+      lat: a.destinationData!.coordinates.latitude,
+      lng: a.destinationData!.coordinates.longitude,
+      type: a.type,
+    }));
 
   const getAllMarkers = () => {
     const markers: Array<{ latitude: number; longitude: number; title: string , type?: number}> = [];
@@ -289,6 +305,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         tripTitle={travelPlan.travel.title || 'My Trip'}
         destination={travelPlan.travel.destination || ''}
         countryName={countryName}
+        doneActivities={doneActivities}
         dateRange={
           travelPlan.travel.startOrDepartureDate
             ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${

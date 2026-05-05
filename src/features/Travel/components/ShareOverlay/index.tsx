@@ -19,7 +19,7 @@ import * as Sharing from 'expo-sharing';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import CountryOutline from './CountryOutline';
+import CountryOutline, { DoneActivity } from './CountryOutline';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CANVAS_WIDTH = SCREEN_WIDTH;
@@ -32,6 +32,8 @@ interface ShareOverlayProps {
   destination: string;
   countryName: string;
   dateRange?: string;
+  /** Done activities to render as pins on the country outline */
+  doneActivities?: DoneActivity[];
 }
 
 const ShareOverlay: React.FC<ShareOverlayProps> = ({
@@ -41,10 +43,13 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
   destination,
   countryName,
   dateRange,
+  doneActivities = [],
 }) => {
   const insets = useSafeAreaInsets();
   const viewShotRef = useRef<ViewShot>(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [transparentCapture, setTransparentCapture] = useState(false);
   const [backgroundImageUri, setBackgroundImageUri] = useState<string | null>(null);
 
   const pickImage = useCallback(async () => {
@@ -76,13 +81,38 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
   const posRef = useRef({ x: 0, y: 0 });
   const scaleRef = useRef(1);
 
-  // ─── PanResponder for drag ────────────────────────────────────────────────
+  // ─── Separate animated position for the trip info text block ─────────────
+  const textTranslateX = useRef(new Animated.Value(0)).current;
+  const textTranslateY = useRef(new Animated.Value(0)).current;
+  const textPosRef = useRef({ x: 0, y: 0 });
+
+  // ─── Top 3 activity types by count (for icon chips below destination) ────
+  const topActivityTypes = (() => {
+    if (!doneActivities.length) return [];
+    const counts: Record<number, number> = {};
+    doneActivities.forEach(a => {
+      const t = a.type ?? 0;
+      if (t === 0) return;
+      counts[t] = (counts[t] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([typeStr]) => parseInt(typeStr, 10));
+  })();
+
+  const ACTIVITY_EMOJI: Record<number, string> = {
+    1: '✈', 2: '⬆', 3: '⬇', 4: '🚕',
+    5: '☕', 6: '🍽', 7: '🚶', 8: '📷',
+    9: '🛍', 10: '🧳', 11: '🚲', 12: '🛏',
+  };
+
+  // ─── PanResponder for the country outline (drag + pinch) ─────────────────
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
-        // snapshot current position
         posRef.current = {
           x: (translateX as any)._value ?? 0,
           y: (translateY as any)._value ?? 0,
@@ -96,6 +126,30 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
         posRef.current = {
           x: posRef.current.x + gestureState.dx,
           y: posRef.current.y + gestureState.dy,
+        };
+      },
+    })
+  ).current;
+
+  // ─── PanResponder for the trip info text block ────────────────────────────
+  const textPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        textPosRef.current = {
+          x: (textTranslateX as any)._value ?? 0,
+          y: (textTranslateY as any)._value ?? 0,
+        };
+      },
+      onPanResponderMove: (_, gestureState) => {
+        textTranslateX.setValue(textPosRef.current.x + gestureState.dx);
+        textTranslateY.setValue(textPosRef.current.y + gestureState.dy);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        textPosRef.current = {
+          x: textPosRef.current.x + gestureState.dx,
+          y: textPosRef.current.y + gestureState.dy,
         };
       },
     })
@@ -125,15 +179,18 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
     lastDist.current = null;
   }, []);
 
-  // ─── Reset with spring animation ─────────────────────────────────────────
+  // ─── Reset: springs both the map outline AND the info text back to origin ─
   const handleReset = useCallback(() => {
     Animated.parallel([
-      Animated.spring(translateX, { toValue: 0, useNativeDriver: true }),
-      Animated.spring(translateY, { toValue: 0, useNativeDriver: true }),
-      Animated.spring(scale, { toValue: 1, useNativeDriver: true }),
+      Animated.spring(translateX,     { toValue: 0, useNativeDriver: true }),
+      Animated.spring(translateY,     { toValue: 0, useNativeDriver: true }),
+      Animated.spring(scale,          { toValue: 1, useNativeDriver: true }),
+      Animated.spring(textTranslateX, { toValue: 0, useNativeDriver: true }),
+      Animated.spring(textTranslateY, { toValue: 0, useNativeDriver: true }),
     ]).start(() => {
-      posRef.current = { x: 0, y: 0 };
-      scaleRef.current = 1;
+      posRef.current     = { x: 0, y: 0 };
+      textPosRef.current = { x: 0, y: 0 };
+      scaleRef.current   = 1;
     });
   }, []);
 
@@ -161,7 +218,6 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
     }
   }, [tripTitle]);
 
-  const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = useCallback(async () => {
     if (!viewShotRef.current) return;
@@ -172,11 +228,16 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
         Alert.alert('Permission required', 'Please allow access to save photos to your gallery.');
         return;
       }
+      // Switch to transparent background, wait one frame for re-render, then capture
+      setTransparentCapture(true);
+      await new Promise<void>(resolve => setTimeout(resolve, 80));
       // @ts-ignore
       const uri = await viewShotRef.current.capture();
+      setTransparentCapture(false);
       await MediaLibrary.saveToLibraryAsync(uri);
-      Alert.alert('Saved!', 'Your trip card has been saved to your photo library.');
+      Alert.alert('Saved!', 'Transparent PNG saved to your photo library.');
     } catch (e) {
+      setTransparentCapture(false);
       console.error('[ShareOverlay] save error:', e);
       Alert.alert('Error', 'Failed to save image. Please try again.');
     } finally {
@@ -255,10 +316,10 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
         <ViewShot
           ref={viewShotRef}
           options={{ format: 'png', quality: 1.0 }}
-          style={styles.card}
+          style={[styles.card, transparentCapture && { backgroundColor: 'transparent' }]}
         >
-          {/* ── Layer 1: user photo (bottom-most) ── */}
-          {backgroundImageUri ? (
+          {/* ── Layer 1: user photo (only when not doing transparent capture) ── */}
+          {backgroundImageUri && !transparentCapture ? (
             <Image
               source={{ uri: backgroundImageUri }}
               style={StyleSheet.absoluteFillObject}
@@ -266,12 +327,18 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
             />
           ) : null}
 
-          {/* ── Layer 2: dark colour base (transparent when photo present) ── */}
-          <View style={[styles.cardBg, backgroundImageUri ? { backgroundColor: 'transparent' } : null]} />
+          {/* ── Layer 2: dark colour base ── */}
+          {!transparentCapture && (
+            <View style={[styles.cardBg, backgroundImageUri ? { backgroundColor: 'transparent' } : null]} />
+          )}
 
-          {/* ── Layer 3: gradient darkening (always present for text legibility) ── */}
-          <View style={styles.cardGradientTop} />
-          <View style={styles.cardGradientBottom} />
+          {/* ── Layer 3: gradient darkening ── */}
+          {!transparentCapture && (
+            <>
+              <View style={styles.cardGradientTop} />
+              <View style={styles.cardGradientBottom} />
+            </>
+          )}
 
           {/* Draggable + scalable country outline */}
           <Animated.View
@@ -295,19 +362,45 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
               height={CANVAS_HEIGHT}
               strokeColor="#ffffff"
               strokeWidth={2}
+              doneActivities={doneActivities}
             />
           </Animated.View>
 
-          {/* Trip info — non-interactive overlay */}
-          <View style={styles.cardText} pointerEvents="none">
+          {/* ── Draggable trip info block ── */}
+          <Animated.View
+            style={[
+              styles.cardText,
+              {
+                transform: [
+                  { translateX: textTranslateX },
+                  { translateY: textTranslateY },
+                ],
+              },
+            ]}
+            {...textPanResponder.panHandlers}
+          >
             <View style={styles.logoRow}>
               <Ionicons name="airplane" size={14} color="rgba(255,255,255,0.65)" />
               <Text style={styles.logoLabel}>TRAVIE</Text>
             </View>
             <Text style={styles.cardTitle} numberOfLines={2}>{tripTitle}</Text>
             <Text style={styles.cardDest}>{destination}</Text>
+
+            {/* Top 3 activity type emoji chips */}
+            {topActivityTypes.length > 0 && (
+              <View style={styles.activityIconRow}>
+                {topActivityTypes.map((type, i) => (
+                  <View key={i} style={styles.activityIconChip}>
+                    <Text style={styles.activityEmoji}>
+                      {ACTIVITY_EMOJI[type] ?? '●'}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
             {dateRange ? <Text style={styles.cardDate}>{dateRange}</Text> : null}
-          </View>
+          </Animated.View>
         </ViewShot>
 
         {/* ─── Share button ──────────────────────────────────────────────── */}
@@ -412,10 +505,10 @@ const styles = StyleSheet.create({
     right: 0,
     padding: 24,
   },
-  logoRow: {
+   logoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 10,
   },
   logoLabel: {
     color: 'rgba(255,255,255,0.65)',
@@ -441,6 +534,28 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.45)',
     fontSize: 13,
     fontWeight: '400',
+    marginTop: 6,
+  },
+  activityIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  activityIconChip: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  activityEmoji: {
+    fontSize: 16,
+    lineHeight: 20,
   },
   bottomBar: {
     width: '100%',

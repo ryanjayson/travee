@@ -1,24 +1,57 @@
 import React, { useMemo } from 'react';
 import { View, Text } from 'react-native';
-import Svg, { Path, G } from 'react-native-svg';
+import Svg, { Path, G, Circle, Text as SvgText, Rect } from 'react-native-svg';
 import { geoMercator, geoPath } from 'd3-geo';
 import type { GeoPermissibleObjects, GeoGeometryObjects } from 'd3-geo';
 
-// Lazy-load GeoJSON so it doesn't block the JS thread on import
 const countriesGeoJSON = require('../../../../assets/geo/countries.json');
 
-interface CountryOutlineProps {
-  /** English country name, e.g. "Japan", "France" */
-  countryName: string;
-  /** Width of the SVG canvas */
-  width: number;
-  /** Height of the SVG canvas */
-  height: number;
-  /** Stroke color for the outline (default: white) */
-  strokeColor?: string;
-  /** Stroke width (default: 1.5) */
-  strokeWidth?: number;
+export interface DoneActivity {
+  lat: number;
+  lng: number;
+  type?: number;
 }
+
+interface CountryOutlineProps {
+  countryName: string;
+  width: number;
+  height: number;
+  strokeColor?: string;
+  strokeWidth?: number;
+  doneActivities?: DoneActivity[];
+}
+
+/** Unicode symbol for each ActivityType — safe cross-platform in SVG Text */
+const ACTIVITY_EMOJI: Record<number, string> = {
+  1:  '✈',  // flight
+  2:  '⬆',  // check-in
+  3:  '⬇',  // check-out
+  4:  '🚕',  // taxi
+  5:  '☕',  // cafe
+  6:  '🍽',  // food
+  7:  '🚶',  // walk
+  8:  '📷',  // sightseeing
+  9:  '🛍',  // shopping
+  10: '🧳',  // preparation
+  11: '🚲',  // ride
+  12: '🛏',  // rest
+};
+
+/** Human-readable label for each ActivityType */
+const ACTIVITY_LABEL: Record<number, string> = {
+  1:  'Flight',
+  2:  'Check-in',
+  3:  'Check-out',
+  4:  'Taxi',
+  5:  'Café',
+  6:  'Food',
+  7:  'Walk',
+  8:  'Sightseeing',
+  9:  'Shopping',
+  10: 'Prep',
+  11: 'Ride',
+  12: 'Rest',
+};
 
 const CountryOutline: React.FC<CountryOutlineProps> = ({
   countryName,
@@ -26,30 +59,29 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
   height,
   strokeColor = '#ffffff',
   strokeWidth = 1.5,
+  doneActivities = [],
 }) => {
-  const { pathData, found } = useMemo(() => {
+  const { pathData, found, activityPoints, topTypes } = useMemo(() => {
     if (!countryName || width === 0 || height === 0) {
-      return { pathData: null, found: false };
+      return { pathData: null, found: false, activityPoints: [], topTypes: [] };
     }
 
     const normalised = countryName.toLowerCase().trim();
 
-    // Try to find the matching country feature by NAME_EN, ADMIN, or NAME
     const feature = countriesGeoJSON.features.find((f: any) => {
       const p = f.properties;
       return (
         (p.NAME_EN && p.NAME_EN.toLowerCase() === normalised) ||
-        (p.ADMIN && p.ADMIN.toLowerCase() === normalised) ||
-        (p.NAME && p.NAME.toLowerCase() === normalised)
+        (p.ADMIN  && p.ADMIN.toLowerCase()   === normalised) ||
+        (p.NAME   && p.NAME.toLowerCase()    === normalised)
       );
     });
 
     if (!feature) {
-      return { pathData: null, found: false };
+      return { pathData: null, found: false, activityPoints: [], topTypes: [] };
     }
 
     try {
-      // Build a Mercator projection fitted to the canvas with padding
       const padding = 20;
       const projection = geoMercator().fitExtent(
         [[padding, padding], [width - padding, height - padding]],
@@ -58,11 +90,35 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
 
       const generator = geoPath().projection(projection);
       const d = generator(feature.geometry as GeoGeometryObjects);
-      return { pathData: d, found: true };
+
+      // Project each done activity onto the canvas
+      const points = doneActivities
+        .map(a => {
+          const projected = projection([a.lng, a.lat]);
+          if (!projected) return null;
+          const [x, y] = projected;
+          if (x < 0 || y < 0 || x > width || y > height) return null;
+          return { x, y, type: a.type };
+        })
+        .filter((p): p is { x: number; y: number; type?: number } => p !== null);
+
+      // Top 3 activity types by count (for the icon legend)
+      const counts: Record<number, number> = {};
+      doneActivities.forEach(a => {
+        const t = a.type ?? 0;
+        if (t === 0) return;
+        counts[t] = (counts[t] || 0) + 1;
+      });
+      const top = Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([t, count]) => ({ type: parseInt(t, 10), count }));
+
+      return { pathData: d, found: true, activityPoints: points, topTypes: top };
     } catch {
-      return { pathData: null, found: false };
+      return { pathData: null, found: false, activityPoints: [], topTypes: [] };
     }
-  }, [countryName, width, height]);
+  }, [countryName, width, height, doneActivities]);
 
   if (!found || !pathData) {
     return (
@@ -74,8 +130,18 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
     );
   }
 
+  const PIN_R = 3;
+
+  // Legend icon chip constants
+  const CHIP_R = 16;       // circle radius
+  const CHIP_GAP = 8;      // gap between chips
+  const CHIP_Y = height - 30; // vertical center of legend chips
+  const CHIP_START_X = 24; // left margin
+
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+
+      {/* ── Country outline ── */}
       <G>
         <Path
           d={pathData}
@@ -86,6 +152,46 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
           strokeLinecap="round"
         />
       </G>
+
+      {/* ── Done-activity location pins on the map ── */}
+      {activityPoints.map((pt, i) => (
+        <G key={i}>
+          <Circle cx={pt.x} cy={pt.y + 1} r={PIN_R + 0.5} fill="rgba(0,0,0,0.25)" />
+          <Circle cx={pt.x} cy={pt.y}     r={PIN_R}        fill="#ffffff" />
+        </G>
+      ))}
+
+      {/* ── Activity type icon legend (top 3 by count) ── */}
+      {/* {topTypes.length > 0 && topTypes.map((item, i) => {
+        const cx = CHIP_START_X + i * (CHIP_R * 2 + CHIP_GAP) + CHIP_R;
+        const emoji  = ACTIVITY_EMOJI[item.type]  ?? '●';
+        const label  = ACTIVITY_LABEL[item.type]  ?? '';
+        return (
+          <G key={`legend-${i}`}>
+            <Rect
+              x={cx - CHIP_R}
+              y={CHIP_Y - CHIP_R}
+              width={CHIP_R * 2}
+              height={CHIP_R * 2}
+              rx={CHIP_R}
+              ry={CHIP_R}
+              fill="rgba(255,255,255,0.15)"
+              stroke="rgba(255,255,255,0.4)"
+              strokeWidth={0.8}
+            />
+            <SvgText
+              x={cx}
+              y={CHIP_Y + 6}
+              fontSize={14}
+              textAnchor="middle"
+              fill="#ffffff"
+            >
+              {emoji}
+            </SvgText>
+          </G>
+        );
+      })} */}
+
     </Svg>
   );
 };
