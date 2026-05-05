@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Modal } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Alert } from "react-native";
 import ViewTravel from ".";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
@@ -7,7 +7,7 @@ import { TravelMenuAction } from "../../../../types/enums";
 import { NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
-import { useTravelPlan } from "../../hooks/useTravel";
+import { useTravelPlan, useDeleteTravel, useCancelTravel, useArchiveTravel } from "../../hooks/useTravel";
 import { useTravelContext } from "../../../../context/TravelContext";
 
 interface ViewTripModalProps {
@@ -46,17 +46,85 @@ const ViewTripModal = ({
     console.log("SELECTED", travelPlan);
   }, [travelId]);
 
+  const { mutate: deleteTravel } = useDeleteTravel();
+  const { mutate: cancelTravel } = useCancelTravel();
+  const { mutate: archiveTravel } = useArchiveTravel();
+
   const handleCancel = () => {
     clearTravelPlan();
     setShowModal(false);
   };
 
   const handleSelectNavigationMenu = (menuAction: TravelMenuAction) => {
+    const id = travelPlan?.travel?.id;
+
     if (menuAction === TravelMenuAction.EditTravel) {
-      const id = travelPlan?.travel?.id;
       if (id != null && navigation) {
         navigation.navigate("EditTravelPlan", { travelId: id });
       }
+    } else if (menuAction === TravelMenuAction.Cancel) {
+      Alert.alert(
+        "Cancel Trip",
+        "Are you sure you want to cancel this trip? This will mark it as cancelled.",
+        [
+          { text: "No", style: "cancel" },
+          {
+            text: "Yes, Cancel Trip",
+            style: "destructive",
+            onPress: () => {
+              if (id != null) {
+                cancelTravel(String(id), {
+                  onSuccess: () => setShowModal(false),
+                  onError: () => Alert.alert("Error", "Failed to cancel trip. Please try again."),
+                });
+              }
+            },
+          },
+        ]
+      );
+    } else if (menuAction === TravelMenuAction.Delete) {
+      Alert.alert(
+        "Delete Trip",
+        "Are you sure you want to permanently delete this trip? This action cannot be undone.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => {
+              if (id != null) {
+                deleteTravel(String(id), {
+                  onSuccess: () => {
+                    clearTravelPlan();
+                    setShowModal(false);
+                  },
+                  onError: () => Alert.alert("Error", "Failed to delete trip. Please try again."),
+                });
+              }
+            },
+          },
+        ]
+      );
+    } else if (menuAction === TravelMenuAction.Archive) {
+      Alert.alert(
+        "Archive Trip",
+        "Are you sure you want to archive this trip? It will be moved to the archive but its status will be retained.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Archive",
+            style: "default",
+            onPress: () => {
+              if (id != null) {
+                archiveTravel(String(id), {
+                  onSuccess: () => setShowModal(false),
+                  onError: () => Alert.alert("Error", "Failed to archive trip. Please try again."),
+                });
+              }
+            },
+          },
+        ]
+      );
     }
   };
 

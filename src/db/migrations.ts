@@ -131,5 +131,16 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 10,
+      steps: [
+        addColumns({
+          table: "travels",
+          columns: [
+            { name: "is_archived", type: "boolean", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

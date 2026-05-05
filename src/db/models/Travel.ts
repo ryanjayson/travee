@@ -17,6 +17,7 @@ export default class Travel extends Model {
   @text("budget") budget!: string | null;
   @text("notes") notes!: string | null;
   @field("is_offline") isOffline!: boolean;
+  @field("is_archived") isArchived!: boolean;
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
 

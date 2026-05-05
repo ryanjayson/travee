@@ -7,7 +7,7 @@ import {
   fetchTravel,
   fetchTravelPlan,
 } from "../../../services/api/travel";
-import { saveTravelLocally, getTravelsLocally, getTravelPlanLocally } from "../../../services/local/travelService";
+import { saveTravelLocally, getTravelsLocally, getTravelPlanLocally, deleteTravelLocally, cancelTravelLocally, archiveTravelLocally } from "../../../services/local/travelService";
 
 const TRAVEL_ENDPOINT = `${API_BASE_URL}/travel`;
 const TRAVEL_QUERY_KEY = ["travel"];
@@ -147,3 +147,52 @@ export const useTravels = () => {
     staleTime: 60 * 1000, // 1 minute
   });
 };
+
+export const useDeleteTravel = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (id: string) => {
+      await deleteTravelLocally(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
+    },
+    onError: (error) => {
+      console.error("Delete Travel Error:", error);
+    },
+  });
+};
+
+export const useCancelTravel = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (id: string) => {
+      await cancelTravelLocally(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
+    },
+    onError: (error) => {
+      console.error("Cancel Travel Error:", error);
+    },
+  });
+};
+
+export const useArchiveTravel = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (id: string) => {
+      await archiveTravelLocally(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
+    },
+    onError: (error) => {
+      console.error("Archive Travel Error:", error);
+    },
+  });
+};
+

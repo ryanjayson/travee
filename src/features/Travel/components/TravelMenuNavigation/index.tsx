@@ -21,7 +21,7 @@ const TravelMenuNavigation = ({
       visible={showModal} 
       onClose={() => setShowModal(false)}
       direction="bottom"
-      height={296}
+      height={346}
     >
       <View className="flex-1">
         <View className="gap-4">
@@ -51,7 +51,7 @@ const TravelMenuNavigation = ({
             </View>
             <Text className="flex-1 ml-3 text-lg font-medium">Duplicate Trip</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+             <TouchableOpacity
             className="flex-row items-center justify-between px-4 py-3 "
             activeOpacity={0.7}
             onPress={() => {
@@ -60,22 +60,35 @@ const TravelMenuNavigation = ({
             }}
           >
             <View className="w-10 h-10 justify-center items-center mr-3">
-              <Icon name="archive" size={24} color={"#183B7A"} />
+              <Icon name="archive" size={28} color={"#183B7A"} />
             </View>
-            <Text className="flex-1 ml-3 text-lg  font-medium">Cancel Trip</Text>
+            <Text className="flex-1 ml-3 text-lg font-medium">Archive Trip</Text>
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center justify-between px-4 py-3 "
             activeOpacity={0.7}
             onPress={() => {
-              onSelect(TravelMenuAction.Print);
+              onSelect(TravelMenuAction.Cancel);
+              setShowModal(false);
+            }}
+          >
+            <View className="w-10 h-10 justify-center items-center mr-3">
+              <Icon name="cancel" size={24} color={"#C62828"} />
+            </View>
+            <Text className="flex-1 ml-3 text-lg font-medium text-[#C62828]">Cancel Trip</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-row items-center justify-between px-4 py-3"
+            activeOpacity={0.7}
+            onPress={() => {
+              onSelect(TravelMenuAction.Delete);
               setShowModal(false);
             }}
           >
             <View className="w-10 justify-center items-center mr-3">
-              <Icon name="delete" size={24} color={"red"} />
+              <Icon name="delete" size={24} color={"#C62828"} />
             </View>
-            <Text className="flex-1 ml-3 text-lg font-medium text-red-500">Delete Trip</Text>
+            <Text className="flex-1 ml-3 text-lg font-medium text-[#C62828]">Delete Trip</Text>
           </TouchableOpacity>
          
         </View>

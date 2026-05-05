@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import TravelDetailPage from "./TravelDetail";
 import ViewTravelModal from "../components/View/Modal";
-import { Travel } from "../types/TravelDto";
+import { Travel, TravelPlan } from "../types/TravelDto";
 import { TravelStatus } from "../../../types/enums";
 import { useTravels } from "../hooks/useTravel";
 import { useTravelContext } from "../../../context/TravelContext";
@@ -65,7 +65,10 @@ const TravelCatalog = () => {
   };
 
   const getTravelsByStatus = (status: TravelStatus) => {
-    return travels?.filter(t => getEffectiveStatus(t) === status) || [];
+    if (status === TravelStatus.Archieved) {
+      return travels?.filter(t => t.isArchived || t.status === TravelStatus.Archieved) || [];
+    }
+    return travels?.filter(t => !t.isArchived && t.status !== TravelStatus.Archieved && getEffectiveStatus(t) === status) || [];
   };
 
   const handleViewModeTravel = (travel: Travel) => {
@@ -264,7 +267,9 @@ const TravelCatalog = () => {
                     const status = getEffectiveStatus(trip);
                     const color = status === TravelStatus.Ongoing ? '#0C4C8A' : '#2E7D32';
                     const startStr = new Date(trip.startOrDepartureDate!).toISOString().split('T')[0];
+                    const endStr = new Date(trip.endOrReturnDate!).toISOString().split('T')[0];
                     const isStart = dayStr === startStr;
+                    const isEnd = dayStr === endStr;
 
                     return (
                       <TouchableOpacity
@@ -279,7 +284,7 @@ const TravelCatalog = () => {
                           paddingVertical: 2,
                           paddingHorizontal: 4,
                           borderRadius: 3,
-                          opacity: state === 'disabled' ? 0.5 : 1,
+                          opacity: state === 'disabled' || !isStart && !isEnd ? 0.75 : 1,
                         }}
                       >
                         <Text

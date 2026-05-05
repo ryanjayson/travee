@@ -38,7 +38,8 @@ export enum TravelMenuAction {
   EditTravel,
   Clone,
   Archive,
-  Print,
+  Cancel,
+  Delete,
 }
 
 export enum ExpenseCategory {

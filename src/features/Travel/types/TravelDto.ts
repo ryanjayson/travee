@@ -82,6 +82,7 @@ export interface Travel {
   updatedAt?: string;
   itinerarySection?: ItinerarySection[];
   isOffline?: boolean;
+  isArchived?: boolean;
 }
 
 export interface ItinerarySection {

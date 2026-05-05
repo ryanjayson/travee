@@ -21,7 +21,7 @@ const HomeScreen = () => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     let completed = 0, upcoming = 0;
     travels.forEach(t => {
-      if (t.status === TravelStatus.Cancelled || t.status === TravelStatus.Archieved) return;
+      if (t.isArchived || t.status === TravelStatus.Cancelled || t.status === TravelStatus.Archieved) return;
       if (t.status === TravelStatus.Completed) { completed++; return; }
       if (t.status === TravelStatus.Upcoming)  { upcoming++;  return; }
       if (t.startOrDepartureDate) {
@@ -68,7 +68,7 @@ const HomeScreen = () => {
     if (!travels) return null;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return travels.find(t => {
-      if ([TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return false;
+      if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return false;
       if (t.status === TravelStatus.Ongoing) return true;
       if (t.startOrDepartureDate && t.endOrReturnDate) {
         const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);
@@ -85,7 +85,7 @@ const HomeScreen = () => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return travels
       .filter(t => {
-        if ([TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed, TravelStatus.Ongoing].includes(t.status as TravelStatus)) return false;
+        if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed, TravelStatus.Ongoing].includes(t.status as TravelStatus)) return false;
         if (!t.startOrDepartureDate) return false;
         const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);
         return s > today;

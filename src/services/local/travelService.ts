@@ -21,6 +21,7 @@ export const getTravelsLocally = async (): Promise<any[]> => {
     budget: t.budget,
     notes: t.notes,
     isOffline: t.isOffline,
+    isArchived: t.isArchived,
   }));
 };
 
@@ -39,6 +40,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
       budget: t.budget,
       notes: t.notes,
       isOffline: t.isOffline,
+      isArchived: t.isArchived,
     };
 
     const sections = await database.get<Section>("itinerary_sections").query(
@@ -121,6 +123,7 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           budget: travelData.budget,
           notes: travelData.notes,
           isOffline: true,
+          isArchived: travelData.isArchived ?? false,
         });
       });
       return travel;
@@ -137,6 +140,7 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           budget: travelData.budget,
           notes: travelData.notes,
           isOffline: true,
+          isArchived: travelData.isArchived ?? false,
         });
       });
 
@@ -320,3 +324,48 @@ export const getAllActivitiesWithDestinationLocally = async (): Promise<any[]> =
     isDone: a.isDone,
   }));
 };
+
+/** Permanently deletes a locally-stored travel and all its sections/activities. */
+export const deleteTravelLocally = async (id: string): Promise<void> => {
+  await database.write(async () => {
+    const travel = await database.get<Travel>("travels").find(id);
+
+    // Delete all activities belonging to this travel's sections
+    const sections = await database.get<Section>("itinerary_sections").query(
+      Q.where("travel_id", id)
+    ).fetch();
+
+    for (const section of sections) {
+      const activities = await database.get<Activity>("itinerary_activities").query(
+        Q.where("section_id", section.id)
+      ).fetch();
+      for (const activity of activities) {
+        await activity.destroyPermanently();
+      }
+      await section.destroyPermanently();
+    }
+
+    await travel.destroyPermanently();
+  });
+};
+
+/** Updates a locally-stored travel status to Cancelled (5). */
+export const cancelTravelLocally = async (id: string): Promise<void> => {
+  await database.write(async () => {
+    const travel = await database.get<Travel>("travels").find(id);
+    await travel.update((t) => {
+      t.status = 5; // TravelStatus.Cancelled
+    });
+  });
+};
+
+/** Sets a locally-stored travel to archived. */
+export const archiveTravelLocally = async (id: string): Promise<void> => {
+  await database.write(async () => {
+    const travel = await database.get<Travel>("travels").find(id);
+    await travel.update((t) => {
+      t.isArchived = true;
+    });
+  });
+};
+
