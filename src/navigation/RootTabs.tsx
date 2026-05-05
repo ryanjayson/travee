@@ -145,7 +145,7 @@ const insets = useSafeAreaInsets();
         />
 
   
-        <Tab.Screen name="Maps" component={ExploreScreen} />   
+        <Tab.Screen name="Maps" component={ExploreScreen} options={{ headerShown: false }} />  
       </Tab.Navigator>
 
       {/* Floating Add Button on the right side */}

@@ -24,6 +24,7 @@ import ExpensesTab from "./Tabs/ExpensesTab";
 import ExpenseModal from "../Forms/Expense/Modal";
 import NoteModal from "../Forms/Note/Modal";
 import TravelActionFAB from "./TravelActionFAB";
+import ShareOverlay from "../ShareOverlay";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -39,7 +40,17 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
   const [selectedExpense, setSelectedExpense] = useState<ItineraryExpense | null>(null);
   const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
+  const [showShareOverlay, setShowShareOverlay] = useState<boolean>(false);
+
+  /** Extract the country portion from a destination string like "Tokyo, Japan" */
+  const extractCountryName = (destination?: string): string => {
+    if (!destination) return '';
+    const parts = destination.split(',').map(p => p.trim());
+    return parts[parts.length - 1] || destination;
+  };
+
   const [selectedNote, setSelectedNote] = useState<any | null>(null);
+  const countryName = extractCountryName(travelPlan.travel.destination);
 
   const getAllMarkers = () => {
     const markers: Array<{ latitude: number; longitude: number; title: string , type?: number}> = [];
@@ -69,6 +80,19 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
 
   const Toolbar = () => (
     <View>
+      {/* Share / overlay icon */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => setShowShareOverlay(true)}
+        className="bg-black/80 w-8 h-8 rounded-full absolute right-[100px] top-5 z-10 items-center justify-center"
+        accessibilityRole="button"
+        accessibilityLabel="Open share overlay"
+      >
+        <Animated.View>
+          <Icon name="share" size={18} color={"#FFF"} />
+        </Animated.View>
+      </TouchableOpacity>
+      {/* Map icon */}
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {
@@ -257,6 +281,23 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         itineraryNote={selectedNote}
         activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
         onClose={() => setShowNoteModal(false)}
+      />
+
+      <ShareOverlay
+        visible={showShareOverlay}
+        onClose={() => setShowShareOverlay(false)}
+        tripTitle={travelPlan.travel.title || 'My Trip'}
+        destination={travelPlan.travel.destination || ''}
+        countryName={countryName}
+        dateRange={
+          travelPlan.travel.startOrDepartureDate
+            ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
+                travelPlan.travel.endOrReturnDate
+                  ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                  : ''
+              }`
+            : undefined
+        }
       />
     </Portal.Host>
   );
