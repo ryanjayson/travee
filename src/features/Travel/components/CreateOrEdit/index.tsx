@@ -185,7 +185,7 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
 
 
   return (
-    <View className="flex-1 bg-gray-100  overflow-hidden">
+    <View className="flex-1 bg-gray-100 overflow-hidden">
 
       <ScrollView className={`flex-1 p-[15px] `} showsVerticalScrollIndicator={false}
        >
@@ -243,7 +243,7 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
                   <TextInput
                     mode="outlined"
                     className="!h-[64px]"
-                    placeholder="Search city or country..."
+                    placeholder="Search place to visit..."
                     value={formik.values.destination}
                     editable={false}
                     error={formik.touched.destination && Boolean(formik.errors.destination)}

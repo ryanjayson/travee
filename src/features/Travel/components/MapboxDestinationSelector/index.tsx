@@ -9,6 +9,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from "react-native";
 import WebView from "react-native-webview";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
@@ -36,12 +37,21 @@ interface MapboxDestinationSelectorProps {
   initialValue?: string;
 }
 
+const FILTER_OPTIONS = [
+  { id: 'country', label: 'Country', icon: 'flag' },
+  { id: 'region', label: 'Region', icon: 'map' },
+  { id: 'place', label: 'City', icon: 'location-city' },
+  { id: 'poi', label: 'POI', icon: 'place' },
+] as const;
+type FilterType = typeof FILTER_OPTIONS[number]['id'];
+
 const MapboxDestinationSelector = ({
   onClose,
   onSelect,
   initialValue = "",
 }: MapboxDestinationSelectorProps) => {
   const [query, setQuery] = useState(initialValue);
+  const [activeFilter, setActiveFilter] = useState<FilterType | null>(null);
   const [results, setResults] = useState<MapboxPlace[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -54,7 +64,7 @@ const MapboxDestinationSelector = ({
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const webViewRef = useRef<WebView>(null);
 
-  const searchPlaces = useCallback(async (text: string) => {
+  const searchPlaces = useCallback(async (text: string, filter: FilterType | null = null) => {
     if (text.length < 2) {
       setResults([]);
       setShowResults(false);
@@ -64,8 +74,10 @@ const MapboxDestinationSelector = ({
     setIsLoading(true);
     try {
       const encodedQuery = encodeURIComponent(text);
-      // const url = `${MAPBOX_GEOCODING_URL}/${encodedQuery}.json?type=poi&access_token=${MAPBOX_ACCESS_TOKEN}&limit=8&language=en`;
-      const url = `${MAPBOX_SEARCHBOX_URL}?q=${encodedQuery}&access_token=${MAPBOX_ACCESS_TOKEN}&limit=8&language=en`;
+      let url = `${MAPBOX_SEARCHBOX_URL}?q=${encodedQuery}&access_token=${MAPBOX_ACCESS_TOKEN}&limit=10&language=en&proximity=114.17,22.31`;
+      if (filter) {
+        url += `&types=${filter}`;
+      }
       console.log(url);
 
       const response = await fetch(url);
@@ -74,19 +86,27 @@ const MapboxDestinationSelector = ({
 
       if (data.features && data.features.length > 0) {
         const places: MapboxPlace[] = data.features.map((feature: any) => {
-          const contextCountry = feature.context?.find(
-            (c: any) => c.id?.startsWith("country")
-          );
+          const props = feature.properties || {};
+          const geom = feature.geometry || {};
+          
+          let countryName;
+          if (Array.isArray(feature.context)) {
+            countryName = feature.context.find((c: any) => c.id?.startsWith("country"))?.text;
+          } else if (props.context && props.context.country) {
+            countryName = props.context.country.name;
+          }
+
+          const isCountry = (feature.place_type && feature.place_type.includes("country")) || props.feature_type === "country";
 
           return {
-            id: feature.id,   
-            name: feature.text,
-            fullName: feature.place_name,
-            country: contextCountry?.text || (feature.place_type?.includes("country") ? feature.text : undefined),
-            type: feature.place_type?.[0] || "place",
+            id: props.mapbox_id || feature.id || Math.random().toString(),   
+            name: props.name || feature.text || "Unknown Place",
+            fullName: props.full_address || props.place_formatted || feature.place_name || props.name || feature.text || "",
+            country: countryName || (isCountry ? (props.name || feature.text) : undefined),
+            type: props.feature_type || (feature.place_type ? feature.place_type[0] : "place"),
             coordinates: {
-              longitude: feature.center[0],
-              latitude: feature.center[1],
+              longitude: geom.coordinates ? geom.coordinates[0] : (feature.center ? feature.center[0] : 0),
+              latitude: geom.coordinates ? geom.coordinates[1] : (feature.center ? feature.center[1] : 0),
             },
           };
         });
@@ -112,8 +132,16 @@ const MapboxDestinationSelector = ({
     }
 
     debounceTimer.current = setTimeout(() => {
-      searchPlaces(text);
+      searchPlaces(text, activeFilter);
     }, 350);
+  };
+
+  const handleFilterSelect = (filterId: FilterType) => {
+    const newFilter = activeFilter === filterId ? null : filterId;
+    setActiveFilter(newFilter);
+    if (query.length >= 2) {
+      searchPlaces(query, newFilter);
+    }
   };
 
   const handleSearchSelect = (place: MapboxPlace) => {
@@ -329,33 +357,67 @@ const MapboxDestinationSelector = ({
   return (
     <View className="flex-1 bg-white pt-[40px]">
       {/* Header */}
-      <View className="flex-row items-center px-3 pt-3 pb-2 border-b border-gray-200 bg-white z-20">
-        <TouchableOpacity
-          onPress={onClose}
-          className="p-1.5 mr-1"
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Icon name="arrow-back" size={24} color="#183B7A" />
-        </TouchableOpacity>
+      <View className="bg-white z-20 pb-3 border-b border-gray-200">
+        <View className="flex-row items-center px-3 pt-3">
+          <TouchableOpacity
+            onPress={onClose}
+            className="p-1.5 mr-1"
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="arrow-back" size={24} color="#183B7A" />
+          </TouchableOpacity>
 
-        <View className="flex-1 flex-row items-center bg-[#F5F6FA] rounded-xl px-3 h-12">
-          <Icon name="search" size={22} color="#999" />
-          <TextInput
-            className="flex-1 text-base text-gray-900 ml-2"
-            placeholder="Search city or country..."
-            placeholderTextColor="#999"
-            value={query}
-            onChangeText={handleTextChange}
-            onFocus={() => { if (results.length > 0) setShowResults(true); }}
-            returnKeyType="search"
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => { setQuery(""); setResults([]); setShowResults(false); }}>
-              <Icon name="close" size={20} color="#999" />
-            </TouchableOpacity>
-          )}
+          <View className="flex-1 flex-row items-center bg-[#F5F6FA] rounded-xl px-3 h-12">
+            <Icon name="search" size={22} color="#999" />
+            <TextInput
+              className="flex-1 text-base text-gray-900 ml-2"
+              placeholder={activeFilter ? `Search ${getTypeLabel(activeFilter)}...` : "Search place to visit..."}
+              placeholderTextColor="#999"
+              value={query}
+              onChangeText={handleTextChange}
+              onFocus={() => { if (results.length > 0) setShowResults(true); }}
+              returnKeyType="search"
+              autoCapitalize="words"
+              autoCorrect={false}
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => { setQuery(""); setResults([]); setShowResults(false); }}>
+                <Icon name="close" size={20} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        {/* Filter Toggle */}
+        <View className="flex-row items-center px-4 mt-3">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            {FILTER_OPTIONS.map((filter) => {
+              const isActive = activeFilter === filter.id;
+              return (
+                <TouchableOpacity
+                  key={filter.id}
+                  onPress={() => handleFilterSelect(filter.id)}
+                  activeOpacity={0.7}
+                  className={`flex-row items-center px-3 py-1.5 mr-2 rounded-full border ${
+                    isActive ? "bg-[#EEF2F9] border-[#0C4C8A]" : "bg-white border-gray-200"
+                  }`}
+                >
+                  <Icon
+                    name={filter.icon as any}
+                    size={16}
+                    color={isActive ? "#0C4C8A" : "#666"}
+                  />
+                  <Text
+                    className={`ml-1.5 text-xs font-medium ${
+                      isActive ? "text-[#0C4C8A]" : "text-gray-600"
+                    }`}
+                  >
+                    {filter.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
       </View>
 
@@ -374,7 +436,7 @@ const MapboxDestinationSelector = ({
 
       {/* Search Results Overlay */}
       {showResults && results.length > 0 && (
-        <View className="absolute top-[60px] left-0 right-0 bg-white z-30 max-h-[350px] rounded-b-xl"
+        <View className="absolute top-[105px] left-0 right-0 bg-white z-30 max-h-[350px] rounded-b-xl"
           style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 8 }}
         >
           {isLoading && (
