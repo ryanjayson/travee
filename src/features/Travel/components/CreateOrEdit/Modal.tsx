@@ -11,9 +11,9 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
-import Create from ".";
+import TripDetail from "../Forms/TripDetail";
 
 interface AddTripModalProps {
   showModal?: boolean;
@@ -66,7 +66,7 @@ const CreateTripModal = ({
                 </View>
 
             <View className="flex-1">
-                  <Create onClose={handleCancel} />
+                  <TripDetail mode="create" onClose={handleCancel} />
               </View>
           </Animated.View>
           </View>

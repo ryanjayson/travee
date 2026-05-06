@@ -16,7 +16,7 @@ import {
   Platform,
 } from "react-native";
 import EditExpense from "./index";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 import { ItineraryExpense, ItineraryActivity } from "../../../types/TravelDto";
 

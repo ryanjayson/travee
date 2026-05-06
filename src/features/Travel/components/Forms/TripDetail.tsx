@@ -7,22 +7,24 @@ import {
   Modal,
   Image,
 } from "react-native";
-import { TextInput, useTheme } from "react-native-paper";
+import { TextInput, useTheme, Checkbox } from "react-native-paper";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Calendar } from "react-native-calendars";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import TouchButton from "../../../../components/atoms/TouchButton";
-import { useUpdateTravel } from "../../hooks/useTravel";
+import { useUpdateTravel, useTravels } from "../../hooks/useTravel";
 import { Travel, UpdateTravelData, DestinationDto } from "../../types/TravelDto";
 import { TravelStatus } from "../../../../types/enums";
 
 interface TripDetailProps {
-  tripData: Travel;
+  tripData?: Travel;
+  mode?: "create" | "edit";
+  onClose?: () => void;
 }
 
 const TravelSchema = Yup.object().shape({
@@ -30,7 +32,7 @@ const TravelSchema = Yup.object().shape({
   destination: Yup.string().required("Destination is required"),
 });
 
-const TripDetail = ({ tripData }: TripDetailProps) => {
+const TripDetail = ({ tripData, mode = "edit", onClose }: TripDetailProps) => {
   const { colors } = useTheme();
   const { mutate: updateTravel, isPending: isSaving } = useUpdateTravel();
   
@@ -61,21 +63,22 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
 
   const formik = useFormik({
     initialValues: {
-      title: tripData.title || "",
-      description: tripData.description || "",
-      destination: tripData.destination || "",
-      destinationData: tripData.destinationData || null as DestinationDto | null,
-      startOrDepartureDate: tripData.startOrDepartureDate ? new Date(tripData.startOrDepartureDate) : null as Date | null,
-      endOrReturnDate: tripData.endOrReturnDate ? new Date(tripData.endOrReturnDate) : null as Date | null,
-      budget: tripData.budget || "",
-      notes: tripData.notes || "",
+      title: tripData?.title || "",
+      description: tripData?.description || "",
+      destination: tripData?.destination || "",
+      destinationData: tripData?.destinationData || null as DestinationDto | null,
+      startOrDepartureDate: tripData?.startOrDepartureDate ? new Date(tripData.startOrDepartureDate) : null as Date | null,
+      endOrReturnDate: tripData?.endOrReturnDate ? new Date(tripData.endOrReturnDate) : null as Date | null,
+      budget: tripData?.budget || "",
+      notes: tripData?.notes || "",
+      createSectionsBasedOnDates: false,
     },
     enableReinitialize: true,
     validationSchema: TravelSchema,
     onSubmit: (values) => {
       setError(null);
 
-      const updateData: UpdateTravelData = {
+      const payload = {
         title: values.title.trim(),
         description: values.description.trim(),
         destination: values.destination.trim(),
@@ -97,15 +100,35 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
         })(),
       };
 
-      updateTravel({ id: tripData.id, data: updateData }, {
-        onSuccess: () => {
-          console.log("Trip updated successfully");
-        },
-        onError: (err: any) => {
-          console.error("Failed to update trip:", err);
-          setError("Failed to update trip. Please try again.");
-        },
-      });
+      if (mode === "create") {
+        updateTravel({ 
+          data: { 
+            ...payload, 
+            isOffline: true, 
+            createSectionsBasedOnDates: values.createSectionsBasedOnDates 
+          } as any
+        }, {
+          onSuccess: () => {
+            formik.resetForm();
+            onClose?.();
+          },
+          onError: (err: any) => {
+            console.error("Failed to save travel:", err);
+            setError("Failed to save travel. Please try again.");
+          },
+        });
+      } else {
+        updateTravel({ id: tripData!.id, data: payload }, {
+          onSuccess: () => {
+            console.log("Trip updated successfully");
+            onClose?.();
+          },
+          onError: (err: any) => {
+            console.error("Failed to update trip:", err);
+            setError("Failed to update trip. Please try again.");
+          },
+        });
+      }
     },
   });
 
@@ -113,9 +136,9 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
   const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
 
   const getEffectiveStatus = (): TravelStatus => {
-    if (tripData.status === TravelStatus.Completed || 
+    if (tripData && (tripData.status === TravelStatus.Completed || 
         tripData.status === TravelStatus.Archieved || 
-        tripData.status === TravelStatus.Cancelled) {
+        tripData.status === TravelStatus.Cancelled)) {
       return tripData.status;
     }
     if (!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate) return TravelStatus.Draft;
@@ -130,6 +153,51 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
     startOrDepartureDate.setHours(0, 0, 0, 0);
     return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
   };
+
+  const { data: travels } = useTravels();
+
+  const generateBlockedDates = () => {
+    const dates: any = {};
+    if (!travels) return dates;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    travels.forEach((t: any) => {
+      // Don't block dates for the trip we're currently editing
+      if (tripData && t.id === tripData.id) return;
+      if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return;
+      
+      if (t.startOrDepartureDate) {
+        const start = new Date(t.startOrDepartureDate);
+        start.setHours(0, 0, 0, 0);
+        const end = t.endOrReturnDate ? new Date(t.endOrReturnDate) : start;
+        end.setHours(0, 0, 0, 0);
+
+        if (end >= today) {
+          let current = new Date(start);
+          const isOngoing = start <= today && end >= today;
+          const color = isOngoing ? '#E3F2FD' : '#E8F5E8';
+          const textColor = isOngoing ? '#0C4C8A' : '#2E7D32';
+
+          while (current <= end) {
+            const dateStr = current.toISOString().split('T')[0];
+            dates[dateStr] = {
+              disabled: true,
+              disableTouchEvent: true,
+              selected: true,
+              selectedColor: color,
+              selectedTextColor: textColor,
+            };
+            current.setDate(current.getDate() + 1);
+          }
+        }
+      }
+    });
+    return dates;
+  };
+
+  const blockedDates = generateBlockedDates();
 
   const getStatusLabelText = (status: TravelStatus) => {
     switch (status) {
@@ -250,9 +318,11 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
         </Modal>
       </View>
 
-      <View className="mb-5 z-10">
-        <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
-      </View>
+      {mode === "edit" && (
+        <View className="mb-5 z-10">
+          <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
+        </View>
+      )}
 
       <View className="flex-row mb-5 gap-3">
         <View className="flex-1">
@@ -287,7 +357,13 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
                     setShowStartDatePicker(false);
                   }}
                   minDate={new Date().toISOString().split('T')[0]}
-                  markedDates={formik.values.startOrDepartureDate ? { [formik.values.startOrDepartureDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' } } : undefined}
+                  enableSwipeMonths={true}
+                  markedDates={{
+                    ...blockedDates,
+                    ...(formik.values.startOrDepartureDate ? {
+                      [formik.values.startOrDepartureDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A', selectedTextColor: '#ffffff' }
+                    } : {})
+                  }}
                   theme={{ todayTextColor: '#0C4C8A', arrowColor: '#0C4C8A' }}
                 />
               </View>
@@ -326,7 +402,13 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
                     formik.setFieldValue("endOrReturnDate", new Date(day.timestamp));
                     setShowEndDatePicker(false);
                   }}
-                  markedDates={formik.values.endOrReturnDate ? { [formik.values.endOrReturnDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' } } : undefined}
+                  enableSwipeMonths={true}
+                  markedDates={{
+                    ...blockedDates,
+                    ...(formik.values.endOrReturnDate ? {
+                      [formik.values.endOrReturnDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A', selectedTextColor: '#ffffff' }
+                    } : {})
+                  }}
                   minDate={formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toISOString().split('T')[0] : undefined}
                   theme={{ todayTextColor: '#0C4C8A', arrowColor: '#0C4C8A' }}
                 />
@@ -335,6 +417,26 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
           </Modal>
         </View>
       </View>
+
+      {mode === "create" && (
+        <View className="flex-row items-center mb-5 -mt-2 -ml-2">
+          <Checkbox
+            status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
+            onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+            disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+            color="#0C4C8A"
+          />
+          <TouchableOpacity 
+            activeOpacity={0.7}
+            disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+            onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+          >
+            <Text className={`text-sm ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-700'}`}>
+              Create sections based on dates
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View className="mb-5">
         <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Description</Text>
@@ -364,55 +466,59 @@ const TripDetail = ({ tripData }: TripDetailProps) => {
         </View>
       </View>
 
-      <View className="mb-5">
-        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Budget</Text>
-        <TextInput
-          mode="outlined"
-          placeholder="e.g., 2,000"
-          value={formik.values.budget}
-          onChangeText={formik.handleChange("budget")}
-          onBlur={formik.handleBlur("budget")}
-          left={<TextInput.Icon icon="currency-php" className="opacity-50"/>}
-          keyboardType="numeric"
-          disabled={isSaving}
-          outlineColor="#E0E0E0"
-          activeOutlineColor="#0C4C8A"
-          theme={{ colors: { onSurfaceVariant: '#888' } }}
-          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-          style={{ marginTop: 6, height: 60 }}
-          contentStyle={{ backgroundColor: "transparent" }}
-        />
-      </View>
+      {mode === "edit" && (
+        <>
+          <View className="mb-5">
+            <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Budget</Text>
+            <TextInput
+              mode="outlined"
+              placeholder="e.g., 2,000"
+              value={formik.values.budget}
+              onChangeText={formik.handleChange("budget")}
+              onBlur={formik.handleBlur("budget")}
+              left={<TextInput.Icon icon="currency-php" className="opacity-50"/>}
+              keyboardType="numeric"
+              disabled={isSaving}
+              outlineColor="#E0E0E0"
+              activeOutlineColor="#0C4C8A"
+              theme={{ colors: { onSurfaceVariant: '#888' } }}
+              outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+              style={{ marginTop: 6, height: 60 }}
+              contentStyle={{ backgroundColor: "transparent" }}
+            />
+          </View>
 
-      <View className="mb-5">
-        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Notes</Text>
-        <TextInput
-          mode="outlined"
-          placeholder="Additional notes..."
-          value={formik.values.notes}
-          onChangeText={formik.handleChange("notes")}
-          onBlur={formik.handleBlur("notes")}
-          disabled={isSaving}
-          outlineColor="#E0E0E0"
-          activeOutlineColor="#0C4C8A"
-          multiline
-          numberOfLines={3}
-          theme={{ colors: { onSurfaceVariant: '#888' } }}
-          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-          style={{ marginTop: 6, height: 80, fontSize: 14 }}
-          contentStyle={{ backgroundColor: "transparent" }}
-        />
-      </View>
+          <View className="mb-5">
+            <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Notes</Text>
+            <TextInput
+              mode="outlined"
+              placeholder="Additional notes..."
+              value={formik.values.notes}
+              onChangeText={formik.handleChange("notes")}
+              onBlur={formik.handleBlur("notes")}
+              disabled={isSaving}
+              outlineColor="#E0E0E0"
+              activeOutlineColor="#0C4C8A"
+              multiline
+              numberOfLines={3}
+              theme={{ colors: { onSurfaceVariant: '#888' } }}
+              outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+              style={{ marginTop: 6, height: 80, fontSize: 14 }}
+              contentStyle={{ backgroundColor: "transparent" }}
+            />
+          </View>
 
-      <View className="mb-8 z-10">
-        <CheckboxGroup initialOptions={activityOptions} title="Activities" />
-      </View>
+          <View className="mb-8 z-10">
+            <CheckboxGroup initialOptions={activityOptions} title="Activities" />
+          </View>
+        </>
+      )}
 
       <View className="mb-16">
         <TouchButton
-          buttonText={isSaving ? "Saving..." : "Save Changes"}
+          buttonText={isSaving ? "Saving..." : mode === "create" ? "Add trip" : "Save Changes"}
           onPress={() => formik.handleSubmit()}
-          disabled={isSaving}
+          disabled={!formik.values.title.trim() || isSaving}
           className="h-[64px] p-6"
         />
       </View>

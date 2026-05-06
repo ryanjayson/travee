@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, Modal, Alert } from "react-native";
 import ViewTravel from ".";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
 import { TravelMenuAction } from "../../../../types/enums";
 import { NavigationContext } from "@react-navigation/native";

@@ -8,7 +8,7 @@ import {
   Dimensions,
 } from "react-native";
 import Activity from ".";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTravelContext } from "../../../../../context/TravelContext";
 
 interface ViewActivityModalProps {

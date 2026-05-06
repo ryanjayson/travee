@@ -15,12 +15,12 @@ import { Calendar } from "react-native-calendars";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
-import { useUpdateTravel } from "../../hooks/useTravel";
+import { useUpdateTravel, useTravels } from "../../hooks/useTravel";
 import { CreateTravelData, DestinationDto } from "../../types/TravelDto";
 import { TravelStatus } from "../../../../types/enums";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { Divider, Text, Checkbox } from 'react-native-paper';
 
 interface AddTravelModalProps {
@@ -139,6 +139,49 @@ const Create = ({ onClose }: AddTravelModalProps) => {
     startOrDepartureDate.setHours(0, 0, 0, 0);
     return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
   };
+
+  const { data: travels } = useTravels();
+
+  const generateBlockedDates = () => {
+    const dates: any = {};
+    if (!travels) return dates;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    travels.forEach((t: any) => {
+      if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return;
+      
+      if (t.startOrDepartureDate) {
+        const start = new Date(t.startOrDepartureDate);
+        start.setHours(0, 0, 0, 0);
+        const end = t.endOrReturnDate ? new Date(t.endOrReturnDate) : start;
+        end.setHours(0, 0, 0, 0);
+
+        if (end >= today) {
+          let current = new Date(start);
+          const isOngoing = start <= today && end >= today;
+          const color = isOngoing ? '#E3F2FD' : '#E8F5E8';
+          const textColor = isOngoing ? '#0C4C8A' : '#2E7D32';
+
+          while (current <= end) {
+            const dateStr = current.toISOString().split('T')[0];
+            dates[dateStr] = {
+              disabled: true,
+              disableTouchEvent: true,
+              selected: true,
+              selectedColor: color,
+              selectedTextColor: textColor,
+            };
+            current.setDate(current.getDate() + 1);
+          }
+        }
+      }
+    });
+    return dates;
+  };
+
+  const blockedDates = generateBlockedDates();
 
   const getStatusLabelText = (status: TravelStatus) => {
     switch (status) {
@@ -364,9 +407,13 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                       />
                     )}
                     // minDate={new Date().toISOString().split('T')[0]}
-                    markedDates={formik.values.startOrDepartureDate ? {
-                      [formik.values.startOrDepartureDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
-                    } : undefined}
+                    enableSwipeMonths={true}
+                    markedDates={{
+                      ...blockedDates,
+                      ...(formik.values.startOrDepartureDate ? {
+                        [formik.values.startOrDepartureDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A', selectedTextColor: '#ffffff' }
+                      } : {})
+                    }}
                     theme={{
                       todayTextColor: '#0C4C8A',
                       arrowColor: '#0C4C8A',
@@ -433,9 +480,13 @@ const Create = ({ onClose }: AddTravelModalProps) => {
                         color="#0C4C8A"
                       />
                     )}
-                    markedDates={formik.values.endOrReturnDate ? {
-                      [formik.values.endOrReturnDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A' }
-                    } : undefined}
+                    enableSwipeMonths={true}
+                    markedDates={{
+                      ...blockedDates,
+                      ...(formik.values.endOrReturnDate ? {
+                        [formik.values.endOrReturnDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A', selectedTextColor: '#ffffff' }
+                      } : {})
+                    }}
                     minDate={formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toISOString().split('T')[0] : undefined}
                     current={formik.values.startOrDepartureDate ? new Date(formik.values.startOrDepartureDate.getTime() + 86400000).toISOString().split('T')[0] : undefined}
                     theme={{

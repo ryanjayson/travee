@@ -1,6 +1,6 @@
 import React from "react";
 import { View, TouchableOpacity } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import SlideModal from "../../../../components/molecules/SlideModal";
 import { TravelMenuAction } from "../../../../types/enums";
 import { Divider, Text } from 'react-native-paper';

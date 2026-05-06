@@ -1,5 +1,5 @@
 import React from "react";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { ExpenseCategory } from "../../../../../types/enums";
 
 interface ExpenseCategoryIconProps {

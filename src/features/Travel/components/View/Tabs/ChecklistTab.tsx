@@ -6,7 +6,7 @@ import { useChecklistGroups, useChecklistItems, useToggleChecklistItemMutation }
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../types/enums";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 
 interface ChecklistTabProps {
   travelPlan: TravelPlan;

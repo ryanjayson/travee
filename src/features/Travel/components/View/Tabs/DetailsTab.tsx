@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { View, ScrollView } from "react-native";
 import { Text, useTheme } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { TravelPlan } from "../../../../Travel/types/TravelDto";
 import { useItineraryExpenses } from "../../../hooks/useExpense";
 import { useItineraryNotes } from "../../../hooks/useNote";

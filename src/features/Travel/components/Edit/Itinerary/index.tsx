@@ -17,7 +17,7 @@ import ActivityCard from "../Itinerary/ActivityCard";
 import DraggableActivityItem from "./DraggableActivityItem";
 import DraggableSectionContainer from "./DraggableSectionContainer";
 import SlideModal from "../../../../../components/molecules/SlideModal";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useDeleteSectionMutation, useUpdateSectionSortOrderMutation, UpdateSectionSortVariables } from "../../../hooks/useSection";
 import { useUpdateActivitySortOrderMutation, useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { UpdateSortVariables } from "../../../types/ActivityDto";

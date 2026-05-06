@@ -1,7 +1,7 @@
 import React from "react";
 import { View, ScrollView, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Text, useTheme } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { TravelPlan, ItineraryNote } from "../../../../Travel/types/TravelDto";
 import { useItineraryNotes } from "../../../hooks/useNote";
 

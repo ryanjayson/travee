@@ -7,8 +7,8 @@ import {
   StyleSheet,
   StatusBar,
 } from "react-native";
-import { WebView } from "react-native-webview";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import WebView from "react-native-webview";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 

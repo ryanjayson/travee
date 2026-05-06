@@ -10,12 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { WebView } from "react-native-webview";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import WebView from "react-native-webview";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
 const MAPBOX_GEOCODING_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places";
+const MAPBOX_SEARCHBOX_URL = "https://api.mapbox.com/search/searchbox/v1/forward";
 
 export interface MapboxPlace {
   id: string;
@@ -63,10 +64,13 @@ const MapboxDestinationSelector = ({
     setIsLoading(true);
     try {
       const encodedQuery = encodeURIComponent(text);
-      const url = `${MAPBOX_GEOCODING_URL}/${encodedQuery}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=8&language=en`;
+      // const url = `${MAPBOX_GEOCODING_URL}/${encodedQuery}.json?type=poi&access_token=${MAPBOX_ACCESS_TOKEN}&limit=8&language=en`;
+      const url = `${MAPBOX_SEARCHBOX_URL}?q=${encodedQuery}&access_token=${MAPBOX_ACCESS_TOKEN}&limit=8&language=en`;
+      console.log(url);
 
       const response = await fetch(url);
       const data = await response.json();
+      console.log(data.features);
 
       if (data.features && data.features.length > 0) {
         const places: MapboxPlace[] = data.features.map((feature: any) => {
@@ -75,7 +79,7 @@ const MapboxDestinationSelector = ({
           );
 
           return {
-            id: feature.id,
+            id: feature.id,   
             name: feature.text,
             fullName: feature.place_name,
             country: contextCountry?.text || (feature.place_type?.includes("country") ? feature.text : undefined),

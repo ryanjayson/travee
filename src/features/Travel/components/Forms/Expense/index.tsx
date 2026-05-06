@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { TextInput, Text, Divider } from "react-native-paper";
 import { Calendar } from "react-native-calendars";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import TouchButton from "../../../../../components/atoms/TouchButton";

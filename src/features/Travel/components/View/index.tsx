@@ -14,7 +14,7 @@ import SectionAccordion from "./SectionAccordion";
 import { TravelPlan, ItineraryExpense } from "../../../Travel/types/TravelDto";
 import StatusTag from "../../../../components/StatusTag";
 import Tabs from "../../../../components/Tabs";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import MapViewer from "../MapViewer";
 import ItineraryTab from "./Tabs/ItineraryTab";
 import ChecklistTab from "./Tabs/ChecklistTab";

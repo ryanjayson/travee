@@ -14,7 +14,7 @@ import {
   Platform,
 } from "react-native";
 import EditSection from "../Section";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
 import { ItinerarySection } from "../../../../types/TravelDto";
 

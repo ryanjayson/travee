@@ -13,7 +13,7 @@ import TextLimiter from "../../../../../components/atoms/TextLimiter";
 import { ItineraryActivity } from "../../../types/TravelDto";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { Typography } from "../../../../../styles/common";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import MapViewer from "../../MapViewer";
 
 interface ItineraryActivityProps {

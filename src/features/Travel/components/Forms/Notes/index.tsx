@@ -10,14 +10,19 @@ import {
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import { Calendar } from "react-native-calendars";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import { Divider, Text, Switch } from 'react-native-paper';
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Image } from "react-native";
-import { DestinationDto } from "../../types/TravelDto";
+import { DestinationDto, ItineraryActivity } from "../../types/TravelDto";
+import { ActivityType } from "../../../../types/enums";
+import { useUpdateActivityMutation, useDeleteActivityMutation } from "../../hooks/useActivity";
+import { useTravelContext } from "../../../../context/TravelContext";
+import ActivityIcon from "../../../atoms/ActivityIcon";
+import MapboxDestinationSelector, { MapboxPlace } from "../../MapboxDestinationSelector";
 
 interface Place {
   id: string;

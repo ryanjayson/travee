@@ -12,7 +12,7 @@ import {
   Platform,
 } from "react-native";
 import { TextInput } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import DestinationSelector from "../../../DestinationSelector";
 import { useFormik } from "formik";
 import * as Yup from "yup";

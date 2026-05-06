@@ -11,7 +11,7 @@ import {
   Platform,
   Dimensions,
 } from "react-native";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import EditNote from "./index";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 import { ItineraryNote, ItineraryActivity } from "../../../types/TravelDto";
