@@ -259,7 +259,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       <ScrollView className="flex-1 bg-[#F9F9F9]" showsVerticalScrollIndicator={false}>
         <HeaderSection /> 
         <View>
-          <Tabs tabs={tabData} initialActiveTabId="itinerary" />
+          <Tabs tabs={tabData} initialActiveTabId="itinerary" type="secondary"/>
         </View>
 
         {setShowMapModal && (

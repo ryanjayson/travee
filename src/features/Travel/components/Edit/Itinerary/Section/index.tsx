@@ -188,7 +188,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                 </Modal>
 
                 {itinerarySection?.id && (
-                  <View className="mt-5 pt-5 border-t border-[#E0E0E0]">
+                  <View className="py-6 ">
                     <TouchableOpacity 
                       className="flex-row items-center gap-2.5 justify-center py-2"
                       onPress={handleDeleteSection}
@@ -201,16 +201,20 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                     </TouchableOpacity>
                   </View>
                 )}
+
+                <View className="mb-5"></View>
              </ScrollView>
 
-             <View className="px-5 py-4 border-t border-gray-200 ">
-               <TouchButton
+                <View className="mb-8 mx-4 bg-transparent">
+                 <TouchButton
                  buttonText={itinerarySection?.id ? "Update Section" : "Add Section"}
                   onPress={() => formik.handleSubmit()}
                   disabled={!formik.isValid || !formik.dirty || isUpdating}
                  className="h-[64px] p-6"
                />
               </View>
+              
+              
           </View>
         );
 };

@@ -20,7 +20,7 @@ interface TabsProps {
   onTabChange?: (tabId: string) => void;
 }
 
-type TabsType = "primary" | "secondary";
+type TabsType = "primary" | "secondary" | "normal";
 
 // --- Component ---
 const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTabChange }) => {
@@ -31,14 +31,17 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
   const currentIndex = tabs.findIndex((tab) => tab.id === activeTabId);
 
+  const styleFontSizing = type === "normal" ? "text-md" : type === "secondary" ? "text-xl" : "text-2xl";
+
   const renderTabButton = (tab: TabItem) => {
     const isActive = tab.id === activeTabId;
 
     return (
       <TouchableOpacity
         key={tab.id}
-        className={`items-center justify-center ${isActive && type === "primary" ? 'text-brand border-b-2 border-brand-primary' : ''}
-        ${type === "secondary" ? "!font-sm border border-[#E0E0E0] rounded-xl py-1.5 px-5 mr-4" : "py-3 px-4 "}
+        className={`items-center justify-center 
+        ${isActive && (type === "primary" || type === "secondary") ? 'text-brand border-t-2 border-brand-primary' : ''}
+        ${type === "normal" ? "!font-sm border border-[#E0E0E0] rounded-xl py-1.5 px-5 mr-4" : "py-3 px-4 "}
         ${type === "secondary" && isActive ? '!border-brand-primary' : ''}`}
         onPress={() => {
           setActiveTabId(tab.id);
@@ -47,7 +50,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
         activeOpacity={0.8}
       >
         <Text className={`font-medium  ${isActive ? ' text-brand ' : 'text-gray-400'}
-         ${type === "primary" ? "text-2xl " : "text-sm"}`}>
+         ${styleFontSizing}`}>
           {tab.title}
         </Text>
       </TouchableOpacity>

@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import SectionModal from "./Section/Modal";
+import SectionMenu from "./Section/Menu";
 import ActivityModal from "./Activity/Modal";
 import AddActivityModal from "../../Edit/Itinerary/AddActivityModal";
 import ActivityCard from "../Itinerary/ActivityCard";
@@ -984,70 +985,15 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
         </View>
       </SlideModal>
 
-      {/* Section Menu Modal */}
-      {/* TODO move this to component */}
-      <SlideModal
+      <SectionMenu
         visible={sectionMenuVisible}
         onClose={() => setSectionMenuVisible(false)}
-      >
-        <View className="flex-1 bg-white">
-          <View
-            style={{
-              padding: 6,
-              borderBottomWidth: 1,
-              borderColor: "#eee",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <TouchableOpacity
-              style={{ paddingRight: 6 }}
-              onPress={() => setSectionMenuVisible(false)}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Icon name="keyboard-arrow-left" size={36} color={"#333"} />
-            </TouchableOpacity>
-            <Text style={{ fontSize: 18, color: "#333", fontWeight: "600" }}>
-              Itinerary Menu
-            </Text>
-          </View>
+        onEditSection={() => handleSectionMenuEditSection(selectedSection?.id || "")}
+        onAddActivity={handleSectionMenuAddActivity}
+        onDeleteSection={() => handleSectionMenuDelete(selectedSection?.id || "")}
+      />
 
-          <View style={{ paddingVertical: 8 }}>
-            <TouchableOpacity
-              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
-              activeOpacity={0.7}
-              onPress={() =>
-                handleSectionMenuEditSection(selectedSection?.id || "")
-              }
-            >
-              <Icon name="segment" size={24} color={"#183B7A"} />
-              <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Edit Section</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
-              activeOpacity={0.7}
-              onPress={handleSectionMenuAddActivity}
-            >
-              <Icon name="new-label" size={24} color={"#183B7A"} />
-              <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Add Activity</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
-              activeOpacity={0.7}
-              onPress={() => handleSectionMenuDelete(selectedSection?.id || "")}
-              disabled={isPending}
-            >
-              <Icon name="delete-outline" size={24} color={"#c93030"} />
-              <Text className="flex-1 ml-3 text-base text-[#c93030] font-medium">
-                Delete Section
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SlideModal>
+ 
     </ScrollView>
 
     </View>

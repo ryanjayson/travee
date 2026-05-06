@@ -14,7 +14,6 @@ import { Travel, TravelPlan } from "../types/TravelDto";
 import { TravelStatus } from "../../../types/enums";
 import { useTravels } from "../hooks/useTravel";
 import { useTravelContext } from "../../../context/TravelContext";
-import { FAB, Portal } from "react-native-paper";
 import Tabs from "../../../components/Tabs/index";
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
@@ -318,7 +317,7 @@ const TravelCatalog = () => {
 
   const renderListView = () => (
     <View>
-      <Tabs tabs={listTabsData} type="secondary"/>
+      <Tabs tabs={listTabsData} type="normal"/>
     </View>
   );
 
