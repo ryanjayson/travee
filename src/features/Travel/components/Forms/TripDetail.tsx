@@ -15,6 +15,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
+import StatusBadge from "../../../../components/StatusBadge";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import { useUpdateTravel, useTravels } from "../../hooks/useTravel";
@@ -25,6 +26,7 @@ interface TripDetailProps {
   tripData?: Travel;
   mode?: "create" | "edit";
   onClose?: () => void;
+  onStatusChange?: (status: TravelStatus) => void;
 }
 
 const TravelSchema = Yup.object().shape({
@@ -32,7 +34,7 @@ const TravelSchema = Yup.object().shape({
   destination: Yup.string().required("Destination is required"),
 });
 
-const TripDetail = ({ tripData, mode = "edit", onClose }: TripDetailProps) => {
+const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDetailProps) => {
   const { colors } = useTheme();
   const { mutate: updateTravel, isPending: isSaving } = useUpdateTravel();
   
@@ -154,6 +156,14 @@ const TripDetail = ({ tripData, mode = "edit", onClose }: TripDetailProps) => {
     return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
   };
 
+  const effectiveStatus = getEffectiveStatus();
+
+  React.useEffect(() => {
+    if (onStatusChange) {
+      onStatusChange(effectiveStatus);
+    }
+  }, [effectiveStatus, onStatusChange]);
+
   const { data: travels } = useTravels();
 
   const generateBlockedDates = () => {
@@ -198,30 +208,6 @@ const TripDetail = ({ tripData, mode = "edit", onClose }: TripDetailProps) => {
   };
 
   const blockedDates = generateBlockedDates();
-
-  const getStatusLabelText = (status: TravelStatus) => {
-    switch (status) {
-      case TravelStatus.Draft: return "Draft";
-      case TravelStatus.Ongoing: return "Ongoing";
-      case TravelStatus.Upcoming: return "Upcoming";
-      case TravelStatus.Completed: return "Completed";
-      case TravelStatus.Archieved: return "Archived";
-      case TravelStatus.Cancelled: return "Cancelled";
-      default: return "Unknown";
-    }
-  };
-
-  const getStatusLabelStyling = (status: TravelStatus) => {
-    if (status === TravelStatus.Ongoing || status === TravelStatus.Upcoming || status === TravelStatus.Completed) 
-      return "bg-[#E8F5E8] text-[#2E7D32]";
-    if (status === TravelStatus.Cancelled || status === TravelStatus.Archieved) return "bg-[#FFEBEE] text-[#D32F2F]";
-    return "bg-[#E0E0E0] text-[#666]";
-  };
-
-  const effectiveStatus = getEffectiveStatus();
-  const styling = getStatusLabelStyling(effectiveStatus);
-  const bgStyle = styling.split(' ')[0];
-  const textStyle = styling.split(' ')[1];
 
   return (
     <ScrollView className="flex-1 p-[15px] bg-gray-50" showsVerticalScrollIndicator={false}>
@@ -458,11 +444,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose }: TripDetailProps) => {
         />
         <View className="flex-row items-center mt-3">
           <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mr-3">Status:</Text>
-          <View className={`px-3 py-1 rounded-full ${bgStyle}`}>
-            <Text className={`text-xs font-bold ${textStyle}`}>
-              {getStatusLabelText(effectiveStatus)}
-            </Text>
-          </View>
+          <StatusBadge status={effectiveStatus} />
         </View>
       </View>
 

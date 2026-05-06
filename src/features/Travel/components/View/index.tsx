@@ -12,7 +12,7 @@ import {
 } from "react-native-paper";
 import SectionAccordion from "./SectionAccordion";
 import { TravelPlan, ItineraryExpense } from "../../../Travel/types/TravelDto";
-import StatusTag from "../../../../components/StatusTag";
+import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import MapViewer from "../MapViewer";
@@ -168,7 +168,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
             <Text className="text-2xl font-bold text-[#183B7A] mb-2 flex-1 mr-4">
               {travelPlan?.travel.title}
             </Text>
-            <StatusTag type={1} status={travelPlan.travel.status!} />
+            <StatusBadge type={1} status={travelPlan.travel.status!} />
           </View>
           <View className="flex-row items-center flex-wrap ">
             <TouchableOpacity 

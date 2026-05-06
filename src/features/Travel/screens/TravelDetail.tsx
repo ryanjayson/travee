@@ -11,6 +11,7 @@ import { travelService } from "../../../services/travelService";
 import { ActivitySection } from "../../../dtos/ItineraryDto";
 import { Travel } from "../../Travel/types/TravelDto";
 import { TravelStatus } from "../../../types/enums";
+import StatusBadge from "../../../components/StatusBadge";
 
 interface TravelDetailPageProps {
   travelData: Travel;
@@ -80,29 +81,7 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
     return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
   };
 
-  const getStatusLabelText = (status: TravelStatus) => {
-    switch (status) {
-      case TravelStatus.Draft: return "Draft";
-      case TravelStatus.Ongoing: return "Ongoing";
-      case TravelStatus.Upcoming: return "Upcoming";
-      case TravelStatus.Completed: return "Completed";
-      case TravelStatus.Archieved: return "Archived";
-      case TravelStatus.Cancelled: return "Cancelled";
-      default: return "Unknown";
-    }
-  };
-
-  const getStatusLabelStyling = (status: TravelStatus) => {
-    if (status === TravelStatus.Ongoing || status === TravelStatus.Upcoming || status === TravelStatus.Completed) 
-      return "bg-[#E8F5E8] text-[#2E7D32]";
-    if (status === TravelStatus.Cancelled || status === TravelStatus.Archieved) return "bg-[#FFEBEE] text-[#D32F2F]";
-    return "bg-[#E0E0E0] text-[#666]";
-  };
-
   const effectiveStatus = getEffectiveStatus(travelData);
-  const styling = getStatusLabelStyling(effectiveStatus);
-  const bgStyle = styling.split(' ')[0];
-  const textStyle = styling.split(' ')[1];
 
   useEffect(() => {
     const fetchItinerary = async () => {
@@ -181,11 +160,7 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
         </TouchableOpacity>
         <View className="flex-1 items-center">
           <Text className="text-lg font-bold text-primary" numberOfLines={1}>{travelData.destination}</Text>
-          <View className={`px-2 py-0.5 rounded-full mt-1 ${bgStyle}`}>
-            <Text className={`text-[10px] font-bold ${textStyle}`}>
-              {getStatusLabelText(effectiveStatus)}
-            </Text>
-          </View>
+          <StatusBadge status={effectiveStatus} containerClassName="mt-1" />
         </View>
         <TouchableOpacity className="p-2.5">
           <Text className="text-primary text-xl">⋮</Text>

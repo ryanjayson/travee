@@ -9,7 +9,7 @@ import { ExploreScreen } from "../screens/ExploreScreen";
 import HomeScreen from "../screens/HomeScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
-import CreateTravelModal from "../features/Travel/components/Create/Modal";
+import CreateTravelModal from "../features/Travel/components/CreateOrEdit/Modal";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
@@ -151,6 +151,7 @@ const insets = useSafeAreaInsets();
       {/* Floating Add Button on the right side */}
       <TouchableOpacity 
         onPress={() => setVisibleCreateTravelModal(true)}
+        className="bg-button-primary"
         style={{
           position: 'absolute',
           bottom: insets.bottom + 5,
@@ -158,7 +159,7 @@ const insets = useSafeAreaInsets();
           width: 70,
           height: 70,
           borderRadius: 35,
-          backgroundColor: '#0C4C8A',
+          // backgroundColor: 'primary',
           justifyContent: 'center',
           alignItems: 'center',
           elevation: 10,

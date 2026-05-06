@@ -18,6 +18,7 @@ import { FAB, Portal } from "react-native-paper";
 import Tabs from "../../../components/Tabs/index";
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import StatusBadge from "../../../components/StatusBadge";
 
 const TravelCatalog = () => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
@@ -89,30 +90,8 @@ const TravelCatalog = () => {
     refetch();
   };
 
-  const getStatusLabelText = (status: TravelStatus | undefined) => {
-    switch (status) {
-      case TravelStatus.Draft: return "Draft";
-      case TravelStatus.Ongoing: return "Ongoing";
-      case TravelStatus.Upcoming: return "Upcoming";
-      case TravelStatus.Completed: return "Completed";
-      case TravelStatus.Archieved: return "Archived";
-      case TravelStatus.Cancelled: return "Cancelled";
-      default: return "Unknown";
-    }
-  };
-
-  const getStatusLabelStyling = (status: TravelStatus | undefined) => {
-    if (status === TravelStatus.Ongoing || status === TravelStatus.Upcoming || status === TravelStatus.Completed) 
-      return "bg-[#E8F5E8] text-[#2E7D32]";
-    if (status === TravelStatus.Cancelled || status === TravelStatus.Archieved) return "bg-[#FFEBEE] text-[#D32F2F]";
-    return "bg-[#E0E0E0] text-[#666]";
-  };
-
   const renderTravelCard = (travel: Travel) => {
     const effectiveStatus = getEffectiveStatus(travel);
-    const styling = getStatusLabelStyling(effectiveStatus);
-    const bgStyle = styling.split(' ')[0];
-    const textStyle = styling.split(' ')[1];
 
     const formatDate = (dateValue: Date | string | undefined) => {
       if (!dateValue) return "";
@@ -143,10 +122,8 @@ const TravelCatalog = () => {
                 <Text className="text-lg font-medium text-primary">{travel.title}</Text>
                 <Text className="text-sm  text-[#666]">{travel.destination}</Text>
               </View>
-              <View className={`px-3 py-1 rounded-full ${bgStyle}`}>
-                <Text className={`text-[10px] font-bold ${textStyle}`}>
-                  {getStatusLabelText(effectiveStatus)}
-                </Text>
+              <View className="flex-row items-center justify-between mt-2">
+                <StatusBadge status={effectiveStatus} />
               </View>
             </View>
             <View className="flex-row items-center mt-1">

@@ -21,18 +21,15 @@ import { TravelStatus } from "../../../../types/enums";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import StatusBadge from "../../../../components/StatusBadge";
 import { Divider, Text, Checkbox } from 'react-native-paper';
 
 interface AddTravelModalProps {
   onClose: () => void;
+  onStatusChange?: (status: TravelStatus) => void;
 }
 
-const TravelSchema = Yup.object().shape({
-  title: Yup.string().required("Title is required"),
-  destination: Yup.string().required("Destination is required"),
-});
-
-const Create = ({ onClose }: AddTravelModalProps) => {
+const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
   const [error, setError] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -125,6 +122,7 @@ const Create = ({ onClose }: AddTravelModalProps) => {
 
   const formattedStartDate = formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toLocaleDateString() : "";
   const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
+  const { data: travels } = useTravels();
 
   const getEffectiveStatus = (): TravelStatus => {
     if (!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate) return TravelStatus.Draft;
@@ -139,8 +137,6 @@ const Create = ({ onClose }: AddTravelModalProps) => {
     startOrDepartureDate.setHours(0, 0, 0, 0);
     return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
   };
-
-  const { data: travels } = useTravels();
 
   const generateBlockedDates = () => {
     const dates: any = {};
@@ -181,28 +177,15 @@ const Create = ({ onClose }: AddTravelModalProps) => {
     return dates;
   };
 
+  const effectiveStatus = getEffectiveStatus();
   const blockedDates = generateBlockedDates();
 
-  const getStatusLabelText = (status: TravelStatus) => {
-    switch (status) {
-      case TravelStatus.Draft: return "Draft";
-      case TravelStatus.Ongoing: return "Ongoing";
-      case TravelStatus.Upcoming: return "Upcoming";
-      case TravelStatus.Completed: return "Completed";
-      default: return "Unknown";
+  React.useEffect(() => {
+    if (onStatusChange) {
+      onStatusChange(effectiveStatus);
     }
-  };
+  }, [effectiveStatus, onStatusChange]);
 
-  const getStatusLabelStyling = (status: TravelStatus) => {
-    if (status === TravelStatus.Ongoing || status === TravelStatus.Upcoming || status === TravelStatus.Completed) 
-      return "bg-[#E8F5E8] text-[#2E7D32]";
-    return "bg-[#E0E0E0] text-[#666]";
-  };
-
-  const effectiveStatus = getEffectiveStatus();
-  const styling = getStatusLabelStyling(effectiveStatus);
-  const bgStyle = styling.split(' ')[0];
-  const textStyle = styling.split(' ')[1];
 
   return (
     <View className="flex-1 bg-gray-100  overflow-hidden ">
@@ -556,14 +539,6 @@ const Create = ({ onClose }: AddTravelModalProps) => {
             <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.description as string}</Text>
           )}
           
-          <View className="flex-row items-center mt-3">
-            <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mr-3">Status:</Text>
-            <View className={`px-3 py-1 rounded-full ${bgStyle}`}>
-              <Text className={`text-xs font-bold ${textStyle}`}>
-                {getStatusLabelText(effectiveStatus)}
-              </Text>
-            </View>
-          </View>
         </View>
 {/* 
       <View className="mb-5 z-10">

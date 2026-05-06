@@ -13,7 +13,9 @@ import {
 } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
-import TripDetail from "../Forms/TripDetail";
+import Create from ".";
+import { TravelStatus } from "../../../../types/enums";
+import StatusBadge from "../../../../components/StatusBadge";
 
 interface AddTripModalProps {
   showModal?: boolean;
@@ -30,6 +32,7 @@ const CreateTripModal = ({
   const [isSaving, setIsSaving] = useState(false);
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
   const keyboardVisible = useKeyboardVisible();
+  const [tripStatus, setTripStatus] = useState(TravelStatus.Draft);
 
 
   const handleCancel = () => {
@@ -57,16 +60,19 @@ const CreateTripModal = ({
             <StatusBar barStyle={"dark-content"} />
 
             <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
-                  <Text className="text-2xl text-gray-700 font-medium">
-                  Create next trip
-                  </Text>
-                  <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
+                <View className="flex-row items-center gap-2">
+                    <Text className="text-2xl text-gray-700 font-medium">
+                    Create next trip
+                    </Text>
+                    <StatusBadge status={tripStatus} />
+                </View>
+                <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
                     <Icon name="clear" size={36} color={"#333"} />
-                  </TouchableOpacity>
+                </TouchableOpacity>
                 </View>
 
             <View className="flex-1">
-                  <TripDetail mode="create" onClose={handleCancel} />
+                  <Create onClose={handleCancel} onStatusChange={setTripStatus} />
               </View>
           </Animated.View>
           </View>
