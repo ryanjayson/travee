@@ -11,9 +11,9 @@ export const getStatusConfig = (status: TravelStatus) => {
     case TravelStatus.Draft:
       return { label: "Draft", bg: "bg-[#E0E0E0]", text: "text-[#666]" };
     case TravelStatus.Upcoming:
-      return { label: "Upcoming", bg: "bg-[#E8F5E8]", text: "text-[#2E7D32]" };
+      return { label: "Upcoming", bg: "bg-[#B9E6FE]", text: "text-[#0C4C8A]" };
     case TravelStatus.Ongoing:
-      return { label: "Ongoing", bg: "bg-[#E8F5E8]", text: "text-[#2E7D32]" };
+      return { label: "Ongoing", bg: "bg-[#B9E6FE]", text: "text-[#0C4C8A]" };
     case TravelStatus.Completed:
       return { label: "Completed", bg: "bg-[#E8F5E8]", text: "text-[#2E7D32]" };
     case TravelStatus.Archieved:

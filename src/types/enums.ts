@@ -38,6 +38,7 @@ export enum TravelMenuAction {
   EditTravel,
   Clone,
   Archive,
+  Unarchive,
   Cancel,
   Delete,
 }

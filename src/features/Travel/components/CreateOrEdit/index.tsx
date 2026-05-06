@@ -6,8 +6,6 @@ import {
   Modal,
   Animated,
   Image,
-  KeyboardAvoidingView,
-  Platform
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import TouchButton from "../../../../components/atoms/TouchButton";
@@ -21,8 +19,7 @@ import { TravelStatus } from "../../../../types/enums";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import StatusBadge from "../../../../components/StatusBadge";
-import { Divider, Text, Checkbox } from 'react-native-paper';
+import { Text, Checkbox } from 'react-native-paper';
 
 interface AddTravelModalProps {
   onClose: () => void;
@@ -188,9 +185,10 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
 
 
   return (
-    <View className="flex-1 bg-gray-100  overflow-hidden ">
+    <View className="flex-1 bg-gray-100  overflow-hidden">
 
-      <ScrollView className="flex-1 p-[15px] pb-20" showsVerticalScrollIndicator={false}>
+      <ScrollView className={`flex-1 p-[15px] `} showsVerticalScrollIndicator={false}
+       >
         {error && (
           <View className="bg-[#FFEBEE] rounded-lg p-3 mb-4 border border-[#FFCDD2]">
             <Text className="text-[#D32F2F] text-sm">{error}</Text>
@@ -540,6 +538,9 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
           )}
           
         </View>
+
+         <View className="mb-5"></View>
+
 {/* 
       <View className="mb-5 z-10">
           <CheckboxGroup initialOptions={activityOptions} title="Activities" />
@@ -595,7 +596,7 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
         </View> */}
       </ScrollView>
 
-    <View className="mb-8 mx-5 bg-transparent  ">
+    <View className="mb-8 mx-4 bg-transparent">
        <TouchButton
           buttonText="Add trip"
           onPress={() => formik.handleSubmit()}

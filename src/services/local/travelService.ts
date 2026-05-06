@@ -368,4 +368,12 @@ export const archiveTravelLocally = async (id: string): Promise<void> => {
     });
   });
 };
-
+/** Unarchives a locally-stored travel. */
+export const unarchiveTravelLocally = async (id: string): Promise<void> => {
+  await database.write(async () => {
+    const travel = await database.get<Travel>("travels").find(id);
+    await travel.update((t) => {
+      t.isArchived = false;
+    });
+  });
+};

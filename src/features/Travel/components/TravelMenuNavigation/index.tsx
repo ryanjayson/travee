@@ -2,32 +2,40 @@ import React from "react";
 import { View, TouchableOpacity } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import SlideModal from "../../../../components/molecules/SlideModal";
-import { TravelMenuAction } from "../../../../types/enums";
+import { TravelMenuAction, TravelStatus } from "../../../../types/enums";
 import { Divider, Text } from 'react-native-paper';
+import { Travel } from "../../Travel/types/TravelDto";
 
 interface TravelMenuNavigationProps {
   showModal: boolean;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   onSelect: (selectedMenuAction: TravelMenuAction) => void;
+  travel?: Travel;
 }
 
 const TravelMenuNavigation = ({
   showModal,
   setShowModal,
   onSelect,
+  travel,
 }: TravelMenuNavigationProps) => {
+  const isCompleted = travel?.status === TravelStatus.Completed;
+  const isCancelled = travel?.status === TravelStatus.Cancelled;
+  const isArchived = travel?.isArchived || travel?.status === TravelStatus.Archieved;
+
   return (
     <SlideModal 
       visible={showModal} 
       onClose={() => setShowModal(false)}
       direction="bottom"
-      height={346}
+      height={316}
     >
-      <View className="flex-1">
-        <View className="gap-4">
+      <View className="flex-1 pt-lg">
+        <View className="gap-xl">
           <TouchableOpacity
-            className="flex-row items-center justify-between px-4 py-3"
+            className={`flex-row items-center justify-between px-4 py-3 ${isArchived ? 'opacity-50' : ''}`}
             activeOpacity={0.7}
+            disabled={isArchived}
             onPress={() => {
               onSelect(TravelMenuAction.EditTravel);
               setShowModal(false);
@@ -39,8 +47,9 @@ const TravelMenuNavigation = ({
             <Text className="flex-1 ml-3 text-lg font-bold">Edit Trip</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className="flex-row items-center justify-between px-4 py-3 "
+            className={`flex-row items-center justify-between px-4 py-3 ${isArchived ? 'opacity-50' : ''}`}
             activeOpacity={0.7}
+            disabled={isArchived}
             onPress={() => {
               onSelect(TravelMenuAction.Clone);
               setShowModal(false);
@@ -51,22 +60,39 @@ const TravelMenuNavigation = ({
             </View>
             <Text className="flex-1 ml-3 text-lg font-medium">Duplicate Trip</Text>
           </TouchableOpacity>
-             <TouchableOpacity
-            className="flex-row items-center justify-between px-4 py-3 "
-            activeOpacity={0.7}
-            onPress={() => {
-              onSelect(TravelMenuAction.Archive);
-              setShowModal(false);
-            }}
-          >
-            <View className="w-10 h-10 justify-center items-center mr-3">
-              <Icon name="archive" size={28} color={"#183B7A"} />
-            </View>
-            <Text className="flex-1 ml-3 text-lg font-medium">Archive Trip</Text>
-          </TouchableOpacity>
+          {isArchived ? (
+            <TouchableOpacity
+              className="flex-row items-center justify-between px-4 py-3"
+              activeOpacity={0.7}
+              onPress={() => {
+                onSelect(TravelMenuAction.Unarchive);
+                setShowModal(false);
+              }}
+            >
+              <View className="w-10 h-10 justify-center items-center mr-3">
+                <Icon name="unarchive" size={28} color={"#183B7A"} />
+              </View>
+              <Text className="flex-1 ml-3 text-lg font-medium">Unarchive Trip</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              className="flex-row items-center justify-between px-4 py-3"
+              activeOpacity={0.7}
+              onPress={() => {
+                onSelect(TravelMenuAction.Archive);
+                setShowModal(false);
+              }}
+            >
+              <View className="w-10 h-10 justify-center items-center mr-3">
+                <Icon name="archive" size={28} color={"#183B7A"} />
+              </View>
+              <Text className="flex-1 ml-3 text-lg font-medium">Archive Trip</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
-            className="flex-row items-center justify-between px-4 py-3 "
+            className={`flex-row items-center justify-between px-4 py-3 ${(isCompleted || isCancelled || isArchived) ? 'opacity-50' : ''}`}
             activeOpacity={0.7}
+            disabled={isCompleted || isCancelled || isArchived}
             onPress={() => {
               onSelect(TravelMenuAction.Cancel);
               setShowModal(false);

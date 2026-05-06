@@ -7,7 +7,7 @@ import { TravelMenuAction } from "../../../../types/enums";
 import { NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
-import { useTravelPlan, useDeleteTravel, useCancelTravel, useArchiveTravel } from "../../hooks/useTravel";
+import { useTravelPlan, useDeleteTravel, useCancelTravel, useArchiveTravel, useUnarchiveTravel } from "../../hooks/useTravel";
 import { useTravelContext } from "../../../../context/TravelContext";
 
 interface ViewTripModalProps {
@@ -49,6 +49,7 @@ const ViewTripModal = ({
   const { mutate: deleteTravel } = useDeleteTravel();
   const { mutate: cancelTravel } = useCancelTravel();
   const { mutate: archiveTravel } = useArchiveTravel();
+  const { mutate: unarchiveTravel } = useUnarchiveTravel();
 
   const handleCancel = () => {
     clearTravelPlan();
@@ -125,6 +126,26 @@ const ViewTripModal = ({
           },
         ]
       );
+    } else if (menuAction === TravelMenuAction.Unarchive) {
+      Alert.alert(
+        "Unarchive Trip",
+        "Are you sure you want to unarchive this trip?",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Unarchive",
+            style: "default",
+            onPress: () => {
+              if (id != null) {
+                unarchiveTravel(String(id), {
+                  onSuccess: () => setShowModal(false),
+                  onError: () => Alert.alert("Error", "Failed to unarchive trip. Please try again."),
+                });
+              }
+            },
+          },
+        ]
+      );
     }
   };
 
@@ -170,6 +191,7 @@ const ViewTripModal = ({
         showModal={showTravelNavigationModal}
         setShowModal={setShowTravelNavigationModal}
         onSelect={handleSelectNavigationMenu}
+        travel={travelPlan?.travel}
       />
     </Modal>
   );
