@@ -87,6 +87,4 @@ const SectionModal = ({
   );
 };
 
-
-
 export default SectionModal;

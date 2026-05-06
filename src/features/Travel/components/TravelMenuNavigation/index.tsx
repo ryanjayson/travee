@@ -28,10 +28,10 @@ const TravelMenuNavigation = ({
       visible={showModal} 
       onClose={() => setShowModal(false)}
       direction="bottom"
-      height={316}
+      height={326}
     >
       <View className="flex-1 pt-lg">
-        <View className="gap-xl">
+        <View className="gap-lg">
           <TouchableOpacity
             className={`flex-row items-center justify-between px-4 py-3 ${isArchived ? 'opacity-50' : ''}`}
             activeOpacity={0.7}
@@ -58,7 +58,7 @@ const TravelMenuNavigation = ({
             <View className="w-10 h-10 justify-center items-center mr-3">
               <Icon name="file-copy" size={28} color={"#183B7A"} />
             </View>
-            <Text className="flex-1 ml-3 text-lg font-medium">Duplicate Trip</Text>
+            <Text className="flex-1 ml-3 text-lg font-medium">Duplicate</Text>
           </TouchableOpacity>
           {isArchived ? (
             <TouchableOpacity
@@ -86,7 +86,7 @@ const TravelMenuNavigation = ({
               <View className="w-10 h-10 justify-center items-center mr-3">
                 <Icon name="archive" size={28} color={"#183B7A"} />
               </View>
-              <Text className="flex-1 ml-3 text-lg font-medium">Archive Trip</Text>
+              <Text className="flex-1 ml-3 text-lg font-medium">Archive</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -101,7 +101,7 @@ const TravelMenuNavigation = ({
             <View className="w-10 h-10 justify-center items-center mr-3">
               <Icon name="cancel" size={24} color={"#C62828"} />
             </View>
-            <Text className="flex-1 ml-3 text-lg font-medium text-[#C62828]">Cancel Trip</Text>
+            <Text className="flex-1 ml-3 text-lg font-medium text-[#C62828]">Cancel</Text>
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-row items-center justify-between px-4 py-3"
@@ -114,7 +114,7 @@ const TravelMenuNavigation = ({
             <View className="w-10 justify-center items-center mr-3">
               <Icon name="delete" size={24} color={"#C62828"} />
             </View>
-            <Text className="flex-1 ml-3 text-lg font-medium text-[#C62828]">Delete Trip</Text>
+            <Text className="flex-1 ml-3 text-lg font-medium text-[#C62828]">Delete</Text>
           </TouchableOpacity>
          
         </View>

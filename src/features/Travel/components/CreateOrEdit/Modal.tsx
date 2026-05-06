@@ -34,7 +34,6 @@ const CreateTripModal = ({
   const keyboardVisible = useKeyboardVisible();
   const [tripStatus, setTripStatus] = useState(TravelStatus.Draft);
 
-
   const handleCancel = () => {
        setShowModal(false);
   };
@@ -58,7 +57,6 @@ const CreateTripModal = ({
             ]}
           >
             <StatusBar barStyle={"dark-content"} />
-
             <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
                 <View className="flex-row items-center gap-2">
                     <Text className="text-2xl text-gray-700 font-medium">
@@ -69,13 +67,12 @@ const CreateTripModal = ({
                 <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
                     <Icon name="clear" size={36} color={"#333"} />
                 </TouchableOpacity>
-                </View>
-
+            </View>
             <View className="flex-1">
-                  <Create onClose={handleCancel} onStatusChange={setTripStatus} />
-              </View>
+              <Create onClose={handleCancel} onStatusChange={setTripStatus} />
+            </View>
           </Animated.View>
-          </View>
+        </View>
       </KeyboardAvoidingView>
     </Modal>
   );

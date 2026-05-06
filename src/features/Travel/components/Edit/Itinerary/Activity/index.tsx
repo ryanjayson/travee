@@ -5,8 +5,6 @@ import {
   ScrollView,
   Modal,
   StatusBar,
-  KeyboardAvoidingView,
-  Platform,
   TextInput as RNTextInput,
   ActivityIndicator,
   Alert,
@@ -215,11 +213,11 @@ const EditActivity = ({
       }) => {
 
         return (
-          <View className="flex-1 bg-white rounded-t-[20px] overflow-hidden">
+          <View className="flex-1 bg-gray-100 overflow-hidden">
             <StatusBar barStyle={"dark-content"} />
 
             <ScrollView
-              className="flex-1 p-[15px] bg-gray-50"
+              className="flex-1 p-[15px] bg-gray-100"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 100 }}
               keyboardShouldPersistTaps="handled"
@@ -309,7 +307,6 @@ const EditActivity = ({
                   </TouchableOpacity>
                   )}
                 </View>
-
                 <View className="mb-5">
                   <View className="flex-row items-center justify-between">
                      <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Date & Time</Text>
@@ -361,7 +358,6 @@ const EditActivity = ({
                     )}
                   </View>
                 </View>
-
                 <View className="mb-5">
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Activity Type</Text>
                   <TouchableOpacity 
@@ -369,7 +365,7 @@ const EditActivity = ({
                     className="border rounded-2xl h-[64px] border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
                   >
                     {values.type != null && values.type !== ActivityType.none ? (
-                      <ActivityIcon type={values.type as number} size={32} color="#183B7A" />
+                      <ActivityIcon type={values.type as number} size={24} color="#183B7A" />
                     ) : (
                       <Icon name="style" size={32} color={"#B3B3B3"} />
                     )}
@@ -382,18 +378,89 @@ const EditActivity = ({
                 </View>
 
                 {/* ─── Checklist Items for this Activity ──────────────────── */}
+                {activityId && (
                 <View className="mb-5">
                   <View className="flex-row items-center gap-2 mb-2">
-                    <Icon name="playlist-add-check" size={18} color="#0C4C8A" />
                     <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase flex-1">
-                      Checklist Items
+                       Checklist
                     </Text>
-                    {activityId && (
-                      <Text className="text-xs text-gray-400">
+
+                   
+                      <Text className="text-xs text-gray-600">
                         {activityChecklistItems.filter(i => i.isDone).length}/{activityChecklistItems.length} done
                       </Text>
-                    )}
+                
                   </View>
+
+                  {/* Add new item card — only shown for existing activities */}
+                  {activityId ? (
+                    <View className="bg-white border border-dashed border-[#0C4C8A]/40 rounded-[16px] p-4 mb-5">
+                         <TextInput
+                          mode="outlined"
+                          className="!h-[64px]"
+                          placeholder="e.g. Prepare documents..."
+                          onChangeText={setNewCheckTitle}
+                          onSubmitEditing={handleAddChecklistItem}
+                          value={newCheckTitle}
+                          returnKeyType="done"
+                          outlineColor="#E0E0E0"
+                          activeOutlineColor="#0C4C8A"
+                          theme={{ colors: { onSurfaceVariant: '#888' } }}
+                          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                          style={{ marginTop: 6 }}
+                          contentStyle={{ backgroundColor: "transparent" }}
+                        />
+
+                      {showCheckDescription ? (
+                        <TextInput
+                          mode="outlined"
+                          multiline
+                          numberOfLines={2}
+                          value={newCheckDescription}
+                          placeholder="Optional description..."
+                          onChangeText={setNewCheckDescription}
+                          onSubmitEditing={handleAddChecklistItem}
+                          returnKeyType="done"
+                          outlineColor="#E0E0E0"
+                          activeOutlineColor="#0C4C8A"
+                          theme={{ colors: { onSurfaceVariant: '#888' } }}
+                          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                          style={{ marginTop: 6, marginBottom: 12, height: 90 }}
+                          textAlignVertical="top"
+                          contentStyle={{ backgroundColor: "transparent" }}
+                        />
+                      ) : (
+                        <TouchableOpacity
+                          accessibilityRole="button"
+                          onPress={() => setShowCheckDescription(true)}
+                          className="mb-4 mt-3"
+                        >
+                          <Text className="text-xs text-[#0C4C8A] font-medium">+ Add description</Text>
+                        </TouchableOpacity>
+                      )}
+                      <TouchableOpacity
+                        accessibilityRole="button"
+                        onPress={handleAddChecklistItem}
+                        disabled={!newCheckTitle.trim() || saveChecklistItem.isPending}
+                        className={`flex-row items-center justify-center gap-2 py-2.5 rounded-[12px] bg-gray-200 `}
+                      >
+                        {saveChecklistItem.isPending ? (
+                          <ActivityIndicator size="small" color="#FFF" />
+                        ) : (
+                          <>
+                            <Icon name="add" size={18} color={"#AAA"} />
+                            <Text className={`text-sm font-semibold text-gray-400`}>Add Item</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View className="bg-gray-50 border border-dashed border-gray-200 rounded-[16px] p-4 items-center">
+                      <Text className="text-xs text-gray-400 text-center">
+                        Save the activity first to add checklist items.
+                      </Text>
+                    </View>
+                  )}
 
                   {/* Existing items */}
                   {activityChecklistItems.length > 0 && (
@@ -433,65 +500,13 @@ const EditActivity = ({
                     </View>
                   )}
 
-                  {/* Add new item card — only shown for existing activities */}
-                  {activityId ? (
-                    <View className="bg-white border border-dashed border-[#0C4C8A]/40 rounded-[16px] p-4">
-                      <RNTextInput
-                        className="border border-[#E0E0E0] rounded-[12px] px-4 py-3 text-base text-gray-800 bg-gray-50 mb-2"
-                        placeholder="New checklist item..."
-                        value={newCheckTitle}
-                        onChangeText={setNewCheckTitle}
-                        onSubmitEditing={handleAddChecklistItem}
-                        returnKeyType="done"
-                      />
-                      {showCheckDescription ? (
-                        <RNTextInput
-                          className="border border-[#E0E0E0] rounded-[12px] px-4 py-2 text-sm text-gray-700 bg-gray-50 mb-3"
-                          placeholder="Optional description..."
-                          value={newCheckDescription}
-                          onChangeText={setNewCheckDescription}
-                          multiline
-                        />
-                      ) : (
-                        <TouchableOpacity
-                          accessibilityRole="button"
-                          onPress={() => setShowCheckDescription(true)}
-                          className="mb-3"
-                        >
-                          <Text className="text-xs text-[#0C4C8A] font-medium">+ Add description</Text>
-                        </TouchableOpacity>
-                      )}
-                      <TouchableOpacity
-                        accessibilityRole="button"
-                        onPress={handleAddChecklistItem}
-                        disabled={!newCheckTitle.trim() || saveChecklistItem.isPending}
-                        className={`flex-row items-center justify-center gap-2 py-2.5 rounded-[12px] ${
-                          newCheckTitle.trim() ? "bg-[#0C4C8A]" : "bg-gray-200"
-                        }`}
-                      >
-                        {saveChecklistItem.isPending ? (
-                          <ActivityIndicator size="small" color="#FFF" />
-                        ) : (
-                          <>
-                            <Icon name="add" size={18} color={newCheckTitle.trim() ? "#FFF" : "#AAA"} />
-                            <Text className={`text-sm font-semibold ${
-                              newCheckTitle.trim() ? "text-white" : "text-gray-400"
-                            }`}>Add Item</Text>
-                          </>
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <View className="bg-gray-50 border border-dashed border-gray-200 rounded-[16px] p-4 items-center">
-                      <Text className="text-xs text-gray-400 text-center">
-                        Save the activity first to add checklist items.
-                      </Text>
-                    </View>
-                  )}
+             
                 </View>
+                )}
+
 
                 {itineraryActivity?.id && (
-                  <View className="mt-5 pt-5 border-t border-[#E0E0E0]">
+                  <View className="">
                     <TouchableOpacity 
                       className="flex-row items-center gap-2.5 justify-center py-2"
                       onPress={() => handleDeleteActivity(itineraryActivity?.id || "")}
@@ -506,7 +521,7 @@ const EditActivity = ({
                 )}
             </ScrollView>
 
-             <View className="px-5 py-4 border-t border-gray-200">
+            <View className="mb-8 mx-4 bg-transparent">
                <TouchButton
                  buttonText={itineraryActivity?.id ? "Update Activity" : "Add Activity"}
                  onPress={() => handleSubmit()}

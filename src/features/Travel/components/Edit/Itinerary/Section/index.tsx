@@ -81,10 +81,10 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
   });
 
   return (
-    <View className="flex-1 justify-end bg-white rounded-t-[20px]">
+    <View className="flex-1 justify-end bg-gray-100 rounded-t-[20px]">
              <StatusBar barStyle={"dark-content"} />
 
-             <ScrollView className="flex-1 p-[15px] bg-gray-50 pb-[100px]" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+             <ScrollView className="flex-1 p-[15px] bg-gray-100 pb-[100px]" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
                 <View className="mb-5">
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
                   <TextInput
