@@ -36,13 +36,14 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
   const renderTabButton = (tab: TabItem) => {
     const isActive = tab.id === activeTabId;
 
-    return (
+  return (
       <TouchableOpacity
         key={tab.id}
-        className={`items-center justify-center 
+        className={`items-center justify-center
         ${isActive && (type === "primary" || type === "secondary") ? 'text-brand border-b-2 border-brand-primary' : ''}
         ${type === "normal" ? "!font-sm border border-[#E0E0E0] rounded-xl py-1.5 px-5 mr-4" : "py-3 px-4 "}
-        ${type === "secondary" && isActive ? '!border-brand-primary' : ''}`}
+        ${type === "secondary" && isActive ? '!border-brand-primary' : ''}
+        ${type === "secondary" ? 'm-0 p-0' : ''}`}
         onPress={() => {
           setActiveTabId(tab.id);
           if (onTabChange) onTabChange(tab.id);
@@ -61,14 +62,15 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
     <View className="">
       {/* Tab Header */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className={`bg-white border-b border-[#eee]  
-         ${type === "primary" ? "" : "p-4"}`}>
+         ${type === "primary" ? "" : ""}
+         ${type === "normal" ? "p-4" : ""}`}>
         <View className="flex-row mx-1 ">
           {tabs.map(renderTabButton)}
         </View>
       </ScrollView>
 
       {/* Tab Content with swipe */}
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100}}>
         {activeTab ? (
           activeTab.content
         ) : (

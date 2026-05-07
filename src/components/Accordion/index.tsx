@@ -50,7 +50,7 @@ const Accordion: FC<AccordionProps> = ({
   headerStyle,
   titleStyle,
   contentContainerStyle,
-  iconColor = "#333",
+  iconColor = "#89939E",
   iconSize = 24,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
@@ -87,7 +87,7 @@ const Accordion: FC<AccordionProps> = ({
     <View style={containerStyle} className="bg-white my-1.5 rounded-[20px] overflow-hidden border border-[#e0e0e0]">
       <TouchableOpacity
         onPress={toggleFullscreenAccordion}
-        className="absolute right-[45px] top-4 z-10"
+        className="absolute right-[45px] top-5 z-10"
       >
         <Animated.View>
           <Icon name="fullscreen" size={iconSize} color={iconColor} />
@@ -105,7 +105,7 @@ const Accordion: FC<AccordionProps> = ({
           numberOfLines={expanded ? 10 : 1}
         >{title}</Text>
 
-        <Animated.View style={{ transform: [{ rotate: arrowAngle }] }} className="absolute right-3 top-4 " >
+        <Animated.View style={{ transform: [{ rotate: arrowAngle }] }} className={`absolute right-3 top-5 `} >
           <Icon name="keyboard-arrow-down" size={iconSize} color={iconColor} />
         </Animated.View>
       </TouchableOpacity>

@@ -4,7 +4,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import SlideModal from "../../../../components/molecules/SlideModal";
 import { TravelMenuAction, TravelStatus } from "../../../../types/enums";
 import { Divider, Text } from 'react-native-paper';
-import { Travel } from "../../Travel/types/TravelDto";
+import { Travel } from "../../../Travel/types/TravelDto";
 
 interface TravelMenuNavigationProps {
   showModal: boolean;
@@ -31,7 +31,7 @@ const TravelMenuNavigation = ({
       height={326}
     >
       <View className="flex-1 pt-lg">
-        <View className="gap-lg">
+        <View className="gap-sm">
           <TouchableOpacity
             className={`flex-row items-center justify-between px-4 py-3 ${isArchived ? 'opacity-50' : ''}`}
             activeOpacity={0.7}
@@ -47,9 +47,9 @@ const TravelMenuNavigation = ({
             <Text className="flex-1 ml-3 text-lg font-bold">Edit Trip</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className={`flex-row items-center justify-between px-4 py-3 ${isArchived ? 'opacity-50' : ''}`}
+            className={`flex-row items-center justify-between px-4 py-3 opacity-50 ${isArchived ? 'opacity-50' : ''}`}
             activeOpacity={0.7}
-            disabled={isArchived}
+            disabled={true}
             onPress={() => {
               onSelect(TravelMenuAction.Clone);
               setShowModal(false);

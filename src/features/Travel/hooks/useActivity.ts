@@ -99,72 +99,73 @@ export const useUpdateActivityMutation = () => {
         });
       }
       
-      // Keep manual update logic for performance, but invalidate is the source of truth
+      // Keep manual update logic for performance, but invalidate is the source of truth 
       // TODO: might separate POST and PUT for clarity
-      queryClient.setQueryData(
-        ["selectedTravelPlan"],
-        (oldData: TravelPlan | undefined) => {
-          if (!oldData) return undefined;
-          const sections = oldData.itinerarySection || [];
+      //commented for now but will add on online mode
+      // queryClient.setQueryData(
+      //   ["selectedTravelPlan"],
+      //   (oldData: TravelPlan | undefined) => {
+      //     if (!oldData) return undefined;
+      //     const sections = oldData.itinerarySection || [];
 
-          const sectionIndex = sections.findIndex(
-            (s) => s.id === variables.sectionId,
-          );
+      //     const sectionIndex = sections.findIndex(
+      //       (s) => s.id === variables.sectionId,
+      //     );
 
-          let newSections: typeof oldData.itinerarySection;
+      //     let newSections: typeof oldData.itinerarySection;
 
-          if (sectionIndex > -1) {
-            newSections = sections.map((s, index) => {
-              // Update target section
-              if (index === sectionIndex) {
-                let newActivities: typeof s.itineraryActivity;
-                const activities = s.itineraryActivity || [];
-                const activityIndex = activities.findIndex(
-                  (activity) => activity.id === variables.id,
-                );
+      //     if (sectionIndex > -1) {
+      //       newSections = sections.map((s, index) => {
+      //         // Update target section
+      //         if (index === sectionIndex) {
+      //           let newActivities: typeof s.itineraryActivity;
+      //           const activities = s.itineraryActivity || [];
+      //           const activityIndex = activities.findIndex(
+      //             (activity) => activity.id === variables.id,
+      //           );
 
-                if (activityIndex > -1) {
-                  newActivities = activities.map((activity, idx) => {
-                    if (idx === activityIndex) {
-                      return {
-                        ...activity,
-                        ...variables,
-                      };
-                    }
-                    return activity;
-                  });
-                } else {
-                  const activityId = data.data?.id || variables.id;
-                  const addedActivity = {
-                    ...variables,
-                    id: activityId,
-                  };
-                  newActivities = [...activities, addedActivity];
-                }
+      //           if (activityIndex > -1) {
+      //             newActivities = activities.map((activity, idx) => {
+      //               if (idx === activityIndex) {
+      //                 return {
+      //                   ...activity,
+      //                   ...variables,
+      //                 };
+      //               }
+      //               return activity;
+      //             });
+      //           } else {
+      //             const activityId = data.data?.id || variables.id;
+      //             const addedActivity = {
+      //               ...variables,
+      //               id: activityId,
+      //             };
+      //             newActivities = [...activities, addedActivity];
+      //           }
 
-                return {
-                  ...s,
-                  itineraryActivity: newActivities,
-                };
-              }
+      //           return {
+      //             ...s,
+      //             itineraryActivity: newActivities,
+      //           };
+      //         }
 
-              // Remove from source section (if moved cross-section)
-              if (s.itineraryActivity?.some((a) => a.id === variables.id)) {
-                return {
-                  ...s,
-                  itineraryActivity: s.itineraryActivity.filter((a) => a.id !== variables.id),
-                };
-              }
+      //         // Remove from source section (if moved cross-section)
+      //         if (s.itineraryActivity?.some((a) => a.id === variables.id)) {
+      //           return {
+      //             ...s,
+      //             itineraryActivity: s.itineraryActivity.filter((a) => a.id !== variables.id),
+      //           };
+      //         }
 
-              return s;
-            });
-          }
-          return {
-            ...oldData,
-            itinerarySection: newSections,
-          };
-        },
-      );
+      //         return s;
+      //       });
+      //     }
+      //     return {
+      //       ...oldData,
+      //       itinerarySection: newSections,
+      //     };
+      //   },
+      // );
     },
     // 6. Keep error handling concise
     onError: (error) => {

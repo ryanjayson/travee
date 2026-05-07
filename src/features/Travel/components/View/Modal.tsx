@@ -153,7 +153,7 @@ const ViewTripModal = ({
     <Modal
       visible={showModal}
       transparent={true}
-      animationType="slide"
+      animationType="none"
       onRequestClose={handleCancel}
     >
       <View className="flex-1 bg-white justify-end pt-10">
@@ -164,7 +164,7 @@ const ViewTripModal = ({
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name="close" size={32} color={"#000"} />
+            <Icon name="close" size={32} color={"#89939E"} />
           </TouchableOpacity>
           <Text className="text-xl font-medium">
             {travelPlan && <Text>{selectedTravelPlan?.title}</Text>}
@@ -175,7 +175,7 @@ const ViewTripModal = ({
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name="more-vert" size={24} color={"#000"} />
+             <Icon name="more-horiz" size={28} color={"#89939E"} />
           </TouchableOpacity>
         </View>
         <View className="bg-white flex-1">
@@ -183,8 +183,6 @@ const ViewTripModal = ({
             <ViewTravel travelPlan={travelPlan} onClose={handleCancel} />
           )}
         </View>
-
-        
       </View>
 
       <TravelMenuNavigation

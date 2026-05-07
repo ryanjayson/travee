@@ -186,14 +186,10 @@ const EditTravelPlan = () => {
   // };
 
   const tabData = [
-      {
+    {
       id: "detail",
       title: "Details",
-      content: <>
-      <CreateOrEdit tripData={travelPlan!.travel} mode="edit" onClose={() => {}} />
-
-      
-      </> ,
+      content: (<CreateOrEdit tripData={travelPlan!.travel} mode="edit" onClose={() => {}} />)
     },
     {
       id: "itinerary",
@@ -217,30 +213,30 @@ const EditTravelPlan = () => {
         />
       ),
     },
-    {
-      id: "participant",
-      title: "Participants",
-      content: (
-        <TripMembers
-          tripMembers={tripMembers}
-          onAddMember={handleOpenAddMemberModal}
-        />
-      ),
-    },
-    {
-      id: "setting",
-      title: "Settings",
-      content: (
-        <TripSettings />
-      ),
-    },
+    // {
+    //   id: "participant",
+    //   title: "Participants",
+    //   content: (
+    //     <TripMembers
+    //       tripMembers={tripMembers}
+    //       onAddMember={handleOpenAddMemberModal}
+    //     />
+    //   ),
+    // },
+    // {
+    //   id: "setting",
+    //   title: "Settings",
+    //   content: (
+    //     <TripSettings />
+    //   ),
+    // },
   ];
 
   if (isLoading) {
     return (
       <View>
         <ActivityIndicator size="large" color="#007AFF" />
-        <Text>Loading travel details...</Text>
+        <Text>Loading trip details...</Text>
       </View>
     );
   }
@@ -248,7 +244,7 @@ const EditTravelPlan = () => {
   if (isError) {
     return (
       <View>
-        <Text>Error loading travel data: {error.message}</Text>
+        <Text>Error loading trip data: {error.message}</Text>
         <TouchButton
           buttonText={isRefetching ? "Retrying..." : "Try Again"}
           onPress={() => refetch()}
@@ -278,6 +274,7 @@ const EditTravelPlan = () => {
       <View className="flex-1 bg-gray-100">
         <Tabs 
           tabs={tabData} 
+          type="secondary"
           initialActiveTabId="itinerary" 
           onTabChange={(id) => setActiveTab(id as TabType)} 
         />

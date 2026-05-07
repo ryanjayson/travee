@@ -246,8 +246,6 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         />
       ),
     },
-
- 
   ];
 
   const handleViewModeActivity = (id: number) => {
@@ -257,7 +255,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
 
   return (
     <Portal.Host>
-      <ScrollView className="flex-1 bg-[#F9F9F9]" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
         <HeaderSection /> 
         <View>
           <Tabs tabs={tabData} initialActiveTabId="itinerary" type="secondary"/>

@@ -100,6 +100,7 @@ export const useUpdateSectionMutation = () => {
       });
 
       // Example: Manual update for a specific section within a trip // Optional: Manual update for better UI speed (if you have the full itinerary key)
+      //commented for now but will add on online mode
       // queryClient.setQueryData(
       //   ["travel"],
       //   (oldData: TravelPlan | undefined) => {
@@ -127,47 +128,47 @@ export const useUpdateSectionMutation = () => {
       // //MANUAL INVALIDATION or ADDING/UPDATTING THE QUERY OBJECT CACHE
       const sectionId = data.data?.id || variables.id; // Use server ID, fallback to client ID
 
-      queryClient.setQueryData(
-        SELECTED_TRAVEL_PLAN_QUERY_KEY,
-        (oldData: TravelPlan | undefined) => {
-          if (!oldData) return undefined;
-          const sections = oldData.itinerarySection || [];
+      // queryClient.setQueryData(
+      //   SELECTED_TRAVEL_PLAN_QUERY_KEY,
+      //   (oldData: TravelPlan | undefined) => {
+      //     if (!oldData) return undefined;
+      //     const sections = oldData.itinerarySection || [];
 
-          const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+      //     const sectionIndex = sections.findIndex((s) => s.id === sectionId);
 
-          let newSections: typeof oldData.itinerarySection;
+      //     let newSections: typeof oldData.itinerarySection;
 
-          if (sectionIndex > -1) {
-            newSections = sections.map((s, index) => {
-              // Check if the current section is the one we need to update
-              if (index === sectionIndex) {
-                // Correct way: Return a brand new object that merges the old properties (s)
-                // with the new properties (from variables).
-                return {
-                  ...s,
-                  ...variables,
-                };
-              }
-              // If it's not the target section, return the original object unchanged
-              return s;
-            });
-          } else {
-            const addedSection = {
-              ...variables, // 1. Spread all properties from the input variables
-              id: sectionId, // 2. Explicitly add the new 'id' property, sourced from the API response
-              isDefaultSection: false,
-              itineraryActivity: [],
-            };
+      //     if (sectionIndex > -1) {
+      //       newSections = sections.map((s, index) => {
+      //         // Check if the current section is the one we need to update
+      //         if (index === sectionIndex) {
+      //           // Correct way: Return a brand new object that merges the old properties (s)
+      //           // with the new properties (from variables).
+      //           return {
+      //             ...s,
+      //             ...variables,
+      //           };
+      //         }
+      //         // If it's not the target section, return the original object unchanged
+      //         return s;
+      //       });
+      //     } else {
+      //       const addedSection = {
+      //         ...variables, // 1. Spread all properties from the input variables
+      //         id: sectionId, // 2. Explicitly add the new 'id' property, sourced from the API response
+      //         isDefaultSection: false,
+      //         itineraryActivity: [],
+      //       };
 
-            newSections = [...sections, addedSection];
-          }
+      //       newSections = [...sections, addedSection];
+      //     }
 
-          return {
-            ...oldData,
-            itinerarySection: newSections,
-          };
-        },
-      );
+      //     return {
+      //       ...oldData,
+      //       itinerarySection: newSections,
+      //     };
+      //   },
+      // );
     },
 
     // 6. Keep error handling concise

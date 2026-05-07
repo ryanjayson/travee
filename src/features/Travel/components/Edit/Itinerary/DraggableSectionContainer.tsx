@@ -71,8 +71,9 @@ const DraggableSectionContainer = ({
     transform: pan.getTranslateTransform(),
     zIndex: isActive ? 9999 : 1,
     elevation: isActive ? 10 : 0,
-    opacity: isActive ? 0.95 : 1,
+    opacity: isActive ? 0.6 : 1,
     backgroundColor: isActive ? "#F8F9FA" : "transparent",
+    flex: 1,
   };
 
   return (

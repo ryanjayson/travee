@@ -7,9 +7,6 @@ import {
   Modal,
   StatusBar,
   Alert,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";

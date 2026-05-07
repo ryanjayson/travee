@@ -85,9 +85,6 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   const [editingActivitySectionId, setEditingActivitySectionId] = useState<
     string | null
   >(null);
-  const [expandedSectionIds, setExpandedSectionIds] = useState<Set<string>>(
-    new Set(),
-  );
   const [hoverState, setHoverState] = useState<{ sectionId: string | null, index: number } | null>(null);
 
   const [masterDragState, setMasterDragState] = useState<{ isDragging: boolean, dragIndex: number | null }>({ isDragging: false, dragIndex: null });
@@ -123,23 +120,43 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   } = useUpdateSectionSortOrderMutation();
 
   useEffect(() => {
-    setSections(
-      travelSections?.map((section) => ({
-        id: section.id,
-        title: section.title,
-        description: section.description,
-        sortOrder: section.sortOrder,
-        isDefaultSection: section.isDefaultSection,
-        itineraryActivity: (section.itineraryActivity ?? []).map(
-          (activity) => ({
-            ...activity,
-          }),
-        ),
-        isCollapsed: expandedSectionIds.has(section.id || "")
-          ? true
-          : section.isCollapsed,
-      })) ?? [],
-    );
+    setSections((prevSections) => {
+      if (!travelSections) return [];
+
+      // If prevSections is empty, initialize with travelSections and default isCollapsed to false
+      if (prevSections.length === 0) {
+        return travelSections.map((section) => ({
+          ...section,
+          isCollapsed: false, // Default to expanded
+        }));
+      }
+
+      // Preserve local drag order and local isCollapsed state
+      const newSections: typeof prevSections = [];
+      const travelSectionsMap = new Map(travelSections.map((s) => [s.id, s]));
+
+      // 1. Update existing sections in their current local order
+      for (const prevSection of prevSections) {
+        const apiSection = travelSectionsMap.get(prevSection.id);
+        if (apiSection) {
+          newSections.push({
+            ...apiSection, // Use fresh API data (activities, title, etc)
+            isCollapsed: prevSection.isCollapsed ?? false, // Preserve local collapse state
+          });
+          travelSectionsMap.delete(prevSection.id); // Mark as processed
+        }
+      }
+
+      // 2. Append any NEW sections from the API that weren't in local state
+      for (const [id, apiSection] of travelSectionsMap.entries()) {
+        newSections.push({
+          ...apiSection,
+          isCollapsed: false, // Default new sections to expanded
+        });
+      }
+
+      return newSections;
+    });
   }, [travelSections]);
 
   useEffect(() => {
@@ -203,24 +220,13 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   // };
 
   const toggleSectionCollapse = (sectionId: string) => {
-    setSections(
-      sections &&
-        sections.map((section) =>
-          section.id === sectionId
-            ? { ...section, isCollapsed: !section.isCollapsed }
-            : section,
-        ),
+    setSections((prevSections) =>
+      prevSections.map((section) =>
+        section.id === sectionId
+          ? { ...section, isCollapsed: !section.isCollapsed }
+          : section
+      )
     );
-
-    setExpandedSectionIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(sectionId)) {
-        newSet.delete(sectionId);
-      } else {
-        newSet.add(sectionId);
-      }
-      return newSet;
-    });
   };
 
   const handleActivityPress = (activity: ItineraryActivity) => {
@@ -555,10 +561,9 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
             }}
           >
             {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
-              <TouchableOpacity
+              <View
                 key={activity.id}
-                onPress={() => handleSectionActivityPress(activity, section.id || "")}
-                activeOpacity={1}
+         
                 style={{
                   zIndex:
                     sectionDragState?.dragIndex === index &&
@@ -581,9 +586,12 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                   )}
 
                 <DraggableActivityItem
+                  onPress={() => handleSectionActivityPress(activity, section.id || "")}
                   title={activity.title}
                   description={""}
                   location={""}
+                  startDate={activity.startDate?.toString() || null}
+                  endDate={activity.endDate?.toString() || null}
                   index={index}
                   listLength={section.itineraryActivity?.length || 0}
                   onDragMove={(currentIndex, dy, moveY) =>
@@ -628,7 +636,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                   (sectionDragState?.dragIndex ?? -1) < index && (
                     <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
                   )}
-              </TouchableOpacity>
+              </View>
             )) : (
               <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
                  <Text style={{ color: "#aaa" }}>Drop activities here</Text>
@@ -690,10 +698,10 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                       <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center mb-[15px]" />
                     )}
 
-                    <View className="absolute top-[10px] left-[6px]" {...panHandlers}>
+                    <View className="absolute top-[10px] left-[10px]" {...panHandlers}>
                       <Icon name="drag-handle" size={24} color={isSectionActive ? "#183B7A" : "#DDD"} />
                     </View>
-                <View className="mx-[18px]">
+                <View className="mx-[30px]">
                   <TouchableOpacity
                     className="px-2 flex-1 flex-row"
                     onPress={() => toggleSectionCollapse(section.id || "")}
@@ -774,15 +782,8 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                         }}
                       >
                         {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
-                          <TouchableOpacity
+                          <View
                             key={activity.id}
-                            onPress={() =>
-                              handleSectionActivityPress(
-                                activity,
-                                section.id || "",
-                              )
-                            }
-                            activeOpacity={0.7}
                             style={{
                               zIndex:
                                 sectionDragState?.sectionId === section.id &&
@@ -805,10 +806,13 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                               )}
 
                             <DraggableActivityItem
+                              onPress={() => handleSectionActivityPress(activity, section.id || "")}
                               id={activity.id}
                               title={activity.title}
                               description={activity.description}
                               location={""}
+                              startDate={activity.startDate?.toString() || null}
+                              endDate={activity.endDate?.toString() || null}
                               index={index}
                               listLength={section.itineraryActivity.length}
                               onDragMove={(currentIndex, dy, moveY) =>
@@ -853,7 +857,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                               (sectionDragState?.dragIndex ?? -1) < index && (
                                 <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
                               )}
-                          </TouchableOpacity>
+                          </View>
                         )) : (
                           // Render invisible or subtle drop zone for empty sections
                           <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
