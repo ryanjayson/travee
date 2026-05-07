@@ -114,7 +114,8 @@ export const useTravelPlan = (travelId: string) => {
       }
       
       try {
-        return await fetchTravelPlan(travelId);
+        // NOTE: This will not work as right now it will support offline first
+        // return await fetchTravelPlan(travelId);
       } catch (err) {
         console.warn("API fetch failed for travel plan, falling back to local database", err);
         return await getTravelPlanLocally(travelId);

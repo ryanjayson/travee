@@ -9,6 +9,7 @@ import {
   Dimensions,
   RefreshControl,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import SectionModal from "./Section/Modal";
 import SectionMenu from "./Section/Menu";
@@ -414,7 +415,21 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
 
   const handleSectionMenuDelete = (sectionId: string) => {
     if (sectionId) {
-      deleteSectionMutation({ sectionId });
+      Alert.alert(
+        "Delete Section",
+        "Are you sure you want to delete this section? All associated activities will also be permanently deleted. This action is irreversible.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => {
+              deleteSectionMutation({ sectionId });
+              setSectionMenuVisible(false);
+            },
+          },
+        ]
+      );
     }
   };
 

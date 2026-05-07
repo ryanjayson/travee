@@ -5,7 +5,7 @@ import { postRequestOptions } from "../../../utils/apiUtils";
 import { Travel } from "../../../dtos/TravelDto";
 import { TravelPlan } from "../types/TravelDto";
 import { ApiResponse } from "../../../types/api";
-import { saveSectionLocally } from "../../../services/local/travelService";
+import { saveSectionLocally, deleteSectionLocally } from "../../../services/local/travelService";
 
 // 1. Define the API endpoint constant for clarity and reuse
 const ACTIVITY_SECTIONS_ENDPOINT = `${API_BASE_URL}/itinerarySection`;
@@ -187,6 +187,18 @@ export const useDeleteSectionMutation = () => {
   return useMutation({
     // --- A. Define the Mutation Function ---
     mutationFn: async (variables: DeleteVariables): Promise<void> => {
+      // Offline-first check
+      const hasStringId = variables.sectionId && isNaN(Number(variables.sectionId));
+      if (hasStringId) {
+        try {
+          await deleteSectionLocally(variables.sectionId);
+          return;
+        } catch (err) {
+          console.error("Local Delete Error (Section):", err);
+          throw new Error("Failed to delete section locally.");
+        }
+      }
+
       // Returns void because DELETE often returns 204 No Content
       const options = postRequestOptions(""); // Assume this provides headers/auth
 
@@ -224,23 +236,7 @@ export const useDeleteSectionMutation = () => {
     ) => {
       // Use the sectionId from 'variables' to remove the item from the cache
 
-      queryClient.setQueryData<TravelPlan | undefined>(
-        SELECTED_TRAVEL_PLAN_QUERY_KEY,
-        (oldData) => {
-          if (!oldData) return oldData;
-
-          // Filter out the deleted section by ID
-          const newSections = oldData.itinerarySection?.filter(
-            (s) => s.id !== variables.sectionId,
-          );
-
-          // Return the new TravelPlan object
-          return {
-            ...oldData,
-            itinerarySection: newSections,
-          };
-        },
-      );
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
 
       console.log(`Successfully deleted section ID: ${variables.sectionId}`);
 

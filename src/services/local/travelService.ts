@@ -44,12 +44,13 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
     };
 
     const sections = await database.get<Section>("itinerary_sections").query(
-      Q.where("travel_id", id.toString())
+      Q.where("travel_id", id.toString()),
+      Q.sortBy("is_default_section", Q.desc)
     ).fetch();
 
     const itinerarySection = await Promise.all(sections.map(async (s) => {
       const activities = await database.get<Activity>("itinerary_activities").query(
-        Q.where("section_id", s.id)
+        Q.where("section_id", s.id),
       ).fetch();
 
       const itineraryActivity = await Promise.all(activities.map(async (a) => {
@@ -325,7 +326,7 @@ export const getAllActivitiesWithDestinationLocally = async (): Promise<any[]> =
   }));
 };
 
-/** Permanently deletes a locally-stored travel and all its sections/activities. */
+/** Permanently deletes a locally-stored travel and all its sections/activities/expenses/notes/checklists. */
 export const deleteTravelLocally = async (id: string): Promise<void> => {
   await database.write(async () => {
     const travel = await database.get<Travel>("travels").find(id);
@@ -340,12 +341,64 @@ export const deleteTravelLocally = async (id: string): Promise<void> => {
         Q.where("section_id", section.id)
       ).fetch();
       for (const activity of activities) {
+        // Delete expenses, notes, checklists for this activity
+        const expenses = await database.get<any>("itinerary_expenses").query(Q.where("activity_id", activity.id)).fetch();
+        for (const exp of expenses) await exp.destroyPermanently();
+        
+        const notes = await database.get<any>("itinerary_notes").query(Q.where("activity_id", activity.id)).fetch();
+        for (const note of notes) await note.destroyPermanently();
+        
+        const checklists = await database.get<any>("checklist_items").query(Q.where("activity_id", activity.id)).fetch();
+        for (const cl of checklists) await cl.destroyPermanently();
+
         await activity.destroyPermanently();
       }
       await section.destroyPermanently();
     }
 
     await travel.destroyPermanently();
+  });
+};
+
+/** Permanently deletes a locally-stored section and all its activities. */
+export const deleteSectionLocally = async (id: string): Promise<void> => {
+  await database.write(async () => {
+    const section = await database.get<Section>("itinerary_sections").find(id);
+    
+    const activities = await database.get<Activity>("itinerary_activities").query(
+      Q.where("section_id", section.id)
+    ).fetch();
+    for (const activity of activities) {
+      const expenses = await database.get<any>("itinerary_expenses").query(Q.where("activity_id", activity.id)).fetch();
+      for (const exp of expenses) await exp.destroyPermanently();
+      
+      const notes = await database.get<any>("itinerary_notes").query(Q.where("activity_id", activity.id)).fetch();
+      for (const note of notes) await note.destroyPermanently();
+      
+      const checklists = await database.get<any>("checklist_items").query(Q.where("activity_id", activity.id)).fetch();
+      for (const cl of checklists) await cl.destroyPermanently();
+
+      await activity.destroyPermanently();
+    }
+    await section.destroyPermanently();
+  });
+};
+
+/** Permanently deletes a locally-stored activity. */
+export const deleteActivityLocally = async (id: string): Promise<void> => {
+  await database.write(async () => {
+    const activity = await database.get<Activity>("itinerary_activities").find(id);
+    
+    const expenses = await database.get<any>("itinerary_expenses").query(Q.where("activity_id", activity.id)).fetch();
+    for (const exp of expenses) await exp.destroyPermanently();
+    
+    const notes = await database.get<any>("itinerary_notes").query(Q.where("activity_id", activity.id)).fetch();
+    for (const note of notes) await note.destroyPermanently();
+    
+    const checklists = await database.get<any>("checklist_items").query(Q.where("activity_id", activity.id)).fetch();
+    for (const cl of checklists) await cl.destroyPermanently();
+
+    await activity.destroyPermanently();
   });
 };
 

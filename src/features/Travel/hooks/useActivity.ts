@@ -8,7 +8,7 @@ import {
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { fetchItineraryActivity } from "../../../services/api/itinerary";
 import { ApiResponse } from "../../../types/api";
-import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity, getAllActivitiesWithDestinationLocally } from "../../../services/local/travelService";
+import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity, getAllActivitiesWithDestinationLocally, deleteActivityLocally } from "../../../services/local/travelService";
 import { UpdateSortVariables } from "../types/ActivityDto";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
@@ -182,6 +182,17 @@ export const useDeleteActivityMutation = () => {
 
   return useMutation({
     mutationFn: async (variables: DeleteVariables): Promise<void> => {
+      const hasStringId = variables.activityId && isNaN(Number(variables.activityId));
+      if (hasStringId) {
+        try {
+          await deleteActivityLocally(variables.activityId);
+          return;
+        } catch (err) {
+          console.error("Local Delete Error (Activity):", err);
+          throw new Error("Failed to delete activity locally.");
+        }
+      }
+
       const options = postRequestOptions("");
 
       const response = await fetch(
@@ -211,49 +222,7 @@ export const useDeleteActivityMutation = () => {
       return;
     },
     onSuccess: (data: void, variables: DeleteVariables) => {
-      queryClient.setQueryData(
-        ["selectedTravelPlan"],
-        (oldData: TravelPlan | undefined) => {
-          if (!oldData) return undefined;
-          const sections = oldData.itinerarySection || [];
-
-          const sectionIndex = sections.findIndex(
-            (s) => s.id === variables.sectionId,
-          );
-
-          let newSections: typeof oldData.itinerarySection;
-
-          if (sectionIndex > -1) {
-            newSections = sections.map((s, index) => {
-              if (index === sectionIndex) {
-                let newActivities: typeof s.itineraryActivity;
-
-                const activities = s.itineraryActivity || [];
-
-                // const activityIndex = activities.findIndex(
-                //   (activity) => activity.id === variables.activityId
-                // );
-
-                // if (activityIndex > -1) {
-                // }
-                newActivities = activities.filter(
-                  (activity) => activity.id != variables.activityId,
-                );
-
-                return {
-                  ...s,
-                  itineraryActivity: newActivities,
-                };
-              }
-              return s;
-            });
-          }
-          return {
-            ...oldData,
-            itinerarySection: newSections,
-          };
-        },
-      );
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
     },
 
     // --- C. Cleanup (Runs after success or failure) ---

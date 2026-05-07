@@ -52,13 +52,24 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
 
   const handleDeleteSection = () => {
     if (itinerarySection?.travelId && itinerarySection?.id) {
-      deleteSectionMutation({
-        travelId: itinerarySection.travelId,
-        sectionId: itinerarySection.id,
-      });
-      if (!isDeleting) {
-        onClose();
-      }
+      Alert.alert(
+        "Delete Section",
+        "Are you sure you want to delete this section? All associated activities will also be permanently deleted. This action is irreversible.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => {
+              deleteSectionMutation({
+                travelId: itinerarySection.travelId!,
+                sectionId: itinerarySection.id!,
+              });
+              onClose();
+            },
+          },
+        ]
+      );
     }
   };
 

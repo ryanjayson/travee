@@ -172,13 +172,24 @@ const EditActivity = ({
 
   const handleDeleteActivity = (activityId: string) => {
     if (itinerarySectionId && activityId) {
-      deleteActivityMutation({
-        sectionId: itinerarySectionId,
-        activityId: activityId,
-      });
-      if (!isPending) {
-        onClose();
-      }
+      Alert.alert(
+        "Delete Activity",
+        "Are you sure you want to delete this activity? All associated expenses, notes, and checklist items will also be permanently deleted. This action is irreversible.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: () => {
+              deleteActivityMutation({
+                sectionId: itinerarySectionId,
+                activityId: activityId,
+              });
+              onClose();
+            },
+          },
+        ]
+      );
     }
   };
 
