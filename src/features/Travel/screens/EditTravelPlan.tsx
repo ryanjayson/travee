@@ -34,10 +34,10 @@ import {
   TravelProvider,
   useTravelContext,
 } from "../../../context/TravelContext";
-import TripDetail from "../components/Forms/TripDetail";
 import TripChecklist from "../components/Forms/TripChecklist";
 import TripMembers from "../components/Forms/TripMembers";
 import TripSettings from "../components/Forms/TripSettings";
+import CreateOrEdit from "../components/CreateOrEdit";
 
 interface TripDetailPageProps {
   tripData: any;
@@ -189,7 +189,11 @@ const EditTravelPlan = () => {
       {
       id: "detail",
       title: "Details",
-      content: <TripDetail tripData={travelPlan!.travel} />,
+      content: <>
+      <CreateOrEdit tripData={travelPlan!.travel} mode="edit" onClose={() => {}} />
+
+      
+      </> ,
     },
     {
       id: "itinerary",

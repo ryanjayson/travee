@@ -42,7 +42,19 @@ const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
                 return (
                   <Accordion
                     key={section.id}
-                    title={section.title}
+                    title={
+                      section.startDate ? (
+                        <Text>
+                          <Text className="text-[#999] font-bold">
+                            {new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })}
+                          </Text>
+                          {"  "}
+                          {section.title}
+                        </Text>
+                      ) : (
+                        section.title
+                      )
+                    }
                     headerStyle={{ backgroundColor: "#FFF" }}
                   >
                     <View style={{ backgroundColor: "#FFF" }} className="">

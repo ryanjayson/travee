@@ -14,19 +14,21 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
 import { useUpdateTravel, useTravels } from "../../hooks/useTravel";
-import { CreateTravelData, DestinationDto } from "../../types/TravelDto";
+import { CreateTravelData, DestinationDto, Travel } from "../../types/TravelDto";
 import { TravelStatus } from "../../../../types/enums";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { Text, Checkbox } from 'react-native-paper';
 
-interface AddTravelModalProps {
+export interface CreateOrEditProps {
   onClose: () => void;
   onStatusChange?: (status: TravelStatus) => void;
+  tripData?: Travel;
+  mode?: "create" | "edit";
 }
 
-const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
+const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: CreateOrEditProps) => {
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
   const [error, setError] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -59,21 +61,22 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
 
   const formik = useFormik({
     initialValues: {
-      title: "",
-      description: "",
-      destination: "",
-      destinationData: null as DestinationDto | null,
-      startOrDepartureDate: null as Date | null,
-      endOrReturnDate: null as Date | null,
-      budget: "",
-      notes: "",
+      title: tripData?.title || "",
+      description: tripData?.description || "",
+      destination: tripData?.destination || "",
+      destinationData: tripData?.destinationData || null as DestinationDto | null,
+      startOrDepartureDate: tripData?.startOrDepartureDate ? new Date(tripData.startOrDepartureDate) : null as Date | null,
+      endOrReturnDate: tripData?.endOrReturnDate ? new Date(tripData.endOrReturnDate) : null as Date | null,
+      budget: tripData?.budget || "",
+      notes: tripData?.notes || "",
       createSectionsBasedOnDates: false,
     },
+    enableReinitialize: true,
     validationSchema: CreateTripSchema,
     onSubmit: (values) => {
       setError(null);
 
-      const travelData: CreateTravelData = {
+      const payload = {
         title: values.title.trim(),
         description: values.description.trim(),
         destination: values.destination.trim(),
@@ -93,21 +96,31 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
           start.setHours(0, 0, 0, 0);
           return start > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
         })(),
-        isOffline: true,
-        createSectionsBasedOnDates: values.createSectionsBasedOnDates,
       };
-        console.log(travelData);
 
-      createTravel({ data: travelData }, {
-        onSuccess: () => {
-          formik.resetForm();
-          onClose();
-        },
-        onError: (err: any) => {
-          console.error("Failed to save travel:", err);
-          setError("Failed to save travel. Please try again.");
-        },
-      });
+      if (mode === "create") {
+        createTravel({ data: { ...payload, isOffline: true, createSectionsBasedOnDates: values.createSectionsBasedOnDates } as any }, {
+          onSuccess: () => {
+            formik.resetForm();
+            onClose();
+          },
+          onError: (err: any) => {
+            console.error("Failed to save travel:", err);
+            setError("Failed to save travel. Please try again.");
+          },
+        });
+      } else {
+        createTravel({ id: tripData!.id, data: { ...payload, isOffline: true } as any }, {
+          onSuccess: () => {
+            console.log("Trip updated successfully");
+            onClose();
+          },
+          onError: (err: any) => {
+            console.error("Failed to update trip:", err);
+            setError("Failed to update trip. Please try again.");
+          },
+        });
+      }
     },
   });
 
@@ -122,6 +135,11 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
   const { data: travels } = useTravels();
 
   const getEffectiveStatus = (): TravelStatus => {
+    if (tripData && (tripData.status === TravelStatus.Completed || 
+        tripData.status === TravelStatus.Archieved || 
+        tripData.status === TravelStatus.Cancelled)) {
+      return tripData.status;
+    }
     if (!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate) return TravelStatus.Draft;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -143,6 +161,7 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
     today.setHours(0, 0, 0, 0);
 
     travels.forEach((t: any) => {
+      if (tripData && t.id === tripData.id) return;
       if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return;
       
       if (t.startOrDepartureDate) {
@@ -327,9 +346,11 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
           </Modal>
         </View>
 
-        {/* <View className="mb-5 z-10">
-          <CheckboxGroup initialOptions={destinationTypeOptions} title="Choose Destination type/s" />
-        </View> */}
+        {mode === "edit" && (
+          <View className="mb-5 z-10">
+            <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
+          </View>
+        )}
 
         <View className="flex-row mb-5 gap-3">
           <View className="flex-1">
@@ -539,69 +560,63 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
           
         </View>
 
-         <View className="mb-5"></View>
+        {mode === "edit" && (
+          <>
+            <View className="mb-5">
+              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Budget</Text>
+              <TextInput
+                mode="outlined"
+                placeholder="e.g., 2,000"
+                value={formik.values.budget}
+                onChangeText={formik.handleChange("budget")}
+                onBlur={formik.handleBlur("budget")}
+                left={<TextInput.Icon icon="currency-php" className="opacity-50"/>}
+                keyboardType="numeric"
+                disabled={isSaving}
+                outlineColor="#E0E0E0"
+                activeOutlineColor="#0C4C8A"
+                theme={{ colors: { onSurfaceVariant: '#888' } }}
+                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                style={{ marginTop: 6, height: 60 }}
+                contentStyle={{ backgroundColor: "transparent" }}
+              />
+            </View>
 
-{/* 
-      <View className="mb-5 z-10">
-          <CheckboxGroup initialOptions={activityOptions} title="Activities" />
-        </View> */}
+            <View className="mb-5">
+              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Notes</Text>
+              <TextInput
+                mode="outlined"
+                placeholder="Additional notes..."
+                value={formik.values.notes}
+                onChangeText={formik.handleChange("notes")}
+                onBlur={formik.handleBlur("notes")}
+                disabled={isSaving}
+                outlineColor="#E0E0E0"
+                activeOutlineColor="#0C4C8A"
+                multiline
+                numberOfLines={3}
+                theme={{ colors: { onSurfaceVariant: '#888' } }}
+                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                style={{ marginTop: 6, height: 80, fontSize: 14 }}
+                contentStyle={{ backgroundColor: "transparent" }}
+              />
+            </View>
 
-{/* 
-        <View className="mb-5">
-          <Text className="text-md tracking-wide">Budget</Text>
-           <TextInput
-                  mode="outlined"
-                  placeholder="e.g., 2,000"
-                  value={formik.values.budget}
-                  onChangeText={formik.handleChange("budget")}
-                  onBlur={formik.handleBlur("budget")}
-                  left={<TextInput.Icon icon="currency-php" className="opacity-50"/>}
-                  keyboardType="numeric"
-                      outlineColor="#E0E0E0"
-            activeOutlineColor="#0C4C8A"
-                   theme={{
-                      colors: {
-                        onSurfaceVariant: '#888', 
-                      },
-                    }}
-                    outlineStyle={{
-                      borderWidth: 2,
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: 16,
-                    }}
-                    style={{
-                      height: 64,
-                    }}
-                    contentStyle={{
-                      backgroundColor: "transparent",
-                    }}
-                />
-        </View>
+            <View className="mb-5 z-10">
+              <CheckboxGroup initialOptions={activityOptions} title="Activities" />
+            </View>
+          </>
+        )}
+            <View className="mb-5"></View>
 
-        <View className="mb-5">
-          <TextInput
-            mode="outlined"
-            label="Notes"
-            className="bg-white"
-            placeholder="Any additional notes about your travel..."
-            value={formik.values.notes}
-            onChangeText={formik.handleChange("notes")}
-            onBlur={formik.handleBlur("notes")}
-            multiline
-            numberOfLines={4}
-            disabled={isSaving}
-            outlineColor="#E0E0E0"
-            activeOutlineColor="#0C4C8A"
-          />
-        </View> */}
       </ScrollView>
 
     <View className="mb-8 mx-4 bg-transparent">
        <TouchButton
-          buttonText="Add trip"
+          buttonText={isSaving ? "Saving..." : mode === "create" ? "Add trip" : "Update Changes"}
           onPress={() => formik.handleSubmit()}
           disabled={!formik.values.title.trim() || isSaving}
-          className="h-[64px] p-6 "  
+          className="h-[64px] p-6"  
         />
     </View>
      
@@ -609,4 +624,4 @@ const Create = ({ onClose, onStatusChange }: AddTravelModalProps) => {
   );
 };
 
-export default Create;
+export default CreateOrEdit;

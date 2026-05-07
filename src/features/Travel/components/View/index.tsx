@@ -204,6 +204,11 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   );
 
   const tabData = [
+    {
+      id: "details",
+      title: "Details",
+      content: <DetailsTab travelPlan={travelPlan} />,
+    },
     { id: "itinerary", title: "Itinerary", content: <ItineraryTab travelPlan={travelPlan} /> },
     {
       id: "notes",
@@ -241,11 +246,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         />
       ),
     },
-    {
-      id: "details",
-      title: "Details",
-      content: <DetailsTab travelPlan={travelPlan} />,
-    },
+
  
   ];
 

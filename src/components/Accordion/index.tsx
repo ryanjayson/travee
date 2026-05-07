@@ -30,7 +30,7 @@ if (
 }
 
 interface AccordionProps extends PropsWithChildren {
-  title: string;
+  title: React.ReactNode | string;
   defaultExpanded?: boolean;
   defaultFullscreen?: boolean;
   containerStyle?: ViewStyle;

@@ -683,15 +683,22 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                     className="px-2 flex-1 flex-row"
                     onPress={() => toggleSectionCollapse(section.id || "")}
                   >
-                    <View className="flex-1">
+                    <View className="flex-1 ">
                       <Text
                         numberOfLines={section.isCollapsed ? 1 : 10}
                         ellipsizeMode="tail"
                         className="text-lg font-bold text-[#183B7A] mb-1.5"
                       >
-                        {section.title}
+                        {section.title} 
                       </Text>
-
+                      
+                      {/* add checking here if has value show the date, copy the format MM/DD */}
+                      {section.startDate && (
+                        <Text className="text-xs font-bold text-[#999] mb-1">
+                          {new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })}
+                        </Text>
+                      )}
+                      
                       {section.description && (
                         <Text
                           numberOfLines={section.isCollapsed ? 2 : 10}

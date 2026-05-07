@@ -144,10 +144,8 @@ export const useUpdateSectionMutation = () => {
                 // Correct way: Return a brand new object that merges the old properties (s)
                 // with the new properties (from variables).
                 return {
-                  ...s, // Spread the original properties of the section
-                  title: variables.title, // Override the 'title' property with the new value
-                  // Add other properties you want to update from 'variables' here, e.g.:
-                  // date: variables.date,
+                  ...s,
+                  ...variables,
                 };
               }
               // If it's not the target section, return the original object unchanged
