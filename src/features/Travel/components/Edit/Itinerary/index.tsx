@@ -3,31 +3,25 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Animated,
-  PanResponder,
-  Dimensions,
-  RefreshControl,
-  ActivityIndicator,
-  Alert,
+  ScrollView, Dimensions, Alert
 } from "react-native";
+import {
+  Divider,
+} from "react-native-paper";
 import SectionModal from "./Section/Modal";
 import SectionMenu from "./Section/Menu";
 import ActivityModal from "./Activity/Modal";
-import AddActivityModal from "../../Edit/Itinerary/AddActivityModal";
-import ActivityCard from "../Itinerary/ActivityCard";
 import DraggableActivityItem from "./DraggableActivityItem";
 import DraggableSectionContainer from "./DraggableSectionContainer";
 import SlideModal from "../../../../../components/molecules/SlideModal";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useDeleteSectionMutation, useUpdateSectionSortOrderMutation, UpdateSectionSortVariables } from "../../../hooks/useSection";
+import { useDeleteSectionMutation, useUpdateSectionSortOrderMutation } from "../../../hooks/useSection";
 import { useUpdateActivitySortOrderMutation, useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { UpdateSortVariables } from "../../../types/ActivityDto";
 
 import {
-  Travel,
   ItinerarySection,
-  ItineraryActivity,
+  ItineraryActivity
 } from "../../../types/TravelDto";
 
 
@@ -690,7 +684,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                     style={[
                       {
                         zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
-                        elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
+                        // elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
                       },
                     ]}
                   >
@@ -710,7 +704,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                       <Text
                         numberOfLines={section.isCollapsed ? 1 : 10}
                         ellipsizeMode="tail"
-                        className="text-lg font-bold text-[#183B7A] mb-1.5"
+                        className="text-lg font-bold text-[#183B7A] mb-1.5 flex-1"
                       >
                         {section.title} 
                       </Text>
@@ -872,7 +866,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                     )}
                 </View>
 
-                {!section.isCollapsed && (
+                {/* {!section.isCollapsed && (
                   <TouchableOpacity
                     onPress={() => {
                       if (!section.id) return;
@@ -887,7 +881,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                       Add Activity
                     </Text>
                   </TouchableOpacity>
-                )}
+                )} */}
 
                 <TouchableOpacity
                   className="p-2 absolute right-0 top-3"
