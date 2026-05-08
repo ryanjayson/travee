@@ -1,13 +1,11 @@
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { API_BASE_URL } from "@env";
-import { CreateTravelData, Travel, TravelPlan } from "../types/TravelDto";
-import { postRequestOptions } from "../../../utils/apiUtils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  fetchTravels,
-  fetchTravel,
-  fetchTravelPlan,
+  fetchTravel
 } from "../../../services/api/travel";
-import { saveTravelLocally, getTravelsLocally, getTravelPlanLocally, deleteTravelLocally, cancelTravelLocally, archiveTravelLocally, unarchiveTravelLocally } from "../../../services/local/travelService";
+import { archiveTravelLocally, cancelTravelLocally, deleteTravelLocally, getTravelPlanLocally, getTravelsLocally, saveTravelLocally, unarchiveTravelLocally } from "../../../services/local/travelService";
+import { postRequestOptions } from "../../../utils/apiUtils";
+import { CreateTravelData, Travel, TravelPlan } from "../types/TravelDto";
 
 const TRAVEL_ENDPOINT = `${API_BASE_URL}/travel`;
 const TRAVEL_QUERY_KEY = ["travel"];
@@ -19,7 +17,6 @@ interface MutationResult {
   errorMessage?: string;
 }
 
-type MutationVariables = CreateTravelData;
 type MutationData = MutationResult;
 type MutationError = Error;
 
@@ -29,7 +26,7 @@ export const useUpdateTravel = () => {
   const updateTravelMutation = useMutation<
     MutationData,
     MutationError,
-    { id?: string; data: CreateTravelData | UpdateTravelData }
+    { id?: string; data: CreateTravelData }
   >({
     mutationFn: async ({ id, data }) => {
 
@@ -131,11 +128,13 @@ export const useTravels = () => {
     queryKey: TRAVELS_QUERY_KEY,
     queryFn: async () => {
       let apiTravels: Travel[] = [];
-      try {
-        apiTravels = await fetchTravels();
-      } catch (err) {
-        console.warn("Failed to fetch travels from API, falling back to local only", err);
-      }
+
+      //This line is for fetching from server
+      // try {
+      //   apiTravels = await fetchTravels();
+      // } catch (err) {
+      //   console.warn("Failed to fetch travels from API, falling back to local only", err);
+      // }
 
       const localTravels = await getTravelsLocally();
 

@@ -117,9 +117,10 @@ const DraggableActivityItem = ({
   return (
     <Animated.View
       style={animatedStyle}
-      className={`bg-[#F9FAFB] rounded-lg p-2 mb-1 border border-[#ddd] flex-row items-center ${
-        isActive ? "bg-[#F8F9FA] opacity-60" : "bg-white"
-      }`}
+      className={`rounded-md p-2 mb-3 border border-[#ddd] flex-row items-center ${
+        isActive ? "bg-[#F8F9FA] opacity-60" : "bg-white"}
+        ${startDate ? "bg-gray-100" : "" }
+      `}
       collapsable={false}
     >
       <View 
@@ -144,12 +145,12 @@ const DraggableActivityItem = ({
           <Text 
             numberOfLines={1}
             ellipsizeMode="tail"
-            className="text-base font-semibold text-[#183B7A]"
+            className="text-md font-semibold text-primary"
           >
             {title}
           </Text>
           {timeString && (
-            <Text className="text-xs text-[#6c757d] mt-0.5 font-medium">
+            <Text className="text-xs text-tertiary mt-0.5 font-medium">
               {timeString}
             </Text>
           )}

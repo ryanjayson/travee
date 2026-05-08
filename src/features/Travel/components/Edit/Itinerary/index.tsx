@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ScrollView, Dimensions, Alert
+  ScrollView, Dimensions, Alert, LayoutAnimation
 } from "react-native";
 import {
   Divider,
@@ -267,6 +267,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     setMasterHoverState(null);
 
     if (fromIndex !== toIndex && sections) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       const defaultSections = sections.filter(s => s.isDefaultSection === true);
       const subSections = sections.filter(s => s.isDefaultSection === false);
       
@@ -310,6 +311,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     const targetSectionId =  hoverState?.sectionId ?? sourceSectionId;
     const toIndex = hoverState?.index ?? fromIndex;
 
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSections((prevSections) => {
       let movedActivity: ItineraryActivity | null = null;
       // 1. Remove from source section
@@ -557,7 +559,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
             {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
               <View
                 key={activity.id}
-         
+                className="relative"
                 style={{
                   zIndex:
                     sectionDragState?.dragIndex === index &&
@@ -576,7 +578,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                   (sectionDragState?.sectionId !== section.id ||
                     (sectionDragState?.dragIndex !== index &&
                       (sectionDragState?.dragIndex ?? -1) > index)) && (
-                    <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
+                    <View className="absolute -top-[7px] h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
                   )}
 
                 <DraggableActivityItem
@@ -628,7 +630,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                   sectionDragState?.sectionId === section.id &&
                   sectionDragState?.dragIndex !== index &&
                   (sectionDragState?.dragIndex ?? -1) < index && (
-                    <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
+                    <View className="absolute -bottom-[7px] h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
                   )}
               </View>
             )) : (
@@ -680,7 +682,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                 {(panHandlers, isSectionActive) => (
                   <>
                   <View
-                    className="bg-white rounded-lg p-2.5 border border-[#DDD] flex-1 mb-4"
+                    className="bg-white rounded-lg p-2.5 border border-[#DDD] flex-1 mb-4 relative"
                     style={[
                       {
                         zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
@@ -689,7 +691,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                     ]}
                   >
                     {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) > mapIndex && (
-                      <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center mb-[15px]" />
+                      <View className="absolute -top-[10px] h-[3px] bg-[#183B7A] rounded-sm w-full self-center z-50" />
                     )}
 
                     <View className="absolute top-[10px] left-[10px]" {...panHandlers}>
@@ -778,6 +780,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                         {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
                           <View
                             key={activity.id}
+                            className="relative"
                             style={{
                               zIndex:
                                 sectionDragState?.sectionId === section.id &&
@@ -796,7 +799,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                               (sectionDragState?.sectionId !== section.id ||
                                 (sectionDragState?.dragIndex !== index &&
                                  (sectionDragState?.dragIndex ?? -1) > index)) && (
-                                <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
+                                <View className="absolute -top-[7px] h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
                               )}
 
                             <DraggableActivityItem
@@ -849,7 +852,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                               sectionDragState?.sectionId === section.id &&
                               sectionDragState?.dragIndex !== index &&
                               (sectionDragState?.dragIndex ?? -1) < index && (
-                                <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center" />
+                                <View className="absolute -bottom-[7px] h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
                               )}
                           </View>
                         )) : (
@@ -866,7 +869,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                     )}
                 </View>
 
-                {/* {!section.isCollapsed && (
+                {!section.isCollapsed && (
                   <TouchableOpacity
                     onPress={() => {
                       if (!section.id) return;
@@ -881,7 +884,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                       Add Activity
                     </Text>
                   </TouchableOpacity>
-                )} */}
+                )}
 
                 <TouchableOpacity
                   className="p-2 absolute right-0 top-3"

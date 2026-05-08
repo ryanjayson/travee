@@ -254,6 +254,7 @@ export const useItineraryActivity = (activityId: string) => {
 };
 
 export const useUpdateActivitySortOrderMutation = () => {
+  
   return useMutation({
     mutationFn: async (variables: UpdateSortVariables): Promise<void> => {
       const options = postRequestOptions("");
@@ -300,7 +301,7 @@ export const useUpdateActivitySortOrderMutation = () => {
       //   },
       // );
 
-      console.log(`Successfully deleted section ID: ${variables.id}`);
+      console.log(`Successfully updated order: ${variables.id}`);
     },
     onSettled: (data, error, variables) => {},
   });
