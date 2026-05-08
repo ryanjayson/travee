@@ -51,6 +51,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
     const itinerarySection = await Promise.all(sections.map(async (s) => {
       const activities = await database.get<Activity>("itinerary_activities").query(
         Q.where("section_id", s.id),
+        Q.sortBy("sort_order", Q.asc)
       ).fetch();
 
       const itineraryActivity = await Promise.all(activities.map(async (a) => {
@@ -427,6 +428,27 @@ export const unarchiveTravelLocally = async (id: string): Promise<void> => {
     const travel = await database.get<Travel>("travels").find(id);
     await travel.update((t) => {
       t.isArchived = false;
+    });
+  });
+};
+
+export const updateActivitySortOrderLocally = async (id: string, newSortOrder: string, newSectionId?: string): Promise<void> => {
+  await database.write(async () => {
+    const activity = await database.get<Activity>("itinerary_activities").find(id);
+    await activity.update((a) => {
+      a.sortOrder = newSortOrder;
+      if (newSectionId) {
+        a.sectionId = newSectionId;
+      }
+    });
+  });
+};
+
+export const updateSectionSortOrderLocally = async (id: string, newSortOrder: string): Promise<void> => {
+  await database.write(async () => {
+    const section = await database.get<Section>("itinerary_sections").find(id);
+    await section.update((s) => {
+      s.sortOrder = newSortOrder;
     });
   });
 };

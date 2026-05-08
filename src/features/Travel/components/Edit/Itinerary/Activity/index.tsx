@@ -21,6 +21,7 @@ import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useDeleteActivityMutation } from "../../../../hooks/useActivity";
 import { ActivityType } from "../../../../../../types/enums";
 import { Divider, Text, Switch } from 'react-native-paper';
+import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import ActivityIcon from "../../../../../../components/ActivityIcon";
 import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
@@ -79,6 +80,8 @@ const EditActivity = ({
   const { userToken } = useAuth();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
+  const { generateSortOrder } = useLexicographicSort();
+  const currentSection = selectedTravelPlan?.itinerarySection?.find(s => s.id === itinerarySectionId);
 
   // Checklist state
   const [newCheckTitle, setNewCheckTitle] = useState("");
@@ -150,12 +153,56 @@ const EditActivity = ({
         finalEndDate = new Date(`${values.endDate}T${values.endTime}:00`);
       }
 
+      let finalSortOrder = values.sortOrder || "";
+
+      const oldStartDate = itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).getTime() : null;
+      const newStartDate = finalStartDate ? finalStartDate.getTime() : null;
+      const dateChanged = oldStartDate !== newStartDate;
+
+      // If creating a new activity, or if the user changed the date/time, generate a new sortOrder
+      if (!itineraryActivity?.id || dateChanged) {
+        const currentSection = selectedTravelPlan?.itinerarySection?.find(s => s.id === (values.sectionId || ""));
+        // Filter out the current activity so it doesn't compare against itself when editing
+        const existingActivities = [...(currentSection?.itineraryActivity || [])].filter(a => a.id !== itineraryActivity?.id);
+
+        if (finalStartDate) {
+          // Has start date: sort existing timed activities chronologically
+          const timedActivities = existingActivities
+            .filter(a => a.startDate)
+            .sort((a, b) => new Date(b.startDate!).getTime() - new Date(a.startDate!).getTime());
+            
+          // Find where this new activity belongs (the first activity that starts *before* our new one)
+          const nextNeighborIndex = timedActivities.findIndex(a => new Date(a.startDate!).getTime() < finalStartDate!.getTime());
+          
+          let prevNeighbor = null;
+          let nextNeighbor = null;
+          
+          if (nextNeighborIndex !== -1) {
+            nextNeighbor = timedActivities[nextNeighborIndex];
+            prevNeighbor = nextNeighborIndex > 0 ? timedActivities[nextNeighborIndex - 1] : null;
+          } else {
+            prevNeighbor = timedActivities.length > 0 ? timedActivities[timedActivities.length - 1] : null;
+          }
+          
+          finalSortOrder = generateSortOrder(prevNeighbor?.sortOrder, nextNeighbor?.sortOrder);
+        } else {
+          // No start date: append to the end of the section by finding the lexicographically largest sortOrder
+          const sortedActivities = existingActivities.sort((a, b) => (a.sortOrder || "").localeCompare(b.sortOrder || ""));
+          const lastActivity = sortedActivities.length > 0 ? sortedActivities[sortedActivities.length - 1] : null;
+          
+          finalSortOrder = generateSortOrder(lastActivity?.sortOrder, null);
+        }
+        
+        // Append a random 4-character suffix to completely eliminate race condition collisions
+        finalSortOrder += Math.random().toString(36).substring(2, 6);
+      }
+
       const payload: ItineraryActivity = {
         id: values.id,
         sectionId: values.sectionId || "",
         title: values.title,
         description: values.description,
-        sortOrder: values.sortOrder || "",
+        sortOrder: finalSortOrder,
         type: values.type as ActivityType,
         startDate: finalStartDate,
         endDate: finalEndDate,
@@ -203,8 +250,8 @@ const EditActivity = ({
         description: itineraryActivity?.description || "",
         type: itineraryActivity?.type ?? ActivityType.none,
         sortOrder: itineraryActivity?.sortOrder || "",
-        startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : null,
-        startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : "08:00",
+        startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : (currentSection?.startDate ? new Date(currentSection.startDate).toISOString().split('T')[0] : null),
+        startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : (currentSection?.startDate && new Date(currentSection.startDate).toISOString().substring(11, 16) !== "00:00" ? new Date(currentSection.startDate).toISOString().substring(11, 16) : "08:00"),
         endDate: itineraryActivity?.endDate ? new Date(itineraryActivity.endDate).toISOString().split('T')[0] : null,
         endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? new Date(itineraryActivity.endDate).toISOString().substring(11, 16) : "09:00",
         destination: itineraryActivity?.destination || (itineraryActivity?.id ? "" : itineraryActivity?.destination || ""),
@@ -319,13 +366,7 @@ const EditActivity = ({
                   )}
                 </View>
                 <View className="mb-5">
-                  <View className="flex-row items-center justify-between">
-                     <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Date & Time</Text>
-                     <View className="flex-row items-center gap-2">
-                        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">All Day</Text>
-                        <Switch value={isAllDay} onValueChange={setIsAllDay} color="#0C4C8A" />
-                     </View>
-                  </View>
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Date & Time</Text>
                   
                   <View className="flex-row items-center gap-4 mt-2">
                     <TouchableOpacity 
@@ -333,40 +374,17 @@ const EditActivity = ({
                       className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 flex-1 items-center"
                     >
                       <Text className="text-sm font-medium text-gray-800">
-                        {values.startDate ? String(values.startDate) : "Start Date"}
+                        {values.startDate ? String(values.startDate) : "Date"}
                       </Text>
                     </TouchableOpacity>
-                    {!isAllDay && (
-                      <TouchableOpacity 
-                        onPress={() => setShowTimePickerFor("startTime")}
-                        className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 items-center"
-                      >
-                        <Text className="text-sm font-medium text-gray-800">
-                          {String((values as any).startTime)}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-
-                  <View className="flex-row items-center gap-4 mt-3">
                     <TouchableOpacity 
-                      onPress={() => setShowCalendarFor("endDate")}
+                      onPress={() => setShowTimePickerFor("startTime")}
                       className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 flex-1 items-center"
                     >
                       <Text className="text-sm font-medium text-gray-800">
-                        {values.endDate ? String(values.endDate) : "End Date"}
+                        {String((values as any).startTime)}
                       </Text>
                     </TouchableOpacity>
-                    {!isAllDay && (
-                      <TouchableOpacity 
-                        onPress={() => setShowTimePickerFor("endTime")}
-                        className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 items-center"
-                      >
-                        <Text className="text-sm font-medium text-gray-800">
-                          {String((values as any).endTime)}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
                   </View>
                 </View>
                 <View className="mb-5">

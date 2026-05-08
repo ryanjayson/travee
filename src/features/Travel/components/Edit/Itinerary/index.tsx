@@ -23,6 +23,8 @@ import {
   ItinerarySection,
   ItineraryActivity
 } from "../../../types/TravelDto";
+import { useLexicographicSort } from "../../../../../hooks/useLexicographicSort";
+import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../../services/local/travelService";
 
 
 export interface EditTravelItineraryRef {
@@ -43,6 +45,8 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   onBack,
   onRefresh,
 }, ref) => {
+  const { generateSortOrder } = useLexicographicSort();
+
   useImperativeHandle(ref, () => ({
     handleAddSection: handleMenuAddSection,
     handleAddActivity: handleMenuAddActivity,
@@ -113,6 +117,13 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     mutate: updateSectionSortOrderMutation,
   } = useUpdateSectionSortOrderMutation();
 
+  const sortActivities = (activities?: ItineraryActivity[]) => {
+    if (!activities) return [];
+    return [...activities].sort((a, b) => {
+      return (a.sortOrder || "").localeCompare(b.sortOrder || "");
+    });
+  };
+
   useEffect(() => {
     setSections((prevSections) => {
       if (!travelSections) return [];
@@ -121,6 +132,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
       if (prevSections.length === 0) {
         return travelSections.map((section) => ({
           ...section,
+          itineraryActivity: sortActivities(section.itineraryActivity),
           isCollapsed: false, // Default to expanded
         }));
       }
@@ -135,6 +147,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
         if (apiSection) {
           newSections.push({
             ...apiSection, // Use fresh API data (activities, title, etc)
+            itineraryActivity: sortActivities(apiSection.itineraryActivity),
             isCollapsed: prevSection.isCollapsed ?? false, // Preserve local collapse state
           });
           travelSectionsMap.delete(prevSection.id); // Mark as processed
@@ -145,6 +158,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
       for (const [id, apiSection] of travelSectionsMap.entries()) {
         newSections.push({
           ...apiSection,
+          itineraryActivity: sortActivities(apiSection.itineraryActivity),
           isCollapsed: false, // Default new sections to expanded
         });
       }
@@ -274,11 +288,16 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
       const [moved] = subSections.splice(fromIndex, 1);
       subSections.splice(toIndex, 0, moved);
       
-      setSections([...defaultSections, ...subSections]);
-
       const prevSortOrder = subSections[toIndex - 1]?.sortOrder;
       const nextSortOrder = subSections[toIndex + 1]?.sortOrder;
+      
+      const newSortOrder = generateSortOrder(prevSortOrder, nextSortOrder);
+      moved.sortOrder = newSortOrder;
+      
+      setSections([...defaultSections, ...subSections]);
+
       if (moved.id) {
+        updateSectionSortOrderLocally(moved.id, newSortOrder);
         updateSectionSortOrderMutation({
           id: moved.id,
           prevSortOrder,
@@ -338,11 +357,23 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
             const previousNeighbor = newActivities[safeToIndex - 1] ?? null;
             const nextNeighbor = newActivities[safeToIndex + 1] ?? null;
 
+            const newSortOrder = generateSortOrder(
+              previousNeighbor?.sortOrder,
+              nextNeighbor?.sortOrder
+            );
+            updatedActivity.sortOrder = newSortOrder;
+
             if (updatedActivity.id) {
+              updateActivitySortOrderLocally(
+                updatedActivity.id, 
+                newSortOrder, 
+                targetSectionId !== sourceSectionId ? targetSectionId : undefined
+              );
+
               const updateSort: UpdateSortVariables = {
                 id: updatedActivity.id,
-                prevSortOrder: previousNeighbor && previousNeighbor.sortOrder,
-                nextSortOrder: nextNeighbor && nextNeighbor.sortOrder,
+                prevSortOrder: previousNeighbor?.sortOrder,
+                nextSortOrder: nextNeighbor?.sortOrder,
               };
               updateActivitySortMutation(updateSort);
 
@@ -806,7 +837,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                               onPress={() => handleSectionActivityPress(activity, section.id || "")}
                               id={activity.id}
                               title={activity.title}
-                              description={activity.description}
+                              description={activity.sortOrder}
                               location={""}
                               startDate={activity.startDate?.toString() || null}
                               endDate={activity.endDate?.toString() || null}
