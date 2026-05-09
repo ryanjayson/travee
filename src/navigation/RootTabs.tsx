@@ -5,7 +5,7 @@ import type { BottomTabNavigationOptions } from "@react-navigation/bottom-tabs";
 import { TravelProvider } from "../context/TravelContext";
 
 import TravelCatalog from "../features/Travel/screens/TravelCatalog";
-import { ExploreScreen } from "../screens/ExploreScreen";
+import { ExploreScreen } from "../screens/MapScreen";
 import HomeScreen from "../screens/HomeScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
@@ -143,8 +143,6 @@ const insets = useSafeAreaInsets();
             ),
           }}
         />
-
-  
         <Tab.Screen name="Maps" component={ExploreScreen} options={{ headerShown: false }} />  
       </Tab.Navigator>
 

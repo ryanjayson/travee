@@ -4,6 +4,7 @@ User
 - Add Member
 - Create pre defined checklist
 - Invite travel friends
+- Export and save data/database to selected location
 
 Trip Management
 - Settings

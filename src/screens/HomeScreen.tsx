@@ -1,18 +1,19 @@
-import React from 'react';
-import { View, Text, ScrollView, FlatList, Image, TouchableOpacity, StatusBar, TextInput, Dimensions } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTravels } from '../features/Travel/hooks/useTravel';
-import { useAllActivitiesWithDestination } from '../features/Travel/hooks/useActivity';
-import { Travel } from '../features/Travel/types/TravelDto';
-import { TravelStatus, ActivityType } from '../types/enums';
 import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { Dimensions, FlatList, Image, RefreshControl, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAllActivitiesWithDestination } from '../features/Travel/hooks/useActivity';
+import { useTravels } from '../features/Travel/hooks/useTravel';
+import { Travel } from '../features/Travel/types/TravelDto';
+import { ActivityType, TravelStatus } from '../types/enums';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.8;
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
-  const { data: travels, isLoading } = useTravels();
+  const [refreshing, setRefreshing] = useState(false);
+  const { data: travels, isLoading, isError, error, refetch } = useTravels();
   const { data: allActivities } = useAllActivitiesWithDestination();
 
   // ─── Stats ───────────────────────────────────────────────────────────────
@@ -35,7 +36,6 @@ const HomeScreen = () => {
     return { total: travels.length, completed, upcoming };
   };
 
-  // ─── Top activity types ───────────────────────────────────────────────────
   const getTopActivityTypes = () => {
     if (!allActivities?.length) return [];
     const counts: Record<number, number> = {};
@@ -63,23 +63,25 @@ const HomeScreen = () => {
     return (map[type ?? 0] ?? 'location') as any;
   };
 
-  // ─── Ongoing trip: status Ongoing OR dates straddle today ─────────────────
   const getOngoingTrip = (): Travel | null => {
     if (!travels) return null;
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    return travels.find(t => {
-      if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return false;
-      if (t.status === TravelStatus.Ongoing) return true;
-      if (t.startOrDepartureDate && t.endOrReturnDate) {
-        const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);
-        const e = new Date(t.endOrReturnDate);       e.setHours(0, 0, 0, 0);
-        return s <= today && today <= e;
-      }
-      return false;
-    }) ?? null;
+    // return travels.find(t => {
+    //   // if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return false;
+    //   // if (t.startOrDepartureDate && t.endOrReturnDate) {
+    //   //   const s = new Date(t.startOrDepartureDate);
+    //   //   s.setHours(0, 0, 0, 0);
+    //   //   const e = new Date(t.endOrReturnDate);
+    //   //   e.setHours(0, 0, 0, 0);
+    //   //   return s <= today && today <= e;
+    //   // }
+
+    //   // Fallback to status if dates are missing
+    // return t.status === TravelStatus.Ongoing;
+    // }) ?? null;
+    return travels.find(t => t.status === TravelStatus.Ongoing) ?? null;
   };
 
-  // ─── All upcoming trips sorted by start date ──────────────────────────────
   const getAllUpcomingTrips = (): Travel[] => {
     if (!travels) return [];
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -93,14 +95,12 @@ const HomeScreen = () => {
       .sort((a, b) => new Date(a.startOrDepartureDate!).getTime() - new Date(b.startOrDepartureDate!).getTime());
   };
 
-  // ─── Derived data ─────────────────────────────────────────────────────────
-  const tripStats          = getTripStats();
-  const topActivityTypes   = getTopActivityTypes();
+  const tripStats = getTripStats();
+  const topActivityTypes = getTopActivityTypes();
   const favoriteActivityName = topActivityTypes[0]?.typeName ?? 'N/A';
-  const ongoingTrip        = getOngoingTrip();
-  const upcomingTrips      = getAllUpcomingTrips();
+  const ongoingTrip = getOngoingTrip();
+  const upcomingTrips = getAllUpcomingTrips();
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
   const formatDate = (v?: Date | string) =>
     v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
@@ -110,108 +110,151 @@ const HomeScreen = () => {
     return `${days} Day${days > 1 ? 's' : ''}`;
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
   return (
     <View className="flex-1 bg-gray-100">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView showsVerticalScrollIndicator={false} 
+        contentContainerStyle={{ paddingBottom: 100 }} 
+        className="bg-gray-100"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#0C4C8A"]}
+            tintColor="#0C4C8A"
+          />
+        }>
 
-        {/* ── Hero Banner ─────────────────────────────────────────────── */}
-        <View className="w-full h-[360px] relative">
+        <View className="w-full h-[346px] relative"
+          style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
+        >
+          
           <Image
             source={require('../assets/images/home_hero.png')}
-            className="w-full h-full"
+            className="w-full h-full "
             resizeMode="cover"
+            style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0, backgroundColor: "#F2F4F7" }}
           />
-          <View className="absolute inset-0 bg-black/50" />
+            <View 
+              className="absolute inset-0 bg-black/80"
+              style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
+             />
 
-          <View className="absolute left-5 right-5" style={{ top: 130 }}>
-            <Text
-              className="text-white text-[32px] font-extrabold mb-1"
-              style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
-            >
-              Where to next?
-            </Text>
-            <Text
-              className="text-gray-100 text-base font-medium mb-5"
-              style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
-            >
-              Plan your next adventure with Travie.
-            </Text>
+          <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 70 : 130 }}>
+              <Text className="text-white text-base mb-2 font-bold">Good morning, travieler</Text>
+            {ongoingTrip ? (
+              <View className="py-2 px-1">
+                <View className="flex-row items-center gap-2">
+                  <View className="w-2 h-2 rounded-full bg-green-400" />
+                  <Text className="text-green-300 text-[10px] font-bold tracking-widest uppercase">Ongoing</Text>
+                </View>
 
-            <View className="flex-row items-center bg-white rounded-xl px-4 py-3 shadow-lg elevation-5">
-              <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 10 }} />
-              <TextInput
-                placeholder="Search destinations, places..."
-                placeholderTextColor="#9ca3af"
-                className="flex-1 text-base text-gray-800"
-              />
-            </View>
-          </View>
-        </View>
+                <Text className="text-white text-4xl font-bold mb-1" numberOfLines={1}>
+                  {ongoingTrip.title}
+                </Text>
 
-        {/* ── Content sheet sliding over hero ─────────────────────────── */}
-        <View
-          className="bg-gray-100 pt-7"
-          style={{ marginTop: -30, borderTopLeftRadius: 30, borderTopRightRadius: 30 }}
-        >
-
-          {/* ── Ongoing Trip ────────────────────────────────────────────── */}
-          <View className="px-5 mb-6">
-           
-            {isLoading ? (
-              <Text className="text-gray-500 text-sm">Loading...</Text>
-            ) : ongoingTrip ? (
-              <View
-                className="rounded-2xl overflow-hidden elevation-6"
-                style={{ backgroundColor: '#0C4C8A', shadowColor: '#0C4C8A', shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 6 } }}
-              >
-                {/* Decorative circles */}
-                <View className="absolute" style={{ width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.06)', top: -40, right: -30 }} />
-                <View className="absolute" style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(255,255,255,0.05)', bottom: -20, left: 20 }} />
-
-                <View className="p-5">
-                  <View className="flex-row items-center gap-2">
-                    <View className="w-2 h-2 rounded-full bg-green-400" />
-                    <Text className="text-green-300 text-[10px] font-bold tracking-widest uppercase">Ongoing</Text>
-                  </View>
-
-                  <Text className="text-white text-2xl font-extrabold mb-1" numberOfLines={1}>
-                    {ongoingTrip.title}
+                <View className="flex-row items-center gap-1.5 mb-3">
+                  <Ionicons name="location-outline" size={16} color="rgba(255,255,255,0.65)" />
+                  <Text className="text-white/65 text-md font-medium" numberOfLines={1}>
+                    {ongoingTrip.destination}
                   </Text>
-                  <View className="flex-row items-center gap-1.5 mb-4">
-                    <Ionicons name="location" size={13} color="rgba(255,255,255,0.65)" />
-                    <Text className="text-white/65 text-sm font-medium" numberOfLines={1}>
-                      {ongoingTrip.destination}
-                    </Text>
-                  </View>
+                </View>
 
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-1.5">
-                      <Ionicons name="calendar" size={13} color="rgba(255,255,255,0.65)" />
-                      <Text className="text-white/65 text-[13px]">
-                        {formatDate(ongoingTrip.startOrDepartureDate)}
-                        {ongoingTrip.endOrReturnDate ? ` → ${formatDate(ongoingTrip.endOrReturnDate)}` : ''}
+                <View className="flex-row items-center gap-1.5 mb-1 justify-between">
+                  <View className="flex-row items-center gap-1.5">
+                    <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.65)" />
+                    <Text className="text-white/65 text-sm">
+                      {formatDate(ongoingTrip.startOrDepartureDate)}
+                      <Ionicons name="arrow-forward-outline" size={10} color="rgba(255,255,255,0.4)" style={{paddingRight: 10, paddingLeft: 10}} />
+                      {ongoingTrip.endOrReturnDate ? `${formatDate(ongoingTrip.endOrReturnDate)}` : ''}
+                    </Text>
+                      {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate) ? (
+                    <View className="bg-white/15 px-3 py-1 rounded-full">
+                      <Text className="text-white text-xs">
+                        {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate)}
                       </Text>
                     </View>
-                    {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate) ? (
-                      <View className="bg-white/15 px-3 py-1 rounded-full">
-                        <Text className="text-white text-[12px] font-semibold">
-                          {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate)}
-                        </Text>
-                      </View>
-                    ) : null}
+                  ) : null}
                   </View>
+                
                 </View>
+
+                <View className="flex-row items-center gap-1.5 mb-1">
+                  <Ionicons name="walk-outline" size={14} color="rgba(255,255,255,0.65)" />
+                  <Text className="text-white/65 text-sm">
+                  12 Planned activities 
+                  </Text>
+                </View>
+
+                <View className="flex-row items-center gap-1.5 mb-4">
+                  <Ionicons name="list-outline" size={16} color="rgba(255,255,255,0.65)" />
+                  <Text className="text-white/65 text-sm " >
+                  Show Checklist stats
+                  </Text>
+                </View>
+
+                <View className="flex-row items-center gap-8 py-3 justify-between">
+                  <TouchableOpacity className='items-center' onPress={() => { }}>
+                    <Ionicons name="briefcase-outline" size={24} color="rgba(255,255,255,0.65)" />
+                    <Text className="text-white/65 text-xs">Details</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity className='items-center' onPress={() => { }}>
+                    <Ionicons name="document-text-outline" size={24} color="rgba(255,255,255,0.65)" />
+                    <Text className="text-white/65 text-xs">Notes</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity className='items-center' onPress={() => { }}>
+                    <Ionicons name="map-outline" size={24} color="rgba(255,255,255,0.65)" />
+                    <Text className="text-white/65 text-xs">Map</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity className='items-center' onPress={() => { }}>
+                    <Ionicons name="cash" size={24} color="rgba(255,255,255,0.65)" />
+                    <Text className="text-white/65 text-xs">Expense</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity className='items-center' onPress={() => { }}>
+                    <Ionicons name="list" size={24} color="rgba(255,255,255,0.65)" />
+                    <Text className="text-white/65 text-xs">Itinerary</Text>
+                  </TouchableOpacity>
+                </View>
+
               </View>
             ) : (
-              <View className="bg-white rounded-2xl px-4 py-5 items-center border border-dashed border-gray-200">
-                <Ionicons name="navigate-circle-outline" size={32} color="#d1d5db" />
-                <Text className="text-gray-400 text-sm font-medium mt-2">No ongoing trip</Text>
+              <View>
+                <Text
+                  className="text-white text-2xl font-extrabold mb-1"
+                  style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
+                >
+                  Where to go next?
+                </Text>
+                <Text
+                  className="text-gray-100 text-base font-medium mb-5"
+                  style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
+                >
+                  Plan your next adventure with Travie.
+                </Text>
+
+                <View className="flex-row items-center bg-white rounded-xl px-4 py-3 shadow-lg elevation-5">
+                  <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 10 }} />
+                  <TextInput
+                    placeholder="Search destinations, places..."
+                    placeholderTextColor="#9ca3af"
+                    className="flex-1 text-base text-gray-800"
+                  />
+                </View>
               </View>
             )}
           </View>
+        </View>
 
+        <View
+          className="bg-transparent pt-4"
+          style={{ borderTopLeftRadius: ongoingTrip ? 0 : 30, borderTopRightRadius: ongoingTrip ? 0 : 30 }}
+        >
           {/* ── Upcoming Trips Carousel ──────────────────────────────────── */}
           <View className="mb-6">
             <View className="flex-row items-center justify-between px-5 mb-3">
@@ -279,16 +322,15 @@ const HomeScreen = () => {
                 )}
               />
             ) : (
-              <View className="mx-5 bg-white rounded-2xl p-6 items-center border border-dashed border-gray-200">
-                <Ionicons name="map-outline" size={32} color="#d1d5db" />
-                <Text className="text-base text-gray-500 font-medium mt-2 mb-1">No upcoming trips planned</Text>
+              <View className="mx-5  rounded-2xl p-6 items-center border-2 border-dashed border-gray-300">
+                <Ionicons name="briefcase-outline" size={32} color="#d1d5db" />
+                <Text className="text-base text-gray-500 font-medium mt-2 mb-1">No upcoming trips</Text>
                 <Text className="text-sm text-gray-400 text-center">
-                  Tap the + button below to start planning your next adventure!
+                  Start planning your next adventure!
                 </Text>
               </View>
             )}
           </View>
-
           {/* ── Stats ───────────────────────────────────────────────────── */}
           <View className="flex-row px-5 mb-6 gap-[15px]">
             <View className="flex-1 bg-white rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">

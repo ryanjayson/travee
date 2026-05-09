@@ -54,4 +54,4 @@ Option 2: Use EAS Build to create an APK If you don't want to plug your phone in
 
 Run npx eas build --profile development --platform android
 When the build finishes, scan the provided QR code to download and install the custom "Development Build" app on your phone.
-To continue testing right now without your phone, simply open the Android Emulator on your computer. An app named "travee" (or your project's name) was installed on it during the last successful build. Open that app instead of Expo Go!
+To continue testing right now without your phone, simply open the Android Emulator on your computer. An app named "travie" (or your project's name) was installed on it during the last successful build. Open that app instead of Expo Go!
