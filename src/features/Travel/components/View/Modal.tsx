@@ -18,7 +18,6 @@ interface ViewTripModalProps {
 
 //Modal for the Travel View page
 //ViewTravel is the actual component
-
 const ViewTripModal = ({
   travelId,
   showModal = false,
@@ -30,17 +29,10 @@ const ViewTripModal = ({
   // useContext never throws — returns null if outside NavigationContainer
   const navContext = useContext(NavigationContext);
   const navigation = navContext as NativeStackNavigationProp<RootStackParamList> | null;
-
   const { selectedTravelPlan, clearTravelPlan } = useTravelContext();
-
   const {
     data: travelPlan,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isRefetching, // Good for showing a silent background loader
-  } = useTravelPlan(travelId); // Pass the required ID
+  } = useTravelPlan(travelId);
 
   useEffect(() => {
     console.log("SELECTED", travelPlan);
@@ -52,7 +44,6 @@ const ViewTripModal = ({
   const { mutate: unarchiveTravel } = useUnarchiveTravel();
 
   const handleCancel = () => {
-    clearTravelPlan();
     setShowModal(false);
   };
 

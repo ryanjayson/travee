@@ -1,31 +1,30 @@
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  View,
+  Animated,
   Image,
   ScrollView,
   TouchableOpacity,
-  Animated,
+  View,
 } from "react-native";
 import {
-  Text,
   Portal,
+  Text,
 } from "react-native-paper";
-import SectionAccordion from "./SectionAccordion";
-import { TravelPlan, ItineraryExpense } from "../../../Travel/types/TravelDto";
 import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
-import MapViewer from "../MapViewer";
-import ItineraryTab from "./Tabs/ItineraryTab";
-import ChecklistTab from "./Tabs/ChecklistTab";
-import NotesTab from "./Tabs/NotesTab";
-import DetailsTab from "./Tabs/DetailsTab";
-import ExpensesTab from "./Tabs/ExpensesTab";
+import { ItineraryExpense, TravelPlan } from "../../../Travel/types/TravelDto";
 import ExpenseModal from "../Forms/Expense/Modal";
 import NoteModal from "../Forms/Note/Modal";
-import TravelActionFAB from "./TravelActionFAB";
+import MapViewer from "../MapViewer";
 import ShareOverlay from "../ShareOverlay";
 import type { DoneActivity } from "../ShareOverlay/CountryOutline";
+import ChecklistTab from "./Tabs/ChecklistTab";
+import DetailsTab from "./Tabs/DetailsTab";
+import ExpensesTab from "./Tabs/ExpensesTab";
+import ItineraryTab from "./Tabs/ItineraryTab";
+import NotesTab from "./Tabs/NotesTab";
+import TravelActionFAB from "./TravelActionFAB";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -53,7 +52,6 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   const [selectedNote, setSelectedNote] = useState<any | null>(null);
   const countryName = extractCountryName(travelPlan.travel.destination);
 
-  /** Done activities with valid coordinates — passed to ShareOverlay for SVG pins + icon legend */
   const doneActivities: DoneActivity[] = (travelPlan.itinerarySection ?? [])
     .flatMap(s => s.itineraryActivity ?? [])
     .filter(a =>
@@ -258,7 +256,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
         <HeaderSection /> 
         <View>
-          <Tabs tabs={tabData} initialActiveTabId="itinerary" type="secondary"/>
+          <Tabs tabs={tabData} initialActiveTabId="details" type="secondary"/>
         </View>
 
         {setShowMapModal && (

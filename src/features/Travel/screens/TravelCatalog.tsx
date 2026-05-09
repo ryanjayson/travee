@@ -1,23 +1,23 @@
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
   RefreshControl,
+  ScrollView,
   StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import TravelDetailPage from "./TravelDetail";
-import ViewTravelModal from "../components/View/Modal";
-import { Travel, TravelPlan } from "../types/TravelDto";
-import { TravelStatus } from "../../../types/enums";
-import { useTravels } from "../hooks/useTravel";
-import { useTravelContext } from "../../../context/TravelContext";
-import Tabs from "../../../components/Tabs/index";
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import StatusBadge from "../../../components/StatusBadge";
+import Tabs from "../../../components/Tabs/index";
+import { useTravelContext } from "../../../context/TravelContext";
+import { TravelStatus } from "../../../types/enums";
+import ViewTravelModal from "../components/View/Modal";
+import { useTravels } from "../hooks/useTravel";
+import { Travel } from "../types/TravelDto";
+import TravelDetailPage from "./TravelDetail";
 
 const TravelCatalog = () => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();

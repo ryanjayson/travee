@@ -1,0 +1,185 @@
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { Travel } from '../../../features/Travel/types/TravelDto';
+import { useTravelContext } from "../../../context/TravelContext";
+import ViewTravelModal from "../../../features/Travel/components/View/Modal";
+import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
+import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
+import { MaterialIcons as Icon } from "@expo/vector-icons";
+
+interface HeroProps {
+  ongoingTrip: Travel | null;
+}
+
+const Hero = ({ ongoingTrip }: HeroProps) => {
+  const navigation = useNavigation<any>();
+  const { selectedTravelPlan } = useTravelContext();
+  const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
+  const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
+  const {
+    data: travelPlan,
+  } = useTravelPlan(ongoingTrip?.id);
+
+  const formatDate = (v?: Date | string) =>
+    v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+  const getDuration = (s?: Date | string, e?: Date | string) => {
+    if (!s || !e) return '';
+    const diff = new Date(e).getTime() - new Date(s).getTime();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+    return `${days} Day${days > 1 ? 's' : ''}`;
+  };
+
+  return (
+    <View className="w-full h-[346px] relative"
+      style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
+    >
+      <Image
+        source={require('../../../assets/images/home_hero.png')}
+        className="w-full h-full "
+        resizeMode="cover"
+        style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0, backgroundColor: "#F2F4F7" }}
+      />
+      <View 
+        className="absolute inset-0 bg-black/80"
+        style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
+       />
+
+      <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 70 : 130 }}>
+          <Text className="text-white text-base mb-2 font-bold">Good morning, travieler</Text>
+        {ongoingTrip ? (
+          <View className="py-2 px-1">
+            <View className="flex-row items-center gap-2">
+              <View className="w-2 h-2 rounded-full bg-green-400" />
+              <Text className="text-green-300 text-[10px] font-bold tracking-widest uppercase">Ongoing</Text>
+            </View>
+
+            <Text className="text-white text-4xl font-bold mb-1" numberOfLines={1}>
+              {ongoingTrip.title}
+            </Text>
+
+            <View className="flex-row items-center gap-1.5 mb-3">
+              <Ionicons name="location-outline" size={16} color="rgba(255,255,255,0.65)" />
+              <Text className="text-white/65 text-md font-medium" numberOfLines={1}>
+                {ongoingTrip.destination}
+              </Text>
+            </View>
+
+            <View className="flex-row items-center gap-1.5 mb-1 justify-between">
+              <View className="flex-row items-center gap-1.5">
+                <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white/65 text-sm">
+                  {formatDate(ongoingTrip.startOrDepartureDate)}
+                  <Ionicons name="arrow-forward-outline" size={10} color="rgba(255,255,255,0.4)" style={{paddingRight: 10, paddingLeft: 10}} />
+                  {ongoingTrip.endOrReturnDate ? `${formatDate(ongoingTrip.endOrReturnDate)}` : ''}
+                </Text>
+                  {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate) ? (
+                <View className="bg-white/15 px-3 py-1 rounded-full">
+                  <Text className="text-white text-xs">
+                    {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate)}
+                  </Text>
+                </View>
+              ) : null}
+              </View>
+            
+            </View>
+
+            <View className="flex-row items-center gap-1.5 mb-1">
+              <Ionicons name="walk-outline" size={14} color="rgba(255,255,255,0.65)" />
+              <Text className="text-white/65 text-sm">
+              12 Planned activities 
+              </Text>
+            </View>
+
+            <View className="flex-row items-center gap-1.5 mb-4">
+              <Ionicons name="list-outline" size={16} color="rgba(255,255,255,0.65)" />
+              <Text className="text-white/65 text-sm " >
+              Show Checklist stats
+              </Text>
+            </View>
+
+            <View className="flex-row items-center gap-8 py-3 justify-between">
+              <TouchableOpacity className='items-center' onPress={() => setShowTravelViewModal(true)}>
+                <Ionicons name="briefcase-outline" size={24} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white/65 text-xs">Details</Text>
+              </TouchableOpacity>
+              <TouchableOpacity className='items-center' onPress={() => navigation.navigate("EditTravelPlan", { travelId: ongoingTrip.id, openModal: 'note' })}>
+                <Ionicons name="document-text-outline" size={24} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white/65 text-xs">Notes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity className='items-center' onPress={() => { }}>
+                <Ionicons name="map-outline" size={24} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white/65 text-xs">Map</Text>
+              </TouchableOpacity>
+              <TouchableOpacity className='items-center' onPress={() => navigation.navigate("EditTravelPlan", { travelId: ongoingTrip.id, openModal: 'expense' })}>
+                <Ionicons name="cash" size={24} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white/65 text-xs">Expense</Text>
+              </TouchableOpacity>
+              <TouchableOpacity className='items-center' onPress={() => setShowItineraryTab(true)}>
+                <Ionicons name="list" size={24} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white/65 text-xs">Itinerary</Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        ) : (
+          <View>
+            <Text
+              className="text-white text-2xl font-extrabold mb-1"
+              style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
+            >
+              Where to go next?
+            </Text>
+            <Text
+              className="text-gray-100 text-base font-medium mb-5"
+              style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
+            >
+              Plan your next adventure with Travie.
+            </Text>
+
+            <View className="flex-row items-center bg-white rounded-xl px-4 py-3 shadow-lg elevation-5">
+              <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 10 }} />
+              <TextInput
+                placeholder="Search destinations, places..."
+                placeholderTextColor="#9ca3af"
+                className="flex-1 text-base text-gray-800"
+              />
+            </View>
+          </View> 
+        )}
+      </View>
+
+      <ViewTravelModal
+        travelId={selectedTravelPlan?.id || ""}
+        showModal={showTravelViewModal}
+        setShowModal={setShowTravelViewModal}
+      />
+
+      <Modal
+       visible={showItineraryTab} transparent={false} animationType="none"
+      >
+              <View className="flex-row justify-between items-center p-5 border-b border-gray-200 pt-10">
+                <View className="flex-row items-center gap-2">
+                    <Text className="text-2xl text-gray-700 font-medium">
+                     Itinerary
+                    </Text>
+                </View>
+                <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
+                    <Icon name="clear" size={36} color={"#333"} />
+                </TouchableOpacity>
+            </View>
+
+            <View className="flex-1">
+              <ItineraryTab
+                  travelPlan={travelPlan}
+                  />
+            </View>
+   
+      </Modal>
+    </View>
+  );
+};
+
+export default Hero;

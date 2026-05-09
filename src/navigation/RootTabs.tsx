@@ -43,6 +43,14 @@ function iconForRoute(routeName: keyof RootTabsParamList, focused: boolean) {
     //   return focused ? "settings" : "settings-outline";
   }
 }
+const HomeTabScreen = () => {
+  return (
+    <TravelProvider>
+      <HomeScreen />
+    </TravelProvider>
+  );
+};
+
 
 const TravelTab = () => {
   return (
@@ -51,6 +59,8 @@ const TravelTab = () => {
     </TravelProvider>
   );
 };
+
+
 
 export function RootTabs() { 
   const [visibleCreateTravelModal, setVisibleCreateTravelModal] = React.useState(false);
@@ -128,7 +138,7 @@ const insets = useSafeAreaInsets();
       },
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />  
+        <Tab.Screen name="Home" component={HomeTabScreen} options={{ headerShown: false }} />  
         <Tab.Screen 
           name="Trips" 
           component={TravelTab} 
