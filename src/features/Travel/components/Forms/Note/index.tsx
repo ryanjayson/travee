@@ -1,24 +1,24 @@
+import { MaterialIcons as Icon } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { Formik } from "formik";
 import React, { useState } from "react";
 import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  StatusBar,
-  Modal,
-  Image,
   Alert,
   FlatList,
+  Image,
+  Modal,
+  ScrollView,
+  StatusBar,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { TextInput, Text } from "react-native-paper";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { Formik } from "formik";
+import { Text, TextInput } from "react-native-paper";
 import * as Yup from "yup";
-import * as ImagePicker from "expo-image-picker";
 import TouchButton from "../../../../../components/atoms/TouchButton";
-import { ItineraryNote, ItineraryActivity } from "../../../types/TravelDto";
-import { useSaveNoteMutation, useDeleteNoteMutation } from "../../../hooks/useNote";
 import { useTravelContext } from "../../../../../context/TravelContext";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
+import { useDeleteNoteMutation, useSaveNoteMutation } from "../../../hooks/useNote";
+import { ItineraryActivity, ItineraryNote } from "../../../types/TravelDto";
 
 interface EditNoteProps {
   itineraryNote: ItineraryNote | null;
@@ -111,7 +111,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
         <View className="flex-1 bg-white rounded-t-[20px] overflow-hidden">
           <StatusBar barStyle="dark-content" />
           <ScrollView
-            className="flex-1 p-[15px] bg-gray-50"
+            className="flex-1 p-[15px] bg-gray-100"
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
@@ -122,7 +122,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
               </Text>
               <TouchableOpacity
                 onPress={() => setShowActivityModal(true)}
-                className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
+                className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3 h-[64px]"
                 accessibilityRole="button"
               >
                 <Icon name="event-note" size={24} color={values.activityId ? "#0C4C8A" : "#BDBDBD"} />
@@ -145,15 +145,18 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
               <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
               <TextInput
                 mode="outlined"
-                placeholder="Note title..."
+                className="!h-[64px]"
+                placeholder="e.g. Food Trip in Osaka..."
                 value={values.title}
                 onChangeText={handleChange("title")}
                 onBlur={handleBlur("title")}
                 error={touched.title && Boolean(errors.title)}
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
-                outlineStyle={{ borderRadius: 16 }}
+                theme={{ colors: { onSurfaceVariant: '#888' } }}
+                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6 }}
+                contentStyle={{ backgroundColor: "transparent" }}
               />
               {touched.title && errors.title && (
                 <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
@@ -167,15 +170,17 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
                 mode="outlined"
                 placeholder="Write your note here..."
                 multiline
-                numberOfLines={6}
+                numberOfLines={4}
                 value={values.content}
                 onChangeText={handleChange("content")}
                 onBlur={handleBlur("content")}
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
-                outlineStyle={{ borderRadius: 16 }}
-                style={{ marginTop: 6, minHeight: 150 }}
+                theme={{ colors: { onSurfaceVariant: '#888' } }}
+                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                style={{ marginTop: 6, height: 120 }}
                 textAlignVertical="top"
+                contentStyle={{ backgroundColor: "transparent" }}
               />
             </View>
 
@@ -184,7 +189,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
               <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Images</Text>
               <TouchableOpacity
                 onPress={() => pickImage(setFieldValue, values.images)}
-                className="border border-dashed border-[#0C4C8A] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3"
+                className="border border-dashed border-[#0C4C8A] h-[150px] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3"
                 accessibilityRole="button"
                 accessibilityLabel="Upload images"
               >
@@ -236,15 +241,19 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
                 </TouchableOpacity>
               </View>
             )}
+
+            <View className="mb-5"></View>
+            
           </ScrollView>
 
-          <View className="px-5 py-4 border-t border-gray-200">
+          <View className="mb-8 mx-4 bg-transparent">
             <TouchButton
               buttonText={itineraryNote?.id ? "Update Note" : "Add Note"}
               onPress={() => handleSubmit()}
-              className="h-[64px]"
+              className="h-[64px] p-6"
             />
           </View>
+                
 
           {/* Activity Selection Modal */}
           <Modal

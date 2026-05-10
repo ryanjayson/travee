@@ -1,20 +1,19 @@
-import React from "react";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
+import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
   Animated,
+  Dimensions,
   Keyboard,
   KeyboardAvoidingView,
+  Modal,
   Platform,
-  Dimensions,
+  Text, TouchableOpacity,
+  View,
+  StatusBar,
 } from "react-native";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
-import EditNote from "./index";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
-import { ItineraryNote, ItineraryActivity } from "../../../types/TravelDto";
+import { ItineraryActivity, ItineraryNote } from "../../../types/TravelDto";
+import EditNote from "./index";
 
 interface NoteModalProps {
   visible: boolean;
@@ -22,10 +21,10 @@ interface NoteModalProps {
   itineraryNote: ItineraryNote | null;
   activities?: ItineraryActivity[];
 }
-
 const { height: screenHeight } = Dimensions.get("window");
 
 const NoteModal = ({ visible, onClose, itineraryNote, activities }: NoteModalProps) => {
+  const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
   const keyboardVisible = useKeyboardVisible();
 
   const handleCancel = () => {
@@ -39,39 +38,40 @@ const NoteModal = ({ visible, onClose, itineraryNote, activities }: NoteModalPro
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <View style={styles.overlay}>
-          <Animated.View
-            className="rounded-t-[30px] bg-white"
-            style={{ height: screenHeight * 0.85, paddingTop: keyboardVisible ? 40 : 10 }}
-          >
-            <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
-              <Text className="tracking-wider uppercase text-base text-gray-500 font-medium">
-                {itineraryNote?.id ? "Edit Note" : "Add Note"}
-              </Text>
-              <TouchableOpacity accessibilityRole="button" onPress={handleCancel}>
-                <Icon name="clear" size={36} color="#333" />
-              </TouchableOpacity>
-            </View>
-            <View className="flex-1">
-              <EditNote
-                itineraryNote={itineraryNote}
-                activities={activities}
-                onClose={onClose}
-              />
-            </View>
-          </Animated.View>
-        </View>
+          <View className="flex-1 bg-black/50 justify-end">
+            <Animated.View
+              className="rounded-t-[30px] bg-white"
+              style={[
+                { height: modalHeight },
+                {
+                  paddingTop:  keyboardVisible ? 180 : 5,
+                }
+              ]}
+            >
+              <StatusBar barStyle={"dark-content"} />
+              <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
+                  <View className="flex-row items-center gap-2">
+                      <Text className="text-2xl text-gray-700 font-medium">
+                            {itineraryNote?.id ? "Edit Note" : "Add Note"}
+                      </Text>
+                  </View>
+                  <TouchableOpacity onPress={handleCancel} disabled={false}>
+                      <Icon name="clear" size={36} color={"#333"} />
+                  </TouchableOpacity>
+              </View>
+  
+              <View className="flex-1">
+                  <EditNote
+                  itineraryNote={itineraryNote}
+                  activities={activities}
+                  onClose={onClose}
+                />
+              </View>
+            </Animated.View>
+          </View>
       </KeyboardAvoidingView>
     </Modal>
-  );
+  )
 };
 
 export default NoteModal;
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-});

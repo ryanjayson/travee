@@ -49,7 +49,6 @@ const SectionModal = ({
         style={{ flex: 1, paddingBottom: 10}}
       >
         <View className="flex-1 bg-black/50 justify-end">
-
            <Animated.View
             className="rounded-t-[30px] bg-white"
             style={[
@@ -60,7 +59,6 @@ const SectionModal = ({
             ]}
           >
             <StatusBar barStyle={"dark-content"} />
-
             <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
                 <View className="flex-row items-center gap-2">
                     <Text className="text-2xl text-gray-700 font-medium">

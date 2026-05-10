@@ -1,26 +1,17 @@
 import React, { useState, useRef } from "react";
 import {
   View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
+  Text, TouchableOpacity,
   Modal,
-  Animated,
-  PanResponder,
-  Dimensions,
-  ActivityIndicator,
-  StatusBar,
+  Animated, Dimensions, StatusBar,
   Keyboard,
   KeyboardAvoidingView,
-  Platform,
+  Platform
 } from "react-native";
 import EditActivity from "../Activity";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
 import { ItineraryActivity } from "../../../../types/TravelDto";
-import Create from "../../../CreateOrEdit";
-import SlideModal from "../../../../../../components/molecules/SlideModal";
 
 interface ActivityModalProps {
   visible: boolean;

@@ -8,6 +8,8 @@ import ViewTravelModal from "../../../features/Travel/components/View/Modal";
 import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
 import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import ExpenseModal from '../../../features/Travel/components/Forms/Expense/Modal';
+import NoteModal from '../../../features/Travel/components/Forms/Note/Modal';
 
 interface HeroProps {
   ongoingTrip: Travel | null;
@@ -18,6 +20,8 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
   const { selectedTravelPlan } = useTravelContext();
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
+  const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
+  const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
   const {
     data: travelPlan,
   } = useTravelPlan(ongoingTrip?.id);
@@ -48,7 +52,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
        />
 
       <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 70 : 130 }}>
-          <Text className="text-white text-base mb-2 font-bold">Good morning, travieler</Text>
+          <Text className="tracking-wider text-white text-base mb-2 font-bold">Good morning, travieler</Text>
         {ongoingTrip ? (
           <View className="py-2 px-1">
             <View className="flex-row items-center gap-2">
@@ -105,22 +109,24 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
                 <Ionicons name="briefcase-outline" size={24} color="rgba(255,255,255,0.65)" />
                 <Text className="text-white/65 text-xs">Details</Text>
               </TouchableOpacity>
-              <TouchableOpacity className='items-center' onPress={() => navigation.navigate("EditTravelPlan", { travelId: ongoingTrip.id, openModal: 'note' })}>
-                <Ionicons name="document-text-outline" size={24} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white/65 text-xs">Notes</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className='items-center' onPress={() => { }}>
-                <Ionicons name="map-outline" size={24} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white/65 text-xs">Map</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className='items-center' onPress={() => navigation.navigate("EditTravelPlan", { travelId: ongoingTrip.id, openModal: 'expense' })}>
+               <TouchableOpacity className='items-center' onPress={() => setShowExpenseModal(true)}>
                 <Ionicons name="cash" size={24} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white/65 text-xs">Expense</Text>
+                <Text className="text-white/65 text-xs">Add Expense</Text>
               </TouchableOpacity>
-              <TouchableOpacity className='items-center' onPress={() => setShowItineraryTab(true)}>
+              <TouchableOpacity className='items-center' onPress={() => setShowNoteModal(true)}>
+                <Ionicons name="document-text-outline" size={24} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white/65 text-xs">Add Note</Text>
+              </TouchableOpacity>
+                <TouchableOpacity className='items-center' onPress={() => setShowItineraryTab(true)}>
                 <Ionicons name="list" size={24} color="rgba(255,255,255,0.65)" />
                 <Text className="text-white/65 text-xs">Itinerary</Text>
               </TouchableOpacity>
+              <TouchableOpacity className='items-center opacity-50' disabled={true} >
+                <Ionicons name="map-outline" size={24} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white/65 text-xs">Map</Text>
+              </TouchableOpacity>
+             
+            
             </View>
 
           </View>
@@ -151,6 +157,9 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         )}
       </View>
 
+
+  {travelPlan && (
+    <>
       <ViewTravelModal
         travelId={selectedTravelPlan?.id || ""}
         showModal={showTravelViewModal}
@@ -158,28 +167,46 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       />
 
       <Modal
-       visible={showItineraryTab} transparent={false} animationType="none"
+       visible={showItineraryTab} 
+       transparent={false} 
+       animationType="none"
       >
-              <View className="flex-row justify-between items-center p-5 border-b border-gray-200 pt-10">
-                <View className="flex-row items-center gap-2">
-                    <Text className="text-2xl text-gray-700 font-medium">
-                     Itinerary
-                    </Text>
-                </View>
-                <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
-                    <Icon name="clear" size={36} color={"#333"} />
-                </TouchableOpacity>
+        <View className="flex-row justify-between items-center p-5 border-b border-gray-200 pt-12">
+            <View className="flex-col flex-1 ">
+                <Text className="text-sm text-gray-400 font-medium">
+                  {travelPlan.travel.title}
+                </Text>
+                <Text className="text-2xl text-gray-700 font-medium">
+                  Itinerary
+                </Text>
             </View>
-
-            <View className="flex-1">
-              <ItineraryTab
-                  travelPlan={travelPlan}
-                  />
-            </View>
-   
+            <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
+                <Icon name="clear" size={36} color={"#333"} />
+            </TouchableOpacity>
+        </View>
+        <View className="flex-1">
+          <ItineraryTab
+              travelPlan={travelPlan}
+              />
+        </View>
       </Modal>
-    </View>
-  );
-};
+
+      <ExpenseModal
+        visible={showExpenseModal}
+        itineraryExpense={null}
+        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
+        onClose={() => setShowExpenseModal(false)}
+      />
+
+      <NoteModal
+        visible={showNoteModal}
+        itineraryNote={null}
+        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
+        onClose={() => setShowNoteModal(false)}
+      />
+    </>
+  )}
+</View>
+)};
 
 export default Hero;

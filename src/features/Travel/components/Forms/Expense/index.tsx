@@ -1,25 +1,24 @@
-import React, { useState } from "react";
-import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  StatusBar,
-  Modal,
-} from "react-native";
-import { TextInput, Text, Divider } from "react-native-paper";
-import { Calendar } from "react-native-calendars";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { Formik } from "formik";
-import * as Yup from "yup";
-import TouchButton from "../../../../../components/atoms/TouchButton";
-import { ItineraryExpense, ItineraryActivity } from "../../../types/TravelDto";
-import { useSaveExpenseMutation } from "../../../hooks/useExpense";
-import { useTravelContext } from "../../../../../context/TravelContext";
-import { useAuth } from "../../../../Auth/hooks/AuthContext";
+import React, { useState } from "react";
+import {
+  Modal,
+  ScrollView,
+  StatusBar,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { ExpenseCategory } from "../../../../../types/enums";
-import ExpenseCategoryIcon from "./ExpenseCategoryIcon";
+import { Text, TextInput } from "react-native-paper";
+import * as Yup from "yup";
 import ActivityIcon from "../../../../../components/ActivityIcon";
+import TouchButton from "../../../../../components/atoms/TouchButton";
+import { useTravelContext } from "../../../../../context/TravelContext";
+import { ExpenseCategory } from "../../../../../types/enums";
+import { useAuth } from "../../../../Auth/hooks/AuthContext";
+import { useSaveExpenseMutation } from "../../../hooks/useExpense";
+import { ItineraryActivity, ItineraryExpense } from "../../../types/TravelDto";
+import ExpenseCategoryIcon from "./ExpenseCategoryIcon";
 
 interface EditExpenseProps {
   itineraryExpense: ItineraryExpense | null;
@@ -111,7 +110,7 @@ const EditExpense = ({
         <View className="flex-1 bg-white rounded-t-[20px] overflow-hidden">
           <StatusBar barStyle={"dark-content"} />
           <ScrollView
-            className="flex-1 p-[15px] bg-gray-50"
+            className="flex-1 p-[15px] bg-gray-100"
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
@@ -119,7 +118,7 @@ const EditExpense = ({
               <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Linked Activity (Optional)</Text>
               <TouchableOpacity
                 onPress={() => setShowActivityModal(true)}
-                className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
+                className="mt-2 border h-[64px] border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
               >
                 {values.activityId ? (
                   <>
@@ -131,7 +130,7 @@ const EditExpense = ({
                 ) : (
                   <>
                     <Icon name="event-note" size={28} color="#BDBDBD" />
-                    <Text className="text-base text-gray-400 flex-1">
+                    <Text className="text-base text-gray-500 flex-1">
                       No Activity Selected
                     </Text>
                   </>
@@ -153,10 +152,14 @@ const EditExpense = ({
                 onChangeText={handleChange("title")}
                 onBlur={handleBlur("title")}
                 error={touched.title && Boolean(errors.title)}
+                className="!h-[64px]"
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
-                outlineStyle={{ borderRadius: 16 }}
+                theme={{ colors: { onSurfaceVariant: '#888' } }}
+                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6 }}
+                contentStyle={{ backgroundColor: "transparent" }}
+
               />
               {touched.title && errors.title && (
                 <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
@@ -174,10 +177,13 @@ const EditExpense = ({
                   onChangeText={handleChange("amount")}
                   onBlur={handleBlur("amount")}
                   error={touched.amount && Boolean(errors.amount)}
+                  className="!h-[64px]"
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#0C4C8A"
-                  outlineStyle={{ borderRadius: 16 }}
+                  theme={{ colors: { onSurfaceVariant: '#888' } }}
+                  outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                   style={{ marginTop: 6 }}
+                  contentStyle={{ backgroundColor: "transparent" }}
                   left={<TextInput.Affix text={values.currency + " "} />}
                 />
               </View>
@@ -187,10 +193,13 @@ const EditExpense = ({
                   mode="outlined"
                   value={values.currency}
                   onChangeText={handleChange("currency")}
+                  className="!h-[64px]"
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#0C4C8A"
-                  outlineStyle={{ borderRadius: 16 }}
+                  theme={{ colors: { onSurfaceVariant: '#888' } }}
+                  outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                   style={{ marginTop: 6 }}
+                  contentStyle={{ backgroundColor: "transparent" }}
                 />
               </View>
             </View>
@@ -199,7 +208,7 @@ const EditExpense = ({
               <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Expense Category</Text>
               <TouchableOpacity
                 onPress={() => setShowCategoryModal(true)}
-                className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
+                className="mt-2 border border-[#E0E0E0] h-[64px] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
               >
                 <ExpenseCategoryIcon category={values.expenseCategory} size={28} color="#0C4C8A" />
                 <Text className="text-base text-gray-800 flex-1">
@@ -215,7 +224,7 @@ const EditExpense = ({
               <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Date & Time</Text>
               <TouchableOpacity
                 onPress={() => setShowDatePicker(true)}
-                className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-between"
+                className="mt-2 border h-[64px] border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-between"
               >
                 <Text className="text-base text-gray-800">
                   {values.dateTime.toLocaleString()}
@@ -246,18 +255,23 @@ const EditExpense = ({
                 onBlur={handleBlur("notes")}
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
-                outlineStyle={{ borderRadius: 16 }}
+                theme={{ colors: { onSurfaceVariant: '#888' } }}
+                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6, height: 120 }}
                 textAlignVertical="top"
+                contentStyle={{ backgroundColor: "transparent" }}
               />
             </View>
+
+            <View className="mb-5"></View>
+
           </ScrollView>
 
-          <View className="px-5 py-4 border-t border-gray-200">
+          <View className="mb-8 mx-4 bg-transparent">
             <TouchButton
               buttonText={itineraryExpense?.id ? "Update Expense" : "Add Expense"}
               onPress={() => handleSubmit()}
-              className="h-[64px]"
+              className="h-[64px] p-6"
             />
           </View>
 
