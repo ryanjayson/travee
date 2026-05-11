@@ -16,10 +16,12 @@ import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import Create from ".";
 import { TravelStatus } from "../../../../types/enums";
 import StatusBadge from "../../../../components/StatusBadge";
+import { Travel } from "../../types/TravelDto";
 
 interface AddTripModalProps {
   showModal?: boolean;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  tripData?: Travel;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -27,6 +29,7 @@ const { height: screenHeight } = Dimensions.get("window");
 const CreateTripModal = ({
   showModal = false,
   setShowModal,
+  tripData,
 }: AddTripModalProps) => {
 
   const [isSaving, setIsSaving] = useState(false);
@@ -69,7 +72,7 @@ const CreateTripModal = ({
                 </TouchableOpacity>
             </View>
             <View className="flex-1">
-              <Create onClose={handleCancel} onStatusChange={setTripStatus} />
+              <Create onClose={handleCancel} onStatusChange={setTripStatus} tripData={tripData} />
             </View>
           </Animated.View>
         </View>

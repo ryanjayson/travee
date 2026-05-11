@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Image, TouchableOpacity, TextInput, Modal } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Image, TouchableOpacity, TextInput, Modal, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Travel } from '../../../features/Travel/types/TravelDto';
@@ -10,6 +10,8 @@ import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import ExpenseModal from '../../../features/Travel/components/Forms/Expense/Modal';
 import NoteModal from '../../../features/Travel/components/Forms/Note/Modal';
+import MapboxDestinationSelector, { MapboxPlace } from '../../../features/Travel/components/MapboxDestinationSelector';
+import CreateTripModal from '../../../features/Travel/components/CreateOrEdit/Modal';
 
 interface HeroProps {
   ongoingTrip: Travel | null;
@@ -22,6 +24,35 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
   const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
   const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
+  const [showMapSelector, setShowMapSelector] = useState<boolean>(false);
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [prefilledTripData, setPrefilledTripData] = useState<any>(null);
+  
+  const words = ['country', 'city', 'destination', 'place', 'province', 'region'];
+  const [currentWord, setCurrentWord] = useState(words[0]);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setCurrentWord((prev) => {
+          const nextIndex = (words.indexOf(prev) + 1) % words.length;
+          return words[nextIndex];
+        });
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   const {
     data: travelPlan,
   } = useTravelPlan(ongoingTrip?.id);
@@ -52,11 +83,15 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
        />
 
       <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 70 : 130 }}>
-          <Text className="tracking-wider text-white text-base mb-2 font-bold">Good morning, travieler</Text>
+          <Text className="tracking-wider text-white text-sm mb-1">Good morning, travieler</Text>
         {ongoingTrip ? (
           <View className="py-2 px-1">
             <View className="flex-row items-center gap-2">
-              <View className="w-2 h-2 rounded-full bg-green-400" />
+            
+               <Animated.View 
+                style={{ opacity: fadeAnim }}
+                className="w-2 h-2 rounded-full bg-green-400"
+              />
               <Text className="text-green-300 text-[10px] font-bold tracking-widest uppercase">Ongoing</Text>
             </View>
 
@@ -107,7 +142,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
             <View className="flex-row items-center gap-8 py-3 justify-between">
               <TouchableOpacity className='items-center' onPress={() => setShowTravelViewModal(true)}>
                 <Ionicons name="briefcase-outline" size={24} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white/65 text-xs">Details</Text>
+                <Text className="text-white/65 text-xs">View Trip</Text>
               </TouchableOpacity>
                <TouchableOpacity className='items-center' onPress={() => setShowExpenseModal(true)}>
                 <Ionicons name="cash" size={24} color="rgba(255,255,255,0.65)" />
@@ -133,26 +168,30 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         ) : (
           <View>
             <Text
-              className="text-white text-2xl font-extrabold mb-1"
-              style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
+              className="text-white text-4xl font-extrabold mb-2"
             >
               Where to go next?
             </Text>
             <Text
-              className="text-gray-100 text-base font-medium mb-5"
-              style={{ textShadowColor: 'rgba(0,0,0,0.75)', textShadowOffset: { width: -1, height: 1 }, textShadowRadius: 10 }}
+              className="text-gray-100 text-m font-medium mb-5"
             >
               Plan your next adventure with Travie.
             </Text>
 
-            <View className="flex-row items-center bg-white rounded-xl px-4 py-3 shadow-lg elevation-5">
+            <TouchableOpacity 
+              onPress={() => setShowMapSelector(true)}
+              className="flex-row items-center bg-white rounded-3xl px-4 py-3 shadow-lg elevation-5"
+              activeOpacity={0.8}
+            >
               <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 10 }} />
-              <TextInput
-                placeholder="Search destinations, places..."
-                placeholderTextColor="#9ca3af"
-                className="flex-1 text-base text-gray-800"
-              />
-            </View>
+              <Text className="text-base text-gray-400">Search a </Text>
+              <Animated.Text 
+                style={{ opacity: fadeAnim }} 
+                className="flex-1 text-base text-gray-400"
+              >
+                 {currentWord}...
+              </Animated.Text>
+            </TouchableOpacity>
           </View> 
         )}
       </View>
@@ -206,6 +245,39 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       />
     </>
   )}
+
+      <Modal
+        visible={showMapSelector}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowMapSelector(false)}
+      >
+        <View className="bg-white flex-1">
+          <MapboxDestinationSelector
+            onClose={() => setShowMapSelector(false)}
+            onSelect={(place: MapboxPlace) => {
+              setPrefilledTripData({
+                destination: place.fullName,
+                destinationData: {
+                  id: place.id,
+                  coordinates: {
+                    longitude: place.coordinates.longitude,
+                    latitude: place.coordinates.latitude,
+                  },
+                },
+              });
+              setShowMapSelector(false);
+              setShowCreateModal(true);
+            }}
+          />
+        </View>
+      </Modal>
+
+      <CreateTripModal
+        showModal={showCreateModal}
+        setShowModal={setShowCreateModal}
+        tripData={prefilledTripData}
+      />
 </View>
 )};
 

@@ -25,8 +25,8 @@ const UpcomingTrips = ({ upcomingTrips, isLoading }: UpcomingTripsProps) => {
   };
 
   return (
-    <View className="mb-6 mt-3">
-      <View className="flex-row items-center justify-between px-5 mb-3">
+    <View className="mt-[40px] mb-6 pt-[28px]">
+      <View className="flex-row items-center justify-between px-6 mb-3 ">
         <Text className="text-2xl font-bold text-gray-800">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
           <Text className="text-sm text-[#0C4C8A] font-semibold">

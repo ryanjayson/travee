@@ -32,7 +32,6 @@ const HomeScreen = () => {
       }
   }, [travels]);
 
-  // ─── Stats ───────────────────────────────────────────────────────────────
   const getTripStats = () => {
     if (!travels) return { total: 0, completed: 0, upcoming: 0 };
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -160,12 +159,11 @@ const HomeScreen = () => {
         <Hero ongoingTrip={currentOngoingTrip} />
 
         <View
-          className="bg-transparent pt-4"
-          style={{ borderTopLeftRadius: currentOngoingTrip ? 0 : 30, borderTopRightRadius: currentOngoingTrip ? 0 : 30 }}
+          className="bg-gray-100 "
+          style={{ marginTop: currentOngoingTrip ? 0 :-50, borderTopLeftRadius: currentOngoingTrip ? 0 : 30, borderTopRightRadius: currentOngoingTrip ? 0 : 30 }}
         >
           <UpcomingTrips upcomingTrips={upcomingTrips} isLoading={isLoading} />
 
-          {/* ── Stats ───────────────────────────────────────────────────── */}
           <View className="flex-row px-5 mb-6 gap-[15px]">
             <View className="flex-1 bg-white rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
               <View className="flex-row items-center mb-2">
@@ -193,7 +191,6 @@ const HomeScreen = () => {
             </View>
           </View>
 
-          {/* ── Top Activities ───────────────────────────────────────────── */}
           <View className="pb-2">
             <Text className="text-xl font-bold text-gray-800 px-5 mb-[15px]">Your top activities</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 15 }}>
