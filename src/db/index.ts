@@ -10,6 +10,7 @@ import Expense from "./models/Expense";
 import Note from "./models/Note";
 import ChecklistGroup from "./models/ChecklistGroup";
 import ChecklistItem from "./models/ChecklistItem";
+import UserProfile from "./models/UserProfile";
 
 const adapter = new SQLiteAdapter({
   schema,
@@ -26,5 +27,5 @@ const adapter = new SQLiteAdapter({
 
 export const database = new Database({
   adapter,
-  modelClasses: [Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem],
+  modelClasses: [Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem, UserProfile],
 });

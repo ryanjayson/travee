@@ -12,4 +12,8 @@ Check these maps
 
 <!-- - add errlogs table to store error encouter for logging for future references and debugging 
 -- add service worker to update status based on the system device date
-- add fullscreen icon / fixed icon on view of trip, when click full screen the current tab-->
+- add fullscreen icon / fixed icon on view of trip, when click full screen the current tab
+
+Pin setup-->
+
+

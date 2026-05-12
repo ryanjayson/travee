@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import { Dimensions, FlatList, Image, RefreshControl, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAllActivitiesWithDestination } from '../features/Travel/hooks/useActivity';
+import { useAllActivities } from '../features/Travel/hooks/useActivity';
 import { useTravels } from '../features/Travel/hooks/useTravel';
 import { Travel } from '../features/Travel/types/TravelDto';
 import { ActivityType, TravelStatus } from '../types/enums';
@@ -14,9 +14,22 @@ const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
-  const { data: allActivities } = useAllActivitiesWithDestination();
+  const { data: allActivities } = useAllActivities();
   const { selectTravelPlan } = useTravelContext();
   const [currentOngoingTrip, setCurrentOngoingTrip] = useState<Travel | null>(null);
+
+  const currentYear = new Date().getFullYear();
+  const startDate = new Date(currentYear, 0, 1);
+  const completedTripIds = travels?.filter(t => t.status === TravelStatus.Completed).map(t => t.id) || [];
+  // const activitiesFromCompletedTrips = allActivities?.filter(a => a.travelId && completedTripIds.includes(a.travelId)) || [];
+  
+  const activityCountsByDay: Record<string, number> = {};
+  allActivities && allActivities.forEach(a => {
+    if (a.createdAt) {
+      const dateStr = new Date(a.createdAt).toISOString().split('T')[0];
+      activityCountsByDay[dateStr] = (activityCountsByDay[dateStr] || 0) + 1;
+    }
+  });
 
   useEffect(() => {
     if (!travels) return;
@@ -126,15 +139,6 @@ const HomeScreen = () => {
   const favoriteActivityName = topActivityTypes[0]?.typeName ?? 'N/A';
   const upcomingTrips = getAllUpcomingTrips();
 
-  const formatDate = (v?: Date | string) =>
-    v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
-
-  const getDuration = (s?: Date | string, e?: Date | string) => {
-    if (!s || !e) return '';
-    const days = Math.ceil(Math.abs(new Date(e).getTime() - new Date(s).getTime()) / 86400000) + 1;
-    return `${days} Day${days > 1 ? 's' : ''}`;
-  };
-
   const handleRefresh = async () => {
     setRefreshing(true);
     await refetch();
@@ -164,31 +168,96 @@ const HomeScreen = () => {
         >
           <UpcomingTrips upcomingTrips={upcomingTrips} isLoading={isLoading} />
 
+          <View className="justify-between mb-3">
+              <Text className=" px-6 text-xl font-bold text-gray-800">Glimpse</Text>
           <View className="flex-row px-5 mb-6 gap-[15px]">
-            <View className="flex-1 bg-white rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
-              <View className="flex-row items-center mb-2">
-                <View className="bg-[#E8F5E8] p-2 rounded-lg mr-2.5">
-                  <Ionicons name="airplane" size={18} color="#2E7D32" />
+          <View className="flex-[1] bg-[#E8F5E8] rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
+              <View className="flex-row items-center">
+                <View className="p-2 rounded-lg mr-2.5">
+                  <Ionicons name="airplane" size={34} color="#2E7D32" />
                 </View>
-                <Text className="text-sm text-gray-500 font-medium">Total Trips</Text>
               </View>
               <View className="flex-row items-baseline gap-1.5">
                 <Text className="text-2xl font-extrabold text-gray-900">{tripStats.completed}</Text>
                 <Text className="text-[12px] text-gray-500 font-medium">Done</Text>
-                <Text className="text-2xl font-extrabold text-gray-900 ml-1">{tripStats.upcoming}</Text>
+              </View>
+              <View className="flex-row items-baseline gap-1.5">
+                <Text className="text-2xl font-extrabold text-gray-900">{tripStats.upcoming}</Text>
                 <Text className="text-[12px] text-gray-500 font-medium">Upcoming</Text>
+              </View>
+              <View className="flex-row items-baseline mb-2">
+                    <Text className="text-sm text-gray-500 font-medium">Trips Stat</Text>
               </View>
             </View>
 
-            <View className="flex-1 bg-white rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
-              <View className="flex-row items-center mb-2">
-                <View className="bg-[#E3F2FD] p-2 rounded-lg mr-2.5">
-                  <Ionicons name="heart" size={18} color="#0C4C8A" />
-                </View>
-                <Text className="text-sm text-gray-500 font-medium">Favorite</Text>
+       
+            {/* Activity Heatmap (2/3) */}
+            <View className="flex-[2] bg-white rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
+              <View className="absolute top-[15px] left-2 ">
+                  <Text className="text-xs font-bold text-gray-600 mr-2">{currentYear}</Text>
               </View>
-              <Text className="text-xl font-extrabold text-gray-900" numberOfLines={1}>{favoriteActivityName}</Text>
+              <View className="justify-between mr-2 absolute left-[12px] top-[30px] gap-y-1">
+                  <Text className="text-xs text-gray-400">M</Text>
+                  <Text className="text-xs text-gray-400">T</Text>
+                  <Text className="text-xs text-gray-400">W</Text>
+                  <Text className="text-xs text-gray-400">T</Text>
+                  <Text className="text-xs text-gray-400">F</Text>
+                  <Text className="text-xs text-gray-400">S</Text>
+                  <Text className="text-xs text-gray-400">S</Text>
+                </View>
+
+              <View className="pl-4">
+        
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View>
+                  <View className="flex-row mb-1 ml-2 items-center ">
+                    <View className="flex-row justify-between" style={{ width: 424 }}>
+                      {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, i) => (
+                        <Text key={i} className="text-[10px] text-gray-400">{month}</Text>
+                      ))}
+                    </View>
+                  </View>
+                  
+                  <View className="flex-row">
+                    <View className="flex-row gap-0.5">
+                      {Array.from({ length: 52 }).map((_, colIndex) => (
+                        <View key={colIndex} className="gap-0.5">
+                          {Array.from({ length: 7 }).map((_, rowIndex) => {
+                            const cellDate = new Date(startDate);
+                            cellDate.setDate(cellDate.getDate() + (colIndex * 7 + rowIndex));
+                            const dateStr = cellDate.toISOString().split('T')[0];
+                            const count = activityCountsByDay[dateStr] || 0;
+                            
+                            let level = 0;
+                            if (count > 0) level = 1;
+                            if (count > 2) level = 2;
+                            if (count > 4) level = 3;
+                            if (count > 6) level = 4;
+
+                            const colors = [
+                              'bg-gray-100',      // 0
+                              'bg-brand-100',     // 1
+                              'bg-brand-300',     // 2
+                              'bg-brand-500',     // 3
+                              'bg-brand-primary'  // 4
+                            ];
+                            return (
+                              <View 
+                                key={rowIndex} 
+                                className={`w-[15px] h-[15px] rounded-sm ${colors[level]}`}
+                              />
+                            );
+                          })}
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                </View>
+              </ScrollView>
+              </View>
+      
             </View>
+          </View>
           </View>
 
           <View className="pb-2">

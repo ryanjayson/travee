@@ -11,7 +11,7 @@ interface SectionAccordionProps {
 
 const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
   return (
-    <View className="flex-1 bg-gray-200 pt-8">
+    <View className="flex-1 bg-gray-100">
       <ScrollView className="flex-1">
         <View className="flex-1 p-2.5">
           {iterarysections &&
@@ -45,8 +45,8 @@ const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
                     title={
                       section.startDate ? (
                         <Text>
-                          <Text className="text-[#999] font-bold">
-                            {new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })}
+                          <Text className="text-[#999] ">
+                            {`${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
                           </Text>
                           {section.title}
                         </Text>

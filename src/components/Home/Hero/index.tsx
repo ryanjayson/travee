@@ -12,6 +12,7 @@ import ExpenseModal from '../../../features/Travel/components/Forms/Expense/Moda
 import NoteModal from '../../../features/Travel/components/Forms/Note/Modal';
 import MapboxDestinationSelector, { MapboxPlace } from '../../../features/Travel/components/MapboxDestinationSelector';
 import CreateTripModal from '../../../features/Travel/components/CreateOrEdit/Modal';
+import { ProfileScreen } from '../../../screens/ProfileScreen';
 
 interface HeroProps {
   ongoingTrip: Travel | null;
@@ -27,6 +28,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
   const [showMapSelector, setShowMapSelector] = useState<boolean>(false);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [prefilledTripData, setPrefilledTripData] = useState<any>(null);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
   
   const words = ['country', 'city', 'destination', 'place', 'province', 'region'];
   const [currentWord, setCurrentWord] = useState(words[0]);
@@ -81,6 +83,17 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         className="absolute inset-0 bg-black/80"
         style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
        />
+
+      {/* Profile icon — always visible top-right */}
+      <TouchableOpacity
+        className="absolute top-[52px] right-5 w-9 h-9 rounded-full bg-white/20 items-center justify-center"
+        onPress={() => setShowProfileModal(true)}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Open profile"
+      >
+        <Ionicons name="person-outline" size={20} color="#fff" />
+      </TouchableOpacity>
 
       <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 70 : 130 }}>
           <Text className="tracking-wider text-white text-sm mb-1">Good morning, travieler</Text>
@@ -278,6 +291,15 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         setShowModal={setShowCreateModal}
         tripData={prefilledTripData}
       />
+
+      <Modal
+        visible={showProfileModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowProfileModal(false)}
+      >
+        <ProfileScreen onClose={() => setShowProfileModal(false)} />
+      </Modal>
 </View>
 )};
 

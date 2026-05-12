@@ -120,7 +120,6 @@ const ActivityItemCard = ({
                 {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </Text>
           )}
-          
             <View>
               <TouchableOpacity
                 activeOpacity={0.7}

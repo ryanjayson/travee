@@ -25,7 +25,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading }: UpcomingTripsProps) => {
   };
 
   return (
-    <View className="mt-[40px] mb-6 pt-[28px]">
+    <View className="mb-6 pt-[28px]">
       <View className="flex-row items-center justify-between px-6 mb-3 ">
         <Text className="text-2xl font-bold text-gray-800">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
@@ -91,9 +91,9 @@ const UpcomingTrips = ({ upcomingTrips, isLoading }: UpcomingTripsProps) => {
           )}
         />
       ) : (
-        <View className="mx-5  rounded-2xl p-6 items-center border-2 border-dashed border-gray-300">
+        <View className="mx-5  h-[160px] align-middle justify-center rounded-2xl p-6 items-center border-2 border-dashed border-gray-300">
           <Ionicons name="briefcase-outline" size={32} color="#d1d5db" />
-          <Text className="text-base text-gray-500 font-medium mt-2 mb-1">No upcoming trips</Text>
+          <Text className="text-base text-gray-500 font-medium mt-2">No upcoming trips</Text>
           <Text className="text-sm text-gray-400 text-center">
             Start planning your next adventure!
           </Text>

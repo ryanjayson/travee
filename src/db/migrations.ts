@@ -142,5 +142,24 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 11,
+      steps: [
+        createTable({
+          name: "user_profiles",
+          columns: [
+            { name: "username", type: "string", isOptional: true },
+            { name: "display_name", type: "string", isOptional: true },
+            { name: "email", type: "string", isOptional: true },
+            { name: "avatar_url", type: "string", isOptional: true },
+            { name: "default_currency", type: "string", isOptional: true },
+            { name: "default_country", type: "string", isOptional: true },
+            { name: "account_type", type: "number" },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
   ],
 });

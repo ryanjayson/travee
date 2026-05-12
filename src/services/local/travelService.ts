@@ -327,6 +327,28 @@ export const getAllActivitiesWithDestinationLocally = async (): Promise<any[]> =
   }));
 };
 
+export const getAllActivitiesLocally = async (): Promise<any[]> => {
+  const activities = await database.get<Activity>("itinerary_activities").query().fetch();
+
+  return activities.map((a) => ({
+    id: a.id,
+    // travelId: a.travelId,
+    sectionId: a.section.id,
+    title: a.title,
+    description: a.description,
+    destination: a.destination,
+    destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
+    startDate: a.startDate,
+    endDate: a.endDate,
+    // status: a.status,
+    isOffline: a.isOffline,
+    type: a.type,
+    isDone: a.isDone,
+    createdAt: a.createdAt,
+    updatedAt: a.updatedAt,
+  }));
+};
+
 /** Permanently deletes a locally-stored travel and all its sections/activities/expenses/notes/checklists. */
 export const deleteTravelLocally = async (id: string): Promise<void> => {
   await database.write(async () => {
