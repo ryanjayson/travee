@@ -29,7 +29,16 @@
     },
     "plugins": [
       "@morrowdigital/watermelondb-expo-plugin",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0C4C8A",
+          "sounds": [],
+          "iosDisplayInForeground": true
+        }
+      ]
     ]
   }
 }

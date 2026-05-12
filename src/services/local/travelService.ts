@@ -425,12 +425,22 @@ export const deleteActivityLocally = async (id: string): Promise<void> => {
   });
 };
 
-/** Updates a locally-stored travel status to Cancelled (5). */
+/** Updates a locally-stored travel status. */
 export const cancelTravelLocally = async (id: string): Promise<void> => {
   await database.write(async () => {
     const travel = await database.get<Travel>("travels").find(id);
     await travel.update((t) => {
       t.status = 5; // TravelStatus.Cancelled
+    });
+  });
+};
+
+/** Updates the status of a locally-stored travel to any TravelStatus value. */
+export const updateTravelStatusLocally = async (id: string, status: number): Promise<void> => {
+  await database.write(async () => {
+    const travel = await database.get<Travel>("travels").find(id);
+    await travel.update((t) => {
+      t.status = status;
     });
   });
 };
