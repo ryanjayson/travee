@@ -26,6 +26,7 @@ import { database } from "../db";
 import Travel from "../db/models/Travel";
 import { TravelStatus } from "../types/enums";
 import { updateTravelStatusLocally } from "./local/travelService";
+import { logger, ErrorCategory, ErrorSeverity } from "./errorLogger";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -154,9 +155,11 @@ export async function runTripStatusCheck(queryClient: QueryClient): Promise<void
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
     }
   } catch (error) {
-    // Silent — never crash the app over a background check
-    if (__DEV__) {
-      console.warn("[TripStatusService] Error during trip status check:", error);
-    }
+    // Persist to error_logs for post-hoc debugging
+    logger.service(error, {
+      errorCode: "ERR_TRIP_STATUS_CHECK",
+      action: "runTripStatusCheck",
+      severity: ErrorSeverity.High,
+    });
   }
 }

@@ -70,7 +70,8 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
   };
 
   return (
-    <View className="w-full h-[346px] relative"
+    <View>
+    <View className="w-full h-[306px] relative"
       style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
     >
       <Image
@@ -152,30 +153,6 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
               </Text>
             </View>
 
-            <View className="flex-row items-center gap-8 py-3 justify-between">
-              <TouchableOpacity className='items-center' onPress={() => setShowTravelViewModal(true)}>
-                <Ionicons name="briefcase-outline" size={24} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white/65 text-xs">View Trip</Text>
-              </TouchableOpacity>
-               <TouchableOpacity className='items-center' onPress={() => setShowExpenseModal(true)}>
-                <Ionicons name="cash" size={24} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white/65 text-xs">Add Expense</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className='items-center' onPress={() => setShowNoteModal(true)}>
-                <Ionicons name="document-text-outline" size={24} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white/65 text-xs">Add Note</Text>
-              </TouchableOpacity>
-                <TouchableOpacity className='items-center' onPress={() => setShowItineraryTab(true)}>
-                <Ionicons name="list" size={24} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white/65 text-xs">Itinerary</Text>
-              </TouchableOpacity>
-              <TouchableOpacity className='items-center opacity-50' disabled={true} >
-                <Ionicons name="map-outline" size={24} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white/65 text-xs">Map</Text>
-              </TouchableOpacity>
-             
-            
-            </View>
 
           </View>
         ) : (
@@ -210,54 +187,54 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       </View>
 
 
-  {travelPlan && (
-    <>
-      <ViewTravelModal
-        travelId={selectedTravelPlan?.id || ""}
-        showModal={showTravelViewModal}
-        setShowModal={setShowTravelViewModal}
-      />
+      {travelPlan && (
+        <>
+          <ViewTravelModal
+            travelId={selectedTravelPlan?.id || ""}
+            showModal={showTravelViewModal}
+            setShowModal={setShowTravelViewModal}
+          />
 
-      <Modal
-       visible={showItineraryTab} 
-       transparent={false} 
-       animationType="none"
-      >
-        <View className="flex-row justify-between items-center p-5 border-b border-gray-200 pt-12">
-            <View className="flex-col flex-1 ">
-                <Text className="text-sm text-gray-400 font-medium">
-                  {travelPlan.travel.title}
-                </Text>
-                <Text className="text-2xl text-gray-700 font-medium">
-                  Itinerary
-                </Text>
+          <Modal
+          visible={showItineraryTab} 
+          transparent={false} 
+          animationType="none"
+          >
+            <View className="flex-row justify-between items-center p-5 border-b border-gray-200 pt-12">
+                <View className="flex-col flex-1 ">
+                    <Text className="text-sm text-gray-400 font-medium">
+                      {travelPlan.travel.title}
+                    </Text>
+                    <Text className="text-2xl text-gray-700 font-medium">
+                      Itinerary
+                    </Text>
+                </View>
+                <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
+                    <Icon name="clear" size={36} color={"#333"} />
+                </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
-                <Icon name="clear" size={36} color={"#333"} />
-            </TouchableOpacity>
-        </View>
-        <View className="flex-1">
-          <ItineraryTab
-              travelPlan={travelPlan}
-              />
-        </View>
-      </Modal>
+            <View className="flex-1">
+              <ItineraryTab
+                  travelPlan={travelPlan}
+                  />
+            </View>
+          </Modal>
 
-      <ExpenseModal
-        visible={showExpenseModal}
-        itineraryExpense={null}
-        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
-        onClose={() => setShowExpenseModal(false)}
-      />
+          <ExpenseModal
+            visible={showExpenseModal}
+            itineraryExpense={null}
+            activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
+            onClose={() => setShowExpenseModal(false)}
+          />
 
-      <NoteModal
-        visible={showNoteModal}
-        itineraryNote={null}
-        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
-        onClose={() => setShowNoteModal(false)}
-      />
-    </>
-  )}
+          <NoteModal
+            visible={showNoteModal}
+            itineraryNote={null}
+            activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
+            onClose={() => setShowNoteModal(false)}
+          />
+        </>
+      )}
 
       <Modal
         visible={showMapSelector}
@@ -301,6 +278,35 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         <ProfileScreen onClose={() => setShowProfileModal(false)} />
       </Modal>
 </View>
+
+      <View className="flex-row items-center gap-8 py-3 justify-between z-40">
+        <TouchableOpacity className='items-center' onPress={() => setShowTravelViewModal(true)}>
+          <Ionicons name="briefcase-outline" size={24} color="rgba(255,255,255,0.65)" />
+          <Text className="text-white/65 text-xs">View Trip</Text>
+        </TouchableOpacity>
+          <TouchableOpacity className='items-center' onPress={() => setShowExpenseModal(true)}>
+          <Ionicons name="cash" size={24} color="rgba(255,255,255,0.65)" />
+          <Text className="text-white/65 text-xs">Add Expense</Text>
+        </TouchableOpacity>
+        <TouchableOpacity className='items-center' onPress={() => setShowNoteModal(true)}>
+          <Ionicons name="document-text-outline" size={24} color="rgba(255,255,255,0.65)" />
+          <Text className="text-white/65 text-xs">Add Note</Text>
+        </TouchableOpacity>
+          <TouchableOpacity className='items-center' onPress={() => setShowItineraryTab(true)}>
+          <Ionicons name="list" size={24} color="rgba(255,255,255,0.65)" />
+          <Text className="text-white/65 text-xs">Itinerary</Text>
+        </TouchableOpacity>
+        <TouchableOpacity className='items-center opacity-50' disabled={true} >
+          <Ionicons name="map-outline" size={24} color="rgba(255,255,255,0.65)" />
+          <Text className="text-white/65 text-xs">Map</Text>
+        </TouchableOpacity>
+        
+      
+      </View>
+
+
+    </View>
+
 )};
 
 export default Hero;

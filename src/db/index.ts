@@ -11,6 +11,8 @@ import Note from "./models/Note";
 import ChecklistGroup from "./models/ChecklistGroup";
 import ChecklistItem from "./models/ChecklistItem";
 import UserProfile from "./models/UserProfile";
+import ErrorLog from "./models/ErrorLog";
+import { logger, ErrorSeverity } from "../services/errorLogger";
 
 const adapter = new SQLiteAdapter({
   schema,
@@ -22,10 +24,16 @@ const adapter = new SQLiteAdapter({
   onSetUpError: (error) => {
     // Database failed to load -- provide backwards compatibility or its runtime error
     console.error("WatermelonDB setup error:", error);
+    // Also persist via logger (best-effort, may not work if DB is completely broken)
+    logger.db(error, {
+      errorCode: "ERR_DB_SETUP",
+      severity: ErrorSeverity.Critical,
+      action: "database_init",
+    });
   },
 });
 
 export const database = new Database({
   adapter,
-  modelClasses: [Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem, UserProfile],
+  modelClasses: [Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem, UserProfile, ErrorLog],
 });

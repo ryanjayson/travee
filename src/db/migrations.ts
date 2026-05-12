@@ -161,5 +161,30 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 12,
+      steps: [
+        createTable({
+          name: "error_logs",
+          columns: [
+            { name: "category", type: "string", isIndexed: true },
+            { name: "severity", type: "string", isIndexed: true },
+            { name: "error_code", type: "string", isOptional: true },
+            { name: "message", type: "string" },
+            { name: "stack_trace", type: "string", isOptional: true },
+            { name: "screen", type: "string", isOptional: true },
+            { name: "action", type: "string", isOptional: true },
+            { name: "context_data", type: "string", isOptional: true },
+            { name: "app_version", type: "string", isOptional: true },
+            { name: "platform", type: "string", isOptional: true },
+            { name: "device_info", type: "string", isOptional: true },
+            { name: "is_resolved", type: "boolean" },
+            { name: "resolved_note", type: "string", isOptional: true },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
   ],
 });

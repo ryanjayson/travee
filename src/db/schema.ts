@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 11,
+  version: 12,
   tables: [
     tableSchema({
       name: "travels",
@@ -137,6 +137,31 @@ export const schema = appSchema({
         { name: "default_currency", type: "string", isOptional: true },
         { name: "default_country", type: "string", isOptional: true },
         { name: "account_type", type: "number" },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "error_logs",
+      columns: [
+        // Categorization
+        { name: "category", type: "string", isIndexed: true }, // 'API' | 'Database' | 'UI' | 'Navigation' | 'Service' | 'Unknown'
+        { name: "severity", type: "string", isIndexed: true }, // 'low' | 'medium' | 'high' | 'critical'
+        // Error identity
+        { name: "error_code", type: "string", isOptional: true },   // e.g. 'ERR_NETWORK', 'ERR_DB_WRITE'
+        { name: "message", type: "string" },                         // error.message
+        { name: "stack_trace", type: "string", isOptional: true },   // error.stack (truncated)
+        // Context
+        { name: "screen", type: "string", isOptional: true },        // screen/component where it happened
+        { name: "action", type: "string", isOptional: true },        // what user action triggered it
+        { name: "context_data", type: "string", isOptional: true },  // JSON: relevant IDs, params, etc.
+        // App state
+        { name: "app_version", type: "string", isOptional: true },
+        { name: "platform", type: "string", isOptional: true },      // 'ios' | 'android'
+        { name: "device_info", type: "string", isOptional: true },   // JSON: model, OS version
+        // Status
+        { name: "is_resolved", type: "boolean" },
+        { name: "resolved_note", type: "string", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],

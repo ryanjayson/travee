@@ -10,6 +10,22 @@ import { AuthProvider } from "./src/features/Auth/hooks/AuthContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTripStatusCheck } from "./src/hooks/useTripStatusCheck";
+import ErrorBoundary from "./src/components/ErrorBoundary";
+import { logError, ErrorCategory, ErrorSeverity } from "./src/services/errorLogger";
+
+// ─── Global unhandled JS error capture ───────────────────────────────────────
+// Catches promise rejections and unhandled JS errors that escape React boundaries.
+const originalHandler = ErrorUtils.getGlobalHandler();
+ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
+  logError(error, {
+    category: ErrorCategory.Unknown,
+    severity: isFatal ? ErrorSeverity.Critical : ErrorSeverity.High,
+    errorCode: isFatal ? "ERR_FATAL_JS" : "ERR_UNHANDLED_JS",
+    action: "global_error_handler",
+    contextData: { isFatal: !!isFatal },
+  });
+  originalHandler(error, isFatal);
+});
 
 const queryClient = new QueryClient();
 
@@ -31,7 +47,9 @@ export default function App() {
             <GestureHandlerRootView style={{ flex: 1 }}>
               <StatusBar style="auto" />
               <TripStatusGuard />
-              <AppNavigator />
+              <ErrorBoundary screen="AppRoot">
+                <AppNavigator />
+              </ErrorBoundary>
             </GestureHandlerRootView>
           </SafeAreaProvider>
         </PaperProvider>
