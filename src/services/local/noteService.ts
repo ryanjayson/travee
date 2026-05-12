@@ -62,3 +62,23 @@ export const deleteNoteLocally = async (noteId: string): Promise<void> => {
     await note.destroyPermanently();
   });
 };
+
+export const fetchLocalNotesByActivity = async (activityId: string): Promise<ItineraryNote[]> => {
+  const notes = await database
+    .get<Note>("itinerary_notes")
+    .query(Q.where("activity_id", activityId))
+    .fetch();
+
+  return notes.map((n) => ({
+    id: n.id,
+    travelId: n.travel.id,
+    activityId: activityId,
+    title: n.title,
+    content: n.content || undefined,
+    images: n.images ? JSON.parse(n.images) : [],
+    userId: n.userId || undefined,
+    isOffline: n.isOffline,
+    createdAt: n.createdAt,
+    updatedAt: n.updatedAt,
+  }));
+};

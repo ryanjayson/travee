@@ -162,3 +162,29 @@ export const toggleChecklistItemLocally = async (
     });
   });
 };
+
+export const fetchLocalChecklistItemsByActivity = async (activityId: string): Promise<ChecklistItem[]> => {
+  const records = await database
+    .get<ChecklistItemModel>("checklist_items")
+    .query(Q.where("activity_id", activityId))
+    .fetch();
+
+  return records.map((r) => ({
+    id: r.id,
+    travelId: r.travel.id,
+    activityId: activityId,
+    checklistGroupId: r.checklistGroup?.id || undefined,
+    title: r.title,
+    description: r.description || undefined,
+    sortOrder: r.sortOrder,
+    isDone: r.isDone,
+    userId: r.userId || undefined,
+    checkedBy: r.checkedBy || undefined,
+    checkedAt: r.checkedAt || undefined,
+    uncheckBy: r.uncheckBy || undefined,
+    uncheckAt: r.uncheckAt || undefined,
+    isOffline: r.isOffline,
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+  }));
+};

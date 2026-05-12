@@ -1,5 +1,5 @@
 import { ItineraryNote } from "../../features/Travel/types/TravelDto";
-import { saveNoteLocally, fetchLocalNotes, deleteNoteLocally } from "../local/noteService";
+import { saveNoteLocally, fetchLocalNotes, deleteNoteLocally, fetchLocalNotesByActivity } from "../local/noteService";
 
 export const saveItineraryNote = async (noteData: ItineraryNote) => {
   return await saveNoteLocally(noteData);
@@ -11,4 +11,8 @@ export const fetchItineraryNotes = async (travelId: string) => {
 
 export const deleteItineraryNote = async (noteId: string) => {
   return await deleteNoteLocally(noteId);
+};
+
+export const fetchItineraryNotesByActivity = async (activityId: string) => {
+  return await fetchLocalNotesByActivity(activityId);
 };

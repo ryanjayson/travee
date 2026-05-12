@@ -67,3 +67,27 @@ export const fetchLocalExpenses = async (travelId: string): Promise<ItineraryExp
     updatedAt: e.updatedAt,
   }));
 };
+
+export const fetchLocalExpensesByActivity = async (activityId: string): Promise<ItineraryExpense[]> => {
+  const expenses = await database
+    .get<Expense>("itinerary_expenses")
+    .query(Q.where("activity_id", activityId))
+    .fetch();
+
+  return expenses.map((e) => ({
+    id: e.id,
+    travelId: e.travel.id,
+    activityId: activityId,
+    title: e.title,
+    amount: e.amount,
+    dateTime: e.dateTime,
+    currency: e.currency || undefined,
+    category: e.category || undefined,
+    expenseCategory: e.expenseCategory || undefined,
+    userId: e.userId || undefined,
+    notes: e.notes || undefined,
+    isOffline: e.isOffline,
+    createdAt: e.createdAt,
+    updatedAt: e.updatedAt,
+  }));
+};

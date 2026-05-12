@@ -8,6 +8,7 @@ import {
   fetchChecklistItems,
   deleteChecklistItem,
   toggleChecklistItem,
+  fetchChecklistItemsByActivity,
 } from "../../../services/travel/checklistService";
 
 // ─── Groups ─────────────────────────────────────────────────────────────────
@@ -81,5 +82,12 @@ export const useToggleChecklistItemMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
     },
+  });
+};
+export const useChecklistItemsByActivity = (activityId: string) => {
+  return useQuery({
+    queryKey: ["checklistItemsByActivity", activityId],
+    queryFn: () => fetchChecklistItemsByActivity(activityId),
+    enabled: !!activityId,
   });
 };

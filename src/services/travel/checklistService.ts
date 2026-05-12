@@ -7,6 +7,7 @@ import {
   fetchLocalChecklistItems,
   deleteChecklistItemLocally,
   toggleChecklistItemLocally,
+  fetchLocalChecklistItemsByActivity,
 } from "../local/checklistService";
 
 // ─── Groups ─────────────────────────────────────────────────────────────────
@@ -39,4 +40,8 @@ export const deleteChecklistItem = async (id: string) => {
 
 export const toggleChecklistItem = async (id: string, isDone: boolean, userId: string) => {
   return await toggleChecklistItemLocally(id, isDone, userId);
+};
+
+export const fetchChecklistItemsByActivity = async (activityId: string) => {
+  return await fetchLocalChecklistItemsByActivity(activityId);
 };

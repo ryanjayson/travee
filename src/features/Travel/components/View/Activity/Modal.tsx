@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
 import Activity from ".";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTravelContext } from "../../../../../context/TravelContext";
+import { useItineraryActivity } from "../../../hooks/useActivity";
+import ActivityModal from "../../Edit/Itinerary/Activity/Modal";
 
 interface ViewActivityModalProps {
   id: string;
@@ -24,8 +26,13 @@ const ViewActivityModal = ({
   showModal = false,
   setShowModal,
 }: ViewActivityModalProps) => {
-  const modalHeight = useMemo(() => screenHeight * 0.8, []);
+  const modalHeight = useMemo(() => screenHeight, []);
   const { selectedTravelPlan } = useTravelContext();
+  
+  // Fetch activity data here to pass to Edit Modal
+  const { data: itineraryActivity } = useItineraryActivity(id);
+  
+  const [showEditActivityModal, setShowEditActivityModal] = useState(false);
 
   const handleCancel = () => setShowModal(false);
 
@@ -40,24 +47,45 @@ const ViewActivityModal = ({
         <Animated.View 
           className="bg-white rounded-t-xl overflow-hidden" 
           style={{ height: modalHeight, paddingTop: 40 }}
-
         >
-          <View className="p-1.5 flex-row items-center border-b border-gray-100">
+          <View className="p-1.5 flex-row items-center justify-between border-b border-gray-100">
+            <View className="flex-row items-center">
+              <TouchableOpacity
+                className="pr-3.5 p-0.5"
+                onPress={handleCancel}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Icon name="close" size={36} color="#777" />
+              </TouchableOpacity>
+   
+              <Text className="text-xl font-medium">{selectedTravelPlan?.title}</Text>
+            </View>
+
+            {/* Edit button on the right */}
             <TouchableOpacity
-              className="pr-3.5 p-0.5"
-              onPress={handleCancel}
+              className="p-2 mr-2"
+              onPress={() => setShowEditActivityModal(true)}
               activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="Edit activity"
             >
-              <Icon name="close" size={36} color="#777" />
+              <Icon name="edit" size={28} color="#777" />
             </TouchableOpacity>
- 
-            <Text className="text-xl font-medium">{selectedTravelPlan?.title}</Text>
           </View>
 
           <Activity id={id} onClose={handleCancel} />
         </Animated.View>
       </View>
+
+      {/* Edit Activity Modal */}
+      {itineraryActivity && (
+        <ActivityModal
+          visible={showEditActivityModal}
+          itineraryActivity={itineraryActivity}
+          onClose={() => setShowEditActivityModal(false)}
+        />
+      )}
     </Modal>
   );
 };
