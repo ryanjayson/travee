@@ -169,7 +169,7 @@ const HomeScreen = () => {
           <UpcomingTrips upcomingTrips={upcomingTrips} isLoading={isLoading} />
 
           <View className="justify-between mb-3">
-              <Text className=" px-6 text-xl font-bold text-gray-800">Glimpse</Text>
+              <Text className=" px-6 text-xl font-bold text-gray-800">Travel Insights</Text>
           <View className="flex-row px-5 mb-6 gap-[15px]">
           <View className="flex-[1] bg-[#E8F5E8] rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
               <View className="flex-row items-center">

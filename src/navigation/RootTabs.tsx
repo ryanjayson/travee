@@ -76,7 +76,7 @@ const insets = useSafeAreaInsets();
         screenOptions={({ route }): BottomTabNavigationOptions => ({
         headerTitleAlign: "left",
         headerShadowVisible: false,
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
 
         tabBarActiveTintColor: '#0C4C8A',
         tabBarInactiveTintColor: '#8E8E93',

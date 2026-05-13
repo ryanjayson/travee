@@ -1,25 +1,24 @@
-import React, { useState } from "react";
-import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  Animated,
-  Image,
-} from "react-native";
-import { TextInput } from "react-native-paper";
-import TouchButton from "../../../../components/atoms/TouchButton";
-import { Calendar } from "react-native-calendars";
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import CheckboxGroup from "../../../../components/GroupCheckboxes";
-import { useUpdateTravel, useTravels } from "../../hooks/useTravel";
-import { CreateTravelData, DestinationDto, Travel } from "../../types/TravelDto";
-import { TravelStatus } from "../../../../types/enums";
-import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { Text, Checkbox } from 'react-native-paper';
+import { useFormik } from "formik";
+import React, { useState } from "react";
+import {
+  Animated,
+  Image,
+  Modal,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Calendar } from "react-native-calendars";
+import { Checkbox, Text, TextInput } from "react-native-paper";
+import * as Yup from "yup";
+import TouchButton from "../../../../components/atoms/TouchButton";
+import CheckboxGroup from "../../../../components/GroupCheckboxes";
+import { TravelStatus } from "../../../../types/enums";
+import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
+import { DestinationDto, Travel } from "../../types/TravelDto";
+import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 
 export interface CreateOrEditProps {
   onClose: () => void;
@@ -124,11 +123,11 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
     },
   });
 
-  const handleCancel = () => {
-    formik.resetForm();
-    setError(null);
-    onClose();
-  };
+  // const handleCancel = () => {
+  //   formik.resetForm();
+  //   setError(null);
+  //   onClose();
+  // };
 
   const formattedStartDate = formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toLocaleDateString() : "";
   const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";

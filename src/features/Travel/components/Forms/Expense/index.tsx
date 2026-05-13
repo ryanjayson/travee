@@ -1,5 +1,5 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { Formik } from "formik";
+import { useFormik } from "formik";
 import React, { useState } from "react";
 import {
   Modal,
@@ -55,13 +55,28 @@ const EditExpense = ({
 }: EditExpenseProps) => {
   const { selectedTravelPlan } = useTravelContext();
   const { userToken } = useAuth();
-  const saveMutation = useSaveExpenseMutation();
+  const { mutate: updateExpense, isPending: isSaving } = useSaveExpenseMutation();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
 
-  const handleSaveExpense = async (values: ExpenseFormValues) => {
-    const payload: ItineraryExpense = {
+  const formik = useFormik({
+    initialValues: {
+      id: itineraryExpense?.id,
+        travelId: itineraryExpense?.travelId || selectedTravelPlan?.id || "",
+        activityId: itineraryExpense?.activityId || activityId,
+        title: itineraryExpense?.title || "",
+        amount: itineraryExpense?.amount?.toString() || "",
+        dateTime: itineraryExpense?.dateTime ? new Date(itineraryExpense.dateTime) : new Date(),
+        currency: itineraryExpense?.currency || "USD",
+        category: itineraryExpense?.category || "General",
+        expenseCategory: itineraryExpense?.expenseCategory ?? ExpenseCategory.None,
+        userId: itineraryExpense?.userId || userToken || "current-user",
+        notes: itineraryExpense?.notes || "",
+    },
+    validationSchema: ExpenseSchema,
+    onSubmit: (values) => {
+      const payload: ItineraryExpense = {
       id: values.id,
       travelId: values.travelId,
       activityId: values.activityId,
@@ -75,44 +90,25 @@ const EditExpense = ({
       notes: values.notes,
       isOffline: true,
     };
+    updateExpense({...payload as any }, {
+          onSuccess: () => {
+            formik.resetForm();
+            onClose();
+          },
+          onError: (err: any) => {
+            console.error("Failed to save travel:", err);
+            // setError("Failed to save travel. Please try again.");
+          },
+        });
 
-    await saveMutation.mutateAsync(payload);
-    onClose();
-  };
+    },
+  });
 
   return (
-    <Formik<ExpenseFormValues>
-      initialValues={{
-        id: itineraryExpense?.id,
-        travelId: itineraryExpense?.travelId || selectedTravelPlan?.id || "",
-        activityId: itineraryExpense?.activityId || activityId,
-        title: itineraryExpense?.title || "",
-        amount: itineraryExpense?.amount?.toString() || "",
-        dateTime: itineraryExpense?.dateTime ? new Date(itineraryExpense.dateTime) : new Date(),
-        currency: itineraryExpense?.currency || "USD",
-        category: itineraryExpense?.category || "General",
-        expenseCategory: itineraryExpense?.expenseCategory ?? ExpenseCategory.None,
-        userId: itineraryExpense?.userId || userToken || "current-user",
-        notes: itineraryExpense?.notes || "",
-      }}
-      validationSchema={ExpenseSchema}
-      onSubmit={handleSaveExpense}
-    >
-      {({
-        handleChange,
-        handleBlur,
-        handleSubmit,
-        setFieldValue,
-        values,
-        errors,
-        touched,
-      }) => (
-        <View className="flex-1 bg-white rounded-t-[20px] overflow-hidden">
-          <StatusBar barStyle={"dark-content"} />
+      <View className="flex-1 bg-gray-100 overflow-hidden">
           <ScrollView
             className="flex-1 p-[15px] bg-gray-100"
             showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
           >
             <View className="mb-5">
               <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Linked Activity (Optional)</Text>
@@ -120,11 +116,11 @@ const EditExpense = ({
                 onPress={() => setShowActivityModal(true)}
                 className="mt-2 border h-[64px] border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
               >
-                {values.activityId ? (
+                {formik.values.activityId ? (
                   <>
-                    <ActivityIcon type={activities?.find(a => a.id === values.activityId)?.type as any} size={28} />
+                    <ActivityIcon type={activities?.find(a => a.id === formik.values.activityId)?.type as any} size={28} />
                     <Text className="text-base text-gray-800 flex-1" numberOfLines={1}>
-                      {activities?.find(a => a.id === values.activityId)?.title}
+                      {activities?.find(a => a.id === formik.values.activityId)?.title}
                     </Text>
                   </>
                 ) : (
@@ -135,8 +131,8 @@ const EditExpense = ({
                     </Text>
                   </>
                 )}
-                {values.activityId && (
-                   <TouchableOpacity onPress={() => setFieldValue("activityId", undefined)}>
+                {formik.values.activityId && (
+                   <TouchableOpacity onPress={() => formik.setFieldValue("activityId", undefined)}>
                      <Icon name="close" size={20} color="#666" />
                    </TouchableOpacity>
                 )}
@@ -148,10 +144,10 @@ const EditExpense = ({
               <TextInput
                 mode="outlined"
                 placeholder="What was this for?"
-                value={values.title}
-                onChangeText={handleChange("title")}
-                onBlur={handleBlur("title")}
-                error={touched.title && Boolean(errors.title)}
+                value={formik.values.title}
+                onChangeText={formik.handleChange("title")}
+                onBlur={formik.handleBlur("title")}
+                error={formik.touched.title && Boolean(formik.errors.title)}
                 className="!h-[64px]"
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
@@ -161,8 +157,8 @@ const EditExpense = ({
                 contentStyle={{ backgroundColor: "transparent" }}
 
               />
-              {touched.title && errors.title && (
-                <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
+              {formik.touched.title && formik.errors.title && (
+                <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.title}</Text>
               )}
             </View>
 
@@ -173,10 +169,10 @@ const EditExpense = ({
                   mode="outlined"
                   placeholder="0.00"
                   keyboardType="numeric"
-                  value={values.amount}
-                  onChangeText={handleChange("amount")}
-                  onBlur={handleBlur("amount")}
-                  error={touched.amount && Boolean(errors.amount)}
+                  value={formik.values.amount}
+                  onChangeText={formik.handleChange("amount")}
+                  onBlur={formik.handleBlur("amount")}
+                  error={formik.touched.amount && Boolean(formik.errors.amount)}
                   className="!h-[64px]"
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#0C4C8A"
@@ -184,15 +180,18 @@ const EditExpense = ({
                   outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                   style={{ marginTop: 6 }}
                   contentStyle={{ backgroundColor: "transparent" }}
-                  left={<TextInput.Affix text={values.currency + " "} />}
+                  left={<TextInput.Affix text={formik.values.currency + " "} />}
                 />
+                {formik.touched.amount && formik.errors.amount && (
+                  <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.amount}</Text>
+                )}
               </View>
               <View className="w-1/3">
                 <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Currency</Text>
                 <TextInput
                   mode="outlined"
-                  value={values.currency}
-                  onChangeText={handleChange("currency")}
+                  value={formik.values.currency}
+                  onChangeText={formik.handleChange("currency")}
                   className="!h-[64px]"
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#0C4C8A"
@@ -210,11 +209,11 @@ const EditExpense = ({
                 onPress={() => setShowCategoryModal(true)}
                 className="mt-2 border border-[#E0E0E0] h-[64px] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
               >
-                <ExpenseCategoryIcon category={values.expenseCategory} size={28} color="#0C4C8A" />
+                <ExpenseCategoryIcon category={formik.values.expenseCategory} size={28} color="#0C4C8A" />
                 <Text className="text-base text-gray-800 flex-1">
-                  {values.expenseCategory === ExpenseCategory.None
+                  {formik.values.expenseCategory === ExpenseCategory.None
                     ? "Select Category"
-                    : ExpenseCategory[values.expenseCategory].replace(/([A-Z])/g, ' $1').trim()}
+                    : ExpenseCategory[formik.values.expenseCategory].replace(/([A-Z])/g, ' $1').trim()}
                 </Text>
                 <Icon name="keyboard-arrow-down" size={24} color="#666" />
               </TouchableOpacity>
@@ -227,16 +226,16 @@ const EditExpense = ({
                 className="mt-2 border h-[64px] border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-between"
               >
                 <Text className="text-base text-gray-800">
-                  {values.dateTime.toLocaleString()}
+                  {formik.values.dateTime.toLocaleString()}
                 </Text>
                 <Icon name="event" size={24} color="#0C4C8A" />
               </TouchableOpacity>
               <DateTimePickerModal
                 isVisible={showDatePicker}
                 mode="datetime"
-                date={values.dateTime}
+                date={formik.values.dateTime}
                 onConfirm={(date) => {
-                  setFieldValue("dateTime", date);
+                  formik.setFieldValue("dateTime", date);
                   setShowDatePicker(false);
                 }}
                 onCancel={() => setShowDatePicker(false)}
@@ -250,9 +249,9 @@ const EditExpense = ({
                 placeholder="Additional details..."
                 multiline
                 numberOfLines={4}
-                value={values.notes}
-                onChangeText={handleChange("notes")}
-                onBlur={handleBlur("notes")}
+                value={formik.values.notes}
+                onChangeText={formik.handleChange("notes")}
+                onBlur={formik.handleBlur("notes")}
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
@@ -270,7 +269,8 @@ const EditExpense = ({
           <View className="mb-8 mx-4 bg-transparent">
             <TouchButton
               buttonText={itineraryExpense?.id ? "Update Expense" : "Add Expense"}
-              onPress={() => handleSubmit()}
+              onPress={() => formik.handleSubmit()}
+              disabled={!formik.isValid || isSaving}
               className="h-[64px] p-6"
             />
           </View>
@@ -301,7 +301,7 @@ const EditExpense = ({
                           key={key}
                           className="p-4 border-b border-gray-100 flex-row items-center gap-4"
                           onPress={() => {
-                            setFieldValue("expenseCategory", categoryValue);
+                            formik.setFieldValue("expenseCategory", categoryValue);
                             setShowCategoryModal(false);
                           }}
                         >
@@ -309,7 +309,7 @@ const EditExpense = ({
                           <Text className="text-base text-gray-800">
                             {key.replace(/([A-Z])/g, ' $1').trim()}
                           </Text>
-                          {values.expenseCategory === categoryValue && (
+                          {formik.values.expenseCategory === categoryValue && (
                             <Icon name="check" size={24} color="#0C4C8A" style={{ marginLeft: "auto" }} />
                           )}
                         </TouchableOpacity>
@@ -340,7 +340,7 @@ const EditExpense = ({
                    <TouchableOpacity
                     className="p-4 border-b border-gray-100 flex-row items-center gap-4"
                     onPress={() => {
-                      setFieldValue("activityId", undefined);
+                      formik.setFieldValue("activityId", undefined);
                       setShowActivityModal(false);
                     }}
                   >
@@ -348,7 +348,7 @@ const EditExpense = ({
                     <Text className="text-base text-gray-800">
                       None
                     </Text>
-                    {!values.activityId && (
+                    {!formik.values.activityId && (
                       <Icon name="check" size={24} color="#0C4C8A" style={{ marginLeft: "auto" }} />
                     )}
                   </TouchableOpacity>
@@ -357,7 +357,7 @@ const EditExpense = ({
                       key={activity.id}
                       className="p-4 border-b border-gray-100 flex-row items-center gap-4"
                       onPress={() => {
-                        setFieldValue("activityId", activity.id);
+                        formik.setFieldValue("activityId", activity.id);
                         setShowActivityModal(false);
                       }}
                     >
@@ -372,7 +372,7 @@ const EditExpense = ({
                            </Text>
                         )}
                       </View>
-                      {values.activityId === activity.id && (
+                      {formik.values.activityId === activity.id && (
                         <Icon name="check" size={24} color="#0C4C8A" style={{ marginLeft: "auto" }} />
                       )}
                     </TouchableOpacity>
@@ -382,8 +382,6 @@ const EditExpense = ({
             </View>
           </Modal>
         </View>
-      )}
-    </Formik>
   );
 };
 
