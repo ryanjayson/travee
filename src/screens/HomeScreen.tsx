@@ -171,7 +171,7 @@ const HomeScreen = () => {
           <View className="justify-between mb-3">
               <Text className=" px-6 text-xl font-bold text-gray-800">Travel Insights</Text>
           <View className="flex-row px-5 mb-6 gap-[15px]">
-          <View className="flex-[1] bg-[#E8F5E8] rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
+          <View className="flex-1 bg-[#E8F5E8] rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
               <View className="flex-row items-center">
                 <View className="p-2 rounded-lg mr-2.5">
                   <Ionicons name="airplane" size={34} color="#2E7D32" />
@@ -192,7 +192,7 @@ const HomeScreen = () => {
 
        
             {/* Activity Heatmap (2/3) */}
-            <View className="flex-[2] bg-white rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
+            <View className="flex-2 bg-white rounded-2xl p-4 shadow-sm elevation-2 border border-gray-100">
               <View className="absolute top-[15px] left-2 ">
                   <Text className="text-xs font-bold text-gray-600 mr-2">{currentYear}</Text>
               </View>
