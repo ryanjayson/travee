@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Image, TouchableOpacity, TextInput, Modal, Animated } from 'react-native';
+import { Animated, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Travel } from '../../../features/Travel/types/TravelDto';
@@ -278,11 +278,11 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       </View>
 
       <View className="p-5 flex-1 flex-row items-center gap-8 py-3 justify-between z-40">
-        <TouchableOpacity className='items-center justify-center w-[48px] h-[48px] bg-gray-100 rounded-full' onPress={() => setShowTravelViewModal(true)}>
+        <TouchableOpacity className='items-center justify-center w-[48px] h-[48px] bg-brand-primary/10 rounded-full' onPress={() => setShowTravelViewModal(true)}>
           <Ionicons name="briefcase-outline" size={24} color="#000" />
           <Text className="text-primary text-xs">View Trip</Text>
         </TouchableOpacity>
-          <TouchableOpacity className='items-center justify-center w-[48px] h-[48px] bg-gray-100 rounded-full' onPress={() => setShowExpenseModal(true)}>
+        <TouchableOpacity className='items-center text-center justify-center w-[48px] h-[48px] bg-brand-primary/30 rounded-xl' onPress={() => setShowExpenseModal(true)}>
           <Ionicons name="cash" size={24} color="#000" />
           <Text className="text-primary text-xs">Add Expense</Text>
         </TouchableOpacity>

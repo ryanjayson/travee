@@ -270,7 +270,10 @@ const EditExpense = ({
             <TouchButton
               buttonText={itineraryExpense?.id ? "Update Expense" : "Add Expense"}
               onPress={() => formik.handleSubmit()}
-              disabled={!formik.isValid || isSaving}
+              // disabled={!formik.isValid || isSaving}
+          disabled={!formik.values.amount || isSaving}
+              
+
               className="h-[64px] p-6"
             />
           </View>
