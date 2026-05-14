@@ -12,6 +12,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTripStatusCheck } from "./src/hooks/useTripStatusCheck";
 import ErrorBoundary from "./src/components/ErrorBoundary";
 import { logError, ErrorCategory, ErrorSeverity } from "./src/services/errorLogger";
+import { UIManager, Platform } from "react-native";
+
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 // ─── Global unhandled JS error capture ───────────────────────────────────────
 // Catches promise rejections and unhandled JS errors that escape React boundaries.

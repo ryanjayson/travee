@@ -7,6 +7,7 @@ interface DraggableSectionContainerProps {
   onDragStart: (index: number) => void;
   onDragMove: (currentIndex: number, dy: number, moveY: number) => void;
   onDragEnd: (fromIndex: number, toIndex: number) => void;
+  isChildActive?: boolean;
   children: (panHandlers: any, isActive: boolean) => React.ReactNode;
 }
 
@@ -16,6 +17,7 @@ const DraggableSectionContainer = ({
   onDragStart,
   onDragMove,
   onDragEnd,
+  isChildActive,
   children,
 }: DraggableSectionContainerProps) => {
   const pan = useRef(new Animated.ValueXY()).current;
@@ -58,19 +60,17 @@ const DraggableSectionContainer = ({
         // because sections have drastically variable heights! We will just pass 0 as targetIndex and let parent handle it.
         propsRef.current.onDragEnd(currentIndex, 0);
 
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
-          friction: 5,
-        }).start();
+        // Instantly reset the pan so LayoutAnimation can smoothly move the container
+        // to its new position without dual-animation conflicting bounds.
+        pan.setValue({ x: 0, y: 0 });
       },
     })
   ).current;
 
   const animatedStyle = {
     transform: pan.getTranslateTransform(),
-    zIndex: isActive ? 9999 : 1,
-    elevation: isActive ? 10 : 0,
+    zIndex: isActive || isChildActive ? 9999 : 1,
+    elevation: isActive || isChildActive ? 10 : 0,
     opacity: isActive ? 0.6 : 1,
     backgroundColor: isActive ? "#F8F9FA" : "transparent",
     flex: 1,

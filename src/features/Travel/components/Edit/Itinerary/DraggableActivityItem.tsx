@@ -85,11 +85,9 @@ const DraggableActivityItem = ({
         propsRef.current.onDragEnd(currentIndex, targetIndex);
 
         // Snap back to original position (the list will re-render with new data)
-        Animated.spring(pan, {
-          toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
-          friction: 5,
-        }).start();
+        // Instantly reset the pan so LayoutAnimation can smoothly move the container
+        // to its new position without dual-animation conflicting bounds.
+        pan.setValue({ x: 0, y: 0 });
       },
     }),
   ).current;
@@ -117,7 +115,7 @@ const DraggableActivityItem = ({
   return (
     <Animated.View
       style={animatedStyle}
-      className={`rounded-md p-2 mb-3 border border-[#ddd] flex-row items-center ${
+      className={`rounded-md p-2 border border-[#ddd] flex-row items-center ${
         isActive ? "bg-[#F8F9FA] opacity-60" : "bg-white"}
         ${startDate ? "bg-gray-100" : "" }
       `}
