@@ -217,7 +217,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
           <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
           <TextInput
             mode="outlined"
-            className="!h-[64px]"
+            className="h-[64px]"
             placeholder="Your trip name"
             value={formik.values.title}
             onChangeText={formik.handleChange("title")}
@@ -260,7 +260,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                 <View pointerEvents="none">
                   <TextInput
                     mode="outlined"
-                    className="!h-[64px]"
+                    className="h-[64px]"
                     placeholder="Search place to visit..."
                     value={formik.values.destination}
                     editable={false}

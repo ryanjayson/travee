@@ -361,25 +361,28 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
               previousNeighbor?.sortOrder,
               nextNeighbor?.sortOrder
             );
+            
             updatedActivity.sortOrder = newSortOrder;
 
             if (updatedActivity.id) {
-              updateActivitySortOrderLocally(
+              const res = updateActivitySortOrderLocally(
                 updatedActivity.id, 
                 newSortOrder, 
                 targetSectionId !== sourceSectionId ? targetSectionId : undefined
               );
 
-              const updateSort: UpdateSortVariables = {
-                id: updatedActivity.id,
-                prevSortOrder: previousNeighbor?.sortOrder,
-                nextSortOrder: nextNeighbor?.sortOrder,
-              };
-              updateActivitySortMutation(updateSort);
+              Alert.alert("Success", "Sort updated");
 
-              if (targetSectionId !== sourceSectionId) {
-                updateActivityMutation(updatedActivity);
-              }
+              // const updateSort: UpdateSortVariables = {
+              //   id: updatedActivity.id,
+              //   prevSortOrder: previousNeighbor?.sortOrder,
+              //   nextSortOrder: nextNeighbor?.sortOrder,
+              // };
+              // updateActivitySortMutation(updateSort);
+
+              // if (targetSectionId !== sourceSectionId) {
+              //   updateActivityMutation(updatedActivity);
+              // }
             }
 
             return { ...section, itineraryActivity: newActivities };
@@ -406,6 +409,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     setModalVisible(true);
     setMenuVisible(false);
   };
+
   const handleMenuAddSection = () => {
     debugger;
     setCurrentSectionId(null);
@@ -836,7 +840,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                             <DraggableActivityItem
                               onPress={() => handleSectionActivityPress(activity, section.id || "")}
                               id={activity.id}
-                              title={activity.title}
+                              title={activity.title + ' ' + activity.sortOrder}
                               description={activity.sortOrder}
                               location={""}
                               startDate={activity.startDate?.toString() || null}

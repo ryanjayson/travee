@@ -109,6 +109,7 @@ const EditExpense = ({
           <ScrollView
             className="flex-1 p-[15px] bg-gray-100"
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="never"
           >
             <View className="mb-5">
               <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Linked Activity (Optional)</Text>
@@ -148,7 +149,7 @@ const EditExpense = ({
                 onChangeText={formik.handleChange("title")}
                 onBlur={formik.handleBlur("title")}
                 error={formik.touched.title && Boolean(formik.errors.title)}
-                className="!h-[64px]"
+                className="h-[64px]"
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#0C4C8A"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
@@ -173,7 +174,7 @@ const EditExpense = ({
                   onChangeText={formik.handleChange("amount")}
                   onBlur={formik.handleBlur("amount")}
                   error={formik.touched.amount && Boolean(formik.errors.amount)}
-                  className="!h-[64px]"
+                  className="h-[64px]"
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#0C4C8A"
                   theme={{ colors: { onSurfaceVariant: '#888' } }}
@@ -192,7 +193,7 @@ const EditExpense = ({
                   mode="outlined"
                   value={formik.values.currency}
                   onChangeText={formik.handleChange("currency")}
-                  className="!h-[64px]"
+                  className="h-[64px]"
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#0C4C8A"
                   theme={{ colors: { onSurfaceVariant: '#888' } }}
@@ -264,19 +265,16 @@ const EditExpense = ({
 
             <View className="mb-5"></View>
 
+            <View className="mb-8 mx-4 bg-transparent">
+              <TouchButton
+                buttonText={itineraryExpense?.id ? "Update Expense" : "Add Expense"}
+                onPress={() => formik.handleSubmit()}
+                disabled={!formik.values.title?.trim() || isSaving}
+                className="h-[64px] p-6"
+              />
+            </View>
+
           </ScrollView>
-
-          <View className="mb-8 mx-4 bg-transparent">
-            <TouchButton
-              buttonText={itineraryExpense?.id ? "Update Expense" : "Add Expense"}
-              onPress={() => formik.handleSubmit()}
-              // disabled={!formik.isValid || isSaving}
-          disabled={!formik.values.amount || isSaving}
-              
-
-              className="h-[64px] p-6"
-            />
-          </View>
 
           <Modal
             visible={showCategoryModal}

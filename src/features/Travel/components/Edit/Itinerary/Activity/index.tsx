@@ -28,7 +28,9 @@ import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Image } from "react-native";
 import { DestinationDto } from "../../../../types/TravelDto";
 import { useSaveChecklistItemMutation, useChecklistItems, useToggleChecklistItemMutation, useDeleteChecklistItemMutation } from "../../../../hooks/useChecklist";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
+import { useTravelPlan } from "../../../../hooks/useTravel";
 
 interface Place {
   id: string;
@@ -81,7 +83,10 @@ const EditActivity = ({
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
   const { generateSortOrder } = useLexicographicSort();
-  const currentSection = selectedTravelPlan?.itinerarySection?.find(s => s.id === itinerarySectionId);
+  const {
+    data: travelPlan,
+  } = useTravelPlan(selectedTravelPlan?.id || "");
+  const currentSection = travelPlan?.itinerarySection?.find(s => s.id === itinerarySectionId);
 
   // Checklist state
   const [newCheckTitle, setNewCheckTitle] = useState("");
@@ -142,6 +147,7 @@ const EditActivity = ({
       selectedTravelPlan?.id
     ) {
 
+      debugger;
       // Build proper Date objects from strings
       let finalStartDate: Date | undefined = undefined;
       if (values.startDate) {
@@ -161,40 +167,50 @@ const EditActivity = ({
 
       // If creating a new activity, or if the user changed the date/time, generate a new sortOrder
       if (!itineraryActivity?.id || dateChanged) {
-        const currentSection = selectedTravelPlan?.itinerarySection?.find(s => s.id === (values.sectionId || ""));
+        const currentSection = travelPlan?.itinerarySection?.find(s => s.id === (values.sectionId || ""));
         // Filter out the current activity so it doesn't compare against itself when editing
         const existingActivities = [...(currentSection?.itineraryActivity || [])].filter(a => a.id !== itineraryActivity?.id);
 
         if (finalStartDate) {
-          // Has start date: sort existing timed activities chronologically
-          const timedActivities = existingActivities
-            .filter(a => a.startDate)
-            .sort((a, b) => new Date(b.startDate!).getTime() - new Date(a.startDate!).getTime());
+          // Sort ALL activities: timed activities chronologically first, then untimed activities by sortOrder
+          const sortedActivities = [...existingActivities].sort((a, b) => {
+            if (a.startDate && b.startDate) {
+              const timeA = new Date(a.startDate).getTime();
+              const timeB = new Date(b.startDate).getTime();
+              if (timeA === timeB) {
+                return (a.sortOrder || "").localeCompare(b.sortOrder || "");
+              }
+              return timeA - timeB;
+            }
+            if (a.startDate) return -1;
+            if (b.startDate) return 1;
+            return (a.sortOrder || "").localeCompare(b.sortOrder || "");
+          });
             
-          // Find where this new activity belongs (the first activity that starts *before* our new one)
-          const nextNeighborIndex = timedActivities.findIndex(a => new Date(a.startDate!).getTime() < finalStartDate!.getTime());
+          // Find where this new activity belongs
+          const nextNeighborIndex = sortedActivities.findIndex(a => {
+            if (!a.startDate) return true; // untimed activities come after our timed activity
+            return new Date(a.startDate).getTime() > finalStartDate!.getTime();
+          });
           
           let prevNeighbor = null;
           let nextNeighbor = null;
           
           if (nextNeighborIndex !== -1) {
-            nextNeighbor = timedActivities[nextNeighborIndex];
-            prevNeighbor = nextNeighborIndex > 0 ? timedActivities[nextNeighborIndex - 1] : null;
+            nextNeighbor = sortedActivities[nextNeighborIndex];
+            prevNeighbor = nextNeighborIndex > 0 ? sortedActivities[nextNeighborIndex - 1] : null;
           } else {
-            prevNeighbor = timedActivities.length > 0 ? timedActivities[timedActivities.length - 1] : null;
+            prevNeighbor = sortedActivities.length > 0 ? sortedActivities[sortedActivities.length - 1] : null;
           }
           
           finalSortOrder = generateSortOrder(prevNeighbor?.sortOrder, nextNeighbor?.sortOrder);
         } else {
-          // No start date: append to the end of the section by finding the lexicographically largest sortOrder
-          const sortedActivities = existingActivities.sort((a, b) => (a.sortOrder || "").localeCompare(b.sortOrder || ""));
+          // No start date: append to the very end of the section
+          const sortedActivities = [...existingActivities].sort((a, b) => (a.sortOrder || "").localeCompare(b.sortOrder || ""));
           const lastActivity = sortedActivities.length > 0 ? sortedActivities[sortedActivities.length - 1] : null;
           
           finalSortOrder = generateSortOrder(lastActivity?.sortOrder, null);
         }
-        
-        // Append a random 4-character suffix to completely eliminate race condition collisions
-        finalSortOrder += Math.random().toString(36).substring(2, 6);
       }
 
       const payload: ItineraryActivity = {
@@ -251,7 +267,7 @@ const EditActivity = ({
         type: itineraryActivity?.type ?? ActivityType.none,
         sortOrder: itineraryActivity?.sortOrder || "",
         startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : (currentSection?.startDate ? new Date(currentSection.startDate).toISOString().split('T')[0] : null),
-        startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : (currentSection?.startDate && new Date(currentSection.startDate).toISOString().substring(11, 16) !== "00:00" ? new Date(currentSection.startDate).toISOString().substring(11, 16) : "08:00"),
+        startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
         endDate: itineraryActivity?.endDate ? new Date(itineraryActivity.endDate).toISOString().split('T')[0] : null,
         endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? new Date(itineraryActivity.endDate).toISOString().substring(11, 16) : "09:00",
         destination: itineraryActivity?.destination || (itineraryActivity?.id ? "" : itineraryActivity?.destination || ""),
@@ -369,22 +385,42 @@ const EditActivity = ({
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Date & Time</Text>
                   
                   <View className="flex-row items-center gap-4 mt-2">
-                    <TouchableOpacity 
-                      onPress={() => setShowCalendarFor("startDate")}
-                      className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 flex-1 items-center"
-                    >
-                      <Text className="text-sm font-medium text-gray-800">
-                        {values.startDate ? String(values.startDate) : "Date"}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                      onPress={() => setShowTimePickerFor("startTime")}
-                      className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 flex-1 items-center"
-                    >
-                      <Text className="text-sm font-medium text-gray-800">
-                        {String((values as any).startTime)}
-                      </Text>
-                    </TouchableOpacity>
+                    <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center">
+                      <TouchableOpacity 
+                        onPress={() => setShowCalendarFor("startDate")}
+                        className="flex-1 py-3 pl-4 items-center justify-center"
+                      >
+                        <Text className="text-sm font-medium text-gray-800">
+                          {values.startDate ? String(values.startDate) : "Date"}
+                        </Text>
+                      </TouchableOpacity>
+                      {values.startDate && (
+                        <TouchableOpacity 
+                          onPress={() => setValues({...values, startDate: null, startTime: ""} as any)}
+                          className="pr-4 py-3"
+                        >
+                          <Icon name="close" size={16} color="#999" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center">
+                      <TouchableOpacity 
+                        onPress={() => setShowTimePickerFor("startTime")}
+                        className="flex-1 py-3 pl-4 items-center justify-center"
+                      >
+                        <Text className="text-sm font-medium text-gray-800">
+                          {(values as any).startTime ? String((values as any).startTime) : "Time"}
+                        </Text>
+                      </TouchableOpacity>
+                      {(values as any).startTime && (values as any).startTime !== "" && (
+                        <TouchableOpacity 
+                          onPress={() => setValues({...values, startTime: ""} as any)}
+                          className="pr-4 py-3"
+                        >
+                          <Icon name="close" size={16} color="#999" />
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
                 </View>
                 <View className="mb-5">
@@ -426,7 +462,7 @@ const EditActivity = ({
                     <View className="bg-white border border-dashed border-[#0C4C8A]/40 rounded-[16px] p-4 mb-5">
                          <TextInput
                           mode="outlined"
-                          className="!h-[64px]"
+                          className="h-[64px]"
                           placeholder="e.g. Prepare documents..."
                           onChangeText={setNewCheckTitle}
                           onSubmitEditing={handleAddChecklistItem}
@@ -584,50 +620,23 @@ const EditActivity = ({
               />
             </Modal>
 
-            <Modal
-              visible={showCalendarFor !== null}
-              transparent={true}
-              animationType="fade"
-              onRequestClose={() => setShowCalendarFor(null)}
-            >
-              <View className="flex-1 justify-center bg-black/50 p-5">
-                <View className="bg-white rounded-[30px] overflow-hidden shadow-lg p-2">
-                  <View className="flex-row justify-between items-center px-4 py-2 bg-white">
-                    <Text className="text-lg font-bold text-primary">
-                      Select {showCalendarFor === "startDate" ? "Start Date" : "End Date"}
-                    </Text>
-                    <TouchableOpacity onPress={() => setShowCalendarFor(null)}>
-                      <Icon name="close" size={24} color="#666" />
-                    </TouchableOpacity>
-                  </View>
-                  
-                  <Calendar
-                    onDayPress={(day: any) => {
-                      if (showCalendarFor === "startDate") {
-                        setValues({ ...values, startDate: day.dateString });
-                      } else {
-                        setValues({ ...values, endDate: day.dateString });
-                      }
-                      setShowCalendarFor(null);
-                    }}
-                    renderArrow={(direction: string) => (
-                      <Icon
-                        name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
-                        size={32}
-                        color="#0C4C8A"
-                      />
-                    )}
-                    markedDates={{
-                      [String(showCalendarFor === "startDate" ? values.startDate : values.endDate)]: { selected: true, selectedColor: '#0C4C8A' }
-                    }}
-                    theme={{
-                      todayTextColor: '#0C4C8A',
-                      arrowColor: '#0C4C8A',
-                    }}
-                  />
-                </View>
-              </View>
-            </Modal>
+            <DateTimePickerModal
+              isVisible={showCalendarFor !== null}
+              mode="date"
+              onConfirm={(date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const dateString = `${year}-${month}-${day}`;
+                if (showCalendarFor === "startDate") {
+                  setValues({ ...values, startDate: dateString });
+                } else {
+                  setValues({ ...values, endDate: dateString });
+                }
+                setShowCalendarFor(null);
+              }}
+              onCancel={() => setShowCalendarFor(null)}
+            />
 
             <Modal
               visible={showPrimaryTypeModal}
@@ -671,47 +680,22 @@ const EditActivity = ({
               </View>
             </Modal>
 
-            <Modal
-              visible={showTimePickerFor !== null}
-              transparent={true}
-              animationType="fade"
-              onRequestClose={() => setShowTimePickerFor(null)}
-            >
-              <View className="flex-1 justify-center items-center bg-black/50 p-5">
-                <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[60%] overflow-hidden">
-                  <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                    <Text className="text-lg font-bold text-primary">
-                      Select Time
-                    </Text>
-                    <TouchableOpacity onPress={() => setShowTimePickerFor(null)}>
-                      <Icon name="close" size={24} color="#666" />
-                    </TouchableOpacity>
-                  </View>
-                  <ScrollView>
-                    {Array.from({ length: 48 }, (_, i) => {
-                      const h = Math.floor(i / 2).toString().padStart(2, '0');
-                      const m = i % 2 === 0 ? '00' : '30';
-                      return `${h}:${m}`;
-                    }).map((time) => (
-                      <TouchableOpacity
-                        key={time}
-                        className="p-4 border-b border-gray-100 items-center justify-center"
-                        onPress={() => {
-                          if (showTimePickerFor === "startTime") {
-                            setValues({ ...values, startTime: time } as any);
-                          } else {
-                            setValues({ ...values, endTime: time } as any);
-                          }
-                          setShowTimePickerFor(null);
-                        }}
-                      >
-                        <Text className="text-base text-gray-800">{time}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              </View>
-            </Modal>
+            <DateTimePickerModal
+              isVisible={showTimePickerFor !== null}
+              mode="time"
+              onConfirm={(date) => {
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const timeString = `${hours}:${minutes}`;
+                if (showTimePickerFor === "startTime") {
+                  setValues({ ...values, startTime: timeString } as any);
+                } else {
+                  setValues({ ...values, endTime: timeString } as any);
+                }
+                setShowTimePickerFor(null);
+              }}
+              onCancel={() => setShowTimePickerFor(null)}
+            />
           </View>
         );
       }}
