@@ -19,6 +19,7 @@ import { useUpdateSectionMutation, useDeleteSectionMutation } from "../../../../
 import { useTravel } from "../../../../hooks/useTravel";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { Calendar } from "react-native-calendars";
+import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 
 interface Place {
   id: string;
@@ -44,6 +45,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
   const { mutate: deleteSectionMutation, isPending: isDeleting } = useDeleteSectionMutation();
   const { selectedTravelPlan } = useTravelContext();
   const { data: travel } = useTravel(selectedTravelPlan?.id || "");
+  const { generateSortOrder } = useLexicographicSort();
 
   const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
 
@@ -78,14 +80,27 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
       description: itinerarySection?.description || "",
       sortOrder: itinerarySection?.sortOrder || "",
       notes: itinerarySection?.notes || "",
-      startDate: itinerarySection?.startDate ? new Date(itinerarySection.startDate) : travel?.startOrDepartureDate ? new Date(travel.startOrDepartureDate) : null as Date | null,
+      startDate: itinerarySection?.startDate ? new Date(itinerarySection.startDate) : null as Date | null,
     },
     validationSchema: TravelSchema,
     onSubmit: async (values) => {
       const isValidId = !!values?.travelId;
       if (isValidId) {
+        let finalSortOrder = values.sortOrder;
+
+        if (!itinerarySection?.id) {
+          // New section: append to the end
+          const existingSections = [...(travel?.itinerarySection || [])].sort((a, b) => 
+            (a.sortOrder || "").localeCompare(b.sortOrder || "")
+          );
+          const lastSection = existingSections.length > 0 ? existingSections[existingSections.length - 1] : null;
+          
+          finalSortOrder = generateSortOrder(lastSection?.sortOrder, null);
+        }
+
         const sectionData: ItinerarySection = {
           ...values,
+          sortOrder: finalSortOrder,
           startDate: values.startDate || undefined,
           isOffline: isNaN(Number(values.travelId)),
         };

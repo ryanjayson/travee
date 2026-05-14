@@ -45,7 +45,8 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
 
     const sections = await database.get<Section>("itinerary_sections").query(
       Q.where("travel_id", id.toString()),
-      Q.sortBy("is_default_section", Q.desc)
+      Q.sortBy("is_default_section", Q.desc),
+      Q.sortBy("sort_order", Q.asc)
     ).fetch();
 
     const itinerarySection = await Promise.all(sections.map(async (s) => {
@@ -470,7 +471,7 @@ export const updateActivitySortOrderLocally = async (id: string, newSortOrder: s
     await activity.update((a) => {
       a.sortOrder = newSortOrder;
       if (newSectionId) {
-        a.sectionId = newSectionId;
+        a.section.id = newSectionId;
       }
     });
   });

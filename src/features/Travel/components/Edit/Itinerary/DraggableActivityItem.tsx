@@ -151,7 +151,7 @@ const DraggableActivityItem = ({
           </Text>
           {timeString && (
             <Text className="text-xs text-tertiary mt-0.5 font-medium">
-              {timeString} - {startDate && new Date(startDate).toLocaleDateString("en-US", {month: "2-digit", day: "2-digit", year: "numeric"})}
+              {startDate && new Date(startDate).toLocaleDateString("en-US", {month: "2-digit", day: "2-digit", year: "numeric"})} - {timeString}
             </Text>
           )}
         </View>

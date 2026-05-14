@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   View,
   Text,
@@ -15,7 +16,7 @@ import DraggableActivityItem from "./DraggableActivityItem";
 import DraggableSectionContainer from "./DraggableSectionContainer";
 import SlideModal from "../../../../../components/molecules/SlideModal";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useDeleteSectionMutation, useUpdateSectionSortOrderMutation } from "../../../hooks/useSection";
+import { useDeleteSectionMutation, useUpdateSectionSortOrderMutation, useUpdateSectionMutation } from "../../../hooks/useSection";
 import { useUpdateActivitySortOrderMutation, useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { UpdateSortVariables } from "../../../types/ActivityDto";
 
@@ -46,6 +47,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   onRefresh,
 }, ref) => {
   const { generateSortOrder } = useLexicographicSort();
+  const queryClient = useQueryClient();
 
   useImperativeHandle(ref, () => ({
     handleAddSection: handleMenuAddSection,
@@ -117,6 +119,10 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     mutate: updateSectionSortOrderMutation,
   } = useUpdateSectionSortOrderMutation();
 
+  const {
+    mutate: updateSectionMutation,
+  } = useUpdateSectionMutation();
+
   const sortActivities = (activities?: ItineraryActivity[]) => {
     if (!activities) return [];
     return [...activities].sort((a, b) => {
@@ -130,11 +136,17 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
 
       // If prevSections is empty, initialize with travelSections and default isCollapsed to false
       if (prevSections.length === 0) {
-        return travelSections.map((section) => ({
-          ...section,
-          itineraryActivity: sortActivities(section.itineraryActivity),
-          isCollapsed: false, // Default to expanded
-        }));
+        return [...travelSections]
+          .sort((a, b) => {
+            if (a.isDefaultSection && !b.isDefaultSection) return -1;
+            if (!a.isDefaultSection && b.isDefaultSection) return 1;
+            return (a.sortOrder || "").localeCompare(b.sortOrder || "");
+          })
+          .map((section) => ({
+            ...section,
+            itineraryActivity: sortActivities(section.itineraryActivity),
+            isCollapsed: false, // Default to expanded
+          }));
       }
 
       // Preserve local drag order and local isCollapsed state
@@ -276,20 +288,22 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     setMasterHoverState({ index: newIndex });
   };
 
-  const handleMasterSectionDragEnd = (fromIndex: number, toIndex: number) => {
+  const handleMasterSectionDragEnd = (fromIndex: number, _toIndex: number) => {
+    const finalToIndex = masterHoverState?.index ?? fromIndex;
+
     setMasterDragState({ isDragging: false, dragIndex: null });
     setMasterHoverState(null);
 
-    if (fromIndex !== toIndex && sections) {
+    if (fromIndex !== finalToIndex && sections) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       const defaultSections = sections.filter(s => s.isDefaultSection === true);
       const subSections = sections.filter(s => s.isDefaultSection === false);
       
       const [moved] = subSections.splice(fromIndex, 1);
-      subSections.splice(toIndex, 0, moved);
+      subSections.splice(finalToIndex, 0, moved);
       
-      const prevSortOrder = subSections[toIndex - 1]?.sortOrder;
-      const nextSortOrder = subSections[toIndex + 1]?.sortOrder;
+      const prevSortOrder = subSections[finalToIndex - 1]?.sortOrder;
+      const nextSortOrder = subSections[finalToIndex + 1]?.sortOrder;
       
       const newSortOrder = generateSortOrder(prevSortOrder, nextSortOrder);
       moved.sortOrder = newSortOrder;
@@ -297,12 +311,14 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
       setSections([...defaultSections, ...subSections]);
 
       if (moved.id) {
-        updateSectionSortOrderLocally(moved.id, newSortOrder);
-        updateSectionSortOrderMutation({
-          id: moved.id,
-          prevSortOrder,
-          nextSortOrder,
+        updateSectionSortOrderLocally(moved.id, newSortOrder).then(() => {
+          queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
         });
+        // updateSectionMutation({
+        //   ...moved,
+        //   sortOrder: newSortOrder,
+        // });
+        Alert.alert("Success", "Sort order updated");
       }
     }
   };
@@ -743,7 +759,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                         ellipsizeMode="tail"
                         className="text-lg font-bold text-[#183B7A] mb-1.5 flex-1"
                       >
-                        {section.title} 
+                        {section.title} - {section.sortOrder}
                       </Text>
                       
                       {/* add checking here if has value show the date, copy the format MM/DD */}
@@ -840,8 +856,8 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                             <DraggableActivityItem
                               onPress={() => handleSectionActivityPress(activity, section.id || "")}
                               id={activity.id}
-                              title={activity.title + ' ' + activity.sortOrder}
-                              description={activity.sortOrder}
+                              title={activity.title}
+                              description={activity.description}
                               location={""}
                               startDate={activity.startDate?.toString() || null}
                               endDate={activity.endDate?.toString() || null}
