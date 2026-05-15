@@ -5,6 +5,8 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  FlatList,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import TouchButton from "../../../../../components/atoms/TouchButton";
@@ -36,6 +38,7 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
   } = useItineraryActivity(id);
 
   const [fabOpen, setFabOpen] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Edit Activity modal
 
@@ -119,14 +122,37 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
   return (
     <Provider>
       <View className="flex-1 bg-white">
-        {/* Hero image */}
+        {/* Image gallery */}
         {itineraryActivity?.images && itineraryActivity.images.length > 0 && (
           <View className="my-1">
-            <Image
-              source={{ uri: itineraryActivity.images[0].url }}
-              className="w-full h-[200px]"
-              resizeMode="cover"
+            <FlatList
+              data={itineraryActivity.images}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, idx) => `${item.url}-${idx}`}
+              onMomentumScrollEnd={(e) => {
+                const idx = Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width);
+                setActiveImageIndex(idx);
+              }}
+              renderItem={({ item }) => (
+                <Image
+                  source={{ uri: item.url }}
+                  style={{ width: Dimensions.get("window").width, height: 200 }}
+                  resizeMode="cover"
+                />
+              )}
             />
+            {itineraryActivity.images.length > 1 && (
+              <View className="absolute bottom-2 left-0 right-0 flex-row justify-center gap-1.5">
+                {itineraryActivity.images.map((_, idx) => (
+                  <View
+                    key={idx}
+                    className={`w-2 h-2 rounded-full ${idx === activeImageIndex ? "bg-white" : "bg-white/50"}`}
+                  />
+                ))}
+              </View>
+            )}
           </View>
         )}
 

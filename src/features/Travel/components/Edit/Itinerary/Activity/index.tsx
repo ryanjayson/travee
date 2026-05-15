@@ -8,14 +8,17 @@ import {
   TextInput as RNTextInput,
   ActivityIndicator,
   Alert,
+  FlatList,
+  Image,
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import { Calendar } from "react-native-calendars";
+import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import TouchButton from "../../../../../../components/atoms/TouchButton";
-import { ItineraryActivity } from "../../../../types/TravelDto";
+import { ItineraryActivity, Images, DestinationDto } from "../../../../types/TravelDto";
 import { useUpdateActivityMutation } from "../../../../hooks/useActivity";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useDeleteActivityMutation } from "../../../../hooks/useActivity";
@@ -25,8 +28,6 @@ import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSo
 import ActivityIcon from "../../../../../../components/ActivityIcon";
 import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
-import { Image } from "react-native";
-import { DestinationDto } from "../../../../types/TravelDto";
 import { useSaveChecklistItemMutation, useChecklistItems, useToggleChecklistItemMutation, useDeleteChecklistItemMutation } from "../../../../hooks/useChecklist";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
@@ -63,6 +64,7 @@ export interface ActivityFormValues {
   endTime: string;
   destination: string;
   destinationData?: DestinationDto;
+  images: Images[];
 }
 
 const EditActivity = ({
@@ -137,6 +139,23 @@ const EditActivity = ({
         onPress: () => deleteChecklistItem.mutate({ id: item.id, travelId }),
       },
     ]);
+  };
+
+  const pickImage = async (setFn: (field: string, value: any) => void, currentImages: Images[]) => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert("Permission required", "Camera roll permission is needed to upload images.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: true,
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      const newImages = result.assets.map((a) => ({ title: "", url: a.uri }));
+      setFn("images", [...currentImages, ...newImages]);
+    }
   };
 
   const handleSaveActivity = async (
@@ -224,6 +243,7 @@ const EditActivity = ({
         endDate: finalEndDate,
         destination: values.destination,
         destinationData: values.destinationData,
+        images: values.images,
         isOffline: true,
         travelId: values.travelId,
       };
@@ -272,6 +292,7 @@ const EditActivity = ({
         endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? new Date(itineraryActivity.endDate).toISOString().substring(11, 16) : "09:00",
         destination: itineraryActivity?.destination || (itineraryActivity?.id ? "" : itineraryActivity?.destination || ""),
         destinationData: itineraryActivity?.destinationData || (itineraryActivity?.id ? undefined : itineraryActivity?.destinationData),
+        images: itineraryActivity?.images || [],
       }}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}
@@ -284,6 +305,7 @@ const EditActivity = ({
         errors,
         touched,
         setValues,
+        setFieldValue,
       }) => {
 
         return (
@@ -337,6 +359,51 @@ const EditActivity = ({
                     contentStyle={{ backgroundColor: "transparent" }}
                   />
                 </View>
+
+                {/* Image Upload */}
+                <View className="mb-5">
+                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Images</Text>
+                  <TouchableOpacity
+                    onPress={() => pickImage(setFieldValue, values.images)}
+                    className="border border-dashed border-[#0C4C8A] h-[150px] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3"
+                    accessibilityRole="button"
+                    accessibilityLabel="Upload images"
+                  >
+                    <Icon name="add-photo-alternate" size={28} color="#0C4C8A" />
+                    <Text className="text-base text-[#0C4C8A] font-medium">Add Photos</Text>
+                  </TouchableOpacity>
+
+                  {values.images.length > 0 && (
+                    <FlatList
+                      data={values.images}
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      keyExtractor={(item, idx) => `${item.url}-${idx}`}
+                      contentContainerStyle={{ gap: 10, marginTop: 12 }}
+                      renderItem={({ item, index }) => (
+                        <View className="relative">
+                          <Image
+                            source={{ uri: item.url }}
+                            style={{ width: 100, height: 100, borderRadius: 12 }}
+                            resizeMode="cover"
+                          />
+                          <TouchableOpacity
+                            className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5"
+                            accessibilityRole="button"
+                            accessibilityLabel="Remove image"
+                            onPress={() => {
+                              const updated = values.images.filter((_, i) => i !== index);
+                              setValues({ ...values, images: updated });
+                            }}
+                          >
+                            <Icon name="close" size={16} color="#FFF" />
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    />
+                  )}
+                </View>
+
                 <View className="mb-5">
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Location</Text>
                   {values.destinationData ? (() => {
