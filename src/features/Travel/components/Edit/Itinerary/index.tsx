@@ -267,13 +267,17 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     );
   };
 
-  const handleActivityPress = (activity: ItineraryActivity) => {
-    setEditingActivity(activity);
-    setEditingActivityType("general");
-    setEditingActivitySectionId(null);
-    setEditActivityModalVisible(true);
+  const toggleAllSectionsCollapse = () => {
+    setSections((prevSections) => {
+      // If all are collapsed, we expand all (isCollapsed = false).
+      // Otherwise, we collapse all (isCollapsed = true).
+      const allCollapsed = prevSections.every((s) => s.isCollapsed);
+      return prevSections.map((s) => ({
+        ...s,
+        isCollapsed: !allCollapsed,
+      }));
+    });
   };
-
   const handleSectionActivityPress = (
     activity: ItineraryActivity,
     sectionId: string,
@@ -282,15 +286,6 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     setEditingActivityType("section");
     setCurrentSectionId(sectionId);
     setEditActivityModalVisible(true);
-  };
-
-  const handleActivityDragStart = (index: number) => {
-    setIsDragging(true);
-    setDragIndex(index);
-  };
-
-  const handleActivityDragEnd = (fromIndex: number, toIndex: number) => {
-    setHoverState(null);
   };
 
   const handleMasterSectionDragStart = (index: number) => {
@@ -360,6 +355,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     fromIndex: number,
     _: number,
   ) => {
+
 
     const targetSectionId =  hoverState?.sectionId ?? sourceSectionId;
     const toIndex = hoverState?.index ?? fromIndex;
@@ -704,7 +700,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
               </View>
             )) : (
               <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
-                 <Text style={{ color: "#aaa" }}>or Drop activities here </Text>
+                 <Text style={{ color: "#aaa" }}>or drop activities here </Text>
                  {hoverState?.sectionId === section.id && (
                    <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
                  )}
@@ -733,7 +729,19 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
 
       <View className="mb-5">
         {sections && sections.length > 0 && (
-        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Sections</Text>
+
+      <View className="flex-row justify-between items-center">
+        <Text className="text-md text-gray-500 font-medium tracking-wider uppercase ">Sections</Text>
+        <TouchableOpacity
+          onPress={toggleAllSectionsCollapse}
+          className="flex flex-row items-center gap-2"
+        >
+
+            <Text className="text-xs text-gray-400 font-medium tracking-wider uppercase">collapse/expand</Text>
+            <Icon name="fullscreen" size={24} color={"#475467"} />
+        </TouchableOpacity>
+      </View>
+
         )}
         
         {sections && sections.length > 0 && (
@@ -752,7 +760,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                 {(panHandlers, isSectionActive) => (
                   <>
                   <View
-                    className={`rounded-lg p-2.5 border border-[#DDD] flex-1 relative bg-white ${!section.isCollapsed && 'mb-4'}`}
+                    className={`rounded-sm p-4 border border-[#DDD] flex-1 relative bg-white ${!section.isCollapsed && 'my-2'}`}
                     style={[
                       {
                         zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
@@ -835,12 +843,12 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                 <View>
                   {!section.isCollapsed && (
                       <View 
-                        className="mt-3 z-0 bg-gray-100 p-3 rounded-lg"
+                        className="mt-3 z-0 bg-gray-100 rounded-2xl"
                         style={[
                           {
                             zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
-                            elevation: sectionDragState?.sectionId === section.id ? 10 : 0,
-                            // paddingBottom: (!section.itineraryActivity || section.itineraryActivity.length === 0) ? 20 : 0
+                            // elevation: sectionDragState?.sectionId === section.id ? 10 : 0,
+                            padding: (!section.itineraryActivity || section.itineraryActivity.length === 0) ? 0 : 10
                           }
                         ]}
                         ref={(ref) => {
@@ -869,7 +877,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                               (sectionDragState?.sectionId !== section.id ||
                                 (sectionDragState?.dragIndex !== index &&
                                  (sectionDragState?.dragIndex ?? -1) > index)) && (
-                                <View className="absolute -top-[7px] h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
+                                <View className="absolute top-[-5px] h-[3px] bg-[#183B7A] rounded-sm w-[96%] self-center z-50" />
                               )}
 
                             <DraggableActivityItem
@@ -922,12 +930,12 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                               sectionDragState?.sectionId === section.id &&
                               sectionDragState?.dragIndex !== index &&
                               (sectionDragState?.dragIndex ?? -1) < index && (
-                                <View className="absolute -bottom-[7px] h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
+                                <View className="absolute bottom-[2px] h-[3px] bg-[#183B7A] rounded-sm w-[96%] self-center z-50 " />
                               )}
                           </View>
                         )) : (
                           // Render invisible or subtle drop zone for empty sections
-                          <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
+                          <View style={{ height: 64, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 2, borderColor: "#ddd", borderRadius: 8 }}>
                              
                               <TouchableOpacity
                               onPress={() => {
@@ -944,7 +952,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                               </Text>
                             </TouchableOpacity>
                             
-                             <Text style={{ color: "#aaa" }}> or Drop activities here</Text>
+                             <Text style={{ color: "#aaa" }}> or drop activities here</Text>
 
                              {hoverState?.sectionId === section.id && (
                                <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />

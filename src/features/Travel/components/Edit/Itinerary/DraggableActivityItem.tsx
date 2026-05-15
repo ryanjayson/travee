@@ -34,6 +34,13 @@ const DraggableActivityItem = ({
 }: DraggableActivityItemProps) => {
   const pan = useRef(new Animated.ValueXY()).current;
   const [isActive, setIsActive] = useState(false);
+  const isActiveRef = useRef(false);
+  const dragTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const setDragActive = (val: boolean) => {
+    setIsActive(val);
+    isActiveRef.current = val;
+  };
 
   // Use a Ref to store changing props so the PanResponder always has latest values
   const propsRef = useRef({ index, listLength, itemHeight, onDragMove, onDragEnd });
@@ -49,12 +56,28 @@ const DraggableActivityItem = ({
       },
       onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: () => {
-        setIsActive(true);
         // Reset pan to zero just in case
         pan.setValue({ x: 0, y: 0 });
-        onDragStart(propsRef.current.index);
+        
+        // Start debouncer timer
+        dragTimer.current = setTimeout(() => {
+          setDragActive(true);
+          onDragStart(propsRef.current.index);
+        }, 100); // 100ms hold to activate
       },
       onPanResponderMove: (e, gestureState) => {
+        // If the timer hasn't fired yet, don't allow dragging!
+        if (!isActiveRef.current) {
+          // If the user moves too much before the timer completes, cancel it (likely scrolling)
+          if (Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10) {
+            if (dragTimer.current) {
+              clearTimeout(dragTimer.current);
+              dragTimer.current = null;
+            }
+          }
+          return;
+        }
+        
         if (propsRef.current.onDragMove) {
           propsRef.current.onDragMove(
             propsRef.current.index,
@@ -67,7 +90,17 @@ const DraggableActivityItem = ({
         })(e, gestureState);
       },
       onPanResponderRelease: (_, gestureState) => {
-        setIsActive(false);
+        if (dragTimer.current) {
+          clearTimeout(dragTimer.current);
+          dragTimer.current = null;
+        }
+        
+        if (!isActiveRef.current) {
+          setDragActive(false);
+          return;
+        }
+
+        setDragActive(false);
         const {
           index: currentIndex,
           itemHeight: height,
@@ -89,6 +122,14 @@ const DraggableActivityItem = ({
         // to its new position without dual-animation conflicting bounds.
         pan.setValue({ x: 0, y: 0 });
       },
+      onPanResponderTerminate: () => {
+        if (dragTimer.current) {
+          clearTimeout(dragTimer.current);
+          dragTimer.current = null;
+        }
+        setDragActive(false);
+        pan.setValue({ x: 0, y: 0 });
+      }
     }),
   ).current;
 
@@ -115,7 +156,7 @@ const DraggableActivityItem = ({
   return (
     <Animated.View
       style={animatedStyle}
-      className={`rounded-md p-2 border border-[#ddd] flex-row items-center ${
+      className={`rounded-xl mb-2 p-2 border border-[#ddd] flex-row items-center ${
         isActive ? "bg-[#F8F9FA] opacity-60" : "bg-white"}
         ${startDate ? "bg-gray-100" : "" }
       `}
