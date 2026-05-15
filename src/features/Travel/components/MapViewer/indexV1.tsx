@@ -1,0 +1,183 @@
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  StyleSheet,
+  StatusBar,
+} from "react-native";
+import WebView from "react-native-webview";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
+// @ts-ignore
+import { MAPBOX_ACCESS_TOKEN } from "@env";
+
+interface MapViewerProps {
+  visible: boolean;
+  onClose: () => void;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  title: string;
+  zoom?: number;
+  markers?: Array<{
+    latitude: number;
+    longitude: number;
+    title: string;
+    type?: string | number;
+  }>;
+}
+
+const MapViewer = ({
+  visible,
+  onClose,
+  coordinates,
+  title,
+  zoom,
+  markers,
+}: MapViewerProps) => {
+  const mapHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+      <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+      <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+      <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; }
+        #map { width: 100%; height: 100vh; }
+        .custom-marker {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: #dc3545;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          cursor: pointer;
+        }
+        .custom-marker ion-icon, .custom-marker .material-icons {
+          font-size: 24px;
+          color: #FFF;
+        }
+      </style>
+    </head>
+    <body>
+      <div id="map"></div>
+      <script>
+        function getIconHTML(type) {
+          switch(Number(type)) {
+            case 1: return '<ion-icon name="airplane"></ion-icon>';
+            case 2: return '<ion-icon name="bag-check"></ion-icon>';
+            case 3: return '<ion-icon name="bag-remove"></ion-icon>';
+            case 4: return '<i class="material-icons">local_taxi</i>';
+            case 5: return '<ion-icon name="glasses"></ion-icon>';
+            case 6: return '<i class="material-icons">shopping_cart</i>';
+            case 7: return '<i class="material-icons">local_cafe</i>';
+            case 8: return '<i class="material-icons">restaurant</i>';
+            case 9: return '<ion-icon name="walk"></ion-icon>';
+            case 10: return '<i class="material-icons">build</i>';
+            case 11: return '<i class="material-icons">directions_car</i>';
+            case 12: return '<i class="material-icons">hotel</i>';
+            default: return '<ion-icon name="location-outline"></ion-icon>';
+          }
+        }
+
+        mapboxgl.accessToken = '${MAPBOX_ACCESS_TOKEN}';
+        const map = new mapboxgl.Map({
+          container: 'map',
+          style: 'mapbox://styles/mapbox/streets-v12',
+          center: [${(markers?.[0] || coordinates)?.longitude || 0}, ${(markers?.[0] || coordinates)?.latitude || 0}],
+          zoom: ${zoom || 6},
+          attributionControl: false,
+        });
+
+        const renderedMarkers = ${JSON.stringify(markers || [])};
+        if (renderedMarkers.length > 0) {
+          const bounds = new mapboxgl.LngLatBounds();
+          renderedMarkers.forEach(m => {
+            const el = document.createElement('div');
+            el.className = 'custom-marker';
+            el.innerHTML = getIconHTML(m.type);
+
+            new mapboxgl.Marker(el)
+              .setLngLat([m.longitude, m.latitude])
+              .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML('<h3>' + m.title + '</h3>'))
+              .addTo(map);
+            bounds.extend([m.longitude, m.latitude]);
+          });
+          
+          if (renderedMarkers.length > 1) {
+            map.fitBounds(bounds, { padding: 50, linear: true });
+          } else {
+            map.setCenter([renderedMarkers[0].longitude, renderedMarkers[0].latitude]);
+            map.setZoom(${zoom || 14});
+          }
+        } else if (${!!coordinates}) {
+          new mapboxgl.Marker({ color: '#0C4C8A' })
+            .setLngLat([${coordinates?.longitude}, ${coordinates?.latitude}])
+            .addTo(map);
+          map.setCenter([${coordinates?.longitude}, ${coordinates?.latitude}]);
+          map.setZoom(${zoom || 14});
+        }
+      </script>
+    </body>
+    </html>
+  `;
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View className="flex-1 bg-white">
+        <StatusBar barStyle="dark-content" />
+        {/* Header */}
+   
+        {/* Map */}
+        <View className="flex-1">
+           <TouchableOpacity onPress={onClose} className="absolute top-[40px] left-5 z-50">
+            <Icon name="close" size={32} color="#555" />
+          </TouchableOpacity>
+          <WebView
+            source={{ html: mapHTML }}
+            javaScriptEnabled
+            domStorageEnabled
+            scrollEnabled={false}
+            style={{ flex: 1 }}
+          />
+        </View>
+
+        <View className="flex-row items-center pt-2.5 pb-2.5 rounded-t-xl pl-4">
+          <View className="flex-1 mr-4">
+            <Text className="text-2xl font-medium">
+              Activity Name
+            </Text>
+            <Text className="text-base">
+              {title}
+            </Text>
+          </View>
+        </View>
+
+        {/* Footer info/controls if needed */}
+        <View className="p-5 bg-white border-t border-[#eee]">
+          <View className="flex-row items-center">
+            <Icon name="location-on" size={20} color="#0C4C8A" />
+            <Text className="ml-2 text-sm text-[#666] font-mono">
+              {markers && markers.length > 0 
+                ? `${markers.length} Locations pinned`
+                : coordinates 
+                  ? `${coordinates.latitude.toFixed(6)}, ${coordinates.longitude.toFixed(6)}`
+                  : ""
+              }
+            </Text>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+export default MapViewer;

@@ -10,6 +10,7 @@ export interface DoneActivity {
   lat: number;
   lng: number;
   type?: number;
+  title?: string;
 }
 
 interface CountryOutlineProps {
@@ -19,6 +20,8 @@ interface CountryOutlineProps {
   strokeColor?: string;
   strokeWidth?: number;
   doneActivities?: DoneActivity[];
+  pinSize?: 'small' | 'medium' | 'large';
+  showLabels?: boolean;
 }
 
 /** Unicode symbol for each ActivityType — safe cross-platform in SVG Text */
@@ -53,6 +56,8 @@ const ACTIVITY_LABEL: Record<number, string> = {
   12: 'Rest',
 };
 
+const PIN_SIZE_R: Record<string, number> = { small: 2, medium: 3, large: 5 };
+
 const CountryOutline: React.FC<CountryOutlineProps> = ({
   countryName,
   width,
@@ -60,6 +65,8 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
   strokeColor = '#ffffff',
   strokeWidth = 1.5,
   doneActivities = [],
+  pinSize = 'medium',
+  showLabels = false,
 }) => {
   const { pathData, found, activityPoints, topTypes } = useMemo(() => {
     if (!countryName || width === 0 || height === 0) {
@@ -98,9 +105,9 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
           if (!projected) return null;
           const [x, y] = projected;
           if (x < 0 || y < 0 || x > width || y > height) return null;
-          return { x, y, type: a.type };
+          return { x, y, type: a.type, title: a.title };
         })
-        .filter((p): p is { x: number; y: number; type?: number } => p !== null);
+        .filter((p): p is NonNullable<typeof p> => p !== null);
 
       // Top 3 activity types by count (for the icon legend)
       const counts: Record<number, number> = {};
@@ -114,7 +121,7 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
         .slice(0, 3)
         .map(([t, count]) => ({ type: parseInt(t, 10), count }));
 
-      return { pathData: d, found: true, activityPoints: points, topTypes: top };
+      return { pathData: d, found: true, activityPoints: points as Array<{ x: number; y: number; type?: number; title?: string }>, topTypes: top };
     } catch {
       return { pathData: null, found: false, activityPoints: [], topTypes: [] };
     }
@@ -130,7 +137,7 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
     );
   }
 
-  const PIN_R = 3;
+  const PIN_R = PIN_SIZE_R[pinSize] || 3;
 
   // Legend icon chip constants
   const CHIP_R = 16;       // circle radius
@@ -158,6 +165,20 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
         <G key={i}>
           <Circle cx={pt.x} cy={pt.y + 1} r={PIN_R + 0.5} fill="rgba(0,0,0,0.25)" />
           <Circle cx={pt.x} cy={pt.y}     r={PIN_R}        fill="#ffffff" />
+          {showLabels && pt.title ? (
+            <SvgText
+              x={pt.x}
+              y={pt.y + PIN_R + 11}
+              fontSize={10}
+              fontWeight="bold"
+              textAnchor="middle"
+              fill="#ffffff"
+              stroke="rgba(0,0,0,0.4)"
+              strokeWidth={0.3}
+            >
+              {pt.title}
+            </SvgText>
+          ) : null}
         </G>
       ))}
 

@@ -17,8 +17,7 @@ import { ItineraryExpense, TravelPlan } from "../../../Travel/types/TravelDto";
 import ExpenseModal from "../Forms/Expense/Modal";
 import NoteModal from "../Forms/Note/Modal";
 import MapViewer from "../MapViewer";
-import ShareOverlay from "../ShareOverlay";
-import type { DoneActivity } from "../ShareOverlay/CountryOutline";
+import ShareTripModal from "../ShareOverlay/ShareTripModal";
 import ChecklistTab from "./Tabs/ChecklistTab";
 import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
@@ -52,7 +51,23 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   const [selectedNote, setSelectedNote] = useState<any | null>(null);
   const countryName = extractCountryName(travelPlan.travel.destination);
 
-  const doneActivities: DoneActivity[] = (travelPlan.itinerarySection ?? [])
+  const allActivities = (travelPlan.itinerarySection ?? [])
+    .flatMap(s => s.itineraryActivity ?? [])
+    .filter(a =>
+      a.destinationData?.coordinates &&
+      a.destinationData.coordinates.latitude  !== 0 &&
+      a.destinationData.coordinates.longitude !== 0
+    )
+    .map(a => ({
+      id: a.id,
+      title: a.title || "Activity",
+      type: a.type,
+      latitude: a.destinationData!.coordinates.latitude,
+      longitude: a.destinationData!.coordinates.longitude,
+      sortOrder: a.sortOrder,
+    }));
+
+  const doneActivities = (travelPlan.itinerarySection ?? [])
     .flatMap(s => s.itineraryActivity ?? [])
     .filter(a =>
       a.isDone &&
@@ -67,7 +82,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
     }));
 
   const getAllMarkers = () => {
-    const markers: Array<{ latitude: number; longitude: number; title: string , type?: number}> = [];
+    const markers: Array<{ id?: string; latitude: number; longitude: number; title: string; type?: number; sortOrder?: string; images?: Array<{ url: string }> }> = [];
     if (travelPlan.travel.destinationData?.coordinates) {
       markers.push({
         latitude: travelPlan.travel.destinationData.coordinates.latitude,
@@ -80,10 +95,13 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       section.itineraryActivity?.forEach((activity) => {
         if (activity.destinationData?.coordinates && activity.destinationData.coordinates.latitude !== 0 && activity.destinationData.coordinates.longitude !== 0) {
           markers.push({
+            id: activity.id,
             latitude: activity.destinationData.coordinates.latitude,
             longitude: activity.destinationData.coordinates.longitude,
             title: activity.title || "Activity",
             type: activity.type,
+            sortOrder: activity.sortOrder,
+            images: activity.images,
           });
         }
       });
@@ -98,7 +116,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => setShowShareOverlay(true)}
-        className="bg-black/80 w-8 h-8 rounded-full absolute right-[100px] top-5 z-10 items-center justify-center"
+        className="bg-black w-8 h-8 rounded-full absolute right-[60px] top-5 z-10 items-center justify-center"
         accessibilityRole="button"
         accessibilityLabel="Open share overlay"
       >
@@ -112,20 +130,20 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         onPress={() => {
           setShowDestinationOnlyMap(false)
           setShowMapModal(true)}}
-        className="bg-black/80 w-8 h-8 rounded-full absolute right-[60px] top-5 z-10 items-center justify-center"
+        className="bg-black w-8 h-8 rounded-full absolute right-5 top-5 z-10 items-center justify-center"
       >
         <Animated.View>
           <Icon name="map" size={20} color={"#FFF"} />
         </Animated.View>
       </TouchableOpacity>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         activeOpacity={0.8}
-        className="bg-black/80 w-8 h-8 rounded-full absolute right-5 top-5 z-10 items-center justify-center"
+        className="bg-black w-8 h-8 rounded-full absolute right-5 top-5 z-10 items-center justify-center"
       >
         <Animated.View>
           <Icon name="group" size={20} color={"#FFF"} />
         </Animated.View>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 
@@ -266,6 +284,8 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
             markers={getAllMarkers()}
             title={travelPlan.travel.title || "Trip Map"}
             zoom={showDestinationOnlyMap ? 6 : null}
+            destination={travelPlan.travel.destination}
+            countryName={countryName}
           />
         )}
       </ScrollView>
@@ -296,12 +316,13 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
         onClose={() => setShowNoteModal(false)}
       />
 
-      <ShareOverlay
+      <ShareTripModal
         visible={showShareOverlay}
         onClose={() => setShowShareOverlay(false)}
         tripTitle={travelPlan.travel.title || 'My Trip'}
         destination={travelPlan.travel.destination || ''}
         countryName={countryName}
+        activities={allActivities}
         doneActivities={doneActivities}
         dateRange={
           travelPlan.travel.startOrDepartureDate
