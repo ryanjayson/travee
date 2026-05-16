@@ -129,9 +129,12 @@ const MapViewer = ({
   const [darkOverlay, setDarkOverlay] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [webViewLoaded, setWebViewLoaded] = useState(false);
   const textDragOpacity = useRef(new Animated.Value(1)).current;
   const textDragScale = useRef(new Animated.Value(1)).current;
   const viewShotRef = useRef<ViewShot>(null);
+  const webViewRef = useRef<WebView>(null);
+  const captureResolveRef = useRef<((uri: string) => void) | null>(null);
   const panelAnim = useRef(new Animated.Value(0)).current;
 
   // ─── Image background state (must be before handlers that use it) ───────
@@ -347,11 +350,32 @@ const MapViewer = ({
   const captureMapImage = useCallback(async (): Promise<string | null> => {
     try {
       if (displayMode === "overlay") {
-        // @ts-ignore
-        const uri = await viewShotRef.current?.capture();
-        if (uri) return uri;
+        const uri = await (viewShotRef.current as any)?.capture?.();
+        return uri || null;
       }
 
+      // Map mode: inject JS into WebView to capture the Mapbox GL canvas
+      const canvasUri = await new Promise<string | null>((resolve) => {
+        captureResolveRef.current = resolve;
+        const tripTitle = JSON.stringify(title ?? "");
+        const tripDest = JSON.stringify(destination ?? "");
+        const tripDate = JSON.stringify(dateRange ?? "");
+        const tripTypes = JSON.stringify(topActivityTypes);
+        const textX = (textTranslateX as any)._value ?? 0;
+        const textY = (textTranslateY as any)._value ?? 0;
+        webViewRef.current?.injectJavaScript(
+          `window.__captureMap__ && window.__captureMap__(${tripTitle}, ${tripDest}, ${tripDate}, ${tripTypes}, ${textX}, ${textY})`
+        );
+        setTimeout(() => {
+          if (captureResolveRef.current) {
+            captureResolveRef.current = null;
+            resolve(null);
+          }
+        }, 8000);
+      });
+      if (canvasUri) return canvasUri;
+
+      // Fallback: static Mapbox API (server-rendered map with pins)
       const staticUrl = buildStaticMapUrl();
       if (staticUrl) {
         const imgFile = await File.downloadFileAsync(staticUrl, Paths.cache);
@@ -361,7 +385,7 @@ const MapViewer = ({
       console.error("[MapViewer] capture failed:", e);
     }
     return null;
-  }, [displayMode, buildStaticMapUrl]);
+  }, [displayMode, buildStaticMapUrl, title, destination, dateRange, topActivityTypes, textTranslateX, textTranslateY]);
 
   const handleCaptureAndShare = useCallback(async () => {
     setIsCapturing(true);
@@ -407,6 +431,43 @@ const MapViewer = ({
       setSaveLoading(false);
     }
   }, [captureMapImage]);
+
+  const handleMessage = useCallback(async (event: any) => {
+    try {
+      const msg = JSON.parse(event.nativeEvent.data);
+      if (msg.type !== "__map_capture__" || !captureResolveRef.current) return;
+
+      const resolve = captureResolveRef.current;
+      captureResolveRef.current = null;
+
+      if (!msg.data) {
+        resolve("");
+        return;
+      }
+
+      const base64 = msg.data.split(",")[1];
+      if (!base64) {
+        resolve("");
+        return;
+      }
+
+      try {
+        const captureFile = new File(Paths.cache, "map_capture_" + Date.now() + ".png");
+        await captureFile.write(base64, { encoding: "base64" });
+        resolve(captureFile.uri);
+      } catch {
+        resolve("");
+      }
+    } catch (e) {
+      console.error("[MapViewer] message error:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      captureResolveRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     Animated.timing(panelAnim, {
@@ -464,6 +525,7 @@ const MapViewer = ({
     if (!visible || displayMode !== "map") return;
     if (visibleIds.size === 0 && markers?.some((m) => m.id)) return;
     imgCounter = 0;
+    setWebViewLoaded(false);
 
     const filtered = markers?.filter((m) => !m.id || visibleIds.has(m.id));
     buildHtml(filtered, { pinMode, pinSize, mapType, showLabels, displayMode, countryName }, coordinates, zoom)
@@ -538,6 +600,7 @@ const MapViewer = ({
               {htmlUri && (
               <WebView
                 key={renderKey}
+                ref={webViewRef}
                 source={{ uri: htmlUri }}
                 javaScriptEnabled
                 domStorageEnabled
@@ -548,6 +611,8 @@ const MapViewer = ({
                 originWhitelist={["*"]}
                 scrollEnabled={false}
                 style={{ flex: 1 }}
+                onLoad={() => setWebViewLoaded(true)}
+                onMessage={handleMessage}
               />
             )}
             </>
@@ -959,6 +1024,7 @@ function generateMapHtml(
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; }
@@ -998,6 +1064,16 @@ function generateMapHtml(
 <body>
   <div id="map"></div>
   <script>
+    (function() {
+      var origGetContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function(type, attrs) {
+        if (type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl') {
+          attrs = Object.assign({}, attrs || {}, { preserveDrawingBuffer: true });
+        }
+        return origGetContext.call(this, type, attrs);
+      };
+    })();
+
     function getIconHTML(type) {
       switch(Number(type)) {
         case 1: return '<ion-icon name="airplane"></ion-icon>';
@@ -1075,6 +1151,71 @@ function generateMapHtml(
         map.setZoom(${zoom || 14});
       }
     });
+
+    window.__captureMap__ = function(title, destination, dateRange, topTypes, textX, textY) {
+      var overlayId = '__capture_trip_info__';
+      function removeOverlay() {
+        var el = document.getElementById(overlayId);
+        if (el) el.remove();
+      }
+      function escapeHtml(str) {
+        return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+      function buildOverlay() {
+        removeOverlay();
+        var wrap = document.createElement('div');
+        wrap.id = overlayId;
+        wrap.style.cssText = 'position:absolute;bottom:0;left:0;right:0;z-index:9999;pointer-events:none;';
+        var tx = Number(textX) || 0;
+        var ty = Number(textY) || 0;
+        if (tx !== 0 || ty !== 0) {
+          wrap.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
+        }
+        var inner = '<div style="background:linear-gradient(transparent,rgba(0,0,0,0.55));padding:120px 24px 40px 24px;">';
+        inner += '<div style="display:flex;flex-direction:row;align-items:center;margin-bottom:10px;">';
+        inner += '<span style="color:rgba(255,255,255,0.65);font-size:11px;font-weight:700;letter-spacing:2px;text-shadow:0 1px 3px rgba(0,0,0,0.6);">\u2708 TRAVIE</span></div>';
+        if (title) inner += '<div style="color:#fff;font-size:28px;font-weight:800;line-height:34px;margin-bottom:6px;text-shadow:1px 2px 6px rgba(0,0,0,0.7);">' + escapeHtml(title) + '</div>';
+        if (destination) inner += '<div style="color:rgba(255,255,255,0.65);font-size:15px;font-weight:500;margin-bottom:4px;text-shadow:0 1px 4px rgba(0,0,0,0.6);">' + escapeHtml(destination) + '</div>';
+        if (topTypes && topTypes.length) {
+          inner += '<div style="display:flex;flex-direction:row;gap:8px;margin-top:10px;margin-bottom:4px;">';
+          var emoji = ['','\u2708','\u2B06','\u2B07','\uD83D\uDE95','\u2615','\uD83C\uDF7D','\uD83D\uDEB6','\uD83D\uDCF7','\uD83D\uDCCD','\uD83E\uDEB3','\uD83D\uDEB2','\uD83D\uDECF'];
+          for (var i = 0; i < topTypes.length; i++) {
+            inner += '<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:20px;">' + (emoji[topTypes[i]] || '\u25CF') + '</div>';
+          }
+          inner += '</div>';
+        }
+        if (dateRange) inner += '<div style="color:rgba(255,255,255,0.45);font-size:13px;font-weight:400;margin-top:6px;text-shadow:0 1px 3px rgba(0,0,0,0.6);">' + escapeHtml(dateRange) + '</div>';
+        inner += '</div>';
+        wrap.innerHTML = inner;
+        document.body.appendChild(wrap);
+      }
+      function doCapture() {
+        buildOverlay();
+        map.resize();
+        requestAnimationFrame(function() {
+          if (typeof html2canvas !== 'undefined') {
+            html2canvas(document.body, { useCORS: true, allowTaint: true, backgroundColor: null, logging: false }).then(function(canvas) {
+              var dataUrl = canvas.toDataURL('image/png');
+              removeOverlay();
+              window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: dataUrl}));
+            }).catch(function() {
+              var c = document.querySelector('.mapboxgl-canvas');
+              if (c) { var d = c.toDataURL('image/png'); removeOverlay(); window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: d})); }
+              else { removeOverlay(); window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: ''})); }
+            });
+          } else {
+            var c = document.querySelector('.mapboxgl-canvas');
+            if (c) { var d = c.toDataURL('image/png'); removeOverlay(); window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: d})); }
+            else { removeOverlay(); window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: ''})); }
+          }
+        });
+      }
+      if (map.loaded && !map.loaded()) {
+        map.once('idle', doCapture);
+      } else {
+        doCapture();
+      }
+    };
   </script>
 </body>
 </html>`;
