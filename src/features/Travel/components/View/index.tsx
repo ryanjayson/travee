@@ -286,6 +286,16 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
             zoom={showDestinationOnlyMap ? 6 : null}
             destination={travelPlan.travel.destination}
             countryName={countryName}
+            dateRange={
+              travelPlan.travel.startOrDepartureDate
+                ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
+                    travelPlan.travel.endOrReturnDate
+                      ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                      : ''
+                  }`
+                : undefined
+            }
+            doneActivities={doneActivities}
           />
         )}
       </ScrollView>

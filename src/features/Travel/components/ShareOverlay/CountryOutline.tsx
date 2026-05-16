@@ -22,6 +22,7 @@ interface CountryOutlineProps {
   doneActivities?: DoneActivity[];
   pinSize?: 'small' | 'medium' | 'large';
   showLabels?: boolean;
+  destinationTitle?: string;
 }
 
 /** Unicode symbol for each ActivityType — safe cross-platform in SVG Text */
@@ -148,8 +149,44 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
   return (
     <Svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
 
-      {/* ── Country outline ── */}
+      {/* ── Country outline with gradient cast shadow ── */}
       <G>
+        <Path
+          d={pathData}
+          fill="none"
+          stroke="rgba(0,0,0,0.08)"
+          strokeWidth={strokeWidth + 14}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          transform="translate(4, 6)"
+        />
+        <Path
+          d={pathData}
+          fill="none"
+          stroke="rgba(0,0,0,0.14)"
+          strokeWidth={strokeWidth + 10}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          transform="translate(3, 5)"
+        />
+        <Path
+          d={pathData}
+          fill="none"
+          stroke="rgba(0,0,0,0.22)"
+          strokeWidth={strokeWidth + 6}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          transform="translate(2, 3)"
+        />
+        <Path
+          d={pathData}
+          fill="none"
+          stroke="rgba(0,0,0,0.30)"
+          strokeWidth={strokeWidth + 3}
+          strokeLinejoin="round"
+          strokeLinecap="round"
+          transform="translate(1, 2)"
+        />
         <Path
           d={pathData}
           fill="rgba(255,255,255,0.08)"
@@ -159,6 +196,7 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
           strokeLinecap="round"
         />
       </G>
+
 
       {/* ── Done-activity location pins on the map ── */}
       {activityPoints.map((pt, i) => (

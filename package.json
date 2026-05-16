@@ -32,6 +32,7 @@
     "expo": "~55.0.16",
     "expo-constants": "~55.0.15",
     "expo-image-picker": "~55.0.19",
+    "expo-linear-gradient": "~55.0.14",
     "expo-media-library": "^55.0.15",
     "expo-notifications": "~55.0.22",
     "expo-sharing": "~55.0.18",

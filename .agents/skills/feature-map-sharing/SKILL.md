@@ -28,6 +28,8 @@ interface MapViewerProps {
   markers?: MapMarker[];
   destination?: string;
   countryName?: string;
+  dateRange?: string;
+  doneActivities?: DoneActivity[];
 }
 ```
 
@@ -70,16 +72,22 @@ interface MapMarker {
 | Map Type | Segmented | `normal` / `satellite` / `hybrid` | Mapbox style URL (`streets-v12`, `satellite-v9`, `satellite-streets-v12`) |
 | View | Segmented | `map` / `overlay` | Switches between WebView and CountryOutline |
 | Show Labels | Switch | on/off | Toggles activity name badges below pins |
+| Dark Overlay | Switch | on/off | Toggles a full-page `LinearGradient` (`transparent → rgba(0,0,0,0.55) → rgba(0,0,0,0.75)`) on top of the map layer or behind the outline layer |
 
-- Panel animates with `Animated.Value` — max height 420px.
-- Collapsed pill shows current mode summary with active settings count badge.
+- Panel animates with `Animated.Value` — max height 470px.
+- Collapsed pill shows current mode summary with active settings count badge (toggles: show labels, dark overlay, overlay mode).
+
+### Icon Styling (TouchableOpacity backgrounds)
+- All icon circle backgrounds use `style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}` (not the `bg-black/50` Tailwind class), combined with `className="w-14 h-14 rounded-full items-center justify-center"`
+- Close button (top-left): `Icon name="close" size={32} color="#FFF"`
+- Vertical bar icons (bottom-right): Ionicons `size={24}` (image, refresh, download, share), settings `size={28}` — all `color="#FFF"` (image icon turns `#7EC8F8` when an image is loaded)
 
 ### Build Effect (stabilized)
 Two separate effects prevent infinite rebuild loops:
 
 1. **VisibleIds Init Effect** — depends on `[visible, markersKey]`. Populates `visibleIds` Set from marker IDs on mount and when marker content changes.
 2. **Build Effect** — depends on `[settingsKey, visibleIds, coordKey, markersKey, visible, displayMode]`. Uses content-based keys:
-   - `settingsKey` = `JSON.stringify({ pinMode, pinSize, mapType, showLabels, displayMode, countryName, zoom })`
+   - `settingsKey` = `JSON.stringify({ pinMode, pinSize, mapType, showLabels, displayMode, countryName, zoom, darkOverlay })`
    - `coordKey` = stringified lat/lng
    - `markersKey` = joined string of `"id-lat-lng"` per marker
    
@@ -87,13 +95,14 @@ Two separate effects prevent infinite rebuild loops:
 
 ### Overlay Outline Mode
 - Displays `CountryOutline` inside an `Animated.View` with `PanResponder` for drag and pinch-to-scale (two-finger)
-- Layer selector at top-left: `[Outline]` / `[Image]` (only shown when image is attached)
+- Layer selector at top-right: `[Outline]` / `[Image]` (only shown when image is attached)
 - Active layer tracked via `activeLayerRef` to avoid stale closures in PanResponder
 - Reset button resets position + scale for the currently active layer
 - Image background: full-area `absolute inset-0`, `resizeMode="contain"`, no borders/styling
 - Both layers (image + outline) have independent `translateX/Y` and `scale` animated values
 - `outlineActivities` computed from `markers` filtered by `visibleIds`, mapped to `DoneActivity[]` type for CountryOutline
 - Background: dark blue `#0C2A5A` with a bottom gradient overlay (`h-24 bg-black/30`)
+- Dark overlay (`darkOverlay`) renders a `LinearGradient` behind the touch surface (above `#0C2A5A` background, below outline/image layers)
 
 ### Activity Filter Modal
 - Opened via "Filter Activities" button in settings

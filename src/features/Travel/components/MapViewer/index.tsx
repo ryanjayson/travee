@@ -12,12 +12,17 @@ import {
   Dimensions,
   Image,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
 import WebView from "react-native-webview";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
+import ViewShot from "react-native-view-shot";
+import * as Sharing from "expo-sharing";
+import * as MediaLibrary from "expo-media-library";
+import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
 import { Paths, File, Directory } from "expo-file-system";
-import CountryOutline from "../ShareOverlay/CountryOutline";
+import CountryOutline, { DoneActivity } from "../ShareOverlay/CountryOutline";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -47,6 +52,8 @@ interface MapViewerProps {
   markers?: MapMarker[];
   destination?: string;
   countryName?: string;
+  dateRange?: string;
+  doneActivities?: DoneActivity[];
 }
 
 const IMG_DIR_NAME = "map-imgs";
@@ -88,6 +95,12 @@ const MAP_STYLE_URLS: Record<MapStyle, string> = {
   hybrid: "mapbox://styles/mapbox/satellite-streets-v12",
 };
 
+const ACTIVITY_EMOJI: Record<number, string> = {
+  1: "✈", 2: "⬆", 3: "⬇", 4: "🚕",
+  5: "☕", 6: "🍽", 7: "🚶", 8: "📷",
+  9: "🛍", 10: "🧳", 11: "🚲", 12: "🛏",
+};
+
 type DisplayMode = "map" | "overlay";
 
 const MapViewer = ({
@@ -99,6 +112,8 @@ const MapViewer = ({
   markers,
   destination,
   countryName,
+  dateRange,
+  doneActivities: doneActivitiesProp,
 }: MapViewerProps) => {
   const [pinMode, setPinMode] = useState<PinMode>("type");
   const [pinSize, setPinSize] = useState<PinSize>("medium");
@@ -110,6 +125,13 @@ const MapViewer = ({
   const [renderKey, setRenderKey] = useState(0);
   const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set());
   const [showActivityList, setShowActivityList] = useState(false);
+  const [textDragging, setTextDragging] = useState(false);
+  const [darkOverlay, setDarkOverlay] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const textDragOpacity = useRef(new Animated.Value(1)).current;
+  const textDragScale = useRef(new Animated.Value(1)).current;
+  const viewShotRef = useRef<ViewShot>(null);
   const panelAnim = useRef(new Animated.Value(0)).current;
 
   // ─── Image background state (must be before handlers that use it) ───────
@@ -135,6 +157,54 @@ const MapViewer = ({
   const imgPosRef = useRef({ x: 0, y: 0 });
   const imgScaleRef = useRef(1);
   const imgLastDist = useRef<number | null>(null);
+
+  // ─── Draggable trip info block ──────────────────────────────────────────
+  const textTranslateX = useRef(new Animated.Value(0)).current;
+  const textTranslateY = useRef(new Animated.Value(0)).current;
+  const textPosRef = useRef({ x: 0, y: 0 });
+
+  const textPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        setTextDragging(true);
+        Animated.parallel([
+          Animated.spring(textDragOpacity, { toValue: 0.5, useNativeDriver: true }),
+          Animated.spring(textDragScale, { toValue: 0.97, useNativeDriver: true }),
+        ]).start();
+        textPosRef.current = { x: (textTranslateX as any)._value ?? 0, y: (textTranslateY as any)._value ?? 0 };
+      },
+      onPanResponderMove: (_, gs) => {
+        textTranslateX.setValue(textPosRef.current.x + gs.dx);
+        textTranslateY.setValue(textPosRef.current.y + gs.dy);
+      },
+      onPanResponderRelease: (_, gs) => {
+        setTextDragging(false);
+        Animated.parallel([
+          Animated.spring(textDragOpacity, { toValue: 1, useNativeDriver: true }),
+          Animated.spring(textDragScale, { toValue: 1, useNativeDriver: true }),
+        ]).start();
+        textPosRef.current = { x: textPosRef.current.x + gs.dx, y: textPosRef.current.y + gs.dy };
+      },
+    })
+  ).current;
+
+  // ─── Top activity emoji chips ────────────────────────────────────────────
+  const topActivityTypes = useMemo(() => {
+    const source = doneActivitiesProp || [];
+    if (!source.length) return [];
+    const counts: Record<number, number> = {};
+    source.forEach((a) => {
+      const t = a.type ?? 0;
+      if (t === 0) return;
+      counts[t] = (counts[t] || 0) + 1;
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([typeStr]) => parseInt(typeStr, 10));
+  }, [doneActivitiesProp]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -200,6 +270,11 @@ const MapViewer = ({
   }, []);
 
   const handleResetLayer = useCallback(() => {
+    Animated.spring(textTranslateX, { toValue: 0, useNativeDriver: true }).start();
+    Animated.spring(textTranslateY, { toValue: 0, useNativeDriver: true }).start(() => {
+      textPosRef.current = { x: 0, y: 0 };
+    });
+
     const layer = activeLayerRef.current;
     if (layer === "outline") {
       Animated.parallel([
@@ -242,6 +317,97 @@ const MapViewer = ({
     }
   }, []);
 
+  const buildStaticMapUrl = useCallback(() => {
+    const allMarkers = markers || [];
+    const center = coordinates ? `${coordinates.longitude},${coordinates.latitude},${zoom || 6}` : "";
+    const pinSizeCode = pinSize === "small" ? "s" : pinSize === "medium" ? "m" : "l";
+    const mapStyle = mapType === "normal" ? "streets-v12" : mapType === "satellite" ? "satellite-v9" : "satellite-streets-v12";
+
+    let pins = "";
+    if (allMarkers.length > 0) {
+      pins = allMarkers
+        .filter((m) => !m.id || visibleIds.has(m.id))
+        .map((m) => `pin-${pinSizeCode}+dc3545(${m.longitude},${m.latitude})`)
+        .join(",") + "/";
+    }
+
+    let path = "";
+    const sorted = [...allMarkers].filter((m) => m.sortOrder).sort((a, b) =>
+      (a.sortOrder || "").localeCompare(b.sortOrder || "")
+    );
+    if (sorted.length > 1) {
+      const coords = sorted.map((a) => `${a.longitude},${a.latitude}`).join(";");
+      path = `/path-3+dc3545-0.5(${coords})`;
+    }
+
+    const centerPart = center ? `${center}/` : "auto/";
+    return `https://api.mapbox.com/styles/v1/mapbox/${mapStyle}/static/${pins}${path}/${centerPart}600x400@2x?access_token=${MAPBOX_ACCESS_TOKEN}`;
+  }, [markers, pinSize, mapType, visibleIds, coordinates, zoom]);
+
+  const captureMapImage = useCallback(async (): Promise<string | null> => {
+    try {
+      if (displayMode === "overlay") {
+        // @ts-ignore
+        const uri = await viewShotRef.current?.capture();
+        if (uri) return uri;
+      }
+
+      const staticUrl = buildStaticMapUrl();
+      if (staticUrl) {
+        const imgFile = await File.downloadFileAsync(staticUrl, Paths.cache);
+        return imgFile.uri;
+      }
+    } catch (e) {
+      console.error("[MapViewer] capture failed:", e);
+    }
+    return null;
+  }, [displayMode, buildStaticMapUrl]);
+
+  const handleCaptureAndShare = useCallback(async () => {
+    setIsCapturing(true);
+    try {
+      const uri = await captureMapImage();
+      if (!uri) {
+        Alert.alert("Unable to capture", "Could not generate map image. Try switching to overlay view.");
+        return;
+      }
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(uri, { mimeType: "image/png", dialogTitle: `Share ${title}` });
+      } else {
+        Alert.alert("Sharing not available", "Your device does not support sharing.");
+      }
+    } catch (e) {
+      console.error("[MapViewer] capture error:", e);
+      Alert.alert("Error", "Failed to capture image.");
+    } finally {
+      setIsCapturing(false);
+    }
+  }, [title, captureMapImage]);
+
+  const handleCaptureAndSave = useCallback(async () => {
+    setSaveLoading(true);
+    try {
+      const uri = await captureMapImage();
+      if (!uri) {
+        Alert.alert("Unable to save", "Could not generate map image. Try switching to overlay view.");
+        return;
+      }
+      const permission = await MediaLibrary.requestPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert("Permission required", "Please allow access to save photos to your gallery.");
+        return;
+      }
+      await MediaLibrary.saveToLibraryAsync(uri);
+      Alert.alert("Saved!", "PNG saved to your photo library.");
+    } catch (e) {
+      console.error("[MapViewer] save error:", e);
+      Alert.alert("Error", "Failed to save image.");
+    } finally {
+      setSaveLoading(false);
+    }
+  }, [captureMapImage]);
+
   useEffect(() => {
     Animated.timing(panelAnim, {
       toValue: settingsExpanded ? 1 : 0,
@@ -251,7 +417,7 @@ const MapViewer = ({
   }, [settingsExpanded, panelAnim]);
 
   // Stable content-based keys — only change when actual data changes
-  const settingsKey = JSON.stringify({ pinMode, pinSize, mapType, showLabels, displayMode, countryName, zoom });
+  const settingsKey = JSON.stringify({ pinMode, pinSize, mapType, showLabels, displayMode, countryName, zoom, darkOverlay });
   const coordKey = coordinates ? `${coordinates.latitude},${coordinates.longitude}` : "";
   const markersKey = useMemo(
     () => markers?.map((m) => `${m.id || ""}-${m.latitude}-${m.longitude}`).join("|") || "",
@@ -309,7 +475,7 @@ const MapViewer = ({
 
   const panelHeight = panelAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 420],
+    outputRange: [0, 470],
   });
 
   const panelOpacity = panelAnim.interpolate({
@@ -317,7 +483,7 @@ const MapViewer = ({
     outputRange: [0, 0, 1],
   });
 
-  const activeSettingsCount = (showLabels ? 1 : 0) + (displayMode === "overlay" ? 1 : 0);
+  const activeSettingsCount = (showLabels ? 1 : 0) + (darkOverlay ? 1 : 0) + (displayMode === "overlay" ? 1 : 0);
 
   const SegmentedControl = <T extends string>({
     options,
@@ -352,13 +518,24 @@ const MapViewer = ({
       <View className="flex-1 bg-white">
         <StatusBar barStyle="dark-content" />
 
-        <View className="flex-1">
-          <TouchableOpacity onPress={onClose} className="absolute top-[40px] left-5 z-50">
-            <Icon name="close" size={32} color="#555" />
-          </TouchableOpacity>
+        <TouchableOpacity onPress={onClose} className="absolute top-[40px] left-5 z-50 w-14 h-14 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <Icon name="close" size={32} color="#FFF" />
+        </TouchableOpacity>
+
+        {/* @ts-ignore */}
+        <ViewShot ref={viewShotRef} options={{ format: "png", quality: 1.0 }} style={{ flex: 1 }} className="flex-1">
 
           {displayMode === "map" ? (
-            htmlUri && (
+            <>
+              {darkOverlay && (
+                <LinearGradient
+                  colors={["transparent", "rgba(0,0,0,0.55)", "rgba(0,0,0,0.75)"]}
+                  locations={[0, 0.5, 1]}
+                  className="absolute inset-0 z-10"
+                  pointerEvents="none"
+                />
+              )}
+              {htmlUri && (
               <WebView
                 key={renderKey}
                 source={{ uri: htmlUri }}
@@ -372,38 +549,12 @@ const MapViewer = ({
                 scrollEnabled={false}
                 style={{ flex: 1 }}
               />
-            )
+            )}
+            </>
           ) : (
             <View className="flex-1 bg-[#0C2A5A]">
-              {/* Top buttons */}
-              <View className="absolute top-[40px] right-5 z-50 flex-row gap-2">
-                {imageUri && (
-                  <TouchableOpacity
-                    onPress={() => { setImageUri(null); if (activeLayer === "image") setActiveLayer("outline"); }}
-                    className="w-9 h-9 rounded-full bg-white/20 items-center justify-center"
-                    accessibilityRole="button"
-                  >
-                    <Icon name="close" size={20} color="#FFF" />
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity
-                  onPress={handlePickImage}
-                  className="w-9 h-9 rounded-full bg-white/20 items-center justify-center"
-                  accessibilityRole="button"
-                >
-                  <Icon name={(imageUri ? "image" : "image-outline") as any} size={20} color={imageUri ? "#7EC8F8" : "#FFF"} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={handleResetLayer}
-                  className="w-9 h-9 rounded-full bg-white/20 items-center justify-center"
-                  accessibilityRole="button"
-                >
-                  <Icon name="refresh" size={20} color="#FFF" />
-                </TouchableOpacity>
-              </View>
-
               {/* Layer selector */}
-              <View className="absolute top-[40px] left-5 z-50 flex-row bg-black/30 rounded-xl p-0.5">
+              <View className="absolute top-[40px] right-5 z-50 flex-row rounded-xl p-0.5" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                 <TouchableOpacity
                   onPress={() => setActiveLayer("outline")}
                   className={`px-3 py-1.5 rounded-xl ${activeLayer === "outline" ? "bg-white/30" : ""}`}
@@ -422,6 +573,14 @@ const MapViewer = ({
                 )}
               </View>
 
+              {darkOverlay && (
+                <LinearGradient
+                  colors={["transparent", "rgba(0,0,0,0.55)", "rgba(0,0,0,0.75)"]}
+                  locations={[0, 0.5, 1]}
+                  className="absolute inset-0"
+                  pointerEvents="none"
+                />
+              )}
               {/* Touch surface with pan/pinch */}
               <View
                 className="flex-1"
@@ -467,6 +626,7 @@ const MapViewer = ({
                     doneActivities={outlineActivities}
                     pinSize={pinSize}
                     showLabels={showLabels}
+                    destinationTitle={title}
                   />
                 </Animated.View>
               </View>
@@ -474,11 +634,95 @@ const MapViewer = ({
               <View className="absolute bottom-0 left-0 right-0 h-24 bg-black/30" />
             </View>
           )}
+
+          {/* ─── Draggable trip info block ───────────────────────────────────── */}
+        <Animated.View
+          className="absolute bottom-0 left-0 right-0 px-6 pb-28 z-30"
+          style={{
+            transform: [{ translateX: textTranslateX }, { translateY: textTranslateY }, { scale: textDragScale }],
+            opacity: textDragOpacity,
+          }}
+          {...textPanResponder.panHandlers}
+          pointerEvents="box-none"
+        >
+          <View className="flex-row items-center mb-2.5">
+            <Ionicons name="airplane" size={14} color="rgba(255,255,255,0.65)" />
+            <Text className="text-white/65 text-[11px] font-bold ml-1.5 tracking-[2px]" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>TRAVIE</Text>
+          </View>
+          <Text className="text-white text-[28px] font-extrabold leading-[34px] mb-1.5" numberOfLines={2} style={{ textShadowColor: 'rgba(0,0,0,0.7)', textShadowOffset: { width: 1, height: 2 }, textShadowRadius: 6 }}>{title}</Text>
+          <Text className="text-white/65 text-[15px] font-medium mb-1" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>{destination}</Text>
+          {topActivityTypes.length > 0 && (
+            <View className="flex-row items-center gap-2 mt-2.5 mb-1">
+              {topActivityTypes.map((type, i) => (
+                <View key={i} className="w-8 h-8 rounded-full bg-white/18 border border-white/35 justify-center items-center">
+                  <Text className="text-[16px] leading-5">{ACTIVITY_EMOJI[type] ?? "●"}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+          {dateRange ? <Text className="text-white/45 text-[13px] font-normal mt-1.5" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>{dateRange}</Text> : null}
+        </Animated.View>
+        </ViewShot>
+
+        {/* ─── Vertical icon bar (bottom-right) ──────────────────────────── */}
+        {!settingsExpanded && (
+        <View className="absolute bottom-32 right-4 z-40 flex-col gap-4">
+          <TouchableOpacity
+            onPress={handlePickImage}
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            accessibilityRole="button"
+          >
+            <Ionicons name={(imageUri ? "image" : "image-outline") as any} size={24} color={imageUri ? "#7EC8F8" : "#FFF"} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleResetLayer}
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            accessibilityRole="button"
+          >
+            <Ionicons name="refresh" size={24} color="#FFF" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleCaptureAndSave}
+            disabled={saveLoading}
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            accessibilityRole="button"
+          >
+            {saveLoading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Ionicons name="download-outline" size={24} color="#FFF" />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleCaptureAndShare}
+            disabled={isCapturing}
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            accessibilityRole="button"
+          >
+            {isCapturing ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Ionicons name="share-social-outline" size={24} color="#FFF" />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setSettingsExpanded(true)}
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+            accessibilityRole="button"
+          >
+            <Icon name="settings" size={28} color="#FFF" />
+          </TouchableOpacity>
         </View>
+        )}
 
         {/* Floating bottom toolbar */}
-        <View className="absolute bottom-5 left-5 right-5 items-center" pointerEvents="box-none">
-          {settingsExpanded ? (
+        {settingsExpanded && (
+        <View className="absolute bottom-5 left-5 right-5 items-center z-40" pointerEvents="box-none">
             <Animated.View
               className="bg-white rounded-2xl shadow-lg mx-4 overflow-hidden w-full"
               style={{
@@ -553,37 +797,20 @@ const MapViewer = ({
                       thumbColor="#FFF"
                     />
                   </View>
+                  <View className="flex-row items-center justify-between py-2">
+                    <Text className="text-sm text-gray-700">Dark Overlay</Text>
+                    <Switch
+                      value={darkOverlay}
+                      onValueChange={setDarkOverlay}
+                      trackColor={{ false: "#E0E0E0", true: "#0C4C8A" }}
+                      thumbColor="#FFF"
+                    />
+                  </View>
                 </View>
               </View>
             </Animated.View>
-          ) : (
-            <TouchableOpacity
-              onPress={() => setSettingsExpanded(true)}
-              className="bg-white rounded-full px-5 py-3 flex-row items-center gap-2 shadow-lg self-center"
-              style={{
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.15,
-                shadowRadius: 6,
-                elevation: 6,
-              }}
-              accessibilityRole="button"
-            >
-              <View className="w-7 h-7 rounded-full bg-[#dc3545] items-center justify-center">
-                <Icon name="settings" size={16} color="#FFF" />
-              </View>
-              <Text className="text-sm font-medium text-gray-800">
-                {pinMode === "type" ? "Type" : "Image"} · {pinSize === "small" ? "S" : pinSize === "medium" ? "M" : "L"} · {displayMode === "map" ? "Map" : "Overlay"}
-              </Text>
-              {activeSettingsCount > 0 && (
-                <View className="bg-[#0C4C8A] rounded-full px-1.5 py-0.5 min-w-[18px] items-center">
-                  <Text className="text-[10px] font-bold text-white">{activeSettingsCount}</Text>
-                </View>
-              )}
-              <Icon name="keyboard-arrow-up" size={20} color="#666" />
-            </TouchableOpacity>
-          )}
         </View>
+        )}
 
         {/* Activity list modal */}
         <Modal
