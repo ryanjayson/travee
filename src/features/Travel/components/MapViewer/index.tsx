@@ -26,6 +26,7 @@ import { Paths, File, Directory } from "expo-file-system";
 import CountryOutline, { DoneActivity } from "../ShareOverlay/CountryOutline";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
+import { Divider } from "react-native-paper";
 
 interface MapMarker {
   id?: string;
@@ -281,6 +282,7 @@ const MapViewer = ({
   }, []);
 
   const handleResetLayer = useCallback(() => {
+    setImageUri(null);
     Animated.spring(textTranslateX, { toValue: 0, useNativeDriver: true }).start();
     Animated.spring(textTranslateY, { toValue: 0, useNativeDriver: true }).start(() => {
       textPosRef.current = { x: 0, y: 0 };
@@ -358,7 +360,13 @@ const MapViewer = ({
   const captureMapImage = useCallback(async (): Promise<string | null> => {
     try {
       if (displayMode === "overlay") {
-        const uri = await (viewShotRef.current as any)?.capture?.();
+        const capOpts: any = { format: "png", quality: 1.0 };
+        if (imageUri) {
+          const { width, height } = Dimensions.get("window");
+          capOpts.width = Math.round(width * 2);
+          capOpts.height = Math.round(height * 2);
+        }
+        const uri = await (viewShotRef.current as any)?.capture?.(capOpts);
         return uri || null;
       }
 
@@ -396,7 +404,7 @@ const MapViewer = ({
       console.error("[MapViewer] capture failed:", e);
     }
     return null;
-  }, [displayMode, buildStaticMapUrl, editableTitle, showDestination, showDateRange, destination, dateRange, topActivityTypes, titleFontSize, titleLineHeight, textAlign, textTranslateX, textTranslateY]);
+  }, [displayMode, buildStaticMapUrl, editableTitle, showDestination, showDateRange, destination, dateRange, topActivityTypes, titleFontSize, titleLineHeight, textAlign, imageUri, textTranslateX, textTranslateY]);
 
   const handleCaptureAndShare = useCallback(async () => {
     setIsCapturing(true);
@@ -600,6 +608,27 @@ const MapViewer = ({
           <Icon name="close" size={32} color="#FFF" />
         </TouchableOpacity>
 
+        {/* Layer selector (outside ViewShot so it's excluded from capture) */}
+        {displayMode === "overlay" && (
+          <View className="absolute top-[40px] right-5 z-50 flex-row rounded-md p-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <TouchableOpacity
+              onPress={() => setActiveLayer("outline")}
+              className={`px-3 py-1.5 rounded-md ${activeLayer === "outline" ? "bg-white/30" : ""}`}
+              accessibilityRole="button"
+            >
+              <Text className={`text-xs font-semibold ${activeLayer === "outline" ? "text-white" : "text-white/60"}`}>Outline</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                disabled={!imageUri}
+                onPress={() => setActiveLayer("image")}
+                className={`px-3 py-1.5 rounded-md ${activeLayer === "image" ? "bg-white/30" : ""} ${!imageUri ? "opacity-30" : ""}`}
+                accessibilityRole="button"
+              >
+                <Text className={`text-xs font-semibold ${activeLayer === "image" ? "text-white" : "text-white/60"}`}>Image</Text>
+              </TouchableOpacity>
+          </View>
+        )}
+
         {/* @ts-ignore */}
         <ViewShot ref={viewShotRef} options={{ format: "png", quality: 1.0 }} style={{ flex: 1 }} className="flex-1">
 
@@ -634,26 +663,6 @@ const MapViewer = ({
             </>
           ) : (
             <View className="flex-1 bg-[#0C2A5A]">
-              {/* Layer selector */}
-              <View className="absolute top-[40px] right-5 z-50 flex-row rounded-xl p-0.5" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-                <TouchableOpacity
-                  onPress={() => setActiveLayer("outline")}
-                  className={`px-3 py-1.5 rounded-xl ${activeLayer === "outline" ? "bg-white/30" : ""}`}
-                  accessibilityRole="button"
-                >
-                  <Text className={`text-xs font-semibold ${activeLayer === "outline" ? "text-white" : "text-white/60"}`}>Outline</Text>
-                </TouchableOpacity>
-                {imageUri && (
-                  <TouchableOpacity
-                    onPress={() => setActiveLayer("image")}
-                    className={`px-3 py-1.5 rounded-xl ${activeLayer === "image" ? "bg-white/30" : ""}`}
-                    accessibilityRole="button"
-                  >
-                    <Text className={`text-xs font-semibold ${activeLayer === "image" ? "text-white" : "text-white/60"}`}>Image</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
               {/* Touch surface with pan/pinch */}
               <View
                 className="flex-1"
@@ -731,10 +740,10 @@ const MapViewer = ({
           <View style={{ alignItems: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
           <View className="flex-row items-center mb-2.5" style={{ justifyContent: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
             <Ionicons name="airplane" size={14} color="rgba(255,255,255,0.65)" />
-            <Text className="text-white/65 text-[11px] font-bold ml-1.5 tracking-[2px]" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>TRAVIE</Text>
+            <Text className="text-white text-[18px] font-bold ml-1.5 tracking-[2px]" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>TRAVIE</Text>
           </View>
            <Text className="text-white font-extrabold mb-1.5" style={{ fontSize: titleFontSize, lineHeight: titleLineHeight, textAlign, textShadowColor: 'rgba(0,0,0,0.7)', textShadowOffset: { width: 1, height: 2 }, textShadowRadius: 6 }}>{editableTitle}</Text>
-          {showDestination && destination ? <Text className="text-white/65 text-[15px] font-medium mb-1" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>{destination}</Text> : null}
+          {showDestination && destination ? <Text className="text-white text-[16px] font-medium mb-1" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>{destination}</Text> : null}
           {topActivityTypes.length > 0 && (
             <View className="flex-row items-center gap-2 mt-2.5 mb-1" style={{ justifyContent: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
               {topActivityTypes.map((type, i) => (
@@ -744,64 +753,72 @@ const MapViewer = ({
               ))}
             </View>
           )}
-          {showDateRange && dateRange ? <Text className="text-white/45 text-[13px] font-normal mt-1.5" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>{dateRange}</Text> : null}
+          {showDateRange && dateRange ? <Text className="text-white text-[13px] font-normal mt-1.5" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>{dateRange}</Text> : null}
           </View>
         </Animated.View>
         </ViewShot>
 
         {/* ─── Vertical icon bar (bottom-right) ──────────────────────────── */}
         {!settingsExpanded && (
-        <View className="absolute bottom-8 right-4 z-40 flex-col gap-4">
+        <View className="absolute bottom-8 right-2 z-40 flex-col gap-4">
           <TouchableOpacity
             onPress={handleCaptureAndShare}
             disabled={isCapturing}
-            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg ml-2"
             style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
             accessibilityRole="button"
           >
             {isCapturing ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
-              <Ionicons name="share-social-outline" size={24} color="#FFF" />
+              <Ionicons name="share-social-outline" size={20} color="#FFF" />
             )}
+            <Text className="text-white/50 text-[8px]">Share</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={handleCaptureAndSave}
             disabled={saveLoading}
-            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg ml-2"
             style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
             accessibilityRole="button"
           >
             {saveLoading ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
-              <Ionicons name="download-outline" size={24} color="#FFF" />
+              <Ionicons name="download-outline" size={20} color="#FFF" />
             )}
+            <Text className="text-white/50 text-[8px]">Save</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handlePickImage}
             disabled={displayMode === "map"}
-            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg ml-2"
             style={{ backgroundColor: displayMode === "map" ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.5)' }}
             accessibilityRole="button"
           >
-            <Ionicons name={(imageUri ? "image" : "image-outline") as any} size={24} color={displayMode === "map" ? "rgba(255,255,255,0.35)" : imageUri ? "#7EC8F8" : "#FFF"} />
+            <Ionicons name={(imageUri ? "image" : "image-outline") as any} size={20} color={displayMode === "map" ? "rgba(255,255,255,0.35)" : imageUri ? "#7EC8F8" : "#FFF"} />
+            <Text className="text-white/50 text-[8px]">Upload</Text>
           </TouchableOpacity>
+
+          <View style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} className="h-px w-3/5 mx-auto" />
           <TouchableOpacity
             onPress={handleResetLayer}
-            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg ml-2"
             style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
             accessibilityRole="button"
           >
-            <Ionicons name="refresh" size={24} color="#FFF" />
+            <Ionicons name="refresh" size={20} color="#FFF" />
+            <Text className="text-white/50 text-[8px]">Reset</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setSettingsExpanded(true)}
-            className="w-16 h-16 rounded-full items-center justify-center shadow-lg"
+            className="w-18 h-18 rounded-full items-center justify-center shadow-lg"
             style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
             accessibilityRole="button"
           >
-            <Icon name="settings" size={32} color="#FFF" />
+            <Icon name="settings" size={24} color="#FFF" />
+            <Text className="text-white/50 text-[8px]">Settings</Text>
           </TouchableOpacity>
         </View>
         )}
@@ -824,9 +841,9 @@ const MapViewer = ({
               <View className="px-5 pt-4 pb-3">
                 {/* Header */}
                 <View className="flex-row items-center justify-between mb-4">
-                  <Text className="text-base font-semibold text-gray-800">Settings</Text>
+                  <Text className="text-base font-semibold text-gray-800 uppercase tracking-wide">Settings</Text>
                   <TouchableOpacity onPress={handleCloseSettings} accessibilityRole="button">
-                    <Icon name="close" size={20} color="#666" />
+                    <Icon name="close" size={28} color="#666" />
                   </TouchableOpacity>
                 </View>
 
@@ -836,8 +853,9 @@ const MapViewer = ({
                   <TextInput
                     value={editableTitle}
                     onChangeText={setEditableTitle}
-                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800"
+                    className="border border-gray-200 rounded-xl p-4 text-sm text-gray-800 h-[64px]"
                     placeholder="Trip name"
+
                   />
                   {editableTitle.length === 0 && (
                     <Text className="text-red-500 text-xs mt-1">Title is required</Text>
@@ -882,6 +900,7 @@ const MapViewer = ({
                   <Text className="text-xs text-gray-500 font-medium mb-1.5">Justify</Text>
                   <SegmentedControl options={["left", "center", "right"] as ("left" | "center" | "right")[]} value={textAlign} onChange={(v) => setTextAlign(v as "left" | "center" | "right")} />
                 </View>
+                <Divider />
 
                 {/* Show Destination toggle */}
                 <View className="flex-row items-center justify-between py-2 border-t border-gray-100">
