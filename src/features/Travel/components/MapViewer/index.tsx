@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from "react"
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   Modal,
   StatusBar,
@@ -130,6 +131,13 @@ const MapViewer = ({
   const [isCapturing, setIsCapturing] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [webViewLoaded, setWebViewLoaded] = useState(false);
+  const [editableTitle, setEditableTitle] = useState(title);
+  const [showDestination, setShowDestination] = useState(true);
+  const [showDateRange, setShowDateRange] = useState(true);
+  const [titleFontSize, setTitleFontSize] = useState(28);
+  const [titleLineHeight, setTitleLineHeight] = useState(34);
+  const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("left");
+  useEffect(() => { setEditableTitle(title); }, [title]);
   const textDragOpacity = useRef(new Animated.Value(1)).current;
   const textDragScale = useRef(new Animated.Value(1)).current;
   const viewShotRef = useRef<ViewShot>(null);
@@ -357,14 +365,17 @@ const MapViewer = ({
       // Map mode: inject JS into WebView to capture the Mapbox GL canvas
       const canvasUri = await new Promise<string | null>((resolve) => {
         captureResolveRef.current = resolve;
-        const tripTitle = JSON.stringify(title ?? "");
-        const tripDest = JSON.stringify(destination ?? "");
-        const tripDate = JSON.stringify(dateRange ?? "");
+        const tripTitle = JSON.stringify(editableTitle ?? "");
+        const tripDest = JSON.stringify(showDestination ? (destination ?? "") : "");
+        const tripDate = JSON.stringify(showDateRange ? (dateRange ?? "") : "");
         const tripTypes = JSON.stringify(topActivityTypes);
+        const tripFontSize = titleFontSize;
+        const tripLineHeight = titleLineHeight;
+        const tripAlign = JSON.stringify(textAlign);
         const textX = (textTranslateX as any)._value ?? 0;
         const textY = (textTranslateY as any)._value ?? 0;
         webViewRef.current?.injectJavaScript(
-          `window.__captureMap__ && window.__captureMap__(${tripTitle}, ${tripDest}, ${tripDate}, ${tripTypes}, ${textX}, ${textY})`
+          `window.__captureMap__ && window.__captureMap__(${tripTitle}, ${tripDest}, ${tripDate}, ${tripTypes}, ${textX}, ${textY}, ${tripFontSize}, ${tripAlign}, ${tripLineHeight})`
         );
         setTimeout(() => {
           if (captureResolveRef.current) {
@@ -385,7 +396,7 @@ const MapViewer = ({
       console.error("[MapViewer] capture failed:", e);
     }
     return null;
-  }, [displayMode, buildStaticMapUrl, title, destination, dateRange, topActivityTypes, textTranslateX, textTranslateY]);
+  }, [displayMode, buildStaticMapUrl, editableTitle, showDestination, showDateRange, destination, dateRange, topActivityTypes, titleFontSize, titleLineHeight, textAlign, textTranslateX, textTranslateY]);
 
   const handleCaptureAndShare = useCallback(async () => {
     setIsCapturing(true);
@@ -431,6 +442,11 @@ const MapViewer = ({
       setSaveLoading(false);
     }
   }, [captureMapImage]);
+
+  const handleCloseSettings = useCallback(() => {
+    if (!editableTitle.trim()) setEditableTitle(title);
+    setSettingsExpanded(false);
+  }, [editableTitle, title]);
 
   const handleMessage = useCallback(async (event: any) => {
     try {
@@ -528,7 +544,7 @@ const MapViewer = ({
     setWebViewLoaded(false);
 
     const filtered = markers?.filter((m) => !m.id || visibleIds.has(m.id));
-    buildHtml(filtered, { pinMode, pinSize, mapType, showLabels, displayMode, countryName }, coordinates, zoom)
+    buildHtml(filtered, { pinMode, pinSize, mapType, showLabels, displayMode, countryName, darkOverlay }, coordinates, zoom)
       .then((uri) => {
         setHtmlUri(uri);
         setRenderKey((k) => k + 1);
@@ -537,7 +553,7 @@ const MapViewer = ({
 
   const panelHeight = panelAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 470],
+    outputRange: [0, 700],
   });
 
   const panelOpacity = panelAnim.interpolate({
@@ -591,8 +607,8 @@ const MapViewer = ({
             <>
               {darkOverlay && (
                 <LinearGradient
-                  colors={["transparent", "rgba(0,0,0,0.55)", "rgba(0,0,0,0.75)"]}
-                  locations={[0, 0.5, 1]}
+                  colors={["transparent", "rgba(0,0,0,0.55)", "rgba(0,0,0,0.50)"]}
+                  locations={[2, 0.5, 1]}
                   className="absolute inset-0 z-10"
                   pointerEvents="none"
                 />
@@ -638,14 +654,6 @@ const MapViewer = ({
                 )}
               </View>
 
-              {darkOverlay && (
-                <LinearGradient
-                  colors={["transparent", "rgba(0,0,0,0.55)", "rgba(0,0,0,0.75)"]}
-                  locations={[0, 0.5, 1]}
-                  className="absolute inset-0"
-                  pointerEvents="none"
-                />
-              )}
               {/* Touch surface with pan/pinch */}
               <View
                 className="flex-1"
@@ -653,7 +661,7 @@ const MapViewer = ({
                 onTouchEnd={handlePinchEnd}
                 {...panResponder.panHandlers}
               >
-                {/* Image layer (behind outline) */}
+                {/* Image layer (back) */}
                 {imageUri && (
                   <Animated.View
                     className="absolute inset-0"
@@ -674,7 +682,17 @@ const MapViewer = ({
                   </Animated.View>
                 )}
 
-                {/* Outline layer */}
+                {/* Dark overlay over image (middle) */}
+                {darkOverlay && (
+                  <LinearGradient
+                    colors={["transparent", "rgba(0,0,0,0.55)", "rgba(0,0,0,0.50)"]}
+                    locations={[0, 0.5, 1]}
+                    className="absolute inset-0"
+                    pointerEvents="none"
+                  />
+                )}
+
+                {/* Outline layer (front) */}
                 <Animated.View
                   className="flex-1"
                   style={{
@@ -710,14 +728,15 @@ const MapViewer = ({
           {...textPanResponder.panHandlers}
           pointerEvents="box-none"
         >
-          <View className="flex-row items-center mb-2.5">
+          <View style={{ alignItems: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
+          <View className="flex-row items-center mb-2.5" style={{ justifyContent: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
             <Ionicons name="airplane" size={14} color="rgba(255,255,255,0.65)" />
             <Text className="text-white/65 text-[11px] font-bold ml-1.5 tracking-[2px]" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>TRAVIE</Text>
           </View>
-          <Text className="text-white text-[28px] font-extrabold leading-[34px] mb-1.5" numberOfLines={2} style={{ textShadowColor: 'rgba(0,0,0,0.7)', textShadowOffset: { width: 1, height: 2 }, textShadowRadius: 6 }}>{title}</Text>
-          <Text className="text-white/65 text-[15px] font-medium mb-1" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>{destination}</Text>
+           <Text className="text-white font-extrabold mb-1.5" style={{ fontSize: titleFontSize, lineHeight: titleLineHeight, textAlign, textShadowColor: 'rgba(0,0,0,0.7)', textShadowOffset: { width: 1, height: 2 }, textShadowRadius: 6 }}>{editableTitle}</Text>
+          {showDestination && destination ? <Text className="text-white/65 text-[15px] font-medium mb-1" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>{destination}</Text> : null}
           {topActivityTypes.length > 0 && (
-            <View className="flex-row items-center gap-2 mt-2.5 mb-1">
+            <View className="flex-row items-center gap-2 mt-2.5 mb-1" style={{ justifyContent: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
               {topActivityTypes.map((type, i) => (
                 <View key={i} className="w-8 h-8 rounded-full bg-white/18 border border-white/35 justify-center items-center">
                   <Text className="text-[16px] leading-5">{ACTIVITY_EMOJI[type] ?? "●"}</Text>
@@ -725,28 +744,26 @@ const MapViewer = ({
               ))}
             </View>
           )}
-          {dateRange ? <Text className="text-white/45 text-[13px] font-normal mt-1.5" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>{dateRange}</Text> : null}
+          {showDateRange && dateRange ? <Text className="text-white/45 text-[13px] font-normal mt-1.5" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>{dateRange}</Text> : null}
+          </View>
         </Animated.View>
         </ViewShot>
 
         {/* ─── Vertical icon bar (bottom-right) ──────────────────────────── */}
         {!settingsExpanded && (
-        <View className="absolute bottom-32 right-4 z-40 flex-col gap-4">
+        <View className="absolute bottom-8 right-4 z-40 flex-col gap-4">
           <TouchableOpacity
-            onPress={handlePickImage}
+            onPress={handleCaptureAndShare}
+            disabled={isCapturing}
             className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
             style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
             accessibilityRole="button"
           >
-            <Ionicons name={(imageUri ? "image" : "image-outline") as any} size={24} color={imageUri ? "#7EC8F8" : "#FFF"} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleResetLayer}
-            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
-            style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-            accessibilityRole="button"
-          >
-            <Ionicons name="refresh" size={24} color="#FFF" />
+            {isCapturing ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Ionicons name="share-social-outline" size={24} color="#FFF" />
+            )}
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleCaptureAndSave}
@@ -762,25 +779,29 @@ const MapViewer = ({
             )}
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={handleCaptureAndShare}
-            disabled={isCapturing}
+            onPress={handlePickImage}
+            disabled={displayMode === "map"}
+            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            style={{ backgroundColor: displayMode === "map" ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.5)' }}
+            accessibilityRole="button"
+          >
+            <Ionicons name={(imageUri ? "image" : "image-outline") as any} size={24} color={displayMode === "map" ? "rgba(255,255,255,0.35)" : imageUri ? "#7EC8F8" : "#FFF"} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleResetLayer}
             className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
             style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
             accessibilityRole="button"
           >
-            {isCapturing ? (
-              <ActivityIndicator size="small" color="#FFF" />
-            ) : (
-              <Ionicons name="share-social-outline" size={24} color="#FFF" />
-            )}
+            <Ionicons name="refresh" size={24} color="#FFF" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setSettingsExpanded(true)}
-            className="w-14 h-14 rounded-full items-center justify-center shadow-lg"
+            className="w-16 h-16 rounded-full items-center justify-center shadow-lg"
             style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
             accessibilityRole="button"
           >
-            <Icon name="settings" size={28} color="#FFF" />
+            <Icon name="settings" size={32} color="#FFF" />
           </TouchableOpacity>
         </View>
         )}
@@ -804,9 +825,84 @@ const MapViewer = ({
                 {/* Header */}
                 <View className="flex-row items-center justify-between mb-4">
                   <Text className="text-base font-semibold text-gray-800">Settings</Text>
-                  <TouchableOpacity onPress={() => setSettingsExpanded(false)} accessibilityRole="button">
+                  <TouchableOpacity onPress={handleCloseSettings} accessibilityRole="button">
                     <Icon name="close" size={20} color="#666" />
                   </TouchableOpacity>
+                </View>
+
+                {/* Trip Title input */}
+                <View className="mb-3">
+                  <Text className="text-xs text-gray-500 font-medium mb-1.5">Trip Title</Text>
+                  <TextInput
+                    value={editableTitle}
+                    onChangeText={setEditableTitle}
+                    className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800"
+                    placeholder="Trip name"
+                  />
+                  {editableTitle.length === 0 && (
+                    <Text className="text-red-500 text-xs mt-1">Title is required</Text>
+                  )}
+                </View>
+
+                {/* Title Font Size & Line Height */}
+                <View className="mb-3">
+                  <Text className="text-xs text-gray-500 font-medium mb-1.5">Title Font Size &amp; Line Height</Text>
+                  <View className="flex-row items-center gap-3">
+                    <TextInput
+                      value={String(titleFontSize)}
+                      onChangeText={(text) => {
+                        if (text === "") return;
+                        const num = parseInt(text, 10);
+                        if (!isNaN(num)) setTitleFontSize(Math.max(1, Math.min(72, num)));
+                      }}
+                      keyboardType="number-pad"
+                      selectTextOnFocus
+                      className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 w-20"
+                      placeholder="28"
+                    />
+                    <Text className="text-sm text-gray-400">Size</Text>
+                    <TextInput
+                      value={String(titleLineHeight)}
+                      onChangeText={(text) => {
+                        if (text === "") return;
+                        const num = parseInt(text, 10);
+                        if (!isNaN(num)) setTitleLineHeight(Math.max(1, Math.min(120, num)));
+                      }}
+                      keyboardType="number-pad"
+                      selectTextOnFocus
+                      className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-800 w-20"
+                      placeholder="34"
+                    />
+                    <Text className="text-sm text-gray-400">Height</Text>
+                  </View>
+                </View>
+
+                {/* Justify */}
+                <View className="mb-3">
+                  <Text className="text-xs text-gray-500 font-medium mb-1.5">Justify</Text>
+                  <SegmentedControl options={["left", "center", "right"] as ("left" | "center" | "right")[]} value={textAlign} onChange={(v) => setTextAlign(v as "left" | "center" | "right")} />
+                </View>
+
+                {/* Show Destination toggle */}
+                <View className="flex-row items-center justify-between py-2 border-t border-gray-100">
+                  <Text className="text-sm text-gray-700">Show Destination</Text>
+                  <Switch
+                    value={showDestination}
+                    onValueChange={setShowDestination}
+                    trackColor={{ false: "#E0E0E0", true: "#0C4C8A" }}
+                    thumbColor="#FFF"
+                  />
+                </View>
+
+                {/* Show Date Range toggle */}
+                <View className="flex-row items-center justify-between py-2">
+                  <Text className="text-sm text-gray-700">Trip Date</Text>
+                  <Switch
+                    value={showDateRange}
+                    onValueChange={setShowDateRange}
+                    trackColor={{ false: "#E0E0E0", true: "#0C4C8A" }}
+                    thumbColor="#FFF"
+                  />
                 </View>
 
                 {/* Filter Activities button */}
@@ -837,12 +933,6 @@ const MapViewer = ({
                 <View className="mb-3">
                   <Text className="text-xs text-gray-500 font-medium mb-1.5">Pin Size</Text>
                   <SegmentedControl options={["small", "medium", "large"] as PinSize[]} value={pinSize} onChange={(v) => setPinSize(v as PinSize)} />
-                </View>
-
-                {/* Map Type */}
-                <View className="mb-3">
-                  <Text className="text-xs text-gray-500 font-medium mb-1.5">Map Type</Text>
-                  <SegmentedControl options={["normal", "satellite", "hybrid"] as MapStyle[]} value={mapType} onChange={(v) => setMapType(v as MapStyle)} />
                 </View>
 
                 {/* View mode */}
@@ -974,7 +1064,7 @@ const MapViewer = ({
 
 async function buildHtml(
   markers: MapMarker[] | undefined,
-  opts: { pinMode: PinMode; pinSize: PinSize; mapType: MapStyle; showLabels: boolean; displayMode: DisplayMode; countryName?: string },
+  opts: { pinMode: PinMode; pinSize: PinSize; mapType: MapStyle; showLabels: boolean; displayMode: DisplayMode; countryName?: string; darkOverlay: boolean },
   coordinates?: { latitude: number; longitude: number },
   zoom?: number,
 ): Promise<string> {
@@ -1008,7 +1098,7 @@ function generateMapHtml(
   markers: MapMarker[] | undefined,
   coordinates: { latitude: number; longitude: number } | undefined,
   zoom: number | undefined,
-  opts: { pinMode: PinMode; pinSize: PinSize; mapType: MapStyle; showLabels: boolean; displayMode: DisplayMode; countryName?: string },
+  opts: { pinMode: PinMode; pinSize: PinSize; mapType: MapStyle; showLabels: boolean; displayMode: DisplayMode; countryName?: string; darkOverlay: boolean },
 ): string {
   const sizes = PIN_SIZE_MAP[opts.pinSize];
   const mapStyleUrl = MAP_STYLE_URLS[opts.mapType];
@@ -1029,6 +1119,7 @@ function generateMapHtml(
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { overflow: hidden; }
     #map { width: 100%; height: 100vh; }
+    #dark-overlay { position:absolute;top:0;left:0;right:0;bottom:0;z-index:10;pointer-events:none;background:linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.50) 80%); }
     .marker-wrapper {
       display: flex; flex-direction: column; align-items: center;
       cursor: pointer;
@@ -1063,6 +1154,7 @@ function generateMapHtml(
 </head>
 <body>
   <div id="map"></div>
+  ${opts.darkOverlay ? '<div id="dark-overlay"></div>' : ''}
   <script>
     (function() {
       var origGetContext = HTMLCanvasElement.prototype.getContext;
@@ -1157,7 +1249,10 @@ function generateMapHtml(
       }
     });
 
-    window.__captureMap__ = function(title, destination, dateRange, topTypes, textX, textY) {
+    window.__captureMap__ = function(title, destination, dateRange, topTypes, textX, textY, titleFontSize, textAlign, titleLineHeight) {
+      titleFontSize = Number(titleFontSize) || 28;
+      titleLineHeight = Number(titleLineHeight) || 34;
+      textAlign = textAlign || 'left';
       var overlayId = '__capture_trip_info__';
       function removeOverlay() {
         var el = document.getElementById(overlayId);
@@ -1177,17 +1272,17 @@ function generateMapHtml(
           wrap.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
         }
         var w = window.innerWidth;
-        var inner = '<div style="padding:120px 24px 112px 24px;">';
-        inner += '<div style="display:flex;flex-direction:row;align-items:center;margin-bottom:10px;">';
+        var inner = '<div style="padding:120px 24px 112px 24px;text-align:' + textAlign + ';font-family:-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;">';
+        inner += '<div style="display:flex;flex-direction:row;align-items:center;margin-bottom:10px;justify-content:' + (textAlign === 'left' ? 'flex-start' : textAlign === 'center' ? 'center' : 'flex-end') + ';">';
         inner += '<span style="color:rgba(255,255,255,0.65);font-size:11px;font-weight:700;letter-spacing:2px;text-shadow:0 1px 3px rgba(0,0,0,0.6);">\u2708 TRAVIE</span></div>';
         if (title) {
-          inner += '<div style="color:#fff;font-size:28px;font-weight:800;line-height:34px;margin-bottom:6px;text-shadow:1px 2px 6px rgba(0,0,0,0.7);max-width:' + (w - 48) + 'px;word-wrap:break-word;overflow-wrap:break-word;">' + escapeHtml(title) + '</div>';
+          inner += '<div style="color:#fff;font-size:' + titleFontSize + 'px;font-weight:800;line-height:' + titleLineHeight + 'px;margin-bottom:6px;text-shadow:1px 2px 6px rgba(0,0,0,0.7);max-width:' + (w - 48) + 'px;word-wrap:break-word;overflow-wrap:break-word;">' + escapeHtml(title) + '</div>';
         }
         if (destination) {
           inner += '<div style="color:rgba(255,255,255,0.65);font-size:15px;font-weight:500;margin-bottom:4px;text-shadow:0 1px 4px rgba(0,0,0,0.6);">' + escapeHtml(destination) + '</div>';
         }
         if (topTypes && topTypes.length) {
-          inner += '<div style="display:flex;flex-direction:row;gap:8px;margin-top:10px;margin-bottom:4px;">';
+          inner += '<div style="display:flex;flex-direction:row;gap:8px;margin-top:10px;margin-bottom:4px;justify-content:' + (textAlign === 'left' ? 'flex-start' : textAlign === 'center' ? 'center' : 'flex-end') + ';">';
           var ACTIVITY_EMOJI = ['','\u2708','\u2B06','\u2B07','\uD83D\uDE95','\u2615','\uD83C\uDF7D','\uD83D\uDEB6','\uD83D\uDCF7','\uD83D\uDCCD','\uD83E\uDEB3','\uD83D\uDEB2','\uD83D\uDECF'];
           for (var i = 0; i < topTypes.length; i++) {
             inner += '<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:20px;">' + (ACTIVITY_EMOJI[topTypes[i]] || '\u25CF') + '</div>';
