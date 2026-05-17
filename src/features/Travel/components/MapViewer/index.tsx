@@ -84,9 +84,9 @@ const cacheImage = async (sourceUri: string): Promise<string | null> => {
 };
 
 const PIN_SIZE_MAP: Record<PinSize, { type: number; image: number; icon: number }> = {
-  small: { type: 24, image: 28, icon: 16 },
-  medium: { type: 32, image: 40, icon: 24 },
-  large: { type: 42, image: 52, icon: 32 },
+  small: { type: 24, image: 32, icon: 16 },
+  medium: { type: 32, image: 50, icon: 24 },
+  large: { type: 42, image: 100, icon: 32 },
 };
 
 const MAP_STYLE_URLS: Record<MapStyle, string> = {
@@ -1074,6 +1074,10 @@ function generateMapHtml(
       };
     })();
 
+    function getEmojiForType(type) {
+      var e = ['','\u2708','\u2B06','\u2B07','\uD83D\uDE95','\u2615','\uD83C\uDF7D','\uD83D\uDEB6','\uD83D\uDCF7','\uD83D\uDCCD','\uD83E\uDEB3','\uD83D\uDEB2','\uD83D\uDECF'];
+      return e[Number(type)] || '\u25CF';
+    }
     function getIconHTML(type) {
       switch(Number(type)) {
         case 1: return '<ion-icon name="airplane"></ion-icon>';
@@ -1111,6 +1115,7 @@ function generateMapHtml(
         renderedMarkers.forEach(m => {
           const wrapper = document.createElement('div');
           wrapper.className = 'marker-wrapper';
+          wrapper.setAttribute('data-emoji', getEmojiForType(m.type));
 
           const icon = document.createElement('div');
           const useImage = ${opts.pinMode === 'image'} && m.images && m.images.length > 0 && m.images[0].url;
@@ -1165,50 +1170,135 @@ function generateMapHtml(
         removeOverlay();
         var wrap = document.createElement('div');
         wrap.id = overlayId;
-        wrap.style.cssText = 'position:absolute;bottom:0;left:0;right:0;z-index:9999;pointer-events:none;';
+        wrap.style.cssText = 'position:absolute;bottom:0;left:0;right:0;z-index:9999;pointer-events:none;opacity:0;';
         var tx = Number(textX) || 0;
         var ty = Number(textY) || 0;
         if (tx !== 0 || ty !== 0) {
           wrap.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
         }
-        var inner = '<div style="background:linear-gradient(transparent,rgba(0,0,0,0.55));padding:120px 24px 40px 24px;">';
+        var w = window.innerWidth;
+        var inner = '<div style="padding:120px 24px 112px 24px;">';
         inner += '<div style="display:flex;flex-direction:row;align-items:center;margin-bottom:10px;">';
         inner += '<span style="color:rgba(255,255,255,0.65);font-size:11px;font-weight:700;letter-spacing:2px;text-shadow:0 1px 3px rgba(0,0,0,0.6);">\u2708 TRAVIE</span></div>';
-        if (title) inner += '<div style="color:#fff;font-size:28px;font-weight:800;line-height:34px;margin-bottom:6px;text-shadow:1px 2px 6px rgba(0,0,0,0.7);">' + escapeHtml(title) + '</div>';
-        if (destination) inner += '<div style="color:rgba(255,255,255,0.65);font-size:15px;font-weight:500;margin-bottom:4px;text-shadow:0 1px 4px rgba(0,0,0,0.6);">' + escapeHtml(destination) + '</div>';
+        if (title) {
+          inner += '<div style="color:#fff;font-size:28px;font-weight:800;line-height:34px;margin-bottom:6px;text-shadow:1px 2px 6px rgba(0,0,0,0.7);max-width:' + (w - 48) + 'px;word-wrap:break-word;overflow-wrap:break-word;">' + escapeHtml(title) + '</div>';
+        }
+        if (destination) {
+          inner += '<div style="color:rgba(255,255,255,0.65);font-size:15px;font-weight:500;margin-bottom:4px;text-shadow:0 1px 4px rgba(0,0,0,0.6);">' + escapeHtml(destination) + '</div>';
+        }
         if (topTypes && topTypes.length) {
           inner += '<div style="display:flex;flex-direction:row;gap:8px;margin-top:10px;margin-bottom:4px;">';
-          var emoji = ['','\u2708','\u2B06','\u2B07','\uD83D\uDE95','\u2615','\uD83C\uDF7D','\uD83D\uDEB6','\uD83D\uDCF7','\uD83D\uDCCD','\uD83E\uDEB3','\uD83D\uDEB2','\uD83D\uDECF'];
+          var ACTIVITY_EMOJI = ['','\u2708','\u2B06','\u2B07','\uD83D\uDE95','\u2615','\uD83C\uDF7D','\uD83D\uDEB6','\uD83D\uDCF7','\uD83D\uDCCD','\uD83E\uDEB3','\uD83D\uDEB2','\uD83D\uDECF'];
           for (var i = 0; i < topTypes.length; i++) {
-            inner += '<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:20px;">' + (emoji[topTypes[i]] || '\u25CF') + '</div>';
+            inner += '<div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;font-size:16px;line-height:20px;">' + (ACTIVITY_EMOJI[topTypes[i]] || '\u25CF') + '</div>';
           }
           inner += '</div>';
         }
-        if (dateRange) inner += '<div style="color:rgba(255,255,255,0.45);font-size:13px;font-weight:400;margin-top:6px;text-shadow:0 1px 3px rgba(0,0,0,0.6);">' + escapeHtml(dateRange) + '</div>';
+        if (dateRange) {
+          inner += '<div style="color:rgba(255,255,255,0.45);font-size:13px;font-weight:400;margin-top:6px;text-shadow:0 1px 3px rgba(0,0,0,0.6);">' + escapeHtml(dateRange) + '</div>';
+        }
         inner += '</div>';
         wrap.innerHTML = inner;
         document.body.appendChild(wrap);
       }
       function doCapture() {
-        buildOverlay();
-        map.resize();
-        requestAnimationFrame(function() {
-          if (typeof html2canvas !== 'undefined') {
-            html2canvas(document.body, { useCORS: true, allowTaint: true, backgroundColor: null, logging: false }).then(function(canvas) {
-              var dataUrl = canvas.toDataURL('image/png');
-              removeOverlay();
-              window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: dataUrl}));
-            }).catch(function() {
-              var c = document.querySelector('.mapboxgl-canvas');
-              if (c) { var d = c.toDataURL('image/png'); removeOverlay(); window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: d})); }
-              else { removeOverlay(); window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: ''})); }
-            });
+        if (typeof html2canvas !== 'undefined') {
+          buildOverlay();
+          var overlay = document.getElementById(overlayId);
+          if (overlay) overlay.style.opacity = '1';
+          var capPromise = html2canvas(document.body, { useCORS: true, allowTaint: true, backgroundColor: null, logging: false, width: window.innerWidth, height: window.innerHeight, windowWidth: window.innerWidth, windowHeight: window.innerHeight });
+          if (overlay) overlay.style.opacity = '0';
+          capPromise
+          .then(function(canvas) {
+            var dataUrl = canvas.toDataURL('image/png');
+            removeOverlay();
+            window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: dataUrl}));
+          })
+          .catch(function() {
+            removeOverlay();
+            fallbackCapture();
+          });
+        } else {
+          fallbackCapture();
+        }
+      }
+      function fallbackCapture() {
+        var mapCanvas = document.querySelector('.mapboxgl-canvas');
+        if (!mapCanvas) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: ''}));
+          return;
+        }
+        var dpr = window.devicePixelRatio || 1;
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        var comp = document.createElement('canvas');
+        comp.width = Math.round(w * dpr);
+        comp.height = Math.round(h * dpr);
+        var ctx = comp.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.drawImage(mapCanvas, 0, 0, w, h);
+        var markers = document.querySelectorAll('.marker-wrapper');
+        var imgLoads = [];
+        markers.forEach(function(m) {
+          var r = m.getBoundingClientRect();
+          var cx = r.left + r.width / 2, cy = r.top + r.height / 2, rad = r.width / 2;
+          var isImg = m.querySelector('.image-marker');
+          if (isImg) {
+            var url = (window.getComputedStyle(isImg).backgroundImage || '').replace(/^url\(["']?|["']?\)$/g, '');
+            if (url) {
+              var p = new Promise(function(res) {
+                var img = new Image();
+                img.onload = function() {
+                  ctx.save();
+                  ctx.beginPath(); ctx.arc(cx, cy, rad - 1, 0, 2 * Math.PI); ctx.closePath(); ctx.clip();
+                  ctx.drawImage(img, r.left, r.top, r.width, r.height);
+                  ctx.restore();
+                  ctx.beginPath(); ctx.arc(cx, cy, rad - 1, 0, 2 * Math.PI);
+                  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+                  res();
+                };
+                img.onerror = function() { res(); };
+                img.src = url;
+              });
+              imgLoads.push(p);
+            }
           } else {
-            var c = document.querySelector('.mapboxgl-canvas');
-            if (c) { var d = c.toDataURL('image/png'); removeOverlay(); window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: d})); }
-            else { removeOverlay(); window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: ''})); }
+            var emoji = m.getAttribute('data-emoji') || '\u25CF';
+            ctx.beginPath(); ctx.arc(cx, cy, rad, 0, 2 * Math.PI);
+            ctx.fillStyle = '#dc3545'; ctx.fill();
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.fillStyle = '#FFF';
+            ctx.font = 'bold ' + Math.round(rad * 0.75) + 'px sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, cx, cy + 0.5);
+          }
+          var lbl = m.querySelector('.marker-label');
+          if (lbl) {
+            var lr = lbl.getBoundingClientRect();
+            ctx.fillStyle = 'rgba(255,255,255,0.95)';
+            roundRect(ctx, lr.left, lr.top, lr.width, lr.height, 6);
+            ctx.fill();
+            ctx.fillStyle = '#333';
+            ctx.font = '600 12px sans-serif';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(lbl.textContent, lr.left + lr.width / 2, lr.top + lr.height / 2);
           }
         });
+        Promise.all(imgLoads).then(function() {
+          window.ReactNativeWebView.postMessage(JSON.stringify({type: '__map_capture__', data: comp.toDataURL('image/png')}));
+        });
+      }
+      function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
       }
       if (map.loaded && !map.loaded()) {
         map.once('idle', doCapture);
