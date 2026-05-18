@@ -23,7 +23,8 @@ import * as Sharing from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
 import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
 import { Paths, File, Directory } from "expo-file-system";
-import CountryOutline, { DoneActivity } from "../ShareOverlay/CountryOutline";
+import CountryOutline, { DoneActivity, ActivityPoint } from "../ShareOverlay/CountryOutline";
+import Svg, { Line, Circle } from "react-native-svg";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Divider } from "react-native-paper";
@@ -132,6 +133,7 @@ const MapViewer = ({
   const [isCapturing, setIsCapturing] = useState(false);
   const [saveLoading, setSaveLoading] = useState(false);
   const [webViewLoaded, setWebViewLoaded] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const [editableTitle, setEditableTitle] = useState(title);
   const [showDestination, setShowDestination] = useState(true);
   const [showDateRange, setShowDateRange] = useState(true);
@@ -154,6 +156,13 @@ const MapViewer = ({
   const activeLayerRef = useRef(activeLayer);
   activeLayerRef.current = activeLayer;
 
+  // ─── Move-pin mode: freeze everything except pins/images ─────────────────
+  const [movePinMode, setMovePinMode] = useState(false);
+  const movePinModeRef = useRef(false);
+  movePinModeRef.current = movePinMode;
+
+  const [mapMoving, setMapMoving] = useState(false);
+
   // Outline transforms
   const translateX = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(0)).current;
@@ -170,6 +179,106 @@ const MapViewer = ({
   const imgScaleRef = useRef(1);
   const imgLastDist = useRef<number | null>(null);
 
+  // ─── Draggable pins ────────────────────────────────────────────────────
+  const PIN_HIT_RADIUS = 22;
+  const [activityPoints, setActivityPoints] = useState<ActivityPoint[]>([]);
+  const [pinOffsets, setPinOffsets] = useState<{dx: number; dy: number}[]>([]);
+  const pinOffsetsRef = useRef<{dx: number; dy: number}[]>([]);
+  pinOffsetsRef.current = pinOffsets;
+  const pinAnchorRef = useRef<{dx: number; dy: number}>({dx: 0, dy: 0});
+  const activePinIdxRef = useRef<number | null>(null);
+  const [dragLine, setDragLine] = useState<{from: {x: number; y: number}; to: {x: number; y: number}} | null>(null);
+  const [imgDragLine, setImgDragLine] = useState<{from: {x: number; y: number}; to: {x: number; y: number}} | null>(null);
+
+  // Animated values per pin for smooth drag + spring-on-release
+  const pinAnimValues = useRef<{x: Animated.Value; y: Animated.Value}[]>([]);
+
+  // "Committed" offsets — only updated on release (avoids re-rendering SVG on every drag frame)
+  const [committedOffsets, setCommittedOffsets] = useState<{dx: number; dy: number}[]>([]);
+
+  // Preserve pin offsets + Animated values when activity points change
+  useEffect(() => {
+    setPinOffsets(prev => {
+      if (prev.length === 0) return activityPoints.map(() => ({dx: 0, dy: 0}));
+      return activityPoints.map((_, i) => prev[i] || {dx: 0, dy: 0});
+    });
+    setCommittedOffsets(prev => {
+      if (prev.length === 0) return activityPoints.map(() => ({dx: 0, dy: 0}));
+      return activityPoints.map((_, i) => prev[i] || {dx: 0, dy: 0});
+    });
+    pinAnimValues.current = activityPoints.map(
+      (_, i) => pinAnimValues.current[i] || {x: new Animated.Value(0), y: new Animated.Value(0)},
+    );
+  }, [activityPoints]);
+
+  const hiddenActivityIndices = useMemo(
+    () =>
+      committedOffsets.reduce((acc, o, i) => {
+        if (o.dx !== 0 || o.dy !== 0) acc.push(i);
+        return acc;
+      }, [] as number[]),
+    [committedOffsets],
+  );
+
+  const pinTargetsPan = useMemo(
+    () =>
+      activityPoints.map((pt, idx) => {
+        return PanResponder.create({
+          onStartShouldSetPanResponder: () => true,
+          onMoveShouldSetPanResponder: () => true,
+          onPanResponderGrant: () => {
+            activePinIdxRef.current = idx;
+            const anim = pinAnimValues.current[idx];
+            const x = (anim?.x as any)._value ?? 0;
+            const y = (anim?.y as any)._value ?? 0;
+            pinAnchorRef.current = {dx: x, dy: y};
+          },
+          onPanResponderMove: (_, gs) => {
+            const a = pinAnchorRef.current;
+            const x = a.dx + gs.dx;
+            const y = a.dy + gs.dy;
+            const anim = pinAnimValues.current[idx];
+            if (anim) {
+              anim.x.setValue(x);
+              anim.y.setValue(y);
+            }
+            setPinOffsets(prev => {
+              const next = [...prev];
+              next[idx] = {dx: x, dy: y};
+              return next;
+            });
+            setDragLine({
+              from: {x: pt.x, y: pt.y},
+              to: {x: pt.x + x, y: pt.y + y},
+            });
+          },
+          onPanResponderRelease: (_, gs) => {
+            const a = pinAnchorRef.current;
+            const targetX = a.dx + gs.dx;
+            const targetY = a.dy + gs.dy;
+            const anim = pinAnimValues.current[idx];
+            if (anim) {
+              Animated.spring(anim.x, { toValue: targetX, useNativeDriver: true, friction: 7 }).start();
+              Animated.spring(anim.y, { toValue: targetY, useNativeDriver: true, friction: 7 }).start();
+            }
+            setPinOffsets(prev => {
+              const next = [...prev];
+              next[idx] = {dx: targetX, dy: targetY};
+              return next;
+            });
+            setCommittedOffsets(prev => {
+              const next = [...prev];
+              next[idx] = {dx: targetX, dy: targetY};
+              return next;
+            });
+            activePinIdxRef.current = null;
+            setDragLine(null);
+          },
+        });
+      }),
+    [activityPoints],
+  );
+
   // ─── Draggable trip info block ──────────────────────────────────────────
   const textTranslateX = useRef(new Animated.Value(0)).current;
   const textTranslateY = useRef(new Animated.Value(0)).current;
@@ -177,8 +286,8 @@ const MapViewer = ({
 
   const textPanResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => !movePinModeRef.current,
+      onMoveShouldSetPanResponder: () => !movePinModeRef.current,
       onPanResponderGrant: () => {
         setTextDragging(true);
         Animated.parallel([
@@ -220,17 +329,28 @@ const MapViewer = ({
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => {
+        if (movePinModeRef.current && activeLayerRef.current === "outline") return false;
+        return activePinIdxRef.current === null;
+      },
+      onMoveShouldSetPanResponder: () => {
+        if (movePinModeRef.current && activeLayerRef.current === "outline") return false;
+        return activePinIdxRef.current === null;
+      },
       onPanResponderGrant: () => {
+        if (activePinIdxRef.current !== null) return;
+        if (movePinModeRef.current && activeLayerRef.current === "outline") return;
         const layer = activeLayerRef.current;
         if (layer === "outline") {
           posRef.current = { x: (translateX as any)._value ?? 0, y: (translateY as any)._value ?? 0 };
         } else {
           imgPosRef.current = { x: (imgTranslateX as any)._value ?? 0, y: (imgTranslateY as any)._value ?? 0 };
         }
+        setImgDragLine(null);
       },
       onPanResponderMove: (_, gs) => {
+        if (activePinIdxRef.current !== null) return;
+        if (movePinModeRef.current && activeLayerRef.current === "outline") return;
         const layer = activeLayerRef.current;
         if (layer === "outline") {
           translateX.setValue(posRef.current.x + gs.dx);
@@ -238,20 +358,33 @@ const MapViewer = ({
         } else {
           imgTranslateX.setValue(imgPosRef.current.x + gs.dx);
           imgTranslateY.setValue(imgPosRef.current.y + gs.dy);
+          const cx = Dimensions.get("window").width / 2;
+          const cy = Dimensions.get("window").height * 0.35;
+          const ox = imgPosRef.current.x + gs.dx;
+          const oy = imgPosRef.current.y + gs.dy;
+          setImgDragLine({
+            from: { x: cx, y: cy },
+            to: { x: cx + ox, y: cy + oy },
+          });
         }
       },
       onPanResponderRelease: (_, gs) => {
+        if (activePinIdxRef.current !== null) return;
+        if (movePinModeRef.current && activeLayerRef.current === "outline") return;
         const layer = activeLayerRef.current;
         if (layer === "outline") {
           posRef.current = { x: posRef.current.x + gs.dx, y: posRef.current.y + gs.dy };
         } else {
           imgPosRef.current = { x: imgPosRef.current.x + gs.dx, y: imgPosRef.current.y + gs.dy };
         }
+        setImgDragLine(null);
       },
     })
   ).current;
 
   const handlePinchMove = useCallback((evt: any) => {
+    if (activePinIdxRef.current !== null) return;
+    if (movePinModeRef.current) return;
     const touches = evt.nativeEvent.touches;
     if (touches.length !== 2) return;
     const dx = touches[0].pageX - touches[1].pageX;
@@ -277,12 +410,21 @@ const MapViewer = ({
   }, [imageUri]);
 
   const handlePinchEnd = useCallback(() => {
+    if (activePinIdxRef.current !== null) return;
     lastDist.current = null;
     imgLastDist.current = null;
   }, []);
 
   const handleResetLayer = useCallback(() => {
     setImageUri(null);
+    setDragLine(null);
+    setImgDragLine(null);
+    setPinOffsets(prev => prev.map(() => ({dx: 0, dy: 0})));
+    setCommittedOffsets(prev => prev.map(() => ({dx: 0, dy: 0})));
+    pinAnimValues.current.forEach(anim => {
+      Animated.spring(anim.x, { toValue: 0, useNativeDriver: true, friction: 7 }).start();
+      Animated.spring(anim.y, { toValue: 0, useNativeDriver: true, friction: 7 }).start();
+    });
     Animated.spring(textTranslateX, { toValue: 0, useNativeDriver: true }).start();
     Animated.spring(textTranslateY, { toValue: 0, useNativeDriver: true }).start(() => {
       textPosRef.current = { x: 0, y: 0 };
@@ -459,6 +601,36 @@ const MapViewer = ({
   const handleMessage = useCallback(async (event: any) => {
     try {
       const msg = JSON.parse(event.nativeEvent.data);
+
+      if (msg.type === "markerPositions") {
+        if (msg.positions) {
+          console.log("[MapViewer] received marker positions:", msg.positions.length);
+          setActivityPoints(msg.positions);
+        }
+        if (msg.error) {
+          console.warn("[MapViewer] markerPositions error:", msg.error);
+        }
+        return;
+      }
+
+      if (msg.type === "_mapReady") {
+        setMapReady(true);
+        return;
+      }
+
+      if (msg.type === "mapMoveStart") {
+        setMapMoving(true);
+        return;
+      }
+
+      if (msg.type === "mapMoveEnd") {
+        setMapMoving(false);
+        if (movePinModeRef.current) {
+          requestMarkerPositionsRef.current();
+        }
+        return;
+      }
+
       if (msg.type !== "__map_capture__" || !captureResolveRef.current) return;
 
       const resolve = captureResolveRef.current;
@@ -501,6 +673,52 @@ const MapViewer = ({
     }).start();
   }, [settingsExpanded, panelAnim]);
 
+  // Request marker pixel positions from WebView when move-pin mode activates in map view
+  const requestMarkerPositions = useCallback(() => {
+    if (!webViewRef.current || displayMode !== "map") return;
+    const mapViewMarkers = markers || [];
+    const js = `
+      (function() {
+        try {
+          var data = ${JSON.stringify(mapViewMarkers)};
+          var coords = ${JSON.stringify(coordinates)};
+          var items = data.length > 0 ? data : (coords ? [{latitude: coords.latitude, longitude: coords.longitude, title: ''}] : []);
+          var positions = items.map(function(m) {
+            var pixel = map.project([m.longitude, m.latitude]);
+            var imgUrl = (m.images && m.images.length > 0) ? m.images[0].url : null;
+            return { x: pixel.x, y: pixel.y, type: m.type, title: m.title || '', imageUrl: imgUrl };
+          });
+          window.ReactNativeWebView.postMessage(JSON.stringify({type: 'markerPositions', positions: positions}));
+        } catch(e) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({type: 'markerPositions', error: e.message}));
+        }
+      })();
+      true;
+    `;
+    webViewRef.current.injectJavaScript(js);
+  }, [markers, coordinates, displayMode]);
+
+  const requestMarkerPositionsRef = useRef(requestMarkerPositions);
+  requestMarkerPositionsRef.current = requestMarkerPositions;
+
+  useEffect(() => {
+    if (movePinMode && displayMode === "map") {
+      if (webViewLoaded && mapReady) {
+        const timer = setTimeout(() => requestMarkerPositions(), 400);
+        return () => clearTimeout(timer);
+      }
+    } else if (!movePinMode) {
+      setDragLine(null);
+    }
+  }, [movePinMode, displayMode, webViewLoaded, mapReady, requestMarkerPositions]);
+
+  // Reset mapReady when leaving map mode (WebView gets unmounted)
+  useEffect(() => {
+    if (displayMode !== "map") {
+      setMapReady(false);
+    }
+  }, [displayMode]);
+
   // Stable content-based keys — only change when actual data changes
   const settingsKey = JSON.stringify({ pinMode, pinSize, mapType, showLabels, displayMode, countryName, zoom, darkOverlay });
   const coordKey = coordinates ? `${coordinates.latitude},${coordinates.longitude}` : "";
@@ -524,6 +742,7 @@ const MapViewer = ({
           lng: m.longitude,
           type: typeof m.type === "number" ? m.type : undefined,
           title: m.title,
+          imageUrl: m.images?.[0]?.url,
         })) || [],
     [markersKey, visibleIds],
   );
@@ -608,24 +827,39 @@ const MapViewer = ({
           <Icon name="close" size={32} color="#FFF" />
         </TouchableOpacity>
 
-        {/* Layer selector (outside ViewShot so it's excluded from capture) */}
+        {/* Move Pin toggle (available in both map and overlay modes) */}
+        <View className="absolute top-[40px] right-5 z-50 items-end gap-2">
+          <View className="flex-row items-center rounded-md p-1.5 gap-1.5" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <Text className="text-white text-[10px] font-semibold">Move Pin</Text>
+            <Switch
+              value={movePinMode}
+              onValueChange={setMovePinMode}
+              trackColor={{ false: "rgba(255,255,255,0.25)", true: "rgba(255,255,255,0.6)" }}
+              thumbColor={movePinMode ? "#ffffff" : "rgba(255,255,255,0.4)"}
+            />
+          </View>
+        </View>
+
+        {/* Layer selector (outside ViewShot so it's excluded from capture) — overlay only */}
         {displayMode === "overlay" && (
-          <View className="absolute top-[40px] right-5 z-50 flex-row rounded-md p-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <TouchableOpacity
-              onPress={() => setActiveLayer("outline")}
-              className={`px-3 py-1.5 rounded-md ${activeLayer === "outline" ? "bg-white/30" : ""}`}
-              accessibilityRole="button"
-            >
-              <Text className={`text-xs font-semibold ${activeLayer === "outline" ? "text-white" : "text-white/60"}`}>Outline</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-                disabled={!imageUri}
-                onPress={() => setActiveLayer("image")}
-                className={`px-3 py-1.5 rounded-md ${activeLayer === "image" ? "bg-white/30" : ""} ${!imageUri ? "opacity-30" : ""}`}
+          <View className="absolute top-[105px] right-5 z-50">
+            <View className="flex-row rounded-md p-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+              <TouchableOpacity
+                onPress={() => setActiveLayer("outline")}
+                className={`px-3 py-1.5 rounded-md ${activeLayer === "outline" ? "bg-white/30" : ""}`}
                 accessibilityRole="button"
               >
-                <Text className={`text-xs font-semibold ${activeLayer === "image" ? "text-white" : "text-white/60"}`}>Image</Text>
+                <Text className={`text-xs font-semibold ${activeLayer === "outline" ? "text-white" : "text-white/60"}`}>Outline</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                  disabled={!imageUri}
+                  onPress={() => setActiveLayer("image")}
+                  className={`px-3 py-1.5 rounded-md ${activeLayer === "image" ? "bg-white/30" : ""} ${!imageUri ? "opacity-30" : ""}`}
+                  accessibilityRole="button"
+                >
+                  <Text className={`text-xs font-semibold ${activeLayer === "image" ? "text-white" : "text-white/60"}`}>Image</Text>
+                </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -660,6 +894,131 @@ const MapViewer = ({
                 onMessage={handleMessage}
               />
             )}
+
+              {/* Dim + freeze overlay when move-pin mode is active — claims touch responder to block WebView */}
+              {movePinMode && (
+                <View
+                  className="absolute inset-0 z-20 bg-black/50"
+                  onStartShouldSetResponder={() => true}
+                  onResponderMove={() => {}}
+                  onResponderRelease={() => {}}
+                  onResponderTerminationRequest={() => false}
+                />
+              )}
+
+              {/* Pin targets + drag line (map view, on top of dim overlay) */}
+              {activityPoints.length > 0 && (
+                <View className="absolute inset-0 z-30" pointerEvents={movePinMode ? "box-none" : "none"}>
+                  {/* Connection lines for moved pins */}
+                  <Svg
+                    width={Dimensions.get("window").width}
+                    height={Dimensions.get("window").height}
+                    className="absolute top-0 left-0 z-10"
+                    pointerEvents="none"
+                    style={{ opacity: mapMoving ? 0 : 1 }}
+                  >
+                    {/* Persistent lines for previously moved pins */}
+                    {activityPoints.map((pt, idx) => {
+                      const offset = pinOffsets[idx];
+                      if (!offset || (offset.dx === 0 && offset.dy === 0)) return null;
+                      return (
+                        <Line
+                          key={`moved-${idx}`}
+                          x1={pt.x}
+                          y1={pt.y}
+                          x2={pt.x + offset.dx}
+                          y2={pt.y + offset.dy}
+                          stroke="rgba(220,53,69,0.5)"
+                          strokeWidth={2}
+                          strokeDasharray="5,4"
+                          strokeLinecap="round"
+                        />
+                      );
+                    })}
+
+                    {/* Active drag line (red) */}
+                    {dragLine && (
+                      <>
+                        <Line
+                          x1={dragLine.from.x}
+                          y1={dragLine.from.y}
+                          x2={dragLine.to.x}
+                          y2={dragLine.to.y}
+                          stroke="rgba(220,53,69,0.85)"
+                          strokeWidth={3}
+                          strokeDasharray="7,5"
+                          strokeLinecap="round"
+                        />
+                        <Circle
+                          cx={dragLine.from.x}
+                          cy={dragLine.from.y}
+                          r={7}
+                          fill="rgba(220,53,69,0.8)"
+                        />
+                      </>
+                    )}
+                  </Svg>
+                  {/* Pin touch targets + visible pins */}
+                  {activityPoints.length > 0 && (
+                  <View className="absolute inset-0 z-20" pointerEvents="box-none">
+                    {activityPoints.map((pt, idx) => {
+                      const anim = pinAnimValues.current[idx];
+                      const offset = committedOffsets[idx];
+                      if (!movePinMode && (!offset || (offset.dx === 0 && offset.dy === 0))) return null;
+                      return (
+                        <Animated.View
+                          key={idx}
+                          className="absolute"
+                          style={{
+                            left: pt.x - PIN_HIT_RADIUS,
+                            top: pt.y - PIN_HIT_RADIUS,
+                            width: PIN_HIT_RADIUS * 2,
+                            height: PIN_HIT_RADIUS * 2,
+                            transform: [
+                              { translateX: anim?.x ?? 0 },
+                              { translateY: anim?.y ?? 0 },
+                            ],
+                          }}
+                          {...(pinTargetsPan[idx]?.panHandlers ?? {})}
+                        >
+                          <View className="flex-1 items-center justify-center">
+                            {(() => {
+                              const useImage = pt.imageUrl && pinMode === "image";
+                              const size = useImage ? PIN_SIZE_MAP[pinSize].image : PIN_SIZE_MAP[pinSize].type;
+                              const iconSize = Math.max(12, Math.round(size * 0.6));
+                              return useImage ? (
+                                <Image
+                                  source={{ uri: pt.imageUrl }}
+                                  className="rounded-full"
+                                  style={{ width: size, height: size, borderWidth: 2, borderColor: '#fff' }}
+                                />
+                              ) : (
+                                <View
+                                  className="rounded-full bg-[#dc3545] items-center justify-center"
+                                  style={{
+                                    width: size,
+                                    height: size,
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.4,
+                                    shadowRadius: 4,
+                                    elevation: 5,
+                                  }}
+                                >
+                                  <Text className="text-white leading-5 font-bold" style={{ fontSize: iconSize }}>
+                                    {ACTIVITY_EMOJI[pt.type ?? 0] ?? "\u25CF"}
+                                  </Text>
+                                </View>
+                              );
+                            })()}
+                          </View>
+                        </Animated.View>
+                      );
+                    })}
+                  </View>
+                  )}
+                </View>
+              )}
             </>
           ) : (
             <View className="flex-1 bg-[#0C2A5A]">
@@ -701,7 +1060,28 @@ const MapViewer = ({
                   />
                 )}
 
-                {/* Outline layer (front) */}
+                {/* Image drag displacement line */}
+                {imgDragLine && (
+                  <Svg
+                    width={Dimensions.get("window").width}
+                    height={Dimensions.get("window").height * 0.7}
+                    className="absolute top-0 left-0 z-10"
+                    pointerEvents="none"
+                  >
+                    <Line
+                      x1={imgDragLine.from.x}
+                      y1={imgDragLine.from.y}
+                      x2={imgDragLine.to.x}
+                      y2={imgDragLine.to.y}
+                      stroke="rgba(255,255,255,0.5)"
+                      strokeWidth={2}
+                      strokeDasharray="6,4"
+                      strokeLinecap="round"
+                    />
+                  </Svg>
+                )}
+
+                {/* Outline layer (non-interactive) */}
                 <Animated.View
                   className="flex-1"
                   style={{
@@ -719,8 +1099,133 @@ const MapViewer = ({
                     pinSize={pinSize}
                     showLabels={showLabels}
                     destinationTitle={title}
+                    onActivityPoints={setActivityPoints}
+                    hiddenActivityIndices={hiddenActivityIndices}
                   />
                 </Animated.View>
+
+                {/* Pin targets + drag line layer (same transform, interactive) */}
+                <Animated.View
+                  className="absolute inset-0"
+                  style={{
+                    transform: [{ translateX }, { translateY }, { scale }],
+                  }}
+                  pointerEvents="box-none"
+                >
+                  {/* Connection lines for moved pins */}
+                  <Svg
+                    width={Dimensions.get("window").width}
+                    height={Dimensions.get("window").height * 0.7}
+                    className="absolute top-0 left-0 z-10"
+                    pointerEvents="none"
+                  >
+                    {/* Persistent lines for previously moved pins */}
+                    {activityPoints.map((pt, idx) => {
+                      const offset = pinOffsets[idx];
+                      if (!offset || (offset.dx === 0 && offset.dy === 0)) return null;
+                      return (
+                        <Line
+                          key={`moved-${idx}`}
+                          x1={pt.x}
+                          y1={pt.y}
+                          x2={pt.x + offset.dx}
+                          y2={pt.y + offset.dy}
+                          stroke="rgba(220,53,69,0.5)"
+                          strokeWidth={2}
+                          strokeDasharray="5,4"
+                          strokeLinecap="round"
+                        />
+                      );
+                    })}
+
+                    {/* Active drag line (red) */}
+                    {dragLine && (
+                      <>
+                        <Line
+                          x1={dragLine.from.x}
+                          y1={dragLine.from.y}
+                          x2={dragLine.to.x}
+                          y2={dragLine.to.y}
+                          stroke="rgba(220,53,69,0.85)"
+                          strokeWidth={3}
+                          strokeDasharray="7,5"
+                          strokeLinecap="round"
+                        />
+                        <Circle
+                          cx={dragLine.from.x}
+                          cy={dragLine.from.y}
+                          r={7}
+                          fill="rgba(220,53,69,0.8)"
+                        />
+                      </>
+                    )}
+                  </Svg>
+
+                  {/* Pin touch targets + visible pins */}
+                  {activityPoints.length > 0 && (
+                    <View className="absolute inset-0 z-20" pointerEvents="box-none">
+                      {activityPoints.map((pt, idx) => {
+                        const anim = pinAnimValues.current[idx];
+                        const offset = committedOffsets[idx];
+                        if (!movePinMode && (!offset || (offset.dx === 0 && offset.dy === 0))) return null;
+                        return (
+                          <Animated.View
+                            key={idx}
+                            className="absolute"
+                            style={{
+                              left: pt.x - PIN_HIT_RADIUS,
+                              top: pt.y - PIN_HIT_RADIUS,
+                              width: PIN_HIT_RADIUS * 2,
+                              height: PIN_HIT_RADIUS * 2,
+                              transform: [
+                                { translateX: anim?.x ?? 0 },
+                                { translateY: anim?.y ?? 0 },
+                              ],
+                            }}
+                            {...(pinTargetsPan[idx]?.panHandlers ?? {})}
+                          >
+                            <View className="flex-1 items-center justify-center">
+                              {(() => {
+                                const useImage = pt.imageUrl && pinMode === "image";
+                                const size = useImage ? PIN_SIZE_MAP[pinSize].image : PIN_SIZE_MAP[pinSize].type;
+                                const iconSize = Math.max(12, Math.round(size * 0.6));
+                                return useImage ? (
+                                  <Image
+                                    source={{ uri: pt.imageUrl }}
+                                    className="rounded-full"
+                                    style={{ width: size, height: size, borderWidth: 2, borderColor: '#fff' }}
+                                  />
+                                ) : (
+                                  <View
+                                    className="rounded-full bg-[#dc3545] items-center justify-center"
+                                    style={{
+                                      width: size,
+                                      height: size,
+                                      shadowColor: '#000',
+                                      shadowOffset: { width: 0, height: 2 },
+                                      shadowOpacity: 0.4,
+                                      shadowRadius: 4,
+                                      elevation: 5,
+                                    }}
+                                  >
+                                    <Text className="text-white leading-5 font-bold" style={{ fontSize: iconSize }}>
+                                      {ACTIVITY_EMOJI[pt.type ?? 0] ?? "\u25CF"}
+                                    </Text>
+                                  </View>
+                                );
+                              })()}
+                            </View>
+                          </Animated.View>
+                        );
+                      })}
+                    </View>
+                  )}
+                </Animated.View>
+
+                {/* Dim overlay when move-pin mode is active (on top of everything) */}
+                {movePinMode && (
+                  <View className="absolute inset-0 bg-black/50" pointerEvents="none" />
+                )}
               </View>
 
               <View className="absolute bottom-0 left-0 right-0 h-24 bg-black/30" />
@@ -1099,9 +1604,9 @@ async function buildHtml(
               const cached = await cacheImage(img.url);
               if (cached) return { ...img, url: cached };
             }
-            return null;
+            return img;
           })
-        )).filter(Boolean) as Array<{ url: string }>;
+        )) as Array<{ url: string }>;
         return { ...m, images: imgs.length > 0 ? imgs : undefined };
       })
     );
@@ -1215,7 +1720,13 @@ function generateMapHtml(
       zoom: ${zoom || 6},
       attributionControl: false,
     });
-
+    map.on('movestart', function() { try { window.ReactNativeWebView.postMessage(JSON.stringify({type:'mapMoveStart'})); } catch(e) {} });
+    map.on('moveend', function() { try { window.ReactNativeWebView.postMessage(JSON.stringify({type:'mapMoveEnd'})); } catch(e) {} });
+    map.on('dragstart', function() { try { window.ReactNativeWebView.postMessage(JSON.stringify({type:'mapMoveStart'})); } catch(e) {} });
+    map.on('dragend', function() { try { window.ReactNativeWebView.postMessage(JSON.stringify({type:'mapMoveEnd'})); } catch(e) {} });
+    map.on('zoomstart', function() { try { window.ReactNativeWebView.postMessage(JSON.stringify({type:'mapMoveStart'})); } catch(e) {} });
+    map.on('zoomend', function() { try { window.ReactNativeWebView.postMessage(JSON.stringify({type:'mapMoveEnd'})); } catch(e) {} });
+ 
     const renderedMarkers = ${JSON.stringify(markers || [])};
     const showLabels = ${opts.showLabels};
 
@@ -1266,6 +1777,11 @@ function generateMapHtml(
         map.setCenter([${coordinates?.longitude || 0}, ${coordinates?.latitude || 0}]);
         map.setZoom(${zoom || 14});
       }
+
+      // Notify RN when map is fully loaded with markers
+      setTimeout(function() {
+        try { window.ReactNativeWebView.postMessage(JSON.stringify({type:'_mapReady'})); } catch(e) {}
+      }, 600);
     });
 
     window.__captureMap__ = function(title, destination, dateRange, topTypes, textX, textY, titleFontSize, textAlign, titleLineHeight) {

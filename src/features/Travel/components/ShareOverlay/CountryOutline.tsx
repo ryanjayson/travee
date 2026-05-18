@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Path, G, Circle, Text as SvgText, Rect } from 'react-native-svg';
 import { geoMercator, geoPath } from 'd3-geo';
@@ -11,6 +11,15 @@ export interface DoneActivity {
   lng: number;
   type?: number;
   title?: string;
+  imageUrl?: string | null;
+}
+
+export interface ActivityPoint {
+  x: number;
+  y: number;
+  type?: number;
+  title?: string;
+  imageUrl?: string | null;
 }
 
 interface CountryOutlineProps {
@@ -23,6 +32,8 @@ interface CountryOutlineProps {
   pinSize?: 'small' | 'medium' | 'large';
   showLabels?: boolean;
   destinationTitle?: string;
+  onActivityPoints?: (points: ActivityPoint[]) => void;
+  hiddenActivityIndices?: number[];
 }
 
 /** Unicode symbol for each ActivityType — safe cross-platform in SVG Text */
@@ -68,6 +79,8 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
   doneActivities = [],
   pinSize = 'medium',
   showLabels = false,
+  onActivityPoints,
+  hiddenActivityIndices = [],
 }) => {
   const { pathData, found, activityPoints, topTypes } = useMemo(() => {
     if (!countryName || width === 0 || height === 0) {
@@ -106,7 +119,7 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
           if (!projected) return null;
           const [x, y] = projected;
           if (x < 0 || y < 0 || x > width || y > height) return null;
-          return { x, y, type: a.type, title: a.title };
+          return { x, y, type: a.type, title: a.title, imageUrl: a.imageUrl };
         })
         .filter((p): p is NonNullable<typeof p> => p !== null);
 
@@ -127,6 +140,12 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
       return { pathData: null, found: false, activityPoints: [], topTypes: [] };
     }
   }, [countryName, width, height, doneActivities]);
+
+  useEffect(() => {
+    if (onActivityPoints) {
+      onActivityPoints(activityPoints);
+    }
+  }, [activityPoints, onActivityPoints]);
 
   if (!found || !pathData) {
     return (
@@ -201,22 +220,28 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
       {/* ── Done-activity location pins on the map ── */}
       {activityPoints.map((pt, i) => (
         <G key={i}>
-          <Circle cx={pt.x} cy={pt.y + 1} r={PIN_R + 0.5} fill="rgba(0,0,0,0.25)" />
-          <Circle cx={pt.x} cy={pt.y}     r={PIN_R}        fill="#ffffff" />
-          {showLabels && pt.title ? (
-            <SvgText
-              x={pt.x}
-              y={pt.y + PIN_R + 11}
-              fontSize={10}
-              fontWeight="bold"
-              textAnchor="middle"
-              fill="#ffffff"
-              stroke="rgba(0,0,0,0.4)"
-              strokeWidth={0.3}
-            >
-              {pt.title}
-            </SvgText>
-          ) : null}
+          {hiddenActivityIndices.includes(i) ? (
+            <Circle cx={pt.x} cy={pt.y} r={PIN_R - 1} fill="rgba(255,255,255,0.15)" />
+          ) : (
+            <>
+              <Circle cx={pt.x} cy={pt.y + 1} r={PIN_R + 0.5} fill="rgba(0,0,0,0.25)" />
+              <Circle cx={pt.x} cy={pt.y}     r={PIN_R}        fill="#ffffff" />
+              {showLabels && pt.title ? (
+                <SvgText
+                  x={pt.x}
+                  y={pt.y + PIN_R + 11}
+                  fontSize={10}
+                  fontWeight="bold"
+                  textAnchor="middle"
+                  fill="#ffffff"
+                  stroke="rgba(0,0,0,0.4)"
+                  strokeWidth={0.3}
+                >
+                  {pt.title}
+                </SvgText>
+              ) : null}
+            </>
+          )}
         </G>
       ))}
 
