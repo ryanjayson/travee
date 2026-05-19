@@ -1,7 +1,7 @@
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Animated,
   Image,
@@ -29,6 +29,7 @@ export interface CreateOrEditProps {
 
 const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: CreateOrEditProps) => {
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
+  const scrollViewRef = useRef<ScrollView>(null);
   const [error, setError] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
@@ -128,7 +129,31 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
   //   setError(null);
   //   onClose();
   // };
+  const words = ['Quick weekend gateaway', 'My International trip 2026', 'A trip with my friends', 'A trip to My Province', 'My Solo Trip to Japan'];
+  const [currentWord, setCurrentWord] = useState(words[0]);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setCurrentWord((prev) => {
+          const nextIndex = (words.indexOf(prev) + 1) % words.length;
+          return words[nextIndex];
+        });
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+  
   const formattedStartDate = formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toLocaleDateString() : "";
   const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
   const { data: travels } = useTravels();
@@ -205,8 +230,13 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
   return (
     <View className="flex-1 bg-gray-100 overflow-hidden">
 
-      <ScrollView className={`flex-1 p-[15px] `} showsVerticalScrollIndicator={false}
-       >
+      <ScrollView 
+        ref={scrollViewRef}
+        className="flex-1 p-[15px]" 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 60 }}
+      >
+
         {error && (
           <View className="bg-[#FFEBEE] rounded-lg p-3 mb-4 border border-[#FFCDD2]">
             <Text className="text-[#D32F2F] text-sm">{error}</Text>
@@ -214,11 +244,11 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
         )}
 
         <View className="mb-5">
-          <Text className="text-xs text-gray-500 font-medium tracking-widest uppercase">Title</Text>
+          <Text className="text-xs text-tertiary font-medium tracking-widest uppercase">Title</Text>
           <TextInput
             mode="outlined"
             className="h-[64px]"
-            placeholder="Your trip name"
+            placeholder={`e.g. ${currentWord}`}
             value={formik.values.title}
             onChangeText={formik.handleChange("title")}
             onBlur={formik.handleBlur("title")}
@@ -237,7 +267,8 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
               borderRadius: 16,
             }}
             style={{
-             marginTop: 6,
+              marginTop: 6,
+              height: 64,
             }}
             contentStyle={{
               backgroundColor: "transparent",
@@ -279,7 +310,8 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                       borderRadius: 16,
                     }}
                     style={{
-                    marginTop: 6,
+                      marginTop: 6,
+                      height: 64,
                     }}
                     contentStyle={{
                       backgroundColor: "transparent",
@@ -527,6 +559,11 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
             value={formik.values.description}
             onChangeText={formik.handleChange("description")}
             onBlur={formik.handleBlur("description")}
+            onFocus={(e) => {
+              setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({ animated: true });
+              }, 120);
+            }}
             error={formik.touched.description && Boolean(formik.errors.description)}
             disabled={isSaving}
             outlineColor="#E0E0E0"
@@ -610,9 +647,10 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
 
       </ScrollView>
 
-    <View className="mb-8 mx-4 bg-transparent">
+    <View className="mb-8 mt-2 mx-4 bg-red-50">
        <TouchButton
           buttonText={isSaving ? "Saving..." : mode === "create" ? "Add trip" : "Update Changes"}
+          icon={mode === "create" ? "add" : ""}
           onPress={() => formik.handleSubmit()}
           disabled={!formik.values.title.trim() || isSaving}
           className="h-[64px] p-6"  

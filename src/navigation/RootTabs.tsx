@@ -78,7 +78,7 @@ const insets = useSafeAreaInsets();
         tabBarShowLabel: true,
         
         tabBarActiveTintColor: '#263F69',
-        tabBarInactiveTintColor: '#8E8E93',
+        tabBarInactiveTintColor: '#98A2B3',
         tabBarIcon: ({ color, focused }) => {
           const iconName = iconForRoute(route.name, focused);
           return (
@@ -88,7 +88,7 @@ const insets = useSafeAreaInsets();
               size={24}
               color={focused ? "#263F69" : color}
             />
-            <Text className={`text-xs  ${focused ? 'text-primary' : 'text-gray-400'}`}>{route.name}</Text>
+            <Text className={`text-xs font-bold  ${focused ? 'text-primary' : 'text-gray-400'}`}>{route.name}</Text>
             </View>
           );
         },

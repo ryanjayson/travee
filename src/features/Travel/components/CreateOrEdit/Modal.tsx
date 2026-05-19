@@ -32,7 +32,7 @@ const CreateTripModal = ({
 }: AddTripModalProps) => {
 
   const [isSaving, setIsSaving] = useState(false);
-  const [modalHeight, setModalHeight] = useState(screenHeight);
+  const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
   const { keyboardVisible, isFloating } = useKeyboardVisible();
   const [tripStatus, setTripStatus] = useState(TravelStatus.Draft);
 
@@ -43,7 +43,8 @@ const CreateTripModal = ({
   return (
     <Modal visible={showModal} 
       transparent
-      animationType="none">
+      animationType="none"
+      onRequestClose={handleCancel}>
         <StatusBar style="dark" />
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
@@ -53,9 +54,9 @@ const CreateTripModal = ({
           <Animated.View
             className="rounded-t-[30px] bg-white"
             style={[
-              { height: screenHeight },
+              { height: modalHeight},
               {
-                paddingTop:  keyboardVisible && !isFloating  ? 380 : 40,
+                paddingTop:  keyboardVisible && !isFloating  ? 170 : 4,
               }
             ]}
           >

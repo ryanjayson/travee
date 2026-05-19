@@ -1,7 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./App.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
-  presets: [require("nativewind/preset")],
   theme: {
     extend: {
       colors: {
@@ -19,7 +18,7 @@ module.exports = {
           900: '#001F42',
           950: '#00092E',
           DEFAULT: '#263F69',
-          primary: '#263F69',
+          primary: '#263F69', 
           secondary: '#2591E4',
         },
         blue: {
@@ -246,13 +245,13 @@ module.exports = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        chart: {
-          1: 'hsl(var(--chart-1))',
-          2: 'hsl(var(--chart-2))',
-          3: 'hsl(var(--chart-3))',
-          4: 'hsl(var(--chart-4))',
-          5: 'hsl(var(--chart-5))',
-        },
+        // chart: {
+        //   1: 'hsl(var(--chart-1))',
+        //   2: 'hsl(var(--chart-2))',
+        //   3: 'hsl(var(--chart-3))',
+        //   4: 'hsl(var(--chart-4))',
+        //   5: 'hsl(var(--chart-5))',
+        // },
       },
       borderWidth: {
         0: '0',
@@ -325,12 +324,12 @@ module.exports = {
         fontWeight: '400',
       },
       textColor: {
-        primary: '#101828',
+        primary: '#263F69',
         secondary: '#344054',
         'secondary-hover': '#182230',
         placeholder: '#667085',
         'placeholder-subtle': '#D0D5DD',
-        tertiary: '#475467',
+        tertiary: '#858585',
         quarterary: '#667085',
         selected: '#101828',
         error: '#B42318',
