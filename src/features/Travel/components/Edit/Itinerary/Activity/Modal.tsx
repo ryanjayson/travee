@@ -1,9 +1,10 @@
 import React, { useState, useRef } from "react";
+import { StatusBar } from "expo-status-bar";
 import {
   View,
   Text, TouchableOpacity,
   Modal,
-  Animated, Dimensions, StatusBar,
+  Animated, Dimensions,
   Keyboard,
   KeyboardAvoidingView,
   Platform
@@ -106,7 +107,7 @@ const ActivityModal = ({
               }
             ]}
           >
-            <StatusBar barStyle={"dark-content"} />
+            <StatusBar style="dark" />
             <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
                 <View className="flex-row items-center gap-2">
                     <Text className="text-2xl text-gray-700 font-medium">

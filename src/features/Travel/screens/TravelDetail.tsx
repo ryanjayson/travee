@@ -121,7 +121,7 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
     if (loading) {
       return (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#0C4C8A" />
+          <ActivityIndicator size="large" color="#263F69" />
           <Text className="mt-2.5 text-[#666]">Loading itinerary...</Text>
         </View>
       );

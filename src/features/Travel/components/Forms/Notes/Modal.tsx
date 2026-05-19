@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { StatusBar } from "expo-status-bar";
 import {
   View,
   Text,
@@ -10,7 +11,6 @@ import {
   PanResponder,
   Dimensions,
   ActivityIndicator,
-  StatusBar,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -113,7 +113,7 @@ const ActivityModal = ({
               }
             ]}
           >
-            <StatusBar barStyle={"dark-content"} />
+            <StatusBar style="dark" />
             {/* <View style={styles.handleContainer}>
               <Animated.View {...panResponder.panHandlers}>
                 <View style={styles.handleBar} />

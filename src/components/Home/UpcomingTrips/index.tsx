@@ -29,7 +29,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading }: UpcomingTripsProps) => {
       <View className="flex-row items-center justify-between px-6 mb-3 ">
         <Text className="text-2xl font-bold text-gray-800">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
-          <Text className="text-sm text-[#0C4C8A] font-semibold">
+          <Text className="text-sm text-[#263F69] font-semibold">
             {upcomingTrips.length} trip{upcomingTrips.length > 1 ? 's' : ''}
           </Text>
         )}
@@ -58,7 +58,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading }: UpcomingTripsProps) => {
 
               {/* Title + destination */}
               <View className="mb-3 pr-8">
-                <Text className="text-lg font-bold text-[#0C4C8A] mb-1" numberOfLines={1}>
+                <Text className="text-lg font-bold text-[#263F69] mb-1" numberOfLines={1}>
                   {item.title}
                 </Text>
                 <View className="flex-row items-center gap-1">
@@ -81,7 +81,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading }: UpcomingTripsProps) => {
                 </View>
                 {getDuration(item.startOrDepartureDate, item.endOrReturnDate) ? (
                   <View className="bg-blue-50 px-2.5 py-0.5 rounded-full">
-                    <Text className="text-[12px] text-[#0C4C8A] font-semibold">
+                    <Text className="text-[12px] text-[#263F69] font-semibold">
                       {getDuration(item.startOrDepartureDate, item.endOrReturnDate)}
                     </Text>
                   </View>

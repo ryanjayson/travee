@@ -26,7 +26,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 const CANVAS_WIDTH = SCREEN_WIDTH;
 const CANVAS_HEIGHT = SCREEN_HEIGHT * 0.7;
 
-const PIN_COLORS = ["#dc3545", "#0C4C8A", "#2ECC71", "#F39C12", "#9B59B6", "#1ABC9C", "#E74C3C", "#34495E"];
+const PIN_COLORS = ["#dc3545", "#263F69", "#2ECC71", "#F39C12", "#9B59B6", "#1ABC9C", "#E74C3C", "#34495E"];
 const PIN_SIZE_LABELS = { small: "S", medium: "M", large: "L" } as const;
 const STATIC_SIZE_MAP = { small: "s", medium: "m", large: "l" } as const;
 
@@ -373,7 +373,7 @@ const ShareTripModal: React.FC<ShareTripModalProps> = ({
 
           {!transparentCapture && (
             <>
-              <View className="absolute top-0 left-0 right-0 bg-[#0C4C8A]/25" />
+              <View className="absolute top-0 left-0 right-0 bg-[#263F69]/25" />
               <View className="absolute bottom-0 left-0 right-0 bg-black/40" style={{ height: CANVAS_HEIGHT }} />
             </>
           )}
@@ -434,7 +434,7 @@ const ShareTripModal: React.FC<ShareTripModalProps> = ({
           <TouchableOpacity
             onPress={handleShare}
             disabled={isSharing}
-            className={`flex-row items-center bg-[#0C4C8A] py-[15px] px-12 rounded-[32px] shadow-lg elevation-10 ${isSharing ? "opacity-70" : ""}`}
+            className={`flex-row items-center bg-[#263F69] py-[15px] px-12 rounded-[32px] shadow-lg elevation-10 ${isSharing ? "opacity-70" : ""}`}
             activeOpacity={0.85}
             accessibilityRole="button"
           >

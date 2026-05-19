@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { StatusBar } from "expo-status-bar";
 import { View, Text, TouchableOpacity, Modal, Alert } from "react-native";
 import ViewTravel from ".";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
@@ -25,6 +26,7 @@ const ViewTripModal = ({
 }: ViewTripModalProps) => {
   const [showTravelNavigationModal, setShowTravelNavigationModal] =
     useState<boolean>(false);
+  const [expanded, setExpanded] = useState<boolean>(false);
 
   // useContext never throws — returns null if outside NavigationContainer
   const navContext = useContext(NavigationContext);
@@ -147,8 +149,9 @@ const ViewTripModal = ({
       animationType="none"
       onRequestClose={handleCancel}
     >
+      <StatusBar style="dark" />
       <View className="flex-1 bg-white justify-end pt-10">
-        <View className="p-1.5 border-b border-[#eee] flex-row items-center">
+        <View className="p-1.5  flex-row items-center">
           <TouchableOpacity
             className="pr-3.5 p-0.5"
             onPress={handleCancel}
@@ -158,7 +161,8 @@ const ViewTripModal = ({
             <Icon name="close" size={32} color={"#89939E"} />
           </TouchableOpacity>
           <Text className="text-xl font-medium">
-            {travelPlan && <Text>{selectedTravelPlan?.title}</Text>}
+            
+            {travelPlan && <Text>Travel Plan</Text>}
           </Text>
           <TouchableOpacity
             className="pr-3.5 p-0.5 absolute right-0"
@@ -168,10 +172,18 @@ const ViewTripModal = ({
           >
              <Icon name="more-horiz" size={28} color={"#89939E"} />
           </TouchableOpacity>
+          <TouchableOpacity
+            className="pr-3.5 p-0.5 absolute right-[45px]"
+            onPress={() => setExpanded(p => !p)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name={expanded ? "fullscreen-exit" : "fullscreen"} size={26} color={expanded ? "#263F69" : "#89939E"} />
+          </TouchableOpacity>
         </View>
         <View className="bg-white flex-1">
           {travelPlan && (
-            <ViewTravel travelPlan={travelPlan} onClose={handleCancel} />
+            <ViewTravel travelPlan={travelPlan} onClose={handleCancel} expanded={expanded} />
           )}
         </View>
       </View>

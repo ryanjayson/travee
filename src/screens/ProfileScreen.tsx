@@ -83,10 +83,10 @@ const PickerModal = ({
               onPress={() => { onSelect(opt); onClose(); }}
               accessibilityRole="button"
             >
-              <Text className={`text-base ${selected === opt ? 'text-[#0C4C8A] font-semibold' : 'text-[#374151]'}`}>
+              <Text className={`text-base ${selected === opt ? 'text-[#263F69] font-semibold' : 'text-[#374151]'}`}>
                 {opt}
               </Text>
-              {selected === opt && <Ionicons name="checkmark" size={18} color="#0C4C8A" />}
+              {selected === opt && <Ionicons name="checkmark" size={18} color="#263F69" />}
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -140,7 +140,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-[#F3F4F6]" style={{ paddingTop: insets.top }}>
-        <ActivityIndicator size="large" color="#0C4C8A" />
+        <ActivityIndicator size="large" color="#263F69" />
       </View>
     );
   }
@@ -162,7 +162,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           disabled={isSaving}
           accessibilityRole="button"
           accessibilityLabel="Save profile"
-          className="bg-[#0C4C8A] px-4 py-1.5 rounded-full min-w-[60px] items-center"
+          className="bg-[#263F69] px-4 py-1.5 rounded-full min-w-[60px] items-center"
         >
           {isSaving ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -176,7 +176,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
 
         {/* Avatar & Badge */}
         <View className="items-center py-5 gap-2.5">
-          <View className="w-24 h-24 rounded-full bg-[#0C4C8A] justify-center items-center shadow-lg elevation-6">
+          <View className="w-24 h-24 rounded-full bg-[#263F69] justify-center items-center shadow-lg elevation-6">
             <Ionicons name="person" size={48} color="#fff" />
           </View>
           <AccountTypeBadge type={form.accountType ?? AccountType.Free} />
@@ -188,11 +188,11 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           <View className="flex-row gap-2.5">
             <TouchableOpacity
               onPress={() => setForm(f => ({ ...f, accountType: AccountType.Free }))}
-              className={`flex-1 items-center p-3.5 rounded-xl border-2 bg-[#F9FAFB] gap-1 ${form.accountType === AccountType.Free ? 'border-[#0C4C8A] bg-[#EFF6FF]' : 'border-[#E5E7EB]'}`}
+              className={`flex-1 items-center p-3.5 rounded-xl border-2 bg-[#F9FAFB] gap-1 ${form.accountType === AccountType.Free ? 'border-[#263F69] bg-[#EFF6FF]' : 'border-[#E5E7EB]'}`}
               accessibilityRole="button"
             >
-              <Ionicons name="person" size={20} color={form.accountType === AccountType.Free ? "#0C4C8A" : "#9CA3AF"} />
-              <Text className={`text-sm font-bold ${form.accountType === AccountType.Free ? 'text-[#0C4C8A]' : 'text-[#9CA3AF]'}`}>Free</Text>
+              <Ionicons name="person" size={20} color={form.accountType === AccountType.Free ? "#263F69" : "#9CA3AF"} />
+              <Text className={`text-sm font-bold ${form.accountType === AccountType.Free ? 'text-[#263F69]' : 'text-[#9CA3AF]'}`}>Free</Text>
               <Text className="text-[11px] text-[#9CA3AF]">Basic features</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -271,7 +271,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
               <Ionicons name="cash-outline" size={18} color="#6B7280" style={{ paddingHorizontal: 12, paddingVertical: 10 }} />
               <View>
                 <Text className="text-sm font-semibold text-[#374151]">Default Currency</Text>
-                <Text className="text-sm text-[#0C4C8A] font-medium mt-0.5">{selectedCurrencyLabel}</Text>
+                <Text className="text-sm text-[#263F69] font-medium mt-0.5">{selectedCurrencyLabel}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
@@ -289,7 +289,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
               <Ionicons name="earth-outline" size={18} color="#6B7280" style={{ paddingHorizontal: 12, paddingVertical: 10 }} />
               <View>
                 <Text className="text-sm font-semibold text-[#374151]">Default Country</Text>
-                <Text className="text-sm text-[#0C4C8A] font-medium mt-0.5">{form.defaultCountry || "Not set"}</Text>
+                <Text className="text-sm text-[#263F69] font-medium mt-0.5">{form.defaultCountry || "Not set"}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />

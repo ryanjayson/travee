@@ -267,7 +267,7 @@ const MapboxDestinationSelector = ({
             marker.setLngLat([lng, lat]);
           } else {
             marker = new mapboxgl.Marker({
-              color: '#0C4C8A',
+              color: '#263F69',
               draggable: true,
             })
               .setLngLat([lng, lat])
@@ -399,17 +399,17 @@ const MapboxDestinationSelector = ({
                   onPress={() => handleFilterSelect(filter.id)}
                   activeOpacity={0.7}
                   className={`flex-row items-center px-3 py-1.5 mr-2 rounded-full border ${
-                    isActive ? "bg-[#EEF2F9] border-[#0C4C8A]" : "bg-white border-gray-200"
+                    isActive ? "bg-[#EEF2F9] border-[#263F69]" : "bg-white border-gray-200"
                   }`}
                 >
                   <Icon
                     name={filter.icon as any}
                     size={16}
-                    color={isActive ? "#0C4C8A" : "#666"}
+                    color={isActive ? "#263F69" : "#666"}
                   />
                   <Text
                     className={`ml-1.5 text-xs font-medium ${
-                      isActive ? "text-[#0C4C8A]" : "text-gray-600"
+                      isActive ? "text-[#263F69]" : "text-gray-600"
                     }`}
                   >
                     {filter.label}
@@ -461,7 +461,7 @@ const MapboxDestinationSelector = ({
         >
           <View className="flex-row items-center mb-3">
             <View className="w-10 h-10 rounded-full bg-[#EEF2F9] items-center justify-center mr-3">
-              <Icon name="location-on" size={22} color="#0C4C8A" />
+              <Icon name="location-on" size={22} color="#263F69" />
             </View>
             <View className="flex-1">
               <Text className="text-base font-semibold text-gray-900">{selectedPin.name}</Text>
@@ -469,7 +469,7 @@ const MapboxDestinationSelector = ({
             </View>
           </View>
           <TouchableOpacity
-            className="bg-[#0C4C8A] rounded-[30px] py-4 items-center"
+            className="bg-[#263F69] rounded-[30px] py-4 items-center"
             activeOpacity={0.7}
             onPress={handleConfirmSelection}
             accessibilityRole="button"

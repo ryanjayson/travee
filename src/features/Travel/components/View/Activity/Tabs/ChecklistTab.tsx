@@ -24,7 +24,7 @@ const ChecklistTab = ({ activityId }: ChecklistTabProps) => {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center p-5">
-        <ActivityIndicator size="small" color="#0C4C8A" />
+        <ActivityIndicator size="small" color="#263F69" />
       </View>
     );
   }
@@ -61,7 +61,7 @@ const ChecklistTab = ({ activityId }: ChecklistTabProps) => {
           <Ionicons
             name={item.isDone ? "checkbox" : "square-outline"}
             size={24}
-            color={item.isDone ? "#0C4C8A" : "#9CA3AF"}
+            color={item.isDone ? "#263F69" : "#9CA3AF"}
           />
           <View className="ml-3 flex-1">
             <Text className={`text-base ${item.isDone ? 'text-gray-400 line-through' : 'text-gray-800'}`}>

@@ -129,7 +129,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                 error={formik.touched.title && Boolean(formik.errors.title)}
                 disabled={isUpdating}
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
                 outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6 }}
@@ -153,7 +153,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                 error={formik.touched.description && Boolean(formik.errors.description)}
                 disabled={isUpdating}
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                   theme={{
               colors: {
                 onSurfaceVariant: '#888', 
@@ -187,7 +187,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                   left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
                   right={formik.values.startDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("startDate", null)} /> : null}
                   outlineColor="#E0E0E0"
-                  activeOutlineColor="#0C4C8A"
+                  activeOutlineColor="#263F69"
                   theme={{ colors: { onSurfaceVariant: '#888' } }}
                   outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                   style={{ height: 64 }}
@@ -215,18 +215,18 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                         <Icon
                           name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
                           size={32}
-                          color="#0C4C8A"
+                          color="#263F69"
                         />
                       )}
                       enableSwipeMonths={true}
                       markedDates={{
                         ...(formik.values.startDate ? {
-                          [formik.values.startDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A', selectedTextColor: '#ffffff' }
+                          [formik.values.startDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#263F69', selectedTextColor: '#ffffff' }
                         } : {})
                       }}
                       theme={{
-                        todayTextColor: '#0C4C8A',
-                        arrowColor: '#0C4C8A',
+                        todayTextColor: '#263F69',
+                        arrowColor: '#263F69',
                       }}
                     />
                   </View>
@@ -249,7 +249,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                     value={selectedPlace?.name || selectedPlace?.address || ""}
                     editable={false}
                     outlineColor="#E0E0E0"
-                    activeOutlineColor="#0C4C8A"
+                    activeOutlineColor="#263F69"
                     left={<TextInput.Icon icon="map-marker" className="opacity-50 mt-2" />}
                     theme={{ colors: { onSurfaceVariant: '#888' } }}
                     outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}

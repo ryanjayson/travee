@@ -129,7 +129,7 @@ const Itinerary = ({
         <View className="flex-row items-center">
           {refreshing && (
             <View className="mr-2">
-              <ActivityIndicator size="small" color="#0C4C8A" />
+              <ActivityIndicator size="small" color="#263F69" />
             </View>
           )}
           <TouchableOpacity onPress={handleMenuPress} className="p-2">
@@ -145,8 +145,8 @@ const Itinerary = ({
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#0C4C8A"]}
-            tintColor="#0C4C8A"
+            colors={["#263F69"]}
+            tintColor="#263F69"
           />
         }
       >

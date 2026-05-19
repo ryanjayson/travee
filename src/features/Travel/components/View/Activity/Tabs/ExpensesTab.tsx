@@ -18,7 +18,7 @@ const CATEGORY_ICONS: Record<string, { icon: keyof typeof Ionicons.glyphMap; col
   shopping: { icon: "bag-handle-outline", color: "#DB2777", bg: "#FCE7F3" },
   entertainment: { icon: "film-outline", color: "#059669", bg: "#D1FAE5" },
   health: { icon: "medkit-outline", color: "#DC2626", bg: "#FEE2E2" },
-  default: { icon: "cash-outline", color: "#0C4C8A", bg: "#DBEAFE" },
+  default: { icon: "cash-outline", color: "#263F69", bg: "#DBEAFE" },
 };
 
 function getCategoryStyle(category?: string) {
@@ -78,7 +78,7 @@ const ExpenseRow = ({ item, onPress }: ExpenseRowProps) => {
       </View>
 
       <View className="items-end">
-        <Text className="text-lg text-[#0C4C8A] mr-2">
+        <Text className="text-lg text-[#263F69] mr-2">
           {formatCurrency(item.amount, item.currency)}
         </Text>
       </View>
@@ -97,10 +97,10 @@ const TotalBar = ({ expenses }: TotalBarProps) => {
   const currency = expenses[0]?.currency;
   return (
     <View className="flex-row justify-between items-center px-4 py-3 bg-[#EFF6FF] border-b border-blue-100">
-      <Text className="text-xs font-bold text-[#0C4C8A] uppercase tracking-wider">
+      <Text className="text-xs font-bold text-[#263F69] uppercase tracking-wider">
         Total · {expenses.length} {expenses.length === 1 ? "item" : "items"}
       </Text>
-      <Text className="text-base font-bold text-[#0C4C8A]">
+      <Text className="text-base font-bold text-[#263F69]">
         {formatCurrency(total, currency)}
       </Text>
     </View>
@@ -118,7 +118,7 @@ const ExpensesTab = ({ activityId, onEditExpense }: ExpensesTabProps) => {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center py-10">
-        <ActivityIndicator size="small" color="#0C4C8A" />
+        <ActivityIndicator size="small" color="#263F69" />
       </View>
     );
   }

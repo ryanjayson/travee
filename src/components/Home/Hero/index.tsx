@@ -29,7 +29,11 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [prefilledTripData, setPrefilledTripData] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
+  const [plainMode, setPlainMode] = useState<boolean>(false);
   
+  const adjustedRef = useRef(false);
+  const [titleIsLong, setTitleIsLong] = useState(false);
+
   const words = ['country', 'city', 'destination', 'place', 'province', 'region'];
   const [currentWord, setCurrentWord] = useState(words[0]);
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -87,13 +91,13 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
 
         {/* Profile icon — always visible top-right */}
         <TouchableOpacity
-          className="absolute top-[52px] right-5 w-9 h-9 rounded-full bg-white/20 items-center justify-center"
+          className="absolute top-[52px] right-5 w-12 h-12 rounded-full bg-white/20 items-center justify-center"
           onPress={() => setShowProfileModal(true)}
           activeOpacity={0.8}
           accessibilityRole="button"
           accessibilityLabel="Open profile"
         >
-          <Ionicons name="person-outline" size={20} color="#fff" />
+          <Ionicons name="person-outline" size={24} color="#fff" />
         </TouchableOpacity>
 
         <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 70 : 130 }}>
@@ -109,7 +113,17 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
                 <Text className="text-green-300 text-[10px] font-bold tracking-widest uppercase">Ongoing</Text>
               </View>
 
-              <Text className="text-white text-4xl font-bold mb-1" numberOfLines={1}>
+              <Text
+                className="text-white font-bold mb-1"
+                style={{ fontSize: titleIsLong ? 24 : 36 }}
+                numberOfLines={2}
+                onTextLayout={(e) => {
+                  if (e.nativeEvent.lines.length > 1 && !adjustedRef.current) {
+                    adjustedRef.current = true;
+                    setTitleIsLong(true);
+                  }
+                }}
+              >
                 {ongoingTrip.title}
               </Text>
 
@@ -207,13 +221,18 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
                         Itinerary
                       </Text>
                   </View>
+                    <TouchableOpacity onPress={() => setPlainMode(p => !p)} >
+                      <Icon name={plainMode ? "format-list-bulleted" : "list"} size={32} color={plainMode ? "#263F69" : "#333"} />
+                  </TouchableOpacity>
                   <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
                       <Icon name="clear" size={36} color={"#333"} />
                   </TouchableOpacity>
               </View>
+            
               <View className="flex-1">
                 <ItineraryTab
                     travelPlan={travelPlan}
+                    plainMode={plainMode}
                     />
               </View>
             </Modal>

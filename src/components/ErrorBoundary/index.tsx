@@ -75,7 +75,7 @@ class ErrorBoundary extends Component<Props, State> {
           )}
           <TouchableOpacity
             onPress={this.handleReset}
-            className="bg-[#0C4C8A] px-8 py-3 rounded-full"
+            className="bg-[#263F69] px-8 py-3 rounded-full"
             accessibilityRole="button"
             accessibilityLabel="Try again"
           >

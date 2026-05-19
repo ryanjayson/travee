@@ -1,5 +1,6 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React, { useState } from "react";
+import { StatusBar } from "expo-status-bar";
 import {
   Animated,
   Dimensions,
@@ -9,7 +10,6 @@ import {
   Platform,
   Text, TouchableOpacity,
   View,
-  StatusBar,
 } from "react-native";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 import { ItineraryActivity, ItineraryNote } from "../../../types/TravelDto";
@@ -48,7 +48,7 @@ const NoteModal = ({ visible, onClose, itineraryNote, activities }: NoteModalPro
                 }
               ]}
             >
-              <StatusBar barStyle={"dark-content"} />
+              <StatusBar style="dark" />
               <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
                   <View className="flex-row items-center gap-2">
                       <Text className="text-2xl text-gray-700 font-medium">

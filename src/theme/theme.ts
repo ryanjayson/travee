@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 
 // --- COLORS ---
 const colors = {
-  primary: "#0C4C8A", // Travie Primary Blue
+  primary: "#263F69", // Travie Primary Blue
   onPrimary: "#FFFFFF",
   primaryContainer: "#D1E4FF",
   onPrimaryContainer: "#001D36",

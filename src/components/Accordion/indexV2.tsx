@@ -11,23 +11,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   LayoutAnimation,
-  Platform,
-  UIManager,
   Animated,
   Easing,
   ViewStyle,
   TextStyle,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-
-// Enable LayoutAnimation for Android
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental &&
-  !(global as any).nativeFabricUIManager
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 // Define the props for the Accordion component
 export interface AccordionProps extends PropsWithChildren {

@@ -173,7 +173,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
           let current = new Date(start);
           const isOngoing = start <= today && end >= today;
           const color = isOngoing ? '#E3F2FD' : '#E8F5E8';
-          const textColor = isOngoing ? '#0C4C8A' : '#2E7D32';
+          const textColor = isOngoing ? '#263F69' : '#2E7D32';
 
           while (current <= end) {
             const dateStr = current.toISOString().split('T')[0];
@@ -214,7 +214,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
         )}
 
         <View className="mb-5">
-          <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
+          <Text className="text-xs text-gray-500 font-medium tracking-widest uppercase">Title</Text>
           <TextInput
             mode="outlined"
             className="h-[64px]"
@@ -225,7 +225,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
             error={formik.touched.title && Boolean(formik.errors.title)}
             disabled={isSaving}
             outlineColor="#E0E0E0"
-            activeOutlineColor="#0C4C8A"
+            activeOutlineColor="#263F69"
             theme={{
               colors: {
                 onSurfaceVariant: '#888', 
@@ -266,7 +266,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                     editable={false}
                     error={formik.touched.destination && Boolean(formik.errors.destination)}
                     outlineColor="#E0E0E0"
-                    activeOutlineColor="#0C4C8A"
+                    activeOutlineColor="#263F69"
                     left={<TextInput.Icon icon="map-marker" className="opacity-50 mt-2" />}
                     theme={{
                       colors: {
@@ -293,7 +293,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
             </>
           ) : (() => {
             const { longitude, latitude } = formik.values.destinationData.coordinates;
-            const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0C4C8A(${longitude},${latitude})/${longitude},${latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+            const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
             return (
               <TouchableOpacity
                 activeOpacity={0.8}
@@ -363,7 +363,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                 left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
                 right={formik.values.startOrDepartureDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("startOrDepartureDate", null)} /> : null}
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                 theme={{
                     colors: {
                       onSurfaceVariant: '#888', 
@@ -404,7 +404,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                       <Icon
                         name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
                         size={32}
-                        color="#0C4C8A"
+                        color="#263F69"
                       />
                     )}
                     // minDate={new Date().toISOString().split('T')[0]}
@@ -412,12 +412,12 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                     markedDates={{
                       ...blockedDates,
                       ...(formik.values.startOrDepartureDate ? {
-                        [formik.values.startOrDepartureDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A', selectedTextColor: '#ffffff' }
+                        [formik.values.startOrDepartureDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#263F69', selectedTextColor: '#ffffff' }
                       } : {})
                     }}
                     theme={{
-                      todayTextColor: '#0C4C8A',
-                      arrowColor: '#0C4C8A',
+                      todayTextColor: '#263F69',
+                      arrowColor: '#263F69',
                     }}
                   />
                 </View>
@@ -436,7 +436,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                 left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
                 right={formik.values.endOrReturnDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("endOrReturnDate", null)} /> : null}
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                 theme={{
                     colors: {
                       onSurfaceVariant: '#888', 
@@ -478,21 +478,21 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                       <Icon
                         name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
                         size={32}
-                        color="#0C4C8A"
+                        color="#263F69"
                       />
                     )}
                     enableSwipeMonths={true}
                     markedDates={{
                       ...blockedDates,
                       ...(formik.values.endOrReturnDate ? {
-                        [formik.values.endOrReturnDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#0C4C8A', selectedTextColor: '#ffffff' }
+                        [formik.values.endOrReturnDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#263F69', selectedTextColor: '#ffffff' }
                       } : {})
                     }}
                     minDate={formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toISOString().split('T')[0] : undefined}
                     current={formik.values.startOrDepartureDate ? new Date(formik.values.startOrDepartureDate.getTime() + 86400000).toISOString().split('T')[0] : undefined}
                     theme={{
-                      todayTextColor: '#0C4C8A',
-                      arrowColor: '#0C4C8A',
+                      todayTextColor: '#263F69',
+                      arrowColor: '#263F69',
                     }}
                   />
                 </View>
@@ -506,7 +506,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
              status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-             color="#0C4C8A"
+             color="#263F69"
            />
            <TouchableOpacity 
              activeOpacity={0.7}
@@ -530,7 +530,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
             error={formik.touched.description && Boolean(formik.errors.description)}
             disabled={isSaving}
             outlineColor="#E0E0E0"
-            activeOutlineColor="#0C4C8A"
+            activeOutlineColor="#263F69"
             multiline
             numberOfLines={4}
             theme={{
@@ -573,7 +573,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                 keyboardType="numeric"
                 disabled={isSaving}
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
                 outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6, height: 60 }}
@@ -591,7 +591,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                 onBlur={formik.handleBlur("notes")}
                 disabled={isSaving}
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                 multiline
                 numberOfLines={3}
                 theme={{ colors: { onSurfaceVariant: '#888' } }}

@@ -809,7 +809,7 @@ const MapViewer = ({
             className={`flex-1 py-2 rounded-xl items-center ${value === opt ? "bg-white shadow-sm" : ""}`}
             accessibilityRole="button"
           >
-            <Text className={`text-xs font-semibold ${value === opt ? "text-[#0C4C8A]" : "text-gray-500"}`}>
+            <Text className={`text-xs font-semibold ${value === opt ? "text-[#263F69]" : "text-gray-500"}`}>
               {label.charAt(0).toUpperCase() + label.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -1413,7 +1413,7 @@ const MapViewer = ({
                   <Switch
                     value={showDestination}
                     onValueChange={setShowDestination}
-                    trackColor={{ false: "#E0E0E0", true: "#0C4C8A" }}
+                    trackColor={{ false: "#E0E0E0", true: "#263F69" }}
                     thumbColor="#FFF"
                   />
                 </View>
@@ -1424,7 +1424,7 @@ const MapViewer = ({
                   <Switch
                     value={showDateRange}
                     onValueChange={setShowDateRange}
-                    trackColor={{ false: "#E0E0E0", true: "#0C4C8A" }}
+                    trackColor={{ false: "#E0E0E0", true: "#263F69" }}
                     thumbColor="#FFF"
                   />
                 </View>
@@ -1436,7 +1436,7 @@ const MapViewer = ({
                   accessibilityRole="button"
                 >
                   <View className="flex-row items-center gap-2">
-                    <Icon name="visibility" size={20} color="#0C4C8A" />
+                    <Icon name="visibility" size={20} color="#263F69" />
                     <Text className="text-sm font-medium text-gray-800">Filter Activities</Text>
                   </View>
                   <View className="flex-row items-center gap-1">
@@ -1472,7 +1472,7 @@ const MapViewer = ({
                     <Switch
                       value={showLabels}
                       onValueChange={setShowLabels}
-                      trackColor={{ false: "#E0E0E0", true: "#0C4C8A" }}
+                      trackColor={{ false: "#E0E0E0", true: "#263F69" }}
                       thumbColor="#FFF"
                     />
                   </View>
@@ -1481,7 +1481,7 @@ const MapViewer = ({
                     <Switch
                       value={darkOverlay}
                       onValueChange={setDarkOverlay}
-                      trackColor={{ false: "#E0E0E0", true: "#0C4C8A" }}
+                      trackColor={{ false: "#E0E0E0", true: "#263F69" }}
                       thumbColor="#FFF"
                     />
                   </View>
@@ -1516,8 +1516,8 @@ const MapViewer = ({
                 className="flex-row items-center gap-1.5"
                 accessibilityRole="button"
               >
-                <Icon name="check-box" size={20} color="#0C4C8A" />
-                <Text className="text-sm font-medium text-[#0C4C8A]">Select All</Text>
+                <Icon name="check-box" size={20} color="#263F69" />
+                <Text className="text-sm font-medium text-[#263F69]">Select All</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
@@ -1563,7 +1563,7 @@ const MapViewer = ({
                     <Icon
                       name={checked ? "check-box" : "check-box-outline-blank"}
                       size={22}
-                      color={checked ? "#0C4C8A" : "#ccc"}
+                      color={checked ? "#263F69" : "#ccc"}
                     />
                     <View className="flex-1">
                       <Text className={`text-sm ${checked ? "text-gray-800 font-medium" : "text-gray-400"}`}>
@@ -1771,7 +1771,7 @@ function generateMapHtml(
           map.setZoom(${zoom || 14});
         }
       } else if (${hasCoords}) {
-        new mapboxgl.Marker({ color: '#0C4C8A' })
+        new mapboxgl.Marker({ color: '#263F69' })
           .setLngLat([${coordinates?.longitude || 0}, ${coordinates?.latitude || 0}])
           .addTo(map);
         map.setCenter([${coordinates?.longitude || 0}, ${coordinates?.latitude || 0}]);

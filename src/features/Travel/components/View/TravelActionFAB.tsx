@@ -43,8 +43,8 @@ const TravelActionFAB = ({ onAddNote, onAddChecklist, onAddExpense }: TravelActi
           }
         }}
         fabStyle={{
-            backgroundColor: '#0C4C8A',
-            borderRadius: 28,
+            backgroundColor: '#263F69',
+            borderRadius: 16,
         }}
         color="white"
       />

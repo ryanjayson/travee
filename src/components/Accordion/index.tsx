@@ -16,18 +16,8 @@ import {
   TextStyle,
   Modal,
   ScrollView,
-  Platform,
-  UIManager,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental &&
-  !(global as any).nativeFabricUIManager
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 interface AccordionProps extends PropsWithChildren {
   title: React.ReactNode | string;
@@ -39,6 +29,7 @@ interface AccordionProps extends PropsWithChildren {
   contentContainerStyle?: ViewStyle;
   iconColor?: string;
   iconSize?: number;
+  disabled?: boolean;
 }
 
 const Accordion: FC<AccordionProps> = ({
@@ -52,6 +43,7 @@ const Accordion: FC<AccordionProps> = ({
   contentContainerStyle,
   iconColor = "#89939E",
   iconSize = 24,
+  disabled = false,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
@@ -85,29 +77,33 @@ const Accordion: FC<AccordionProps> = ({
 
   return (
     <View style={containerStyle} className="bg-white my-1.5 rounded-[20px] overflow-hidden border border-[#e0e0e0]">
-      <TouchableOpacity
-        onPress={toggleFullscreenAccordion}
-        className="absolute right-[45px] top-5 z-10"
-      >
-        <Animated.View>
-          <Icon name="fullscreen" size={iconSize} color={iconColor} />
-        </Animated.View>
-      </TouchableOpacity>
+      {!disabled && (
+        <TouchableOpacity
+          onPress={toggleFullscreenAccordion}
+          className="absolute right-[45px] top-5 z-10"
+        >
+          <Animated.View>
+            <Icon name="fullscreen" size={iconSize} color={iconColor} />
+          </Animated.View>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
-        onPress={toggleAccordion}
+        onPress={disabled ? undefined : toggleAccordion}
         style={headerStyle}
         className={`flex-row justify-between items-center py-[18px] px-3 bg-[#f9f9f9] pr-[74px] ${expanded ? "pb-1" : ""}`}
-        activeOpacity={0.8}
+        activeOpacity={disabled ? 1 : 0.8}
       >
         <Text style={titleStyle} 
           className="text-lg font-semibold text-[#333] "
           numberOfLines={expanded ? 10 : 1}
         >{title}</Text>
 
-        <Animated.View style={{ transform: [{ rotate: arrowAngle }] }} className={`absolute right-3 top-5 `} >
-          <Icon name="keyboard-arrow-down" size={iconSize} color={iconColor} />
-        </Animated.View>
+        {!disabled && (
+          <Animated.View style={{ transform: [{ rotate: arrowAngle }] }} className={`absolute right-3 top-5 `} >
+            <Icon name="keyboard-arrow-down" size={iconSize} color={iconColor} />
+          </Animated.View>
+        )}
       </TouchableOpacity>
 
       {expanded && (

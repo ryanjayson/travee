@@ -329,7 +329,7 @@ const EditActivity = ({
                     onBlur={handleBlur("title")}
                     error={touched.title && Boolean(errors.title)}
                     outlineColor="#E0E0E0"
-                    activeOutlineColor="#0C4C8A"
+                    activeOutlineColor="#263F69"
                     theme={{ colors: { onSurfaceVariant: '#888' } }}
                     outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                     style={{ marginTop: 6 }}
@@ -351,7 +351,7 @@ const EditActivity = ({
                     onBlur={handleBlur("description")}
                     error={touched.description && Boolean(errors.description)}
                     outlineColor="#E0E0E0"
-                    activeOutlineColor="#0C4C8A"
+                    activeOutlineColor="#263F69"
                     theme={{ colors: { onSurfaceVariant: '#888' } }}
                     outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                     style={{ marginTop: 6, height: 120 }}
@@ -365,12 +365,12 @@ const EditActivity = ({
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Images</Text>
                   <TouchableOpacity
                     onPress={() => pickImage(setFieldValue, values.images)}
-                    className="border border-dashed border-[#0C4C8A] h-[150px] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3"
+                    className="border border-dashed border-[#263F69] h-[150px] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3"
                     accessibilityRole="button"
                     accessibilityLabel="Upload images"
                   >
-                    <Icon name="add-photo-alternate" size={28} color="#0C4C8A" />
-                    <Text className="text-base text-[#0C4C8A] font-medium">Add Photos</Text>
+                    <Icon name="add-photo-alternate" size={28} color="#263F69" />
+                    <Text className="text-base text-[#263F69] font-medium">Add Photos</Text>
                   </TouchableOpacity>
 
                   {values.images.length > 0 && (
@@ -408,7 +408,7 @@ const EditActivity = ({
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Location</Text>
                   {values.destinationData ? (() => {
                     const { longitude, latitude } = values.destinationData.coordinates;
-                    const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0C4C8A(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+                    const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
                     return (
                       <TouchableOpacity 
                         activeOpacity={0.8} 
@@ -437,7 +437,7 @@ const EditActivity = ({
                         value=""
                         editable={false}
                         outlineColor="#E0E0E0"
-                        activeOutlineColor="#0C4C8A"
+                        activeOutlineColor="#263F69"
                         left={<TextInput.Icon icon="map-marker" className="opacity-50 mt-2" />}
                         theme={{ colors: { onSurfaceVariant: '#888' } }}
                         outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
@@ -526,7 +526,7 @@ const EditActivity = ({
 
                   {/* Add new item card — only shown for existing activities */}
                   {activityId ? (
-                    <View className="bg-white border border-dashed border-[#0C4C8A]/40 rounded-[16px] p-4 mb-5">
+                    <View className="bg-white border border-dashed border-[#263F69]/40 rounded-[16px] p-4 mb-5">
                          <TextInput
                           mode="outlined"
                           className="h-[64px]"
@@ -536,7 +536,7 @@ const EditActivity = ({
                           value={newCheckTitle}
                           returnKeyType="done"
                           outlineColor="#E0E0E0"
-                          activeOutlineColor="#0C4C8A"
+                          activeOutlineColor="#263F69"
                           theme={{ colors: { onSurfaceVariant: '#888' } }}
                           outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                           style={{ marginTop: 6 }}
@@ -554,7 +554,7 @@ const EditActivity = ({
                           onSubmitEditing={handleAddChecklistItem}
                           returnKeyType="done"
                           outlineColor="#E0E0E0"
-                          activeOutlineColor="#0C4C8A"
+                          activeOutlineColor="#263F69"
                           theme={{ colors: { onSurfaceVariant: '#888' } }}
                           outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                           style={{ marginTop: 6, marginBottom: 12, height: 90 }}
@@ -567,7 +567,7 @@ const EditActivity = ({
                           onPress={() => setShowCheckDescription(true)}
                           className="mb-4 mt-3"
                         >
-                          <Text className="text-xs text-[#0C4C8A] font-medium">+ Add description</Text>
+                          <Text className="text-xs text-[#263F69] font-medium">+ Add description</Text>
                         </TouchableOpacity>
                       )}
                       <TouchableOpacity
@@ -606,7 +606,7 @@ const EditActivity = ({
                             accessibilityRole="checkbox"
                             onPress={() => handleToggleChecklistItem(item)}
                             className={`w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0 ${
-                              item.isDone ? "bg-[#0C4C8A] border-[#0C4C8A]" : "border-[#0C4C8A]"
+                              item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
                             }`}
                           >
                             {item.isDone && <Icon name="check" size={14} color="#FFF" />}

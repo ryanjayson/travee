@@ -82,7 +82,7 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
     if (isLoading) {
       return (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#0C4C8A" />
+          <ActivityIndicator size="large" color="#263F69" />
           <Text className="mt-2 text-gray-600">Loading activity details...</Text>
         </View>
       );
@@ -166,7 +166,7 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
               </Text>
               {itineraryActivity?.primaryType && (
                 <View className="mt-1 self-start bg-blue-50 px-2 py-0.5 rounded-full">
-                  <Text className="text-xs font-semibold text-[#0C4C8A] uppercase tracking-wider">
+                  <Text className="text-xs font-semibold text-[#263F69] uppercase tracking-wider">
                     {itineraryActivity.primaryType}
                   </Text>
                 </View>
@@ -201,7 +201,7 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
               },
             ]}
             onStateChange={({ open }) => setFabOpen(open)}
-            fabStyle={{ backgroundColor: "#0C4C8A" }}
+            fabStyle={{ backgroundColor: "#263F69" }}
             color="#fff"
           />
         </Portal>

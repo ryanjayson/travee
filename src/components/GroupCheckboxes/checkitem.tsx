@@ -43,7 +43,7 @@ const CheckboxItem = ({ label, selected, onToggle }: CheckboxItemProps) => {
         <Icon 
           name={getIconName(label)} 
           size={22} 
-          color={selected ? '#0C4C8A' : '#555'} 
+          color={selected ? '#263F69' : '#555'} 
         />
         <Text 
           className={`text-[11px] font-medium mt-2 text-center px-1 ${

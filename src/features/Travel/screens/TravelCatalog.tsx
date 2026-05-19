@@ -146,8 +146,8 @@ const TravelCatalog = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#0C4C8A"]}
-            tintColor="#0C4C8A"
+            colors={["#263F69"]}
+            tintColor="#263F69"
           />
         }
       >
@@ -177,7 +177,7 @@ const TravelCatalog = () => {
       <View className="flex-1 bg-white">
         <View className="flex-row items-center py-3 px-5 border-b border-gray-100 gap-4">
           <View className="flex-row items-center gap-2">
-            <View className="w-3 h-3 rounded-full bg-[#0C4C8A]" />
+            <View className="w-3 h-3 rounded-full bg-[#263F69]" />
             <Text className="text-xs text-[#666]">Ongoing</Text>
           </View>
           <View className="flex-row items-center gap-2">
@@ -190,8 +190,8 @@ const TravelCatalog = () => {
           style={{ flex: 1 }}
           enableSwipeMonths={true}
           theme={{
-            todayTextColor: '#0C4C8A',
-            arrowColor: '#0C4C8A',
+            todayTextColor: '#263F69',
+            arrowColor: '#263F69',
             'stylesheet.calendar.main': {
               monthView: {
                 flex: 1,
@@ -211,7 +211,7 @@ const TravelCatalog = () => {
             <Icon
               name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
               size={32}
-              color="#0C4C8A"
+              color="#263F69"
             />
           )}
           dayComponent={({ date, state }: any) => {
@@ -232,7 +232,7 @@ const TravelCatalog = () => {
                     textAlign: 'center',
                     fontSize: 12,
                     fontWeight: state === 'today' ? 'bold' : 'normal',
-                    color: state === 'disabled' ? '#d9e1e8' : state === 'today' ? '#0C4C8A' : '#2d4150',
+                    color: state === 'disabled' ? '#d9e1e8' : state === 'today' ? '#263F69' : '#2d4150',
                     marginBottom: 2,
                   }}
                 >
@@ -241,7 +241,7 @@ const TravelCatalog = () => {
                 <View style={{ gap: 2 }}>
                   {tripsOnDay.map((trip) => {
                     const status = getEffectiveStatus(trip);
-                    const color = status === TravelStatus.Ongoing ? '#0C4C8A' : '#2E7D32';
+                    const color = status === TravelStatus.Ongoing ? '#263F69' : '#2E7D32';
                     const startStr = new Date(trip.startOrDepartureDate!).toISOString().split('T')[0];
                     const endStr = new Date(trip.endOrReturnDate!).toISOString().split('T')[0];
                     const isStart = dayStr === startStr;
@@ -350,7 +350,7 @@ const TravelCatalog = () => {
       <View className="flex-1">
         {isLoading ? (
           <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color={'#0C4C8A'} />
+            <ActivityIndicator size="large" color={'#263F69'} />
             <Text className="mt-2.5 text-[#666]">Loading your travel plans...</Text>
           </View>
         ) : isError ? (

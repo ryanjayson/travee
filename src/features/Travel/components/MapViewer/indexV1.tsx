@@ -119,7 +119,7 @@ const MapViewer = ({
             map.setZoom(${zoom || 14});
           }
         } else if (${!!coordinates}) {
-          new mapboxgl.Marker({ color: '#0C4C8A' })
+          new mapboxgl.Marker({ color: '#263F69' })
             .setLngLat([${coordinates?.longitude}, ${coordinates?.latitude}])
             .addTo(map);
           map.setCenter([${coordinates?.longitude}, ${coordinates?.latitude}]);
@@ -164,7 +164,7 @@ const MapViewer = ({
         {/* Footer info/controls if needed */}
         <View className="p-5 bg-white border-t border-[#eee]">
           <View className="flex-row items-center">
-            <Icon name="location-on" size={20} color="#0C4C8A" />
+            <Icon name="location-on" size={20} color="#263F69" />
             <Text className="ml-2 text-sm text-[#666] font-mono">
               {markers && markers.length > 0 
                 ? `${markers.length} Locations pinned`

@@ -19,7 +19,7 @@ const StatCard = ({
   label,
   value,
   sub,
-  accent = "#0C4C8A",
+  accent = "#263F69",
 }: {
   icon: string;
   label: string;
@@ -43,8 +43,8 @@ const StatCard = ({
 // ─── Section Header ────────────────────────────────────────────────────────────
 const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
   <View className="flex-row items-center gap-2 mb-3 mt-5">
-    <Icon name={icon} size={16} color="#0C4C8A" />
-    <Text className="text-sm font-bold text-[#0C4C8A] uppercase tracking-wider">{title}</Text>
+    <Icon name={icon} size={16} color="#263F69" />
+    <Text className="text-sm font-bold text-[#263F69] uppercase tracking-wider">{title}</Text>
   </View>
 );
 
@@ -132,7 +132,7 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
             label="Activities"
             value={totalActivities}
             sub={doneActivities > 0 ? `${doneActivities} completed` : "None done yet"}
-            accent="#0C4C8A"
+            accent="#263F69"
           />
           <StatCard
             icon="sticky-note-2"
@@ -174,12 +174,12 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
                   <Icon name="list" size={18} color="#888" />
                   <Text className="text-sm text-gray-600 font-medium flex-1 ml-3">General</Text>
                   <View className="items-end">
-                    <Text className="text-sm font-bold text-[#0C4C8A]">
+                    <Text className="text-sm font-bold text-[#263F69]">
                       {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
                     </Text>
                     <View className="bg-gray-200 h-1.5 w-20 rounded-full mt-1 overflow-hidden">
                       <View
-                        className="bg-[#0C4C8A] h-1.5 rounded-full"
+                        className="bg-[#263F69] h-1.5 rounded-full"
                         style={{
                           width: `${Math.round((ungroupedItems.filter((i) => i.isDone).length / ungroupedItems.length) * 100)}%`,
                         }}
@@ -194,7 +194,7 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
                   key={group.id}
                   className={`flex-row items-center px-4 py-3 ${idx < groupBreakdown.length - 1 ? "border-b border-gray-50" : ""}`}
                 >
-                  <Icon name="folder" size={18} color="#0C4C8A" />
+                  <Icon name="folder" size={18} color="#263F69" />
                   <View className="flex-1 ml-3">
                     <Text className="text-sm text-gray-800 font-semibold">{group.title}</Text>
                     {group.description ? (
@@ -202,7 +202,7 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
                     ) : null}
                   </View>
                   <View className="items-end">
-                    <Text className="text-sm font-bold text-[#0C4C8A]">
+                    <Text className="text-sm font-bold text-[#263F69]">
                       {group.done}/{group.total}
                     </Text>
                     {group.total > 0 && (
@@ -235,13 +235,13 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
                   key={entry.type}
                   className={`flex-row items-center px-4 py-3 ${idx < activityTypeBreakdown.length - 1 ? "border-b border-gray-50" : ""}`}
                 >
-                  <ActivityIcon type={entry.type as ActivityType} size={22} color="#0C4C8A" />
+                  <ActivityIcon type={entry.type as ActivityType} size={22} color="#263F69" />
                   <Text className="text-sm text-gray-700 font-medium flex-1 ml-3 capitalize">
                     {activityTypeName(entry.type)}
                   </Text>
                   <View className="flex-row items-center gap-2">
-                    <View className="bg-[#0C4C8A]/10 px-3 py-1 rounded-full">
-                      <Text className="text-xs font-bold text-[#0C4C8A]">{entry.count}</Text>
+                    <View className="bg-[#263F69]/10 px-3 py-1 rounded-full">
+                      <Text className="text-xs font-bold text-[#263F69]">{entry.count}</Text>
                     </View>
                   </View>
                 </View>

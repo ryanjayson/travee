@@ -151,7 +151,7 @@ const EditExpense = ({
                 error={formik.touched.title && Boolean(formik.errors.title)}
                 className="h-[64px]"
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
                 outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6 }}
@@ -176,7 +176,7 @@ const EditExpense = ({
                   error={formik.touched.amount && Boolean(formik.errors.amount)}
                   className="h-[64px]"
                   outlineColor="#E0E0E0"
-                  activeOutlineColor="#0C4C8A"
+                  activeOutlineColor="#263F69"
                   theme={{ colors: { onSurfaceVariant: '#888' } }}
                   outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                   style={{ marginTop: 6 }}
@@ -195,7 +195,7 @@ const EditExpense = ({
                   onChangeText={formik.handleChange("currency")}
                   className="h-[64px]"
                   outlineColor="#E0E0E0"
-                  activeOutlineColor="#0C4C8A"
+                  activeOutlineColor="#263F69"
                   theme={{ colors: { onSurfaceVariant: '#888' } }}
                   outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                   style={{ marginTop: 6 }}
@@ -210,7 +210,7 @@ const EditExpense = ({
                 onPress={() => setShowCategoryModal(true)}
                 className="mt-2 border border-[#E0E0E0] h-[64px] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
               >
-                <ExpenseCategoryIcon category={formik.values.expenseCategory} size={28} color="#0C4C8A" />
+                <ExpenseCategoryIcon category={formik.values.expenseCategory} size={28} color="#263F69" />
                 <Text className="text-base text-gray-800 flex-1">
                   {formik.values.expenseCategory === ExpenseCategory.None
                     ? "Select Category"
@@ -229,7 +229,7 @@ const EditExpense = ({
                 <Text className="text-base text-gray-800">
                   {formik.values.dateTime.toLocaleString()}
                 </Text>
-                <Icon name="event" size={24} color="#0C4C8A" />
+                <Icon name="event" size={24} color="#263F69" />
               </TouchableOpacity>
               <DateTimePickerModal
                 isVisible={showDatePicker}
@@ -254,7 +254,7 @@ const EditExpense = ({
                 onChangeText={formik.handleChange("notes")}
                 onBlur={formik.handleBlur("notes")}
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
                 outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6, height: 120 }}
@@ -285,7 +285,7 @@ const EditExpense = ({
             <View className="flex-1 justify-center items-center bg-black/50 p-5">
               <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[80%] overflow-hidden">
                 <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                  <Text className="text-lg font-bold text-[#0C4C8A]">
+                  <Text className="text-lg font-bold text-[#263F69]">
                     Select Category
                   </Text>
                   <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
@@ -311,7 +311,7 @@ const EditExpense = ({
                             {key.replace(/([A-Z])/g, ' $1').trim()}
                           </Text>
                           {formik.values.expenseCategory === categoryValue && (
-                            <Icon name="check" size={24} color="#0C4C8A" style={{ marginLeft: "auto" }} />
+                            <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
                           )}
                         </TouchableOpacity>
                       );
@@ -330,7 +330,7 @@ const EditExpense = ({
             <View className="flex-1 justify-center items-center bg-black/50 p-5">
               <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[80%] overflow-hidden">
                 <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                  <Text className="text-lg font-bold text-[#0C4C8A]">
+                  <Text className="text-lg font-bold text-[#263F69]">
                     Select Activity
                   </Text>
                   <TouchableOpacity onPress={() => setShowActivityModal(false)}>
@@ -350,7 +350,7 @@ const EditExpense = ({
                       None
                     </Text>
                     {!formik.values.activityId && (
-                      <Icon name="check" size={24} color="#0C4C8A" style={{ marginLeft: "auto" }} />
+                      <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
                     )}
                   </TouchableOpacity>
                   {activities?.map((activity) => (
@@ -374,7 +374,7 @@ const EditExpense = ({
                         )}
                       </View>
                       {formik.values.activityId === activity.id && (
-                        <Icon name="check" size={24} color="#0C4C8A" style={{ marginLeft: "auto" }} />
+                        <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
                       )}
                     </TouchableOpacity>
                   ))}

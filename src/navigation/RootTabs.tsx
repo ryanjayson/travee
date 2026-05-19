@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabNavigationOptions } from "@react-navigation/bottom-tabs";
 import { TravelProvider } from "../context/TravelContext";
+import { Text } from "react-native";
 
 import TravelCatalog from "../features/Travel/screens/TravelCatalog";
 import { ExploreScreen } from "../screens/MapScreen";
@@ -43,6 +44,7 @@ function iconForRoute(routeName: keyof RootTabsParamList, focused: boolean) {
     //   return focused ? "settings" : "settings-outline";
   }
 }
+
 const HomeTabScreen = () => {
   return (
     <TravelProvider>
@@ -51,7 +53,6 @@ const HomeTabScreen = () => {
   );
 };
 
-
 const TravelTab = () => {
   return (
     <TravelProvider>
@@ -59,8 +60,6 @@ const TravelTab = () => {
     </TravelProvider>
   );
 };
-
-
 
 export function RootTabs() { 
   const [visibleCreateTravelModal, setVisibleCreateTravelModal] = React.useState(false);
@@ -77,46 +76,22 @@ const insets = useSafeAreaInsets();
         headerTitleAlign: "left",
         headerShadowVisible: false,
         tabBarShowLabel: true,
-
-        tabBarActiveTintColor: '#0C4C8A',
+        
+        tabBarActiveTintColor: '#263F69',
         tabBarInactiveTintColor: '#8E8E93',
-        tabBarItemStyle: {
-        },
-  tabBarIcon: ({ color, focused }) => {
-    const iconName = iconForRoute(route.name, focused);
-
-    if (focused) {
-      return (
-        <View
-          style={{
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: '#f3f4f6',
-            justifyContent: 'center',
-            alignItems: 'center',
-            position: "absolute",
-            top: -18
-          }}
-        >
-          <Ionicons name={iconName} size={26} color="#0F172A" />
-        </View>
-      );
-    }
-
-    return (
-      <View
-      style={{
-        position: "absolute",
-      }}>
-        <Ionicons
+        tabBarIcon: ({ color, focused }) => {
+          const iconName = iconForRoute(route.name, focused);
+          return (
+            <View className="flex-1 justify-center items-center">
+            <Ionicons
               name={iconName}
-              size={26}
-              color={color}
+              size={24}
+              color={focused ? "#263F69" : color}
             />
-      </View>
-    );
-  },
+            <Text className={`text-xs  ${focused ? 'text-primary' : 'text-gray-400'}`}>{route.name}</Text>
+            </View>
+          );
+        },
 
       tabBarStyle: {
         position: 'absolute',
@@ -148,7 +123,7 @@ const insets = useSafeAreaInsets();
                 onPress={() => setVisibleCreateTravelModal(true)}
                 style={{ marginRight: 16 }}
               >
-                <Ionicons name="add" size={32} color="#0C4C8A" />
+                <Ionicons name="add" size={32} color="#263F69" />
               </TouchableOpacity>
             ),
           }}
@@ -167,7 +142,7 @@ const insets = useSafeAreaInsets();
           width: 70,
           height: 70,
           borderRadius: 35,
-          // backgroundColor: 'primary',
+          backgroundColor: '#263F69',
           justifyContent: 'center',
           alignItems: 'center',
           elevation: 10,

@@ -21,7 +21,7 @@ const FloatingAddButton = ({
         icon={open ? "close" : "plus"}
         color="white"
         style={{ position: 'absolute', bottom: 0, right: 0 }}
-        fabStyle={{ backgroundColor: "#0C4C8A", borderRadius: 30 }}
+        fabStyle={{ backgroundColor: "#263F69", borderRadius: 30 }}
         actions={[
           {
             icon: "map-marker-plus",

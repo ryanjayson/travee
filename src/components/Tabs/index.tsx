@@ -18,12 +18,13 @@ interface TabsProps {
   initialActiveTabId?: string;
   type?: TabsType;
   onTabChange?: (tabId: string) => void;
+  expanded?: boolean;
 }
 
 type TabsType = "primary" | "secondary" | "normal";
 
 // --- Component ---
-const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTabChange }) => {
+const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTabChange, expanded }) => {
   const [activeTabId, setActiveTabId] = useState(
     initialActiveTabId || tabs[0]?.id
   );
@@ -31,7 +32,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
   const currentIndex = tabs.findIndex((tab) => tab.id === activeTabId);
 
-  const styleFontSizing = type === "normal" ? "text-md" : type === "secondary" ? "text-xl" : "text-2xl";
+  const styleFontSizing = type === "normal" ? "text-md" : type === "secondary" ? "text-lg" : "text-2xl";
 
   const renderTabButton = (tab: TabItem) => {
     const isActive = tab.id === activeTabId;
@@ -39,10 +40,10 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
   return (
       <TouchableOpacity
         key={tab.id}
-        className={`items-center justify-center
-        ${isActive && (type === "primary" || type === "secondary") ? 'text-brand border-b-2 border-brand-primary' : ''}
-        ${type === "normal" ? "!font-sm border border-[#E0E0E0] rounded-xl py-1.5 px-5 mr-4" : "py-3 px-4 "}
-        ${type === "secondary" && isActive ? '!border-brand-primary' : ''}
+        className={`items-center justify-center flex-1
+        ${isActive && (type === "primary" || type === "secondary") ? 'border-b-4 border-[#263F69]' : ''}
+        ${type === "normal" ? "font-sm border border-[#E0E0E0] rounded-xl py-1.5 px-5 mr-4" : "py-1 px-4 "}
+        ${type === "secondary" && isActive ? 'border-brand-primary' : ''}
         ${type === "secondary" ? 'm-0 p-0' : ''}`}
         onPress={() => {
           setActiveTabId(tab.id);
@@ -59,24 +60,36 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
   };
 
   return (
-    <View className="">
+       <View className={expanded ? "flex-1" : ""}>
+
       {/* Tab Header */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className={`bg-white border-b border-[#eee]  
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className={` bg-white border-b border-[#eee]  
          ${type === "primary" ? "" : ""}
          ${type === "normal" ? "p-4" : ""}`}>
-        <View className="flex-row mx-1 ">
+        <View className="flex-1 flex-row mx-1 ">
           {tabs.map(renderTabButton)}
         </View>
       </ScrollView>
 
-      {/* Tab Content with swipe */}
-      <ScrollView contentContainerStyle={{ paddingBottom: 100}}>
-        {activeTab ? (
-          activeTab.content
-        ) : (
-          <Text className="text-[#999] text-center mt-5">No content found.</Text>
-        )}
-      </ScrollView>
+     
+      {/* Tab Content */}
+      {expanded ? (
+        <View className="flex-1">
+          {activeTab ? (
+            activeTab.content
+          ) : (
+            <Text className="text-[#999] text-center mt-5">No content found.</Text>
+          )}
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+          {activeTab ? (
+            activeTab.content
+          ) : (
+            <Text className="text-[#999] text-center mt-5">No content found.</Text>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 };

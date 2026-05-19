@@ -13,19 +13,21 @@ import TextLimiter from "../../../../../components/atoms/TextLimiter";
 import { ItineraryActivity } from "../../../types/TravelDto";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { Typography } from "../../../../../styles/common";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
 import MapViewer from "../../MapViewer";
 
 interface ItineraryActivityProps {
   itineraryActivity: ItineraryActivity;
   isFirstItem?: boolean;
   isLastItem?: boolean;
+  plainMode?: boolean;
 }
 
 const ActivityItemCard = ({
   itineraryActivity,
   isFirstItem,
   isLastItem,
+  plainMode,
 }: ItineraryActivityProps) => {
   const [itineraryEventActivity, setItineraryEventActivity] =
     useState<ItineraryActivity>(itineraryActivity);
@@ -75,6 +77,19 @@ const ActivityItemCard = ({
     console.log("ID", id);
     setShowActivityViewModal(true);
   };
+
+  if (plainMode) {
+    return (
+      <View className="flex-row items-center px-1 py-1">
+        <View className="z-10 items-center justify-center mr-3">
+          <Ionicons name="location" size={20} color="#dc3545" />
+        </View>
+        <Text className="text-base text-[#333] flex-1" numberOfLines={1}>
+          {itineraryEventActivity.title}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <Animated.View>
@@ -130,7 +145,7 @@ const ActivityItemCard = ({
                   {itineraryEventActivity.isDone ? "Done" : "Mark as done"}
                 </Text>
                   {itineraryEventActivity.isDone ? 
-                      (<Icon name="check" size={20} color="#0C4C8A" />)
+                      (<Icon name="check" size={20} color="#263F69" />)
                       : (<Icon name="check-box-outline-blank" size={20} color="#777" />)}
 
               

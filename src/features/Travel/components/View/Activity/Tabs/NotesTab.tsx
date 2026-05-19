@@ -74,7 +74,7 @@ const NotesTab = ({ activityId, onEditNote }: NotesTabProps) => {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center py-10">
-        <ActivityIndicator size="small" color="#0C4C8A" />
+        <ActivityIndicator size="small" color="#263F69" />
       </View>
     );
   }

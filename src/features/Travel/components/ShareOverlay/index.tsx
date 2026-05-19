@@ -340,7 +340,7 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
           {/* ── Layer 3: gradient darkening ── */}
           {!transparentCapture && (
             <>
-              <View className="absolute top-0 left-0 right-0 bg-[#0C4C8A]/25" />
+              <View className="absolute top-0 left-0 right-0 bg-[#263F69]/25" />
               <View 
                 className="absolute bottom-0 left-0 right-0 bg-black/40"
                 style={{ height: CANVAS_HEIGHT }} 
@@ -417,7 +417,7 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
           <TouchableOpacity
             onPress={handleShare}
             disabled={isSharing}
-            className={`flex-row items-center bg-[#0C4C8A] py-[15px] px-12 rounded-[32px] shadow-lg elevation-10 ${isSharing ? 'opacity-70' : ''}`}
+            className={`flex-row items-center bg-[#263F69] py-[15px] px-12 rounded-[32px] shadow-lg elevation-10 ${isSharing ? 'opacity-70' : ''}`}
             activeOpacity={0.85}
             accessibilityRole="button"
             accessibilityLabel="Share this trip card"

@@ -125,7 +125,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
                 className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3 h-[64px]"
                 accessibilityRole="button"
               >
-                <Icon name="event-note" size={24} color={values.activityId ? "#0C4C8A" : "#BDBDBD"} />
+                <Icon name="event-note" size={24} color={values.activityId ? "#263F69" : "#BDBDBD"} />
                 <Text className={`text-base flex-1 ${values.activityId ? "text-gray-800" : "text-gray-400"}`} numberOfLines={1}>
                   {values.activityId
                     ? activities?.find((a) => a.id === values.activityId)?.title || "Activity"
@@ -152,7 +152,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
                 onBlur={handleBlur("title")}
                 error={touched.title && Boolean(errors.title)}
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
                 outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6 }}
@@ -175,7 +175,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
                 onChangeText={handleChange("content")}
                 onBlur={handleBlur("content")}
                 outlineColor="#E0E0E0"
-                activeOutlineColor="#0C4C8A"
+                activeOutlineColor="#263F69"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
                 outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                 style={{ marginTop: 6, height: 120 }}
@@ -189,12 +189,12 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
               <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Images</Text>
               <TouchableOpacity
                 onPress={() => pickImage(setFieldValue, values.images)}
-                className="border border-dashed border-[#0C4C8A] h-[150px] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3"
+                className="border border-dashed border-[#263F69] h-[150px] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3"
                 accessibilityRole="button"
                 accessibilityLabel="Upload images"
               >
-                <Icon name="add-photo-alternate" size={28} color="#0C4C8A" />
-                <Text className="text-base text-[#0C4C8A] font-medium">Add Photos</Text>
+                <Icon name="add-photo-alternate" size={28} color="#263F69" />
+                <Text className="text-base text-[#263F69] font-medium">Add Photos</Text>
               </TouchableOpacity>
 
               {values.images.length > 0 && (
@@ -265,7 +265,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
             <View className="flex-1 justify-center items-center bg-black/50 p-5">
               <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[80%] overflow-hidden">
                 <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                  <Text className="text-lg font-bold text-[#0C4C8A]">Select Activity</Text>
+                  <Text className="text-lg font-bold text-[#263F69]">Select Activity</Text>
                   <TouchableOpacity accessibilityRole="button" onPress={() => setShowActivityModal(false)}>
                     <Icon name="close" size={24} color="#666" />
                   </TouchableOpacity>
@@ -279,7 +279,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
                     <Icon name="event-busy" size={24} color="#666" />
                     <Text className="text-base text-gray-800">None</Text>
                     {!values.activityId && (
-                      <Icon name="check" size={24} color="#0C4C8A" style={{ marginLeft: "auto" }} />
+                      <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
                     )}
                   </TouchableOpacity>
                   {activities?.map((activity) => (
@@ -299,7 +299,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
                         )}
                       </View>
                       {values.activityId === activity.id && (
-                        <Icon name="check" size={24} color="#0C4C8A" style={{ marginLeft: "auto" }} />
+                        <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
                       )}
                     </TouchableOpacity>
                   ))}

@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, ScrollView, Animated } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Accordion from "../../../../components/Accordion";
 import ActivityItemCard from "./Activity/Card";
 import { ItinerarySection } from "../../../Travel/types/TravelDto";
@@ -7,9 +8,10 @@ import { ActivityType } from "../../../../types/enums";
 
 interface SectionAccordionProps {
   iterarysections?: ItinerarySection[];
+  plainMode?: boolean;
 }
 
-const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
+const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps) => {
   return (
     <View className="flex-1 bg-gray-100">
       <ScrollView className="flex-1">
@@ -33,9 +35,41 @@ const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
                               itineraryActivity={eventActivity}
                               isFirstItem={isFirstEvent}
                               isLastItem={isLastEvent}
+                              plainMode={plainMode}
                             />
                           );
                         })}
+                  </View>
+                );
+              } else if (plainMode) {
+                return (
+                  <View key={section.id} className="mb-2">
+                    <View className="flex-row items-center gap-2 py-2">
+                      <Ionicons name="chevron-forward" size={18} color="#000000" />
+                      {section.startDate ? (
+                        <Text>
+                          {section.title}
+                        </Text>
+                      ) : (
+                        <Text>{section.title}</Text>
+                      )}
+                    </View>
+                    
+                    {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
+                      section.itineraryActivity.map(
+                        (eventActivity, index, array) => {
+                          return (
+                            <View key={index} className="ml-8 p-1 flex-row gap-x-3 items-center">
+                              <Ionicons name="location" size={18} color="#dc3545" />
+                              <Text>{eventActivity.title}</Text>
+                            </View>
+                          );
+                        }
+                      )) : (
+                        <Text className="text-sm text-[#555] leading-5 p-1 opacity-50 ml-8 ">
+                          No activities found
+                        </Text>
+                      )}
                   </View>
                 );
               } else {
@@ -73,6 +107,7 @@ const SectionAccordion = ({ iterarysections }: SectionAccordionProps) => {
                                 itineraryActivity={eventActivity}
                                 isFirstItem={isFirstEvent}
                                 isLastItem={isLastEvent}
+                                plainMode={plainMode}
                               />
                             );
                           }

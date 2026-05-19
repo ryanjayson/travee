@@ -176,7 +176,7 @@ debugger;
                     onBlur={handleBlur("title")}
                     error={touched.title && Boolean(errors.title)}
                     outlineColor="#E0E0E0"
-                    activeOutlineColor="#0C4C8A"
+                    activeOutlineColor="#263F69"
                     theme={{ colors: { onSurfaceVariant: '#888' } }}
                     outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                     style={{ marginTop: 6 }}
@@ -198,7 +198,7 @@ debugger;
                     onBlur={handleBlur("description")}
                     error={touched.description && Boolean(errors.description)}
                     outlineColor="#E0E0E0"
-                    activeOutlineColor="#0C4C8A"
+                    activeOutlineColor="#263F69"
                     theme={{ colors: { onSurfaceVariant: '#888' } }}
                     outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                     style={{ marginTop: 6, height: 120 }}
@@ -210,7 +210,7 @@ debugger;
                   <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Location</Text>
                   {values.destinationData ? (() => {
                     const { longitude, latitude } = values.destinationData.coordinates;
-                    const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0C4C8A(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+                    const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
                     return (
                       <TouchableOpacity 
                         activeOpacity={0.8} 
@@ -239,7 +239,7 @@ debugger;
                         value=""
                         editable={false}
                         outlineColor="#E0E0E0"
-                        activeOutlineColor="#0C4C8A"
+                        activeOutlineColor="#263F69"
                         left={<TextInput.Icon icon="map-marker" className="opacity-50 mt-2" />}
                         theme={{ colors: { onSurfaceVariant: '#888' } }}
                         outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
@@ -256,7 +256,7 @@ debugger;
                      <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Date & Time</Text>
                      <View className="flex-row items-center gap-2">
                         <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">All Day</Text>
-                        <Switch value={isAllDay} onValueChange={setIsAllDay} color="#0C4C8A" />
+                        <Switch value={isAllDay} onValueChange={setIsAllDay} color="#263F69" />
                      </View>
                   </View>
                   
@@ -400,11 +400,11 @@ debugger;
                       setShowCalendarFor(null);
                     }}
                     markedDates={{
-                      [String(showCalendarFor === "startDate" ? values.startDate : values.endDate)]: { selected: true, selectedColor: '#0C4C8A' }
+                      [String(showCalendarFor === "startDate" ? values.startDate : values.endDate)]: { selected: true, selectedColor: '#263F69' }
                     }}
                     theme={{
-                      todayTextColor: '#0C4C8A',
-                      arrowColor: '#0C4C8A',
+                      todayTextColor: '#263F69',
+                      arrowColor: '#263F69',
                     }}
                   />
                 </View>

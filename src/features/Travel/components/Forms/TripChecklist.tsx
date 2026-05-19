@@ -180,7 +180,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
         accessibilityRole="button"
         onPress={() => handleToggle(item)}
         className={`w-6 h-6 rounded-full border-2 items-center justify-center mt-0.5 flex-shrink-0 ${
-          item.isDone ? "bg-[#0C4C8A] border-[#0C4C8A]" : "border-[#0C4C8A]"
+          item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
         }`}
       >
         {item.isDone && <Icon name="check" size={14} color="#FFF" />}
@@ -241,10 +241,10 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
             <TouchableOpacity
               accessibilityRole="button"
               onPress={() => setShowGroupModal(true)}
-              className="flex-row items-center gap-1 bg-[#0C4C8A]/10 px-3 py-1.5 rounded-full"
+              className="flex-row items-center gap-1 bg-[#263F69]/10 px-3 py-1.5 rounded-full"
             >
-              <Icon name="create-new-folder" size={16} color="#0C4C8A" />
-              <Text className="text-xs text-[#0C4C8A] font-semibold">New Group</Text>
+              <Icon name="create-new-folder" size={16} color="#263F69" />
+              <Text className="text-xs text-[#263F69] font-semibold">New Group</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -257,12 +257,12 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
             className="flex-row items-center border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 gap-3"
           >
             {selectedContext?.type === "group" ? (
-              <Icon name="folder" size={20} color="#0C4C8A" />
+              <Icon name="folder" size={20} color="#263F69" />
             ) : selectedContext?.type === "activity" ? (
               <ActivityIcon
                 type={(selectedContext.activityType ?? ActivityType.none) as ActivityType}
                 size={20}
-                color="#0C4C8A"
+                color="#263F69"
               />
             ) : (
               <Icon name="layers" size={20} color="#BDBDBD" />
@@ -312,7 +312,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
                       }}
                     >
                       {option.type === "group" ? (
-                        <Icon name="folder" size={20} color="#0C4C8A" />
+                        <Icon name="folder" size={20} color="#263F69" />
                       ) : (
                         <ActivityIcon
                           type={(option.activityType ?? ActivityType.none) as ActivityType}
@@ -325,7 +325,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
                         <Text className="text-xs text-gray-400 capitalize">{option.type}</Text>
                       </View>
                       {selectedContext?.id === option.id && (
-                        <Icon name="check" size={20} color="#0C4C8A" />
+                        <Icon name="check" size={20} color="#263F69" />
                       )}
                     </TouchableOpacity>
                   ))
@@ -338,7 +338,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
         {/* ─── Add Item Card ────────────────────────────────────────────────── */}
         <View className="bg-white border border-[#E0E0E0] rounded-[20px] p-4 mb-5 shadow-sm">
           <View className="flex-row items-center gap-2 mb-2">
-            <Icon name="playlist-add" size={20} color="#0C4C8A" />
+            <Icon name="playlist-add" size={20} color="#263F69" />
             <Text className="text-xs text-gray-500 font-semibold tracking-wider uppercase">New Item</Text>
           </View>
           <RNTextInput
@@ -364,7 +364,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
               onPress={() => setShowDescriptionField(true)}
               className="mb-3"
             >
-              <Text className="text-xs text-[#0C4C8A] font-medium">+ Add description</Text>
+              <Text className="text-xs text-[#263F69] font-medium">+ Add description</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -372,7 +372,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
             onPress={handleAddItem}
             disabled={!newItemTitle.trim() || saveItemMutation.isPending}
             className={`flex-row items-center justify-center gap-2 py-3 rounded-[12px] ${
-              newItemTitle.trim() ? "bg-[#0C4C8A]" : "bg-gray-200"
+              newItemTitle.trim() ? "bg-[#263F69]" : "bg-gray-200"
             }`}
           >
             {saveItemMutation.isPending ? (
@@ -395,8 +395,8 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
           return (
             <View key={group.id} className="mb-5">
               <View className="flex-row items-center gap-2 mb-2">
-                <Icon name="folder" size={18} color="#0C4C8A" />
-                <Text className="text-sm font-bold text-[#0C4C8A] uppercase tracking-wider flex-1">
+                <Icon name="folder" size={18} color="#263F69" />
+                <Text className="text-sm font-bold text-[#263F69] uppercase tracking-wider flex-1">
                   {group.title}
                 </Text>
                 <Text className="text-xs text-gray-400">{doneCount}/{groupItems.length}</Text>
@@ -511,7 +511,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
                         onBlur={handleBlur("title")}
                         error={touched.title && Boolean(errors.title)}
                         outlineColor="#E0E0E0"
-                        activeOutlineColor="#0C4C8A"
+                        activeOutlineColor="#263F69"
                         outlineStyle={{ borderRadius: 16 }}
                         style={{ marginTop: 4 }}
                         left={<TextInput.Icon icon="folder" />}
@@ -534,7 +534,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
                         onChangeText={handleChange("description")}
                         onBlur={handleBlur("description")}
                         outlineColor="#E0E0E0"
-                        activeOutlineColor="#0C4C8A"
+                        activeOutlineColor="#263F69"
                         outlineStyle={{ borderRadius: 16 }}
                         style={{ marginTop: 4, minHeight: 90 }}
                         textAlignVertical="top"

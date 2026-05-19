@@ -6,11 +6,11 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
-  StatusBar,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import Create from ".";
 import StatusBadge from "../../../../components/StatusBadge";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
@@ -32,7 +32,7 @@ const CreateTripModal = ({
 }: AddTripModalProps) => {
 
   const [isSaving, setIsSaving] = useState(false);
-  const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
+  const [modalHeight, setModalHeight] = useState(screenHeight);
   const { keyboardVisible, isFloating } = useKeyboardVisible();
   const [tripStatus, setTripStatus] = useState(TravelStatus.Draft);
 
@@ -44,6 +44,7 @@ const CreateTripModal = ({
     <Modal visible={showModal} 
       transparent
       animationType="none">
+        <StatusBar style="dark" />
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
         style={{ flex: 1, paddingBottom: 10}}
@@ -52,13 +53,12 @@ const CreateTripModal = ({
           <Animated.View
             className="rounded-t-[30px] bg-white"
             style={[
-              { height: modalHeight },
+              { height: screenHeight },
               {
-                paddingTop:  keyboardVisible && !isFloating  ? 180 : 5,
+                paddingTop:  keyboardVisible && !isFloating  ? 380 : 40,
               }
             ]}
           >
-            <StatusBar barStyle={"dark-content"} />
             <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
                 <View className="flex-row items-center gap-2">
                     <Text className="text-2xl text-gray-700 font-medium">

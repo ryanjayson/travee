@@ -91,36 +91,6 @@ const HomeScreen = () => {
     return (map[type ?? 0] ?? 'location') as any;
   };
 
-  // const getOngoingTrip = (): Travel | null => {
-  //   if (!travels) return null;
-  //   const today = new Date(); today.setHours(0, 0, 0, 0);
-  //   // return travels.find(t => {
-  //   //   // if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return false;
-  //   //   // if (t.startOrDepartureDate && t.endOrReturnDate) {
-  //   //   //   const s = new Date(t.startOrDepartureDate);
-  //   //   //   s.setHours(0, 0, 0, 0);
-  //   //   //   const e = new Date(t.endOrReturnDate);
-  //   //   //   e.setHours(0, 0, 0, 0);
-  //   //   //   return s <= today && today <= e;
-  //   //   // }
-
-  //   //   // Fallback to status if dates are missing
-  //   // return t.status === TravelStatus.Ongoing;
-  //   // }) ?? null;
-
-  //   const trip = travels.find(t => t.status === TravelStatus.Ongoing) ?? null;
-  //   // const tripDetails = {
-  //   //     id: trip.id,
-  //   //     title: trip.title,
-  //   //   };
-
-  //   //   if (trip) {
-  //   //     selectTravelPlan(tripDetails);
-  //   //   }
-
-  //   return trip;
-  // };
-
   const getAllUpcomingTrips = (): Travel[] => {
     if (!travels) return [];
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -155,8 +125,8 @@ const HomeScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#0C4C8A"]}
-            tintColor="#0C4C8A"
+            colors={["#263F69"]}
+            tintColor="#263F69"
           />
         }>
 
@@ -269,7 +239,7 @@ const HomeScreen = () => {
                 topActivityTypes.map((stat, i) => (
                   <View key={stat.type || i} className="w-[130px] bg-white rounded-2xl p-[15px] shadow-sm elevation-2 border border-gray-100 items-center">
                     <View className="bg-gray-100 w-11 h-11 rounded-full justify-center items-center mb-3">
-                      <Ionicons name={getIconForActivityType(stat.type)} size={22} color="#0C4C8A" />
+                      <Ionicons name={getIconForActivityType(stat.type)} size={22} color="#263F69" />
                     </View>
                     <Text className="text-xl font-extrabold text-gray-900 mb-0.5">{stat.count}</Text>
                     <Text className="text-[12px] text-gray-500 font-medium text-center" numberOfLines={1}>{stat.typeName}s</Text>

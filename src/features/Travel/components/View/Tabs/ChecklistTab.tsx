@@ -56,7 +56,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       <View
         className={`items-center justify-center mt-0.5 flex-shrink-0`}
       >
-        {item.isDone ? (<Icon name="check-box" size={20} color="#0C4C8A" />) : (<Icon name="check-box-outline-blank" size={20} color="#777" />)}
+        {item.isDone ? (<Icon name="check-box" size={20} color="#263F69" />) : (<Icon name="check-box-outline-blank" size={20} color="#777" />)}
         
 
       </View>
@@ -104,7 +104,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       {items.length > 0 && (
         <View className="bg-gray-200 h-2 rounded-full mb-5 overflow-hidden">
           <View
-            className="bg-[#0C4C8A] h-2 rounded-full"
+            className="bg-[#263F69] h-2 rounded-full"
             style={{ width: `${Math.round((totalDone / items.length) * 100)}%` }}
           />
         </View>
@@ -118,8 +118,8 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
         return (
           <View key={group.id} className="bg-white rounded-[20px] border border-gray-100 shadow-sm mb-4 overflow-hidden">
             <View className="flex-row items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
-              <Icon name="folder" size={18} color="#0C4C8A" />
-              <Text className="text-sm font-bold text-[#0C4C8A] flex-1 uppercase tracking-wider">
+              <Icon name="folder" size={18} color="#263F69" />
+              <Text className="text-sm font-bold text-[#263F69] flex-1 uppercase tracking-wider">
                 {group.title}
               </Text>
               <Text className="text-xs text-gray-400">{doneCt}/{groupItems.length}</Text>

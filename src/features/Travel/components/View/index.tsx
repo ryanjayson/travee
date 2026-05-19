@@ -30,9 +30,10 @@ import { MAPBOX_ACCESS_TOKEN } from "@env";
 interface ViewTravelProps {
   travelPlan: TravelPlan;
   onClose: () => void;
+  expanded?: boolean;
 }
 
-const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
+const ViewTravel = ({ travelPlan, onClose, expanded }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
   const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
@@ -113,27 +114,27 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
   const Toolbar = () => (
     <View>
       {/* Share / overlay icon */}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => setShowShareOverlay(true)}
-        className="bg-black w-8 h-8 rounded-full absolute right-[60px] top-5 z-10 items-center justify-center"
+        className="bg-black w-10 h-10 rounded-full absolute right-[60px] top-5 z-10 items-center justify-center"
         accessibilityRole="button"
         accessibilityLabel="Open share overlay"
       >
         <Animated.View>
-          <Icon name="share" size={18} color={"#FFF"} />
+          <Icon name="share" size={20} color={"#FFF"} />
         </Animated.View>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       {/* Map icon */}
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {
           setShowDestinationOnlyMap(false)
           setShowMapModal(true)}}
-        className="bg-black w-8 h-8 rounded-full absolute right-5 top-5 z-10 items-center justify-center"
+        className="bg-black w-10 h-10 rounded-full absolute right-5 top-5 z-10 items-center justify-center"
       >
         <Animated.View>
-          <Icon name="map" size={20} color={"#FFF"} />
+          <Icon name="share" size={20} color={"#FFF"} />
         </Animated.View>
       </TouchableOpacity>
       {/* <TouchableOpacity
@@ -151,7 +152,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
     <View>
       <View className="flex-1">
         <Toolbar />
-        <View className="flex-1 bg-white pt-2.5 px-2.5">
+        <View className="flex-1 bg-white">
           {travelPlan.travel.destinationData?.coordinates ? (
             <TouchableOpacity 
               activeOpacity={0.9} 
@@ -162,23 +163,23 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
             >
               <Image
                 source={{
-                  uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+0C4C8A(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
+                  uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
                 }}
-                className="w-full h-[200px] rounded-xl"
+                className="w-full h-[200px]"
                 style={{ resizeMode: "cover" }}
               />
             </TouchableOpacity>
           ) : (
             <Image
               source={require("../../../../assets/images/japan.jpg")}
-              className="w-full h-[200px] rounded-xl"
+              className="w-full h-[200px]"
               style={{ resizeMode: "cover" }}
             />
           )}
         </View>
       </View>
 
-      <View className="flex-[2] bg-white">
+      <View className="flex-2 bg-white">
         <View className="p-4 pb-2">
           <View className="flex-row justify-between items-start">
             <Text className="text-2xl font-bold text-[#183B7A] mb-2 flex-1 mr-4">
@@ -189,7 +190,7 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
           <View className="flex-row items-center flex-wrap ">
             <TouchableOpacity 
               activeOpacity={0.8}
-              className="flex-row items-center my-1 mr-2 !w-[200px]"
+              className="flex-row items-center my-1 mr-2 w-[200px]"
               onPress={() => travelPlan.travel.destinationData?.coordinates && setShowMapModal(true)}
             >
               <Icon name="location-pin" size={16} color={"red"} />
@@ -271,34 +272,62 @@ const ViewTravel = ({ travelPlan, onClose }: ViewTravelProps) => {
 
   return (
     <Portal.Host>
-      <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
-        <HeaderSection /> 
-        <View>
-          <Tabs tabs={tabData} initialActiveTabId="details" type="secondary"/>
+      {expanded ? (
+        <View className="flex-1 bg-gray-100">
+          <View className="flex-1">
+            <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" expanded={expanded}/>
+          </View>
+          {setShowMapModal && (
+            <MapViewer
+              visible={showMapModal}
+              onClose={() => setShowMapModal(false)}
+              markers={getAllMarkers()}
+              title={travelPlan.travel.title || "Trip Map"}
+              zoom={showDestinationOnlyMap ? 6 : null}
+              destination={travelPlan.travel.destination}
+              countryName={countryName}
+              dateRange={
+                travelPlan.travel.startOrDepartureDate
+                  ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
+                      travelPlan.travel.endOrReturnDate
+                        ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                        : ''
+                    }`
+                  : undefined
+              }
+              doneActivities={doneActivities}
+            />
+          )}
         </View>
-
-        {setShowMapModal && (
-          <MapViewer
-            visible={showMapModal}
-            onClose={() => setShowMapModal(false)}
-            markers={getAllMarkers()}
-            title={travelPlan.travel.title || "Trip Map"}
-            zoom={showDestinationOnlyMap ? 6 : null}
-            destination={travelPlan.travel.destination}
-            countryName={countryName}
-            dateRange={
-              travelPlan.travel.startOrDepartureDate
-                ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
-                    travelPlan.travel.endOrReturnDate
-                      ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                      : ''
-                  }`
-                : undefined
-            }
-            doneActivities={doneActivities}
-          />
-        )}
-      </ScrollView>
+      ) : (
+        <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
+          <HeaderSection />
+          <View>
+            <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" />
+          </View>
+          {setShowMapModal && (
+            <MapViewer
+              visible={showMapModal}
+              onClose={() => setShowMapModal(false)}
+              markers={getAllMarkers()}
+              title={travelPlan.travel.title || "Trip Map"}
+              zoom={showDestinationOnlyMap ? 6 : null}
+              destination={travelPlan.travel.destination}
+              countryName={countryName}
+              dateRange={
+                travelPlan.travel.startOrDepartureDate
+                  ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
+                      travelPlan.travel.endOrReturnDate
+                        ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                        : ''
+                    }`
+                  : undefined
+              }
+              doneActivities={doneActivities}
+            />
+          )}
+        </ScrollView>
+      )}
 
       <TravelActionFAB 
         onAddNote={() => {
