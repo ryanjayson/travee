@@ -9,9 +9,10 @@ import {
   ScrollView,
   TouchableOpacity,
   View,
+  Text,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
-import { Checkbox, Text, TextInput } from "react-native-paper";
+import { Checkbox, TextInput } from "react-native-paper";
 import * as Yup from "yup";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
@@ -56,7 +57,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
   ];
 
   const CreateTripSchema = Yup.object().shape({
-    title: Yup.string().required("Title is required").min(2),
+    title: Yup.string().required("Trip title is required").min(2, "Trip title is too short, make it more descriptive"),
   });
 
   const formik = useFormik({
@@ -236,18 +237,17 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60 }}
       >
-
+{/* 
         {error && (
           <View className="bg-[#FFEBEE] rounded-lg p-3 mb-4 border border-[#FFCDD2]">
             <Text className="text-[#D32F2F] text-sm">{error}</Text>
           </View>
-        )}
+        )} */}
 
         <View className="mb-5">
-          <Text className="text-xs text-tertiary font-medium tracking-widest uppercase">Title</Text>
+          <Text className="text-xs font-medium tracking-wider uppercase">Title</Text>
           <TextInput
             mode="outlined"
-            className="h-[64px]"
             placeholder={`e.g. ${currentWord}`}
             value={formik.values.title}
             onChangeText={formik.handleChange("title")}
@@ -275,12 +275,13 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
             }}
           />
           {formik.touched.title && formik.errors.title && (
-            <Text className="text-[#D32F2F] text-sm mt-1 ml-1">{formik.errors.title as string}</Text>
+            <Text className="text-error text-sm mt-1 ml-1">{formik.errors.title as string}</Text>
           )}
         </View>
 
          <View className="mb-5">
-          <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Destination</Text>
+          <Text className="text-xs font-medium tracking-wider uppercase">Destination</Text>
+
           {!formik.values.destinationData?.coordinates ? (
             <>
               <TouchableOpacity
@@ -543,16 +544,20 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
            <TouchableOpacity 
              activeOpacity={0.7}
              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-             onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+             onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates )}
            >
-             <Text className={`text-sm ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-700'}`}>
-               Create sections based on dates
+             <Text className={`mt-4 text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-700'}`}>
+               Generate sections
+             </Text>
+
+              <Text className={`text-sm ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-400'}`}>
+                Create itinerary sections based on travel dates. [DD/MM] Day No.
              </Text>
            </TouchableOpacity>
         </View>
 
       <View className="mb-5">
-          <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Description</Text>
+          <Text className="text-xs font-medium tracking-wider uppercase">Description</Text>
           <TextInput
             mode="outlined"
             placeholder="Describe your next trip"
@@ -653,7 +658,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
           icon={mode === "create" ? "add" : ""}
           onPress={() => formik.handleSubmit()}
           disabled={!formik.values.title.trim() || isSaving}
-          className="h-[64px] p-6"  
+          className="h-7xl p-6"  
         />
     </View>
      

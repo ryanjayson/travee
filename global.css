@@ -1,6 +1,344 @@
 @import "tailwindcss";
-@config "./tailwind.config.js";
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css";
 @import "nativewind/theme";
+
+@theme {
+  /* =========================================================
+   * Brand palette (primary app identity)
+   * ========================================================= */
+  --color-brand-25: #E2E9F1;
+  --color-brand-50: #C6D4E2;
+  --color-brand-100: #AAC0D4;
+  --color-brand-200: #8DABC6;
+  --color-brand-300: #7097B8;
+  --color-brand-400: #5184AB;
+  --color-brand-500: #2A719D;
+  --color-brand-600: #263F69;
+  --color-brand-700: #00466E;
+  --color-brand-800: #003258;
+  --color-brand-900: #001F42;
+  --color-brand-950: #00092E;
+  --color-brand: #263F69;
+  --color-brand-primary: #263F69;
+  --color-brand-secondary: #2591E4;
+
+  /* =========================================================
+   * Gray palette
+   * ========================================================= */
+  --color-gray-25: #FCFCFD;
+  --color-gray-50: #F9FAFB;
+  --color-gray-100: #F2F4F7;
+  --color-gray-200: #EAECF0;
+  --color-gray-300: #D0D5DD;
+  --color-gray-400: #98A2B3;
+  --color-gray-500: #667085;
+  --color-gray-600: #475467;
+  --color-gray-700: #344054;
+  --color-gray-800: #182230;
+  --color-gray-900: #101828;
+  --color-gray-950: #0C111D;
+  --color-gray: #475467;
+  --color-gray-secondary: #98A2B3;
+
+  /* =========================================================
+   * Gray Modern palette
+   * ========================================================= */
+  --color-gray-modern-25: #FCFCFD;
+  --color-gray-modern-50: #F8FAFC;
+  --color-gray-modern-100: #EEF2F6;
+  --color-gray-modern-200: #E3E8EF;
+  --color-gray-modern-300: #CDD5DF;
+  --color-gray-modern-400: #9AA4B2;
+  --color-gray-modern-500: #697586;
+  --color-gray-modern-600: #4B5565;
+  --color-gray-modern-700: #364152;
+  --color-gray-modern-800: #202939;
+  --color-gray-modern-900: #121926;
+  --color-gray-modern-950: #0D121C;
+
+  /* =========================================================
+   * Blue palette
+   * ========================================================= */
+  --color-blue-25: #F5FAFF;
+  --color-blue-50: #EFF8FF;
+  --color-blue-100: #D1E9FF;
+  --color-blue-200: #B2DDFF;
+  --color-blue-300: #84CAFF;
+  --color-blue-400: #53B1FD;
+  --color-blue-500: #2E90FA;
+  --color-blue-600: #1570EF;
+  --color-blue-700: #175CD3;
+  --color-blue-800: #1849A9;
+  --color-blue-900: #194185;
+  --color-blue-950: #102A56;
+  --color-blue: #1570EF;
+  --color-blue-primary: #1570EF;
+  --color-blue-secondary: #F5FAFF;
+
+  /* =========================================================
+   * Blue Light palette
+   * ========================================================= */
+  --color-blue_light-25: #F5FBFF;
+  --color-blue_light-50: #F0F9FF;
+  --color-blue_light-100: #E0F2FE;
+  --color-blue_light-200: #B9E6FE;
+  --color-blue_light-300: #7CD4FD;
+  --color-blue_light-400: #36BFFA;
+  --color-blue_light-500: #0BA5EC;
+  --color-blue_light-600: #0086C9;
+  --color-blue_light-700: #026AA2;
+  --color-blue_light-800: #065986;
+  --color-blue_light-900: #0B4A6F;
+  --color-blue_light-950: #062C41;
+  --color-blue_light: #0BA5EC;
+
+  /* =========================================================
+   * Gray Blue palette
+   * ========================================================= */
+  --color-gray_blue-25: #FCFCFD;
+  --color-gray_blue-50: #F8F9FC;
+  --color-gray_blue-100: #EAECF5;
+  --color-gray_blue-200: #D5D9EB;
+  --color-gray_blue-300: #B3B8DB;
+  --color-gray_blue-400: #717BBC;
+  --color-gray_blue-500: #4E5BA6;
+  --color-gray_blue-600: #3E4784;
+  --color-gray_blue-700: #363F72;
+  --color-gray_blue-800: #293056;
+  --color-gray_blue-900: #101323;
+  --color-gray_blue-950: #0D0F1C;
+  --color-gray_blue: #4E5BA6;
+
+  /* =========================================================
+   * Success palette
+   * ========================================================= */
+  --color-success-25: #F6FEF9;
+  --color-success-50: #ECFDF3;
+  --color-success-100: #DCFAE6;
+  --color-success-200: #ABEFC6;
+  --color-success-300: #75E0A7;
+  --color-success-400: #47CD89;
+  --color-success-500: #17B26A;
+  --color-success-600: #079455;
+  --color-success-700: #067647;
+  --color-success-800: #085D3A;
+  --color-success-900: #074D31;
+  --color-success-950: #053321;
+  --color-success: #17B26A;
+
+  /* =========================================================
+   * Error palette
+   * ========================================================= */
+  --color-error-25: #FFFBFA;
+  --color-error-50: #FEF3F2;
+  --color-error-100: #FEE4E2;
+  --color-error-200: #FECDCA;
+  --color-error-300: #FDA29B;
+  --color-error-400: #F97066;
+  --color-error-500: #F04438;
+  --color-error-600: #D92D20;
+  --color-error-700: #B42318;
+  --color-error-800: #912018;
+  --color-error-900: #7A271A;
+  --color-error-950: #55160C;
+  --color-error: #F04438;
+  --color-error-primary: #D92D20;
+  --color-error-secondary: #B42318;
+
+  /* =========================================================
+   * Warning palette
+   * ========================================================= */
+  --color-warning-25: #FFFCF5;
+  --color-warning-50: #FFFAEB;
+  --color-warning-100: #FEF0C7;
+  --color-warning-200: #FEDF89;
+  --color-warning-300: #FEC84B;
+  --color-warning-400: #FDB022;
+  --color-warning-500: #F79009;
+  --color-warning-600: #DC6803;
+  --color-warning-700: #B54708;
+  --color-warning-800: #93370D;
+  --color-warning-900: #7A2E0E;
+  --color-warning-950: #4E1D09;
+  --color-warning: #F79009;
+  --color-warning-secondary: #FEF0C7;
+
+  /* =========================================================
+   * Indigo palette
+   * ========================================================= */
+  --color-indigo-25: #F5F8FF;
+  --color-indigo-50: #EEF4FF;
+  --color-indigo-100: #E0EAFF;
+  --color-indigo-200: #C7D7FE;
+  --color-indigo-300: #A4BCFD;
+  --color-indigo-400: #8098F9;
+  --color-indigo-500: #6172F3;
+  --color-indigo-600: #444CE7;
+  --color-indigo-700: #3538CD;
+  --color-indigo-800: #2D31A6;
+  --color-indigo-900: #2D3282;
+  --color-indigo-950: #1F235B;
+  --color-indigo: #6172F3;
+
+  /* =========================================================
+   * Purple palette
+   * ========================================================= */
+  --color-purple-25: #FAFAFF;
+  --color-purple-50: #F4F3FF;
+  --color-purple-100: #EBE9FE;
+  --color-purple-200: #D9D6FE;
+  --color-purple-300: #BDB4FE;
+  --color-purple-400: #9B8AFB;
+  --color-purple-500: #7A5AF8;
+  --color-purple-600: #6938EF;
+  --color-purple-700: #5925DC;
+  --color-purple-800: #4A1FB8;
+  --color-purple-900: #3E1C96;
+  --color-purple-950: #27115F;
+  --color-purple: #7A5AF8;
+
+  /* =========================================================
+   * Pink palette
+   * ========================================================= */
+  --color-pink-25: #FEF6FB;
+  --color-pink-50: #FDF2FA;
+  --color-pink-100: #FCE7F6;
+  --color-pink-200: #FCCEEE;
+  --color-pink-300: #FAA7E0;
+  --color-pink-400: #F670C7;
+  --color-pink-500: #EE46BC;
+  --color-pink-600: #DD2590;
+  --color-pink-700: #C11574;
+  --color-pink-800: #9E165F;
+  --color-pink-900: #851651;
+  --color-pink-950: #4E0D30;
+  --color-pink: #EE46BC;
+
+  /* =========================================================
+   * Orange palette
+   * ========================================================= */
+  --color-orange-25: #FEFAF5;
+  --color-orange-50: #FEF6EE;
+  --color-orange-100: #FDEAD7;
+  --color-orange-200: #F9DBAF;
+  --color-orange-300: #F7B27A;
+  --color-orange-400: #F38744;
+  --color-orange-500: #EF6820;
+  --color-orange-600: #E04F16;
+  --color-orange-700: #B93815;
+  --color-orange-800: #932F19;
+  --color-orange-900: #772917;
+  --color-orange-950: #511C10;
+  --color-orange: #EF6820;
+
+  /* =========================================================
+   * Semantic / app-level colors
+   * (merged from textColor, backgroundColor, borderColor, ringColor)
+   * ========================================================= */
+  --color-primary: #263F69;
+  --color-primary-light: #E2E9F1;
+  --color-primary-hover: #F9FAFB;
+  --color-primary-solid: #0C111D;
+  --color-primary-disabled: #878B93;
+  --color-secondary: #344054;
+  --color-secondary-hover: #182230;
+  --color-secondary-subtle: #FCFCFD;
+  --color-secondary-disabled: #999FA9;
+  --color-secondary-brand: #2591E4;
+  --color-secondary-error-border: #FDA29B;
+  --color-tertiary: #858585;
+  --color-quarterary: #667085;
+  --color-quarterary-disabled: #B2B7C1;
+  --color-quaternary: #EAECF0;
+  --color-selected: #101828;
+  --color-placeholder: #667085;
+  --color-placeholder-subtle: #D0D5DD;
+  --color-supporting-text: #D0D5DD;
+  --color-text-primary: #101828;
+  --color-overlay: #0C111D;
+  --color-avatar: #F2F4F7;
+  --color-avatar-focus: #0E6BBB70;
+  --color-active: #F9FAFB;
+  --color-radio-default: #D0D5DD;
+  --color-disabled: #F2F4F7;
+  --color-disabled-subtle: #F9FAFB;
+  --color-fg-primary: #101828;
+  --color-fg-secondary: #344054;
+  --color-fg-disabled: #98A2B3;
+  --color-fg-quarterary: #667085;
+  --color-fg-quinary: #98A2B3;
+  --color-fg-quinary-hover: #667085;
+  --color-fg-success-primary: #079455;
+  --color-fg-success-primary-hover: #085D3A;
+  --color-alpha-black-100: #000000;
+
+  /* =========================================================
+   * Button colors
+   * ========================================================= */
+  --color-button-primary: #263F69;
+  --color-button-primary-hover: #00466E;
+  --color-button-primary-error: #D92D20;
+  --color-button-primary-error-hover: #B42318;
+  --color-button-secondary: #FFFFFF;
+  --color-button-secondary-hover: #F9FAFB;
+  --color-button-secondary-bg-hover: #C6D4E2;
+  --color-button-secondary-fg: #344054;
+  --color-button-secondary-color-fg: #00466E;
+  --color-button-secondary-color-border: #7097B8;
+  --color-button-tertiary: #00466E;
+  --color-button-tertiary-fg: #00466E;
+  --color-button-tertiary-fg-hover: #344054;
+  --color-button-error-primary-error: #D92D20;
+  --color-brand-secondary: #E2EFFC;
+
+  /* =========================================================
+   * Font family
+   * ========================================================= */
+  --font-dm-sans: 'DM Sans';
+
+  /* =========================================================
+   * Spacing
+   * ========================================================= */
+  --spacing-sm: 6px;
+  --spacing-md: 8px;
+  --spacing-xl: 16px;
+  --spacing-1px: 1px;
+  --spacing-xxs: 2px;
+  --spacing-xs: 4px;
+  --spacing-7px: 7px;
+  --spacing-9px: 9px;
+  --spacing-10px: 10px;
+  --spacing-lg: 12px;
+  --spacing-14px: 14px;
+  --spacing-18px: 18px;
+  --spacing-2xl: 20px;
+  --spacing-22px: 22px;
+  --spacing-3xl: 24px;
+  --spacing-4xl: 32px;
+  --spacing-42px: 42px;
+  --spacing-5xl: 40px;
+  --spacing-6xl: 48px;
+  --spacing-7xl: 64px;
+  --spacing-8xl: 80px;
+
+  /* =========================================================
+   * Border radius
+   * ========================================================= */
+  --radius-xxs: 2px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-xl: 12px;
+
+  /* =========================================================
+   * Box shadows
+   * ========================================================= */
+  --shadow-xs: 0px 1px 2px 0px #1018280D;
+  --shadow-sm: 0 1px 2px 0 rgba(16, 24, 40, 0.06);
+  --shadow-md: 0px 4px 8px -2px rgba(16, 24, 40, 0.10), 0px 2px 4px -2px rgba(16, 24, 40, 0.06);
+  --shadow-xl: 0px 20px 24px -4px rgba(16, 24, 40, 0.08), 0px 8px 8px -4px rgba(16, 24, 40, 0.03);
+
+  /* =========================================================
+   * Breakpoints
+   * ========================================================= */
+  --breakpoint-xs: 480px;
+}

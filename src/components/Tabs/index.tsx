@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import Icon from "react-native-vector-icons/MaterialIcons";
 
 // --- Types ---
 interface TabItem {
@@ -32,7 +33,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
   const currentIndex = tabs.findIndex((tab) => tab.id === activeTabId);
 
-  const styleFontSizing = type === "normal" ? "text-md" : type === "secondary" ? "text-lg" : "text-2xl";
+  const styleFontSizing = type === "normal" ? "text-md" : type === "secondary" ? "text-lg" : "text-lg";
 
   const renderTabButton = (tab: TabItem) => {
     const isActive = tab.id === activeTabId;
@@ -40,8 +41,8 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
   return (
       <TouchableOpacity
         key={tab.id}
-        className={`items-center justify-center flex-1
-        ${isActive && (type === "primary" || type === "secondary") ? 'border-b-4 border-[#263F69]' : ''}
+        className={`bg-gray-100 my-4 rounded-md items-center justify-center flex-1 p-10
+        ${isActive && (type === "primary" || type === "secondary") ? ' bg-brand-primary! text-white' : ''}
         ${type === "normal" ? "font-sm border border-[#E0E0E0] rounded-xl py-1.5 px-5 mr-4" : "py-1 px-4 "}
         ${type === "secondary" && isActive ? 'border-brand-primary' : ''}
         ${type === "secondary" ? 'm-0 p-0' : ''}`}
@@ -51,8 +52,9 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
         }}
         activeOpacity={0.8}
       >
-        <Text className={`font-medium  ${isActive ? ' text-brand ' : 'text-gray-400'}
+        <Text className={`font-medium flex-row items-center gap-2 py-2 px-5 ${isActive ? ' text-white ' : 'text-gray-500'}
          ${styleFontSizing}`}>
+            {/* <Icon name="calendar-today" size={24} color={"#333"} /> */}
           {tab.title}
         </Text>
       </TouchableOpacity>
@@ -63,10 +65,10 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
        <View className={expanded ? "flex-1" : ""}>
 
       {/* Tab Header */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className={` bg-white border-b border-[#eee]  
-         ${type === "primary" ? "" : ""}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className={`  
+         ${type === "primary" ? "bg-white" : ""}
          ${type === "normal" ? "p-4" : ""}`}>
-        <View className="flex-1 flex-row mx-1 ">
+        <View className="flex-1 flex-row mx-4 gap-4">
           {tabs.map(renderTabButton)}
         </View>
       </ScrollView>
