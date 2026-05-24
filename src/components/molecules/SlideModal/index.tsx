@@ -54,7 +54,9 @@ export default function SlideModal({
       animationType="none"
       onRequestClose={onClose}
     >
-      <View className={`flex-1 bg-black/40 ${!isRight ? "justify-end" : ""}`}>
+
+      <View className={`flex-1 ${!isRight ? "justify-end" : ""}`}
+      style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
         <TouchableWithoutFeedback onPress={onClose}>
           <View className="absolute inset-0" />
         </TouchableWithoutFeedback>

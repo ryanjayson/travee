@@ -1,15 +1,15 @@
-import React, { useContext, useEffect, useState } from "react";
-import { StatusBar } from "expo-status-bar";
-import { View, Text, TouchableOpacity, Modal, Alert } from "react-native";
-import ViewTravel from ".";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
-import { TravelMenuAction } from "../../../../types/enums";
 import { NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { RootStackParamList } from "../../../../navigation/navigation.types";
-import { useTravelPlan, useDeleteTravel, useCancelTravel, useArchiveTravel, useUnarchiveTravel } from "../../hooks/useTravel";
+import { StatusBar } from "expo-status-bar";
+import React, { useContext, useEffect, useState } from "react";
+import { Alert, Modal, Text, TouchableOpacity, View, Animated } from "react-native";
+import ViewTravel from ".";
 import { useTravelContext } from "../../../../context/TravelContext";
+import type { RootStackParamList } from "../../../../navigation/navigation.types";
+import { TravelMenuAction } from "../../../../types/enums";
+import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
+import { useArchiveTravel, useCancelTravel, useDeleteTravel, useTravelPlan, useUnarchiveTravel } from "../../hooks/useTravel";
 
 interface ViewTripModalProps {
   travelId: string;
@@ -27,6 +27,28 @@ const ViewTripModal = ({
   const [showTravelNavigationModal, setShowTravelNavigationModal] =
     useState<boolean>(false);
   const [expanded, setExpanded] = useState<boolean>(false);
+  const [showMapModal, setShowMapModal] = useState<boolean>(false);
+  const [showShareModal, setShowShareModal] = useState<boolean>(false);
+  const [scrollYVal, setScrollYVal] = useState<number>(0);
+
+  const progress = Math.min(Math.max(scrollYVal / 85, 0), 1);
+  const headerBg = `rgba(255, 255, 255, ${progress})`;
+  const headerBorder = `rgba(0, 0, 0, ${progress * 0.08})`;
+
+  const r = Math.round(255 - (255 - 137) * progress);
+  const g = Math.round(255 - (255 - 147) * progress);
+  const b = Math.round(255 - (255 - 158) * progress);
+  const iconColor = `rgb(${r}, ${g}, ${b})`;
+
+  const targetR = expanded ? 38 : 137;
+  const targetG = expanded ? 63 : 147;
+  const targetB = expanded ? 105 : 158;
+  const rFS = Math.round(255 - (255 - targetR) * progress);
+  const gFS = Math.round(255 - (255 - targetG) * progress);
+  const bFS = Math.round(255 - (255 - targetB) * progress);
+  const fullscreenIconColor = `rgb(${rFS}, ${gFS}, ${bFS})`;
+
+  const titleOpacity = Math.min(Math.max((scrollYVal - 40) / 60, 0), 1);
 
   // useContext never throws — returns null if outside NavigationContainer
   const navContext = useContext(NavigationContext);
@@ -150,40 +172,73 @@ const ViewTripModal = ({
       onRequestClose={handleCancel}
     >
       <StatusBar style="dark" />
-      <View className="flex-1 bg-white justify-end pt-10">
-        <View className="p-1.5  flex-row items-center">
+      <View className="flex-1 bg-white justify-end ">
+        <View 
+          className="p-1.5 flex-row items-center z-10 pt-10"
+          style={{
+            backgroundColor: headerBg,
+            borderBottomWidth: 1,
+            borderBottomColor: headerBorder,
+          }}
+        >
           <TouchableOpacity
             className="pr-3.5 p-0.5"
             onPress={handleCancel}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name="close" size={32} color={"#89939E"} />
+            <Icon name="close" size={32} color={iconColor} />
           </TouchableOpacity>
-          <Text className="text-xl font-medium">
-            
-            {travelPlan && <Text>Travel Plan</Text>}
-          </Text>
+          <View style={{ opacity: titleOpacity }}>
+            <Text className="text-xl font-medium">
+              {travelPlan && <Text>Travel Plan</Text>}
+            </Text>
+          </View>
           <TouchableOpacity
-            className="pr-3.5 p-0.5 absolute right-0"
+            className="pr-3.5 p-0.5 absolute right-[0px] pt-10"
             onPress={() => setShowTravelNavigationModal(true)}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-             <Icon name="more-horiz" size={28} color={"#89939E"} />
+             <Icon name="more-horiz" size={28} color={iconColor} />
           </TouchableOpacity>
           <TouchableOpacity
-            className="pr-3.5 p-0.5 absolute right-[45px]"
+            className="pr-3.5 p-0.5 absolute right-[45px] pt-10"
             onPress={() => setExpanded(p => !p)}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name={expanded ? "fullscreen-exit" : "fullscreen"} size={26} color={expanded ? "#263F69" : "#89939E"} />
+            <Icon name={expanded ? "fullscreen-exit" : "fullscreen"} size={26} color={fullscreenIconColor} />
           </TouchableOpacity>
+          <TouchableOpacity
+            className="pr-3.5 p-0.5 absolute right-[90px] pt-10"
+            onPress={() => setShowMapModal(true)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="share" size={28} color={iconColor} />
+          </TouchableOpacity>
+          {/* <TouchableOpacity
+            className="pr-3.5 p-0.5 absolute right-[135px] pt-10"
+            onPress={() => setShowMapModal(true)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Icon name="map" size={28} color={iconColor} />
+          </TouchableOpacity> */}
         </View>
-        <View className="bg-white flex-1">
+        <View className="bg-white flex-1 mt-[-82px]">
           {travelPlan && (
-            <ViewTravel travelPlan={travelPlan} onClose={handleCancel} expanded={expanded} />
+            <ViewTravel 
+              travelPlan={travelPlan} 
+              onClose={handleCancel} 
+              expanded={expanded} 
+              onScrollY={setScrollYVal}
+              showMap={showMapModal}
+              setShowMap={setShowMapModal}
+              showShare={showShareModal}
+              setShowShare={setShowShareModal}
+            />
           )}
         </View>
       </View>

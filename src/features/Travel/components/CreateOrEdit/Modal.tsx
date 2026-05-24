@@ -54,9 +54,9 @@ const CreateTripModal = ({
           <Animated.View
             className="rounded-t-[30px] bg-white"
             style={[
-              { height: modalHeight},
+              { height: keyboardVisible ? "100%" : modalHeight},
               {
-                paddingTop:  keyboardVisible && !isFloating  ? 170 : 4,
+                paddingTop: keyboardVisible ? 40 : 4
               }
             ]}
           >

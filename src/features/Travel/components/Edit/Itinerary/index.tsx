@@ -1,31 +1,30 @@
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
-  View,
+  Alert,
+  Dimensions,
+  LayoutAnimation,
+  ScrollView,
   Text,
   TouchableOpacity,
-  ScrollView, Dimensions, Alert, LayoutAnimation
+  View
 } from "react-native";
-import {
-  Divider,
-} from "react-native-paper";
-import SectionModal from "./Section/Modal";
-import SectionMenu from "./Section/Menu";
+import SlideModal from "../../../../../components/molecules/SlideModal";
+import { useUpdateActivityMutation, useUpdateActivitySortOrderMutation } from "../../../hooks/useActivity";
+import { useDeleteSectionMutation, useUpdateSectionMutation, useUpdateSectionSortOrderMutation } from "../../../hooks/useSection";
 import ActivityModal from "./Activity/Modal";
 import DraggableActivityItem from "./DraggableActivityItem";
 import DraggableSectionContainer from "./DraggableSectionContainer";
-import SlideModal from "../../../../../components/molecules/SlideModal";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useDeleteSectionMutation, useUpdateSectionSortOrderMutation, useUpdateSectionMutation } from "../../../hooks/useSection";
-import { useUpdateActivitySortOrderMutation, useUpdateActivityMutation } from "../../../hooks/useActivity";
-import { UpdateSortVariables } from "../../../types/ActivityDto";
+import SectionMenu from "./Section/Menu";
+import SectionModal from "./Section/Modal";
 
-import {
-  ItinerarySection,
-  ItineraryActivity
-} from "../../../types/TravelDto";
 import { useLexicographicSort } from "../../../../../hooks/useLexicographicSort";
 import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../../services/local/travelService";
+import {
+  ItineraryActivity,
+  ItinerarySection
+} from "../../../types/TravelDto";
 
 
 export interface EditTravelItineraryRef {

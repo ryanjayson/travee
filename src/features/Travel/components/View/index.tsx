@@ -1,4 +1,5 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import {
   Animated,
@@ -27,20 +28,49 @@ import TravelActionFAB from "./TravelActionFAB";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
+import { useEffect } from "react";
+
 interface ViewTravelProps {
   travelPlan: TravelPlan;
   onClose: () => void;
   expanded?: boolean;
+  onScrollY?: (y: number) => void;
+  showMap?: boolean;
+  setShowMap?: React.Dispatch<React.SetStateAction<boolean>>;
+  showShare?: boolean;
+  setShowShare?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ViewTravel = ({ travelPlan, onClose, expanded }: ViewTravelProps) => {
+const ViewTravel = ({ 
+  travelPlan, 
+  onClose, 
+  expanded, 
+  onScrollY,
+  showMap = false,
+  setShowMap,
+  showShare = false,
+  setShowShare,
+}: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
-  const [showMapModal, setShowMapModal] = useState<boolean>(false);
+  const [localShowMap, localSetShowMap] = useState<boolean>(false);
+  const [localShowShare, localSetShowShare] = useState<boolean>(false);
+
+  const isMapVisible = setShowMap ? showMap : localShowMap;
+  const setMapVisible = setShowMap ? setShowMap : localSetShowMap;
+
+  const isShareVisible = setShowShare ? showShare : localShowShare;
+  const setShareVisible = setShowShare ? setShowShare : localSetShowShare;
+
   const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
   const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
   const [selectedExpense, setSelectedExpense] = useState<ItineraryExpense | null>(null);
   const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
-  const [showShareOverlay, setShowShareOverlay] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (isMapVisible) {
+      setShowDestinationOnlyMap(false);
+    }
+  }, [isMapVisible]);
 
   /** Extract the country portion from a destination string like "Tokyo, Japan" */
   const extractCountryName = (destination?: string): string => {
@@ -111,70 +141,46 @@ const ViewTravel = ({ travelPlan, onClose, expanded }: ViewTravelProps) => {
     return markers;
   };
 
-  const Toolbar = () => (
-    <View>
-      {/* Share / overlay icon */}
-      {/* <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => setShowShareOverlay(true)}
-        className="bg-black w-10 h-10 rounded-full absolute right-[60px] top-5 z-10 items-center justify-center"
-        accessibilityRole="button"
-        accessibilityLabel="Open share overlay"
-      >
-        <Animated.View>
-          <Icon name="share" size={20} color={"#FFF"} />
-        </Animated.View>
-      </TouchableOpacity> */}
-      {/* Map icon */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => {
-          setShowDestinationOnlyMap(false)
-          setShowMapModal(true)}}
-        className="bg-black w-10 h-10 rounded-full absolute right-5 top-5 z-10 items-center justify-center"
-      >
-        <Animated.View>
-          <Icon name="share" size={20} color={"#FFF"} />
-        </Animated.View>
-      </TouchableOpacity>
-      {/* <TouchableOpacity
-        activeOpacity={0.8}
-        className="bg-black w-8 h-8 rounded-full absolute right-5 top-5 z-10 items-center justify-center"
-      >
-        <Animated.View>
-          <Icon name="group" size={20} color={"#FFF"} />
-        </Animated.View>
-      </TouchableOpacity> */}
-    </View>
-  );
-
   const HeaderSection = () => (
     <View>
       <View className="flex-1">
-        <Toolbar />
         <View className="flex-1 bg-white">
           {travelPlan.travel.destinationData?.coordinates ? (
             <TouchableOpacity 
               activeOpacity={0.9} 
               onPress={() => {
                 setShowDestinationOnlyMap(true)
-                setShowMapModal(true)}}
-              className="w-full"
+                setMapVisible(true)}}
+              className="w-full relative"
             >
               <Image
                 source={{
                   uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
                 }}
-                className="w-full h-[200px]"
+                className="w-full h-[260px]"
                 style={{ resizeMode: "cover" }}
+              />
+              <LinearGradient
+                colors={["rgba(0, 0, 0, 0.75)", "rgba(0, 0, 0, .10)"]}
+                start={{ x: 0.1, y: 0 }}
+                end={{ x: 0.7, y: 1 }}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
               />
             </TouchableOpacity>
           ) : (
-            <Image
-              source={require("../../../../assets/images/japan.jpg")}
-              className="w-full h-[200px]"
-              style={{ resizeMode: "cover" }}
-            />
+            <View className="relative w-full h-[240px]">
+              <Image
+                source={require("../../../../assets/images/japan.jpg")}
+                className="w-full h-[240px]"
+                style={{ resizeMode: "cover" }}
+              />
+              <LinearGradient
+                colors={["rgba(0, 0, 0, 0.70)", "rgba(0, 0, 0, 0.30)"]}
+                start={{ x: 0.1, y: 0 }}
+                end={{ x: 0.7, y: 1 }}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+              />
+            </View>
           )}
         </View>
       </View>
@@ -191,7 +197,7 @@ const ViewTravel = ({ travelPlan, onClose, expanded }: ViewTravelProps) => {
             <TouchableOpacity 
               activeOpacity={0.8}
               className="flex-row items-center my-1 mr-2 w-[200px]"
-              onPress={() => travelPlan.travel.destinationData?.coordinates && setShowMapModal(true)}
+              onPress={() => travelPlan.travel.destinationData?.coordinates && setMapVisible(true)}
             >
               <Icon name="location-pin" size={16} color={"red"} />
               <Text className="text-[#183B7A] font-medium mx-1 " numberOfLines={1} ellipsizeMode="tail">
@@ -277,10 +283,10 @@ const ViewTravel = ({ travelPlan, onClose, expanded }: ViewTravelProps) => {
           <View className="flex-1">
             <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" expanded={expanded}/>
           </View>
-          {setShowMapModal && (
+          {setMapVisible && (
             <MapViewer
-              visible={showMapModal}
-              onClose={() => setShowMapModal(false)}
+              visible={isMapVisible}
+              onClose={() => setMapVisible(false)}
               markers={getAllMarkers()}
               title={travelPlan.travel.title || "Trip Map"}
               zoom={showDestinationOnlyMap ? 6 : null}
@@ -300,15 +306,22 @@ const ViewTravel = ({ travelPlan, onClose, expanded }: ViewTravelProps) => {
           )}
         </View>
       ) : (
-        <ScrollView className="flex-1 bg-gray-100" showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          className="flex-1 bg-gray-100" 
+          showsVerticalScrollIndicator={false}
+          scrollEventThrottle={16}
+          onScroll={onScrollY ? (event) => {
+            onScrollY(event.nativeEvent.contentOffset.y);
+          } : undefined}
+        >
           <HeaderSection />
           <View>
             <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" />
           </View>
-          {setShowMapModal && (
+          {setMapVisible && (
             <MapViewer
-              visible={showMapModal}
-              onClose={() => setShowMapModal(false)}
+              visible={isMapVisible}
+              onClose={() => setMapVisible(false)}
               markers={getAllMarkers()}
               title={travelPlan.travel.title || "Trip Map"}
               zoom={showDestinationOnlyMap ? 6 : null}
@@ -356,8 +369,8 @@ const ViewTravel = ({ travelPlan, onClose, expanded }: ViewTravelProps) => {
       />
 
       <ShareTripModal
-        visible={showShareOverlay}
-        onClose={() => setShowShareOverlay(false)}
+        visible={isShareVisible}
+        onClose={() => setShareVisible(false)}
         tripTitle={travelPlan.travel.title || 'My Trip'}
         destination={travelPlan.travel.destination || ''}
         countryName={countryName}

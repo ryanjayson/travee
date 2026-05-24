@@ -25,7 +25,7 @@ const { height: screenHeight } = Dimensions.get("window");
 
 const NoteModal = ({ visible, onClose, itineraryNote, activities }: NoteModalProps) => {
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
-  const keyboardVisible = useKeyboardVisible();
+  const {keyboardVisible} = useKeyboardVisible();
 
   const handleCancel = () => {
     Keyboard.dismiss();
@@ -33,18 +33,20 @@ const NoteModal = ({ visible, onClose, itineraryNote, activities }: NoteModalPro
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
+    <Modal visible={visible} transparent animationType="none"
+          onRequestClose={handleCancel}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
-        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+        style={{ flex: 1, paddingBottom: 10}}
       >
-          <View className="flex-1 bg-black/50 justify-end">
+          <View className="flex-1 bg-black/50 justify-end" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
+          
             <Animated.View
               className="rounded-t-[30px] bg-white"
               style={[
-                { height: modalHeight },
+               { height: keyboardVisible ? "100%" : modalHeight},
                 {
-                  paddingTop:  keyboardVisible ? 180 : 5,
+                  paddingTop: keyboardVisible ? 40 : 4
                 }
               ]}
             >

@@ -34,7 +34,8 @@ const SectionModal = ({
   const pan = useRef(new Animated.ValueXY()).current;
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.6);
   const isSavingRef = useRef(false);
-  const keyboardVisible = useKeyboardVisible();
+  const { keyboardVisible } = useKeyboardVisible();
+  
 
   const handleCancel = () => {
     setIsSaving(false);
@@ -43,7 +44,11 @@ const SectionModal = ({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none">
+    <Modal 
+    visible={visible} 
+      transparent 
+      animationType="none"
+      onRequestClose={handleCancel}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
         style={{ flex: 1, paddingBottom: 10}}
@@ -52,9 +57,9 @@ const SectionModal = ({
            <Animated.View
             className="rounded-t-[30px] bg-white"
             style={[
-              { height: modalHeight },
+              { height: keyboardVisible ? "100%" : modalHeight},
               {
-                paddingTop:  keyboardVisible ? 30 : 5,
+                paddingTop: keyboardVisible ? 40 : 4
               }
             ]}
           >

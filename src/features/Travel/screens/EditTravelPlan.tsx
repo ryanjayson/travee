@@ -189,7 +189,13 @@ const EditTravelPlan = () => {
     {
       id: "detail",
       title: "Details",
-      content: (<CreateOrEdit tripData={travelPlan!.travel} mode="edit" onClose={() => {}} />)
+      content: (
+        <CreateOrEdit 
+          tripData={travelPlan!?.travel} 
+          mode="edit" 
+          onClose={() => {}} 
+        />
+    )
     },
     {
       id: "itinerary",
@@ -255,8 +261,8 @@ const EditTravelPlan = () => {
   }
 
   return (
-    <View className="flex-1 bg-white pt-[40px]">
-      <View className="flex-row justify-between items-center px-5 pt-5 bg-white ">
+    <View className="flex-1 bg-white pt-5xl">
+      <View className="flex-row justify-between items-center px-5 py-5 bg-white ">
         {/* <TouchableOpacity onPress={() => onBack()} className="p-[10px]">
           <Text className="text-[#183B7A] text-base">← Back</Text>
         <Text className="text-lg font-bold text-[#183B7A]">{travelPlan?.travel.title}</Text>
@@ -265,10 +271,12 @@ const EditTravelPlan = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="close" size={28} color={"#666"} />
         </TouchableOpacity>
-        <Text className="text-2xl tracking-wider font-bold">{travelPlan?.travel.title}</Text>
-        <TouchableOpacity onPress={() => handleMenuPress}>
+        <Text className="text-xl font-bold">Edit Trip</Text>
+
+        {/* <TouchableOpacity onPress={() => handleMenuPress}>
           <Icon name="more-horiz" size={28} color={"#666"} />
-        </TouchableOpacity>
+        </TouchableOpacity>  */}
+        <View></View>
       </View>
 
       <View className="flex-1 bg-gray-100">

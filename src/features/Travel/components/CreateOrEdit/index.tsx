@@ -17,6 +17,7 @@ import * as Yup from "yup";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
 import { TravelStatus } from "../../../../types/enums";
+import { useNavigation } from "@react-navigation/native";
 import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
 import { DestinationDto, Travel } from "../../types/TravelDto";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
@@ -29,6 +30,7 @@ export interface CreateOrEditProps {
 }
 
 const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: CreateOrEditProps) => {
+  const navigation = useNavigation<any>();
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
   const scrollViewRef = useRef<ScrollView>(null);
   const [error, setError] = useState<string | null>(null);
@@ -101,9 +103,13 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
 
       if (mode === "create") {
         createTravel({ data: { ...payload, isOffline: true, createSectionsBasedOnDates: values.createSectionsBasedOnDates } as any }, {
-          onSuccess: () => {
+          onSuccess: (result: any) => {
             formik.resetForm();
             onClose();
+            const createdId = result?.data?.id || result?.id;
+            if (createdId) {
+              navigation.navigate("EditTravelPlan", { travelId: String(createdId) });
+            }
           },
           onError: (err: any) => {
             console.error("Failed to save travel:", err);

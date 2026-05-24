@@ -35,7 +35,7 @@ const ActivityModal = ({
   const pan = useRef(new Animated.ValueXY()).current;
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.6);
   const isSavingRef = useRef(false);
-  const keyboardVisible = useKeyboardVisible();
+  const { keyboardVisible } = useKeyboardVisible();
 
   // const panResponder = PanResponder.create({
   //   onStartShouldSetPanResponder: () => true,
@@ -92,7 +92,8 @@ const ActivityModal = ({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none">
+    <Modal visible={visible} transparent animationType="none"
+      onRequestClose={handleCancel}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
         style={{ flex: 1, paddingBottom: 10}}
@@ -101,9 +102,9 @@ const ActivityModal = ({
            <Animated.View
             className="rounded-t-[30px] bg-white"
             style={[
-              { height: modalHeight },
+              { height: "100%"},
               {
-                paddingTop:  keyboardVisible ? 30 : 5,
+                paddingTop: 40
               }
             ]}
           >
