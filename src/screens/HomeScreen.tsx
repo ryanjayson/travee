@@ -110,6 +110,7 @@ const HomeScreen = () => {
   const upcomingTrips = getAllUpcomingTrips();
 
   const handleRefresh = async () => {
+    debugger;
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
@@ -166,7 +167,7 @@ const HomeScreen = () => {
               <View className="absolute top-[15px] left-2 ">
                   <Text className="text-xs font-bold text-gray-600 mr-2">{currentYear}</Text>
               </View>
-              <View className="justify-between mr-2 absolute left-[12px] top-[30px] gap-y-1">
+              <View className="justify-between mr-2 absolute left-lg top-[30px] gap-y-1">
                   <Text className="text-xs text-gray-400">M</Text>
                   <Text className="text-xs text-gray-400">T</Text>
                   <Text className="text-xs text-gray-400">W</Text>

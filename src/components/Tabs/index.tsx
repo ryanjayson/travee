@@ -4,6 +4,7 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  Animated,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 
@@ -20,20 +21,48 @@ interface TabsProps {
   type?: TabsType;
   onTabChange?: (tabId: string) => void;
   expanded?: boolean;
+  hasActionTripStatus?: boolean;
 }
 
 type TabsType = "primary" | "secondary" | "default";
 
 // --- Component ---
-const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTabChange, expanded }) => {
+const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus }) => {
   const [activeTabId, setActiveTabId] = useState(
     initialActiveTabId || tabs[0]?.id
   );
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
 
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 0.3,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, []);
+
   const renderTabButton = (tab: TabItem) => {
     const isActive = tab.id === activeTabId;
+    const isOngoingWithActiveTrip = tab.id === "ongoing" && hasActionTripStatus;
+
+    let displayTitle = tab.title;
+    if (type === "default" && tab.id === "ongoing") {
+      displayTitle = tab.title.replace(/\s*\(\d+\)/, "");
+    }
 
     let buttonClass = "";
     let textClass = "";
@@ -54,10 +83,10 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
         : "text-gray-500 font-medium text-base";
     } else { // "default"
       buttonClass = isActive
-        ? "bg-brand-50 border border-brand-100 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center"
+        ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center" : "bg-brand-50 border border-brand-100 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center")
         : "bg-white border border-[#E0E0E0] rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center";
       textClass = isActive
-        ? "text-primary font-semibold text-sm"
+        ? (isOngoingWithActiveTrip ? "text-success-500 font-semibold text-sm" : "text-primary font-semibold text-sm")
         : "text-gray-600 font-medium text-sm";
     }
 
@@ -71,9 +100,17 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
         }}
         activeOpacity={0.8}
       >
-        <Text className={textClass}>
-          {tab.title}
-        </Text>
+        <View className="flex-row items-center gap-1.5">
+          {isOngoingWithActiveTrip && (
+            <Animated.View 
+              style={{ opacity: pulseAnim }}
+              className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-300' : 'bg-green-500'}`}
+            />
+          )}
+          <Text className={textClass}>
+            {displayTitle}
+          </Text>
+        </View>
       </TouchableOpacity>
     );
   };

@@ -6,6 +6,7 @@ import {
 import { archiveTravelLocally, cancelTravelLocally, deleteTravelLocally, getTravelPlanLocally, getTravelsLocally, saveTravelLocally, unarchiveTravelLocally } from "../../../services/local/travelService";
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { CreateTravelData, Travel, TravelPlan } from "../types/TravelDto";
+import { TravelStatus } from "../../../types/enums";
 
 const TRAVEL_ENDPOINT = `${API_BASE_URL}/travel`;
 const TRAVEL_QUERY_KEY = ["travel"];
@@ -155,7 +156,16 @@ export const useDeleteTravel = () => {
     mutationFn: async (id: string) => {
       await deleteTravelLocally(id);
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
+      // 1. Update the list cache
+      queryClient.setQueryData<Travel[]>(TRAVELS_QUERY_KEY, (old) => {
+        if (!old) return old;
+        return old.filter(t => String(t.id) !== String(id));
+      });
+      // 2. Remove the specific travel caches
+      queryClient.removeQueries({ queryKey: ["selectedTravelPlan", id] });
+      queryClient.removeQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
+      // 3. Invalidate to refetch fresh data
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
     },
     onError: (error) => {
@@ -171,8 +181,25 @@ export const useCancelTravel = () => {
     mutationFn: async (id: string) => {
       await cancelTravelLocally(id);
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
+      // 1. Update the list cache
+      queryClient.setQueryData<Travel[]>(TRAVELS_QUERY_KEY, (old) => {
+        if (!old) return old;
+        return old.map(t => String(t.id) === String(id) ? { ...t, status: TravelStatus.Cancelled } : t);
+      });
+      // 2. Update specific travel caches
+      queryClient.setQueryData<TravelPlan>(["selectedTravelPlan", id], (old) => {
+        if (!old) return old;
+        return { ...old, travel: { ...old.travel, status: TravelStatus.Cancelled } };
+      });
+      queryClient.setQueryData<Travel>([TRAVEL_QUERY_KEY, id], (old) => {
+        if (!old) return old;
+        return { ...old, status: TravelStatus.Cancelled };
+      });
+      // 3. Invalidate
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", id] });
+      queryClient.invalidateQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
     },
     onError: (error) => {
       console.error("Cancel Travel Error:", error);
@@ -187,8 +214,25 @@ export const useArchiveTravel = () => {
     mutationFn: async (id: string) => {
       await archiveTravelLocally(id);
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
+      // 1. Update the list cache
+      queryClient.setQueryData<Travel[]>(TRAVELS_QUERY_KEY, (old) => {
+        if (!old) return old;
+        return old.map(t => String(t.id) === String(id) ? { ...t, isArchived: true, status: TravelStatus.Archieved } : t);
+      });
+      // 2. Update specific travel caches
+      queryClient.setQueryData<TravelPlan>(["selectedTravelPlan", id], (old) => {
+        if (!old) return old;
+        return { ...old, travel: { ...old.travel, isArchived: true, status: TravelStatus.Archieved } };
+      });
+      queryClient.setQueryData<Travel>([TRAVEL_QUERY_KEY, id], (old) => {
+        if (!old) return old;
+        return { ...old, isArchived: true, status: TravelStatus.Archieved };
+      });
+      // 3. Invalidate
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", id] });
+      queryClient.invalidateQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
     },
     onError: (error) => {
       console.error("Archive Travel Error:", error);
@@ -203,8 +247,25 @@ export const useUnarchiveTravel = () => {
     mutationFn: async (id: string) => {
       await unarchiveTravelLocally(id);
     },
-    onSuccess: () => {
+    onSuccess: (_, id) => {
+      // 1. Update the list cache
+      queryClient.setQueryData<Travel[]>(TRAVELS_QUERY_KEY, (old) => {
+        if (!old) return old;
+        return old.map(t => String(t.id) === String(id) ? { ...t, isArchived: false, status: t.status === TravelStatus.Archieved ? TravelStatus.Draft : t.status } : t);
+      });
+      // 2. Update specific travel caches
+      queryClient.setQueryData<TravelPlan>(["selectedTravelPlan", id], (old) => {
+        if (!old) return old;
+        return { ...old, travel: { ...old.travel, isArchived: false, status: old.travel.status === TravelStatus.Archieved ? TravelStatus.Draft : old.travel.status } };
+      });
+      queryClient.setQueryData<Travel>([TRAVEL_QUERY_KEY, id], (old) => {
+        if (!old) return old;
+        return { ...old, isArchived: false, status: old.status === TravelStatus.Archieved ? TravelStatus.Draft : old.status };
+      });
+      // 3. Invalidate
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", id] });
+      queryClient.invalidateQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
     },
     onError: (error) => {
       console.error("Unarchive Travel Error:", error);

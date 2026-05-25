@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text } from "react-native";
+import React, { useRef, useEffect } from "react";
+import { View, Text, Animated } from "react-native";
 import { TravelStatus } from "../../types/enums";
 
 /**
@@ -13,7 +13,7 @@ export const getStatusConfig = (status: TravelStatus) => {
     case TravelStatus.Upcoming:
       return { label: "Upcoming", bg: "bg-[#B9E6FE]", text: "text-[#263F69]" };
     case TravelStatus.Ongoing:
-      return { label: "Ongoing", bg: "bg-[#B9E6FE]", text: "text-[#263F69]" };
+      return { label: "Ongoing", bg: "bg-success-100", text: "text-success-600" };
     case TravelStatus.Completed:
       return { label: "Completed", bg: "bg-[#E8F5E8]", text: "text-[#2E7D32]" };
     case TravelStatus.Archieved:
@@ -38,9 +38,38 @@ type StatusTagProps = {
  */
 const StatusBadge = ({ status, containerClassName = "", textClassName = "" }: StatusTagProps) => {
   const { label, bg, text } = getStatusConfig(status);
+  
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (status === TravelStatus.Ongoing) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 0.3,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    }
+  }, [status]);
 
   return (
-    <View className={`px-3 py-2 rounded-full ${bg} ${containerClassName}`}>
+    <View className={`px-3 py-2 rounded-full ${bg} ${containerClassName} flex-row items-center gap-1.5`}>
+      {status === TravelStatus.Ongoing && (
+        <Animated.View 
+          style={{ opacity: pulseAnim }}
+          className="w-2 h-2 rounded-full bg-success-500"
+        />
+      )}
       <Text className={`text-xs font-bold ${text} ${textClassName}`}>
         {label}
       </Text>

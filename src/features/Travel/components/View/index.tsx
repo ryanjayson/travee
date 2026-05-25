@@ -7,10 +7,10 @@ import {
   ScrollView,
   TouchableOpacity,
   View,
+  Text,
 } from "react-native";
 import {
   Portal,
-  Text,
 } from "react-native-paper";
 import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
@@ -80,6 +80,8 @@ const ViewTravel = ({
   };
 
   const [selectedNote, setSelectedNote] = useState<any | null>(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
+  const [showMoreButton, setShowMoreButton] = useState<boolean>(false);
   const countryName = extractCountryName(travelPlan.travel.destination);
 
   const allActivities = (travelPlan.itinerarySection ?? [])
@@ -157,21 +159,21 @@ const ViewTravel = ({
                 source={{
                   uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
                 }}
-                className="w-full h-[260px]"
+                className="w-full h-[200px] "
                 style={{ resizeMode: "cover" }}
               />
               <LinearGradient
-                colors={["rgba(0, 0, 0, 0.75)", "rgba(0, 0, 0, .10)"]}
+                colors={["rgba(0, 0, 0, 0.75)", "rgba(0, 0, 0, 0.5)"]}
                 start={{ x: 0.1, y: 0 }}
                 end={{ x: 0.7, y: 1 }}
                 style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
               />
             </TouchableOpacity>
           ) : (
-            <View className="relative w-full h-[240px]">
+            <View className="relative w-full h-[200px]">
               <Image
                 source={require("../../../../assets/images/japan.jpg")}
-                className="w-full h-[240px]"
+                className="w-full h-[200px]"
                 style={{ resizeMode: "cover" }}
               />
               <LinearGradient
@@ -185,41 +187,75 @@ const ViewTravel = ({
         </View>
       </View>
 
-      <View className="flex-2 bg-white">
-        <View className="p-4 pb-2">
+      <View className="flex-2 bg-white border-t border-gray-300 rounded-t-4xl -mt-7">
+        <View className="p-6">
           <View className="flex-row justify-between items-start">
-            <Text className="text-2xl font-bold text-[#183B7A] mb-2 flex-1 mr-4">
+            <Text className="text-3xl font-bold  mb-2 flex-1 mr-4">
               {travelPlan?.travel.title}
             </Text>
             <StatusBadge type={1} status={travelPlan.travel.status!} />
           </View>
-          <View className="flex-row items-center flex-wrap ">
-            <TouchableOpacity 
-              activeOpacity={0.8}
-              className="flex-row items-center my-1 mr-2 w-[200px]"
-              onPress={() => travelPlan.travel.destinationData?.coordinates && setMapVisible(true)}
-            >
-              <Icon name="location-pin" size={16} color={"red"} />
-              <Text className="text-[#183B7A] font-medium mx-1 " numberOfLines={1} ellipsizeMode="tail">
-                {travelPlan.travel.destination}
-              </Text>
-            </TouchableOpacity>
-            <View className="flex-row items-center my-1">
-              <Text className="text-sm text-[#666] px-2 mx-2 border-l border-[#DDD]">
-                {travelPlan.travel?.startOrDepartureDate
-                  ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "2-digit", year: "numeric" })
-                  : ""}
-                {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
-                  ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
-                  : ""}
-              </Text>
+          <View className="flex-row items-center flex-wrap bg-gray-50 rounded-lg p-2">
+            <View className="flex-row items-center my-1 pr-3 border-r border-[#DDD]">
+              <View className="flex-row items-center">
+                <Icon name="calendar-month" size={28} color={"#858585"} />
+              <View className="flex-col px-1">
+                <Text className="text-xs text-tertiary">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
+                    ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
+                    : ""}</Text>
+                <Text className="text-lg font-bold text-secondary line-clamp-1">
+                  {travelPlan.travel?.startOrDepartureDate
+                    ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day:"2-digit"})
+                    : ""}
+
+                    - {travelPlan.travel?.endOrReturnDate
+                    ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day:"2-digit" })
+                    : ""}
+                </Text>
+                </View>              
+              </View>
             </View>
+            <View className="flex-row items-center my-1 pl-3">
+                <TouchableOpacity 
+                  activeOpacity={0.8}
+                  className="flex-row items-center my-1 mr-2 "
+                  onPress={() => travelPlan.travel.destinationData?.coordinates && setMapVisible(true)}
+                >
+                  <Icon name="location-pin" size={24} color={"#B42318"} />
+               
+                {travelPlan.travel.destination ? (
+                  <Text className="text-[#183B7A] font-medium mx-1 " numberOfLines={1} ellipsizeMode="tail">
+                  {travelPlan.travel.destination}
+                </Text>
+                ) : (
+                  <Text className="text-tertiary italic text-base  mx-1 " numberOfLines={1} ellipsizeMode="tail">
+                  Not set
+                </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+        
           </View>
 
           <View className="mt-2.5">
-            <Text className="text-base text-[#666] leading-6">
+            <Text 
+              className="text-base text-tertiary leading-6"
+              numberOfLines={isDescriptionExpanded ? undefined : 3}
+              onTextLayout={(e) => {
+                if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
+                  setShowMoreButton(true);
+                }
+              }}
+            >
               {travelPlan.travel.description || null}
             </Text>
+            {showMoreButton && (
+              <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+                <Text className="text-secondary font-medium mt-1">
+                  {isDescriptionExpanded ? "Show less" : "Show more"}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>

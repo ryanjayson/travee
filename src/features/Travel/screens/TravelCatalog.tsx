@@ -44,31 +44,14 @@ const TravelCatalog = () => {
     if (!travel.startOrDepartureDate) {
       return TravelStatus.Draft;
     }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (travel.endOrReturnDate) {
-      const endDate = new Date(travel.endOrReturnDate);
-      endDate.setHours(0, 0, 0, 0);
-      if (endDate < today) return TravelStatus.Completed;
-    }
-
-    const startDate = new Date(travel.startOrDepartureDate);
-    startDate.setHours(0, 0, 0, 0);
-
-    if (startDate > today) {
-      return TravelStatus.Upcoming;
-    } else {
-      return TravelStatus.Ongoing;
-    }
+    return travel.status;
   };
 
   const getTravelsByStatus = (status: TravelStatus) => {
     if (status === TravelStatus.Archieved) {
       return travels?.filter(t => t.isArchived || t.status === TravelStatus.Archieved) || [];
     }
-    return travels?.filter(t => !t.isArchived && t.status !== TravelStatus.Archieved && getEffectiveStatus(t) === status) || [];
+    return travels?.filter(t => !t.isArchived && t.status !== TravelStatus.Archieved && t.status === status) || [];
   };
 
   const handleViewModeTravel = (travel: Travel) => {
@@ -151,7 +134,21 @@ const TravelCatalog = () => {
           />
         }
       >
-        {data && data.length > 0 ? (
+        {data && data.length === 1 && data[0].status === TravelStatus.Ongoing ?(
+          <View key={data[0].id} className="rounded-xl mb-2 bg-success-50 shadow-sm shadow-black/10 elevation-1 mx-4 overflow-hidden">
+            <TouchableOpacity onPress={() => handleViewModeTravel(data[0])}>
+              <View className="p-4 border border-success-500 rounded-xl">
+                <View className="flex-row justify-between items-start mb-3">
+                  <View className="flex-1">
+                    <Text className="text-lg font-medium text-primary">{data[0].title}</Text>
+                    <Text className="text-sm  text-[#666]">{data[0].destination}</Text>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+        ) :
+        data && data.length > 0 ? (
           data.map(renderTravelCard)
         ) : (
           <View className="flex-1 justify-center items-center py-[60px]">
@@ -164,6 +161,7 @@ const TravelCatalog = () => {
             </Text>
           </View>
         )}
+        
       </ScrollView>
     );
   };
@@ -317,7 +315,7 @@ const TravelCatalog = () => {
 
   const renderListView = () => (
     <View>
-      <Tabs tabs={listTabsData} type="default"/>
+      <Tabs tabs={listTabsData} type="default" hasActionTripStatus={true}/>
     </View>
   );
 

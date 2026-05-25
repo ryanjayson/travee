@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Animated, Image, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons as Icon, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Travel } from '../../../features/Travel/types/TravelDto';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { useTravelContext } from "../../../context/TravelContext";
-import ViewTravelModal from "../../../features/Travel/components/View/Modal";
-import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
-import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
-import { MaterialIcons as Icon } from "@expo/vector-icons";
+import CreateTripModal from '../../../features/Travel/components/CreateOrEdit/Modal';
 import ExpenseModal from '../../../features/Travel/components/Forms/Expense/Modal';
 import NoteModal from '../../../features/Travel/components/Forms/Note/Modal';
 import MapboxDestinationSelector, { MapboxPlace } from '../../../features/Travel/components/MapboxDestinationSelector';
-import CreateTripModal from '../../../features/Travel/components/CreateOrEdit/Modal';
+import ViewTravelModal from "../../../features/Travel/components/View/Modal";
+import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
+import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
+import { Travel } from '../../../features/Travel/types/TravelDto';
 import { ProfileScreen } from '../../../screens/ProfileScreen';
 
 interface HeroProps {
@@ -37,6 +36,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
   const words = ['country', 'city', 'destination', 'place', 'province', 'region'];
   const [currentWord, setCurrentWord] = useState(words[0]);
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -57,6 +57,25 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       });
     }, 2500);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 0.3,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
   }, []);
 
   const {
@@ -85,13 +104,13 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
           style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0, backgroundColor: "#F2F4F7" }}
         />
         <View 
-          className="absolute inset-0 bg-black/80"
-          style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
+          className="absolute inset-0 "
+          style={{ backgroundColor: "rgba(0,0,0,0.60)", borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
         />
 
         {/* Profile icon — always visible top-right */}
         <TouchableOpacity
-          className="absolute top-[52px] right-5 w-12 h-12 rounded-full bg-white/20 items-center justify-center"
+          className="absolute top-[52px] right-5 w-14 h-14 rounded-full bg-white/20 items-center justify-center"
           onPress={() => setShowProfileModal(true)}
           activeOpacity={0.8}
           accessibilityRole="button"
@@ -107,7 +126,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
               <View className="flex-row items-center gap-2">
               
                 <Animated.View 
-                  style={{ opacity: fadeAnim }}
+                  style={{ opacity: pulseAnim }}
                   className="w-2 h-2 rounded-full bg-green-400"
                 />
                 <Text className="text-green-300 text-[10px] font-bold tracking-widest uppercase">Ongoing</Text>
@@ -296,27 +315,43 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         </Modal>
       </View>
 
-      <View className="p-5 flex-1 flex-row items-center gap-8 py-3 justify-between z-40">
-        <TouchableOpacity className='items-center justify-center w-[48px] h-[48px] bg-brand-primary/10 rounded-full' onPress={() => setShowTravelViewModal(true)}>
-          <Ionicons name="briefcase-outline" size={24} color="#000" />
-          <Text className="text-primary text-xs">View Trip</Text>
+      <View className="p-5  flex-1">
+        <Text className="text-sm font-medium">Quick Actions</Text>
+        <View className="flex-1 flex-row items-center gap-8 py-3 justify-between z-40">
+        <View className="items-center">
+          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full border-2 border-gray-300' onPress={() => setShowTravelViewModal(true)}>
+            <Ionicons name="briefcase-outline" size={24} color="#263F69" />
+          </TouchableOpacity>
+          <Text className="text-primary text-xs mt-2">View Trip</Text>
+          </View>
+       
+        <View className="items-center">
+          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' onPress={() => setShowExpenseModal(true)}>
+            <Ionicons name="cash" size={24} color="#263F69" />
+          </TouchableOpacity>
+          <Text className="text-primary text-xs mt-2">Add Expense</Text>
+        </View>
+        <View className="items-center">
+          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' onPress={() => setShowNoteModal(true)}>
+            <Ionicons name="document-text-outline" size={24} color="#263F69" />
+          </TouchableOpacity>
+          <Text className="text-primary text-xs mt-2">Add Note</Text>
+        </View>
+        <View className="items-center">
+
+          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' onPress={() => setShowItineraryTab(true)}>
+          <Ionicons name="list" size={24} color="#263F69" />
         </TouchableOpacity>
-        <TouchableOpacity className='items-center text-center justify-center w-[48px] h-[48px] bg-brand-primary/30 rounded-xl' onPress={() => setShowExpenseModal(true)}>
-          <Ionicons name="cash" size={24} color="#000" />
-          <Text className="text-primary text-xs">Add Expense</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className='items-center justify-center' onPress={() => setShowNoteModal(true)}>
-          <Ionicons name="document-text-outline" size={24} color="#000" />
-          <Text className="text-primary text-xs">Add Note</Text>
-        </TouchableOpacity>
-          <TouchableOpacity className='items-center' onPress={() => setShowItineraryTab(true)}>
-          <Ionicons name="list" size={24} color="#000" />
-          <Text className="text-primary text-xs">Itinerary</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className='items-center opacity-50' disabled={true} >
+          <Text className="text-primary text-xs mt-2">Itinerary</Text>
+
+        </View>
+
+        {/* <TouchableOpacity className='items-center opacity-50' disabled={true} >
           <Ionicons name="map-outline" size={24} color="#000" />
           <Text className="text-primary text-xs">Map</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+      </View>
+
       </View>
 
     </View>
