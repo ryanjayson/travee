@@ -218,7 +218,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
       )}
 
       <View className="mb-5">
-        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
+        <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
         <TextInput
           mode="outlined"
           className="!h-[64px]"
@@ -241,7 +241,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
       </View>
 
       <View className="mb-5">
-        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Destination</Text>
+        <Text className="text-xs font-semibold tracking-wider uppercase">Destination</Text>
         {!formik.values.destinationData?.coordinates ? (
           <>
             <TouchableOpacity activeOpacity={0.7} onPress={() => setShowDestinationModal(true)} disabled={isSaving}>
@@ -425,7 +425,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
       )}
 
       <View className="mb-5">
-        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Description</Text>
+        <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
         <TextInput
           mode="outlined"
           placeholder="Describe your next trip"
@@ -451,7 +451,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
       {mode === "edit" && (
         <>
           <View className="mb-5">
-            <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Budget</Text>
+            <Text className="text-xs font-semibold tracking-wider uppercase">Budget</Text>
             <TextInput
               mode="outlined"
               placeholder="e.g., 2,000"
@@ -471,7 +471,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           </View>
 
           <View className="mb-5">
-            <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Notes</Text>
+            <Text className="text-xs font-semibold tracking-wider uppercase">Notes</Text>
             <TextInput
               mode="outlined"
               placeholder="Additional notes..."

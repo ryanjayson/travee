@@ -24,7 +24,7 @@ const CheckboxGroup = ({ title, initialOptions }: CheckboxGroupProps) => {
 
   return (
     <View className=" rounded-lg">
-      <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">{title}</Text>
+      <Text className="text-xs font-semibold tracking-wider uppercase">{title}</Text>
       <View className="flex-row flex-wrap mt-1">
         {options.map((option) => (
           <CheckboxItem

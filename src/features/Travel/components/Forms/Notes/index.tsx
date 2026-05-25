@@ -7,6 +7,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
   Platform,
+  Text,
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import { Calendar } from "react-native-calendars";
@@ -14,7 +15,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import TouchButton from "../../../../components/atoms/TouchButton";
-import { Divider, Text, Switch } from 'react-native-paper';
+import { Divider, Switch } from 'react-native-paper';
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Image } from "react-native";
 import { DestinationDto, ItineraryActivity } from "../../types/TravelDto";
@@ -166,7 +167,7 @@ debugger;
               keyboardShouldPersistTaps="handled"
             >
                 <View className="mb-5">
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
+                  <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
                   <TextInput
                     mode="outlined"
                     className="!h-[64px]"
@@ -187,7 +188,7 @@ debugger;
                   )}
                 </View>
                 <View className="mb-5">
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Description</Text>
+                  <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
                   <TextInput
                     mode="outlined"
                     placeholder="Activity details"
@@ -207,7 +208,7 @@ debugger;
                   />
                 </View>
                 <View className="mb-5">
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Location</Text>
+                  <Text className="text-xs font-semibold tracking-wider uppercase">Location</Text>
                   {values.destinationData ? (() => {
                     const { longitude, latitude } = values.destinationData.coordinates;
                     const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
@@ -253,9 +254,9 @@ debugger;
 
                 <View className="mb-5">
                   <View className="flex-row items-center justify-between">
-                     <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Date & Time</Text>
+                     <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
                      <View className="flex-row items-center gap-2">
-                        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">All Day</Text>
+                        <Text className="text-xs font-semibold tracking-wider uppercase">All Day</Text>
                         <Switch value={isAllDay} onValueChange={setIsAllDay} color="#263F69" />
                      </View>
                   </View>
@@ -304,7 +305,7 @@ debugger;
                 </View>
 
                 <View className="mb-5">
-                  <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Activity Type</Text>
+                  <Text className="text-xs font-semibold tracking-wider uppercase">Activity Type</Text>
                   <TouchableOpacity 
                     onPress={() => setShowPrimaryTypeModal(true)}
                     className="border rounded-2xl h-[64px] border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"

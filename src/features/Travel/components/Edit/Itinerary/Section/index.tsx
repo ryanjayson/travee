@@ -118,7 +118,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
 
           <ScrollView className="flex-1 p-[15px] bg-gray-100 pb-[100px]" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
               <TextInput
                 mode="outlined"
                 className="!h-[64px]"
@@ -141,7 +141,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Description</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
               <TextInput
                 mode="outlined"
                 placeholder="Add a short description"
@@ -177,7 +177,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Date</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Date</Text>
               <View className="relative mt-[6px]">
                 <TextInput
                   mode="outlined"
@@ -235,7 +235,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Location</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Location</Text>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => setShowDestinationModal(true)}

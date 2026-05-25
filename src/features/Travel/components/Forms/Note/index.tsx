@@ -11,8 +11,9 @@ import {
   StatusBar,
   TouchableOpacity,
   View,
+  Text,
 } from "react-native";
-import { Text, TextInput } from "react-native-paper";
+import { TextInput } from "react-native-paper";
 import * as Yup from "yup";
 import TouchButton from "../../../../../components/atoms/TouchButton";
 import { useTravelContext } from "../../../../../context/TravelContext";
@@ -117,9 +118,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
           >
             {/* Linked Activity */}
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">
-                Linked Activity (Optional)
-              </Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Linked Activity (Optional)</Text>
               <TouchableOpacity
                 onPress={() => setShowActivityModal(true)}
                 className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3 h-[64px]"
@@ -142,7 +141,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
 
             {/* Title */}
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Title</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
               <TextInput
                 mode="outlined"
                 className="!h-[64px]"
@@ -165,7 +164,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
 
             {/* Content */}
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Content</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Content</Text>
               <TextInput
                 mode="outlined"
                 placeholder="Write your note here..."
@@ -186,7 +185,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
 
             {/* Image Upload */}
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Images</Text>
+              <Text className="text-xs font-medium tracking-wider uppercase mb-2">Images</Text>
               <TouchableOpacity
                 onPress={() => pickImage(setFieldValue, values.images)}
                 className="border border-dashed border-[#263F69] h-[150px] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3"

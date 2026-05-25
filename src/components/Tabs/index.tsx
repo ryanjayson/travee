@@ -22,7 +22,7 @@ interface TabsProps {
   expanded?: boolean;
 }
 
-type TabsType = "primary" | "secondary" | "normal";
+type TabsType = "primary" | "secondary" | "default";
 
 // --- Component ---
 const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTabChange, expanded }) => {
@@ -31,48 +31,77 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
   );
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
-  const currentIndex = tabs.findIndex((tab) => tab.id === activeTabId);
-
-  const styleFontSizing = type === "normal" ? "text-md" : type === "secondary" ? "text-lg" : "text-lg";
 
   const renderTabButton = (tab: TabItem) => {
     const isActive = tab.id === activeTabId;
 
-  return (
+    let buttonClass = "";
+    let textClass = "";
+
+    if (type === "primary") {
+      buttonClass = isActive 
+        ? "bg-primary rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center shadow-sm h-14 min-w-24"
+        : "bg-gray-100 rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center h-14 min-w-24";
+      textClass = isActive 
+        ? "text-white font-semibold text-base"
+        : "text-gray-500 font-medium text-base";
+    } else if (type === "secondary") {
+      buttonClass = isActive
+        ? "px-4 py-3 mr-4 border-b-2 border-[#263F69] items-center justify-center"
+        : "px-4 py-3 mr-4 border-b-2 border-transparent items-center justify-center";
+      textClass = isActive
+        ? "text-[#263F69] font-bold text-base"
+        : "text-gray-500 font-medium text-base";
+    } else { // "default"
+      buttonClass = isActive
+        ? "bg-brand-50 border border-brand-100 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center"
+        : "bg-white border border-[#E0E0E0] rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center";
+      textClass = isActive
+        ? "text-primary font-semibold text-sm"
+        : "text-gray-600 font-medium text-sm";
+    }
+
+    return (
       <TouchableOpacity
         key={tab.id}
-        className={`bg-gray-100 my-4 rounded-md items-center justify-center flex-1 p-10
-        ${isActive && (type === "primary" || type === "secondary") ? ' bg-brand-primary! text-white' : ''}
-        ${type === "normal" ? "font-sm border border-[#E0E0E0] rounded-xl py-1.5 px-5 mr-4" : "py-1 px-4 "}
-        ${type === "secondary" && isActive ? 'border-brand-primary' : ''}
-        ${type === "secondary" ? 'm-0 p-0' : ''}`}
+        className={buttonClass}
         onPress={() => {
           setActiveTabId(tab.id);
           if (onTabChange) onTabChange(tab.id);
         }}
         activeOpacity={0.8}
       >
-        <Text className={`font-medium flex-row items-center gap-2 py-2 px-5 ${isActive ? ' text-white ' : 'text-gray-500'}
-         ${styleFontSizing}`}>
-            {/* <Icon name="calendar-today" size={24} color={"#333"} /> */}
+        <Text className={textClass}>
           {tab.title}
         </Text>
       </TouchableOpacity>
     );
   };
 
+  let wrapperStyle = "bg-white border-b border-gray-100";
+
+  if (type === "secondary") {
+    wrapperStyle = "bg-white border-b border-gray-100";
+  } else if (type === "default") {
+    wrapperStyle = "";
+  } else { // "primary"
+    wrapperStyle = "bg-white border-b border-gray-100";
+  }
+
   return (
-       <View className={expanded ? "flex-1" : ""}>
-
+    <View className={expanded ? "flex-1" : ""}>
       {/* Tab Header */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className={`  
-         ${type === "primary" ? "bg-white" : ""}
-         ${type === "normal" ? "p-4" : ""}`}>
-        <View className="flex-1 flex-row mx-4 gap-4">
-          {tabs.map(renderTabButton)}
-        </View>
-      </ScrollView>
-
+      <View className={wrapperStyle}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16 }}
+        >
+          <View className="flex-row">
+            {tabs.map(renderTabButton)}
+          </View>
+        </ScrollView>
+      </View>
      
       {/* Tab Content */}
       {expanded ? (

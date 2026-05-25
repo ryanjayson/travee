@@ -9,8 +9,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Text,
 } from "react-native";
-import { Text, TextInput, useTheme } from "react-native-paper";
+import { TextInput, useTheme } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -339,7 +340,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
         <View className="bg-white border border-[#E0E0E0] rounded-[20px] p-4 mb-5 shadow-sm">
           <View className="flex-row items-center gap-2 mb-2">
             <Icon name="playlist-add" size={20} color="#263F69" />
-            <Text className="text-xs text-gray-500 font-semibold tracking-wider uppercase">New Item</Text>
+            <Text className="text-xs font-semibold tracking-wider uppercase">New Item</Text>
           </View>
           <RNTextInput
             className="border border-[#E0E0E0] rounded-[12px] px-4 py-3 text-base text-gray-800 bg-gray-50 mb-2"
@@ -500,9 +501,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
                 {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
                   <View className="px-5 pt-4">
                     <View className="mb-4">
-                      <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-1">
-                        Group Title*
-                      </Text>
+                      <Text className="text-xs font-medium tracking-wider uppercase mb-1">Group Title*</Text>
                       <TextInput
                         mode="outlined"
                         placeholder="e.g. Documents, Clothing..."
@@ -522,9 +521,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
                     </View>
 
                     <View className="mb-6">
-                      <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-1">
-                        Description (optional)
-                      </Text>
+                      <Text className="text-xs font-medium tracking-wider uppercase mb-1">Description (optional)</Text>
                       <TextInput
                         mode="outlined"
                         placeholder="What kind of items go here?"

@@ -7,9 +7,10 @@ import {
   StatusBar,
   TouchableOpacity,
   View,
+  Text,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { Text, TextInput } from "react-native-paper";
+import { TextInput } from "react-native-paper";
 import * as Yup from "yup";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import TouchButton from "../../../../../components/atoms/TouchButton";
@@ -112,10 +113,10 @@ const EditExpense = ({
             keyboardShouldPersistTaps="never"
           >
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Linked Activity (Optional)</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Linked Activity (Optional)</Text>
               <TouchableOpacity
                 onPress={() => setShowActivityModal(true)}
-                className="mt-2 border h-[64px] border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
+                className="mt-2 border h-7xl border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
               >
                 {formik.values.activityId ? (
                   <>
@@ -141,7 +142,7 @@ const EditExpense = ({
               </TouchableOpacity>
             </View>
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Expense Title</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Expense Title</Text>
               <TextInput
                 mode="outlined"
                 placeholder="What was this for?"
@@ -149,12 +150,11 @@ const EditExpense = ({
                 onChangeText={formik.handleChange("title")}
                 onBlur={formik.handleBlur("title")}
                 error={formik.touched.title && Boolean(formik.errors.title)}
-                className="h-[64px]"
                 outlineColor="#E0E0E0"
                 activeOutlineColor="#263F69"
                 theme={{ colors: { onSurfaceVariant: '#888' } }}
                 outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ marginTop: 6 }}
+                style={{ marginTop: 6, height: 64 }}
                 contentStyle={{ backgroundColor: "transparent" }}
 
               />
@@ -165,7 +165,7 @@ const EditExpense = ({
 
             <View className="flex-row gap-4 mb-5">
               <View className="flex-1">
-                <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Amount</Text>
+                <Text className="text-xs font-semibold tracking-wider uppercase">Amount</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="0.00"
@@ -174,12 +174,11 @@ const EditExpense = ({
                   onChangeText={formik.handleChange("amount")}
                   onBlur={formik.handleBlur("amount")}
                   error={formik.touched.amount && Boolean(formik.errors.amount)}
-                  className="h-[64px]"
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#263F69"
                   theme={{ colors: { onSurfaceVariant: '#888' } }}
                   outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                  style={{ marginTop: 6 }}
+                  style={{ marginTop: 6, height: 64 }}
                   contentStyle={{ backgroundColor: "transparent" }}
                   left={<TextInput.Affix text={formik.values.currency + " "} />}
                 />
@@ -188,24 +187,23 @@ const EditExpense = ({
                 )}
               </View>
               <View className="w-1/3">
-                <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Currency</Text>
+                <Text className="text-xs font-semibold tracking-wider uppercase">Currency</Text>
                 <TextInput
                   mode="outlined"
                   value={formik.values.currency}
                   onChangeText={formik.handleChange("currency")}
-                  className="h-[64px]"
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#263F69"
                   theme={{ colors: { onSurfaceVariant: '#888' } }}
                   outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                  style={{ marginTop: 6 }}
+                  style={{ marginTop: 6, height: 64 }}
                   contentStyle={{ backgroundColor: "transparent" }}
                 />
               </View>
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Expense Category</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Expense Category</Text>
               <TouchableOpacity
                 onPress={() => setShowCategoryModal(true)}
                 className="mt-2 border border-[#E0E0E0] h-[64px] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
@@ -221,10 +219,10 @@ const EditExpense = ({
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Date & Time</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
               <TouchableOpacity
                 onPress={() => setShowDatePicker(true)}
-                className="mt-2 border h-[64px] border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-between"
+                className="mt-2 border border-[#E0E0E0] h-7xl rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-between"
               >
                 <Text className="text-base text-gray-800">
                   {formik.values.dateTime.toLocaleString()}
@@ -244,7 +242,7 @@ const EditExpense = ({
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Notes</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Notes</Text>
               <TextInput
                 mode="outlined"
                 placeholder="Additional details..."
@@ -270,7 +268,7 @@ const EditExpense = ({
                 buttonText={itineraryExpense?.id ? "Update Expense" : "Add Expense"}
                 onPress={() => formik.handleSubmit()}
                 disabled={!formik.values.title?.trim() || isSaving}
-                className="h-[64px] p-6"
+                className="h-7xl p-6"
               />
             </View>
 

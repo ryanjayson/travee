@@ -233,15 +233,15 @@ const ViewTravel = ({
       content: <DetailsTab travelPlan={travelPlan} />,
     },
     { id: "itinerary", title: "Itinerary", content: <ItineraryTab travelPlan={travelPlan} /> },
-    {
-      id: "notes",
-      title: "Notes",
+       {
+      id: "expenses",
+      title: "Expenses",
       content: (
-        <NotesTab
-          travelPlan={travelPlan}
-          onEditNote={(note) => {
-            setSelectedNote(note);
-            setShowNoteModal(true);
+        <ExpensesTab 
+          travelPlan={travelPlan} 
+          onEditExpense={(expense) => {
+            setSelectedExpense(expense);
+            setShowExpenseModal(true);
           }}
         />
       ),
@@ -256,15 +256,16 @@ const ViewTravel = ({
         />
       ),
     },
-    {
-      id: "expenses",
-      title: "Expenses",
+
+     {
+      id: "notes",
+      title: "Notes",
       content: (
-        <ExpensesTab 
-          travelPlan={travelPlan} 
-          onEditExpense={(expense) => {
-            setSelectedExpense(expense);
-            setShowExpenseModal(true);
+        <NotesTab
+          travelPlan={travelPlan}
+          onEditNote={(note) => {
+            setSelectedNote(note);
+            setShowNoteModal(true);
           }}
         />
       ),

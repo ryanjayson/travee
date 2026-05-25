@@ -141,7 +141,7 @@ const TravelCatalog = () => {
     return (
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100, paddingTop: 10 }}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: 0 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -226,7 +226,7 @@ const TravelCatalog = () => {
             });
 
             return (
-              <View style={{ height: 90, flex: 1, width: '100%', padding: 2, paddingTop: 4 }}>
+              <View style={{ borderRadius: 6, margin: 4, backgroundColor: "#f2f4f7", height: 80, flex: 1, width: '90%', padding: 4, paddingTop: 4 }}>
                 <Text
                   style={{
                     textAlign: 'center',
@@ -236,7 +236,7 @@ const TravelCatalog = () => {
                     marginBottom: 2,
                   }}
                 >
-                  {date.day}
+                  {date.day} 
                 </Text>
                 <View style={{ gap: 2 }}>
                   {tripsOnDay.map((trip) => {
@@ -317,7 +317,7 @@ const TravelCatalog = () => {
 
   const renderListView = () => (
     <View>
-      <Tabs tabs={listTabsData} type="normal"/>
+      <Tabs tabs={listTabsData} type="default"/>
     </View>
   );
 

@@ -251,7 +251,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
         )} */}
 
         <View className="mb-5">
-          <Text className="text-xs font-medium tracking-wider uppercase">Title</Text>
+          <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
           <TextInput
             mode="outlined"
             placeholder={`e.g. ${currentWord}`}
@@ -286,7 +286,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
         </View>
 
          <View className="mb-5">
-          <Text className="text-xs font-medium tracking-wider uppercase">Destination</Text>
+          <Text className="text-xs font-semibold tracking-wider uppercase">Destination</Text>
 
           {!formik.values.destinationData?.coordinates ? (
             <>
@@ -563,10 +563,10 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
         </View>
 
       <View className="mb-5">
-          <Text className="text-xs font-medium tracking-wider uppercase">Description</Text>
+          <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
           <TextInput
             mode="outlined"
-            placeholder="Describe your next trip"
+            placeholder="Describe your this trip"
             value={formik.values.description}
             onChangeText={formik.handleChange("description")}
             onBlur={formik.handleBlur("description")}
@@ -610,7 +610,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
         {mode === "edit" && (
           <>
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Budget</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Budget</Text>
               <TextInput
                 mode="outlined"
                 placeholder="e.g., 2,000"
@@ -630,7 +630,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase">Notes</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Notes</Text>
               <TextInput
                 mode="outlined"
                 placeholder="Additional notes..."
