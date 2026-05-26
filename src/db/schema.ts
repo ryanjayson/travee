@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 12,
+  version: 15,
   tables: [
     tableSchema({
       name: "travels",
@@ -76,6 +76,7 @@ export const schema = appSchema({
         { name: "user_id", type: "string", isOptional: true },
         { name: "notes", type: "string", isOptional: true },
         { name: "is_offline", type: "boolean" },
+        { name: "is_include_in_bill", type: "boolean" },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],
@@ -162,6 +163,34 @@ export const schema = appSchema({
         // Status
         { name: "is_resolved", type: "boolean" },
         { name: "resolved_note", type: "string", isOptional: true },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "trip_members",
+      columns: [
+        { name: "travel_id", type: "string", isIndexed: true },
+        { name: "name", type: "string" },
+        { name: "description", type: "string", isOptional: true },
+        { name: "email", type: "string", isOptional: true },
+        { name: "is_offline", type: "boolean" },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "member_split_bills",
+      columns: [
+        { name: "travel_id", type: "string", isIndexed: true },
+        { name: "member_id", type: "string", isIndexed: true },
+        { name: "owes_amount", type: "number" },
+        { name: "percentage_share", type: "number" },
+        { name: "is_paid", type: "boolean" },
+        { name: "payment_type", type: "string", isOptional: true },
+        { name: "paid_date", type: "number", isOptional: true },
+        { name: "notes", type: "string", isOptional: true },
+        { name: "is_offline", type: "boolean" },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],

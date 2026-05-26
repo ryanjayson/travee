@@ -5,6 +5,8 @@ export default class Travel extends Model {
   static table = "travels";
   static associations = {
     itinerary_sections: { type: "has_many" as const, foreignKey: "travel_id" },
+    trip_members: { type: "has_many" as const, foreignKey: "travel_id" },
+    member_split_bills: { type: "has_many" as const, foreignKey: "travel_id" },
   };
 
   @text("title") title!: string;
@@ -22,4 +24,6 @@ export default class Travel extends Model {
   @readonly @date("updated_at") updatedAt!: Date;
 
   @children("itinerary_sections") itinerarySections!: any;
+  @children("trip_members") tripMembers!: any;
+  @children("member_split_bills") memberSplitBills!: any;
 }

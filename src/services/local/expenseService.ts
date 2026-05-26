@@ -17,6 +17,7 @@ export const saveExpenseLocally = async (expenseData: ItineraryExpense): Promise
         record.userId = expenseData.userId || null;
         record.notes = expenseData.notes || null;
         record.isOffline = true;
+        record.isIncludeInBill = expenseData.isIncludeInBill ?? true;
         // @ts-ignore
         record.travel.id = expenseData.travelId;
         // @ts-ignore
@@ -33,6 +34,7 @@ export const saveExpenseLocally = async (expenseData: ItineraryExpense): Promise
         record.userId = expenseData.userId || null;
         record.notes = expenseData.notes || null;
         record.isOffline = true;
+        record.isIncludeInBill = expenseData.isIncludeInBill ?? true;
         // @ts-ignore
         record.travel.id = expenseData.travelId;
         if (expenseData.activityId) {
@@ -63,6 +65,7 @@ export const fetchLocalExpenses = async (travelId: string): Promise<ItineraryExp
     userId: e.userId || undefined,
     notes: e.notes || undefined,
     isOffline: e.isOffline,
+    isIncludeInBill: e.isIncludeInBill,
     createdAt: e.createdAt,
     updatedAt: e.updatedAt,
   }));
@@ -87,6 +90,7 @@ export const fetchLocalExpensesByActivity = async (activityId: string): Promise<
     userId: e.userId || undefined,
     notes: e.notes || undefined,
     isOffline: e.isOffline,
+    isIncludeInBill: e.isIncludeInBill,
     createdAt: e.createdAt,
     updatedAt: e.updatedAt,
   }));

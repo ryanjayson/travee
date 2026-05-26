@@ -1,20 +1,18 @@
+import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
+  Alert,
   Animated,
   Image,
-  Alert,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import ViewActivityModal from "./Modal";
 import ActivityIcon from "../../../../../components/ActivityIcon";
-import TextLimiter from "../../../../../components/atoms/TextLimiter";
-import { ItineraryActivity } from "../../../types/TravelDto";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
-import { Typography } from "../../../../../styles/common";
-import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
+import { ItineraryActivity } from "../../../types/TravelDto";
 import MapViewer from "../../MapViewer";
+import ViewActivityModal from "./Modal";
 
 interface ItineraryActivityProps {
   itineraryActivity: ItineraryActivity;
@@ -97,9 +95,9 @@ const ActivityItemCard = ({
         {!isLastItem ? (
           <View className="w-1.5 items-center h-full absolute">
             {isFirstItem ? (
-              <View className="absolute h-1/2 w-[1px] top-1/2 left-5 z-0 border-l border-dashed border-gray-300"></View>
+              <View className="absolute h-1/2 w-1px top-1/2 left-[18.5px] z-0 border-l border-dashed border-gray-300"></View>
             ) : (
-              <View className="absolute h-full w-[1px] left-5 z-0 border-l border-dashed border-[#ccc]"></View>
+              <View className="absolute h-full w-1px left-[18.5px] z-0 border-l border-dashed border-[#ccc]"></View>
             )}
           </View>
         ) : (
@@ -107,7 +105,7 @@ const ActivityItemCard = ({
             {isFirstItem && isLastItem ? (
               <></>
             ) : (
-              <View className="absolute h-1/2 w-[1px] left-5 top-0 z-0 border-l border-dashed border-[#ccc]"></View>
+              <View className="absolute h-1/2 w-1px left-[18.5px] top-0 z-0 border-l border-dashed border-[#ccc]"></View>
             )}
           </View>
         )}
@@ -121,17 +119,17 @@ const ActivityItemCard = ({
 
         <TouchableOpacity
           onPress={() => handleViewModeActivity(itineraryEventActivity.id!)}
-          className={`w-[100px] border border-solid border-[#e0e0e0] rounded-xl bg-white p-2.5 flex-grow ml-3 my-1 ${itineraryEventActivity.isDone ? 'opacity-50' : ''}`}
+          className={`w-[100px] border border-solid border-[#e0e0e0] rounded-xl bg-white p-2.5 grow ml-3 my-1 ${itineraryEventActivity.isDone ? 'opacity-50' : ''}`}
         >
-          <View className="flex-row justify-between items-start gap-x-2 !p-0">
+          <View className="flex-row justify-between items-start gap-x-2 p-0!">
           {!itineraryEventActivity.startDate ? (
               <View className="justify-between items-start mb-1 gap-x-2">
-                  <Text className="text-lg font-normal text-[#333] leading-5 flex-1 break-words">
+                  <Text className="text-lg font-normal text-[#333] leading-5 flex-1 wrap-break-word">
                       {itineraryEventActivity.title}
                   </Text>
               </View>
           ) : (
-              <Text className="text-xs font-semibold text-[#606060] flex-1 break-words">
+              <Text className="text-xs font-semibold text-[#606060] flex-1 wrap-break-word">
                 {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </Text>
           )}
@@ -155,7 +153,7 @@ const ActivityItemCard = ({
 
           {itineraryEventActivity.startDate && (
               <View className="flex-row justify-between items-start   mb-1 gap-x-2">
-                  <Text className="text-lg font-normal text-[#333] leading-5 flex-1 break-words">
+                  <Text className="text-lg font-normal text-[#333] leading-5 flex-1 wrap-break-word">
                       {itineraryEventActivity.title}
                   </Text>
               </View>
@@ -167,7 +165,7 @@ const ActivityItemCard = ({
               style={{ resizeMode: "cover" }}
             /> */}
 
-          {itineraryEventActivity && itineraryEventActivity.images && (
+          {itineraryEventActivity && itineraryEventActivity.images && itineraryEventActivity.images.length > 0 && (
             <View className="my-1">
               <Image
                 src={itineraryEventActivity.images[0].url}

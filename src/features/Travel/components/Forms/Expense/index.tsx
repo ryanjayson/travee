@@ -10,7 +10,7 @@ import {
   Text,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { TextInput } from "react-native-paper";
+import { Checkbox, TextInput } from "react-native-paper";
 import * as Yup from "yup";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import TouchButton from "../../../../../components/atoms/TouchButton";
@@ -46,6 +46,7 @@ export interface ExpenseFormValues {
   expenseCategory: ExpenseCategory;
   userId: string;
   notes: string;
+  isIncludeInBill: boolean;
 }
 
 const EditExpense = ({
@@ -74,6 +75,7 @@ const EditExpense = ({
         expenseCategory: itineraryExpense?.expenseCategory ?? ExpenseCategory.None,
         userId: itineraryExpense?.userId || userToken || "current-user",
         notes: itineraryExpense?.notes || "",
+        isIncludeInBill: itineraryExpense?.isIncludeInBill ?? true,
     },
     validationSchema: ExpenseSchema,
     onSubmit: (values) => {
@@ -90,6 +92,7 @@ const EditExpense = ({
       userId: values.userId,
       notes: values.notes,
       isOffline: true,
+      isIncludeInBill: values.isIncludeInBill,
     };
     updateExpense({...payload as any }, {
           onSuccess: () => {
@@ -259,6 +262,23 @@ const EditExpense = ({
                 textAlignVertical="top"
                 contentStyle={{ backgroundColor: "transparent" }}
               />
+            </View>
+
+            <View className="flex-row items-center mb-5 mt-1 ml-1">
+              <Checkbox
+                status={formik.values.isIncludeInBill ? 'checked' : 'unchecked'}
+                onPress={() => formik.setFieldValue('isIncludeInBill', !formik.values.isIncludeInBill)}
+                color="#263F69"
+              />
+              <TouchableOpacity 
+                activeOpacity={0.7}
+                onPress={() => formik.setFieldValue('isIncludeInBill', !formik.values.isIncludeInBill)}
+                accessibilityRole="checkbox"
+              >
+                <Text className="text-base text-gray-700 font-medium ml-1">
+                  Include in bill split
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <View className="mb-5"></View>

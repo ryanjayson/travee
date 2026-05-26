@@ -4,6 +4,8 @@ export interface TravelPlan {
   travel: Travel;
   itinerarySection?: ItinerarySection[];
   itineraryExpense?: ItineraryExpense[];
+  tripMembers?: TripMember[];
+  memberSplitBills?: MemberSplitBill[];
 }
 
 export interface ItineraryExpense {
@@ -19,6 +21,7 @@ export interface ItineraryExpense {
   userId?: string;
   notes?: string;
   isOffline?: boolean;
+  isIncludeInBill?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }
@@ -83,6 +86,8 @@ export interface Travel {
   itinerarySection?: ItinerarySection[];
   isOffline?: boolean;
   isArchived?: boolean;
+  tripMembers?: TripMember[];
+  memberSplitBills?: MemberSplitBill[];
 }
 
 export interface ItinerarySection {
@@ -134,6 +139,32 @@ export interface ItineraryActivity {
 export interface Images {
   title: string;
   url: string;
+}
+
+export interface TripMember {
+  id?: string;
+  travelId: string;
+  name: string;
+  description?: string;
+  email?: string;
+  isOffline?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface MemberSplitBill {
+  id?: string;
+  travelId: string;
+  memberId: string;
+  owesAmount: number;
+  percentageShare: number;
+  isPaid: boolean;
+  paymentType?: string;
+  paidDate?: string | Date | number;
+  notes?: string;
+  isOffline?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface CreateTravelData {

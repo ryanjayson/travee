@@ -186,5 +186,59 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 13,
+      steps: [
+        addColumns({
+          table: "itinerary_expenses",
+          columns: [
+            { name: "is_include_in_bill", type: "boolean" },
+          ],
+        }),
+        createTable({
+          name: "trip_members",
+          columns: [
+            { name: "travel_id", type: "string", isIndexed: true },
+            { name: "name", type: "string" },
+            { name: "description", type: "string", isOptional: true },
+            { name: "email", type: "string", isOptional: true },
+            { name: "is_offline", type: "boolean" },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 14,
+      steps: [
+        createTable({
+          name: "member_split_bills",
+          columns: [
+            { name: "travel_id", type: "string", isIndexed: true },
+            { name: "member_id", type: "string", isIndexed: true },
+            { name: "owes_amount", type: "number" },
+            { name: "percentage_share", type: "number" },
+            { name: "is_paid", type: "boolean" },
+            { name: "payment_type", type: "string", isOptional: true },
+            { name: "paid_date", type: "number", isOptional: true },
+            { name: "is_offline", type: "boolean" },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 15,
+      steps: [
+        addColumns({
+          table: "member_split_bills",
+          columns: [
+            { name: "notes", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

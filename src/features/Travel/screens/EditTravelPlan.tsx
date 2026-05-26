@@ -219,16 +219,15 @@ const EditTravelPlan = () => {
         />
       ),
     },
-    // {
-    //   id: "participant",
-    //   title: "Participants",
-    //   content: (
-    //     <TripMembers
-    //       tripMembers={tripMembers}
-    //       onAddMember={handleOpenAddMemberModal}
-    //     />
-    //   ),
-    // },
+    {
+      id: "members",
+      title: "Members",
+      content: (
+        <TripMembers
+          travelId={travelId}
+        />
+      ),
+    },
     // {
     //   id: "setting",
     //   title: "Settings",

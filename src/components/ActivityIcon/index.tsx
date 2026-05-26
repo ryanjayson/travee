@@ -133,14 +133,7 @@ const ActivityIcon = ({
   };
 
   return (
-    <View
-      style={{
-        borderWidth: 1,
-        borderColor: "#FFF",
-        borderRadius: 50,
-        paddingVertical: 6,
-      }}
-    >
+    <View>
       {activityIcon && getIconDisplay(activityIcon)}
     </View>
   );

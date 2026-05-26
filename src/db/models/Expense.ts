@@ -20,6 +20,7 @@ export default class Expense extends Model {
   @text("user_id") userId!: string | null;
   @text("notes") notes!: string | null;
   @field("is_offline") isOffline!: boolean;
+  @field("is_include_in_bill") isIncludeInBill!: boolean;
   
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
