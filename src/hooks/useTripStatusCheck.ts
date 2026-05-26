@@ -19,7 +19,9 @@ import { runTripStatusCheck } from "../services/tripStatusService";
 // Configure how notifications are presented when app is in foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    // shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),

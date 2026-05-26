@@ -1,7 +1,7 @@
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useFormik } from "formik";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import {
   Animated,
   Image,
@@ -27,12 +27,27 @@ export interface CreateOrEditProps {
   onStatusChange?: (status: TravelStatus) => void;
   tripData?: Travel;
   mode?: "create" | "edit";
+  hideSubmitButton?: boolean;
 }
 
-const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: CreateOrEditProps) => {
+export interface CreateOrEditRef {
+  submit: () => void;
+  isSaving: boolean;
+  isValid: boolean;
+}
+
+const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, onStatusChange, tripData, mode = "create", hideSubmitButton }, ref) => {
   const navigation = useNavigation<any>();
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
   const scrollViewRef = useRef<ScrollView>(null);
+
+  useImperativeHandle(ref, () => ({
+    submit: () => {
+      formik.handleSubmit();
+    },
+    isSaving,
+    isValid: formik.isValid,
+  }));
   const [error, setError] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
@@ -298,7 +313,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
                 <View pointerEvents="none">
                   <TextInput
                     mode="outlined"
-                    className="h-[64px]"
+                    className="h-7xl"
                     placeholder="Search place to visit..."
                     value={formik.values.destination}
                     editable={false}
@@ -392,7 +407,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
 
         <View className="flex-row mb-5 gap-3">
           <View className="flex-1">
-            <View className="relative mt-[6px]">
+            <View className="relative mt-sm">
               <TextInput
                 mode="outlined"
                 label={"Departure"}
@@ -465,7 +480,7 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
           </View>
 
           <View className="flex-1">
-            <View className="relative mt-[6px]">
+            <View className="relative mt-sm">
               <TextInput
                 mode="outlined"
                 label={"Return"}
@@ -540,27 +555,30 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
           </View>
         </View>
 
-        <View className="flex-row items-center mb-5 -mt-2 -ml-2">
-           <Checkbox
-             status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
-             onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
-             disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-             color="#263F69"
-           />
-           <TouchableOpacity 
-             activeOpacity={0.7}
-             disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-             onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates )}
-           >
-             <Text className={`mt-4 text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-700'}`}>
-               Generate sections
-             </Text>
+          {!tripData && (
+            <View className="flex-row items-center mb-5 -mt-2 -ml-2">
+              <Checkbox
+                status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
+                onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+                disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+                color="#263F69"
+                    />
+                    <TouchableOpacity 
+                      activeOpacity={0.7}
+                      disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+                      onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates )}
+                    >
+                      <Text className={`mt-4 text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-700'}`}>
+                        Generate sections
+                      </Text>
 
-              <Text className={`text-sm ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-400'}`}>
-                Create itinerary sections based on travel dates. [DD/MM] Day No.
-             </Text>
-           </TouchableOpacity>
-        </View>
+                        <Text className={`text-sm ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-400'}`}>
+                          Create itinerary sections based on travel dates. [DD/MM] Day No.
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+          )}
+    
 
       <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
@@ -658,18 +676,20 @@ const CreateOrEdit = ({ onClose, onStatusChange, tripData, mode = "create" }: Cr
 
       </ScrollView>
 
-    <View className="mb-8 mt-2 mx-4 bg-red-50">
-       <TouchButton
-          buttonText={isSaving ? "Saving..." : mode === "create" ? "Add trip" : "Update Changes"}
-          icon={mode === "create" ? "add" : ""}
-          onPress={() => formik.handleSubmit()}
-          disabled={!formik.values.title.trim() || isSaving}
-          className="h-7xl p-6"  
-        />
-    </View>
+    {!hideSubmitButton && (
+      <View className="mb-8 mt-2 mx-4 bg-red-50 fixed bottom-0 w-full">
+         <TouchButton
+            buttonText={isSaving ? "Saving..." : mode === "create" ? "Add trip" : "Update Changes"}
+            icon={mode === "create" ? "add" : ""}
+            onPress={() => formik.handleSubmit()}
+            disabled={!formik.values.title.trim() || isSaving}
+            className="h-7xl p-6"  
+          />
+      </View>
+    )}
      
     </View>
   );
-};
+});
 
 export default CreateOrEdit;

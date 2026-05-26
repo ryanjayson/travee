@@ -21,6 +21,8 @@ import { useSaveExpenseMutation } from "../../../hooks/useExpense";
 import { useTripMembers } from "../../../hooks/useTripMembers";
 import { ItineraryActivity, ItineraryExpense } from "../../../types/TravelDto";
 import ExpenseCategoryIcon from "./ExpenseCategoryIcon";
+import ActivityLookupModal from "../../Lookups/ActivityLookupModal";
+import ExpenseCategoryLookupModal from "../../Lookups/ExpenseCategoryLookupModal";
 
 interface EditExpenseProps {
   itineraryExpense: ItineraryExpense | null;
@@ -30,7 +32,7 @@ interface EditExpenseProps {
 }
 
 const ExpenseSchema = Yup.object().shape({
-  title: Yup.string().required("Title is required"),
+  title: Yup.string().required("Expense name is required"),
   amount: Yup.number().required("Amount is required").positive("Must be positive"),
   dateTime: Yup.date().required("Date is required"),
 });
@@ -123,7 +125,7 @@ const EditExpense = ({
             keyboardShouldPersistTaps="never"
           >
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase">Expense Title</Text>
+              <Text className="text-xs font-semibold tracking-wider text-tertiary uppercase">Expense Title</Text>
               <TextInput
                 mode="outlined"
                 placeholder="What was this for?"
@@ -140,12 +142,13 @@ const EditExpense = ({
 
               />
               {formik.touched.title && formik.errors.title && (
-                <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.title}</Text>
+                <Text className="text-error text-sm mt-1 ml-1">{formik.errors.title as string}</Text>
               )}
             </View>
+
             <View className="flex-row gap-4 mb-5">
               <View className="flex-1">
-                <Text className="text-xs font-semibold tracking-wider uppercase">Amount</Text>
+                <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Amount</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="0.00"
@@ -167,7 +170,7 @@ const EditExpense = ({
                 )}
               </View>
               <View className="w-1/3">
-                <Text className="text-xs font-semibold tracking-wider uppercase">Currency</Text>
+                <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Currency</Text>
                 <TextInput
                   mode="outlined"
                   value={formik.values.currency}
@@ -182,7 +185,46 @@ const EditExpense = ({
               </View>
             </View>
 
+            <View className="mb-5">
+              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Date & Time</Text>
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(true)}
+                className="mt-2 border border-[#E0E0E0] h-7xl rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
+              >
+                <Icon name="event" size={24} color="#263F69" />
+                <Text className="text-base font-normal text-gray-800">
+                  {formik.values.dateTime.toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </Text>
+                 <Text className="text-base text-gray-800">
+                  {formik.values.dateTime.toLocaleString("en-US", {
+                    hour: "numeric",
+                    minute: "numeric",
+                    hour12: true,
+                  })}
+                </Text>
+              </TouchableOpacity>
+              <DateTimePickerModal
+                isVisible={showDatePicker}
+                mode="datetime"
+                date={formik.values.dateTime}
+                onConfirm={(date) => {
+                  formik.setFieldValue("dateTime", date);
+                  setShowDatePicker(false);
+                }}
+                onCancel={() => setShowDatePicker(false)}
+              />
+            </View>
+
+            <View className="flex-1 my-5">
+              <Text className="text-md font-semibold tracking-wider uppercase">Expense assignment</Text>
+            </View>
+
             <View className="flex-row items-center mb-5">
+              
               <Checkbox
                 status={formik.values.isIncludeInBill ? 'checked' : 'unchecked'}
                 onPress={() => {
@@ -209,10 +251,12 @@ const EditExpense = ({
                   Include in bill split
                 </Text>
               </TouchableOpacity>
+
+              
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase">Assign to Member</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Assign to Member</Text>
               <TouchableOpacity
                 disabled={formik.values.isIncludeInBill}
                 onPress={() => setShowMemberModal(true)}
@@ -265,29 +309,7 @@ const EditExpense = ({
             <View className="h-1px bg-gray-300 my-4 mx-2" />
 
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
-              <TouchableOpacity
-                onPress={() => setShowDatePicker(true)}
-                className="mt-2 border border-[#E0E0E0] h-7xl rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-between"
-              >
-                <Text className="text-base text-gray-800">
-                  {formik.values.dateTime.toLocaleString()}
-                </Text>
-                <Icon name="event" size={24} color="#263F69" />
-              </TouchableOpacity>
-              <DateTimePickerModal
-                isVisible={showDatePicker}
-                mode="datetime"
-                date={formik.values.dateTime}
-                onConfirm={(date) => {
-                  formik.setFieldValue("dateTime", date);
-                  setShowDatePicker(false);
-                }}
-                onCancel={() => setShowDatePicker(false)}
-              />
-            </View>
-            <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase">Linked Activity (Optional)</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Activity</Text>
               <TouchableOpacity
                 onPress={() => setShowActivityModal(true)}
                 className="mt-2 border h-7xl border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
@@ -317,10 +339,10 @@ const EditExpense = ({
             </View>
     
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase">Expense Category</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Expense Category</Text>
               <TouchableOpacity
                 onPress={() => setShowCategoryModal(true)}
-                className="mt-2 border border-[#E0E0E0] h-[64px] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
+                className="mt-2 border border-[#E0E0E0] h-7xl rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
               >
                 <ExpenseCategoryIcon category={formik.values.expenseCategory} size={28} color="#263F69" />
                 <Text className="text-base text-gray-800 flex-1">
@@ -333,7 +355,7 @@ const EditExpense = ({
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase">Notes</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Notes</Text>
               <TextInput
                 mode="outlined"
                 placeholder="Additional details..."
@@ -351,124 +373,31 @@ const EditExpense = ({
                 contentStyle={{ backgroundColor: "transparent" }}
               />
             </View>
-      
-            <View className="mb-8 mx-4 bg-transparent">
-              <TouchButton
-                buttonText={itineraryExpense?.id ? "Update Expense" : "Add Expense"}
-                onPress={() => formik.handleSubmit()}
-                disabled={!formik.values.title?.trim() || isSaving}
-                className="h-7xl p-6"
-              />
-            </View>
-
           </ScrollView>
+        
+          <View className="mb-8 mt-2 mx-4 bg-red-50">
+            <TouchButton
+              buttonText={itineraryExpense?.id ? "Update Expense" : "Add Expense"}
+              onPress={() => formik.handleSubmit()}
+              disabled={!formik.values.title?.trim() || isSaving}
+              className="h-7xl p-6"
+            />
+          </View>
 
-          <Modal
+          <ExpenseCategoryLookupModal
             visible={showCategoryModal}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setShowCategoryModal(false)}
-          >
-            <View className="flex-1 justify-center items-center bg-black/50 p-5">
-              <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[80%] overflow-hidden">
-                <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                  <Text className="text-lg font-bold text-[#263F69]">
-                    Select Category
-                  </Text>
-                  <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
-                    <Icon name="close" size={24} color="#666" />
-                  </TouchableOpacity>
-                </View>
-                <ScrollView>
-                  {Object.keys(ExpenseCategory)
-                    .filter((key) => isNaN(Number(key)) && key !== "None")
-                    .map((key) => {
-                      const categoryValue = ExpenseCategory[key as keyof typeof ExpenseCategory];
-                      return (
-                        <TouchableOpacity
-                          key={key}
-                          className="p-4 border-b border-gray-100 flex-row items-center gap-4"
-                          onPress={() => {
-                            formik.setFieldValue("expenseCategory", categoryValue);
-                            setShowCategoryModal(false);
-                          }}
-                        >
-                          <ExpenseCategoryIcon category={categoryValue} size={24} color="#183B7A" />
-                          <Text className="text-base text-gray-800">
-                            {key.replace(/([A-Z])/g, ' $1').trim()}
-                          </Text>
-                          {formik.values.expenseCategory === categoryValue && (
-                            <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
-                          )}
-                        </TouchableOpacity>
-                      );
-                    })}
-                </ScrollView>
-              </View>
-            </View>
-          </Modal>
+            onClose={() => setShowCategoryModal(false)}
+            selectedCategory={formik.values.expenseCategory}
+            onSelect={(category) => formik.setFieldValue("expenseCategory", category)}
+          />
 
-          <Modal
+          <ActivityLookupModal
             visible={showActivityModal}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setShowActivityModal(false)}
-          >
-            <View className="flex-1 justify-center items-center bg-black/50 p-5">
-              <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[80%] overflow-hidden">
-                <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                  <Text className="text-lg font-bold text-[#263F69]">
-                    Select Activity
-                  </Text>
-                  <TouchableOpacity onPress={() => setShowActivityModal(false)}>
-                    <Icon name="close" size={24} color="#666" />
-                  </TouchableOpacity>
-                </View>
-                <ScrollView>
-                   <TouchableOpacity
-                    className="p-4 border-b border-gray-100 flex-row items-center gap-4"
-                    onPress={() => {
-                      formik.setFieldValue("activityId", undefined);
-                      setShowActivityModal(false);
-                    }}
-                  >
-                    <Icon name="event-busy" size={24} color="#666" />
-                    <Text className="text-base text-gray-800">
-                      None
-                    </Text>
-                    {!formik.values.activityId && (
-                      <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
-                    )}
-                  </TouchableOpacity>
-                  {activities?.map((activity) => (
-                    <TouchableOpacity
-                      key={activity.id}
-                      className="p-4 border-b border-gray-100 flex-row items-center gap-4"
-                      onPress={() => {
-                        formik.setFieldValue("activityId", activity.id);
-                        setShowActivityModal(false);
-                      }}
-                    >
-                      <ActivityIcon type={activity.type as any} size={24} />
-                      <View className="flex-1">
-                        <Text className="text-base text-gray-800 font-medium">
-                          {activity.title}
-                        </Text>
-                        {activity.startDate && (
-                           <Text className="text-xs text-gray-500">
-                             {new Date(activity.startDate).toLocaleDateString()}
-                           </Text>
-                        )}
-                      </View>
-                      {formik.values.activityId === activity.id && (
-                        <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </View>
-          </Modal>
+            onClose={() => setShowActivityModal(false)}
+            activities={activities}
+            selectedActivityId={formik.values.activityId}
+            onSelect={(activityId) => formik.setFieldValue("activityId", activityId)}
+          />
 
           <Modal
             visible={showMemberModal}

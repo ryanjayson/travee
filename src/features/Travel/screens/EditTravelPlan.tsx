@@ -1,56 +1,31 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
   ActivityIndicator,
+  Text, TouchableOpacity,
+  View
 } from "react-native";
 import TouchButton from "../../../components/atoms/TouchButton";
 import EditTravelItinerary, { EditTravelItineraryRef } from "../components/Edit/Itinerary";
 import FloatingAddButton from "../components/Edit/Itinerary/FloatingAddButton";
-// import AddMemberModal from "../components/AddMemberModal";
-import { sampleFriends, Friend } from "../../../data/sampleFriends";
-// import {
-//   activitySectionService,
-//   ActivitySection,
-//   Activity,
-// } from "../../../services/activitySectionService";
-// import { activitySectionService } from "../../../_services/travel/activitySectionService";
-import {
-  Travel,
-  ItinerarySection,
-  ItineraryActivity,
-} from "../../Travel/types/TravelDto";
-import { sampleTravel, sampleActivities } from "../../../data/travels";
+import { Friend, sampleFriends } from "../../../data/sampleFriends";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import { TabStyle } from "../../../styles/common";
 import Tabs from "../../../components/Tabs";
-import { useRoute, useNavigation } from "@react-navigation/native";
-import { useTravelPlan } from "../hooks/useTravel";
 import {
-  TravelProvider,
-  useTravelContext,
+  useTravelContext
 } from "../../../context/TravelContext";
+import { sampleTravel } from "../../../data/travels";
+import {
+  ItineraryActivity,
+  ItinerarySection,
+  Travel,
+} from "../../Travel/types/TravelDto";
+import CreateOrEdit, { CreateOrEditRef } from "../components/CreateOrEdit";
 import TripChecklist from "../components/Forms/TripChecklist";
 import TripMembers from "../components/Forms/TripMembers";
-import TripSettings from "../components/Forms/TripSettings";
-import CreateOrEdit from "../components/CreateOrEdit";
-
-interface TripDetailPageProps {
-  tripData: any;
-  onBack: () => void;
-}
+import { useTravelPlan } from "../hooks/useTravel";
 
 type TabType = "detail" | "itinerary" | "checklist" | "members" | "settings";
-
-
-
-// interface EditTravelProps {
-//   travelId: number;
-// }
 
 const EditTravelPlan = () => {
   const route = useRoute();
@@ -58,7 +33,6 @@ const EditTravelPlan = () => {
   // @ts-ignore
   const { travelId } = route.params || {};
 
-  // const EditTravelPlan = ({ tripData, onBack }: TripDetailPageProps) => {
   const [travelData, setTravelData] = useState<Travel>(sampleTravel[0]);
   const [activeTab, setActiveTab] = useState<TabType>("itinerary");
 
@@ -74,6 +48,7 @@ const EditTravelPlan = () => {
     useTravelContext();
 
   const itineraryRef = useRef<EditTravelItineraryRef>(null);
+  const formRef = useRef<CreateOrEditRef>(null);
 
   const handleAddSection = () => itineraryRef.current?.handleAddSection();
   const handleAddActivity = () => itineraryRef.current?.handleAddActivity();
@@ -96,14 +71,6 @@ const EditTravelPlan = () => {
     }
   }, [travelPlan?.travel?.id, travelPlan?.travel?.title]);
 
-  const handleAddMembers = (selectedFriends: Friend[]) => {
-    setTripMembers([...tripMembers, ...selectedFriends]);
-  };
-
-  const handleOpenAddMemberModal = () => {
-    console.log("Opening AddMemberModal with friends:", sampleFriends);
-    setAddMemberModalVisible(true);
-  };
 
   const refreshItinerary = async () => {
     refetch();
@@ -131,8 +98,6 @@ const EditTravelPlan = () => {
       refreshItinerary();
     }
   };
-
-  const handleMenuPress = () => setMenuVisible(true);
 
   // const renderTabContent = () => {
   //   if (loading) {
@@ -191,11 +156,13 @@ const EditTravelPlan = () => {
       title: "Details",
       content: (
         <CreateOrEdit 
+          ref={formRef}
           tripData={travelPlan!?.travel} 
           mode="edit" 
           onClose={() => {}} 
+          hideSubmitButton={true}
         />
-    )
+      )
     },
     {
       id: "itinerary",
@@ -261,30 +228,37 @@ const EditTravelPlan = () => {
 
   return (
     <View className="flex-1 bg-white pt-5xl">
-      <View className="flex-row justify-between items-center px-5 py-5 bg-white ">
-        {/* <TouchableOpacity onPress={() => onBack()} className="p-[10px]">
-          <Text className="text-[#183B7A] text-base">← Back</Text>
-        <Text className="text-lg font-bold text-[#183B7A]">{travelPlan?.travel.title}</Text>
-        </TouchableOpacity> */}
-        {/* <Text className="text-lg font-bold text-[#183B7A]">{selectedTravelPlan?.id}</Text> */}
+      <View className="flex-row justify-between items-center px-5 pb-1 pt-5 bg-white ">
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="close" size={28} color={"#666"} />
         </TouchableOpacity>
         <Text className="text-xl font-bold">Edit Trip</Text>
 
-        {/* <TouchableOpacity onPress={() => handleMenuPress}>
-          <Icon name="more-horiz" size={28} color={"#666"} />
-        </TouchableOpacity>  */}
-        <View></View>
+        <View className="w-4xl">
+        </View>
       </View>
 
       <View className="flex-1 bg-gray-100">
         <Tabs 
           tabs={tabData} 
           type="secondary"
-          initialActiveTabId="itinerary" 
+          initialActiveTabId="detail" 
           onTabChange={(id) => setActiveTab(id as TabType)} 
         />
+
+        {activeTab === "detail" && (
+          <View className="mb-8 mt-2 mx-4 bg-red-50 absolute bottom-0 w-full">
+            <TouchButton
+              buttonText={"Update Changes"}
+              icon={""}
+              onPress={() => {
+                formRef.current?.submit();
+              }}
+              className="h-7xl p-6"  
+            />
+          </View>
+        )}
+
       </View>
       {/* 
       <View style={styles.tabContainer}>

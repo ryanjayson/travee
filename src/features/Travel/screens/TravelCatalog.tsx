@@ -315,7 +315,7 @@ const TravelCatalog = () => {
 
   const renderListView = () => (
     <View>
-      <Tabs tabs={listTabsData} type="default" hasActionTripStatus={true}/>
+      <Tabs tabs={listTabsData} type="default" hasActionTripStatus={getTravelsByStatus(TravelStatus.Ongoing).length > 0}/>
     </View>
   );
 

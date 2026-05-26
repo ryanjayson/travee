@@ -315,6 +315,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         </Modal>
       </View>
 
+      {ongoingTrip && (
       <View className="p-5  flex-1">
         <Text className="text-sm font-medium">Quick Actions</Text>
         <View className="flex-1 flex-row items-center gap-8 py-3 justify-between z-40">
@@ -353,6 +354,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       </View>
 
       </View>
+      )}
 
     </View>
 )};

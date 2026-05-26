@@ -8,17 +8,26 @@ import {
   TouchableOpacity,
   View,
   Animated,
+  Dimensions,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
 } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
+import { StatusBar } from "expo-status-bar";
+import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import {
   useDeleteTripMemberMutation,
   useSaveTripMemberMutation,
   useTripMembers,
 } from "../../hooks/useTripMembers";
+import { TripMember } from "../../types/TravelDto";
 
 interface TripMembersProps {
   travelId: string;
 }
+
+const { height: screenHeight } = Dimensions.get("window");
 
 const TripMembers = ({ travelId }: TripMembersProps) => {
   const { colors } = useTheme();
@@ -33,6 +42,34 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+
+  const [modalHeight, setModalHeight] = useState(screenHeight * 0.70);
+  const { keyboardVisible, isFloating } = useKeyboardVisible();
+
+  const handleCloseModal = () => {
+    setName("");
+    setDescription("");
+    setEmail("");
+    setEditingMemberId(null);
+    setShowAddForm(false);
+  };
+
+  const handleOpenAddModal = () => {
+    setName("");
+    setDescription("");
+    setEmail("");
+    setEditingMemberId(null);
+    setShowAddForm(true);
+  };
+
+  const handleEditMemberPress = (member: TripMember) => {
+    setName(member.name);
+    setDescription(member.description || "");
+    setEmail(member.email || "");
+    setEditingMemberId(member.id || null);
+    setShowAddForm(true);
+  };
 
   const handleAddMember = () => {
     if (!name.trim()) {
@@ -47,6 +84,7 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
 
     saveMember(
       {
+        id: editingMemberId || undefined,
         travelId,
         name: name.trim(),
         description: description.trim() || undefined,
@@ -54,13 +92,10 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
       },
       {
         onSuccess: () => {
-          setName("");
-          setDescription("");
-          setEmail("");
-          setShowAddForm(false);
+          handleCloseModal();
         },
         onError: (err) => {
-          Alert.alert("Error", "Failed to add member. Please try again.");
+          Alert.alert("Error", `Failed to ${editingMemberId ? "update" : "add"} member. Please try again.`);
           console.error("Save Member Error:", err);
         },
       }
@@ -110,107 +145,152 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
 
   return (
     <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ padding: 20 }}>
-      {/* Add New Member Section Toggle */}
+      {/* Trigger Button to Open Modal */}
       <View className="mb-5">
         <TouchableOpacity
-          onPress={() => setShowAddForm(!showAddForm)}
-          style={{ backgroundColor: showAddForm ? colors.surface : colors.primary }}
-          className={`flex-row items-center justify-between p-4 rounded-[16px] border ${showAddForm ? 'border-gray-200' : 'border-transparent'} shadow-sm`}
+          onPress={handleOpenAddModal}
+          style={{ backgroundColor: colors.primary }}
+          className="flex-row items-center justify-between p-4 rounded-[16px] shadow-sm"
           activeOpacity={0.8}
           accessibilityRole="button"
-          accessibilityLabel="Toggle add member form"
+          accessibilityLabel="Open add member modal"
         >
           <View className="flex-row items-center gap-2">
             <Icon 
-              name={showAddForm ? "close" : "person-add"} 
+              name="person-add" 
               size={20} 
-              color={showAddForm ? colors.primary : colors.onPrimary} 
+              color={colors.onPrimary} 
             />
             <Text 
               className="text-base font-semibold"
-              style={{ color: showAddForm ? colors.primary : colors.onPrimary }}
+              style={{ color: colors.onPrimary }}
             >
-              {showAddForm ? "Cancel Add Member" : "Add New Member"}
+              Add New Member
             </Text>
           </View>
           <Icon 
-            name={showAddForm ? "expand-less" : "expand-more"} 
+            name="expand-more" 
             size={24} 
-            color={showAddForm ? colors.primary : colors.onPrimary} 
+            color={colors.onPrimary} 
           />
         </TouchableOpacity>
       </View>
 
-      {/* Add Member Form Card */}
-      {showAddForm && (
-        <View className="bg-white rounded-[24px] p-5 mb-6 border border-gray-200 shadow-sm shadow-black/5">
-          <Text className="text-xs font-semibold tracking-wider uppercase mb-4 text-gray-500">
-            New Member Details
-          </Text>
+      {/* Add Member Bottom Sheet Modal */}
+      <Modal 
+        visible={showAddForm} 
+        transparent
+        animationType="slide"
+        onRequestClose={handleCloseModal}
+      >
+        <StatusBar style="dark" />
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+          style={{ flex: 1 }}
+        >
+          <View className="flex-1 bg-black/50 justify-end" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+            <Animated.View
+              className="rounded-t-[30px] bg-white overflow-hidden"
+              style={[
+                { height: keyboardVisible ? "100%" : modalHeight },
+                {
+                  paddingTop: keyboardVisible ? 40 : 4
+                }
+              ]}
+            >
+              {/* Modal Header */}
+              <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-2xl text-gray-700 font-medium">
+                    {editingMemberId ? "Edit Member" : "Add New Member"}
+                  </Text>
+                </View>
+                <TouchableOpacity 
+                  onPress={handleCloseModal} 
+                  disabled={isSaving}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close add member modal"
+                >
+                  <Icon name="clear" size={36} color="#333" />
+                </TouchableOpacity>
+              </View>
 
-          <View className="mb-4">
-            <TextInput
-              mode="outlined"
-              label="Full Name"
-              placeholder="e.g. John Doe"
-              value={name}
-              onChangeText={setName}
-              outlineColor="#E0E0E0"
-              activeOutlineColor={colors.primary}
-              theme={{ colors: { onSurfaceVariant: '#888' } }}
-              outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-              style={{ height: 60 }}
-            />
+              {/* Scrollable Form Body */}
+              <ScrollView 
+                className="flex-1 p-5"
+                contentContainerStyle={{ paddingBottom: 40 }}
+                showsVerticalScrollIndicator={false}
+              >
+                <Text className="text-xs font-semibold tracking-wider uppercase mb-4 text-gray-500">
+                  New Member Details
+                </Text>
+
+                <View className="mb-4">
+                  <TextInput
+                    mode="outlined"
+                    label="Full Name"
+                    placeholder="e.g. John Doe"
+                    value={name}
+                    onChangeText={setName}
+                    outlineColor="#E0E0E0"
+                    activeOutlineColor={colors.primary}
+                    theme={{ colors: { onSurfaceVariant: '#888' } }}
+                    outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
+                    style={{ height: 60 }}
+                  />
+                </View>
+
+                <View className="mb-4">
+                  <TextInput
+                    mode="outlined"
+                    label="Email Address (Optional)"
+                    placeholder="e.g. john@example.com"
+                    keyboardType="email-address"
+                    value={email}
+                    onChangeText={setEmail}
+                    outlineColor="#E0E0E0"
+                    activeOutlineColor={colors.primary}
+                    theme={{ colors: { onSurfaceVariant: '#888' } }}
+                    outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
+                    style={{ height: 60 }}
+                  />
+                </View>
+
+                <View className="mb-6">
+                  <TextInput
+                    mode="outlined"
+                    label="Description (Optional)"
+                    placeholder="e.g. Co-pilot, Photographer"
+                    value={description}
+                    onChangeText={setDescription}
+                    outlineColor="#E0E0E0"
+                    activeOutlineColor={colors.primary}
+                    theme={{ colors: { onSurfaceVariant: '#888' } }}
+                    outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
+                    style={{ height: 60 }}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleAddMember}
+                  disabled={!name.trim() || isSaving}
+                  style={{ backgroundColor: colors.primary, opacity: name.trim() && !isSaving ? 1 : 0.6 }}
+                  className="flex-row items-center justify-center p-4 rounded-[16px] shadow-sm mb-6"
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                >
+                  <View className="flex-row items-center gap-2">
+                    <Icon name="check" size={20} color={colors.onPrimary} />
+                    <Text className="text-white text-base font-semibold">
+                      {isSaving ? "Saving..." : editingMemberId ? "Save Changes" : "Add Member"}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </ScrollView>
+            </Animated.View>
           </View>
-
-          <View className="mb-4">
-            <TextInput
-              mode="outlined"
-              label="Email Address (Optional)"
-              placeholder="e.g. john@example.com"
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-              outlineColor="#E0E0E0"
-              activeOutlineColor={colors.primary}
-              theme={{ colors: { onSurfaceVariant: '#888' } }}
-              outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-              style={{ height: 60 }}
-            />
-          </View>
-
-          <View className="mb-6">
-            <TextInput
-              mode="outlined"
-              label="Description (Optional)"
-              placeholder="e.g. Co-pilot, Photographer"
-              value={description}
-              onChangeText={setDescription}
-              outlineColor="#E0E0E0"
-              activeOutlineColor={colors.primary}
-              theme={{ colors: { onSurfaceVariant: '#888' } }}
-              outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-              style={{ height: 60 }}
-            />
-          </View>
-
-          <TouchableOpacity
-            onPress={handleAddMember}
-            disabled={!name.trim() || isSaving}
-            style={{ backgroundColor: colors.primary, opacity: name.trim() && !isSaving ? 1 : 0.6 }}
-            className="flex-row items-center justify-center p-4 rounded-[16px] shadow-sm"
-            activeOpacity={0.8}
-            accessibilityRole="button"
-          >
-            <View className="flex-row items-center gap-2">
-              <Icon name="check" size={20} color={colors.onPrimary} />
-              <Text className="text-white text-base font-semibold">
-                {isSaving ? "Saving..." : "Add Member"}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      )}
+        </KeyboardAvoidingView>
+      </Modal>
 
       {/* Members List */}
       <View className="mb-6">
@@ -229,7 +309,13 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
                   key={member.id} 
                   className={`flex-row items-center p-4 justify-between ${!isLast ? 'border-b border-gray-100' : ''}`}
                 >
-                  <View className="flex-row items-center flex-1 pr-4">
+                  <TouchableOpacity 
+                    className="flex-row items-center flex-1 pr-4"
+                    onPress={() => handleEditMemberPress(member)}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Edit member ${member.name}`}
+                  >
                     {/* Circle Avatar */}
                     <View 
                       style={{ backgroundColor: colors.primaryContainer }}
@@ -255,7 +341,7 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
                         </Text>
                       )}
                     </View>
-                  </View>
+                  </TouchableOpacity>
 
                   {/* Remove Button */}
                   <TouchableOpacity

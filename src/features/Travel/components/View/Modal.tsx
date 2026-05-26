@@ -31,7 +31,7 @@ const ViewTripModal = ({
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const [scrollYVal, setScrollYVal] = useState<number>(0);
 
-  const progress = Math.min(Math.max(scrollYVal / 85, 0), 1);
+  const progress = Math.min(Math.max(scrollYVal / 150, 0), 1);
   const headerBg = `rgba(255, 255, 255, ${progress})`;
   const headerBorder = `rgba(0, 0, 0, ${progress * 0.08})`;
 
@@ -68,6 +68,8 @@ const ViewTripModal = ({
   const { mutate: unarchiveTravel } = useUnarchiveTravel();
 
   const handleCancel = () => {
+    setExpanded(false);
+    setScrollYVal(0);
     setShowModal(false);
   };
 
@@ -190,13 +192,13 @@ const ViewTripModal = ({
             <Icon name="close" size={32} color={iconColor} />
           </TouchableOpacity>
           <View style={{ opacity: titleOpacity }}>
-            <Text className="text-xl font-medium">
-              {travelPlan && <Text>Travel Plan</Text>}
+            <Text className="text-xl font-medium  min-w-[68%] w-[68%]" ellipsizeMode="tail" numberOfLines={1}>
+              {travelPlan && `${travelPlan.travel.title}`}
             </Text>
           </View>
           <TouchableOpacity
-            className="pr-3.5 p-0.5 absolute right-[0px] pt-10"
-            onPress={() => setShowTravelNavigationModal(true)}
+            className="pr-3.5 p-0.5 absolute right-0 pt-10"
+            onPress={() => setShowTravelNavigationModal(true)}  
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >

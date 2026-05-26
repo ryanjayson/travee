@@ -190,7 +190,7 @@ const ViewTravel = ({
       <View className="flex-2 bg-white border-t border-gray-300 rounded-t-4xl -mt-7">
         <View className="p-6">
           <View className="flex-row justify-between items-start">
-            <Text className="text-3xl font-bold  mb-2 flex-1 mr-4">
+            <Text className="text-4xl font-bold  mb-2 flex-1 mr-4">
               {travelPlan?.travel.title}
             </Text>
             <StatusBadge type={1} status={travelPlan.travel.status!} />
@@ -316,7 +316,7 @@ const ViewTravel = ({
   return (
     <Portal.Host>
       {expanded ? (
-        <View className="flex-1 bg-gray-100">
+        <View className="flex-1 bg-gray-100 mt-[85px]">
           <View className="flex-1">
             <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" expanded={expanded}/>
           </View>
@@ -344,7 +344,7 @@ const ViewTravel = ({
         </View>
       ) : (
         <ScrollView 
-          className="flex-1 bg-gray-100" 
+          className="flex-1 bg-gray-100 " 
           showsVerticalScrollIndicator={false}
           scrollEventThrottle={16}
           onScroll={onScrollY ? (event) => {
