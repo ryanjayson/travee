@@ -22,6 +22,8 @@ export const saveExpenseLocally = async (expenseData: ItineraryExpense): Promise
         record.travel.id = expenseData.travelId;
         // @ts-ignore
         record.activity.id = expenseData.activityId || null;
+        // @ts-ignore
+        record.member.id = expenseData.memberId || null;
       });
     } else {
       return await database.get<Expense>("itinerary_expenses").create((record) => {
@@ -41,6 +43,10 @@ export const saveExpenseLocally = async (expenseData: ItineraryExpense): Promise
             // @ts-ignore
             record.activity.id = expenseData.activityId;
         }
+        if (expenseData.memberId) {
+            // @ts-ignore
+            record.member.id = expenseData.memberId;
+        }
       });
     }
   });
@@ -56,6 +62,7 @@ export const fetchLocalExpenses = async (travelId: string): Promise<ItineraryExp
     id: e.id,
     travelId: travelId,
     activityId: e.activity?.id,
+    memberId: e.member?.id,
     title: e.title,
     amount: e.amount,
     dateTime: e.dateTime,
@@ -81,6 +88,7 @@ export const fetchLocalExpensesByActivity = async (activityId: string): Promise<
     id: e.id,
     travelId: e.travel.id,
     activityId: activityId,
+    memberId: e.member?.id,
     title: e.title,
     amount: e.amount,
     dateTime: e.dateTime,

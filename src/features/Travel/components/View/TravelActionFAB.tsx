@@ -19,22 +19,51 @@ const TravelActionFAB = ({ onAddNote, onAddChecklist, onAddExpense }: TravelActi
         open={open}
         visible
         icon={open ? 'close' : 'plus'}
+        
         actions={[
           {
             icon: 'note-text',
             label: 'Add Note',
+            style: {
+                elevation: 0,
+                borderRadius: 50,
+                padding: 6,
+                backgroundColor: '#263F69',
+                marginRight: -6,
+                marginBottom: 10
+            },
+            color: 'white',
             onPress: onAddNote,
           },
           {
             icon: 'playlist-check',
             label: 'Add Checklist',
+            style: {
+                elevation: 0,
+                borderRadius: 50,
+                padding: 6,
+                backgroundColor: '#263F69',
+                marginRight: -6,
+                marginBottom: 10
+            },
+            color: 'white',
             onPress: onAddChecklist,
           },
           {
             icon: 'currency-usd',
             label: 'Add Expense',
+            style: {
+                elevation: 0,
+                borderRadius: 50,
+                padding: 6,
+                backgroundColor: '#263F69',
+                marginRight: -6,
+                marginBottom: 10
+            },
+            color: 'white',
             onPress: onAddExpense,
           },
+          
         ]}
         onStateChange={onStateChange}
         onPress={() => {
@@ -44,7 +73,7 @@ const TravelActionFAB = ({ onAddNote, onAddChecklist, onAddExpense }: TravelActi
         }}
         fabStyle={{
             backgroundColor: '#263F69',
-            borderRadius: 16,
+            borderRadius: 50,
         }}
         color="white"
       />

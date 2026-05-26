@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, ActivityIndicator, ScrollView, TouchableOpacity, Modal, TextInput, Alert } from "react-native";
-import { Text, DataTable, useTheme, Checkbox } from "react-native-paper";
+import { View, ActivityIndicator, ScrollView, TouchableOpacity, Modal, Alert, Text, KeyboardAvoidingView, Platform } from "react-native";
+import {  DataTable, useTheme, Checkbox,TextInput } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { TravelPlan, ItineraryExpense } from "../../../../Travel/types/TravelDto";
 import { useItineraryExpenses } from "../../../hooks/useExpense";
 import { useTripMembers } from "../../../hooks/useTripMembers";
 import { useMemberSplitBills, useSaveManyMemberSplitBillsMutation, useSaveMemberSplitBillMutation } from "../../../hooks/useMemberSplitBills";
 import ExpenseCategoryIcon from "../../Forms/Expense/ExpenseCategoryIcon";
+import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 
 interface ExpensesTabProps {
   travelPlan: TravelPlan;
@@ -95,6 +96,8 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
   const [isPaid, setIsPaid] = useState(false);
   const [notes, setNotes] = useState("");
   const [percentageShare, setPercentageShare] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const { keyboardVisible, isFloating } = useKeyboardVisible();
 
   // Queries
   const { data: expenses = [], isLoading: isLoadingExpenses } = useItineraryExpenses(travelPlan.travel.id || "");
@@ -107,12 +110,19 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
 
   // Statistics Calculations
   const totalExpense = expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
-  const totalSplitBill = expenses?.reduce((sum, exp) => sum + (exp.isIncludeInBill !== false ? exp.amount : 0), 0) || 0;
+  const totalSplitBillBase = expenses?.reduce((sum, exp) => sum + (exp.isIncludeInBill !== false ? exp.amount : 0), 0) || 0;
 
   // Build the live combined member splitting allocations list
   const memberSplits = members.map((member) => {
     const splitRecord = splits.find((s) => String(s.memberId) === String(member.id));
     
+    const directExpensesAmount = expenses?.reduce((sum, exp) => {
+      if (exp.isIncludeInBill === false && String(exp.memberId) === String(member.id)) {
+        return sum + exp.amount;
+      }
+      return sum;
+    }, 0) || 0;
+
     let currentPercentageShare = 0;
     let owesAmount = 0;
     let memberIsPaid = false;
@@ -123,14 +133,14 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
     if (members.length > 0) {
       if (splitEqually) {
         currentPercentageShare = 100 / members.length;
-        owesAmount = totalSplitBill / members.length;
+        owesAmount = (totalSplitBillBase / members.length) + directExpensesAmount;
         memberIsPaid = splitRecord ? splitRecord.isPaid : false;
         memberPaymentType = splitRecord?.paymentType || "Cash";
         memberPaidDate = splitRecord?.paidDate || null;
         memberNotes = splitRecord?.notes || "";
       } else {
         currentPercentageShare = splitRecord ? splitRecord.percentageShare : 0;
-        owesAmount = splitRecord ? splitRecord.owesAmount : 0;
+        owesAmount = (totalSplitBillBase * currentPercentageShare / 100) + directExpensesAmount;
         memberIsPaid = splitRecord ? splitRecord.isPaid : false;
         memberPaymentType = splitRecord?.paymentType || "Cash";
         memberPaidDate = splitRecord?.paidDate || null;
@@ -153,15 +163,22 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
   });
 
   // Calculate overall collections
+  const totalSplitBill = memberSplits.reduce((sum, s) => sum + s.owesAmount, 0);
   const totalCollected = memberSplits.reduce((sum, s) => sum + (s.isPaid ? s.owesAmount : 0), 0);
   const totalRemaining = totalSplitBill - totalCollected;
 
   // Auto-sync Equal Splits to DB to preserve queries integrity
   useEffect(() => {
-    if (splitEqually && members.length > 0 && totalSplitBill >= 0 && !isLoadingSplits) {
+    if (splitEqually && members.length > 0 && totalSplitBillBase >= 0 && !isLoadingSplits) {
       const needsSync = members.some((m) => {
         const splitRecord = splits.find((s) => String(s.memberId) === String(m.id));
-        const expectedOwes = totalSplitBill / members.length;
+        const directAmount = expenses?.reduce((sum, exp) => {
+          if (exp.isIncludeInBill === false && String(exp.memberId) === String(m.id)) {
+            return sum + exp.amount;
+          }
+          return sum;
+        }, 0) || 0;
+        const expectedOwes = (totalSplitBillBase / members.length) + directAmount;
         const expectedPercent = 100 / members.length;
         
         if (!splitRecord) return true;
@@ -172,10 +189,16 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
       if (needsSync) {
         const equalSplits = members.map((m) => {
           const splitRecord = splits.find((s) => String(s.memberId) === String(m.id));
+          const directAmount = expenses?.reduce((sum, exp) => {
+            if (exp.isIncludeInBill === false && String(exp.memberId) === String(m.id)) {
+              return sum + exp.amount;
+            }
+            return sum;
+          }, 0) || 0;
           return {
             travelId: travelPlan.travel.id || "",
             memberId: m.id || "",
-            owesAmount: totalSplitBill / members.length,
+            owesAmount: (totalSplitBillBase / members.length) + directAmount,
             percentageShare: 100 / members.length,
             isPaid: splitRecord ? splitRecord.isPaid : false,
             paymentType: splitRecord?.paymentType || "Cash",
@@ -186,7 +209,7 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
         saveManySplits(equalSplits);
       }
     }
-  }, [splitEqually, members.length, totalSplitBill, splits, isLoadingSplits]);
+  }, [splitEqually, members.length, totalSplitBillBase, splits, isLoadingSplits, expenses]);
 
   // Log Payments / Custom Split Shares in Modal
   const handleOpenPaymentModal = (split: any) => {
@@ -201,8 +224,15 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
   const handleSavePayment = () => {
     if (!selectedMemberSplit) return;
 
+    const directExpensesAmount = expenses?.reduce((sum, exp) => {
+      if (exp.isIncludeInBill === false && String(exp.memberId) === String(selectedMemberSplit.memberId)) {
+        return sum + exp.amount;
+      }
+      return sum;
+    }, 0) || 0;
+
     const finalPercent = splitEqually ? (100 / members.length) : percentageShare;
-    const finalOwes = totalSplitBill * (finalPercent / 100);
+    const finalOwes = (totalSplitBillBase * (finalPercent / 100)) + directExpensesAmount;
 
     saveSingleSplit(
       {
@@ -247,67 +277,66 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
     <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ padding: 16 }}>
       
       {/* Redesigned Combined Dashboard Card */}
-      <View className="bg-white rounded-[24px] border border-gray-200/60 shadow-sm p-5 mb-5 overflow-hidden">
+      <View className="bg-gray_blue-700 rounded-2xl border border-[#e0e0e0] p-3 mb-5 overflow-hidden">
         
         {/* Highlighted Primary Stat: Total Expense */}
         <View className="items-center py-1 mb-4">
           <Text className="text-gray-400 text-xs font-bold uppercase tracking-widest">Total Expense</Text>
           <Text 
-            style={{ color: colors.primary }}
-            className="text-4xl font-extrabold mt-1 tracking-tight"
+            className="text-4xl text-white font-extrabold mt-1 tracking-tight"
           >
             ${totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Text>
         </View>
 
         {/* Sub-stats Row (Split Bill, Collected, Remaining) */}
-        <View className="flex-row justify-between bg-gray-50/50 rounded-2xl p-4 border border-gray-100 mb-4 gap-2">
+        <View className="flex-row justify-between bg-white/80 rounded-2xl p-4 border border-gray-100 mb-4 gap-2">
           <View className="flex-1 items-center">
-            <Text className="text-gray-400 text-[10px] font-bold uppercase tracking-wider text-center">Split Bill</Text>
-            <Text className="text-sm font-extrabold text-gray-800 mt-1 text-center">
+            <Text className="text-gray-800 text-[10px] font-bold uppercase tracking-wider text-center">Split Bill</Text>
+            <Text className="text-base font-extrabold text-gray-800 mt-1 text-center">
               ${totalSplitBill.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
           
-          <View className="w-[1px] bg-gray-200" />
+          <View className="w-1px bg-gray-200" />
 
           <View className="flex-1 items-center">
             <Text className="text-emerald-600 text-[10px] font-bold uppercase tracking-wider text-center">Collected</Text>
-            <Text className="text-sm font-extrabold text-emerald-600 mt-1 text-center">
+            <Text className="text-base font-extrabold text-emerald-600 mt-1 text-center">
               ${totalCollected.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
 
-          <View className="w-[1px] bg-gray-200" />
+          <View className="w-1px bg-gray-200" />
 
           <View className="flex-1 items-center">
             <Text className="text-amber-600 text-[10px] font-bold uppercase tracking-wider text-center">Remaining</Text>
-            <Text className="text-sm font-extrabold text-amber-600 mt-1 text-center">
+            <Text className="text-base font-extrabold text-amber-600 mt-1 text-center">
               ${totalRemaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
         </View>
 
         {/* Checkbox: Split Bill Equally */}
-        <View className="flex-row items-center mb-2 mt-1 ml-1">
+        <View className="flex-row items-center mb-1 mt-1 ml-1">
           <Checkbox
             status={splitEqually ? 'checked' : 'unchecked'}
             onPress={() => setSplitEqually(!splitEqually)}
-            color={colors.primary}
+            color={"#fff"}
           />
           <TouchableOpacity 
             activeOpacity={0.7}
             onPress={() => setSplitEqually(!splitEqually)}
             accessibilityRole="checkbox"
           >
-            <Text className="text-sm font-semibold text-gray-700 ml-1">
+            <Text className="text-sm font-semibold text-white ml-1">
               Split bill equally among members
             </Text>
           </TouchableOpacity>
         </View>
 
         {/* Line Separator & Expand Toggle Button */}
-        <View className="h-[1px] bg-gray-200/80 my-3" />
+        <View className="h-1px bg-gray-600 my-2" />
         
         <TouchableOpacity
           onPress={() => setIsExpanded(!isExpanded)}
@@ -315,17 +344,26 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
           accessibilityRole="button"
           accessibilityLabel="Toggle members list"
         >
-          <View className="flex-row items-center gap-2">
-            <Icon name="people" size={20} color={colors.primary} />
-            <Text className="text-sm font-bold text-gray-700">
-              Members Split Allocation ({memberSplits.length})
-            </Text>
+          <View className="flex-1">
+              <View className="flex-row items-center gap-2">
+              <Icon name="people" size={24} color={"#fff"} />
+              <Text className="text-base text-white">
+                Member split allocation ({memberSplits.length})
+              </Text>
           </View>
+          {isExpanded &&(
+            <Text className="text-xs font-normal text-gray-400 ml-4xl">
+              Click row to see member split bill details
+            </Text>
+          )}
+          </View>
+
           <Icon 
             name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
             size={24} 
-            color={colors.primary} 
+            color={"#fff"} 
           />
+          
         </TouchableOpacity>
 
         {/* Collapsible Members Allocation List/Table */}
@@ -349,11 +387,11 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
                         {/* Circle Avatar */}
                         <View 
                           style={{ backgroundColor: colors.primaryContainer }}
-                          className="w-8 h-8 rounded-full justify-center items-center mr-2.5"
+                          className="w-12 h-12 rounded-full justify-center items-center mr-2.5"
                         >
                           <Text 
                             style={{ color: colors.onPrimaryContainer }}
-                            className="text-sm font-bold"
+                            className="text-base font-bold"
                           >
                             {firstLetter}
                           </Text>
@@ -361,8 +399,8 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
 
                         {/* Member Details */}
                         <View className="flex-1">
-                          <Text className="text-xs font-bold text-gray-800" numberOfLines={1}>{split.name}</Text>
-                          <Text className="text-[10px] text-gray-500 mt-0.5 font-semibold">
+                          <Text className="text-lg text-white" numberOfLines={1}>{split.name}</Text>
+                          <Text className="text-[12px] text-white mt-0.5 font-semibold">
                             Owes: ${split.owesAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </Text>
                         </View>
@@ -371,14 +409,14 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
                       <View className="flex-row items-center gap-2">
                         {/* Percentage Share Display */}
                         <View className="bg-gray-100 rounded-lg px-2 py-0.5">
-                          <Text className="text-[10px] font-bold text-gray-600">
+                          <Text className="text-[12px] font-bold text-gray-600">
                             {split.percentageShare.toFixed(0)}%
                           </Text>
                         </View>
 
                         {/* Paid/Unpaid Badge */}
                         <View className={`px-2 py-0.5 rounded-full ${split.isPaid ? 'bg-emerald-50 border border-emerald-100' : 'bg-amber-50 border border-amber-100'}`}>
-                          <Text className={`text-[9px] font-bold ${split.isPaid ? 'text-emerald-700' : 'text-amber-700'}`}>
+                          <Text className={`text-[12px] font-bold ${split.isPaid ? 'text-emerald-700' : 'text-amber-700'}`}>
                             {split.isPaid ? 'Paid' : 'Unpaid'}
                           </Text>
                         </View>
@@ -401,17 +439,20 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
 
       {/* Expenses Table UI */}
       <View className="mb-4">
-        <Text className="text-xs font-semibold tracking-wider uppercase mb-3 text-gray-500">
-          Expenses Details
+        <Text className="text-lg font-semibold tracking-wider uppercase mb-1">
+          Expenses
         </Text>
-        <View className="bg-white rounded-[24px] overflow-hidden border border-gray-200/50 shadow-sm mb-4">
+        <Text className="text-xs font-normal text-gray-400 mb-3">
+          Click row to see expense details
+        </Text>
+        <View className="bg-white rounded-2xl overflow-hidden border border-[#e0e0e0] mb-4">
           <DataTable>
             <DataTable.Header className="bg-gray-50/50">
-              <DataTable.Title style={{ maxWidth: 45 }}>{""}</DataTable.Title>
+              <DataTable.Title style={{ maxWidth: 40 }}>{""}</DataTable.Title>
               <DataTable.Title textStyle={{ color: colors.onSurfaceVariant, fontSize: 11, fontWeight: '600' }}>Item</DataTable.Title>
               <DataTable.Title numeric textStyle={{ color: colors.onSurfaceVariant, fontSize: 11, fontWeight: '600' }}>Date</DataTable.Title>
+              <DataTable.Title style={{ maxWidth: 40 }} numeric textStyle={{ color: colors.onSurfaceVariant, fontSize: 11, fontWeight: '600' }}>Split</DataTable.Title>
               <DataTable.Title numeric textStyle={{ color: colors.onSurfaceVariant, fontSize: 11, fontWeight: '600' }}>Amount</DataTable.Title>
-              <DataTable.Title style={{ maxWidth: 45 }} numeric textStyle={{ color: colors.onSurfaceVariant, fontSize: 11, fontWeight: '600' }}>Split</DataTable.Title>
             </DataTable.Header>
 
             {sortedExpenses.length > 0 ? (
@@ -421,28 +462,28 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
                   className="border-b-0"
                   onPress={() => onEditExpense?.(expense)}
                 >
-                  <DataTable.Cell style={{ maxWidth: 45 }}>
-                     <ExpenseCategoryIcon category={expense.expenseCategory} size={22} color={colors.primary} />
+                  <DataTable.Cell style={{ maxWidth: 40 }}>
+                     <ExpenseCategoryIcon category={expense.expenseCategory} size={22} color={"#363F72"} />
                   </DataTable.Cell>
-                  <DataTable.Cell textStyle={{ fontSize: 13, fontWeight: '500', color: '#1A1A1A' }}>
+                  <DataTable.Cell textStyle={{ fontSize: 14, fontWeight: '700', color: '#000' }}>
                     {expense.title}
                   </DataTable.Cell>
-                  <DataTable.Cell numeric textStyle={{ fontSize: 11, color: colors.secondary }}>
+                  <DataTable.Cell numeric textStyle={{ fontSize: 12, color: colors.onSurfaceVariant }}>
                     {(() => {
                       const d = new Date(expense.dateTime);
                       return d.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' }) + 
                              " " + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
                     })()}
                   </DataTable.Cell>
-                  <DataTable.Cell numeric textStyle={{ fontSize: 13, fontWeight: '700', color: colors.primary }}>
-                    {expense.currency || '$'}{expense.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </DataTable.Cell>
-                  <DataTable.Cell style={{ maxWidth: 45 }} numeric>
+                  <DataTable.Cell style={{ maxWidth: 40 }} numeric>
                     <Icon 
-                      name={expense.isIncludeInBill !== false ? "people" : "person"} 
+                      name={expense.isIncludeInBill !== false ? "check" : "close"} 
                       size={18} 
-                      color={expense.isIncludeInBill !== false ? "#16A34A" : "#666"} 
+                      color={expense.isIncludeInBill !== false ? "#16A34A" : "#FFF"} 
                     />
+                  </DataTable.Cell>
+                      <DataTable.Cell numeric textStyle={{ fontSize: 13, fontWeight: '700', color: colors.primary }}>
+                    {expense.currency || '$'}{expense.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </DataTable.Cell>
                 </DataTable.Row>
               ))
@@ -454,36 +495,39 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
 
             {expenses && expenses.length > 0 && (
               <DataTable.Row className="bg-gray-50/30 border-t border-gray-100">
-                <DataTable.Cell style={{ maxWidth: 45 }}>{""}</DataTable.Cell>
+                <DataTable.Cell style={{ maxWidth: 40 }}>{""}</DataTable.Cell>
                 <DataTable.Cell textStyle={{ fontWeight: '700', color: '#1A1A1A' }}>Total</DataTable.Cell>
                 <DataTable.Cell numeric textStyle={{ fontWeight: '800', color: colors.primary, fontSize: 15 }}>
                   ${totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </DataTable.Cell>
-                <DataTable.Cell style={{ maxWidth: 45 }} numeric>{""}</DataTable.Cell>
               </DataTable.Row>
             )}
           </DataTable>
         </View>
       </View>
 
-      {/* Redesigned Payment & Share Adjustment Modal */}
       <Modal
         visible={paymentModalVisible}
         transparent={true}
         animationType="fade"
+        statusBarTranslucent={true}
         onRequestClose={() => setPaymentModalVisible(false)}
       >
-        <View className="flex-1 justify-center items-center p-5" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
-        
-          <View 
-            style={{ width: '100%', maxWidth: 360 }}
-            className="bg-white rounded-[30px] shadow-lg p-6 overflow-hidden"
-          >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          className="flex-1"
+        >
+          <View className="flex-1 justify-center items-center p-5" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
+          
+            <View 
+              style={{ width: '100%', maxWidth: 360, maxHeight: '85%' }}
+              className="bg-white rounded-[30px] shadow-lg p-6 overflow-hidden"
+            >
             
             {/* Modal Header */}
             <View className="flex-row justify-between items-center pb-4 border-b border-gray-100 mb-4">
               <Text className="text-base font-bold text-gray-800">
-                Edit Member Split Share
+                Split share
               </Text>
               <TouchableOpacity 
                 onPress={() => setPaymentModalVisible(false)}
@@ -495,19 +539,30 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
             </View>
 
             {selectedMemberSplit && (
-              <ScrollView showsVerticalScrollIndicator={false}>
+              <ScrollView 
+                ref={scrollViewRef}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
                 {/* Member Info */}
-                <Text className="text-base font-bold text-gray-800 mb-0.5">
+                <Text className="text-2xl font-bold text-gray-800 mb-0.5">
                   {selectedMemberSplit.name}
                 </Text>
-                <Text className="text-xs text-gray-500 font-semibold mb-4">
-                  Owes: ${((totalSplitBill * (splitEqually ? (100 / members.length) : percentageShare)) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <Text className="text-base text-gray-500 font-semibold mb-2">
+                  Owes: ${(((totalSplitBillBase * (splitEqually ? (100 / members.length) : percentageShare)) / 100) + 
+                    (expenses?.reduce((sum, exp) => {
+                      if (exp.isIncludeInBill === false && String(exp.memberId) === String(selectedMemberSplit.memberId)) {
+                        return sum + exp.amount;
+                      }
+                      return sum;
+                    }, 0) || 0)
+                  ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Text>
 
                 {/* Notice if Equal Splitting is Locked */}
                 {splitEqually && (
                   <View className="bg-amber-50 border border-amber-100 p-2.5 rounded-xl mb-4">
-                    <Text className="text-[10px] text-amber-700 font-medium leading-4">
+                    <Text className="text-[10px] text-amber-700 font-medium leading-5">
                       ⚠ Uncheck "Split bill equally" in the card to unlock custom percentage slider.
                     </Text>
                   </View>
@@ -541,11 +596,11 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
 
                 {/* Payment Method Selector (Always Editable as requested) */}
                 <View className="mb-5">
-                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                  <Text className="text-xs font-semibold uppercase tracking-wider mb-2">
                     Payment Method
                   </Text>
                   <View className="flex-row flex-wrap gap-2">
-                    {["Cash", "Venmo", "Bank Transfer", "Others"].map((type) => {
+                    {["Cash", "Gcash", "Bank Transfer", "Others"].map((type) => {
                       const isSelected = paymentType === type;
                       return (
                         <TouchableOpacity
@@ -560,7 +615,7 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
                         >
                           <Text 
                             style={{ color: isSelected ? '#FFF' : '#666' }}
-                            className="text-xs font-semibold"
+                            className="text-sm font-semibold"
                           >
                             {type}
                           </Text>
@@ -572,29 +627,34 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
 
                 {/* Custom Notes / Memo Input */}
                 <View className="mb-6">
-                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
+                  <Text className="text-xs font-semibold uppercase tracking-wider mb-2">
                     Notes / Memo
                   </Text>
                   <TextInput
-                    placeholder="Add details, e.g. Request sent, Paid cash"
-                    value={notes}
-                    onChangeText={setNotes}
-                    multiline
-                    numberOfLines={2}
-                    placeholderTextColor="#A0A0A0"
-                    style={{ 
-                      minHeight: 50,
-                      textAlignVertical: 'top'
-                    }}
-                    className="border border-gray-200 rounded-[12px] p-3 text-xs bg-gray-50/50 text-gray-800"
-                  />
+                      mode="outlined"
+                      placeholder="Add details, e.g. Request sent, Paid cash"
+                      value={notes}
+                      onChangeText={setNotes}
+                      outlineColor="#E0E0E0"
+                      activeOutlineColor="#263F69"
+                      multiline
+                      numberOfLines={3}
+                      theme={{ colors: { onSurfaceVariant: '#888' } }}
+                      outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                      style={{ paddingVertical: 0, height: 80, fontSize: 12 }}
+                      contentStyle={{ backgroundColor: "transparent" }}
+                      onFocus={() => {
+                        setTimeout(() => {
+                          scrollViewRef.current?.scrollToEnd({ animated: true });
+                        }, 150);
+                      }}
+                    />
                 </View>
-
                 {/* Save Details Button */}
                 <TouchableOpacity
                   onPress={handleSavePayment}
                   style={{ backgroundColor: colors.primary }}
-                  className="p-4 rounded-[16px] items-center justify-center shadow-sm"
+                  className={`p-4 rounded-[16px] items-center justify-center shadow-sm ${keyboardVisible ? "mb-80" : "mb-0"}`}
                   activeOpacity={0.8}
                   accessibilityRole="button"
                 >
@@ -604,8 +664,9 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
                 </TouchableOpacity>
               </ScrollView>
             )}
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </ScrollView>
   );

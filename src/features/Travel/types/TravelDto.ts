@@ -12,6 +12,7 @@ export interface ItineraryExpense {
   id?: string;
   travelId?: string;
   activityId?: string;
+  memberId?: string;
   title: string;
   amount: number;
   dateTime: Date;

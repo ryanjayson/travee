@@ -6,10 +6,12 @@ export default class Expense extends Model {
   static associations = {
     travels: { type: "belongs_to" as const, key: "travel_id" },
     itinerary_activities: { type: "belongs_to" as const, key: "activity_id" },
+    trip_members: { type: "belongs_to" as const, key: "member_id" },
   };
 
   @relation("travels", "travel_id") travel!: any;
   @relation("itinerary_activities", "activity_id") activity!: any;
+  @relation("trip_members", "member_id") member!: any;
   
   @text("title") title!: string;
   @field("amount") amount!: number;
