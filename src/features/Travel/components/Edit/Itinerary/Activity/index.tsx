@@ -1,39 +1,35 @@
-import React, { useState, useEffect } from "react";
+import { MAPBOX_ACCESS_TOKEN } from "@env";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { Formik } from "formik";
+import React, { useState } from "react";
 import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  StatusBar,
-  TextInput as RNTextInput,
   ActivityIndicator,
   Alert,
   FlatList,
   Image,
+  Modal,
+  ScrollView,
+  StatusBar,
   Text,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { TextInput } from "react-native-paper";
-import { Calendar } from "react-native-calendars";
-import * as ImagePicker from "expo-image-picker";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { Formik } from "formik";
-import * as Yup from "yup";
-import TouchButton from "../../../../../../components/atoms/TouchButton";
-import { ItineraryActivity, Images, DestinationDto } from "../../../../types/TravelDto";
-import { useUpdateActivityMutation } from "../../../../hooks/useActivity";
-import { useTravelContext } from "../../../../../../context/TravelContext";
-import { useDeleteActivityMutation } from "../../../../hooks/useActivity";
-import { ActivityType } from "../../../../../../types/enums";
-import { Divider, Switch } from 'react-native-paper';
-import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
-import ActivityIcon from "../../../../../../components/ActivityIcon";
-import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
-import { MAPBOX_ACCESS_TOKEN } from "@env";
-import { useSaveChecklistItemMutation, useChecklistItems, useToggleChecklistItemMutation, useDeleteChecklistItemMutation } from "../../../../hooks/useChecklist";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { TextInput, useTheme } from "react-native-paper";
+import * as Yup from "yup";
+import ActivityIcon from "../../../../../../components/ActivityIcon";
+import TouchButton from "../../../../../../components/atoms/TouchButton";
+import { useTravelContext } from "../../../../../../context/TravelContext";
+import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
+import { ActivityType } from "../../../../../../types/enums";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
+import { useDeleteActivityMutation, useUpdateActivityMutation } from "../../../../hooks/useActivity";
+import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItemMutation, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
 import { useTravelPlan } from "../../../../hooks/useTravel";
+import { DestinationDto, Images, ItineraryActivity } from "../../../../types/TravelDto";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
+import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
 
 interface Place {
   id: string;
@@ -77,6 +73,7 @@ const EditActivity = ({
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
   const [showPrimaryTypeModal, setShowPrimaryTypeModal] = useState<boolean>(false);
+  const [showSectionModal, setShowSectionModal] = useState<boolean>(false);
   const [isAllDay, setIsAllDay] = useState<boolean>(true);
   const [showTimePickerFor, setShowTimePickerFor] = useState<"startTime" | "endTime" | null>(null);
   const [showCalendarFor, setShowCalendarFor] = useState<"startDate" | "endDate" | null>(null);
@@ -280,9 +277,10 @@ const EditActivity = ({
 
   return (
     <Formik<ActivityFormValues>
+      enableReinitialize={true}
       initialValues={{
         travelId: selectedTravelPlan?.id,
-        sectionId: itinerarySectionId,
+        sectionId: itinerarySectionId || (travelPlan?.itinerarySection?.[0]?.id || ""),
         id: itineraryActivity?.id,
         title: itineraryActivity?.title || "",
         description: itineraryActivity?.description || "",
@@ -309,6 +307,10 @@ const EditActivity = ({
         setValues,
         setFieldValue,
       }) => {
+        const { colors } = useTheme();
+        const sections = travelPlan?.itinerarySection || [];
+        const hasSections = sections.length > 0;
+        const selectedSectionName = sections.find((s) => s.id === values.sectionId)?.title || "";
 
         return (
           <View className="flex-1 bg-gray-100 overflow-hidden">
@@ -492,6 +494,23 @@ const EditActivity = ({
                     </View>
                   </View>
                 </View>
+                <View className="mb-5">
+                  <Text className="text-xs font-semibold tracking-wider uppercase">Itinerary Section</Text>
+                  <TouchableOpacity 
+                    onPress={() => hasSections && setShowSectionModal(true)}
+                    disabled={!hasSections}
+                    className={`border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3 ${!hasSections ? 'opacity-50 bg-gray-100' : ''}`}
+                    accessibilityRole="button"
+                    accessibilityLabel="Select itinerary section"
+                  >
+                    <Icon name="folder" size={28} color={hasSections ? "#263F69" : "#B3B3B3"} />
+                    <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
+                      {selectedSectionName || (hasSections ? "Select Section..." : "No Sections Available")}
+                    </Text>
+                    {hasSections && <Icon name="keyboard-arrow-down" size={24} color="#666" />}
+                  </TouchableOpacity>
+                </View>
+
                 <View className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase">Activity Type</Text>
                   <TouchableOpacity 
@@ -704,6 +723,52 @@ const EditActivity = ({
               }}
               onCancel={() => setShowCalendarFor(null)}
             />
+
+            <Modal
+              visible={showSectionModal}
+              transparent={true}
+              animationType="slide"
+              onRequestClose={() => setShowSectionModal(false)}
+            >
+              <View className="flex-1 justify-end" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                <View className="bg-white rounded-t-[30px] max-h-[50%] min-h-[40%] w-full overflow-hidden">
+                  <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
+                    <Text className="text-xl font-medium" style={{ color: colors.primary }}>
+                      Select Section
+                    </Text>
+                    <TouchableOpacity 
+                      onPress={() => setShowSectionModal(false)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Close section selection modal"
+                    >
+                      <Icon name="close" size={24} color={colors.onSurfaceVariant} />
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView>
+                    {sections.map((section) => (
+                      <TouchableOpacity
+                        key={section.id}
+                        className="p-5 border-b border-gray-100 flex-row items-center gap-4"
+                        onPress={() => {
+                          setFieldValue("sectionId", section.id);
+                          setShowSectionModal(false);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Select section ${section.title}`}
+                      >
+                        <Icon name="folder" size={24} color="#263F69" />
+                        <Text className="text-base text-gray-800 flex-1">
+                          {section.title}
+                        </Text>
+                        {values.sectionId === section.id && (
+                          <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </View>
+            </Modal>
 
             <ActivityTypeLookupModal
               visible={showPrimaryTypeModal}

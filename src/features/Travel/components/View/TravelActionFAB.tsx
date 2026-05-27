@@ -5,9 +5,10 @@ interface TravelActionFABProps {
   onAddNote: () => void;
   onAddChecklist: () => void;
   onAddExpense: () => void;
+  onAddActivity: () => void;
 }
 
-const TravelActionFAB = ({ onAddNote, onAddChecklist, onAddExpense }: TravelActionFABProps) => {
+const TravelActionFAB = ({ onAddNote, onAddChecklist, onAddExpense, onAddActivity }: TravelActionFABProps) => {
   const [open, setOpen] = useState(false);
   const { colors } = useTheme();
 
@@ -21,6 +22,20 @@ const TravelActionFAB = ({ onAddNote, onAddChecklist, onAddExpense }: TravelActi
         icon={open ? 'close' : 'plus'}
         
         actions={[
+          {
+            icon: 'calendar-plus',
+            label: 'Add Activity',
+            style: {
+                elevation: 0,
+                borderRadius: 50,
+                padding: 6,
+                backgroundColor: '#263F69',
+                marginRight: -6,
+                marginBottom: 10
+            },
+            color: 'white',
+            onPress: onAddActivity,
+          },
           {
             icon: 'note-text',
             label: 'Add Note',

@@ -6,6 +6,7 @@ import { useTravelContext } from "../../../context/TravelContext";
 import CreateTripModal from '../../../features/Travel/components/CreateOrEdit/Modal';
 import ExpenseModal from '../../../features/Travel/components/Forms/Expense/Modal';
 import NoteModal from '../../../features/Travel/components/Forms/Note/Modal';
+import ActivityModal from '../../../features/Travel/components/Edit/Itinerary/Activity/Modal';
 import MapboxDestinationSelector, { MapboxPlace } from '../../../features/Travel/components/MapboxDestinationSelector';
 import ViewTravelModal from "../../../features/Travel/components/View/Modal";
 import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
@@ -24,6 +25,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
   const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
   const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
+  const [showActivityModal, setShowActivityModal] = useState<boolean>(false);
   const [showMapSelector, setShowMapSelector] = useState<boolean>(false);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [prefilledTripData, setPrefilledTripData] = useState<any>(null);
@@ -267,6 +269,13 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
               activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
               onClose={() => setShowNoteModal(false)}
             />
+
+            <ActivityModal
+              visible={showActivityModal}
+              itineraryActivity={null}
+              itinerarySectionId={undefined}
+              onClose={() => setShowActivityModal(false)}
+            />
           </>
         )}
 
@@ -316,13 +325,20 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       {ongoingTrip && (
       <View className="p-5 flex-1">
         <Text className="text-sm font-medium">Quick Actions</Text>
-        <View className="flex-1 flex-row items-center gap-8 py-3 justify-between z-40 px-6">
+        <View className="flex-row items-center justify-between py-3 z-40 px-1">
         <View className="items-center">
           <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full border-2 border-gray-300' onPress={() => setShowTravelViewModal(true)}>
             <Ionicons name="briefcase-outline" size={24} color="#263F69" />
           </TouchableOpacity>
           <Text className="text-primary text-xs mt-2">View Trip</Text>
-          </View>
+        </View>
+
+        <View className="items-center">
+          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full border-2 border-gray-300' onPress={() => setShowActivityModal(true)}>
+            <Ionicons name="walk-outline" size={24} color="#263F69" />
+          </TouchableOpacity>
+          <Text className="text-primary text-xs mt-2">Add Activity</Text>
+        </View>
        
         <View className="items-center">
           <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' onPress={() => setShowExpenseModal(true)}>

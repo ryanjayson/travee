@@ -54,7 +54,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       className="flex-row items-start gap-3 py-3 px-4 "
     >
       <View
-        className={`items-center justify-center mt-0.5 flex-shrink-0`}
+        className={`items-center justify-center mt-0.5 shrink-0`}
       >
         {item.isDone ? (<Icon name="check-box" size={20} color="#263F69" />) : (<Icon name="check-box-outline-blank" size={20} color="#777" />)}
         

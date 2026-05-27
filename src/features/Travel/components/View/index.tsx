@@ -17,6 +17,7 @@ import Tabs from "../../../../components/Tabs";
 import { ItineraryExpense, TravelPlan } from "../../../Travel/types/TravelDto";
 import ExpenseModal from "../Forms/Expense/Modal";
 import NoteModal from "../Forms/Note/Modal";
+import ActivityModal from "../Edit/Itinerary/Activity/Modal";
 import MapViewer from "../MapViewer";
 import ShareTripModal from "../ShareOverlay/ShareTripModal";
 import ChecklistTab from "./Tabs/ChecklistTab";
@@ -65,6 +66,7 @@ const ViewTravel = ({
   const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
   const [selectedExpense, setSelectedExpense] = useState<ItineraryExpense | null>(null);
   const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
+  const [showActivityModal, setShowActivityModal] = useState<boolean>(false);
 
   useEffect(() => {
     if (isMapVisible) {
@@ -389,6 +391,7 @@ const ViewTravel = ({
           setSelectedExpense(null);
           setShowExpenseModal(true);
         }}
+        onAddActivity={() => setShowActivityModal(true)}
       />
 
       <ExpenseModal
@@ -403,6 +406,13 @@ const ViewTravel = ({
         itineraryNote={selectedNote}
         activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
         onClose={() => setShowNoteModal(false)}
+      />
+
+      <ActivityModal
+        visible={showActivityModal}
+        itineraryActivity={null}
+        itinerarySectionId={undefined}
+        onClose={() => setShowActivityModal(false)}
       />
 
       <ShareTripModal
