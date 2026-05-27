@@ -22,6 +22,7 @@ import ExpenseModal from "../../Forms/Expense/Modal";
 import NoteModal from "../../Forms/Note/Modal";
 
 import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
+import { ActivityType } from "../../../../../types/enums";
 
 interface ViewTripActivityProps {
   id: string;
@@ -99,7 +100,7 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
       );
     }
 
-    return <Tabs tabs={tabData} initialActiveTabId="details" />;
+    return <Tabs tabs={tabData} type="secondary" initialActiveTabId="details" expanded={true} />;
   };
 
   const tabData = [
@@ -164,10 +165,10 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
               <Text className="my-1 text-gray-600 leading-5">
                 {itineraryActivity?.description}
               </Text>
-              {itineraryActivity?.primaryType && (
+              {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.none && (
                 <View className="mt-1 self-start bg-blue-50 px-2 py-0.5 rounded-full">
                   <Text className="text-xs font-semibold text-[#263F69] uppercase tracking-wider">
-                    {itineraryActivity.primaryType}
+                    {String(ActivityType[itineraryActivity.type]).replace(/([A-Z])/g, ' $1').trim()}
                   </Text>
                 </View>
               )}

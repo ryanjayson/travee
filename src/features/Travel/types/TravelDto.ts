@@ -136,6 +136,13 @@ export interface ItineraryActivity {
   isOffline?: boolean;
   travelId?: string;
   isDone?: boolean;
+  attachments?: Attachment[];
+}
+export interface Attachment {
+  name: string;
+  url: string;
+  size?: number;
+  type?: string;
 }
 export interface Images {
   title: string;

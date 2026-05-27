@@ -77,6 +77,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
           images: a.images ? JSON.parse(a.images) : undefined,
           isDone: a.isDone,
+          attachments: a.attachments ? JSON.parse(a.attachments) : undefined,
           notesCount,
           expensesCount,
           checklistCount,
@@ -244,6 +245,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           isDone: activityData.isDone || false,
           isDeleted: false,
           isDefaultSection: activityData.isDefaultSection,
+          attachments: JSON.stringify(activityData.attachments || []),
         });
       });
       return activity;
@@ -267,6 +269,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           secondaryType: JSON.stringify(activityData.secondaryType),
           images: JSON.stringify(activityData.images),
           isDone: activityData.isDone || false,
+          attachments: JSON.stringify(activityData.attachments || []),
         });
       });
     }
@@ -297,6 +300,7 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
       secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
       images: a.images ? JSON.parse(a.images) : undefined,
       isDone: a.isDone,
+      attachments: a.attachments ? JSON.parse(a.attachments) : undefined,
       notesCount,
       expensesCount,
       checklistCount,

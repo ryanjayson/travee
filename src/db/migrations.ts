@@ -251,5 +251,16 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 17,
+      steps: [
+        addColumns({
+          table: "itinerary_activities",
+          columns: [
+            { name: "attachments", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

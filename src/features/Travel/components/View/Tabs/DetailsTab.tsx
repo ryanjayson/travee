@@ -8,6 +8,7 @@ import { useItineraryNotes } from "../../../hooks/useNote";
 import { useChecklistGroups, useChecklistItems } from "../../../hooks/useChecklist";
 import { ActivityType } from "../../../../../types/enums";
 import ActivityIcon from "../../../../../components/ActivityIcon";
+import { number } from "yup";
 
 interface DetailsTabProps {
   travelPlan: TravelPlan;
@@ -21,7 +22,7 @@ const StatCard = ({
   sub,
   accent = "#263F69",
 }: {
-  icon: string;
+  icon: string | any;
   label: string;
   value: string | number;
   sub?: string;
@@ -40,15 +41,13 @@ const StatCard = ({
   </View>
 );
 
-// ─── Section Header ────────────────────────────────────────────────────────────
-const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
+const SectionHeader = ({ icon, title }: { icon: string | any; title: string }) => (
   <View className="flex-row items-center gap-2 mb-3 mt-5">
     <Icon name={icon} size={16} color="#263F69" />
     <Text className="text-sm font-bold text-[#263F69] uppercase tracking-wider">{title}</Text>
   </View>
 );
 
-// ─── Main Component ────────────────────────────────────────────────────────────
 const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
   const { colors } = useTheme();
   const travelId = travelPlan.travel.id || "";
@@ -58,13 +57,11 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
   const { data: checklistGroups = [] } = useChecklistGroups(travelId);
   const { data: checklistItems = [] } = useChecklistItems(travelId);
 
-  // Flatten all activities from all sections
   const allActivities = useMemo(
     () => travelPlan.itinerarySection?.flatMap((s) => s.itineraryActivity || []) ?? [],
     [travelPlan]
   );
 
-  // ─── Derived Stats ─────────────────────────────────────────────────────────
   const totalActivities = allActivities.length;
   const doneActivities = allActivities.filter((a) => a.isDone).length;
 
@@ -73,7 +70,6 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
   const totalChecklist = checklistItems.length;
   const doneChecklist = checklistItems.filter((i) => i.isDone).length;
 
-  // ─── Activity type breakdown ────────────────────────────────────────────────
   const activityTypeBreakdown = useMemo(() => {
     const map: Record<number, number> = {};
     allActivities.forEach((a) => {

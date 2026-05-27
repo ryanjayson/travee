@@ -40,15 +40,15 @@ const ViewTripModal = ({
   const r = Math.round(255 - (255 - 137) * progress);
   const g = Math.round(255 - (255 - 147) * progress);
   const b = Math.round(255 - (255 - 158) * progress);
-  const iconColor = `rgb(${r}, ${g}, ${b})`;
-
+  const iconColor = expanded ? "#263F69" : `rgb(${r}, ${g}, ${b})`;
+  
   const targetR = expanded ? 38 : 137;
   const targetG = expanded ? 63 : 147;
   const targetB = expanded ? 105 : 158;
   const rFS = Math.round(255 - (255 - targetR) * progress);
   const gFS = Math.round(255 - (255 - targetG) * progress);
   const bFS = Math.round(255 - (255 - targetB) * progress);
-  const fullscreenIconColor = `rgb(${rFS}, ${gFS}, ${bFS})`;
+  const fullscreenIconColor = expanded ? "#263F69" : `rgb(${rFS}, ${gFS}, ${bFS})`;
 
   const titleOpacity = Math.min(Math.max((scrollYVal - 40) / 60, 0), 1);
 
@@ -193,7 +193,7 @@ const ViewTripModal = ({
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name="share" size={28} color={iconColor} />
+            <Icon name="share" size={24} color={iconColor} />
           </TouchableOpacity>
           {/* <TouchableOpacity
             className="pr-3.5 p-0.5 absolute right-[135px] pt-10"

@@ -147,7 +147,7 @@ const ActivityItemCard = ({
           </View>
 
           {itineraryEventActivity.startDate && (
-              <View className="flex-row justify-between items-start   mb-1 gap-x-2">
+              <View className="flex-row justify-between items-start mb-1 gap-x-2">
                   <Text className="text-lg font-normal text-[#333] leading-5 flex-1 wrap-break-word">
                       {itineraryEventActivity.title}
                   </Text>
@@ -161,10 +161,10 @@ const ActivityItemCard = ({
             /> */}
 
           {itineraryEventActivity && itineraryEventActivity.images && itineraryEventActivity.images.length > 0 && (
-            <View className="my-1">
+            <View className="my-1 p-2">
               <Image
                 src={itineraryEventActivity.images[0].url}
-                className="h-[120px] w-full rounded"
+                className="h-[120px] w-full rounded-md"
                 style={{ resizeMode: "cover" }}
               />
             </View>

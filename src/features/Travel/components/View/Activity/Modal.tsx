@@ -56,7 +56,7 @@ const ViewActivityModal = ({
                 activeOpacity={0.7}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
-                <Icon name="close" size={36} color="#777" />
+                <Icon name="chevron-left" size={36} color="#777" />
               </TouchableOpacity>
    
               <Text className="text-xl font-medium">{selectedTravelPlan?.title}</Text>

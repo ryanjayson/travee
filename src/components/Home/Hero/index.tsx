@@ -230,7 +230,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
             visible={showItineraryTab} 
             transparent={false} 
             animationType="none"
-            >
+            onRequestClose={() => setShowItineraryTab(false)}>
               <View className="flex-row justify-between items-center p-5 border-b border-gray-200 pt-12">
                   <View className="flex-col flex-1 ">
                       <Text className="text-sm text-gray-400 font-medium">

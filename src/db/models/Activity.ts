@@ -22,6 +22,7 @@ export default class Activity extends Model {
   @text("secondary_type") secondaryType!: string | null;
   @text("images") images!: string | null;
   @field("is_done") isDone!: boolean;
+  @text("attachments") attachments!: string | null;
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
 }
