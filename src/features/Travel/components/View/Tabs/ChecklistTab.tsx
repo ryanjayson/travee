@@ -1,12 +1,12 @@
-import React from "react";
-import { View, TouchableOpacity, ActivityIndicator } from "react-native";
-import { Text, useTheme } from "react-native-paper";
-import { TravelPlan, ItineraryActivity } from "../../../../Travel/types/TravelDto";
-import { useChecklistGroups, useChecklistItems, useToggleChecklistItemMutation } from "../../../hooks/useChecklist";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../types/enums";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { ItineraryActivity, TravelPlan } from "../../../../Travel/types/TravelDto";
+import { useChecklistGroups, useChecklistItems, useToggleChecklistItemMutation } from "../../../hooks/useChecklist";
 
 interface ChecklistTabProps {
   travelPlan: TravelPlan;
@@ -21,6 +21,14 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
   const { data: groups = [], isLoading: groupsLoading } = useChecklistGroups(travelId);
   const { data: items = [], isLoading: itemsLoading } = useChecklistItems(travelId);
   const toggleMutation = useToggleChecklistItemMutation();
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
+  const toggleSectionCollapse = (sectionId: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
+  };
 
   const allActivities =
     activities ??
@@ -51,25 +59,23 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       key={item.id}
       accessibilityRole="checkbox"
       onPress={() => handleToggle(item)}
-      className="flex-row items-start gap-3 py-3 px-4 "
+      className="flex-row items-start gap-3 py-3 px-4 border-b border-gray-100 "
     >
       <View
         className={`items-center justify-center mt-0.5 shrink-0`}
       >
         {item.isDone ? (<Icon name="check-box" size={20} color="#263F69" />) : (<Icon name="check-box-outline-blank" size={20} color="#777" />)}
-        
-
       </View>
       <View className="flex-1">
         <Text
-          className={`text-base ${
+          className={`text-base  ${
             item.isDone ? "line-through text-gray-400" : "text-[#1A1A1A] font-medium"
           }`}
         >
           {item.title}
         </Text>
         {item.description ? (
-          <Text className="text-xs text-gray-400 mt-0.5" numberOfLines={2}>
+          <Text className="text-xs text-gray-400 leading-5 mt-0.5" numberOfLines={2}>
             {item.description}
           </Text>
         ) : null}
@@ -91,20 +97,20 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
   }
 
   return (
-    <View className="px-4 py-2">
+    <View className="px-4 py-5">
       {/* Summary header */}
       <View className="flex-row items-center justify-between mb-4">
-        <Text className="text-base font-bold text-[#183B7A]">Checklist</Text>
+        <Text className="text-lg font-semibold tracking-wider uppercase mb-1">Trip checklist</Text>
         <Text className="text-sm text-gray-500 font-medium">
-          {totalDone}/{items.length} done
+          {totalDone}/{items.length} Done
         </Text>
       </View>
 
       {/* Progress bar */}
       {items.length > 0 && (
-        <View className="bg-gray-200 h-2 rounded-full mb-5 overflow-hidden">
+        <View className="bg-gray-200 h-4 rounded-xl mb-5 overflow-hidden flex-row">
           <View
-            className="bg-[#263F69] h-2 rounded-full"
+            className="bg-[#263F69] h-4 rounded-full"
             style={{ width: `${Math.round((totalDone / items.length) * 100)}%` }}
           />
         </View>
@@ -115,19 +121,36 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
         const groupItems = items.filter((i) => i.checklistGroupId === group.id);
         const doneCt = groupItems.filter((i) => i.isDone).length;
         if (groupItems.length === 0) return null;
+        const isCollapsed = collapsedSections[group.id || ""] || false;
         return (
-          <View key={group.id} className="bg-white rounded-[20px] border border-gray-100 shadow-sm mb-4 overflow-hidden">
-            <View className="flex-row items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
-              <Icon name="folder" size={18} color="#263F69" />
-              <Text className="text-sm font-bold text-[#263F69] flex-1 uppercase tracking-wider">
-                {group.title}
-              </Text>
-              <Text className="text-xs text-gray-400">{doneCt}/{groupItems.length}</Text>
-            </View>
-            {group.description ? (
-              <Text className="text-xs text-gray-500 px-4 pt-2">{group.description}</Text>
-            ) : null}
-            {groupItems.map(renderItem)}
+          <View key={group.id} className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              onPress={() => toggleSectionCollapse(group.id || "")}
+              className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
+            >
+              <Icon name="folder" size={24} color="#263F69" />
+              <View className="flex-1">
+                <Text className="text-md font-bold text-[#263F69] uppercase tracking-wider">
+                  {group.title}
+                </Text>
+                {group.description ? (
+                  <Text className="text-xs text-gray-600 pt-1">{group.description}</Text>
+                ) : null}
+              </View>
+              <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{groupItems.length}</Text>
+              <Icon 
+                name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
+                size={24} 
+                color="#777" 
+              />
+            </TouchableOpacity>
+            {!isCollapsed && (
+              <>
+                {groupItems.map(renderItem)}
+              </>
+            )}
           </View>
         );
       })}
@@ -137,34 +160,58 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
         const activityItems = items.filter((i) => i.activityId === activity.id);
         if (activityItems.length === 0) return null;
         const doneCt = activityItems.filter((i) => i.isDone).length;
+        const isCollapsed = collapsedSections[`activity-${activity.id}`] || false;
         return (
-          <View key={`activity-${activity.id}`} className="bg-white rounded-[20px] border border-gray-100 shadow-sm mb-4 overflow-hidden">
-            <View className="flex-row items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
+          <View key={`activity-${activity.id}`} className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              onPress={() => toggleSectionCollapse(`activity-${activity.id}`)}
+               className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
+            >
               <ActivityIcon
                 type={(activity.type ?? ActivityType.none) as ActivityType}
-                size={18}
+                size={24}
               />
-              <Text className="text-sm font-bold text-gray-600 flex-1">{activity.title}</Text>
-              <Text className="text-xs text-gray-400">{doneCt}/{activityItems.length}</Text>
-            </View>
-            {activityItems.map(renderItem)}
+              <Text className="text-md font-bold text-gray-600 flex-1">{activity.title}</Text>
+              <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{activityItems.length}</Text>
+              <Icon 
+                name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
+                size={24} 
+                color="#777" 
+              />
+            </TouchableOpacity>
+            {!isCollapsed && activityItems.map(renderItem)}
           </View>
         );
       })}
 
       {/* Ungrouped / General */}
-      {ungroupedItems.length > 0 && (
-        <View className="bg-white rounded-[20px] border border-gray-100 shadow-sm mb-4 overflow-hidden">
-          <View className="flex-row items-center gap-3 px-4 py-3 bg-gray-50 border-b border-gray-100">
-            <Icon name="list" size={18} color="#888" />
-            <Text className="text-sm font-bold text-gray-500 flex-1 uppercase tracking-wider">General</Text>
-            <Text className="text-xs text-gray-400">
-              {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
-            </Text>
+      {ungroupedItems.length > 0 && (() => {
+        const isCollapsed = collapsedSections["general"] || false;
+        return (
+          <View className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              onPress={() => toggleSectionCollapse("general")}
+               className={`flex-row items-center gap-3 px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
+            >
+              <Icon name="list" size={24} color="#888" />
+              <Text className="text-md font-bold text-gray-500 flex-1 uppercase tracking-wider">General</Text>
+              <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">
+                {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
+              </Text>
+              <Icon 
+                name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
+                size={24} 
+                color="#777" 
+              />
+            </TouchableOpacity>
+            {!isCollapsed && ungroupedItems.map(renderItem)}
           </View>
-          {ungroupedItems.map(renderItem)}
-        </View>
-      )}
+        );
+      })()}
     </View>
   );
 };

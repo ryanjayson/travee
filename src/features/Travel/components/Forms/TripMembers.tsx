@@ -143,17 +143,22 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
 
   return (
     <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ padding: 20 }}>
+
+      <Text className="text-xl font-semibold ">Trip Members</Text>
+       <Text className="text-base font-normal text-gray-400 mb-5">
+        Manage your travel companions. See who’s joining your trip to share memories, split costs, and more.
+      </Text>
       {/* Trigger Button to Open Modal */}
-      <View className="mb-5">
+      <View className="mb-6">
         <TouchableOpacity
           onPress={handleOpenAddModal}
           style={{ backgroundColor: colors.primary }}
-          className="flex-row items-center justify-between p-4 rounded-[16px] shadow-sm"
+          className="flex-row items-center justify-center p-4 rounded-[16px] shadow-sm"
           activeOpacity={0.8}
           accessibilityRole="button"
           accessibilityLabel="Open add member modal"
         >
-          <View className="flex-row items-center gap-2">
+          <View className="flex-row items-center text-center gap-2">
             <Icon 
               name="person-add" 
               size={20} 
@@ -163,14 +168,9 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
               className="text-base font-semibold"
               style={{ color: colors.onPrimary }}
             >
-              Add New Member
+              Add Member
             </Text>
           </View>
-          <Icon 
-            name="expand-more" 
-            size={24} 
-            color={colors.onPrimary} 
-          />
         </TouchableOpacity>
       </View>
 
@@ -200,7 +200,7 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
               <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
                 <View className="flex-row items-center gap-2">
                   <Text className="text-2xl text-gray-700 font-medium">
-                    {editingMemberId ? "Edit Member" : "Add New Member"}
+                    {editingMemberId ? "Edit Member" : "Add Member"}
                   </Text>
                 </View>
                 <TouchableOpacity 
@@ -295,6 +295,7 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
         <Text className="text-xs font-semibold tracking-wider uppercase mb-3 text-gray-500">
           Trip Members List ({tripMembers.length})
         </Text>
+     
         
         {tripMembers.length > 0 ? (
           <View className="bg-white rounded-[24px] border border-gray-200 shadow-sm shadow-black/5 overflow-hidden">

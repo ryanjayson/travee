@@ -76,15 +76,15 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
         : "text-gray-500 font-medium text-base";
     } else if (type === "secondary") {
       buttonClass = isActive
-        ? "px-4 py-3 mr-4 border-b-2 border-[#263F69] items-center justify-center"
-        : "px-4 py-3 mr-4 border-b-2 border-transparent items-center justify-center";
+        ? "px-4 py-3 border-b-2 border-[#263F69] items-center justify-center"
+        : "px-4 py-3 border-b-2 border-transparent items-center justify-center";
       textClass = isActive
         ? "text-[#263F69] font-bold text-base"
         : "text-gray-500 font-medium text-base";
     } else { // "default"
       buttonClass = isActive
         ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center" : "bg-brand-50 border border-brand-100 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center")
-        : "bg-white border border-[#E0E0E0] rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center";
+        : "bg-white border border-[#E0E0E0] rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center ";
       textClass = isActive
         ? (isOngoingWithActiveTrip ? "text-success-500 font-semibold text-sm" : "text-primary font-semibold text-sm")
         : "text-gray-600 font-medium text-sm";

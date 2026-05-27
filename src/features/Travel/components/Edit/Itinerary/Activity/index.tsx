@@ -312,7 +312,8 @@ const EditActivity = ({
         const { colors } = useTheme();
         const sections = travelPlan?.itinerarySection || [];
         const hasSections = sections.length > 0;
-        const selectedSectionName = sections.find((s) => s.id === values.sectionId)?.title || "";
+        const selectedSection = sections.find((s) => s.id === values.sectionId);
+        const selectedSectionName = selectedSection?.isDefaultSection ? "(Ungrouped)" :  selectedSection?.title || "";
 
         return (
           <View className="flex-1 bg-gray-100 overflow-hidden">
@@ -461,9 +462,9 @@ const EditActivity = ({
                     <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center">
                       <TouchableOpacity 
                         onPress={() => setShowCalendarFor("startDate")}
-                        className="flex-1 py-3 pl-4 items-center justify-center"
+                        className="flex-1 py-3 items-center justify-center h-7xl"
                       >
-                        <Text className="text-sm font-medium text-gray-800">
+                        <Text className="text-md font-medium text-gray-800">
                           {values.startDate ? String(values.startDate) : "Date"}
                         </Text>
                       </TouchableOpacity>
@@ -472,16 +473,16 @@ const EditActivity = ({
                           onPress={() => setValues({...values, startDate: null, startTime: ""} as any)}
                           className="pr-4 py-3"
                         >
-                          <Icon name="close" size={16} color="#999" />
+                          <Icon name="close" size={22} color="#999" />
                         </TouchableOpacity>
                       )}
                     </View>
                     <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center">
                       <TouchableOpacity 
                         onPress={() => setShowTimePickerFor("startTime")}
-                        className="flex-1 py-3 pl-4 items-center justify-center"
+                        className="flex-1 py-3 items-center justify-center h-7xl"
                       >
-                        <Text className="text-sm font-medium text-gray-800">
+                        <Text className="text-md font-medium text-gray-800">
                           {(values as any).startTime ? String((values as any).startTime) : "Time"}
                         </Text>
                       </TouchableOpacity>
@@ -490,7 +491,7 @@ const EditActivity = ({
                           onPress={() => setValues({...values, startTime: ""} as any)}
                           className="pr-4 py-3"
                         >
-                          <Icon name="close" size={16} color="#999" />
+                          <Icon name="close" size={22} color="#999" />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -735,8 +736,8 @@ const EditActivity = ({
               <View className="flex-1 justify-end" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
                 <View className="bg-white rounded-t-[30px] max-h-[50%] min-h-[40%] w-full overflow-hidden">
                   <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
-                    <Text className="text-xl font-medium" style={{ color: colors.primary }}>
-                      Select Section
+                    <Text className="text-xl font-medium">
+                      Trip Sections
                     </Text>
                     <TouchableOpacity 
                       onPress={() => setShowSectionModal(false)}
@@ -760,7 +761,7 @@ const EditActivity = ({
                       >
                         <Icon name="folder" size={24} color="#263F69" />
                         <Text className="text-base text-gray-800 flex-1">
-                          {section.title}
+                           {section?.isDefaultSection ? "(Ungrouped)" : section.title}
                         </Text>
                         {values.sectionId === section.id && (
                           <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />

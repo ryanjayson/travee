@@ -34,7 +34,7 @@ const EditTravelPlan = () => {
   const { travelId } = route.params || {};
 
   const [travelData, setTravelData] = useState<Travel>(sampleTravel[0]);
-  const [activeTab, setActiveTab] = useState<TabType>("itinerary");
+  const [activeTab, setActiveTab] = useState<TabType>("detail");
 
   const [addMemberModalVisible, setAddMemberModalVisible] = useState(false);
   const [tripMembers, setTripMembers] = useState<Friend[]>([]);
@@ -232,7 +232,7 @@ const EditTravelPlan = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="close" size={28} color={"#666"} />
         </TouchableOpacity>
-        <Text className="text-xl font-bold">Edit Trip</Text>
+        <Text className="text-xl text-secondary font-bold">Edit Trip</Text>
 
         <View className="w-4xl">
         </View>
@@ -247,9 +247,9 @@ const EditTravelPlan = () => {
         />
 
         {activeTab === "detail" && (
-          <View className="mb-8 mt-2 mx-4 bg-red-50 absolute bottom-0 w-full">
+          <View className="mb-8 mt-2 left-[5%] absolute bottom-0 w-[90%]">
             <TouchButton
-              buttonText={"Update Changes"}
+              buttonText={"Update changes"}
               icon={""}
               onPress={() => {
                 formRef.current?.submit();

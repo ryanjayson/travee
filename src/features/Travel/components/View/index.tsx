@@ -8,9 +8,11 @@ import {
   TouchableOpacity,
   View,
   Text,
+  RefreshControl,
 } from "react-native";
 import {
   Portal,
+  useTheme,
 } from "react-native-paper";
 import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
@@ -40,6 +42,7 @@ interface ViewTravelProps {
   setShowMap?: React.Dispatch<React.SetStateAction<boolean>>;
   showShare?: boolean;
   setShowShare?: React.Dispatch<React.SetStateAction<boolean>>;
+  onRefresh?: () => Promise<any>;
 }
 
 const ViewTravel = ({ 
@@ -51,10 +54,26 @@ const ViewTravel = ({
   setShowMap,
   showShare = false,
   setShowShare,
+  onRefresh,
 }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
   const [localShowMap, localSetShowMap] = useState<boolean>(false);
   const [localShowShare, localSetShowShare] = useState<boolean>(false);
+  const { colors } = useTheme();
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  const handleRefresh = async () => {
+    if (onRefresh) {
+      setRefreshing(true);
+      try {
+        await onRefresh();
+      } catch (err) {
+        console.error("Failed to refresh travel plan:", err);
+      } finally {
+        setRefreshing(false);
+      }
+    }
+  };
 
   const isMapVisible = setShowMap ? showMap : localShowMap;
   const setMapVisible = setShowMap ? setShowMap : localSetShowMap;
@@ -202,10 +221,10 @@ const ViewTravel = ({
               <View className="flex-row items-center">
                 <Icon name="calendar-month" size={28} color={"#858585"} />
               <View className="flex-col px-1">
-                <Text className="text-xs text-tertiary">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
+                <Text className="text-xs text-tertiary leading-3">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
                     ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
                     : ""}</Text>
-                <Text className="text-lg font-bold text-secondary line-clamp-1">
+                <Text className="text-lg font-bold text-secondary line-clamp-1 leading-6">
                   {travelPlan.travel?.startOrDepartureDate
                     ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day:"2-digit"})
                     : ""}
@@ -352,6 +371,14 @@ const ViewTravel = ({
           onScroll={onScrollY ? (event) => {
             onScrollY(event.nativeEvent.contentOffset.y);
           } : undefined}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={[colors.primary]}
+              tintColor={colors.primary}
+            />
+          }
         >
           <HeaderSection />
           <View>

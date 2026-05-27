@@ -5,6 +5,7 @@ import {
   Alert,
   Dimensions,
   LayoutAnimation,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -202,59 +203,19 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     }
   }, [isPending]);
 
-  // const handleRefresh = async () => {
-  //   setRefreshing(true);
-  //   try {
-  //     // Call the parent's refresh function if available
-  //     if (travelData?.id) {
-  //       // Use ActivityService to get activities
-  //       const generalActivities = await activityService.getActivitiesByTripId(
-  //         travelData.id
-  //       );
-
-  //       // Update general activities
-  //       setActivities(
-  //         generalActivities.map((ItineraryActivity) => ({
-  //           ...activity,
-  //           location: activity.location || "",
-  //         }))
-  //       );
-
-  //       // Update sections with their activities
-  //       const updatedSections = await Promise.all(
-  //         sections.map(async (section) => {
-  //           try {
-  //             const sectionActivities =
-  //               await activityService.getActivitiesBySectionId(section.id);
-  //             return {
-  //               ...section,
-  //               activities: sectionActivities.map((activity) => ({
-  //                 ...activity,
-  //                 location: activity.location || "",
-  //               })),
-  //             };
-  //           } catch (error) {
-  //             console.warn(
-  //               `Failed to fetch activities for section ${section.id}:`,
-  //               error
-  //             );
-  //             return section;
-  //           }
-  //         })
-  //       );
-  //       setSections(updatedSections);
-  //     }
-
-  //     // Call parent's onRefresh callback if provided
-  //     if (onRefresh) {
-  //       onRefresh();
-  //     }
-  //   } catch (error) {
-  //     console.error("Error refreshing itinerary:", error);
-  //   } finally {
-  //     setRefreshing(false);
-  //   }
-  // };
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+     
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error("Error refreshing itinerary:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const toggleSectionCollapse = (sectionId: string) => {
     setSections((prevSections) =>
@@ -589,20 +550,26 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
         scrollOffset.current = e.nativeEvent.contentOffset.y;
       }}
       scrollEventThrottle={16}
-      className="flex-1 p-2.5 w-full pb-12"
+      className="flex-1 w-full"
       showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ padding: 20 }}
       // keyboardShouldPersistTaps="always"
       scrollEnabled={!isDragging && !sectionDragState?.isDragging}
-      // refreshControl={
-      //   <RefreshControl
-      //     refreshing={refreshing}
-      //     // onRefresh={handleRefresh}
-      //     colors={["#183B7A"]}
-      //     tintColor="#183B7A"
-      //   />
-      // }
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+          colors={["#183B7A"]}
+          tintColor="#183B7A"
+        />
+      }
     >
       <View className="mb-5">
+        <Text className="text-xl font-semibold ">Manage Trip Itinerary</Text>
+                  <Text className="text-base font-normal text-gray-400 mb-5">
+                   Keep your travel plans organized and your entire trip schedule in one seamless timeline.
+                  </Text>
+
         {!sections && (
         <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Activities</Text>
         )}

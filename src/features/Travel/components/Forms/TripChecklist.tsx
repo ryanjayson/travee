@@ -1,36 +1,30 @@
-import React, { useState, useMemo } from "react";
-import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  TextInput as RNTextInput,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Text,
-} from "react-native";
-import { TextInput, useTheme } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { Formik } from "formik";
-import * as Yup from "yup";
-import TouchButton from "../../../../components/atoms/TouchButton";
-import { ChecklistGroup, ChecklistItem, ItineraryActivity } from "../../types/TravelDto";
-import { ActivityType } from "../../../../types/enums";
+import React, { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  TextInput as RNTextInput,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../components/ActivityIcon";
+import { useConfirm } from "../../../../context/ConfirmContext";
+import { useTravelContext } from "../../../../context/TravelContext";
+import { ActivityType } from "../../../../types/enums";
+import { useAuth } from "../../../Auth/hooks/AuthContext";
 import {
   useChecklistGroups,
   useChecklistItems,
+  useDeleteChecklistItemMutation,
   useSaveChecklistGroupMutation,
   useSaveChecklistItemMutation,
-  useDeleteChecklistItemMutation,
   useToggleChecklistItemMutation,
 } from "../../hooks/useChecklist";
-import { useTravelContext } from "../../../../context/TravelContext";
-import { useAuth } from "../../../Auth/hooks/AuthContext";
-import { useConfirm } from "../../../../context/ConfirmContext";
+import { ChecklistItem, ItineraryActivity } from "../../types/TravelDto";
+import ChecklistGroupModal from "./Checklist/ChecklistGroupModal";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type ContextType = "group" | "activity" | null;
 
@@ -45,13 +39,6 @@ interface TripChecklistProps {
   activities?: ItineraryActivity[];
 }
 
-// ─── Group Form Schema ────────────────────────────────────────────────────────
-
-const GroupSchema = Yup.object().shape({
-  title: Yup.string().required("Title is required"),
-});
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 
 const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
   const { colors } = useTheme();
@@ -69,18 +56,14 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
 
   const { confirm } = useConfirm();
 
-  // UI State
   const [showGroupModal, setShowGroupModal] = useState(false);
   const [groupSearch, setGroupSearch] = useState("");
   const [selectedContext, setSelectedContext] = useState<ContextOption | null>(null);
   const [showContextDropdown, setShowContextDropdown] = useState(false);
 
-  // New item form state
   const [newItemTitle, setNewItemTitle] = useState("");
   const [newItemDescription, setNewItemDescription] = useState("");
   const [showDescriptionField, setShowDescriptionField] = useState(false);
-
-  // ─── Context Options (groups + activities interleaved) ─────────────────────
 
   const contextOptions = useMemo<ContextOption[]>(() => {
     const groupOpts: ContextOption[] = groups.map((g) => ({
@@ -106,8 +89,6 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
     );
   }, [contextOptions, groupSearch]);
 
-  // ─── Add Item ───────────────────────────────────────────────────────────────
-
   const handleAddItem = async () => {
     if (!newItemTitle.trim()) return;
 
@@ -130,7 +111,6 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
     setShowDescriptionField(false);
   };
 
-  // ─── Toggle Item ────────────────────────────────────────────────────────────
 
   const handleToggle = async (item: ChecklistItem) => {
     if (!item.id) return;
@@ -142,7 +122,6 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
     });
   };
 
-  // ─── Delete Item ────────────────────────────────────────────────────────────
 
   const handleDelete = async (item: ChecklistItem) => {
     const isConfirmed = await confirm({
@@ -234,11 +213,16 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
       className="flex-1"
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ padding: 20 }}
     >
-      <View className="px-4 py-2">
+      <View className="">
         {/* ─── Header ─────────────────────────────────────────────────────── */}
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-lg font-bold text-[#183B7A]">Checklist</Text>
+        <View className="flex-1 mb-4">
+          <Text className="text-xl font-semibold ">Trip Checklist</Text>
+          <Text className="text-base font-normal text-gray-400 mb-5">
+          Your trip prep, simplified. Keep track of everything you need for a smooth and stress-free journey.
+          </Text>
+
           <View className="flex-row items-center gap-2">
             <Text className="text-sm text-gray-500 font-medium">
               {completedCount}/{items.length} done
@@ -465,95 +449,12 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
         )}
       </View>
 
-      {/* ─── New Group Modal ─────────────────────────────────────────────────── */}
-      <Modal
+      <ChecklistGroupModal
         visible={showGroupModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowGroupModal(false)}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          style={{ flex: 1 }}
-        >
-          <View className="flex-1 justify-end bg-black/50">
-            <View className="bg-white rounded-t-[30px] pt-2 pb-8">
-              {/* Handle */}
-              <View className="items-center mb-2">
-                <View className="w-10 h-1 bg-gray-300 rounded-full" />
-              </View>
-
-              {/* Header */}
-              <View className="flex-row justify-between items-center px-5 py-3 border-b border-gray-100">
-                <Text className="tracking-wider uppercase text-base text-gray-500 font-medium">
-                  New Checklist Group
-                </Text>
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  onPress={() => setShowGroupModal(false)}
-                >
-                  <Icon name="clear" size={30} color="#333" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Form */}
-              <Formik
-                initialValues={{ title: "", description: "" }}
-                validationSchema={GroupSchema}
-                onSubmit={handleSaveGroup}
-              >
-                {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
-                  <View className="px-5 pt-4">
-                    <View className="mb-4">
-                      <Text className="text-xs font-medium tracking-wider uppercase mb-1">Group Title*</Text>
-                      <TextInput
-                        mode="outlined"
-                        placeholder="e.g. Documents, Clothing..."
-                        value={values.title}
-                        onChangeText={handleChange("title")}
-                        onBlur={handleBlur("title")}
-                        error={touched.title && Boolean(errors.title)}
-                        outlineColor="#E0E0E0"
-                        activeOutlineColor="#263F69"
-                        outlineStyle={{ borderRadius: 16 }}
-                        style={{ marginTop: 4 }}
-                        left={<TextInput.Icon icon="folder" />}
-                      />
-                      {touched.title && errors.title && (
-                        <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
-                      )}
-                    </View>
-
-                    <View className="mb-6">
-                      <Text className="text-xs font-medium tracking-wider uppercase mb-1">Description (optional)</Text>
-                      <TextInput
-                        mode="outlined"
-                        placeholder="What kind of items go here?"
-                        multiline
-                        numberOfLines={3}
-                        value={values.description}
-                        onChangeText={handleChange("description")}
-                        onBlur={handleBlur("description")}
-                        outlineColor="#E0E0E0"
-                        activeOutlineColor="#263F69"
-                        outlineStyle={{ borderRadius: 16 }}
-                        style={{ marginTop: 4, minHeight: 90 }}
-                        textAlignVertical="top"
-                      />
-                    </View>
-
-                    <TouchButton
-                      buttonText="Create Group"
-                      onPress={() => handleSubmit()}
-                      className="h-[56px]"
-                    />
-                  </View>
-                )}
-              </Formik>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        onClose={() => setShowGroupModal(false)}
+        onSave={handleSaveGroup}
+        isSaving={saveGroupMutation.isPending}
+      />
     </ScrollView>
   );
 };

@@ -217,11 +217,12 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
         </View>
       )}
 
+       
       <View className="mb-5">
         <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
         <TextInput
           mode="outlined"
-          className="!h-[64px]"
+          className="h-7xl"
           placeholder="Your trip name"
           value={formik.values.title}
           onChangeText={formik.handleChange("title")}

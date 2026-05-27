@@ -58,6 +58,7 @@ const ViewTripModal = ({
   const { selectedTravelPlan, clearTravelPlan } = useTravelContext();
   const {
     data: travelPlan,
+    refetch,
   } = useTravelPlan(travelId);
 
   useEffect(() => {
@@ -214,6 +215,7 @@ const ViewTripModal = ({
               setShowMap={setShowMapModal}
               showShare={showShareModal}
               setShowShare={setShowShareModal}
+              onRefresh={refetch}
             />
           )}
         </View>

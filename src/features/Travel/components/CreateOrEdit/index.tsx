@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   View,
   Text,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Calendar, CalendarList } from "react-native-calendars";
 import { Checkbox, TextInput } from "react-native-paper";
@@ -253,7 +255,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
   return (
     <View className="flex-1 bg-gray-100 overflow-hidden">
-
       <ScrollView 
         ref={scrollViewRef}
         className="flex-1 p-[15px]" 
@@ -267,6 +268,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           </View>
         )} */}
 
+
+ 
         <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
           <TextInput
@@ -753,7 +756,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       </ScrollView>
 
     {!hideSubmitButton && (
-      <View className="mb-8 mt-2 mx-4 bg-red-50 fixed bottom-0 w-full">
+      <View className="mb-8 mt-2 mx-4 bg-red-50">
          <TouchButton
             buttonText={isSaving ? "Saving..." : mode === "create" ? "Add trip" : "Update Changes"}
             icon={mode === "create" ? "add" : ""}
@@ -763,7 +766,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           />
       </View>
     )}
-     
     </View>
   );
 });
