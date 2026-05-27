@@ -3,7 +3,6 @@ import * as ImagePicker from "expo-image-picker";
 import { Formik } from "formik";
 import React, { useState } from "react";
 import {
-  Alert,
   FlatList,
   Image,
   Modal,
@@ -20,6 +19,8 @@ import { useTravelContext } from "../../../../../context/TravelContext";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
 import { useDeleteNoteMutation, useSaveNoteMutation } from "../../../hooks/useNote";
 import { ItineraryActivity, ItineraryNote } from "../../../types/TravelDto";
+import { useConfirm } from "../../../../../context/ConfirmContext";
+import { useToast } from "../../../../../context/ToastContext";
 
 interface EditNoteProps {
   itineraryNote: ItineraryNote | null;
@@ -47,6 +48,8 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
   const saveMutation = useSaveNoteMutation();
   const deleteMutation = useDeleteNoteMutation();
   const [showActivityModal, setShowActivityModal] = useState(false);
+  const { confirm } = useConfirm();
+  const { showToast } = useToast();
 
   const handleSaveNote = async (values: NoteFormValues) => {
     const payload: ItineraryNote = {
@@ -64,23 +67,24 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
   };
 
   const handleDelete = async (id: string, travelId: string) => {
-    Alert.alert("Delete Note", "Are you sure you want to delete this note?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          await deleteMutation.mutateAsync({ noteId: id, travelId });
-          onClose();
-        },
-      },
-    ]);
+    const isConfirmed = await confirm({
+      title: "Delete Note",
+      message: "Are you sure you want to delete this note?",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger",
+    });
+
+    if (isConfirmed) {
+      await deleteMutation.mutateAsync({ noteId: id, travelId, activityId: itineraryNote?.activityId || undefined });
+      onClose();
+    }
   };
 
   const pickImage = async (setFieldValue: (field: string, value: any) => void, currentImages: string[]) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission required", "Camera roll permission is needed to upload images.");
+      showToast({ type: "error", message: "Camera roll permission is needed to upload images." });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({

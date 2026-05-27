@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../../../context/ToastContext";
 import { ItineraryNote } from "../types/TravelDto";
 import { saveItineraryNote, fetchItineraryNotes, deleteItineraryNote, fetchItineraryNotesByActivity } from "../../../services/travel/noteService";
 
@@ -12,6 +13,7 @@ export const useItineraryNotes = (travelId: string) => {
 
 export const useSaveNoteMutation = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   return useMutation({
     mutationFn: (noteData: ItineraryNote) => saveItineraryNote(noteData),
     onSuccess: (_, variables) => {
@@ -21,12 +23,24 @@ export const useSaveNoteMutation = () => {
       if (variables.activityId) {
         queryClient.invalidateQueries({ queryKey: ["itineraryNotesByActivity", variables.activityId] });
       }
+      showToast({
+        type: "success",
+        message: variables.id ? "Note updated successfully!" : "Note saved successfully!",
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Save Note Error:", error);
+      showToast({
+        type: "error",
+        message: error.message || "Failed to save note.",
+      });
     },
   });
 };
 
 export const useDeleteNoteMutation = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   return useMutation({
     mutationFn: ({ noteId, travelId }: { noteId: string; travelId: string; activityId?: string }) =>
       deleteItineraryNote(noteId),
@@ -35,6 +49,17 @@ export const useDeleteNoteMutation = () => {
       if (variables.activityId) {
         queryClient.invalidateQueries({ queryKey: ["itineraryNotesByActivity", variables.activityId] });
       }
+      showToast({
+        type: "success",
+        message: "Note deleted successfully!",
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Delete Note Error:", error);
+      showToast({
+        type: "error",
+        message: error.message || "Failed to delete note.",
+      });
     },
   });
 };

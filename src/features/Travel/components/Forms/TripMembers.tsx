@@ -2,7 +2,6 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React, { useState, useRef, useEffect } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -22,6 +21,8 @@ import {
   useTripMembers,
 } from "../../hooks/useTripMembers";
 import { TripMember } from "../../types/TravelDto";
+import { useConfirm } from "../../../../context/ConfirmContext";
+import { useToast } from "../../../../context/ToastContext";
 
 interface TripMembersProps {
   travelId: string;
@@ -31,6 +32,8 @@ const { height: screenHeight } = Dimensions.get("window");
 
 const TripMembers = ({ travelId }: TripMembersProps) => {
   const { colors } = useTheme();
+  const { confirm } = useConfirm();
+  const { showToast } = useToast();
   
   // Queries & Mutations
   const { data: tripMembers = [], isLoading, isError, error } = useTripMembers(travelId);
@@ -73,12 +76,12 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
 
   const handleAddMember = () => {
     if (!name.trim()) {
-      Alert.alert("Required Field", "Member name is required.");
+      showToast({ type: "error", message: "Member name is required." });
       return;
     }
 
     if (email.trim() && !/\S+@\S+\.\S+/.test(email)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address.");
+      showToast({ type: "error", message: "Please enter a valid email address." });
       return;
     }
 
@@ -95,33 +98,28 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
           handleCloseModal();
         },
         onError: (err) => {
-          Alert.alert("Error", `Failed to ${editingMemberId ? "update" : "add"} member. Please try again.`);
           console.error("Save Member Error:", err);
         },
       }
     );
   };
 
-  const handleDeleteMember = (id: string, memberName: string) => {
-    Alert.alert(
-      "Remove Member",
-      `Are you sure you want to remove ${memberName} from this trip?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () => {
-            deleteMember(id, {
-              onError: (err) => {
-                Alert.alert("Error", "Failed to remove member. Please try again.");
-                console.error("Delete Member Error:", err);
-              },
-            });
-          },
+  const handleDeleteMember = async (id: string, memberName: string) => {
+    const isConfirmed = await confirm({
+      title: "Remove Member",
+      message: `Are you sure you want to remove ${memberName} from this trip?`,
+      confirmText: "Remove",
+      cancelText: "Cancel",
+      type: "danger",
+    });
+
+    if (isConfirmed) {
+      deleteMember(id, {
+        onError: (err) => {
+          console.error("Delete Member Error:", err);
         },
-      ]
-    );
+      });
+    }
   };
 
   if (isLoading) {

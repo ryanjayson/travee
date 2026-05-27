@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
+import { useConfirm } from "../../../../../context/ConfirmContext";
 import { ItineraryActivity } from "../../../types/TravelDto";
 import MapViewer from "../../MapViewer";
 import ViewActivityModal from "./Modal";
@@ -29,6 +30,7 @@ const ActivityItemCard = ({
 }: ItineraryActivityProps) => {
   const [itineraryEventActivity, setItineraryEventActivity] =
     useState<ItineraryActivity>(itineraryActivity);
+  const { confirm } = useConfirm();
 
   const [showActivityViewModal, setShowActivityViewModal] =
     useState<boolean>(false);
@@ -39,36 +41,30 @@ const ActivityItemCard = ({
     setItineraryEventActivity(itineraryActivity);
   }, [itineraryActivity]);
 
-  const handleToggleDone = () => {
+  const handleToggleDone = async () => {
     const nextStatus = !itineraryEventActivity.isDone;
-    Alert.alert(
-      "Confirmation",
-      `Are you sure you want to mark this activity as ${nextStatus ? 'done' : 'undone'}?`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Yes",
-          onPress: async () => {
-            try {
-              const updatedPayload = {
-                ...itineraryEventActivity,
-                isDone: nextStatus,
-                isOffline: true,
-              };
-              
-              await updateMutation.mutateAsync(updatedPayload);
-              setItineraryEventActivity(updatedPayload);
-            } catch (err) {
-              console.error("Failed to update activity status:", err);
-              Alert.alert("Error", "Failed to update activity status.");
-            }
-          },
-        },
-      ],
-    );
+    const isConfirmed = await confirm({
+      title: "Confirmation",
+      message: `Are you sure you want to mark this activity as ${nextStatus ? 'done' : 'undone'}?`,
+      confirmText: "Yes",
+      cancelText: "Cancel",
+      type: "default",
+    });
+
+    if (isConfirmed) {
+      try {
+        const updatedPayload = {
+          ...itineraryEventActivity,
+          isDone: nextStatus,
+          isOffline: true,
+        };
+        
+        await updateMutation.mutateAsync(updatedPayload);
+        setItineraryEventActivity(updatedPayload);
+      } catch (err) {
+        console.error("Failed to update activity status:", err);
+      }
+    }
   };
 
   const handleViewModeActivity = (id: string) => {

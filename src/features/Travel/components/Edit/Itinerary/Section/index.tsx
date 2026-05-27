@@ -20,6 +20,7 @@ import { useTravel } from "../../../../hooks/useTravel";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { Calendar } from "react-native-calendars";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
+import { useConfirm } from "../../../../../../context/ConfirmContext";
 
 interface Place {
   id: string;
@@ -46,29 +47,26 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
   const { selectedTravelPlan } = useTravelContext();
   const { data: travel } = useTravel(selectedTravelPlan?.id || "");
   const { generateSortOrder } = useLexicographicSort();
+  const { confirm } = useConfirm();
 
   const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
 
-  const handleDeleteSection = () => {
+  const handleDeleteSection = async () => {
     if (itinerarySection?.travelId && itinerarySection?.id) {
-      Alert.alert(
-        "Delete Section",
-        "Are you sure you want to delete this section? All associated activities will also be permanently deleted. This action is irreversible.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: () => {
-              deleteSectionMutation({
-                travelId: itinerarySection.travelId!,
-                sectionId: itinerarySection.id!,
-              });
-              onClose();
-            },
-          },
-        ]
-      );
+      const isConfirmed = await confirm({
+        title: "Delete Section",
+        message: "Are you sure you want to delete this section? All associated activities will also be permanently deleted. This action is irreversible.",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        type: "danger",
+      });
+
+      if (isConfirmed) {
+        deleteSectionMutation({
+          sectionId: itinerarySection.id!,
+        });
+        onClose();
+      }
     }
   };
 

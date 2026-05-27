@@ -12,6 +12,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTripStatusCheck } from "./src/hooks/useTripStatusCheck";
 import ErrorBoundary from "./src/components/ErrorBoundary";
 import { logError, ErrorCategory, ErrorSeverity } from "./src/services/errorLogger";
+import { ToastProvider } from "./src/context/ToastContext";
+import { ConfirmProvider } from "./src/context/ConfirmContext";
 
 // ─── Global unhandled JS error capture ───────────────────────────────────────
 // Catches promise rejections and unhandled JS errors that escape React boundaries.
@@ -45,11 +47,15 @@ export default function App() {
         <PaperProvider theme={theme}>
           <SafeAreaProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
-              <StatusBar style="auto" />
-              <TripStatusGuard />
-              <ErrorBoundary screen="AppRoot">
-                <AppNavigator />
-              </ErrorBoundary>
+              <ToastProvider>
+                <ConfirmProvider>
+                  <StatusBar style="auto" />
+                  <TripStatusGuard />
+                  <ErrorBoundary screen="AppRoot">
+                    <AppNavigator />
+                  </ErrorBoundary>
+                </ConfirmProvider>
+              </ToastProvider>
             </GestureHandlerRootView>
           </SafeAreaProvider>
         </PaperProvider>

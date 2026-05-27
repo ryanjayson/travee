@@ -30,6 +30,7 @@ import { useTravelPlan } from "../../../../hooks/useTravel";
 import { DestinationDto, Images, ItineraryActivity } from "../../../../types/TravelDto";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
 import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
+import { useConfirm } from "../../../../../../context/ConfirmContext";
 
 interface Place {
   id: string;
@@ -88,6 +89,7 @@ const EditActivity = ({
     data: travelPlan,
   } = useTravelPlan(selectedTravelPlan?.id || "");
   const currentSection = travelPlan?.itinerarySection?.find(s => s.id === itinerarySectionId);
+  const { confirm } = useConfirm();
 
   // Checklist state
   const [newCheckTitle, setNewCheckTitle] = useState("");
@@ -129,15 +131,18 @@ const EditActivity = ({
     });
   };
 
-  const handleDeleteChecklistItem = (item: any) => {
-    Alert.alert("Remove Item", `Remove "${item.title}"?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Remove",
-        style: "destructive",
-        onPress: () => deleteChecklistItem.mutate({ id: item.id, travelId }),
-      },
-    ]);
+  const handleDeleteChecklistItem = async (item: any) => {
+    const isConfirmed = await confirm({
+      title: "Remove Item",
+      message: `Remove "${item.title}"?`,
+      confirmText: "Remove",
+      cancelText: "Cancel",
+      type: "danger",
+    });
+
+    if (isConfirmed) {
+      deleteChecklistItem.mutate({ id: item.id, travelId });
+    }
   };
 
   const pickImage = async (setFn: (field: string, value: any) => void, currentImages: Images[]) => {
@@ -252,26 +257,23 @@ const EditActivity = ({
     }
   };
 
-  const handleDeleteActivity = (activityId: string) => {
+  const handleDeleteActivity = async (activityId: string) => {
     if (itinerarySectionId && activityId) {
-      Alert.alert(
-        "Delete Activity",
-        "Are you sure you want to delete this activity? All associated expenses, notes, and checklist items will also be permanently deleted. This action is irreversible.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: () => {
-              deleteActivityMutation({
-                sectionId: itinerarySectionId,
-                activityId: activityId,
-              });
-              onClose();
-            },
-          },
-        ]
-      );
+      const isConfirmed = await confirm({
+        title: "Delete Activity",
+        message: "Are you sure you want to delete this activity? All associated expenses, notes, and checklist items will also be permanently deleted. This action is irreversible.",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        type: "danger",
+      });
+
+      if (isConfirmed) {
+        deleteActivityMutation({
+          sectionId: itinerarySectionId,
+          activityId: activityId,
+        });
+        onClose();
+      }
     }
   };
 

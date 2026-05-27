@@ -10,6 +10,7 @@ import type { RootStackParamList } from "../../../../navigation/navigation.types
 import { TravelMenuAction } from "../../../../types/enums";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
 import { useArchiveTravel, useCancelTravel, useDeleteTravel, useTravelPlan, useUnarchiveTravel } from "../../hooks/useTravel";
+import { useConfirm } from "../../../../context/ConfirmContext";
 
 interface ViewTripModalProps {
   travelId: string;
@@ -24,6 +25,7 @@ const ViewTripModal = ({
   showModal = false,
   setShowModal,
 }: ViewTripModalProps) => {
+  const { confirm } = useConfirm();
   const [showTravelNavigationModal, setShowTravelNavigationModal] =
     useState<boolean>(false);
   const [expanded, setExpanded] = useState<boolean>(false);
@@ -73,7 +75,7 @@ const ViewTripModal = ({
     setShowModal(false);
   };
 
-  const handleSelectNavigationMenu = (menuAction: TravelMenuAction) => {
+  const handleSelectNavigationMenu = async (menuAction: TravelMenuAction) => {
     const id = travelPlan?.travel?.id;
 
     if (menuAction === TravelMenuAction.EditTravel) {
@@ -81,88 +83,60 @@ const ViewTripModal = ({
         navigation.navigate("EditTravelPlan", { travelId: id });
       }
     } else if (menuAction === TravelMenuAction.Cancel) {
-      Alert.alert(
-        "Cancel Trip",
-        "Are you sure you want to cancel this trip? This will mark it as cancelled.",
-        [
-          { text: "No", style: "cancel" },
-          {
-            text: "Yes, Cancel Trip",
-            style: "destructive",
-            onPress: () => {
-              if (id != null) {
-                cancelTravel(String(id), {
-                  onSuccess: () => setShowModal(false),
-                  onError: () => Alert.alert("Error", "Failed to cancel trip. Please try again."),
-                });
-              }
-            },
-          },
-        ]
-      );
+      const isConfirmed = await confirm({
+        title: "Cancel Trip",
+        message: "Are you sure you want to cancel this trip? This will mark it as cancelled.",
+        confirmText: "Cancel Trip",
+        cancelText: "No",
+        type: "danger",
+      });
+      if (isConfirmed && id != null) {
+        cancelTravel(String(id), {
+          onSuccess: () => setShowModal(false),
+        });
+      }
     } else if (menuAction === TravelMenuAction.Delete) {
-      Alert.alert(
-        "Delete Trip",
-        "Are you sure you want to permanently delete this trip? This action cannot be undone.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: () => {
-              if (id != null) {
-                deleteTravel(String(id), {
-                  onSuccess: () => {
-                    clearTravelPlan();
-                    setShowModal(false);
-                  },
-                  onError: () => Alert.alert("Error", "Failed to delete trip. Please try again."),
-                });
-              }
-            },
+      const isConfirmed = await confirm({
+        title: "Delete Trip",
+        message: "Are you sure you want to permanently delete this trip? This action cannot be undone.",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        type: "danger",
+      });
+      if (isConfirmed && id != null) {
+        deleteTravel(String(id), {
+          onSuccess: () => {
+            clearTravelPlan();
+            setShowModal(false);
           },
-        ]
-      );
+        });
+      }
     } else if (menuAction === TravelMenuAction.Archive) {
-      Alert.alert(
-        "Archive Trip",
-        "Are you sure you want to archive this trip? It will be moved to the archive but its status will be retained.",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Archive",
-            style: "default",
-            onPress: () => {
-              if (id != null) {
-                archiveTravel(String(id), {
-                  onSuccess: () => setShowModal(false),
-                  onError: () => Alert.alert("Error", "Failed to archive trip. Please try again."),
-                });
-              }
-            },
-          },
-        ]
-      );
+      const isConfirmed = await confirm({
+        title: "Archive Trip",
+        message: "Are you sure you want to archive this trip? It will be moved to the archive.",
+        confirmText: "Archive",
+        cancelText: "Cancel",
+        type: "warning",
+      });
+      if (isConfirmed && id != null) {
+        archiveTravel(String(id), {
+          onSuccess: () => setShowModal(false),
+        });
+      }
     } else if (menuAction === TravelMenuAction.Unarchive) {
-      Alert.alert(
-        "Unarchive Trip",
-        "Are you sure you want to unarchive this trip?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Unarchive",
-            style: "default",
-            onPress: () => {
-              if (id != null) {
-                unarchiveTravel(String(id), {
-                  onSuccess: () => setShowModal(false),
-                  onError: () => Alert.alert("Error", "Failed to unarchive trip. Please try again."),
-                });
-              }
-            },
-          },
-        ]
-      );
+      const isConfirmed = await confirm({
+        title: "Unarchive Trip",
+        message: "Are you sure you want to unarchive this trip?",
+        confirmText: "Unarchive",
+        cancelText: "Cancel",
+        type: "default",
+      });
+      if (isConfirmed && id != null) {
+        unarchiveTravel(String(id), {
+          onSuccess: () => setShowModal(false),
+        });
+      }
     }
   };
 

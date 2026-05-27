@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "@env";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../../../context/ToastContext";
 import {
   fetchTravel
 } from "../../../services/api/travel";
@@ -23,6 +24,7 @@ type MutationError = Error;
 
 export const useUpdateTravel = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const updateTravelMutation = useMutation<
     MutationData,
@@ -67,9 +69,17 @@ export const useUpdateTravel = () => {
           queryKey: [TRAVEL_QUERY_KEY, variables.id],
         });
       }
+      showToast({
+        type: "success",
+        message: variables.id ? "Trip updated successfully!" : "Trip created successfully!",
+      });
     },
     onError: (error) => {
       console.error("Travel Mutation Error:", error);
+      showToast({
+        type: "error",
+        message: error.message || "Failed to save trip.",
+      });
     },
   });
 
@@ -151,6 +161,7 @@ export const useTravels = () => {
 
 export const useDeleteTravel = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   return useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
@@ -167,15 +178,24 @@ export const useDeleteTravel = () => {
       queryClient.removeQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
       // 3. Invalidate to refetch fresh data
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
+      showToast({
+        type: "success",
+        message: "Trip deleted successfully!",
+      });
     },
     onError: (error) => {
       console.error("Delete Travel Error:", error);
+      showToast({
+        type: "error",
+        message: error.message || "Failed to delete trip.",
+      });
     },
   });
 };
 
 export const useCancelTravel = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   return useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
@@ -200,15 +220,24 @@ export const useCancelTravel = () => {
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", id] });
       queryClient.invalidateQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
+      showToast({
+        type: "success",
+        message: "Trip cancelled successfully!",
+      });
     },
     onError: (error) => {
       console.error("Cancel Travel Error:", error);
+      showToast({
+        type: "error",
+        message: error.message || "Failed to cancel trip.",
+      });
     },
   });
 };
 
 export const useArchiveTravel = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   return useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
@@ -233,15 +262,24 @@ export const useArchiveTravel = () => {
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", id] });
       queryClient.invalidateQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
+      showToast({
+        type: "success",
+        message: "Trip archived successfully!",
+      });
     },
     onError: (error) => {
       console.error("Archive Travel Error:", error);
+      showToast({
+        type: "error",
+        message: error.message || "Failed to archive trip.",
+      });
     },
   });
 };
 
 export const useUnarchiveTravel = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   return useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
@@ -266,9 +304,17 @@ export const useUnarchiveTravel = () => {
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", id] });
       queryClient.invalidateQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
+      showToast({
+        type: "success",
+        message: "Trip unarchived successfully!",
+      });
     },
     onError: (error) => {
       console.error("Unarchive Travel Error:", error);
+      showToast({
+        type: "error",
+        message: error.message || "Failed to unarchive trip.",
+      });
     },
   });
 };

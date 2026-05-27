@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../../../context/ToastContext";
 import { API_BASE_URL } from "@env";
 import { ItinerarySection } from "../types/TravelDto"; // Assuming Itinerary is needed for caching
 import { postRequestOptions } from "../../../utils/apiUtils";
@@ -33,6 +34,7 @@ type DeleteVariables = {
 
 export const useUpdateSectionMutation = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const updateSectionMutation = useMutation<
     MutationData,
@@ -127,6 +129,10 @@ export const useUpdateSectionMutation = () => {
 
       // //MANUAL INVALIDATION or ADDING/UPDATTING THE QUERY OBJECT CACHE
       const sectionId = data.data?.id || variables.id; // Use server ID, fallback to client ID
+      showToast({
+        type: "success",
+        message: variables.id ? "Section updated successfully!" : "Section created successfully!",
+      });
 
       // queryClient.setQueryData(
       //   SELECTED_TRAVEL_PLAN_QUERY_KEY,
@@ -171,11 +177,13 @@ export const useUpdateSectionMutation = () => {
       // );
     },
 
-    // 6. Keep error handling concise
     onError: (error) => {
       // Log the error for development/monitoring
       console.error("Section Update Error:", error);
-      // Optional: Add Toast/Alert here to notify the user
+      showToast({
+        type: "error",
+        message: error.message || "Failed to save section.",
+      });
     },
   });
 
@@ -184,6 +192,7 @@ export const useUpdateSectionMutation = () => {
 
 export const useDeleteSectionMutation = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   return useMutation({
     // --- A. Define the Mutation Function ---
@@ -243,6 +252,17 @@ export const useDeleteSectionMutation = () => {
 
       // OPTIONAL: Also remove the specific query for the deleted section if it existed
       queryClient.removeQueries({ queryKey: ["section", variables.sectionId] });
+      showToast({
+        type: "success",
+        message: "Section deleted successfully!",
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Section Delete Error:", error);
+      showToast({
+        type: "error",
+        message: error.message || "Failed to delete section.",
+      });
     },
 
     // --- C. Cleanup (Runs after success or failure) ---

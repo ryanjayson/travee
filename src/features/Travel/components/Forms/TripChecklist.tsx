@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Text,
 } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
@@ -29,6 +28,7 @@ import {
 } from "../../hooks/useChecklist";
 import { useTravelContext } from "../../../../context/TravelContext";
 import { useAuth } from "../../../Auth/hooks/AuthContext";
+import { useConfirm } from "../../../../context/ConfirmContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -66,6 +66,8 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
   const saveItemMutation = useSaveChecklistItemMutation();
   const deleteItemMutation = useDeleteChecklistItemMutation();
   const toggleItemMutation = useToggleChecklistItemMutation();
+
+  const { confirm } = useConfirm();
 
   // UI State
   const [showGroupModal, setShowGroupModal] = useState(false);
@@ -142,15 +144,17 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
 
   // ─── Delete Item ────────────────────────────────────────────────────────────
 
-  const handleDelete = (item: ChecklistItem) => {
-    Alert.alert("Delete Item", `Remove "${item.title}"?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => deleteItemMutation.mutate({ id: item.id!, travelId }),
-      },
-    ]);
+  const handleDelete = async (item: ChecklistItem) => {
+    const isConfirmed = await confirm({
+      title: "Delete Item",
+      message: `Remove "${item.title}"?`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger",
+    });
+    if (isConfirmed) {
+      deleteItemMutation.mutate({ id: item.id!, travelId });
+    }
   };
 
   // ─── Save Group ─────────────────────────────────────────────────────────────

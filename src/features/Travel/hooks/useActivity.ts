@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useToast } from "../../../context/ToastContext";
 import { API_BASE_URL } from "@env";
 import {
   ItinerarySection,
@@ -26,6 +27,7 @@ type DeleteVariables = {
 
 export const useUpdateActivityMutation = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const updateActivityMutation = useMutation<
     MutationData,
@@ -98,6 +100,10 @@ export const useUpdateActivityMutation = () => {
           queryKey: [ITINERARY_QUERY_KEY, variables.id],
         });
       }
+      showToast({
+        type: "success",
+        message: variables.id ? "Activity updated successfully!" : "Activity created successfully!",
+      });
       
       // Keep manual update logic for performance, but invalidate is the source of truth 
       // TODO: might separate POST and PUT for clarity
@@ -171,7 +177,10 @@ export const useUpdateActivityMutation = () => {
     onError: (error) => {
       // Log the error for development/monitoring
       console.error("Section Update Error:", error);
-      // Optional: Add Toast/Alert here to notify the user
+      showToast({
+        type: "error",
+        message: error.message || "Failed to save activity.",
+      });
     },
   });
 
@@ -180,6 +189,7 @@ export const useUpdateActivityMutation = () => {
 
 export const useDeleteActivityMutation = () => {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   return useMutation({
     mutationFn: async (variables: DeleteVariables): Promise<void> => {
@@ -224,6 +234,17 @@ export const useDeleteActivityMutation = () => {
     },
     onSuccess: (data: void, variables: DeleteVariables) => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      showToast({
+        type: "success",
+        message: "Activity deleted successfully!",
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Activity Delete Error:", error);
+      showToast({
+        type: "error",
+        message: error.message || "Failed to delete activity.",
+      });
     },
 
     // --- C. Cleanup (Runs after success or failure) ---
