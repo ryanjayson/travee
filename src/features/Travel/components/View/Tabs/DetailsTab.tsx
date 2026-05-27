@@ -235,7 +235,7 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
                   key={entry.type}
                   className={`flex-row items-center px-4 py-3 ${idx < activityTypeBreakdown.length - 1 ? "border-b border-gray-50" : ""}`}
                 >
-                  <ActivityIcon type={entry.type as ActivityType} size={22} color="#263F69" />
+                  <ActivityIcon type={entry.type as ActivityType} size={22} />
                   <Text className="text-sm text-gray-700 font-medium flex-1 ml-3 capitalize">
                     {activityTypeName(entry.type)}
                   </Text>

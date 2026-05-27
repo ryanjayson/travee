@@ -119,19 +119,17 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
           <Ionicons name="person-outline" size={24} color="#fff" />
         </TouchableOpacity>
 
-        <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 70 : 130 }}>
+        <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 70 : 80 }}>
             <Text className="tracking-wider text-white text-sm mb-1">Good morning, Travieler</Text>
           {ongoingTrip ? (
             <View className="py-2 px-1">
               <View className="flex-row items-center gap-2">
-              
                 <Animated.View 
                   style={{ opacity: pulseAnim }}
                   className="w-2 h-2 rounded-full bg-green-400"
                 />
                 <Text className="text-green-300 text-[10px] font-bold tracking-widest uppercase">Ongoing</Text>
               </View>
-
               <Text
                 className="text-white font-bold mb-1"
                 style={{ fontSize: titleIsLong ? 24 : 36 }}
@@ -316,9 +314,9 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       </View>
 
       {ongoingTrip && (
-      <View className="p-5  flex-1">
+      <View className="p-5 flex-1">
         <Text className="text-sm font-medium">Quick Actions</Text>
-        <View className="flex-1 flex-row items-center gap-8 py-3 justify-between z-40">
+        <View className="flex-1 flex-row items-center gap-8 py-3 justify-between z-40 px-6">
         <View className="items-center">
           <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full border-2 border-gray-300' onPress={() => setShowTravelViewModal(true)}>
             <Ionicons name="briefcase-outline" size={24} color="#263F69" />

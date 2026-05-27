@@ -37,6 +37,36 @@ const ExpenseCategoryIcon = ({
     case ExpenseCategory.HealthAndWellness:
       iconName = "spa";
       break;
+    case ExpenseCategory.Gifts:
+      iconName = "card-giftcard";
+      break;
+    case ExpenseCategory.Insurance:
+      iconName = "security";
+      break;
+    case ExpenseCategory.Emergency:
+      iconName = "emergency";
+      break;
+    case ExpenseCategory.Subscriptions:
+      iconName = "subscriptions";
+      break;
+    case ExpenseCategory.BankAndFees:
+      iconName = "account-balance";
+      break;
+    case ExpenseCategory.Communication:
+      iconName = "wifi";
+      break;
+    case ExpenseCategory.Fuel:
+      iconName = "local-gas-station";
+      break;
+    case ExpenseCategory.Activities:
+      iconName = "sports-gymnastics";
+      break;
+    case ExpenseCategory.Laundry:
+      iconName = "local-laundry-service";
+      break;
+    case ExpenseCategory.VisasAndDocuments:
+      iconName = "badge";
+      break;
     case ExpenseCategory.Others:
       iconName = "more-horiz";
       break;
@@ -45,7 +75,7 @@ const ExpenseCategoryIcon = ({
       break;
   }
 
-  return <Icon name={iconName} size={size} color={color} />;
+  return <Icon name={iconName as any} size={size} color={color} />;
 };
 
 export default ExpenseCategoryIcon;

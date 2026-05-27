@@ -78,7 +78,7 @@ const ExpenseCategoryLookupModal = ({
           <View className="px-6 py-4 border-b border-gray-200">
             <TextInput
               mode="outlined"
-              placeholder="Search category"
+              placeholder="Search category to assign in expense"
               value={searchQuery}
               onChangeText={setSearchQuery}
               right={
@@ -90,9 +90,11 @@ const ExpenseCategoryLookupModal = ({
                   />
                 ) : null
               }
-              activeOutlineColor={colors.primary}
-              outlineColor={colors.outlineVariant}
-              style={{ backgroundColor: colors.surface }}
+              theme={{ colors: { onSurfaceVariant: '#888' } }}
+              outlineColor="#E0E0E0"
+              activeOutlineColor="#263F69"
+              outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+              style={{ backgroundColor: colors.surface, borderRadius: 20 }}
             />
           </View>
 
@@ -100,7 +102,7 @@ const ExpenseCategoryLookupModal = ({
             {filteredCategories.map(({ key, categoryValue, displayName }) => (
               <TouchableOpacity
                 key={key}
-                className="p-4 border-b border-gray-100 flex-row items-center gap-4"
+                className="p-5 border-b border-gray-100 flex-row items-center gap-4"
                 onPress={() => handleSelect(categoryValue)}
                 accessibilityRole="button"
                 accessibilityLabel={`Select category ${displayName}`}

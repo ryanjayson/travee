@@ -8,29 +8,27 @@ import {
   Text,
 } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
+import { ActivityType } from "../../../../types/enums";
 import ActivityIcon from "../../../../components/ActivityIcon";
-import { ItineraryActivity } from "../../types/TravelDto";
 
-interface ActivityLookupModalProps {
+interface ActivityTypeLookupModalProps {
   visible: boolean;
   onClose: () => void;
-  activities?: ItineraryActivity[];
-  selectedActivityId?: string;
-  onSelect: (activityId?: string) => void;
+  selectedType?: ActivityType;
+  onSelect: (type: ActivityType) => void;
 }
 
-const ActivityLookupModal = ({
+const ActivityTypeLookupModal = ({
   visible,
   onClose,
-  activities = [],
-  selectedActivityId,
+  selectedType,
   onSelect,
-}: ActivityLookupModalProps) => {
+}: ActivityTypeLookupModalProps) => {
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const handleSelect = (activityId?: string) => {
-    onSelect(activityId);
+  const handleSelect = (type: ActivityType) => {
+    onSelect(type);
     setSearchQuery(""); // reset search
     onClose();
   };
@@ -40,8 +38,16 @@ const ActivityLookupModal = ({
     onClose();
   };
 
-  const filteredActivities = activities.filter((activity) =>
-    activity.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const types = Object.keys(ActivityType)
+    .filter((key) => isNaN(Number(key)))
+    .map((key) => {
+      const typeValue = ActivityType[key as keyof typeof ActivityType];
+      const displayName = key.replace(/([A-Z])/g, " $1").trim();
+      return { key, typeValue, displayName };
+    });
+
+  const filteredTypes = types.filter((t) =>
+    t.displayName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -58,12 +64,12 @@ const ActivityLookupModal = ({
               className="text-xl font-medium"
               style={{ color: colors.primary }}
             >
-              Select Activity
+              Select Activity Type
             </Text>
             <TouchableOpacity 
               onPress={handleClose}
               accessibilityRole="button"
-              accessibilityLabel="Close activity selection modal"
+              accessibilityLabel="Close activity type selection modal"
             >
               <Icon name="close" size={24} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
@@ -72,7 +78,7 @@ const ActivityLookupModal = ({
           <View className="px-6 py-4 border-b border-gray-200">
             <TextInput
               mode="outlined"
-              placeholder="Search for trip activity to link"
+              placeholder="Search activity type"
               value={searchQuery}
               onChangeText={setSearchQuery}
               right={
@@ -91,42 +97,22 @@ const ActivityLookupModal = ({
               style={{ backgroundColor: colors.surface, borderRadius: 20 }}
             />
           </View>
-          
+
           <ScrollView>
-            {/* <TouchableOpacity
-              className="p-4 border-b border-gray-100 flex-row items-center gap-4"
-              onPress={() => handleSelect(undefined)}
-              accessibilityRole="button"
-              accessibilityLabel="Select no activity"
-            >
-              <Text className="text-base text-gray-800">
-                None
-              </Text>
-              {!selectedActivityId && (
-                <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
-              )}
-            </TouchableOpacity> */}
-            
-            {filteredActivities.map((activity) => (
+            {filteredTypes.map(({ key, typeValue, displayName }) => (
               <TouchableOpacity
-                key={activity.id}
+                key={key}
                 className="p-5 border-b border-gray-100 flex-row items-center gap-4"
-                onPress={() => handleSelect(activity.id)}
+                onPress={() => handleSelect(typeValue)}
                 accessibilityRole="button"
-                accessibilityLabel={`Select activity ${activity.title}`}
+                accessibilityLabel={`Select activity type ${displayName}`}
               >
-                <ActivityIcon type={activity.type as any} size={24} />
-                <View className="flex-1">
-                  <Text className="text-base text-gray-800 font-medium">
-                    {activity.title}
-                  </Text>
-                  {activity.startDate && (
-                    <Text className="text-xs text-gray-500">
-                      {new Date(activity.startDate).toLocaleDateString()}
-                    </Text>
-                  )}
-                </View>
-                {selectedActivityId === activity.id && (
+                {/* Note: Not passing a color override here so that it automatically uses the assigned per-type color we defined in ActivityIcon */}
+                <ActivityIcon type={typeValue} size={24} />
+                <Text className="text-base text-gray-800 flex-1 capitalize">
+                  {displayName}
+                </Text>
+                {selectedType === typeValue && (
                   <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
                 )}
               </TouchableOpacity>
@@ -138,4 +124,4 @@ const ActivityLookupModal = ({
   );
 };
 
-export default ActivityLookupModal;
+export default ActivityTypeLookupModal;

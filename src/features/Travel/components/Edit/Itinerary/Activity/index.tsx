@@ -33,6 +33,7 @@ import { useSaveChecklistItemMutation, useChecklistItems, useToggleChecklistItem
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
 import { useTravelPlan } from "../../../../hooks/useTravel";
+import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
 
 interface Place {
   id: string;
@@ -323,7 +324,7 @@ const EditActivity = ({
                   <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
                   <TextInput
                     mode="outlined"
-                    className="!h-[64px]"
+                    className="h-7xl!"
                     placeholder="Activity title"
                     value={values.title}
                     onChangeText={handleChange("title")}
@@ -495,10 +496,10 @@ const EditActivity = ({
                   <Text className="text-xs font-semibold tracking-wider uppercase">Activity Type</Text>
                   <TouchableOpacity 
                     onPress={() => setShowPrimaryTypeModal(true)}
-                    className="border rounded-2xl h-[64px] border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
+                    className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
                   >
                     {values.type != null && values.type !== ActivityType.none ? (
-                      <ActivityIcon type={values.type as number} size={24} color="#183B7A" />
+                      <ActivityIcon type={values.type as number} size={24} />
                     ) : (
                       <Icon name="style" size={32} color={"#B3B3B3"} />
                     )}
@@ -704,47 +705,17 @@ const EditActivity = ({
               onCancel={() => setShowCalendarFor(null)}
             />
 
-            <Modal
+            <ActivityTypeLookupModal
               visible={showPrimaryTypeModal}
-              transparent={true}
-              animationType="fade"
-              onRequestClose={() => setShowPrimaryTypeModal(false)}
-            >
-              <View className="flex-1 justify-center items-center bg-black/50 p-5">
-                <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[80%] overflow-hidden">
-                  <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                    <Text className="text-lg font-bold text-primary">
-                      Select Activity Type
-                    </Text>
-                    <TouchableOpacity onPress={() => setShowPrimaryTypeModal(false)}>
-                      <Icon name="close" size={24} color="#666" />
-                    </TouchableOpacity>
-                  </View>
-                  <ScrollView>
-                    {Object.keys(ActivityType)
-                      .filter((key) => isNaN(Number(key)))
-                      .map((key) => (
-                        <TouchableOpacity
-                          key={key}
-                          className="p-4 border-b border-gray-100 flex-row items-center gap-3"
-                          onPress={() => {
-                            setValues({
-                              ...values,
-                              type: ActivityType[key as keyof typeof ActivityType],
-                            });
-                            setShowPrimaryTypeModal(false);
-                          }}
-                        >
-                          <ActivityIcon type={ActivityType[key as keyof typeof ActivityType]} size={24} color="#183B7A" />
-                          <Text className="text-base text-gray-800 capitalize">
-                            {key.replace(/([A-Z])/g, ' $1').trim()}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                  </ScrollView>
-                </View>
-              </View>
-            </Modal>
+              onClose={() => setShowPrimaryTypeModal(false)}
+              selectedType={values.type as ActivityType}
+              onSelect={(type) => {
+                setValues({
+                  ...values,
+                  type,
+                });
+              }}
+            />
 
             <DateTimePickerModal
               isVisible={showTimePickerFor !== null}

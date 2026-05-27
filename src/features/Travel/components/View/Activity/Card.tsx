@@ -113,7 +113,6 @@ const ActivityItemCard = ({
           <ActivityIcon
             type={itineraryEventActivity.type!}
             size={24}
-            color="#dc3545"
           />
         </View>
 

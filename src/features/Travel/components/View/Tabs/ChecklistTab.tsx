@@ -143,7 +143,6 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
               <ActivityIcon
                 type={(activity.type ?? ActivityType.none) as ActivityType}
                 size={18}
-                color="#444"
               />
               <Text className="text-sm font-bold text-gray-600 flex-1">{activity.title}</Text>
               <Text className="text-xs text-gray-400">{doneCt}/{activityItems.length}</Text>

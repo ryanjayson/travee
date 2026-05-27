@@ -23,7 +23,6 @@ import { ItineraryActivity, ItineraryExpense } from "../../../types/TravelDto";
 import ExpenseCategoryIcon from "./ExpenseCategoryIcon";
 import ActivityLookupModal from "../../Lookups/ActivityLookupModal";
 import ExpenseCategoryLookupModal from "../../Lookups/ExpenseCategoryLookupModal";
-
 interface EditExpenseProps {
   itineraryExpense: ItineraryExpense | null;
   activityId?: string;
@@ -125,7 +124,7 @@ const EditExpense = ({
             keyboardShouldPersistTaps="never"
           >
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider text-tertiary uppercase">Expense Title</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Expense Title</Text>
               <TextInput
                 mode="outlined"
                 placeholder="What was this for?"
@@ -148,7 +147,7 @@ const EditExpense = ({
 
             <View className="flex-row gap-4 mb-5">
               <View className="flex-1">
-                <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Amount</Text>
+                <Text className="text-xs font-semibold tracking-wider uppercase">Amount</Text>
                 <TextInput
                   mode="outlined"
                   placeholder="0.00"
@@ -170,9 +169,10 @@ const EditExpense = ({
                 )}
               </View>
               <View className="w-1/3">
-                <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Currency</Text>
+                <Text className="text-xs font-semibold tracking-wider uppercase ">Currency</Text>
                 <TextInput
                   mode="outlined"
+                  disabled={true}
                   value={formik.values.currency}
                   onChangeText={formik.handleChange("currency")}
                   outlineColor="#E0E0E0"
@@ -186,7 +186,7 @@ const EditExpense = ({
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Date & Time</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase ">Date & Time</Text>
               <TouchableOpacity
                 onPress={() => setShowDatePicker(true)}
                 className="mt-2 border border-[#E0E0E0] h-7xl rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
@@ -219,12 +219,11 @@ const EditExpense = ({
               />
             </View>
 
-            <View className="flex-1 my-5">
+            <View className="flex-1 mt-5 mb-2 ">
               <Text className="text-md font-semibold tracking-wider uppercase">Expense assignment</Text>
             </View>
 
-            <View className="flex-row items-center mb-5">
-              
+            <View className="flex-row items-center p-5 pl-2 bg-white rounded-t-2xl">
               <Checkbox
                 status={formik.values.isIncludeInBill ? 'checked' : 'unchecked'}
                 onPress={() => {
@@ -255,14 +254,17 @@ const EditExpense = ({
               
             </View>
 
-            <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Assign to Member</Text>
+            <View className="mb-3 bg-white rounded-b-2xl px-4">
+              <Text className="text-xs font-semibold tracking-wider uppercase">Assign to Member</Text>
+              <Text className="text-xs font-normal my-2 text-tertiary">Enabled only if 'Include in bill split' is unchecked</Text>
+            
+            
               <TouchableOpacity
                 disabled={formik.values.isIncludeInBill}
                 onPress={() => setShowMemberModal(true)}
-                className={`mt-2 border h-7xl rounded-[16px] px-4 py-4 flex-row items-center gap-3 ${
+                className={`mt-2 mb-4 border h-7xl rounded-[16px] px-5 flex-row items-center gap-3 ${
                   formik.values.isIncludeInBill 
-                    ? "bg-gray-100 border-gray-200 opacity-60" 
+                    ? "bg-white border-gray-200 opacity-90" 
                     : "bg-white border-[#E0E0E0]"
                 }`}
                 accessibilityRole="button"
@@ -283,9 +285,7 @@ const EditExpense = ({
                   }`} 
                   numberOfLines={1}
                 >
-                  {formik.values.isIncludeInBill
-                    ? "Enabled only if 'Include in bill split' is unchecked"
-                    : formik.values.memberId
+                  {formik.values.memberId
                       ? members.find(m => String(m.id) === String(formik.values.memberId))?.name || "Select Member"
                       : "Select Member"}
                 </Text>
@@ -306,10 +306,10 @@ const EditExpense = ({
               </TouchableOpacity>
             </View>
             
-            <View className="h-1px bg-gray-300 my-4 mx-2" />
+            <View className="h-1px bg-gray-200 my-4 mx-2" />
 
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Activity</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase">Activity</Text>
               <TouchableOpacity
                 onPress={() => setShowActivityModal(true)}
                 className="mt-2 border h-7xl border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
@@ -339,7 +339,7 @@ const EditExpense = ({
             </View>
     
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Expense Category</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase ">Expense Category</Text>
               <TouchableOpacity
                 onPress={() => setShowCategoryModal(true)}
                 className="mt-2 border border-[#E0E0E0] h-7xl rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
@@ -355,7 +355,7 @@ const EditExpense = ({
             </View>
 
             <View className="mb-5">
-              <Text className="text-xs font-semibold tracking-wider uppercase text-tertiary">Notes</Text>
+              <Text className="text-xs font-semibold tracking-wider uppercase ">Notes</Text>
               <TextInput
                 mode="outlined"
                 placeholder="Additional details..."
