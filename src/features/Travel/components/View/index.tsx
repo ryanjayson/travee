@@ -44,6 +44,8 @@ interface ViewTravelProps {
   showShare?: boolean;
   setShowShare?: React.Dispatch<React.SetStateAction<boolean>>;
   onRefresh?: () => Promise<any>;
+  fabOpen?: boolean;
+  setFabOpen?: (open: boolean) => void;
 }
 
 const ViewTravel = ({ 
@@ -56,6 +58,8 @@ const ViewTravel = ({
   showShare = false,
   setShowShare,
   onRefresh,
+  fabOpen,
+  setFabOpen,
 }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
   const [localShowMap, localSetShowMap] = useState<boolean>(false);
@@ -95,6 +99,7 @@ const ViewTravel = ({
   const [selectedExpense, setSelectedExpense] = useState<ItineraryExpense | null>(null);
   const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
   const [showActivityModal, setShowActivityModal] = useState<boolean>(false);
+  const [activeTabId, setActiveTabId] = useState<string>("details");
 
   useEffect(() => {
     if (isMapVisible) {
@@ -348,7 +353,7 @@ const ViewTravel = ({
       {expanded ? (
         <View className="flex-1 bg-gray-100 mt-[85px]">
           <View className="flex-1">
-            <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" expanded={expanded}/>
+            <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" expanded={expanded} onTabChange={setActiveTabId}/>
           </View>
           {setMapVisible && (
             <MapViewer
@@ -391,7 +396,7 @@ const ViewTravel = ({
         >
           <HeaderSection />
           <View>
-            <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" />
+            <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" onTabChange={setActiveTabId} />
           </View>
           {setMapVisible && (
             <MapViewer
@@ -418,6 +423,9 @@ const ViewTravel = ({
       )}
 
       <TravelActionFAB 
+        currentTab={activeTabId}
+        open={fabOpen}
+        setOpen={setFabOpen}
         onAddNote={() => {
           setSelectedNote(null);
           setShowNoteModal(true);

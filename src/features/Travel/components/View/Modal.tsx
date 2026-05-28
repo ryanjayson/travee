@@ -32,6 +32,7 @@ const ViewTripModal = ({
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const [scrollYVal, setScrollYVal] = useState<number>(0);
+  const [isFabOpen, setIsFabOpen] = useState<boolean>(false);
 
   const progress = Math.min(Math.max(scrollYVal / 150, 0), 1);
   const headerBg = `rgba(255, 255, 255, ${progress})`;
@@ -146,7 +147,13 @@ const ViewTripModal = ({
       visible={showModal}
       transparent={true}
       animationType="none"
-      onRequestClose={handleCancel}
+      onRequestClose={() => {
+        if (isFabOpen) {
+          setIsFabOpen(false);
+        } else {
+          handleCancel();
+        }
+      }}
     >
       <StatusBar style="dark" />
       <View className="flex-1 bg-white justify-end ">
@@ -216,6 +223,8 @@ const ViewTripModal = ({
               showShare={showShareModal}
               setShowShare={setShowShareModal}
               onRefresh={refetch}
+              fabOpen={isFabOpen}
+              setFabOpen={setIsFabOpen}
             />
           )}
         </View>

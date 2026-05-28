@@ -219,7 +219,7 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
         </View>
 
 
-        <View className="flex-row flex-wrap gap-3">
+        {/* <View className="flex-row flex-wrap gap-3">
         
           <StatCard
             icon="account-balance-wallet"
@@ -228,7 +228,7 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
             sub={`${expenses.length} transaction${expenses.length !== 1 ? "s" : ""}`}
             accent="#DC2626"
           />
-        </View>
+        </View> */}
 
         {/* ─── Expenses Breakdown ────────────────────────────────────────── */}
         {expenses.length > 0 && totalExpenses > 0 && (
