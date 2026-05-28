@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   View,
@@ -7,12 +7,17 @@ import {
   Animated, Dimensions,
   Keyboard,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ActivityIndicator
 } from "react-native";
 import EditActivity from "../Activity";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
 import { ItineraryActivity } from "../../../../types/TravelDto";
+import * as ImagePicker from "expo-image-picker";
+import { parseExtractedText } from "../../../../utils/ocrParser";
+import { useConfirm } from "../../../../../../context/ConfirmContext";
+import { useTheme } from "react-native-paper";
 
 interface ActivityModalProps {
   visible: boolean;
@@ -36,6 +41,81 @@ const ActivityModal = ({
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.6);
   const isSavingRef = useRef(false);
   const { keyboardVisible } = useKeyboardVisible();
+  const [extractedData, setExtractedData] = useState<Partial<ItineraryActivity> | null>(null);
+  const [isOcrPending, setIsOcrPending] = useState(false);
+  const { confirm } = useConfirm();
+  const { colors } = useTheme();
+
+  useEffect(() => {
+    if (!visible) {
+      setExtractedData(null);
+    }
+  }, [visible]);
+
+  const handleTextExtraction = async () => {
+    // 1. PRIVACY CONFIRMATION (Explicitly verifying that ML Kit runs 100% on-device offline)
+    const isConfirmed = await confirm({
+      title: "Secure Local Scan",
+      message: "Travee values your privacy. Text extraction from documents, screenshots, and receipts is performed 100% locally and offline on your device using Google ML Kit. We do not upload your personal documents to any external server.\n\nWould you like to select a booking screenshot or receipt to extract details?",
+      confirmText: "Select Image",
+      cancelText: "Cancel",
+      type: "default",
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      // 2. Request library permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        alert("Permission to access the camera roll is required to select booking documents.");
+        return;
+      }
+
+      // 3. Launch Image Picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true, // Enable cropping to isolate relevant text blocks and maximize accuracy
+        quality: 0.8,        // Optimize size to improve on-device memory and processing efficiency
+      });
+
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return;
+      }
+
+      const imageUri = result.assets[0].uri;
+      setIsOcrPending(true);
+
+      // 4. Perform offline ML Kit Text Recognition
+      let recognizedText = "";
+      try {
+        const TextRecognition = require("@react-native-ml-kit/text-recognition").default;
+        const ocrResult = await TextRecognition.recognize(imageUri);
+        recognizedText = ocrResult.text || "";
+      } catch (ocrError) {
+        console.error("Local ML Kit OCR failed:", ocrError);
+        throw new Error("Local on-device OCR native modules not fully linked in the active application binary. Please compile with native ML Kit libraries using 'npx expo run:android' to enable text extraction.");
+      }
+
+      setIsOcrPending(false);
+
+      if (!recognizedText.trim()) {
+        alert("No clear text could be extracted from this image. Please ensure the booking screenshot is sharp and legible.");
+        return;
+      }
+
+      // 5. Run local heuristic parsing to auto-populate fields
+      const parsedFields = parseExtractedText(recognizedText);
+
+      // 6. Populate form fields dynamically
+      setExtractedData(parsedFields);
+      alert("Successfully scanned booking receipt! Available details have been populated.");
+    } catch (err: any) {
+      setIsOcrPending(false);
+      console.error("OCR Scan failed:", err);
+      alert(err.message || "Failed to scan document. Please try again.");
+    }
+  };
 
   // const panResponder = PanResponder.create({
   //   onStartShouldSetPanResponder: () => true,
@@ -88,6 +168,7 @@ const ActivityModal = ({
     setError(null);
     setIsSaving(false);
     isSavingRef.current = false;
+    setExtractedData(null);
     onClose();
   };
 
@@ -115,15 +196,29 @@ const ActivityModal = ({
                         {itineraryActivity?.id ? "Edit Activity" : "Add Activity"}
                     </Text>
                 </View>
-                <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-                    <Icon name="clear" size={36} color={"#333"} />
-                </TouchableOpacity>
+                <View className="flex-row items-center gap-4">
+                    {isOcrPending ? (
+                      <ActivityIndicator size="small" color={colors.primary} />
+                    ) : (
+                      <TouchableOpacity 
+                        onPress={handleTextExtraction} 
+                        disabled={isSaving}
+                        accessibilityRole="button"
+                        accessibilityLabel="Extract details from booking receipt or ticket image"
+                      >
+                          <Icon name="camera-alt" size={28} color={colors.primary} />
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
+                        <Icon name="clear" size={36} color={colors.onSurfaceVariant || "#333"} />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <View className="flex-1">
                  <EditActivity
                 itinerarySectionId={itinerarySectionId}
-                itineraryActivity={itineraryActivity}
+                itineraryActivity={extractedData ? { ...itineraryActivity, ...extractedData } as any : itineraryActivity}
                 onClose={onClose}
               />
               </View>
