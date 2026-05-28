@@ -281,6 +281,7 @@ const EditActivity = ({
       };
 
       await updateMutation.mutateAsync(payload);
+      onClose();
     }
   };
 
@@ -547,7 +548,6 @@ const EditActivity = ({
           {
             id: "images",
             title: "Images",
-            disabled: !itineraryActivity?.id,
             content: (
               <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <Text className="text-xs font-semibold tracking-wider uppercase mb-3 text-gray-500">Upload Images</Text>
@@ -591,7 +591,6 @@ const EditActivity = ({
           {
             id: "attachments",
             title: "Attachments",
-            disabled: !itineraryActivity?.id,
             content: (
               <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <Text className="text-xs font-semibold tracking-wider uppercase mb-3 text-gray-500">File Attachments</Text>
@@ -644,7 +643,6 @@ const EditActivity = ({
           {
             id: "checklist",
             title: "Checklist",
-            disabled: !itineraryActivity?.id,
             content: (
               <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <View className="flex-row items-center gap-2 mb-3">
@@ -736,7 +734,7 @@ const EditActivity = ({
                         <TouchableOpacity
                           accessibilityRole="checkbox"
                           onPress={() => handleToggleChecklistItem(item)}
-                          className={`w-6 h-6 rounded-full border-2 items-center justify-center flex-shrink-0 ${
+                          className={`w-6 h-6 rounded-full border-2 items-center justify-center shrink-0 ${
                             item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
                           }`}
                         >
@@ -780,7 +778,7 @@ const EditActivity = ({
                  buttonText={itineraryActivity?.id ? "Update Activity" : "Add Activity"}
                  onPress={() => handleSubmit()}
                  disabled={isPending}
-                 className="h-[64px] p-6"
+                 className="h-7xl p-6"
                />
              </View>
 
