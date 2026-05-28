@@ -3,14 +3,14 @@ import { NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import React, { useContext, useEffect, useState } from "react";
-import { Alert, Modal, Text, TouchableOpacity, View, Animated } from "react-native";
+import { Modal, Text, TouchableOpacity, View } from "react-native";
 import ViewTravel from ".";
+import { useConfirm } from "../../../../context/ConfirmContext";
 import { useTravelContext } from "../../../../context/TravelContext";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
 import { TravelMenuAction } from "../../../../types/enums";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
 import { useArchiveTravel, useCancelTravel, useDeleteTravel, useTravelPlan, useUnarchiveTravel } from "../../hooks/useTravel";
-import { useConfirm } from "../../../../context/ConfirmContext";
 
 interface ViewTripModalProps {
   travelId: string;
@@ -55,7 +55,7 @@ const ViewTripModal = ({
   // useContext never throws — returns null if outside NavigationContainer
   const navContext = useContext(NavigationContext);
   const navigation = navContext as NativeStackNavigationProp<RootStackParamList> | null;
-  const { selectedTravelPlan, clearTravelPlan } = useTravelContext();
+  const { clearTravelPlan } = useTravelContext();
   const {
     data: travelPlan,
     refetch,
@@ -159,7 +159,7 @@ const ViewTripModal = ({
           }}
         >
           <TouchableOpacity
-            className="pr-3.5 p-0.5"
+            className="pr-3.5 p-0.5 left-2"
             onPress={handleCancel}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -180,7 +180,7 @@ const ViewTripModal = ({
              <Icon name="more-horiz" size={28} color={iconColor} />
           </TouchableOpacity>
           <TouchableOpacity
-            className="pr-3.5 p-0.5 absolute right-[45px] pt-10"
+            className="pr-3.5 p-0.5 absolute right-[50px] pt-10"
             onPress={() => setExpanded(p => !p)}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -188,7 +188,7 @@ const ViewTripModal = ({
             <Icon name={expanded ? "fullscreen-exit" : "fullscreen"} size={26} color={fullscreenIconColor} />
           </TouchableOpacity>
           <TouchableOpacity
-            className="pr-3.5 p-0.5 absolute right-[90px] pt-10"
+            className="pr-3.5 p-0.5 absolute right-[100px] pt-10"
             onPress={() => setShowMapModal(true)}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

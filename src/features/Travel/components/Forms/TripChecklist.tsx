@@ -163,7 +163,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
       <TouchableOpacity
         accessibilityRole="button"
         onPress={() => handleToggle(item)}
-        className={`w-6 h-6 rounded-full border-2 items-center justify-center mt-0.5 flex-shrink-0 ${
+        className={`w-6 h-6 rounded-full border-2 items-center justify-center mt-0.5 shrink-0 ${
           item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
         }`}
       >
@@ -331,7 +331,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
             <Text className="text-xs font-semibold tracking-wider uppercase">New Item</Text>
           </View>
           <RNTextInput
-            className="border border-[#E0E0E0] rounded-[12px] px-4 py-3 text-base text-gray-800 bg-gray-50 mb-2"
+            className="border border-[#E0E0E0] rounded-xl px-4 py-3 text-base text-gray-800 bg-gray-50 mb-2"
             placeholder="Item title..."
             value={newItemTitle}
             onChangeText={setNewItemTitle}
@@ -340,7 +340,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
           />
           {showDescriptionField ? (
             <RNTextInput
-              className="border border-[#E0E0E0] rounded-[12px] px-4 py-3 text-base text-gray-800 bg-gray-50 mb-3"
+              className="border border-[#E0E0E0] rounded-xl px-4 py-3 text-base text-gray-800 bg-gray-50 mb-3"
               placeholder="Optional description..."
               value={newItemDescription}
               onChangeText={setNewItemDescription}
@@ -360,7 +360,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
             accessibilityRole="button"
             onPress={handleAddItem}
             disabled={!newItemTitle.trim() || saveItemMutation.isPending}
-            className={`flex-row items-center justify-center gap-2 py-3 rounded-[12px] ${
+            className={`flex-row items-center justify-center gap-2 py-3 rounded-xl ${
               newItemTitle.trim() ? "bg-[#263F69]" : "bg-gray-200"
             }`}
           >

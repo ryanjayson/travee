@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Portal } from "react-native-paper";
 
 type ToastType = "success" | "error" | "info";
 
@@ -179,45 +180,47 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     <ToastContext.Provider value={{ showToast }}>
       {children}
       {visible && (
-        <Animated.View
-          {...panResponder.panHandlers}
-          style={[
-            styles.toastWrapper,
-            {
-              top: insets.top + 10,
-              opacity,
-              transform: [{ translateY }, { translateX: swipeValue }],
-            },
-          ]}
-        >
-          <View
+        <Portal>
+          <Animated.View
+            {...panResponder.panHandlers}
             style={[
-              styles.toastContainer,
+              styles.toastWrapper,
               {
-                backgroundColor: colors.bg,
-                borderColor: colors.border,
+                top: insets.top + 10,
+                opacity,
+                transform: [{ translateY }, { translateX: swipeValue }],
               },
             ]}
           >
-            <Icon
-              name={colors.icon}
-              size={24}
-              color={colors.border}
-              style={styles.icon}
-            />
-            <Text style={[styles.message, { color: colors.text }]}>
-              {message}
-            </Text>
-            <TouchableOpacity
-              onPress={hideToast}
-              style={styles.closeBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Dismiss notification"
+            <View
+              style={[
+                styles.toastContainer,
+                {
+                  backgroundColor: colors.bg,
+                  borderColor: colors.border,
+                },
+              ]}
             >
-              <Icon name="close" size={20} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
+              <Icon
+                name={colors.icon}
+                size={24}
+                color={colors.border}
+                style={styles.icon}
+              />
+              <Text style={[styles.message, { color: colors.text }]}>
+                {message}
+              </Text>
+              <TouchableOpacity
+                onPress={hideToast}
+                style={styles.closeBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Dismiss notification"
+              >
+                <Icon name="close" size={20} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Portal>
       )}
     </ToastContext.Provider>
   );

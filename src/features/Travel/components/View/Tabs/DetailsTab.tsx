@@ -1,20 +1,20 @@
-import React, { useMemo } from "react";
-import { View, ScrollView } from "react-native";
-import { Text, useTheme } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import React, { useMemo } from "react";
+import { ScrollView, View } from "react-native";
+import { Text, useTheme } from "react-native-paper";
+import Svg, { Circle, G } from "react-native-svg";
+import ActivityIcon from "../../../../../components/ActivityIcon";
+import { ActivityType, ExpenseCategory } from "../../../../../types/enums";
 import { TravelPlan } from "../../../../Travel/types/TravelDto";
+import { useChecklistGroups, useChecklistItems } from "../../../hooks/useChecklist";
 import { useItineraryExpenses } from "../../../hooks/useExpense";
 import { useItineraryNotes } from "../../../hooks/useNote";
-import { useChecklistGroups, useChecklistItems } from "../../../hooks/useChecklist";
-import { ActivityType } from "../../../../../types/enums";
-import ActivityIcon from "../../../../../components/ActivityIcon";
-import { number } from "yup";
+import { getExpenseCategoryColor } from "../../Forms/Expense/ExpenseCategoryIcon";
 
 interface DetailsTabProps {
   travelPlan: TravelPlan;
 }
 
-// ─── Mini Stat Card ────────────────────────────────────────────────────────────
 const StatCard = ({
   icon,
   label,
@@ -28,7 +28,7 @@ const StatCard = ({
   sub?: string;
   accent?: string;
 }) => (
-  <View className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-4 flex-1 min-w-[44%]">
+  <View className="bg-white rounded-2xl border border-[#e0e0e0] p-4 flex-1 min-w-[44%]">
     <View
       className="w-9 h-9 rounded-full items-center justify-center mb-3"
       style={{ backgroundColor: accent + "18" }}
@@ -42,11 +42,70 @@ const StatCard = ({
 );
 
 const SectionHeader = ({ icon, title }: { icon: string | any; title: string }) => (
-  <View className="flex-row items-center gap-2 mb-3 mt-5">
-    <Icon name={icon} size={16} color="#263F69" />
-    <Text className="text-sm font-bold text-[#263F69] uppercase tracking-wider">{title}</Text>
+  <View className="flex-1 justify-start gap-0 mt-5">
+    <Text className="text-sm font-semibold tracking-wider uppercase mb-1">
+      {title}
+    </Text>
+    {/* <Text className="text-xs font-normal text-gray-400 mb-3">
+      Click row to see details
+    </Text> */}
   </View>
 );
+
+// ─── Donut Chart Component ───────────────────────────────────────────────────
+const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: string }>; total: number }) => {
+  const radius = 35;
+  const strokeWidth = 12;
+  const circumference = 2 * Math.PI * radius;
+  
+  let accumulatedPercent = 0;
+
+  return (
+    <View style={{ width: 100, height: 100, alignItems: "center", justifyContent: "center" }}>
+      <Svg width={100} height={100} viewBox="0 0 100 100">
+        <G transform="rotate(-90 50 50)">
+          {/* Background circle */}
+          <Circle
+            cx="50"
+            cy="50"
+            r={radius}
+            stroke="#F3F4F6"
+            strokeWidth={strokeWidth}
+            fill="transparent"
+          />
+          {data.map((slice, index) => {
+            const percent = slice.amount / total;
+            const strokeDashoffset = circumference - (percent * circumference);
+            const rotation = accumulatedPercent * 360;
+            accumulatedPercent += percent;
+
+            return (
+              <Circle
+                key={index}
+                cx="50"
+                cy="50"
+                r={radius}
+                stroke={slice.color}
+                strokeWidth={strokeWidth}
+                strokeDasharray={`${percent * circumference} ${circumference}`}
+                strokeDashoffset={0}
+                fill="transparent"
+                transform={`rotate(${rotation} 50 50)`}
+              />
+            );
+          })}
+        </G>
+      </Svg>
+      {/* Central absolute text for total */}
+      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ fontSize: 9, fontWeight: "bold", color: "#888888" }} className="uppercase tracking-wider">Total</Text>
+        <Text style={{ fontSize: 13, fontWeight: "bold", color: "#1A1A1A" }} numberOfLines={1}>
+          ${total >= 1000 ? `${(total/1000).toFixed(1)}k` : Math.round(total)}
+        </Text>
+      </View>
+    </View>
+  );
+};
 
 const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
   const { colors } = useTheme();
@@ -112,6 +171,26 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
     return Object.entries(map).sort((a, b) => b[1] - a[1]);
   }, [expenses]);
 
+  // ─── Expense category breakdown ─────────────────────────────────────────────
+  const categoryBreakdown = useMemo(() => {
+    const map: Record<number, { amount: number; name: string; color: string }> = {};
+    expenses.forEach((e) => {
+      const cat = e.expenseCategory ?? ExpenseCategory.None;
+      const amount = e.amount || 0;
+      if (!map[cat]) {
+        const name = cat === ExpenseCategory.None
+          ? "General"
+          : ExpenseCategory[cat].replace(/([A-Z])/g, " $1").trim();
+        const color = getExpenseCategoryColor(cat);
+        map[cat] = { amount: 0, name, color };
+      }
+      map[cat].amount += amount;
+    });
+    return Object.entries(map)
+      .map(([cat, val]) => ({ category: Number(cat), ...val }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [expenses]);
+
   return (
     <ScrollView
       className="flex-1"
@@ -130,24 +209,18 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
             sub={doneActivities > 0 ? `${doneActivities} completed` : "None done yet"}
             accent="#263F69"
           />
-          <StatCard
-            icon="sticky-note-2"
-            label="Notes"
-            value={notes.length}
-            sub={notes.length === 1 ? "1 note added" : `${notes.length} notes added`}
-            accent="#7C3AED"
-          />
-        </View>
-
-
-        <View className="flex-row flex-wrap gap-3">
-          <StatCard
+            <StatCard
             icon="playlist-add-check"
             label="Checklist"
             value={`${doneChecklist}/${totalChecklist}`}
             sub={totalChecklist > 0 ? `${Math.round((doneChecklist / totalChecklist) * 100)}% complete` : "No items yet"}
             accent="#059669"
           />
+        </View>
+
+
+        <View className="flex-row flex-wrap gap-3">
+        
           <StatCard
             icon="account-balance-wallet"
             label="Expenses"
@@ -157,25 +230,88 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
           />
         </View>
 
+        {/* ─── Expenses Breakdown ────────────────────────────────────────── */}
+        {expenses.length > 0 && totalExpenses > 0 && (
+          <>
+            <SectionHeader icon="pie-chart" title="Expense Distribution" />
+            <View className="bg-white rounded-2xl border border-[#e0e0e0] p-4 flex-row items-center gap-6">
+              {/* Column 1: Pie/Donut Chart */}
+              <View className="items-center justify-center pr-4 border-r border-gray-100">
+                <DonutChart data={categoryBreakdown} total={totalExpenses} />
+              </View>
+
+              {/* Column 2: Legend List */}
+              <View className="flex-1 gap-2.5">
+                {categoryBreakdown.map((entry) => (
+                  <View key={entry.category} className="flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-2 flex-1">
+                      {/* Dot icon with category color */}
+                      <View 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: entry.color }}
+                      />
+                      <Text className="text-sm font-semibold text-gray-700 capitalize flex-1" numberOfLines={1}>
+                        {entry.name}
+                      </Text>
+                    </View>
+                    <Text className="text-sm font-bold text-gray-800 ml-2">
+                      ${entry.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          </>
+        )}
+
+        {/* ─── Expenses Breakdown ────────────────────────────────────────── */}
+        {expenses.length > 0 && (
+          <>
+            <SectionHeader icon="account-balance-wallet" title="Expenses by Currency" />
+            <View className="bg-white rounded-2xl border border-[#e0e0e0] overflow-hidden">
+              {currencyBreakdown.map(([currency, amount], idx) => (
+                <View
+                  key={currency}
+                  className={`flex-row items-center px-4 py-4 ${idx < currencyBreakdown.length - 1 ? "border-b border-gray-50" : ""}`}
+                >
+                  <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center">
+                    <Text className="text-sm font-bold text-red-600">{currency}</Text>
+                  </View>
+                  <Text className="text-base text-gray-700 font-medium flex-1 ml-3">
+                    {currency === "$" ? "USD" : currency}
+                  </Text>
+                  <Text className="text-md font-bold text-[#DC2626]">
+                    {currency}{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </Text>
+                </View>
+              ))}
+              <View className="flex-row items-center px-4 py-3 bg-gray-50 border-t border-gray-100">
+                <Icon name="receipt-long" size={24} color="#555" />
+                <Text className="text-sm text-gray-600 font-semibold flex-1 ml-3">Total Transactions</Text>
+                <Text className="text-base font-bold text-gray-700">{expenses.length}</Text>
+              </View>
+            </View>
+          </>
+        )}
 
 
         {/* ─── Checklist Progress ────────────────────────────────────────── */}
         {totalChecklist > 0 && (
           <>
             <SectionHeader icon="folder-open" title="Checklist by Group" />
-            <View className="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
+            <View className="bg-white rounded-2xl border border-[#e0e0e0] overflow-hidden">
               {/* Ungrouped */}
               {ungroupedItems.length > 0 && (
                 <View className="flex-row items-center px-4 py-3 border-b border-gray-50">
-                  <Icon name="list" size={18} color="#888" />
-                  <Text className="text-sm text-gray-600 font-medium flex-1 ml-3">General</Text>
+                  <Icon name="list" size={24} color="#888" />
+                  <Text className="text-base text-gray-600 font-medium flex-1 ml-3">General</Text>
                   <View className="items-end">
-                    <Text className="text-sm font-bold text-[#263F69]">
+                    <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">
                       {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
                     </Text>
-                    <View className="bg-gray-200 h-1.5 w-20 rounded-full mt-1 overflow-hidden">
+                    <View className="bg-gray-200 h-2 w-20 rounded-full mt-1 overflow-hidden">
                       <View
-                        className="bg-[#263F69] h-1.5 rounded-full"
+                        className="bg-[#263F69] h-2 rounded-full"
                         style={{
                           width: `${Math.round((ungroupedItems.filter((i) => i.isDone).length / ungroupedItems.length) * 100)}%`,
                         }}
@@ -190,15 +326,15 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
                   key={group.id}
                   className={`flex-row items-center px-4 py-3 ${idx < groupBreakdown.length - 1 ? "border-b border-gray-50" : ""}`}
                 >
-                  <Icon name="folder" size={18} color="#263F69" />
+                  <Icon name="folder" size={24} color="#263F69" />
                   <View className="flex-1 ml-3">
-                    <Text className="text-sm text-gray-800 font-semibold">{group.title}</Text>
+                    <Text className="text-base text-gray-800 font-semibold">{group.title}</Text>
                     {group.description ? (
                       <Text className="text-xs text-gray-400" numberOfLines={1}>{group.description}</Text>
                     ) : null}
                   </View>
                   <View className="items-end">
-                    <Text className="text-sm font-bold text-[#263F69]">
+                    <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">
                       {group.done}/{group.total}
                     </Text>
                     {group.total > 0 && (
@@ -225,53 +361,23 @@ const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
         {activityTypeBreakdown.length > 0 && (
           <>
             <SectionHeader icon="category" title="Activities by Type" />
-            <View className="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
+            <View className="bg-white rounded-2xl border border-[#e0e0e0] overflow-hidden">
               {activityTypeBreakdown.map((entry, idx) => (
                 <View
                   key={entry.type}
                   className={`flex-row items-center px-4 py-3 ${idx < activityTypeBreakdown.length - 1 ? "border-b border-gray-50" : ""}`}
                 >
-                  <ActivityIcon type={entry.type as ActivityType} size={22} />
-                  <Text className="text-sm text-gray-700 font-medium flex-1 ml-3 capitalize">
+                  <ActivityIcon type={entry.type as ActivityType} size={24} />
+                  <Text className="text-base text-gray-700 font-medium flex-1 ml-3 capitalize">
                     {activityTypeName(entry.type)}
                   </Text>
                   <View className="flex-row items-center gap-2">
                     <View className="bg-[#263F69]/10 px-3 py-1 rounded-full">
-                      <Text className="text-xs font-bold text-[#263F69]">{entry.count}</Text>
+                      <Text className="text-base font-bold text-[#263F69]">{entry.count}</Text>
                     </View>
                   </View>
                 </View>
               ))}
-            </View>
-          </>
-        )}
-
-        {/* ─── Expenses Breakdown ────────────────────────────────────────── */}
-        {expenses.length > 0 && (
-          <>
-            <SectionHeader icon="account-balance-wallet" title="Expenses by Currency" />
-            <View className="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
-              {currencyBreakdown.map(([currency, amount], idx) => (
-                <View
-                  key={currency}
-                  className={`flex-row items-center px-4 py-3 ${idx < currencyBreakdown.length - 1 ? "border-b border-gray-50" : ""}`}
-                >
-                  <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center">
-                    <Text className="text-xs font-bold text-red-600">{currency}</Text>
-                  </View>
-                  <Text className="text-sm text-gray-700 font-medium flex-1 ml-3">
-                    {currency === "$" ? "USD" : currency}
-                  </Text>
-                  <Text className="text-base font-bold text-[#DC2626]">
-                    {currency}{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </Text>
-                </View>
-              ))}
-              <View className="flex-row items-center px-4 py-3 bg-gray-50 border-t border-gray-100">
-                <Icon name="receipt-long" size={18} color="#555" />
-                <Text className="text-sm text-gray-600 font-semibold flex-1 ml-3">Total Transactions</Text>
-                <Text className="text-sm font-bold text-gray-700">{expenses.length}</Text>
-              </View>
             </View>
           </>
         )}

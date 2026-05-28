@@ -1,19 +1,18 @@
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Text, TouchableOpacity,
   View
 } from "react-native";
-import TouchButton from "../../../components/atoms/TouchButton";
-import EditTravelItinerary, { EditTravelItineraryRef } from "../components/Edit/Itinerary";
-import FloatingAddButton from "../components/Edit/Itinerary/FloatingAddButton";
-import { Friend, sampleFriends } from "../../../data/sampleFriends";
-import { useNavigation, useRoute } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import TouchButton from "../../../components/atoms/TouchButton";
 import Tabs from "../../../components/Tabs";
 import {
   useTravelContext
 } from "../../../context/TravelContext";
+import { Friend } from "../../../data/sampleFriends";
 import { sampleTravel } from "../../../data/travels";
 import {
   ItineraryActivity,
@@ -21,6 +20,8 @@ import {
   Travel,
 } from "../../Travel/types/TravelDto";
 import CreateOrEdit, { CreateOrEditRef } from "../components/CreateOrEdit";
+import EditTravelItinerary, { EditTravelItineraryRef } from "../components/Edit/Itinerary";
+import FloatingAddButton from "../components/Edit/Itinerary/FloatingAddButton";
 import TripChecklist from "../components/Forms/TripChecklist";
 import TripMembers from "../components/Forms/TripMembers";
 import { useTravelPlan } from "../hooks/useTravel";
@@ -30,6 +31,7 @@ type TabType = "detail" | "itinerary" | "checklist" | "members" | "settings";
 const EditTravelPlan = () => {
   const route = useRoute();
   const navigation = useNavigation();
+  const queryClient = useQueryClient();
   // @ts-ignore
   const { travelId } = route.params || {};
 
@@ -73,17 +75,17 @@ const EditTravelPlan = () => {
 
 
   const refreshItinerary = async () => {
-    refetch();
     setLoading(true);
     try {
-      // const data = await activitySectionService.getItineraryByTripId(
-      //   travelData.id
-      // );
-      // setItineraryData(data);
-      // setItineraryData({
-      //   sections: travelData?.itinerarySection,
-      //   activities: sampleActivities,
-      // });
+      await Promise.all([
+        refetch(),
+        queryClient.invalidateQueries({ queryKey: ["checklistGroups", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["checklistItems", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["tripMembers", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["memberSplitBills", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["itineraryExpenses", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["itineraryNotes", travelId] }),
+      ]);
     } catch (error) {
       console.error("Error refreshing itinerary:", error);
     } finally {
@@ -228,7 +230,7 @@ const EditTravelPlan = () => {
 
   return (
     <View className="flex-1 bg-white pt-5xl">
-      <View className="flex-row justify-between items-center px-5 pb-1 pt-5 bg-white ">
+      <View className="flex-row justify-between items-center px-5 bg-white ">
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="close" size={28} color={"#666"} />
         </TouchableOpacity>

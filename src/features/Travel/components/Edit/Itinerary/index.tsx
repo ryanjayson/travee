@@ -609,7 +609,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                   (sectionDragState?.sectionId !== section.id ||
                     (sectionDragState?.dragIndex !== index &&
                       (sectionDragState?.dragIndex ?? -1) > index)) && (
-                    <View className="absolute -top-[7px] h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
+                    <View className="absolute -top-7px h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
                   )}
 
                 <DraggableActivityItem
@@ -661,14 +661,14 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                   sectionDragState?.sectionId === section.id &&
                   sectionDragState?.dragIndex !== index &&
                   (sectionDragState?.dragIndex ?? -1) < index && (
-                    <View className="absolute -bottom-[7px] h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
+                    <View className="absolute -bottom-7px h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
                   )}
               </View>
             )) : (
               <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
                  <Text style={{ color: "#aaa" }}>or drop activities here </Text>
                  {hoverState?.sectionId === section.id && (
-                   <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
+                   <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
                  )}
               </View>
             )}
@@ -735,10 +735,10 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                     ]}
                   >
                     {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) > mapIndex && (
-                      <View className="absolute -top-[10px] h-[3px] bg-[#183B7A] rounded-sm w-full self-center z-50" />
+                      <View className="absolute -top-10px h-[3px] bg-[#183B7A] rounded-sm w-full self-center z-50" />
                     )}
 
-                    <View className="absolute top-[10px] left-[10px]" {...panHandlers}>
+                    <View className="absolute top-10px left-10px" {...panHandlers}>
                       <Icon name="drag-handle" size={24} color={isSectionActive ? "#183B7A" : "#DDD"} />
                     </View>
                 <View className="mx-[30px]">
@@ -896,7 +896,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                               sectionDragState?.sectionId === section.id &&
                               sectionDragState?.dragIndex !== index &&
                               (sectionDragState?.dragIndex ?? -1) < index && (
-                                <View className="absolute bottom-[2px] h-[3px] bg-[#183B7A] rounded-sm w-[96%] self-center z-50 " />
+                                <View className="absolute bottom-xxs h-[3px] bg-[#183B7A] rounded-sm w-[96%] self-center z-50 " />
                               )}
                           </View>
                         )) : (
@@ -921,7 +921,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                              <Text style={{ color: "#aaa" }}> or drop activities here</Text>
 
                              {hoverState?.sectionId === section.id && (
-                               <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
+                               <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
                              )}
                           </View>
                         )}
@@ -955,7 +955,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                 </TouchableOpacity>
               </View>
               {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) < mapIndex && (
-                <View className="h-[2px] bg-[#183B7A] rounded-sm my-1 w-4/5 self-center mt-[15px]" />
+                <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-4/5 self-center mt-[15px]" />
               )}
               </>
               )}

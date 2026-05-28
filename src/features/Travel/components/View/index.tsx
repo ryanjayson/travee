@@ -1,5 +1,6 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import {
   Animated,
@@ -61,17 +62,25 @@ const ViewTravel = ({
   const [localShowShare, localSetShowShare] = useState<boolean>(false);
   const { colors } = useTheme();
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const queryClient = useQueryClient();
+  const travelId = travelPlan.travel.id;
 
   const handleRefresh = async () => {
-    if (onRefresh) {
-      setRefreshing(true);
-      try {
-        await onRefresh();
-      } catch (err) {
-        console.error("Failed to refresh travel plan:", err);
-      } finally {
-        setRefreshing(false);
-      }
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        onRefresh ? onRefresh() : Promise.resolve(),
+        queryClient.invalidateQueries({ queryKey: ["itineraryExpenses", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["itineraryNotes", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["tripMembers", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["memberSplitBills", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["checklistGroups", travelId] }),
+        queryClient.invalidateQueries({ queryKey: ["checklistItems", travelId] }),
+      ]);
+    } catch (err) {
+      console.error("Failed to refresh travel plan:", err);
+    } finally {
+      setRefreshing(false);
     }
   };
 

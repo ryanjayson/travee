@@ -8,12 +8,57 @@ interface ExpenseCategoryIconProps {
   color?: string;
 }
 
+export const getExpenseCategoryColor = (category?: ExpenseCategory): string => {
+  switch (category) {
+    case ExpenseCategory.FoodAndDining:
+      return "#FF5722"; // Coral/Deep Orange
+    case ExpenseCategory.Transportation:
+      return "#2196F3"; // Blue
+    case ExpenseCategory.Accommodation:
+      return "#9C27B0"; // Purple
+    case ExpenseCategory.Shopping:
+      return "#E91E63"; // Pink
+    case ExpenseCategory.Entertainment:
+      return "#673AB7"; // Deep Purple
+    case ExpenseCategory.Sightseeing:
+      return "#FF9800"; // Orange
+    case ExpenseCategory.HealthAndWellness:
+      return "#EC407A"; // Rose Pink
+    case ExpenseCategory.Gifts:
+      return "#E040FB"; // Magenta
+    case ExpenseCategory.Insurance:
+      return "#607D8B"; // Slate Blue/Grey
+    case ExpenseCategory.Emergency:
+      return "#F44336"; // Red
+    case ExpenseCategory.Subscriptions:
+      return "#00BCD4"; // Cyan
+    case ExpenseCategory.BankAndFees:
+      return "#795548"; // Brown
+    case ExpenseCategory.Communication:
+      return "#009688"; // Teal
+    case ExpenseCategory.Fuel:
+      return "#FFC107"; // Amber
+    case ExpenseCategory.Activities:
+      return "#4CAF50"; // Green
+    case ExpenseCategory.Laundry:
+      return "#03A9F4"; // Light Blue
+    case ExpenseCategory.VisasAndDocuments:
+      return "#455A64"; // Charcoal
+    case ExpenseCategory.Others:
+      return "#9E9E9E"; // Neutral Grey
+    case ExpenseCategory.None:
+    default:
+      return "#9E9E9E"; // Grey
+  }
+};
+
 const ExpenseCategoryIcon = ({
   category,
   size = 24,
-  color = "#183B7A",
+  color,
 }: ExpenseCategoryIconProps) => {
   let iconName = "more-horiz";
+  const resolvedColor = color ?? getExpenseCategoryColor(category);
 
   switch (category) {
     case ExpenseCategory.FoodAndDining:
@@ -75,7 +120,7 @@ const ExpenseCategoryIcon = ({
       break;
   }
 
-  return <Icon name={iconName as any} size={size} color={color} />;
+  return <Icon name={iconName as any} size={size} color={resolvedColor} />;
 };
 
 export default ExpenseCategoryIcon;

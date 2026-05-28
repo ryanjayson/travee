@@ -249,7 +249,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
               <View pointerEvents="none">
                 <TextInput
                   mode="outlined"
-                  className="!h-[64px]"
+                  className="h-7xl!"
                   placeholder="Search city or country..."
                   value={formik.values.destination}
                   editable={false}
@@ -313,7 +313,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
 
       <View className="flex-row mb-5 gap-3">
         <View className="flex-1">
-          <View className="relative mt-[6px] h-[64px]">
+          <View className="relative mt-sm h-7xl">
             <TextInput
               mode="outlined"
               label={"Departure"}
@@ -359,7 +359,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
         </View>
 
         <View className="flex-1">
-          <View className="relative mt-[6px] h-[64px]">
+          <View className="relative mt-sm h-7xl">
             <TextInput
               mode="outlined"
               label={"Return"}
@@ -502,7 +502,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           buttonText={isSaving ? "Saving..." : mode === "create" ? "Add trip" : "Save Changes"}
           onPress={() => formik.handleSubmit()}
           disabled={!formik.values.title.trim() || isSaving}
-          className="h-[64px] p-6"
+          className="h-7xl p-6"
         />
       </View>
     </ScrollView>

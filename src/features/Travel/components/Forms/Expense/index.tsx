@@ -190,6 +190,8 @@ const EditExpense = ({
               <TouchableOpacity
                 onPress={() => setShowDatePicker(true)}
                 className="mt-2 border border-[#E0E0E0] h-7xl rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
+                accessibilityRole="button"
+                accessibilityLabel="Select date and time"
               >
                 <Icon name="event" size={24} color="#263F69" />
                 <Text className="text-base font-normal text-gray-800">
@@ -223,7 +225,7 @@ const EditExpense = ({
               <Text className="text-md font-semibold tracking-wider uppercase">Expense assignment</Text>
             </View>
 
-            <View className="flex-row items-center p-5 pl-2 bg-white rounded-t-2xl">
+            <View className="flex-row items-start p-3 pl-2 bg-white rounded-t-2xl">
               <Checkbox
                 status={formik.values.isIncludeInBill ? 'checked' : 'unchecked'}
                 onPress={() => {
@@ -247,16 +249,20 @@ const EditExpense = ({
                 accessibilityRole="checkbox"
               >
                 <Text className="text-base text-gray-700 font-medium ml-1">
-                  Include in bill split
+                  Expense split
                 </Text>
+                <View className="pr-4">
+                  <Text className="text-xs font-normal text-tertiary ml-1 mr-4">When enabled, expenses with this tag will be included in calculations and distributed based on each member’s share percentage.</Text>
+                </View>
+
               </TouchableOpacity>
 
               
             </View>
 
             <View className="mb-3 bg-white rounded-b-2xl px-4">
-              <Text className="text-xs font-semibold tracking-wider uppercase">Assign to Member</Text>
-              <Text className="text-xs font-normal my-2 text-tertiary">Enabled only if 'Include in bill split' is unchecked</Text>
+              <Text className="text-xs  mt-4 font-semibold tracking-wider uppercase">Assign to Member</Text>
+              <Text className="text-xs font-normal my-1 text-tertiary">Enabled only if 'Include in expense split' is unchecked</Text>
             
             
               <TouchableOpacity
@@ -313,6 +319,8 @@ const EditExpense = ({
               <TouchableOpacity
                 onPress={() => setShowActivityModal(true)}
                 className="mt-2 border h-7xl border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
+                accessibilityRole="button"
+                accessibilityLabel="Select associated activity"
               >
                 {formik.values.activityId ? (
                   <>
@@ -330,7 +338,11 @@ const EditExpense = ({
                   </>
                 )}
                 {formik.values.activityId && (
-                   <TouchableOpacity onPress={() => formik.setFieldValue("activityId", undefined)}>
+                   <TouchableOpacity 
+                     onPress={() => formik.setFieldValue("activityId", undefined)}
+                     accessibilityRole="button"
+                     accessibilityLabel="Clear activity selection"
+                   >
                      <Icon name="close" size={20} color="#666" />
                    </TouchableOpacity>
                 )}
@@ -343,8 +355,10 @@ const EditExpense = ({
               <TouchableOpacity
                 onPress={() => setShowCategoryModal(true)}
                 className="mt-2 border border-[#E0E0E0] h-7xl rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3"
+                accessibilityRole="button"
+                accessibilityLabel="Select expense category"
               >
-                <ExpenseCategoryIcon category={formik.values.expenseCategory} size={28} color="#263F69" />
+                <ExpenseCategoryIcon category={formik.values.expenseCategory} size={28} />
                 <Text className="text-base text-gray-800 flex-1">
                   {formik.values.expenseCategory === ExpenseCategory.None
                     ? "Select Category"

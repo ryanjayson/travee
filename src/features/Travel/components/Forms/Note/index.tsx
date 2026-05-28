@@ -125,7 +125,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
               <Text className="text-xs font-semibold tracking-wider uppercase">Linked Activity (Optional)</Text>
               <TouchableOpacity
                 onPress={() => setShowActivityModal(true)}
-                className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3 h-[64px]"
+                className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3 h-7xl"
                 accessibilityRole="button"
               >
                 <Icon name="event-note" size={24} color={values.activityId ? "#263F69" : "#BDBDBD"} />
@@ -148,7 +148,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
               <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
               <TextInput
                 mode="outlined"
-                className="!h-[64px]"
+                className="h-7xl!"
                 placeholder="e.g. Food Trip in Osaka..."
                 value={values.title}
                 onChangeText={handleChange("title")}
@@ -253,7 +253,7 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
             <TouchButton
               buttonText={itineraryNote?.id ? "Update Note" : "Add Note"}
               onPress={() => handleSubmit()}
-              className="h-[64px] p-6"
+              className="h-7xl p-6"
             />
           </View>
                 

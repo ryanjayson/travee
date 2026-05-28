@@ -119,7 +119,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
               <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
               <TextInput
                 mode="outlined"
-                className="!h-[64px]"
+                className="h-7xl!"
                 placeholder="e.g Day 1"
                 value={formik.values.title}
                 onChangeText={formik.handleChange("title")}
@@ -176,7 +176,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
 
             <View className="mb-5">
               <Text className="text-xs font-semibold tracking-wider uppercase">Date</Text>
-              <View className="relative mt-[6px]">
+              <View className="relative mt-sm">
                 <TextInput
                   mode="outlined"
                   placeholder="Select Date"
@@ -242,7 +242,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
                 <View pointerEvents="none">
                   <TextInput
                     mode="outlined"
-                    className="!h-[64px]"
+                    className="h-7xl!"
                     placeholder="Search a place..."
                     value={selectedPlace?.name || selectedPlace?.address || ""}
                     editable={false}
@@ -298,7 +298,7 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
               buttonText={itinerarySection?.id ? "Update Section" : "Add Section"}
               onPress={() => formik.handleSubmit()}
               disabled={!formik.isValid || !formik.dirty || isUpdating}
-              className="h-[64px] p-6"
+              className="h-7xl p-6"
             />
           </View>
           

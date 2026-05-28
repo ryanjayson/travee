@@ -107,7 +107,7 @@ const ExpenseCategoryLookupModal = ({
                 accessibilityRole="button"
                 accessibilityLabel={`Select category ${displayName}`}
               >
-                <ExpenseCategoryIcon category={categoryValue} size={24} color={colors.primary} />
+                <ExpenseCategoryIcon category={categoryValue} size={24} />
                 <Text className="text-base text-gray-800 flex-1">
                   {displayName}
                 </Text>

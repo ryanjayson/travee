@@ -108,14 +108,44 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
 
       {/* Progress bar */}
       {items.length > 0 && (
-        <View className="bg-gray-200 h-4 rounded-xl mb-5 overflow-hidden flex-row">
+        <View className="bg-gray-200 h-3 rounded-xl mb-5 overflow-hidden flex-row">
           <View
-            className="bg-[#263F69] h-4 rounded-full"
+            className="bg-[#263F69] h-3 rounded-full"
             style={{ width: `${Math.round((totalDone / items.length) * 100)}%` }}
           />
         </View>
       )}
 
+      {/* Ungrouped / General */}
+      {ungroupedItems.length > 0 && (() => {
+        const isCollapsed = collapsedSections["general"] || false;
+        return (
+          <View className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              onPress={() => toggleSectionCollapse("general")}
+               className={`flex-row items-center gap-3 px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
+            >
+              <Icon name="list" size={24} color="#888" />
+              <Text className="text-md font-bold text-gray-500 flex-1 uppercase tracking-wider">General</Text>
+              <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">
+                {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
+              </Text>
+              <Icon 
+                name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
+                size={24} 
+                color="#777" 
+              />
+            </TouchableOpacity>
+            {!isCollapsed && ungroupedItems.map(renderItem)}
+          </View>
+        );
+      })()}
+
+      <View className="flex-row items-center justify-between">
+        <Text className="text-xs font-semibold tracking-wide uppercase mb-2 text-tertiary-500">Custom Group</Text>
+      </View>
       {/* Grouped items */}
       {groups.map((group) => {
         const groupItems = items.filter((i) => i.checklistGroupId === group.id);
@@ -155,6 +185,9 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
         );
       })}
 
+      <View className="flex-row items-center justify-between">
+        <Text className="text-xs font-semibold tracking-wide uppercase mb-2 text-tertiary-500">Activity checklist</Text>
+      </View>
       {/* Activity-linked items */}
       {allActivities.map((activity) => {
         const activityItems = items.filter((i) => i.activityId === activity.id);
@@ -186,32 +219,6 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
         );
       })}
 
-      {/* Ungrouped / General */}
-      {ungroupedItems.length > 0 && (() => {
-        const isCollapsed = collapsedSections["general"] || false;
-        return (
-          <View className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
-            <TouchableOpacity
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              onPress={() => toggleSectionCollapse("general")}
-               className={`flex-row items-center gap-3 px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
-            >
-              <Icon name="list" size={24} color="#888" />
-              <Text className="text-md font-bold text-gray-500 flex-1 uppercase tracking-wider">General</Text>
-              <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">
-                {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
-              </Text>
-              <Icon 
-                name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
-                size={24} 
-                color="#777" 
-              />
-            </TouchableOpacity>
-            {!isCollapsed && ungroupedItems.map(renderItem)}
-          </View>
-        );
-      })()}
     </View>
   );
 };
