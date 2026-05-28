@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { IconSetProvider, ActivityType } from "../../types/enums";
@@ -227,9 +227,7 @@ const ActivityIcon = ({
   size = 26,
   color,
 }: ActivityTypeProps) => {
-  const [activityIcon, _setActivityIcon] = useState<ActivityIcon>(
-    getIcon(type)
-  );
+  const activityIcon = getIcon(type);
 
   // Use the per-type hue color if no override was provided
   const resolvedColor = color ?? activityIcon.color;

@@ -361,7 +361,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                     error={formik.touched.destination && Boolean(formik.errors.destination)}
                     outlineColor="#E0E0E0"
                     activeOutlineColor="#263F69"
-                    left={<TextInput.Icon icon="map-marker" className="opacity-50 mt-2" />}
+                    left={<TextInput.Icon icon="map-marker" color="#999" />}
                     theme={{
                       colors: {
                         onSurfaceVariant: '#888', 
@@ -457,7 +457,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   label={`${!formik.values.startOrDepartureDate ? "Departure" : ""}`}
                   value={formattedStartDate}
                   editable={false}
-                  left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
+                  left={<TextInput.Icon icon="calendar" color="#999"/>}
                   right={formik.values.startOrDepartureDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("startOrDepartureDate", null)} /> : null}
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#263F69"
@@ -568,7 +568,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   label={`${!formik.values.endOrReturnDate ? "Return" : ""}`}
                   value={formattedEndDate}
                   editable={false}
-                  left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
+                  left={<TextInput.Icon icon="calendar" color="#999"/>}
                   right={formik.values.endOrReturnDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("endOrReturnDate", null)} /> : null}
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#263F69"
@@ -723,7 +723,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             </View>
           </>
         )}
-            <View className="mb-5"></View>
 
       </ScrollView>
 

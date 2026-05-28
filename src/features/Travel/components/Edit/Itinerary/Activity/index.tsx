@@ -3,12 +3,13 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { Formik } from "formik";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Image,
+  Keyboard,
   Modal,
   ScrollView,
   StatusBar,
@@ -18,8 +19,9 @@ import {
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { TextInput, useTheme } from "react-native-paper";
+import { CalendarList } from "react-native-calendars";
 import * as Yup from "yup";
-import ActivityIcon from "../../../../../../components/ActivityIcon";
+import ActivityIcon, { activityIcons } from "../../../../../../components/ActivityIcon";
 import TouchButton from "../../../../../../components/atoms/TouchButton";
 import Tabs from "../../../../../../components/Tabs";
 import { useTravelContext } from "../../../../../../context/TravelContext";
@@ -49,7 +51,7 @@ interface EditActivityProps {
 }
 
 const TravelSchema = Yup.object().shape({
-  title: Yup.string().required("Title is required").min(2),
+  title: Yup.string().required("Activity title is required").min(2, "Activity title is too short, make it more descriptive"),
 });
 
 export interface ActivityFormValues {
@@ -75,6 +77,25 @@ const EditActivity = ({
   itineraryActivity,
   onClose,
 }: EditActivityProps) => {
+  const toLocalDateStr = (dInput: any) => {
+    if (!dInput) return null;
+    const d = new Date(dInput);
+    if (isNaN(d.getTime())) return null;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const toLocalTimeStr = (dInput: any) => {
+    if (!dInput) return "";
+    const d = new Date(dInput);
+    if (isNaN(d.getTime())) return "";
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
   const [showPrimaryTypeModal, setShowPrimaryTypeModal] = useState<boolean>(false);
@@ -83,6 +104,24 @@ const EditActivity = ({
   const [showTimePickerFor, setShowTimePickerFor] = useState<"startTime" | "endTime" | null>(null);
   const [showCalendarFor, setShowCalendarFor] = useState<"startDate" | "endDate" | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
+  const [isChecklistFocused, setIsChecklistFocused] = useState<boolean>(false);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => setIsKeyboardVisible(true)
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => setIsKeyboardVisible(false)
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
   const updateMutation = useUpdateActivityMutation();
   const { selectedTravelPlan } = useTravelContext();
   const { userToken } = useAuth();
@@ -127,7 +166,7 @@ const EditActivity = ({
   const toggleChecklistItem = useToggleChecklistItemMutation();
   const travelId = selectedTravelPlan?.id || "";
   const activityId = itineraryActivity?.id;
-  const { data: checklistItems = [] } = useChecklistItems(travelId);
+  const { data: checklistItems = [], refetch: refetchChecklist } = useChecklistItems(travelId);
   const activityChecklistItems = checklistItems.filter(
     (i) => activityId && i.activityId === activityId
   );
@@ -147,6 +186,7 @@ const EditActivity = ({
     setNewCheckTitle("");
     setNewCheckDescription("");
     setShowCheckDescription(false);
+    await refetchChecklist();
   };
 
   const handleToggleChecklistItem = async (item: any) => {
@@ -156,6 +196,7 @@ const EditActivity = ({
       userId: userToken || "user",
       travelId,
     });
+    await refetchChecklist();
   };
 
   const handleDeleteChecklistItem = async (item: any) => {
@@ -168,7 +209,8 @@ const EditActivity = ({
     });
 
     if (isConfirmed) {
-      deleteChecklistItem.mutate({ id: item.id, travelId });
+      await deleteChecklistItem.mutateAsync({ id: item.id, travelId });
+      await refetchChecklist();
     }
   };
 
@@ -197,7 +239,6 @@ const EditActivity = ({
       selectedTravelPlan?.id
     ) {
 
-      debugger;
       // Build proper Date objects from strings
       let finalStartDate: Date | undefined = undefined;
       if (values.startDate) {
@@ -281,6 +322,10 @@ const EditActivity = ({
       };
 
       await updateMutation.mutateAsync(payload);
+      showToast({
+        type: "success",
+        message: values.id ? "Activity updated successfully!" : "Activity created successfully!",
+      });
       onClose();
     }
   };
@@ -316,10 +361,10 @@ const EditActivity = ({
         description: itineraryActivity?.description || "",
         type: itineraryActivity?.type ?? ActivityType.none,
         sortOrder: itineraryActivity?.sortOrder || "",
-        startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : (currentSection?.startDate ? new Date(currentSection.startDate).toISOString().split('T')[0] : null),
-        startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
-        endDate: itineraryActivity?.endDate ? new Date(itineraryActivity.endDate).toISOString().split('T')[0] : null,
-        endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? new Date(itineraryActivity.endDate).toISOString().substring(11, 16) : "09:00",
+        startDate: itineraryActivity?.startDate ? toLocalDateStr(itineraryActivity.startDate) : (currentSection?.startDate ? toLocalDateStr(currentSection.startDate) : null),
+        startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? toLocalTimeStr(itineraryActivity.startDate) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
+        endDate: itineraryActivity?.endDate ? toLocalDateStr(itineraryActivity.endDate) : null,
+        endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? toLocalTimeStr(itineraryActivity.endDate) : "09:00",
         destination: itineraryActivity?.destination || (itineraryActivity?.id ? "" : itineraryActivity?.destination || ""),
         destinationData: itineraryActivity?.destinationData || (itineraryActivity?.id ? undefined : itineraryActivity?.destinationData),
         images: itineraryActivity?.images || [],
@@ -349,13 +394,13 @@ const EditActivity = ({
             id: "details",
             title: "Details",
             content: (
-              <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <View className="flex-1 pt-2 px-5">
                 {/* Title */}
                 <View className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
                   <TextInput
                     mode="outlined"
-                    placeholder="Activity title"
+                    placeholder="e.g. Museum Visit"
                     value={values.title}
                     onChangeText={handleChange("title")}
                     onBlur={handleBlur("title")}
@@ -364,7 +409,7 @@ const EditActivity = ({
                     activeOutlineColor="#263F69"
                     theme={{ colors: { onSurfaceVariant: '#888' } }}
                     outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                    style={{ marginTop: 6, height: 60 }}
+                    style={{ marginTop: 6, height: 64 }}
                     contentStyle={{ backgroundColor: "transparent" }}
                   />
                   {touched.title && errors.title && (
@@ -397,13 +442,14 @@ const EditActivity = ({
                 <View className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
                   <View className="flex-row items-center gap-4 mt-2">
-                    <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center">
+                    <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
                       <TouchableOpacity 
                         onPress={() => setShowCalendarFor("startDate")}
-                        className="flex-1 py-3 items-center justify-center h-14"
+                        className="flex-1 flex-row items-center p-5 gap-2"
                         accessibilityRole="button"
                       >
-                        <Text className="text-md font-medium text-gray-800">
+                        <Icon name="calendar-today" size={24} color="#999" />
+                        <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
                           {values.startDate ? String(values.startDate) : "Date"}
                         </Text>
                       </TouchableOpacity>
@@ -417,13 +463,14 @@ const EditActivity = ({
                         </TouchableOpacity>
                       )}
                     </View>
-                    <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center">
+                    <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
                       <TouchableOpacity 
                         onPress={() => setShowTimePickerFor("startTime")}
-                        className="flex-1 py-3 items-center justify-center h-14"
+                        className="flex-1 flex-row items-center p-5 gap-2"
                         accessibilityRole="button"
                       >
-                        <Text className="text-md font-medium text-gray-800">
+                        <Icon name="access-time" size={24} color="#888" />
+                        <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
                           {values.startTime ? String(values.startTime) : "Time"}
                         </Text>
                       </TouchableOpacity>
@@ -476,10 +523,10 @@ const EditActivity = ({
                           editable={false}
                           outlineColor="#E0E0E0"
                           activeOutlineColor="#263F69"
-                          left={<TextInput.Icon icon="map-marker" className="opacity-50 mt-2" />}
+                          left={<TextInput.Icon icon="map-marker" color="#999" />}
                           theme={{ colors: { onSurfaceVariant: '#888' } }}
                           outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                          style={{ marginTop: 6, height: 60 }}
+                          style={{ marginTop: 6, height: 64 }}
                           contentStyle={{ backgroundColor: "transparent" }}
                         />
                       </View>
@@ -493,7 +540,7 @@ const EditActivity = ({
                   <TouchableOpacity 
                     onPress={() => hasSections && setShowSectionModal(true)}
                     disabled={!hasSections}
-                    className={`border rounded-2xl h-14 border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3 ${!hasSections ? 'opacity-50 bg-gray-100' : ''}`}
+                    className={`border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3 ${!hasSections ? 'opacity-50 bg-gray-100' : ''}`}
                     accessibilityRole="button"
                     accessibilityLabel="Select itinerary section"
                   >
@@ -510,7 +557,7 @@ const EditActivity = ({
                   <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
                   <TouchableOpacity 
                     onPress={() => setShowPrimaryTypeModal(true)}
-                    className="border rounded-2xl h-14 border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
+                    className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
                     accessibilityRole="button"
                   >
                     {values.type != null && values.type !== ActivityType.none ? (
@@ -528,7 +575,7 @@ const EditActivity = ({
 
                 {/* Delete Activity */}
                 {itineraryActivity?.id && (
-                  <View className="mt-2 pt-4 border-t border-gray-100">
+                  <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200">
                     <TouchableOpacity 
                       className="flex-row items-center gap-2.5 justify-center py-2"
                       onPress={() => handleDeleteActivity(itineraryActivity?.id || "")}
@@ -548,12 +595,13 @@ const EditActivity = ({
           {
             id: "images",
             title: "Images",
+            disabled: !itineraryActivity?.id,
             content: (
-              <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                <Text className="text-xs font-semibold tracking-wider uppercase mb-3 text-gray-500">Upload Images</Text>
+              <View className="flex-1 pb-6 pt-2 px-5">
+                <Text className="text-xs font-semibold tracking-wider uppercase mb-2 ">Upload Images</Text>
                 <TouchableOpacity
                   onPress={() => pickImage(setFieldValue, values.images)}
-                  className="border border-dashed border-[#263F69] h-[150px] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3 mb-4"
+                  className="border-2 border-dashed border-[#ddd] h-[140px] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-center gap-3 mb-4"
                   accessibilityRole="button"
                   accessibilityLabel="Upload images"
                 >
@@ -591,12 +639,13 @@ const EditActivity = ({
           {
             id: "attachments",
             title: "Attachments",
+            disabled: !itineraryActivity?.id,
             content: (
-              <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                <Text className="text-xs font-semibold tracking-wider uppercase mb-3 text-gray-500">File Attachments</Text>
+              <View className="flex-1 pb-6 pt-2 px-5">
+                <Text className="text-xs font-semibold tracking-wider uppercase mb-2">File Attachments</Text>
                 <TouchableOpacity
                   onPress={() => pickDocument(setFieldValue, values.attachments || [])}
-                  className="border border-dashed border-[#263F69] h-[150px] rounded-[16px] bg-white px-4 py-5 flex-row items-center justify-center gap-3 mb-4"
+                  className="border-2 border-dashed border-[#ddd] h-[140px] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-center gap-3 mb-4"
                   accessibilityRole="button"
                   accessibilityLabel="Upload files"
                 >
@@ -643,10 +692,11 @@ const EditActivity = ({
           {
             id: "checklist",
             title: "Checklist",
+            disabled: !itineraryActivity?.id,
             content: (
-              <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <View className="flex-1 pb-6 pt-2 px-5">
                 <View className="flex-row items-center gap-2 mb-3">
-                  <Text className="text-xs font-semibold tracking-wider uppercase flex-1 text-gray-500">Checklist Items</Text>
+                  <Text className="text-xs font-semibold tracking-wider uppercase flex-1">Checklist Items</Text>
                   {activityId && (
                     <Text className="text-xs text-gray-500 font-medium">
                       {activityChecklistItems.filter(i => i.isDone).length}/{activityChecklistItems.length} Done
@@ -655,7 +705,7 @@ const EditActivity = ({
                 </View>
 
                 {activityId ? (
-                  <View className="bg-white border border-dashed border-[#263F69]/40 rounded-[16px] p-4 mb-4">
+                  <View className="bg-white border border-[#ddd] rounded-2xl p-4 mb-4">
                     <TextInput
                       mode="outlined"
                       placeholder="e.g. Bring passport..."
@@ -667,15 +717,17 @@ const EditActivity = ({
                       activeOutlineColor="#263F69"
                       theme={{ colors: { onSurfaceVariant: '#888' } }}
                       outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                      style={{ height: 60 }}
+                      style={{ height: 64 }}
                       contentStyle={{ backgroundColor: "transparent" }}
+                      onFocus={() => setIsChecklistFocused(true)}
+                      onBlur={() => setIsChecklistFocused(false)}
                     />
 
                     {showCheckDescription ? (
                       <TextInput
                         mode="outlined"
                         multiline
-                        numberOfLines={2}
+                        numberOfLines={3}
                         value={newCheckDescription}
                         placeholder="Optional description..."
                         onChangeText={setNewCheckDescription}
@@ -685,9 +737,11 @@ const EditActivity = ({
                         activeOutlineColor="#263F69"
                         theme={{ colors: { onSurfaceVariant: '#888' } }}
                         outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                        style={{ marginTop: 6, marginBottom: 12, height: 90 }}
+                        style={{ marginTop: 6, marginBottom: 12, height: 105 }}
                         textAlignVertical="top"
                         contentStyle={{ backgroundColor: "transparent" }}
+                        onFocus={() => setIsChecklistFocused(true)}
+                        onBlur={() => setIsChecklistFocused(false)}
                       />
                     ) : (
                       <TouchableOpacity
@@ -702,15 +756,15 @@ const EditActivity = ({
                       accessibilityRole="button"
                       onPress={handleAddChecklistItem}
                       disabled={!newCheckTitle.trim() || saveChecklistItem.isPending}
-                      style={{ backgroundColor: colors.primary, opacity: newCheckTitle.trim() ? 1 : 0.6 }}
-                      className="flex-row items-center justify-center gap-2 py-3 rounded-[16px]"
+                      style={{ backgroundColor: "#FFF", opacity: newCheckTitle.trim() ? 1 : 0.6 }}
+                      className="flex-row items-center border border-primary justify-center gap-2 py-3 rounded-[16px]"
                     >
                       {saveChecklistItem.isPending ? (
-                        <ActivityIndicator size="small" color="#FFF" />
+                        <ActivityIndicator size="small" color="#263F69" />
                       ) : (
                         <>
-                          <Icon name="add" size={18} color={colors.onPrimary} />
-                          <Text className="text-sm font-semibold" style={{ color: colors.onPrimary }}>Add Item</Text>
+                          <Icon name="add" size={18} color="#263F69" />
+                          <Text className="text-sm font-semibold text-primary">Add Item</Text>
                         </>
                       )}
                     </TouchableOpacity>
@@ -773,14 +827,16 @@ const EditActivity = ({
               <Tabs tabs={tabData} initialActiveTabId="details" type="default" />
             </View>
 
-            <View className="mb-8 mx-4 bg-transparent">
-               <TouchButton
-                 buttonText={itineraryActivity?.id ? "Update Activity" : "Add Activity"}
-                 onPress={() => handleSubmit()}
-                 disabled={isPending}
-                 className="h-7xl p-6"
-               />
-             </View>
+            {!(isKeyboardVisible && isChecklistFocused) && (
+              <View className="mb-8 mx-4 bg-transparent">
+                 <TouchButton
+                   buttonText={itineraryActivity?.id ? "Update Activity" : "Add Activity"}
+                   onPress={() => handleSubmit()}
+                   disabled={isPending}
+                   className="h-7xl p-6"
+                 />
+               </View>
+            )}
 
             <Modal
               visible={showDestinationModal}
@@ -807,23 +863,59 @@ const EditActivity = ({
               />
             </Modal>
 
-            <DateTimePickerModal
-              isVisible={showCalendarFor !== null}
-              mode="date"
-              onConfirm={(date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const dateString = `${year}-${month}-${day}`;
-                if (showCalendarFor === "startDate") {
-                  setValues({ ...values, startDate: dateString });
-                } else {
-                  setValues({ ...values, endDate: dateString });
-                }
-                setShowCalendarFor(null);
-              }}
-              onCancel={() => setShowCalendarFor(null)}
-            />
+            <Modal 
+              visible={showCalendarFor !== null} 
+              transparent={false} 
+              animationType="slide"
+              onRequestClose={() => setShowCalendarFor(null)}
+            >
+              <View className="flex-1 bg-white pt-12">
+                <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
+                  <TouchableOpacity 
+                    onPress={() => setShowCalendarFor(null)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Close date selector"
+                  >
+                    <Icon name="close" size={28} color="#333" />
+                  </TouchableOpacity>
+                  <Text className="text-xl font-bold">Select Date</Text>
+                  <View className="w-10" />
+                </View>
+
+                <View className="flex-1">
+                  <CalendarList
+                    current={(showCalendarFor === "startDate" ? values.startDate : values.endDate) || undefined}
+                    pastScrollRange={12}
+                    futureScrollRange={24}
+                    scrollEnabled={true}
+                    horizontal={false}
+                    showsVerticalScrollIndicator={true}
+                    hideArrows={true}
+                    onDayPress={(day: any) => {
+                      if (showCalendarFor === "startDate") {
+                        setValues({ ...values, startDate: day.dateString });
+                      } else {
+                        setValues({ ...values, endDate: day.dateString });
+                      }
+                      setShowCalendarFor(null);
+                    }}
+                    markedDates={{
+                      [(showCalendarFor === "startDate" ? values.startDate : values.endDate) || ""]: {
+                        selected: true,
+                        selectedColor: '#263F69',
+                      }
+                    }}
+                    theme={{
+                      todayTextColor: '#263F69',
+                      todayBackgroundColor: '#E3F2FD',
+                      textDayFontWeight: 'bold',
+                      selectedDayBackgroundColor: '#263F69',
+                      selectedDayTextColor: '#ffffff',
+                    }}
+                  />
+                </View>
+              </View>
+            </Modal>
 
             <Modal
               visible={showSectionModal}
@@ -886,6 +978,26 @@ const EditActivity = ({
             <DateTimePickerModal
               isVisible={showTimePickerFor !== null}
               mode="time"
+              date={(() => {
+                const targetDateStr = showTimePickerFor === "startTime" ? values.startDate : values.endDate;
+                const targetTimeStr = showTimePickerFor === "startTime" ? values.startTime : values.endTime;
+                
+                const resultDate = new Date();
+                
+                if (targetDateStr) {
+                  const [year, month, day] = targetDateStr.split('-').map(Number);
+                  resultDate.setFullYear(year, month - 1, day);
+                }
+                
+                if (targetTimeStr && targetTimeStr.includes(':')) {
+                  const [hours, minutes] = targetTimeStr.split(':').map(Number);
+                  resultDate.setHours(hours, minutes, 0, 0);
+                } else {
+                  resultDate.setHours(showTimePickerFor === "startTime" ? 9 : 17, 0, 0, 0);
+                }
+                
+                return resultDate;
+              })()}
               onConfirm={(date) => {
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');

@@ -95,11 +95,11 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
       buttonClass = isActive
         ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center" : "bg-brand-50 border border-brand-100 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center")
         : (tab.disabled 
-            ? "bg-gray-50 border border-gray-100 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center opacity-50"
+            ? "bg-gray-50 border border-gray-300 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center opacity-30"
             : "bg-white border border-[#E0E0E0] rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center");
       textClass = isActive
         ? (isOngoingWithActiveTrip ? "text-success-500 font-semibold text-sm" : "text-primary font-semibold text-sm")
-        : (tab.disabled ? "text-gray-300 font-medium text-sm" : "text-gray-600 font-medium text-sm");
+        : (tab.disabled ? "text-gray-800 font-medium text-sm" : "text-gray-600 font-medium text-sm");
     }
 
     return (
@@ -111,7 +111,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
           setActiveTabId(tab.id);
           if (onTabChange) onTabChange(tab.id);
         }}
-        activeOpacity={tab.disabled ? 1 : 0.8}
+        activeOpacity={tab.disabled ? 1 : 0.5}
         disabled={tab.disabled}
       >
         <View className="flex-row items-center gap-1.5">

@@ -19,6 +19,7 @@ import DraggableActivityItem from "./DraggableActivityItem";
 import DraggableSectionContainer from "./DraggableSectionContainer";
 import SectionMenu from "./Section/Menu";
 import SectionModal from "./Section/Modal";
+import { useToast } from "../../../../../context/ToastContext";
 
 import { useLexicographicSort } from "../../../../../hooks/useLexicographicSort";
 import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../../services/local/travelService";
@@ -66,6 +67,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
 }, ref) => {
   const { generateSortOrder } = useLexicographicSort();
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   useImperativeHandle(ref, () => ({
     handleAddSection: handleMenuAddSection,
@@ -286,6 +288,10 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
       if (moved.id) {
         updateSectionSortOrderLocally(moved.id, newSortOrder).then(() => {
           queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+          showToast({
+            type: "success",
+            message: "Section order updated successfully!",
+          });
         });
         // updateSectionMutation({
         //   ...moved,
@@ -355,11 +361,17 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
             updatedActivity.sortOrder = newSortOrder;
 
             if (updatedActivity.id) {
-              const res = updateActivitySortOrderLocally(
+              updateActivitySortOrderLocally(
                 updatedActivity.id, 
                 newSortOrder, 
                 targetSectionId !== sourceSectionId ? targetSectionId : undefined
-              );
+              ).then(() => {
+                queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+                showToast({
+                  type: "success",
+                  message: "Activity order updated successfully!",
+                });
+              });
 
               // Alert.alert("Success", "Sort updated");
 
@@ -684,10 +696,10 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
             setCurrentSectionId(defaultSection?.id || null);
           }}
          
-          className="mt-2 bg-primary-light p-2 rounded-3xl h-[50px] flex items-center justify-center flex-row text-right mx-4"
+          className="bg-primary-light flex-row items-center border border-primary/50 justify-center gap-2 py-3 rounded-4xl"
         >
-            <Icon name="add" size={22} color={"#475467"} />
-            <Text className="tracking-wider flex items-center text-gray-800">
+            <Icon name="add" size={16} color={"#263F69"} />
+            <Text className="font-semibold flex items-center text-primary">
             Add Activity
           </Text>
         </TouchableOpacity>
@@ -912,14 +924,12 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                                 setCurrentSectionId(defaultSection?.id || null);
                               }}
                               className="justify-center flex-row">
-                                <Icon name="add" size={18} color={"#475467"} />
-                                <Text className="tracking-wider flex items-center text-gray-800">
+                                <Icon name="add" size={18} color={"#aaa"} />
+                                <Text className=" font-semibold flex items-center text-[#aaa]">
                                 Add
                               </Text>
                             </TouchableOpacity>
-                            
                              <Text style={{ color: "#aaa" }}> or drop activities here</Text>
-
                              {hoverState?.sectionId === section.id && (
                                <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
                              )}
@@ -938,9 +948,8 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                     }}
                     className="mt-2 h-[44px] flex items-center justify-center flex-row"
                   >
-                     <Icon name="add" size={24} color={"#475467"} 
-                       className="opacity-50"/>
-                    <Text className="tracking-wider flex items-center text-gray-800">
+                     <Icon name="add" size={20} color={"#263F69"} />
+                    <Text className="font-semibold flex items-center text-primary underline">
                       Add Activity
                     </Text>
                   </TouchableOpacity>
@@ -969,12 +978,12 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
               onPress={() => {
                 setSectionModalVisible(true);
               }}
-              className="mt-2 p-2 rounded-full h-[50px] flex items-center justify-center flex-row mx-4"
+              // className="mt-2 p-2 rounded-full h-[50px] flex items-center justify-center flex-row mx-4"
+              className="mt-2 rounded-md h-7xl border-0 bg-primary-light flex-row items-center justify-center gap-2"
             >
-              <Icon name="add" size={24} color={"#475467"} 
-                className="opacity-50"/>
-              <Text className="tracking-wider flex items-center ">
-                Add New Section
+              <Icon name="add-circle-outline" size={20} color={"#263F69"} />
+              <Text className="font-semibold flex items-center text-primary">
+                Add new section
               </Text>
             </TouchableOpacity>
         </View>
