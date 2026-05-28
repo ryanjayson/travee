@@ -426,6 +426,7 @@ const ViewTravel = ({
         currentTab={activeTabId}
         open={fabOpen}
         setOpen={setFabOpen}
+        travelId={travelId}
         onAddNote={() => {
           setSelectedNote(null);
           setShowNoteModal(true);

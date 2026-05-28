@@ -249,10 +249,10 @@ const EditExpense = ({
                 accessibilityRole="checkbox"
               >
                 <Text className="text-base text-gray-700 font-medium ml-1">
-                  Expense split
+                  Split Expense 
                 </Text>
                 <View className="pr-4">
-                  <Text className="text-xs font-normal text-tertiary ml-1 mr-4">When enabled, expenses with this tag will be included in calculations and distributed based on each member’s share percentage.</Text>
+                  <Text className="text-sm font-normal text-tertiary ml-1 mr-4">When enabled, expenses with this tag will be included in calculations and distributed based on each member’s share percentage.</Text>
                 </View>
 
               </TouchableOpacity>
@@ -261,8 +261,8 @@ const EditExpense = ({
             </View>
 
             <View className="mb-3 bg-white rounded-b-2xl px-4">
-              <Text className="text-xs  mt-4 font-semibold tracking-wider uppercase">Assign to Member</Text>
-              <Text className="text-xs font-normal my-1 text-tertiary">Enabled only if 'Include in expense split' is unchecked</Text>
+              <Text className="text-base  mt-4 font-semibold">Assign to Member</Text>
+              <Text className="text-sm font-normal my-1 text-tertiary">Enabled only if 'Split Expense' is unchecked</Text>
             
             
               <TouchableOpacity

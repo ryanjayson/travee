@@ -21,16 +21,37 @@ const FloatingAddButton = ({
         icon={open ? "close" : "plus"}
         color="white"
         style={{ position: 'absolute', bottom: 0, right: 0 }}
-        fabStyle={{ backgroundColor: "#263F69", borderRadius: 30 }}
+        fabStyle={{
+            backgroundColor: open ? '#82181a' : '#263F69',
+            borderRadius: 50,
+        }}
         actions={[
           {
             icon: "map-marker-plus",
             label: "Add Activity",
+            style: {
+                elevation: 0,
+                borderRadius: 50,
+                padding: 6,
+                backgroundColor: '#263F69',
+                marginRight: -6,
+                marginBottom: 10
+            },
+            color: 'white',
             onPress: onAddActivity,
           },
           {
             icon: "view-list",
             label: "Add Section",
+            style: {
+                elevation: 0,
+                borderRadius: 50,
+                padding: 6,
+                backgroundColor: '#263F69',
+                marginRight: -6,
+                marginBottom: 10
+            },
+            color: 'white',
             onPress: onAddSection,
           },
         ]}

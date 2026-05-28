@@ -13,11 +13,13 @@ interface TabItem {
   id: string;
   title: string;
   content: ReactNode;
+  disabled?: boolean;
 }
 
 interface TabsProps {
   tabs: TabItem[];
   initialActiveTabId?: string;
+  activeTabId?: string;
   type?: TabsType;
   onTabChange?: (tabId: string) => void;
   expanded?: boolean;
@@ -27,10 +29,16 @@ interface TabsProps {
 type TabsType = "primary" | "secondary" | "default";
 
 // --- Component ---
-const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus }) => {
+const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlledActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus }) => {
   const [activeTabId, setActiveTabId] = useState(
     initialActiveTabId || tabs[0]?.id
   );
+
+  useEffect(() => {
+    if (controlledActiveTabId !== undefined) {
+      setActiveTabId(controlledActiveTabId);
+    }
+  }, [controlledActiveTabId]);
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
 
@@ -56,7 +64,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
   }, []);
 
   const renderTabButton = (tab: TabItem) => {
-    const isActive = tab.id === activeTabId;
+    const isActive = tab.id === activeTabId && !tab.disabled;
     const isOngoingWithActiveTrip = tab.id === "ongoing" && hasActionTripStatus;
 
     let displayTitle = tab.title;
@@ -70,24 +78,28 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
     if (type === "primary") {
       buttonClass = isActive 
         ? "bg-primary rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center shadow-sm h-14 min-w-24"
-        : "bg-gray-100 rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center h-14 min-w-24";
+        : (tab.disabled
+            ? "bg-gray-50 rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center h-14 min-w-24 opacity-50"
+            : "bg-gray-100 rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center h-14 min-w-24");
       textClass = isActive 
         ? "text-white font-semibold text-base"
-        : "text-gray-500 font-medium text-base";
+        : (tab.disabled ? "text-gray-300 font-medium text-base" : "text-gray-500 font-medium text-base");
     } else if (type === "secondary") {
       buttonClass = isActive
         ? "px-4 py-3 border-b-2 border-[#263F69] items-center justify-center"
         : "px-4 py-3 border-b-2 border-transparent items-center justify-center";
       textClass = isActive
         ? "text-[#263F69] font-bold text-base"
-        : "text-gray-500 font-medium text-base";
+        : (tab.disabled ? "text-gray-300 font-medium text-base opacity-50" : "text-gray-500 font-medium text-base");
     } else { // "default"
       buttonClass = isActive
         ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center" : "bg-brand-50 border border-brand-100 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center")
-        : "bg-white border border-[#E0E0E0] rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center ";
+        : (tab.disabled 
+            ? "bg-gray-50 border border-gray-100 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center opacity-50"
+            : "bg-white border border-[#E0E0E0] rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center");
       textClass = isActive
         ? (isOngoingWithActiveTrip ? "text-success-500 font-semibold text-sm" : "text-primary font-semibold text-sm")
-        : "text-gray-600 font-medium text-sm";
+        : (tab.disabled ? "text-gray-300 font-medium text-sm" : "text-gray-600 font-medium text-sm");
     }
 
     return (
@@ -95,10 +107,12 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, type = "primary", onTab
         key={tab.id}
         className={buttonClass}
         onPress={() => {
+          if (tab.disabled) return;
           setActiveTabId(tab.id);
           if (onTabChange) onTabChange(tab.id);
         }}
-        activeOpacity={0.8}
+        activeOpacity={tab.disabled ? 1 : 0.8}
+        disabled={tab.disabled}
       >
         <View className="flex-row items-center gap-1.5">
           {isOngoingWithActiveTrip && (

@@ -281,7 +281,6 @@ const EditActivity = ({
       };
 
       await updateMutation.mutateAsync(payload);
-      onClose();
     }
   };
 
@@ -548,6 +547,7 @@ const EditActivity = ({
           {
             id: "images",
             title: "Images",
+            disabled: !itineraryActivity?.id,
             content: (
               <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <Text className="text-xs font-semibold tracking-wider uppercase mb-3 text-gray-500">Upload Images</Text>
@@ -591,6 +591,7 @@ const EditActivity = ({
           {
             id: "attachments",
             title: "Attachments",
+            disabled: !itineraryActivity?.id,
             content: (
               <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <Text className="text-xs font-semibold tracking-wider uppercase mb-3 text-gray-500">File Attachments</Text>
@@ -643,6 +644,7 @@ const EditActivity = ({
           {
             id: "checklist",
             title: "Checklist",
+            disabled: !itineraryActivity?.id,
             content: (
               <View className="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
                 <View className="flex-row items-center gap-2 mb-3">

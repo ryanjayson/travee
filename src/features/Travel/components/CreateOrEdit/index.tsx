@@ -52,7 +52,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
   }));
   const [error, setError] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showDestinationModal, setShowDestinationModal] = useState(false);
   const [tempDepartureDate, setTempDepartureDate] = useState<Date | null>(null);
   const [tempReturnDate, setTempReturnDate] = useState<Date | null>(null);
@@ -150,11 +149,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     },
   });
 
-  // const handleCancel = () => {
-  //   formik.resetForm();
-  //   setError(null);
-  //   onClose();
-  // };
   const words = ['Quick weekend gateaway', 'My International trip 2026', 'A trip with my friends', 'A trip to My Province', 'My Solo Trip to Japan'];
   const [currentWord, setCurrentWord] = useState(words[0]);
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -245,6 +239,48 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
   const effectiveStatus = getEffectiveStatus();
   const blockedDates = generateBlockedDates();
+
+  const getPeriodMarkedDates = (start: Date | null, end: Date | null) => {
+    const marked: Record<string, any> = {};
+
+    if (start && !isNaN(start.getTime())) {
+      const startStr = start.toISOString().split('T')[0];
+      marked[startStr] = {
+        startingDay: true,
+        selected: true,
+        color: '#263F69',
+        textColor: '#ffffff',
+      };
+
+      if (end && !isNaN(end.getTime())) {
+        const endStr = end.toISOString().split('T')[0];
+        marked[endStr] = {
+          endingDay: true,
+          selected: true,
+          color: '#263F69',
+          textColor: '#ffffff',
+        };
+
+        let currentDate = new Date(start.getTime());
+        currentDate.setDate(currentDate.getDate() + 1);
+
+        while (currentDate.toDateString() !== end.toDateString() && currentDate < end) {
+          const midStr = currentDate.toISOString().split('T')[0];
+          marked[midStr] = {
+            selected: true,
+            color: '#263F6920',
+            textColor: '#263F69',
+          };
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      }
+    }
+
+    return {
+      ...blockedDates,
+      ...marked,
+    };
+  };
 
   React.useEffect(() => {
     if (onStatusChange) {
@@ -410,233 +446,169 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           </View>
         )}
 
-        <View className="flex-row mb-5 gap-3">
-          <View className="flex-1">
-            <View className="relative mt-sm">
-              <TextInput
-                mode="outlined"
-                label={"Departure"}
-                placeholder="Departure Date."
-                value={formattedStartDate}
-                editable={false}
-                left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
-                right={formik.values.startOrDepartureDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("startOrDepartureDate", null)} /> : null}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                theme={{
-                    colors: {
-                      onSurfaceVariant: '#888', 
-                    },
-                  }}
-                  outlineStyle={{
-                    borderWidth: 1,
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: 16,
-                  }}
-                  style={{
-                    height: 64,
-                    flex: 1,
-                  }}
-                  contentStyle={{
-                    backgroundColor: "transparent",
-                  }}
-              />
-              <TouchableOpacity 
-                style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
-                onPress={() => {
-                  setTempDepartureDate(formik.values.startOrDepartureDate ? new Date(formik.values.startOrDepartureDate) : null);
-                  setShowStartDatePicker(true);
-                  setShowEndDatePicker(false);
-                }}
-                activeOpacity={0.6}
-              />
-            </View>
-            <Modal 
-              visible={showStartDatePicker} 
-              transparent={false} 
-              animationType="slide"
-              onRequestClose={() => setShowStartDatePicker(false)}
-            >
-              <View className="flex-1 bg-white pt-12">
-                {/* Header */}
-                <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
-                  <TouchableOpacity 
-                    onPress={() => setShowStartDatePicker(false)}
-                    accessibilityRole="button"
-                    accessibilityLabel="Close date selector"
-                  >
-                    <Icon name="close" size={28} color="#333" />
-                  </TouchableOpacity>
-                  <Text className="text-xl font-bold">Select Departure Date</Text>
-                  <View className="w-10" />
-                </View>
 
-                {/* Calendar List */}
-                <View className="flex-1">
-                  <CalendarList
-                    pastScrollRange={0}
-                    futureScrollRange={12}
-                    scrollEnabled={true}
-                    horizontal={false}
-                    showsVerticalScrollIndicator={true}
-                    hideArrows={true}
-                    onDayPress={(day: any) => {
-                      setTempDepartureDate(new Date(day.timestamp));
+        <View className="">
+          <Text className="text-xs font-semibold tracking-wider uppercase">Travel dates</Text>
+          <View className="flex-row mb-2 gap-3 -mt-3px">
+            <View className="flex-1">
+              <View className="relative mt-sm">
+                <TextInput
+                  mode="outlined"
+                  label={`${!formik.values.startOrDepartureDate ? "Departure" : ""}`}
+                  value={formattedStartDate}
+                  editable={false}
+                  left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
+                  right={formik.values.startOrDepartureDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("startOrDepartureDate", null)} /> : null}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor="#263F69"
+                  theme={{
+                      colors: {
+                        onSurfaceVariant: '#888', 
+                      },
                     }}
-                    minDate={new Date().toISOString().split('T')[0]}
-                    markedDates={{
-                      ...blockedDates,
-                      ...(tempDepartureDate ? {
-                        [tempDepartureDate.toISOString().split('T')[0]]: {
-                          selected: true,
-                          selectedColor: '#263F69',
-                          selectedTextColor: '#ffffff',
-                        }
-                      } : {})
+                    outlineStyle={{
+                      borderWidth: 1,
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 16,
                     }}
-                    theme={{
-                      todayTextColor: '#263F69',
-                      selectedDayBackgroundColor: '#263F69',
-                      selectedDayTextColor: '#ffffff',
+                    style={{
+                      height: 64,
+                      marginTop: formik.values.startOrDepartureDate ? 0 : -6,
                     }}
-                  />
-                </View>
-
-                {/* Confirm Button */}
-                <View className="p-5 border-t border-gray-200 bg-white mb-6">
-                  <TouchButton
-                    buttonText="Confirm Selection"
-                    onPress={() => {
-                      if (tempDepartureDate) {
-                        formik.setFieldValue("startOrDepartureDate", tempDepartureDate);
-                        if (formik.values.endOrReturnDate && formik.values.endOrReturnDate < tempDepartureDate) {
-                          formik.setFieldValue("endOrReturnDate", null);
-                        }
-                      }
-                      setShowStartDatePicker(false);
+                    contentStyle={{
+                      backgroundColor: "transparent",
                     }}
-                    disabled={!tempDepartureDate}
-                    className="h-7xl p-6"
-                  />
-                </View>
+                />
+                <TouchableOpacity 
+                  style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
+                  onPress={() => {
+                    setTempDepartureDate(formik.values.startOrDepartureDate ? new Date(formik.values.startOrDepartureDate) : null);
+                    setTempReturnDate(formik.values.endOrReturnDate ? new Date(formik.values.endOrReturnDate) : null);
+                    setShowStartDatePicker(true);
+                  }}
+                  activeOpacity={0.6}
+                  accessibilityRole="button"
+                  accessibilityLabel="Open calendar range selector"
+                />
               </View>
-            </Modal>
-          </View>
+              <Modal 
+                visible={showStartDatePicker} 
+                transparent={false} 
+                animationType="slide"
+                onRequestClose={() => setShowStartDatePicker(false)}
+              >
+                <View className="flex-1 bg-white pt-12">
+                  {/* Header */}
+                  <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
+                    <TouchableOpacity 
+                      onPress={() => setShowStartDatePicker(false)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Close date selector"
+                    >
+                      <Icon name="close" size={28} color="#333" />
+                    </TouchableOpacity>
+                    <Text className="text-xl font-bold">Select Travel Dates</Text>
+                    <View className="w-10" />
+                  </View>
 
-          <View className="flex-1">
-            <View className="relative mt-sm">
-              <TextInput
-                mode="outlined"
-                label={"Return"}
-                placeholder="Search city or country..."
-                value={formattedEndDate}
-                editable={false}
-                left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
-                right={formik.values.endOrReturnDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("endOrReturnDate", null)} /> : null}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                theme={{
-                    colors: {
-                      onSurfaceVariant: '#888', 
-                    },
-                  }}
-                  outlineStyle={{
-                    borderWidth: 1,
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: 16,
-                  }}
-                  style={{
-                    height: 64,
-                    flex: 1,
-                    marginTop: 1,
-                  }}
-                  contentStyle={{
-                    backgroundColor: "transparent",
-                  }}
-              />
-              <TouchableOpacity 
-                style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
-                onPress={() => {
-                  setTempReturnDate(formik.values.endOrReturnDate ? new Date(formik.values.endOrReturnDate) : null);
-                  setShowEndDatePicker(true);
-                  setShowStartDatePicker(false);
-                }}
-                activeOpacity={0.6}
-              />
-            </View>
-            <Modal 
-              visible={showEndDatePicker} 
-              transparent={false} 
-              animationType="slide"
-              onRequestClose={() => setShowEndDatePicker(false)}
-            >
-              <View className="flex-1 bg-white pt-12">
-                {/* Header */}
-                <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
-                  <TouchableOpacity 
-                    onPress={() => setShowEndDatePicker(false)}
-                    accessibilityRole="button"
-                    accessibilityLabel="Close date selector"
-                  >
-                    <Icon name="close" size={28} color="#333" />
-                  </TouchableOpacity>
-                  <Text className="text-xl font-bold">Select Return Date</Text>
-                  <View className="w-10" />
-                </View>
-
-                {/* Calendar List */}
-                <View className="flex-1">
-                  <CalendarList
-                    pastScrollRange={0}
-                    futureScrollRange={12}
-                    scrollEnabled={true}
-                    horizontal={false}
-                    showsVerticalScrollIndicator={true}
-                    hideArrows={true}
-                    onDayPress={(day: any) => {
-                      setTempReturnDate(new Date(day.timestamp));
-                    }}
-                    minDate={formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}
-                    markedDates={{
-                      ...blockedDates,
-                      ...(tempReturnDate ? {
-                        [tempReturnDate.toISOString().split('T')[0]]: {
-                          selected: true,
-                          selectedColor: '#263F69',
-                          selectedTextColor: '#ffffff',
+                  {/* Calendar List */}
+                  <View className="flex-1">
+                    <CalendarList
+                      pastScrollRange={0}
+                      futureScrollRange={12}
+                      scrollEnabled={true}
+                      horizontal={false}
+                      showsVerticalScrollIndicator={true}
+                      hideArrows={true}
+                      markingType={'period'}
+                      onDayPress={(day: any) => {
+                        const pressedDate = new Date(day.timestamp);
+                        if (!tempDepartureDate || (tempDepartureDate && tempReturnDate)) {
+                          setTempDepartureDate(pressedDate);
+                          setTempReturnDate(null);
+                        } else if (pressedDate < tempDepartureDate) {
+                          setTempDepartureDate(pressedDate);
+                          setTempReturnDate(null);
+                        } else {
+                          setTempReturnDate(pressedDate);
                         }
-                      } : {})
-                    }}
-                    theme={{
-                      todayTextColor: '#263F69',
-                      selectedDayBackgroundColor: '#263F69',
-                      selectedDayTextColor: '#ffffff',
-                    }}
-                  />
-                </View>
+                      }}
+                      minDate={new Date().toISOString().split('T')[0]}
+                      markedDates={getPeriodMarkedDates(tempDepartureDate, tempReturnDate)}
+                      theme={{
+                        todayTextColor: '#263F69',
+                        selectedDayBackgroundColor: '#263F69',
+                        selectedDayTextColor: '#ffffff',
+                      }}
+                    />
+                  </View>
 
-                {/* Confirm Button */}
-                <View className="p-5 border-t border-gray-200 bg-white mb-6">
-                  <TouchButton
-                    buttonText="Confirm Selection"
-                    onPress={() => {
-                      if (tempReturnDate) {
-                        formik.setFieldValue("endOrReturnDate", tempReturnDate);
-                      }
-                      setShowEndDatePicker(false);
-                    }}
-                    disabled={!tempReturnDate}
-                    className="h-7xl p-6"
-                  />
+                  {/* Confirm Button */}
+                  <View className="p-5 border-t border-gray-200 bg-white mb-6">
+                    <TouchButton
+                      buttonText="Confirm Selection"
+                      onPress={() => {
+                        if (tempDepartureDate) {
+                          formik.setFieldValue("startOrDepartureDate", tempDepartureDate);
+                          formik.setFieldValue("endOrReturnDate", tempReturnDate);
+                        }
+                        setShowStartDatePicker(false);
+                      }}
+                      disabled={!tempDepartureDate}
+                      className="h-7xl p-6"
+                    />
+                  </View>
                 </View>
+              </Modal>
+            </View>
+            <View className="flex-1">
+              <View className="relative mt-sm">
+                <TextInput
+                  mode="outlined"
+                  label={`${!formik.values.endOrReturnDate ? "Return" : ""}`}
+                  value={formattedEndDate}
+                  editable={false}
+                  left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
+                  right={formik.values.endOrReturnDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("endOrReturnDate", null)} /> : null}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor="#263F69"
+                  theme={{
+                      colors: {
+                        onSurfaceVariant: '#888', 
+                      },
+                    }}
+                    outlineStyle={{
+                      borderWidth: 1,
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 16,
+                    }}
+                    style={{
+                      height: 64,
+                      marginTop: formik.values.endOrReturnDate ? 0 : -6,
+                    }}
+                    contentStyle={{
+                      backgroundColor: "transparent",
+                    }}
+                />
+                <TouchableOpacity 
+                  style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
+                  onPress={() => {
+                    setTempDepartureDate(formik.values.startOrDepartureDate ? new Date(formik.values.startOrDepartureDate) : null);
+                    setTempReturnDate(formik.values.endOrReturnDate ? new Date(formik.values.endOrReturnDate) : null);
+                    setShowStartDatePicker(true);
+                  }}
+                  activeOpacity={0.6}
+                  accessibilityRole="button"
+                  accessibilityLabel="Open calendar range selector"
+                />
               </View>
-            </Modal>
+            </View>
           </View>
         </View>
 
-          {!tripData && (
-            <View className="flex-row items-center mb-5 -mt-2 -ml-2">
-              <Checkbox
+        {!tripData && (
+          <View className="flex-row items-start mb-6 mr-5">
+            <Checkbox
                 status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
                 onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
                 disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
@@ -647,16 +619,16 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                       disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
                       onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates )}
                     >
-                      <Text className={`mt-4 text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-700'}`}>
+                      <Text className={`mt-1 text-lg ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'opacity-80' : 'text-gray-700'}`}>
                         Generate sections
                       </Text>
 
-                        <Text className={`text-sm ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-40' : 'text-gray-400'}`}>
-                          Create itinerary sections based on travel dates. [DD/MM] Day No.
+                        <Text className={`text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-80' : 'text-gray-400'}`}>
+                          When checked it will create itinerary sections based on travel dates. Travel dates should be set to create.
                       </Text>
                     </TouchableOpacity>
-                  </View>
-          )}
+          </View>
+        )}
     
 
       <View className="mb-5">

@@ -36,7 +36,7 @@ const EditTravelPlan = () => {
   const { travelId } = route.params || {};
 
   const [travelData, setTravelData] = useState<Travel>(sampleTravel[0]);
-  const [activeTab, setActiveTab] = useState<TabType>("detail");
+  const [activeTab, setActiveTab] = useState<TabType>("itinerary");
 
   const [addMemberModalVisible, setAddMemberModalVisible] = useState(false);
   const [tripMembers, setTripMembers] = useState<Friend[]>([]);
@@ -161,7 +161,9 @@ const EditTravelPlan = () => {
           ref={formRef}
           tripData={travelPlan!?.travel} 
           mode="edit" 
-          onClose={() => {}} 
+          onClose={() => {
+            setActiveTab("itinerary");
+          }} 
           hideSubmitButton={true}
         />
       )
@@ -244,7 +246,8 @@ const EditTravelPlan = () => {
         <Tabs 
           tabs={tabData} 
           type="secondary"
-          initialActiveTabId="detail" 
+          initialActiveTabId="itinerary" 
+          activeTabId={activeTab}
           onTabChange={(id) => setActiveTab(id as TabType)} 
         />
 

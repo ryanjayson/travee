@@ -193,17 +193,38 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
               {
                 icon: "cash",
                 label: "Add Expense",
+                style: {
+                    elevation: 0,
+                    borderRadius: 50,
+                    padding: 6,
+                    backgroundColor: '#263F69',
+                    marginRight: -6,
+                    marginBottom: 10
+                },
+                color: 'white',
                 onPress: handleOpenAddExpense,
               },
               {
                 icon: "fountain-pen-tip",
                 label: "Add Note",
+                style: {
+                    elevation: 0,
+                    borderRadius: 50,
+                    padding: 6,
+                    backgroundColor: '#263F69',
+                    marginRight: -6,
+                    marginBottom: 10
+                },
+                color: 'white',
                 onPress: handleOpenAddNote,
               },
             ]}
             onStateChange={({ open }) => setFabOpen(open)}
-            fabStyle={{ backgroundColor: "#263F69" }}
-            color="#fff"
+            fabStyle={{
+                backgroundColor: fabOpen ? '#82181a' : '#263F69',
+                borderRadius: 50,
+            }}
+            color="white"
           />
         </Portal>
 

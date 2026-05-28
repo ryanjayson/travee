@@ -156,7 +156,7 @@ const ViewTripModal = ({
       }}
     >
       <StatusBar style="dark" />
-      <View className="flex-1 bg-white justify-end ">
+      <View className="flex-1 bg-white justify-end">
         <View 
           className="p-1.5 flex-row items-center z-10 pt-10"
           style={{
