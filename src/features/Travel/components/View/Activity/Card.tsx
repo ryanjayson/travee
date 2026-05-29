@@ -1,9 +1,10 @@
 import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
   Image,
+  PanResponder,
   Text,
   TouchableOpacity,
   TouchableHighlight,
@@ -13,6 +14,7 @@ import ActivityIcon, { activityIcons } from "../../../../../components/ActivityI
 import { ActivityType } from "../../../../../types/enums";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { useConfirm } from "../../../../../context/ConfirmContext";
+import { useToast } from "../../../../../context/ToastContext";
 import { ItineraryActivity } from "../../../types/TravelDto";
 import MapViewer from "../../MapViewer";
 import ViewActivityModal from "./Modal";
@@ -22,6 +24,17 @@ interface ItineraryActivityProps {
   isFirstItem?: boolean;
   isLastItem?: boolean;
   plainMode?: boolean;
+  // Drag-to-reorder props
+  index?: number;
+  listLength?: number;
+  onDragStart?: (index: number) => void;
+  onDragEnd?: (fromIndex: number, toIndex: number) => void;
+  onDragMove?: (index: number, dy: number, moveY?: number) => void;
+  isDragging?: boolean;
+  dragIndex?: number | null;
+  dragSectionId?: string | null;
+  hoverSectionId?: string | null;
+  hoverIndex?: number | null;
 }
 
 const ActivityItemCard = ({
@@ -29,15 +42,219 @@ const ActivityItemCard = ({
   isFirstItem,
   isLastItem,
   plainMode,
+  index = 0,
+  listLength = 0,
+  onDragStart,
+  onDragEnd,
+  onDragMove,
+  isDragging: parentIsDragging,
+  dragIndex,
+  dragSectionId,
+  hoverSectionId,
+  hoverIndex,
 }: ItineraryActivityProps) => {
   const [itineraryEventActivity, setItineraryEventActivity] =
     useState<ItineraryActivity>(itineraryActivity);
   const { confirm } = useConfirm();
+  const { showToast } = useToast();
 
   const [showActivityViewModal, setShowActivityViewModal] =
     useState<boolean>(false);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
   const updateMutation = useUpdateActivityMutation();
+
+  // --- Drag-to-reorder ---
+  const pan = useRef(new Animated.ValueXY()).current;
+  const [isDragActive, setIsDragActive] = useState(false);
+  const isDragActiveRef = useRef(false);
+  const dragTimer = useRef<NodeJS.Timeout | null>(null);
+  const panResponderClaimed = useRef(false);
+
+  const setDragActiveState = (val: boolean) => {
+    setIsDragActive(val);
+    isDragActiveRef.current = val;
+  };
+
+  const dragPropsRef = useRef({ index, listLength, onDragMove, onDragEnd, dragSectionId, hoverSectionId, hoverIndex });
+  useEffect(() => {
+    dragPropsRef.current = { index, listLength, onDragMove, onDragEnd, dragSectionId, hoverSectionId, hoverIndex };
+  }, [index, listLength, onDragMove, onDragEnd, dragSectionId, hoverSectionId, hoverIndex]);
+
+  const dragEnabled = !!onDragStart && !!onDragEnd && !itineraryEventActivity.startDate;
+
+  const shiftAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!dragSectionId) {
+      Animated.spring(shiftAnim, {
+        toValue: 0,
+        tension: 80,
+        friction: 12,
+        useNativeDriver: false,
+      }).start();
+      return;
+    }
+
+    let targetShift = 0;
+    const isThisCardDragging = dragEnabled && isDragActive;
+
+    if (!isThisCardDragging && dragIndex !== null && dragIndex !== undefined) {
+      const thisSectionId = itineraryActivity.sectionId || "";
+      const activeHoverSectionId = hoverSectionId || dragSectionId;
+      const activeHoverIndex = hoverIndex !== null && hoverIndex !== undefined ? hoverIndex : dragIndex;
+
+      if (dragSectionId === thisSectionId) {
+        // Dragged card is in this section
+        if (activeHoverSectionId === dragSectionId) {
+          if (dragIndex < activeHoverIndex) {
+            if (index > dragIndex && index <= activeHoverIndex) {
+              targetShift = -110;
+            }
+          } else if (dragIndex > activeHoverIndex) {
+            if (index >= activeHoverIndex && index < dragIndex) {
+              targetShift = 110;
+            }
+          }
+        } else {
+          // Dragged card has moved out of this section
+          if (index > dragIndex) {
+            targetShift = -110;
+          }
+        }
+      } else if (activeHoverSectionId === thisSectionId) {
+        // Dragged card is from a different section, and this section is hovered
+        if (index >= activeHoverIndex) {
+          targetShift = 110;
+        }
+      }
+    }
+
+    Animated.spring(shiftAnim, {
+      toValue: targetShift,
+      tension: 60,
+      friction: 9,
+      useNativeDriver: false,
+    }).start();
+  }, [dragSectionId, hoverSectionId, hoverIndex, dragIndex, index, isDragActive, dragEnabled, itineraryActivity.sectionId]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gs) => {
+        // Only claim if drag is already active (hold timer fired)
+        return isDragActiveRef.current && (Math.abs(gs.dx) > 2 || Math.abs(gs.dy) > 2);
+      },
+      onPanResponderTerminationRequest: () => !isDragActiveRef.current,
+      onPanResponderGrant: () => {
+        pan.setValue({ x: 0, y: 0 });
+        panResponderClaimed.current = true; // Mark as claimed by PanResponder!
+      },
+      onPanResponderMove: (e, gestureState) => {
+        if (!isDragActiveRef.current) return;
+        if (dragPropsRef.current.onDragMove) {
+          dragPropsRef.current.onDragMove(
+            dragPropsRef.current.index,
+            gestureState.dy,
+            gestureState.moveY
+          );
+        }
+        Animated.event([null, { dx: pan.x, dy: pan.y }], {
+          useNativeDriver: false,
+        })(e, gestureState);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (dragTimer.current) {
+          clearTimeout(dragTimer.current);
+          dragTimer.current = null;
+        }
+        if (!isDragActiveRef.current) {
+          setDragActiveState(false);
+          return;
+        }
+
+        const { 
+          index: currentIndex, 
+          dragSectionId: latestDragSectionId, 
+          hoverSectionId: latestHoverSectionId, 
+          hoverIndex: latestHoverIndex 
+        } = dragPropsRef.current;
+        
+        const isTargetDifferent = 
+          latestDragSectionId !== null && 
+          latestDragSectionId !== undefined &&
+          latestHoverSectionId !== null && 
+          latestHoverSectionId !== undefined &&
+          (latestDragSectionId !== latestHoverSectionId || (latestHoverIndex !== null && latestHoverIndex !== undefined && latestHoverIndex !== currentIndex));
+
+        if (isTargetDifferent) {
+          // Dropped on a new target area! Notify parent to reorder immediately
+          dragPropsRef.current.onDragEnd?.(currentIndex, latestHoverIndex !== null && latestHoverIndex !== undefined ? latestHoverIndex : currentIndex);
+          // Smoothly glide the card from its finger release position straight into its new slot
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            tension: 80,
+            friction: 12,
+            useNativeDriver: false,
+          }).start(() => {
+            setDragActiveState(false);
+          });
+        } else {
+          // Cancelled / released at same spot! Smoothly glide back to original slot
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            tension: 80,
+            friction: 10,
+            useNativeDriver: false,
+          }).start(() => {
+            setDragActiveState(false);
+            dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex);
+          });
+        }
+      },
+      onPanResponderTerminate: () => {
+        if (dragTimer.current) {
+          clearTimeout(dragTimer.current);
+          dragTimer.current = null;
+        }
+        const { index: currentIndex } = dragPropsRef.current;
+        // Smoothly glide back to original slot on termination
+        Animated.spring(pan, {
+          toValue: { x: 0, y: 0 },
+          tension: 80,
+          friction: 10,
+          useNativeDriver: false,
+        }).start(() => {
+          setDragActiveState(false);
+          dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex);
+        });
+      },
+    })
+  ).current;
+
+  const handleLongPress = () => {
+    if (itineraryEventActivity.startDate) {
+      showToast({
+        type: "info",
+        message: "Activities with date and time set cannot be moved.",
+      });
+      return;
+    }
+    if (!dragEnabled) return;
+    panResponderClaimed.current = false; // Reset to false on new press session!
+    setDragActiveState(true);
+    onDragStart?.(index);
+  };
+
+  const dragAnimatedStyle = {
+    transform: [
+      { translateY: shiftAnim },
+      ...pan.getTranslateTransform(),
+      { scale: isDragActive ? 1.03 : 1 },
+    ] as any,
+    zIndex: isDragActive ? 9999 : 1,
+    elevation: isDragActive ? 10 : 1,
+    // shadowOpacity: isDragActive ? 0.25 : 0,
+  };
 
   const getActivityTypeDetails = (type: any) => {
     if (type == null) return { text: "None", color: "#9E9E9E" };
@@ -99,39 +316,70 @@ const ActivityItemCard = ({
   }
 
   return (
-    <Animated.View>
-      <View className={`px-2 flex-row justify-between items-center relative`}>
-        {!isLastItem ? (
-          <View className="w-1.5 items-center h-full absolute">
-            {isFirstItem ? (
-              <View className="absolute h-1/2 w-1px top-1/2 left-[27px] z-0 border-l border-dashed border-gray-300"></View>
+    <Animated.View
+      style={dragEnabled ? dragAnimatedStyle : undefined}
+      {...(dragEnabled ? panResponder.panHandlers : {})}
+    >
+      <View className={`px-2 flex-row justify-between items-center relative `}>
+        {!isDragActive && (
+          <>
+            {!isLastItem ? (
+              <View className="w-1.5 items-center h-full absolute">
+                {isFirstItem ? (
+                  <View className="absolute h-1/2 w-1px top-1/2 left-[30px] z-0 border-l border-dashed border-gray-300"></View>
+                ) : (
+                  <View className="absolute h-full w-1px left-[30px] z-0 border-l border-dashed border-[#ccc]">
+                  </View>
+                )}
+              </View>
             ) : (
-              <View className="absolute h-full w-1px left-[27px] z-0 border-l border-dashed border-[#ccc]">
+              <View className="w-1.5 items-center h-full absolute">
+                {isFirstItem && isLastItem ? (
+                  <>
+                  </>
+                ) : (
+                  <View className="absolute h-1/2 w-1px left-[30px] top-0 z-0 border-l border-dashed border-[#ccc]">
+                  </View>
+                )}
               </View>
             )}
-          </View>
-        ) : (
-          <View className="w-1.5 items-center h-full absolute">
 
-            {isFirstItem && isLastItem ? (
-              <>
-              </>
-            ) : (
-              <View className="absolute h-1/2 w-1px left-[27px] top-0 z-0 border-l border-dashed border-[#ccc]">
-              </View>
-            )}
-          </View>
+            <TouchableOpacity
+              // activeOpacity={0.7}
+              onLongPress={handleLongPress}
+              delayLongPress={150}
+              onPressOut={() => {
+                if (!panResponderClaimed.current) {
+                  pan.setValue({ x: 0, y: 0 });
+                  setDragActiveState(false);
+                  dragPropsRef.current.onDragEnd?.(dragPropsRef.current.index, dragPropsRef.current.index);
+                }
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Drag activity"
+              className="z-10 items-center justify-center bg-gray-100 border-3 border-gray-100 rounded-full "
+            >
+              <ActivityIcon
+                type={itineraryEventActivity.type!}
+                size={22}
+              />
+            </TouchableOpacity>
+          </>
         )}
-        <View className="z-10 items-center justify-center bg-gray-100 border-3 border-gray-100 rounded-full">
-          <ActivityIcon
-            type={itineraryEventActivity.type!}
-            size={20}
-          />
-        </View>
 
         <TouchableOpacity
           onPress={() => handleViewModeActivity(itineraryEventActivity.id!)}
-          className={`w-[100px] border border-solid border-[#e0e0e0] rounded-xl  p-2.5 grow ml-3 my-4 ${itineraryEventActivity.isDone ? 'opacity-50 border border-success-700 bg-success-25' : 'bg-white'}`}
+          onLongPress={handleLongPress}
+          delayLongPress={150}
+          onPressOut={() => {
+            if (!panResponderClaimed.current) {
+              pan.setValue({ x: 0, y: 0 });
+              setDragActiveState(false);
+              dragPropsRef.current.onDragEnd?.(dragPropsRef.current.index, dragPropsRef.current.index);
+            }
+          }}
+          accessibilityRole="button"
+          className={`w-[100px] border border-solid border-[#e0e0e0] rounded-xl  p-2.5 grow ml-3 my-4 ${itineraryEventActivity.isDone ? 'opacity-50 border border-success-700 bg-success-25' : 'bg-white  '} ${isDragActive ? 'opacity-100 shadow-2xl' : ''}`}
         >
           <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
             <View className="">
@@ -228,7 +476,7 @@ const ActivityItemCard = ({
           </View> */}
       
         </TouchableOpacity>
-          <View className="absolute right-4 bottom-4">
+          <View className="absolute right-4 bottom-4 ">
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={handleToggleDone}
@@ -243,15 +491,14 @@ const ActivityItemCard = ({
                       : (<Icon name="check-box-outline-blank" size={24} color="#888" />)}
               </TouchableOpacity>
             </View>
-
-            {!isLastItem && (
-                   <TouchableHighlight 
-      underlayColor={"#263F69"}
-          className="absolute -bottom-3 left-[15px] border border-gray-300 bg-gray-200 px-0.5 rounded-md"
-          onPress={() => setShowMapModal(true)}
-        >
-          <Icon name="add" size={20} color={"#999"}/>
-        </TouchableHighlight>
+            {!isLastItem && !isDragActive && !parentIsDragging && (
+              <TouchableHighlight 
+                underlayColor={"#263F69"}
+                className="absolute -bottom-3 left-18px border border-gray-300 bg-gray-200 px-0.5 rounded-md z-50"
+                onPress={() => setShowMapModal(true)}
+              >
+                <Icon name="add" size={20} color={"#999"}/>
+              </TouchableHighlight>
             )}
  
       </View>
