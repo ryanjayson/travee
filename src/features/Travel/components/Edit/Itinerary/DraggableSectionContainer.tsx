@@ -8,6 +8,7 @@ interface DraggableSectionContainerProps {
   onDragMove: (currentIndex: number, dy: number, moveY: number) => void;
   onDragEnd: (fromIndex: number, toIndex: number) => void;
   isChildActive?: boolean;
+  disableOpacity?: boolean;
   children: (panHandlers: any, isActive: boolean) => React.ReactNode;
 }
 
@@ -18,6 +19,7 @@ const DraggableSectionContainer = ({
   onDragMove,
   onDragEnd,
   isChildActive,
+  disableOpacity = false,
   children,
 }: DraggableSectionContainerProps) => {
   const pan = useRef(new Animated.ValueXY()).current;
@@ -71,7 +73,7 @@ const DraggableSectionContainer = ({
     transform: pan.getTranslateTransform(),
     zIndex: isActive || isChildActive ? 9999 : 1,
     elevation: isActive || isChildActive ? 10 : 0,
-    opacity: isActive ? 0.6 : 1,
+    opacity: isActive && !disableOpacity ? 0.6 : 1,
     backgroundColor: isActive ? "#F8F9FA" : "transparent",
     flex: 1,
   };

@@ -4,10 +4,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import Accordion from "../../../../components/Accordion";
 import ActivityItemCard from "./Activity/Card";
+import DraggableSectionContainer from "../Edit/Itinerary/DraggableSectionContainer";
 import { ItineraryActivity, ItinerarySection } from "../../../Travel/types/TravelDto";
 import { ActivityType } from "../../../../types/enums";
 import { useLexicographicSort } from "../../../../hooks/useLexicographicSort";
-import { updateActivitySortOrderLocally } from "../../../../services/local/travelService";
+import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../services/local/travelService";
 import { useToast } from "../../../../context/ToastContext";
 
 interface SectionAccordionProps {
@@ -37,6 +38,174 @@ const sortActivities = (activities?: ItineraryActivity[]) => {
   if (!activities) return [];
   return [...activities].sort((a, b) =>
     (a.sortOrder || "").localeCompare(b.sortOrder || "")
+  );
+};
+
+interface DraggableSectionItemProps {
+  key?: string;
+  section: ItinerarySection;
+  mapIndex: number;
+  subSectionsLength: number;
+  masterDragState: { isDragging: boolean; dragIndex: number | null };
+  masterHoverState: { index: number } | null;
+  sections: ItinerarySection[];
+  onMasterDragStart: (index: number) => void;
+  onMasterDragMove: (currentIndex: number, dy: number, moveY: number) => void;
+  onMasterDragEnd: (fromIndex: number, toIndex: number) => void;
+  sectionDragState: { sectionId: string; isDragging: boolean; dragIndex: number | null } | null;
+  masterSectionRefs: React.MutableRefObject<Record<string, any>>;
+  masterSectionBounds: React.MutableRefObject<Record<string, { pageY: number; height: number }>>;
+  renderActivityCards: (section: ItinerarySection, activities: ItineraryActivity[]) => React.ReactNode;
+  sectionRefs: React.MutableRefObject<Record<string, any>>;
+}
+
+const DraggableSectionItem = ({
+  section,
+  mapIndex,
+  subSectionsLength,
+  masterDragState,
+  masterHoverState,
+  sections,
+  onMasterDragStart,
+  onMasterDragMove,
+  onMasterDragEnd,
+  sectionDragState,
+  masterSectionRefs,
+  masterSectionBounds,
+  renderActivityCards,
+  sectionRefs,
+}: DraggableSectionItemProps) => {
+  const shiftAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!masterDragState.isDragging || masterDragState.dragIndex === null) {
+      Animated.spring(shiftAnim, {
+        toValue: 0,
+        tension: 80,
+        friction: 12,
+        useNativeDriver: false,
+      }).start();
+      return;
+    }
+
+    const dragIndex = masterDragState.dragIndex;
+    const hoverIndex = masterHoverState?.index ?? dragIndex;
+    let targetShift = 0;
+
+    if (dragIndex !== mapIndex) {
+      const subSections = sections.filter(s => s.isDefaultSection === false);
+      const draggedSection = subSections[dragIndex];
+      const draggedHeight = draggedSection
+        ? (masterSectionBounds.current[draggedSection.id || ""]?.height ?? 180)
+        : 180;
+
+      if (dragIndex < hoverIndex) {
+        if (mapIndex > dragIndex && mapIndex <= hoverIndex) {
+          targetShift = -draggedHeight;
+        }
+      } else if (dragIndex > hoverIndex) {
+        if (mapIndex >= hoverIndex && mapIndex < dragIndex) {
+          targetShift = draggedHeight;
+        }
+      }
+    }
+
+    Animated.spring(shiftAnim, {
+      toValue: targetShift,
+      tension: 60,
+      friction: 9,
+      useNativeDriver: false,
+    }).start();
+  }, [masterDragState.isDragging, masterDragState.dragIndex, masterHoverState?.index, mapIndex, sections]);
+
+  const isThisSectionDragging = masterDragState.isDragging && masterDragState.dragIndex === mapIndex;
+
+  return (
+    <Animated.View
+      style={{
+        transform: [{ translateY: shiftAnim }],
+        flex: 1,
+        zIndex: isThisSectionDragging ? 9999 : 1,
+        elevation: isThisSectionDragging ? 10 : 1,
+      }}
+    >
+      <DraggableSectionContainer
+        key={section.id}
+        index={mapIndex}
+        listLength={subSectionsLength}
+        onDragStart={onMasterDragStart}
+        onDragMove={onMasterDragMove}
+        onDragEnd={onMasterDragEnd}
+        isChildActive={sectionDragState?.sectionId === section.id}
+        disableOpacity={true}
+      >
+        {(panHandlers, isSectionActive) => (
+          <View
+            className="relative flex-1"
+            collapsable={false}
+            ref={(ref) => {
+              if (ref && section.id) masterSectionRefs.current[section.id] = ref;
+            }}
+          >
+            {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) > mapIndex && (
+              <View className="absolute -top-[10px] left-[22px] right-[12px] flex-row items-center z-50">
+                <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
+                <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
+              </View>
+            )}
+
+            {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) < mapIndex && (
+              <View className="absolute -bottom-[10px] left-[22px] right-[12px] flex-row items-center z-50">
+                <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
+                <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
+              </View>
+            )}
+
+            <View
+              className="absolute left-3 top-[16px] z-50 flex-row items-center justify-center w-[30px] h-[30px]"
+              {...panHandlers}
+            >
+              <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
+            </View>
+
+            <Accordion
+              title={
+                <Text style={{ marginLeft: 30 }} className="text-lg font-semibold text-[#333]">
+                  {section.startDate && (
+                    <Text className="text-[#999]">
+                      {`${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
+                    </Text>
+                  )}
+                  {section.title}
+                </Text>
+              }
+              headerStyle={{ backgroundColor: "#FFF" }}
+            >
+              <View
+                style={{ backgroundColor: "#FFF" }}
+                collapsable={false}
+                ref={(ref) => {
+                  if (ref && section.id) sectionRefs.current[section.id] = ref;
+                }}
+              >
+                {section.description && section.description.trim() !== "" && (
+                  <Text className="text-sm text-[#555] leading-5 p-2 pt-0">
+                    {section.description}
+                  </Text>
+                )}
+                {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
+                  renderActivityCards(section, section.itineraryActivity)
+                ) : (
+                    <Text className="text-sm text-[#555] leading-5 p-2 text-center">
+                      No activities found
+                    </Text>
+                  )}
+              </View>
+            </Accordion>
+          </View>
+        )}
+      </DraggableSectionContainer>
+    </Animated.View>
   );
 };
 
@@ -72,6 +241,13 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
   } | null>(null);
   const [hoverState, setHoverState] = useState<{ sectionId: string | null; index: number } | null>(null);
 
+  // --- Master Section Drag State ---
+  const [masterDragState, setMasterDragState] = useState<{
+    isDragging: boolean;
+    dragIndex: number | null;
+  }>({ isDragging: false, dragIndex: null });
+  const [masterHoverState, setMasterHoverState] = useState<{ index: number } | null>(null);
+
   // --- Refs ---
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollOffset = useRef(0);
@@ -81,11 +257,151 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
   const sectionRefs = useRef<Record<string, any>>({});
   const sectionBounds = useRef<Record<string, { pageY: number; height: number }>>({});
 
+  const masterSectionRefs = useRef<Record<string, any>>({});
+  const masterSectionBounds = useRef<Record<string, { pageY: number; height: number }>>({});
+
   const sectionsRef = useRef(sections);
   useEffect(() => { sectionsRef.current = sections; }, [sections]);
 
   const sectionDragStateRef = useRef(sectionDragState);
   useEffect(() => { sectionDragStateRef.current = sectionDragState; }, [sectionDragState]);
+
+  const masterDragStateRef = useRef(masterDragState);
+  useEffect(() => { masterDragStateRef.current = masterDragState; }, [masterDragState]);
+
+  const masterHoverStateRef = useRef(masterHoverState);
+  useEffect(() => { masterHoverStateRef.current = masterHoverState; }, [masterHoverState]);
+
+  // --- Master Section Drag handlers ---
+  const handleMasterSectionDragStart = (index: number) => {
+    initialScrollY.current = scrollOffset.current;
+    Object.entries(masterSectionRefs.current).forEach(([idStr, ref]) => {
+      if (ref && ref.measure) {
+        ref.measure((_x: number, _y: number, _width: number, height: number, _pageX: number, pageY: number) => {
+          masterSectionBounds.current[idStr] = { pageY, height };
+        });
+      }
+    });
+    setMasterDragState({ isDragging: true, dragIndex: index });
+  };
+
+  const computeMasterSectionIntersection = (moveY: number) => {
+    let targetIndex = masterDragStateRef.current.dragIndex ?? 0;
+    const scrollDelta = scrollOffset.current - initialScrollY.current;
+
+    const subSections = sectionsRef.current.filter(s => s.isDefaultSection === false);
+
+    let foundIntersection = false;
+    for (let i = 0; i < subSections.length; i++) {
+      const sec = subSections[i];
+      const bounds = masterSectionBounds.current[sec.id || ""];
+      if (bounds) {
+        // Expand bounding hitboxes slightly (+/- 20px padding) to eliminate coordinate gaps/dead-zones
+        const shiftedTop = bounds.pageY - scrollDelta - 20;
+        const shiftedBottom = shiftedTop + bounds.height + 40;
+
+        if (moveY >= shiftedTop && moveY <= shiftedBottom) {
+          targetIndex = i;
+          foundIntersection = true;
+          break;
+        }
+      }
+    }
+
+    if (foundIntersection) {
+      setMasterHoverState((prev) => {
+        if (prev?.index === targetIndex) return prev;
+        return { index: targetIndex };
+      });
+    }
+  };
+
+  const handleMasterSectionDragMove = (currentIndex: number, dy: number, moveY?: number) => {
+    if (moveY) {
+      dragMoveY.current = moveY;
+      const { height: screenHeight } = Dimensions.get("window");
+      const topBoundary = 150;
+      const bottomBoundary = screenHeight - 150;
+
+      if (moveY < topBoundary || moveY > bottomBoundary) {
+        if (!autoScrollInterval.current) {
+          autoScrollInterval.current = setInterval(() => {
+            const y = dragMoveY.current;
+            const scrollSpeed = 15;
+            let increment = 0;
+
+            if (y < topBoundary) {
+              increment = -scrollSpeed;
+            } else if (y > bottomBoundary) {
+              increment = scrollSpeed;
+            } else {
+              if (autoScrollInterval.current) {
+                clearInterval(autoScrollInterval.current);
+                autoScrollInterval.current = null;
+              }
+              return;
+            }
+
+            const newScrollY = Math.max(0, scrollOffset.current + increment);
+            scrollViewRef.current?.scrollTo({ y: newScrollY, animated: false });
+            scrollOffset.current = newScrollY;
+
+            computeMasterSectionIntersection(y);
+          }, 16);
+        }
+      } else {
+        if (autoScrollInterval.current) {
+          clearInterval(autoScrollInterval.current);
+          autoScrollInterval.current = null;
+        }
+      }
+
+      computeMasterSectionIntersection(moveY);
+    }
+  };
+
+  const handleMasterSectionDragEnd = (fromIndex: number, _toIndex: number) => {
+    const finalToIndex = masterHoverStateRef.current?.index ?? fromIndex;
+
+    setMasterDragState({ isDragging: false, dragIndex: null });
+    setMasterHoverState(null);
+    if (autoScrollInterval.current) {
+      clearInterval(autoScrollInterval.current);
+      autoScrollInterval.current = null;
+    }
+
+    if (fromIndex === finalToIndex) {
+      // Unchanged position! Skip save and toast.
+      return;
+    }
+
+    if (sections) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      const defaultSections = sections.filter(s => s.isDefaultSection === true);
+      const subSections = sections.filter(s => s.isDefaultSection === false);
+
+      const [moved] = subSections.splice(fromIndex, 1);
+      subSections.splice(finalToIndex, 0, moved);
+
+      const prevSortOrder = subSections[finalToIndex - 1]?.sortOrder;
+      const nextSortOrder = subSections[finalToIndex + 1]?.sortOrder;
+
+      const newSortOrder = generateSortOrder(prevSortOrder, nextSortOrder);
+      moved.sortOrder = newSortOrder;
+
+      setSections([...defaultSections, ...subSections]);
+
+      if (moved.id) {
+        updateSectionSortOrderLocally(moved.id, newSortOrder).then(() => {
+          queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+          showToast({
+            type: "success",
+            message: "Section order updated successfully!",
+          });
+        });
+      }
+    }
+  };
 
   // --- Drag handlers ---
   const handleSectionActivityDragStart = (sectionId: string, index: number) => {
@@ -301,7 +617,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
             (sectionDragState?.sectionId !== section.id ||
               (sectionDragState?.dragIndex !== index &&
                 (sectionDragState?.dragIndex ?? -1) > index)) && (
-              <View className="absolute -top-[5px] left-[30px] right-[16px] flex-row items-center z-50">
+              <View className="absolute -top-[5px] left-[33px] right-[16px] flex-row items-center z-50">
                 <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
                 <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
               </View>
@@ -351,7 +667,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
             sectionDragState?.sectionId === section.id &&
             sectionDragState?.dragIndex !== index &&
             (sectionDragState?.dragIndex ?? -1) < index && (
-              <View className="absolute -bottom-[5px] left-[30px] right-[16px] flex-row items-center z-50">
+              <View className="absolute -bottom-[5px] left-[33px] right-[16px] flex-row items-center z-50">
                 <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
                 <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
               </View>
@@ -370,16 +686,17 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
         }}
         scrollEventThrottle={16}
         className="flex-1"
-        scrollEnabled={!sectionDragState?.isDragging}
+        scrollEnabled={!sectionDragState?.isDragging && !masterDragState.isDragging}
       >
         <View className="flex-1 p-2.5">
           {sections &&
-            sections.map((section) => {
+            sections.map((section, index) => {
               const isDefaultSection = section.isDefaultSection;
               if (isDefaultSection) {
                 return (
                   <View
                     key={section.id}
+                    collapsable={false}
                     ref={(ref) => {
                       if (ref && section.id) sectionRefs.current[section.id] = ref;
                     }}
@@ -420,43 +737,27 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
                   </View>
                 );
               } else {
+                const subSections = sections.filter(s => s.isDefaultSection === false);
+                const mapIndex = subSections.findIndex(s => s.id === section.id);
+                const subSectionsLength = subSections.length;
                 return (
-                  <Accordion
+                  <DraggableSectionItem
                     key={section.id}
-                    title={
-                      section.startDate ? (
-                        <Text>
-                          <Text className="text-[#999] ">
-                            {`${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
-                          </Text>
-                          {section.title}
-                        </Text>
-                      ) : (
-                        section.title
-                      )
-                    }
-                    headerStyle={{ backgroundColor: "#FFF" }}
-                  >
-                    <View
-                      style={{ backgroundColor: "#FFF" }}
-                      ref={(ref) => {
-                        if (ref && section.id) sectionRefs.current[section.id] = ref;
-                      }}
-                    >
-                      {section.description && section.description.trim() !== "" && (
-                        <Text className="text-sm text-[#555] leading-5 p-2 pt-0">
-                          {section.description}
-                        </Text>
-                      )}
-                      {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
-                        renderActivityCards(section, section.itineraryActivity)
-                      ) : (
-                          <Text className="text-sm text-[#555] leading-5 p-2 text-center">
-                            No activities found
-                          </Text>
-                        )}
-                    </View>
-                  </Accordion>
+                    section={section}
+                    mapIndex={mapIndex}
+                    subSectionsLength={subSectionsLength}
+                    masterDragState={masterDragState}
+                    masterHoverState={masterHoverState}
+                    sections={sections}
+                    onMasterDragStart={handleMasterSectionDragStart}
+                    onMasterDragMove={handleMasterSectionDragMove}
+                    onMasterDragEnd={handleMasterSectionDragEnd}
+                    sectionDragState={sectionDragState}
+                    masterSectionRefs={masterSectionRefs}
+                    masterSectionBounds={masterSectionBounds}
+                    renderActivityCards={renderActivityCards}
+                    sectionRefs={sectionRefs}
+                  />
                 );
               }
             })}
