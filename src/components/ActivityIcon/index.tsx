@@ -224,7 +224,7 @@ const getIcon = (type: number): ActivityIcon => {
 
 const ActivityIcon = ({
   type,
-  size = 26,
+  size = 20,
   color,
 }: ActivityTypeProps) => {
   const activityIcon = getIcon(type);
@@ -234,11 +234,11 @@ const ActivityIcon = ({
 
   const getIconDisplay = (activityIcon: ActivityIcon) => {
     if (activityIcon.iconSet == IconSetProvider.feather) {
-      return <Feather name={activityIcon.iconName as any} size={size} color={resolvedColor} />;
+      return <View style={{ borderColor: resolvedColor + '90', borderWidth: 1.5, borderRadius: 50, backgroundColor: resolvedColor + '50' }} className="rounded-full p-1.5"><Feather name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
     } else if (activityIcon.iconSet == IconSetProvider.ionic) {
-      return <Ionicons name={activityIcon.iconName as any} size={size} color={resolvedColor} />;
+      return <View style={{ borderColor: resolvedColor + '90', borderWidth: 1.5, borderRadius: 50, backgroundColor: resolvedColor + '50' }} className="rounded-full p-1.5"><Ionicons name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
     } else if (activityIcon.iconSet == IconSetProvider.material) {
-      return <Icon name={activityIcon.iconName as any} size={size} color={resolvedColor} />;
+      return <View style={{ borderColor: resolvedColor + '90', borderWidth: 1, borderRadius: 50, backgroundColor: resolvedColor + '50' }} className="rounded-full p-1.5"><Icon name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
     }
   };
 

@@ -401,11 +401,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                     style={{ width: '100%', height: 160, borderRadius: 16 }}
                     resizeMode="cover"
                   />
-                  <View className="absolute bottom-2 left-2 bg-black/50 px-3 py-1 rounded-full flex-row items-center">
+                  <View className="absolute bottom-2 left-2 px-3 py-1 rounded-xl flex-row items-center" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
                     <Icon name="location-on" size={14} color="#FFF" />
                     <Text className="text-white text-xs ml-1">{formik.values.destination}</Text>
                   </View>
-                  <View className="absolute top-2 right-2 bg-black/50 px-2 py-1 rounded-full">
+                  <View className="absolute top-2 right-2 px-2 py-1 rounded-full" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
                     <Text className="text-white text-[10px]">Tap to change</Text>
                   </View>
                 </View>
