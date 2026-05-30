@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   TouchableHighlight,
   View,
+  Easing,
 } from "react-native";
 import ActivityIcon, { activityIcons } from "../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../types/enums";
@@ -27,7 +28,7 @@ interface ItineraryActivityProps {
   // Drag-to-reorder props
   index?: number;
   listLength?: number;
-  onDragStart?: (index: number) => void;
+  onDragStart?: (index: number, height: number) => void;
   onDragEnd?: (fromIndex: number, toIndex: number) => void;
   onDragMove?: (index: number, dy: number, moveY?: number) => void;
   isDragging?: boolean;
@@ -35,6 +36,7 @@ interface ItineraryActivityProps {
   dragSectionId?: string | null;
   hoverSectionId?: string | null;
   hoverIndex?: number | null;
+  draggedHeight?: number | null;
 }
 
 const ActivityItemCard = ({
@@ -52,6 +54,7 @@ const ActivityItemCard = ({
   dragSectionId,
   hoverSectionId,
   hoverIndex,
+  draggedHeight,
 }: ItineraryActivityProps) => {
   const [itineraryEventActivity, setItineraryEventActivity] =
     useState<ItineraryActivity>(itineraryActivity);
@@ -81,22 +84,30 @@ const ActivityItemCard = ({
   }, [index, listLength, onDragMove, onDragEnd, dragSectionId, hoverSectionId, hoverIndex]);
 
   const dragEnabled = !!onDragStart && !!onDragEnd && !itineraryEventActivity.startDate;
-
   const shiftAnim = useRef(new Animated.Value(0)).current;
+  const lastTargetShift = useRef(0);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [cardHeight, setCardHeight] = useState(110);
+
+  useEffect(() => {
+    Animated.timing(scaleAnim, {
+      toValue: isDragActive ? 1.04 : 1,
+      duration: 200,
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      useNativeDriver: false,
+    }).start();
+  }, [isDragActive]);
 
   useEffect(() => {
     if (!dragSectionId) {
-      Animated.spring(shiftAnim, {
-        toValue: 0,
-        tension: 80,
-        friction: 12,
-        useNativeDriver: false,
-      }).start();
+      shiftAnim.setValue(0);
+      lastTargetShift.current = 0;
       return;
     }
 
     let targetShift = 0;
     const isThisCardDragging = dragEnabled && isDragActive;
+    const activeDraggedHeight = draggedHeight ?? cardHeight;
 
     if (!isThisCardDragging && dragIndex !== null && dragIndex !== undefined) {
       const thisSectionId = itineraryActivity.sectionId || "";
@@ -108,34 +119,39 @@ const ActivityItemCard = ({
         if (activeHoverSectionId === dragSectionId) {
           if (dragIndex < activeHoverIndex) {
             if (index > dragIndex && index <= activeHoverIndex) {
-              targetShift = -110;
+              targetShift = -activeDraggedHeight;
             }
           } else if (dragIndex > activeHoverIndex) {
             if (index >= activeHoverIndex && index < dragIndex) {
-              targetShift = 110;
+              targetShift = activeDraggedHeight;
             }
           }
         } else {
           // Dragged card has moved out of this section
           if (index > dragIndex) {
-            targetShift = -110;
+            targetShift = -activeDraggedHeight;
           }
         }
       } else if (activeHoverSectionId === thisSectionId) {
         // Dragged card is from a different section, and this section is hovered
         if (index >= activeHoverIndex) {
-          targetShift = 110;
+          targetShift = activeDraggedHeight;
         }
       }
     }
 
-    Animated.spring(shiftAnim, {
+    if (lastTargetShift.current === targetShift) {
+      return;
+    }
+    lastTargetShift.current = targetShift;
+
+    Animated.timing(shiftAnim, {
       toValue: targetShift,
-      tension: 60,
-      friction: 9,
+      duration: 200,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: false,
     }).start();
-  }, [dragSectionId, hoverSectionId, hoverIndex, dragIndex, index, isDragActive, dragEnabled, itineraryActivity.sectionId]);
+  }, [dragSectionId, hoverSectionId, hoverIndex, dragIndex, index, isDragActive, dragEnabled, itineraryActivity.sectionId, draggedHeight, cardHeight]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -186,26 +202,41 @@ const ActivityItemCard = ({
           latestHoverSectionId !== undefined &&
           (latestDragSectionId !== latestHoverSectionId || (latestHoverIndex !== null && latestHoverIndex !== undefined && latestHoverIndex !== currentIndex));
 
+        // Lock coordinates explicitly at final gesture positions to prevent the React Native first-frame reset bug
+        pan.setValue({ x: gestureState.dx, y: gestureState.dy });
+
         if (isTargetDifferent) {
-          // Dropped on a new target area! Notify parent to reorder immediately
-          dragPropsRef.current.onDragEnd?.(currentIndex, latestHoverIndex !== null && latestHoverIndex !== undefined ? latestHoverIndex : currentIndex);
-          // Smoothly glide the card from its finger release position straight into its new slot
-          Animated.spring(pan, {
-            toValue: { x: 0, y: 0 },
-            tension: 80,
-            friction: 12,
+          const activeDraggedHeight = draggedHeight ?? cardHeight;
+          let targetY = 0;
+          
+          if (latestDragSectionId === latestHoverSectionId) {
+            const targetIndex = latestHoverIndex !== null && latestHoverIndex !== undefined ? latestHoverIndex : currentIndex;
+            targetY = (targetIndex - currentIndex) * activeDraggedHeight;
+          } else {
+            targetY = gestureState.dy;
+          }
+
+          // Smoothly glide the active card first into its target index slot position before resetting drag state
+          Animated.timing(pan, {
+            toValue: { x: 0, y: targetY },
+            duration: 400,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: false,
           }).start(() => {
+            // Complete transition: reset coordinates and active status synchronously in the same batch as parent list update
+            pan.setValue({ x: 0, y: 0 });
             setDragActiveState(false);
+            dragPropsRef.current.onDragEnd?.(currentIndex, latestHoverIndex !== null && latestHoverIndex !== undefined ? latestHoverIndex : currentIndex);
           });
         } else {
-          // Cancelled / released at same spot! Smoothly glide back to original slot
-          Animated.spring(pan, {
+          // Cancelled / released at same spot! Smoothly glide back to original slot using ease-in-out timing
+          Animated.timing(pan, {
             toValue: { x: 0, y: 0 },
-            tension: 80,
-            friction: 10,
+            duration: 400,
+            easing: Easing.out(Easing.cubic),
             useNativeDriver: false,
           }).start(() => {
+            pan.setValue({ x: 0, y: 0 });
             setDragActiveState(false);
             dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex);
           });
@@ -217,13 +248,14 @@ const ActivityItemCard = ({
           dragTimer.current = null;
         }
         const { index: currentIndex } = dragPropsRef.current;
-        // Smoothly glide back to original slot on termination
-        Animated.spring(pan, {
+        // Smoothly glide back to original slot on termination using ease-in-out timing
+        Animated.timing(pan, {
           toValue: { x: 0, y: 0 },
-          tension: 80,
-          friction: 10,
+          duration: 400,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: false,
         }).start(() => {
+          pan.setValue({ x: 0, y: 0 });
           setDragActiveState(false);
           dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex);
         });
@@ -242,14 +274,14 @@ const ActivityItemCard = ({
     if (!dragEnabled) return;
     panResponderClaimed.current = false; // Reset to false on new press session!
     setDragActiveState(true);
-    onDragStart?.(index);
+    onDragStart?.(index, cardHeight);
   };
 
   const dragAnimatedStyle = {
     transform: [
       { translateY: shiftAnim },
       ...pan.getTranslateTransform(),
-      { scale: isDragActive ? 1.03 : 1 },
+      { scale: scaleAnim },
     ] as any,
     zIndex: isDragActive ? 9999 : 1,
     elevation: isDragActive ? 10 : 1,
@@ -319,6 +351,12 @@ const ActivityItemCard = ({
     <Animated.View
       style={dragEnabled ? dragAnimatedStyle : undefined}
       {...(dragEnabled ? panResponder.panHandlers : {})}
+      onLayout={(e) => {
+        const { height } = e.nativeEvent.layout;
+        if (height && height > 0) {
+          setCardHeight(height);
+        }
+      }}
     >
       <View className={`px-2 flex-row justify-between items-center relative `}>
         {!isDragActive && (

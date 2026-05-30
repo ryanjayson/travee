@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, PanResponder, StyleSheet, View } from "react-native";
+import { Animated, PanResponder, StyleSheet, View, Easing } from "react-native";
 
 interface DraggableSectionContainerProps {
   index: number;
@@ -9,6 +9,10 @@ interface DraggableSectionContainerProps {
   onDragEnd: (fromIndex: number, toIndex: number) => void;
   isChildActive?: boolean;
   disableOpacity?: boolean;
+  dragIndex?: number | null;
+  hoverIndex?: number | null;
+  draggedHeight?: number | null;
+  isDragging?: boolean;
   children: (panHandlers: any, isActive: boolean) => React.ReactNode;
 }
 
@@ -20,15 +24,19 @@ const DraggableSectionContainer = ({
   onDragEnd,
   isChildActive,
   disableOpacity = false,
+  dragIndex,
+  hoverIndex,
+  draggedHeight,
+  isDragging,
   children,
 }: DraggableSectionContainerProps) => {
   const pan = useRef(new Animated.ValueXY()).current;
   const [isActive, setIsActive] = useState(false);
 
-  const propsRef = useRef({ index, listLength, onDragMove, onDragEnd });
+  const propsRef = useRef({ index, listLength, onDragMove, onDragEnd, dragIndex, hoverIndex, draggedHeight });
   useEffect(() => {
-    propsRef.current = { index, listLength, onDragMove, onDragEnd };
-  }, [index, listLength, onDragMove, onDragEnd]);
+    propsRef.current = { index, listLength, onDragMove, onDragEnd, dragIndex, hoverIndex, draggedHeight };
+  }, [index, listLength, onDragMove, onDragEnd, dragIndex, hoverIndex, draggedHeight]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -55,26 +63,57 @@ const DraggableSectionContainer = ({
         })(e, gestureState);
       },
       onPanResponderRelease: (_, gestureState) => {
-        setIsActive(false);
-        const { index: currentIndex } = propsRef.current;
+        const { index: currentIndex, dragIndex: latestDragIndex, hoverIndex: latestHoverIndex, draggedHeight: activeHeight } = propsRef.current;
         
-        // Let the parent calculate where it landed based on moveY via onDragEnd instead of trying to guess height here, 
-        // because sections have drastically variable heights! We will just pass 0 as targetIndex and let parent handle it.
-        propsRef.current.onDragEnd(currentIndex, 0);
+        const isTargetDifferent = 
+          latestDragIndex !== null && 
+          latestDragIndex !== undefined && 
+          latestHoverIndex !== null && 
+          latestHoverIndex !== undefined && 
+          latestDragIndex !== latestHoverIndex;
 
-        // Instantly reset the pan so LayoutAnimation can smoothly move the container
-        // to its new position without dual-animation conflicting bounds.
-        pan.setValue({ x: 0, y: 0 });
+        // Lock coordinates explicitly at final gesture positions to prevent the React Native first-frame reset bug
+        pan.setValue({ x: gestureState.dx, y: gestureState.dy });
+
+        if (isTargetDifferent) {
+          const height = activeHeight ?? 180;
+          const targetY = (latestHoverIndex - currentIndex) * height;
+
+          // Smoothly glide the section first to its target slot position before executing list reorder
+          Animated.timing(pan, {
+            toValue: { x: 0, y: targetY },
+            duration: 400,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: false,
+          }).start(() => {
+            pan.setValue({ x: 0, y: 0 });
+            setIsActive(false);
+            propsRef.current.onDragEnd(currentIndex, latestHoverIndex);
+          });
+        } else {
+          // Cancelled / released at same spot!
+          Animated.timing(pan, {
+            toValue: { x: 0, y: 0 },
+            duration: 400,
+            easing: Easing.out(Easing.cubic),
+            useNativeDriver: false,
+          }).start(() => {
+            pan.setValue({ x: 0, y: 0 });
+            setIsActive(false);
+            propsRef.current.onDragEnd(currentIndex, currentIndex);
+          });
+        }
       },
     })
   ).current;
 
   const animatedStyle = {
+    padding: 0,
     transform: pan.getTranslateTransform(),
     zIndex: isActive || isChildActive ? 9999 : 1,
-    elevation: isActive || isChildActive ? 10 : 0,
+    // elevation: isActive || isChildActive ? 10 : 0,
     opacity: isActive && !disableOpacity ? 0.6 : 1,
-    backgroundColor: isActive ? "#F8F9FA" : "transparent",
+    // backgroundColor: "red",//sActive ? "red" : "transparent",
     flex: 1,
   };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, ScrollView, Animated, LayoutAnimation, Dimensions } from "react-native";
+import { View, Text, ScrollView, Animated, LayoutAnimation, Dimensions, Easing } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import Accordion from "../../../../components/Accordion";
@@ -76,15 +76,12 @@ const DraggableSectionItem = ({
   sectionRefs,
 }: DraggableSectionItemProps) => {
   const shiftAnim = useRef(new Animated.Value(0)).current;
+  const lastTargetShift = useRef(0);
 
   useEffect(() => {
     if (!masterDragState.isDragging || masterDragState.dragIndex === null) {
-      Animated.spring(shiftAnim, {
-        toValue: 0,
-        tension: 80,
-        friction: 12,
-        useNativeDriver: false,
-      }).start();
+      shiftAnim.setValue(0);
+      lastTargetShift.current = 0;
       return;
     }
 
@@ -110,15 +107,28 @@ const DraggableSectionItem = ({
       }
     }
 
-    Animated.spring(shiftAnim, {
+    if (lastTargetShift.current === targetShift) {
+      return;
+    }
+    lastTargetShift.current = targetShift;
+
+    Animated.timing(shiftAnim, {
       toValue: targetShift,
-      tension: 60,
-      friction: 9,
+      duration: 200,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: false,
     }).start();
   }, [masterDragState.isDragging, masterDragState.dragIndex, masterHoverState?.index, mapIndex, sections]);
 
   const isThisSectionDragging = masterDragState.isDragging && masterDragState.dragIndex === mapIndex;
+
+  const dragIndex = masterDragState.dragIndex;
+  const hoverIndex = masterHoverState?.index ?? dragIndex;
+  const subSections = sections.filter(s => s.isDefaultSection === false);
+  const draggedSection = dragIndex !== null && dragIndex !== undefined ? subSections[dragIndex] : null;
+  const draggedHeight = draggedSection
+    ? (masterSectionBounds.current[draggedSection.id || ""]?.height ?? 180)
+    : 180;
 
   return (
     <Animated.View
@@ -138,10 +148,14 @@ const DraggableSectionItem = ({
         onDragEnd={onMasterDragEnd}
         isChildActive={sectionDragState?.sectionId === section.id}
         disableOpacity={true}
+        dragIndex={dragIndex}
+        hoverIndex={hoverIndex}
+        draggedHeight={draggedHeight}
+        isDragging={masterDragState.isDragging}
       >
         {(panHandlers, isSectionActive) => (
           <View
-            className="relative flex-1"
+            className="relative flex-1 py-2"
             collapsable={false}
             ref={(ref) => {
               if (ref && section.id) masterSectionRefs.current[section.id] = ref;
@@ -162,7 +176,7 @@ const DraggableSectionItem = ({
             )}
 
             <View
-              className="absolute left-3 top-[16px] z-50 flex-row items-center justify-center w-[30px] h-[30px]"
+              className="absolute left-3 top-xl z-50 flex-row items-center justify-center w-[30px] h-[30px]"
               {...panHandlers}
             >
               <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
@@ -238,6 +252,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
     sectionId: string;
     isDragging: boolean;
     dragIndex: number | null;
+    draggedHeight?: number;
   } | null>(null);
   const [hoverState, setHoverState] = useState<{ sectionId: string | null; index: number } | null>(null);
 
@@ -361,7 +376,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
   };
 
   const handleMasterSectionDragEnd = (fromIndex: number, _toIndex: number) => {
-    const finalToIndex = masterHoverStateRef.current?.index ?? fromIndex;
+    const finalToIndex = _toIndex !== undefined && _toIndex !== null ? _toIndex : (masterHoverStateRef.current?.index ?? fromIndex);
 
     setMasterDragState({ isDragging: false, dragIndex: null });
     setMasterHoverState(null);
@@ -376,7 +391,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
     }
 
     if (sections) {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      // LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       const defaultSections = sections.filter(s => s.isDefaultSection === true);
       const subSections = sections.filter(s => s.isDefaultSection === false);
 
@@ -404,7 +419,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
   };
 
   // --- Drag handlers ---
-  const handleSectionActivityDragStart = (sectionId: string, index: number) => {
+  const handleSectionActivityDragStart = (sectionId: string, index: number, height: number) => {
     initialScrollY.current = scrollOffset.current;
     Object.entries(sectionRefs.current).forEach(([idStr, ref]) => {
       if (ref && ref.measure) {
@@ -413,7 +428,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
         });
       }
     });
-    setSectionDragState({ sectionId, isDragging: true, dragIndex: index });
+    setSectionDragState({ sectionId, isDragging: true, dragIndex: index, draggedHeight: height });
   };
 
   const computeIntersection = (moveY: number) => {
@@ -454,6 +469,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
     _listLength: number,
     moveY?: number,
   ) => {
+
     if (moveY) {
       dragMoveY.current = moveY;
       const { height: screenHeight } = Dimensions.get("window");
@@ -503,12 +519,13 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
     fromIndex: number,
     _toIndex: number,
   ) => {
+
     const targetSectionId = hoverState?.sectionId ?? sourceSectionId;
     const toIndex = hoverState?.index ?? fromIndex;
 
     if (targetSectionId === sourceSectionId && toIndex === fromIndex) {
       // Position did not change! Just reset drag state and do not save or show toast
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      // LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setSectionDragState(null);
       setHoverState(null);
       if (autoScrollInterval.current) {
@@ -518,7 +535,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
       return;
     }
 
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    // LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSections((prevSections) => {
       let movedActivity: ItineraryActivity | null = null;
       // 1. Remove from source section
@@ -630,8 +647,8 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
             plainMode={plainMode}
             index={index}
             listLength={array.length}
-            onDragStart={(idx: number) =>
-              handleSectionActivityDragStart(section.id || "", idx)
+            onDragStart={(idx: number, h: number) =>
+              handleSectionActivityDragStart(section.id || "", idx, h)
             }
             onDragEnd={(fromIdx: number, _toIdx: number) =>
               handleSectionActivityDragEnd(
@@ -659,6 +676,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
             dragSectionId={sectionDragState?.sectionId}
             hoverSectionId={hoverState?.sectionId}
             hoverIndex={hoverState?.index}
+            draggedHeight={sectionDragState?.draggedHeight}
           />
 
           {/* Hover indicator below */}
@@ -688,7 +706,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
         className="flex-1"
         scrollEnabled={!sectionDragState?.isDragging && !masterDragState.isDragging}
       >
-        <View className="flex-1 p-2.5">
+        <View className="flex-1 p-3">
           {sections &&
             sections.map((section, index) => {
               const isDefaultSection = section.isDefaultSection;
@@ -708,7 +726,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
               } else if (plainMode) {
                 return (
                   <View key={section.id} className="mb-2">
-                    <View className="flex-row items-center gap-2 py-2">
+                    <View className="flex-row items-center gap-2 py-3">
                       <Ionicons name="chevron-forward" size={18} color="#000000" />
                       {section.startDate ? (
                         <Text>
