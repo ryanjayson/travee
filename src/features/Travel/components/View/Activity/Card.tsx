@@ -19,6 +19,7 @@ import { useToast } from "../../../../../context/ToastContext";
 import { ItineraryActivity } from "../../../types/TravelDto";
 import MapViewer from "../../MapViewer";
 import ViewActivityModal from "./Modal";
+import ActivityModal from "../../Edit/Itinerary/Activity/Modal";
 
 interface ItineraryActivityProps {
   itineraryActivity: ItineraryActivity;
@@ -64,6 +65,7 @@ const ActivityItemCard = ({
   const [showActivityViewModal, setShowActivityViewModal] =
     useState<boolean>(false);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
+  const [showActivityModal, setShowActivityModal] = useState<boolean>(false);
   const [isAddPressed, setIsAddPressed] = useState<boolean>(false);
   const updateMutation = useUpdateActivityMutation();
 
@@ -364,7 +366,7 @@ const ActivityItemCard = ({
         <TouchableHighlight 
           underlayColor={"#263F69"}
           className="absolute -bottom-4 left-2xl border border-gray-300 bg-gray-200 px-0.5 rounded-md z-50"
-          onPress={() => setShowMapModal(true)}
+          onPress={() => setShowActivityModal(true)}
           onShowUnderlay={() => setIsAddPressed(true)}
           onHideUnderlay={() => setIsAddPressed(false)}
         >
@@ -558,6 +560,13 @@ const ActivityItemCard = ({
         id={itineraryEventActivity.id!}
         showModal={showActivityViewModal}
         setShowModal={setShowActivityViewModal}
+      />
+
+      <ActivityModal
+        visible={showActivityModal}
+        onClose={() => setShowActivityModal(false)}
+        itineraryActivity={null}
+        itinerarySectionId={itineraryActivity.sectionId || undefined}
       />
 
       {itineraryEventActivity.destinationData?.coordinates && (

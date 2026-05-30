@@ -173,7 +173,7 @@ const ActivityModal = ({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="none"
+    <Modal visible={visible} transparent animationType="slide"
       onRequestClose={handleCancel}>
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
