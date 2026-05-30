@@ -1,7 +1,7 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Animated,
   Image,
@@ -10,6 +10,9 @@ import {
   View,
   Text,
   RefreshControl,
+  PanResponder,
+  Dimensions,
+  StyleSheet,
 } from "react-native";
 import {
   Portal,
@@ -31,8 +34,6 @@ import NotesTab from "./Tabs/NotesTab";
 import TravelActionFAB from "./TravelActionFAB";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
-
-import { useEffect } from "react";
 
 interface ViewTravelProps {
   travelPlan: TravelPlan;
@@ -100,6 +101,115 @@ const ViewTravel = ({
   const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
   const [showActivityModal, setShowActivityModal] = useState<boolean>(false);
   const [activeTabId, setActiveTabId] = useState<string>("details");
+
+  // --- Draggable Bottom Sheet Snap Values ---
+  const { height: screenHeight } = Dimensions.get("window");
+  const SNAP_MAX = 0;
+  const SNAP_MID = screenHeight * 0.45;
+  const SNAP_MIN = screenHeight - 170;
+
+  // Track the last-snapped position manually because Animated.Value.addListener
+  // does NOT fire reliably on Android when useNativeDriver: true.
+  const snappedY = useRef(SNAP_MID);
+  const dragStartY = useRef(0);
+
+  const translateY = useRef(new Animated.Value(SNAP_MID)).current;
+
+  const snapTo = (toValue: number) => {
+    snappedY.current = toValue;
+    Animated.spring(translateY, {
+      toValue,
+      tension: 80,
+      friction: 12,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  useEffect(() => {
+    if (expanded) {
+      snapTo(SNAP_MAX);
+    } else {
+      snapTo(SNAP_MID);
+    }
+  }, [expanded]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => {
+        const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
+        // Handle curved borders/shadows by allowing Y to be slightly above the sheet top (-30px)
+        const shouldSet = touchStartRelativeY > -30 && touchStartRelativeY < 120;
+        console.log(`[PanResponder] onStartShouldSetPanResponder: pageY=${evt.nativeEvent.pageY}, snappedY=${snappedY.current}, relativeY=${touchStartRelativeY}, shouldSet=${shouldSet}`);
+        return shouldSet;
+      },
+      // Capture phase: intercept vertical gestures BEFORE child ScrollViews/TouchableOpacities consume them
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 8;
+        if (!isVertical) return false;
+
+        // Snapping/dragging ONLY allowed from Drag Handle & Trip Title areas (top 120px)
+        const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
+        if (touchStartRelativeY > -30 && touchStartRelativeY < 120) {
+          console.log(`[PanResponder] onMoveShouldSetPanResponderCapture: Capturing because in header/title area. relativeY=${touchStartRelativeY}`);
+          return true;
+        }
+
+        return false;
+      },
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 5;
+        if (!isVertical) return false;
+
+        const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
+        if (touchStartRelativeY > -30 && touchStartRelativeY < 120) {
+          return true;
+        }
+
+        return false;
+      },
+      // Prevent children from reclaiming the gesture once we've started dragging.
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderGrant: (evt, gestureState) => {
+        console.log(`[PanResponder] onPanResponderGrant: snappedY=${snappedY.current}`);
+        dragStartY.current = snappedY.current;
+        translateY.setOffset(snappedY.current);
+        translateY.setValue(0);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const nextY = dragStartY.current + gestureState.dy;
+        if (nextY >= SNAP_MAX && nextY <= SNAP_MIN) {
+          translateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        translateY.flattenOffset();
+        const nextY = dragStartY.current + gestureState.dy;
+        const velocityY = gestureState.vy;
+        
+        let target = SNAP_MID;
+        if (velocityY < -0.5) {
+          target = nextY < SNAP_MID ? SNAP_MAX : SNAP_MID;
+        } else if (velocityY > 0.5) {
+          target = nextY > SNAP_MID ? SNAP_MIN : SNAP_MID;
+        } else {
+          const distMax = Math.abs(nextY - SNAP_MAX);
+          const distMid = Math.abs(nextY - SNAP_MID);
+          const distMin = Math.abs(nextY - SNAP_MIN);
+          
+          const minDist = Math.min(distMax, distMid, distMin);
+          if (minDist === distMax) {
+            target = SNAP_MAX;
+          } else if (minDist === distMin) {
+            target = SNAP_MIN;
+          } else {
+            target = SNAP_MID;
+          }
+        }
+        console.log(`[PanResponder] onPanResponderRelease: nextY=${nextY}, velocityY=${velocityY}, target=${target}`);
+        snapTo(target);
+      },
+    })
+  ).current;
 
   useEffect(() => {
     if (isMapVisible) {
@@ -301,10 +411,22 @@ const ViewTravel = ({
     {
       id: "details",
       title: "Details",
-      content: <DetailsTab travelPlan={travelPlan} />,
+      content: (
+        <DetailsTab 
+          travelPlan={travelPlan} 
+        />
+      ),
     },
-    { id: "itinerary", title: "Itinerary", content: <ItineraryTab travelPlan={travelPlan} /> },
-       {
+    { 
+      id: "itinerary", 
+      title: "Itinerary", 
+      content: (
+        <ItineraryTab 
+          travelPlan={travelPlan} 
+        />
+      ) 
+    },
+    {
       id: "expenses",
       title: "Expenses",
       content: (
@@ -327,8 +449,7 @@ const ViewTravel = ({
         />
       ),
     },
-
-     {
+    {
       id: "notes",
       title: "Notes",
       content: (
@@ -350,77 +471,98 @@ const ViewTravel = ({
 
   return (
     <Portal.Host>
-      {expanded ? (
-        <View className="flex-1 bg-gray-100 mt-[85px]">
-          <View className="flex-1">
-            <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" expanded={expanded} onTabChange={setActiveTabId}/>
-          </View>
-          {setMapVisible && (
-            <MapViewer
-              visible={isMapVisible}
-              onClose={() => setMapVisible(false)}
-              markers={getAllMarkers()}
-              title={travelPlan.travel.title || "Trip Map"}
-              zoom={showDestinationOnlyMap ? 6 : null}
-              destination={travelPlan.travel.destination}
-              countryName={countryName}
-              dateRange={
-                travelPlan.travel.startOrDepartureDate
-                  ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
-                      travelPlan.travel.endOrReturnDate
-                        ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                        : ''
-                    }`
-                  : undefined
-              }
-              doneActivities={doneActivities}
-            />
-          )}
-        </View>
-      ) : (
-        <ScrollView 
-          className="flex-1 bg-gray-100 " 
-          showsVerticalScrollIndicator={false}
-          scrollEventThrottle={16}
-          onScroll={onScrollY ? (event) => {
-            onScrollY(event.nativeEvent.contentOffset.y);
-          } : undefined}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={[colors.primary]}
-              tintColor={colors.primary}
-            />
+      {/* Full-screen background interactive map */}
+      <View style={StyleSheet.absoluteFillObject} className="absolute inset-0">
+        <MapViewer
+          inline={true}
+          visible={true}
+          onClose={onClose}
+          markers={getAllMarkers()}
+          title={travelPlan.travel.title || "Trip Map"}
+          zoom={showDestinationOnlyMap ? 6 : null}
+          destination={travelPlan.travel.destination}
+          countryName={countryName}
+          dateRange={
+            travelPlan.travel.startOrDepartureDate
+              ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
+                  travelPlan.travel.endOrReturnDate
+                    ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                    : ''
+                }`
+              : undefined
           }
+          doneActivities={doneActivities}
+        />
+      </View>
+
+      {/* Floating Bottom Form Sheet */}
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={[
+          {
+            transform: [{ translateY }],
+            height: screenHeight - SNAP_MAX,
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "#FFFFFF",
+            borderTopLeftRadius: 32,
+            borderTopRightRadius: 32,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: -8 },
+            shadowOpacity: 0.12,
+            shadowRadius: 16,
+            elevation: 24,
+          },
+        ]}
+      >
+        {/* Drag Handle Area */}
+        <View 
+          className="w-full items-center py-3 bg-white"
+          style={{ borderTopLeftRadius: 32, borderTopRightRadius: 32 }}
+          accessibilityRole="button"
+          accessibilityLabel="Drag up or down to expand or collapse trip details sheet"
         >
-          <HeaderSection />
-          <View>
-            <Tabs tabs={tabData} initialActiveTabId="details" type="secondary" onTabChange={setActiveTabId} />
+          <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+        </View>
+
+        {/* Trip Title & Summary */}
+        <View className="px-6 pb-4 bg-white flex-row justify-between items-start">
+          <View className="flex-1 mr-4">
+            <Text className="text-3xl font-bold text-gray-800" numberOfLines={1}>
+              {travelPlan.travel.title}
+            </Text>
+            <View className="flex-row items-center mt-1 flex-wrap">
+              <Icon name="location-pin" size={14} color="#B42318" />
+              <Text className="text-xs text-gray-500 font-medium ml-0.5 mr-3" numberOfLines={1}>
+                {travelPlan.travel.destination || "Destination not set"}
+              </Text>
+              <Icon name="calendar-month" size={14} color="#858585" />
+              <Text className="text-xs text-gray-500 font-medium ml-0.5">
+                {travelPlan.travel.startOrDepartureDate
+                  ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+                  : ""}
+                - {travelPlan.travel.endOrReturnDate
+                  ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+                  : ""}
+              </Text>
+            </View>
           </View>
-          {setMapVisible && (
-            <MapViewer
-              visible={isMapVisible}
-              onClose={() => setMapVisible(false)}
-              markers={getAllMarkers()}
-              title={travelPlan.travel.title || "Trip Map"}
-              zoom={showDestinationOnlyMap ? 6 : null}
-              destination={travelPlan.travel.destination}
-              countryName={countryName}
-              dateRange={
-                travelPlan.travel.startOrDepartureDate
-                  ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
-                      travelPlan.travel.endOrReturnDate
-                        ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                        : ''
-                    }`
-                  : undefined
-              }
-              doneActivities={doneActivities}
-            />
-          )}
-        </ScrollView>
-      )}
+          <StatusBadge type={1} status={travelPlan.travel.status!} />
+        </View>
+
+        {/* Tabbed Content */}
+        <View className="flex-1 bg-gray-100">
+          <Tabs 
+            tabs={tabData} 
+            initialActiveTabId="details" 
+            type="secondary" 
+            onTabChange={setActiveTabId} 
+            expanded={true}
+          />
+        </View>
+      </Animated.View>
 
       <TravelActionFAB 
         currentTab={activeTabId}

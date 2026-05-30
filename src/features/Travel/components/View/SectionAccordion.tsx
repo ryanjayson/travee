@@ -237,7 +237,7 @@ const DraggableSectionItem = ({
   );
 };
 
-const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps) => {
+const SectionAccordion = ({ iterarysections, plainMode, scrollEnabled = false, onScrollY }: SectionAccordionProps) => {
   const { generateSortOrder } = useLexicographicSort();
   const queryClient = useQueryClient();
   const { showToast } = useToast();

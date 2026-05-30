@@ -84,7 +84,7 @@ const CustomSlider = ({ value, onChange, disabled, colors }: { value: number; on
   );
 };
 
-const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
+const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrollY }: ExpensesTabProps) => {
   const { colors } = useTheme();
   
   // UI and Local states
@@ -274,7 +274,10 @@ const ExpensesTab = ({ travelPlan, onEditExpense }: ExpensesTabProps) => {
   }) : [];
 
   return (
-    <ScrollView className="flex-1 bg-gray-100" contentContainerStyle={{ padding: 16 }}>
+    <ScrollView 
+      className="flex-1 bg-gray-100" 
+      contentContainerStyle={{ padding: 16 }}
+    >
       
       {/* Redesigned Combined Dashboard Card */}
       <View className="bg-gray_blue-700 rounded-2xl border border-[#e0e0e0] p-3 mb-5 overflow-hidden">

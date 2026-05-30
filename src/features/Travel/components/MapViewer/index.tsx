@@ -57,6 +57,7 @@ interface MapViewerProps {
   countryName?: string;
   dateRange?: string;
   doneActivities?: DoneActivity[];
+  inline?: boolean;
 }
 
 const IMG_DIR_NAME = "map-imgs";
@@ -117,6 +118,7 @@ const MapViewer = ({
   countryName,
   dateRange,
   doneActivities: doneActivitiesProp,
+  inline = false,
 }: MapViewerProps) => {
   const [pinMode, setPinMode] = useState<PinMode>("type");
   const [pinSize, setPinSize] = useState<PinSize>("medium");
@@ -818,16 +820,18 @@ const MapViewer = ({
     </View>
   );
 
-  return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View className="flex-1 bg-white">
-        <StatusBar barStyle="dark-content" />
+  const mainContent = (
+    <View className="flex-1 bg-white">
+      <StatusBar barStyle="dark-content" />
 
+      {!inline && (
         <TouchableOpacity onPress={onClose} className="absolute top-[40px] left-5 z-50 w-14 h-14 rounded-full items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <Icon name="close" size={32} color="#FFF" />
         </TouchableOpacity>
+      )}
 
-        {/* Move Pin toggle (available in both map and overlay modes) */}
+      {/* Move Pin toggle (available in both map and overlay modes) */}
+      {!inline && (
         <View className="absolute top-[40px] right-5 z-50 items-end gap-2">
           <View className="flex-row items-center rounded-md p-1.5 gap-1.5" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <Text className="text-white text-[10px] font-semibold">Move Pin</Text>
@@ -839,29 +843,30 @@ const MapViewer = ({
             />
           </View>
         </View>
+      )}
 
-        {/* Layer selector (outside ViewShot so it's excluded from capture) — overlay only */}
-        {displayMode === "overlay" && (
-          <View className="absolute top-[105px] right-5 z-50">
-            <View className="flex-row rounded-md p-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-              <TouchableOpacity
-                onPress={() => setActiveLayer("outline")}
-                className={`px-3 py-1.5 rounded-md ${activeLayer === "outline" ? "bg-white/30" : ""}`}
+      {/* Layer selector (outside ViewShot so it's excluded from capture) — overlay only */}
+      {!inline && displayMode === "overlay" && (
+        <View className="absolute top-[105px] right-5 z-50">
+          <View className="flex-row rounded-md p-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+            <TouchableOpacity
+              onPress={() => setActiveLayer("outline")}
+              className={`px-3 py-1.5 rounded-md ${activeLayer === "outline" ? "bg-white/30" : ""}`}
+              accessibilityRole="button"
+            >
+              <Text className={`text-xs font-semibold ${activeLayer === "outline" ? "text-white" : "text-white/60"}`}>Outline</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                disabled={!imageUri}
+                onPress={() => setActiveLayer("image")}
+                className={`px-3 py-1.5 rounded-md ${activeLayer === "image" ? "bg-white/30" : ""} ${!imageUri ? "opacity-30" : ""}`}
                 accessibilityRole="button"
               >
-                <Text className={`text-xs font-semibold ${activeLayer === "outline" ? "text-white" : "text-white/60"}`}>Outline</Text>
+                <Text className={`text-xs font-semibold ${activeLayer === "image" ? "text-white" : "text-white/60"}`}>Image</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                  disabled={!imageUri}
-                  onPress={() => setActiveLayer("image")}
-                  className={`px-3 py-1.5 rounded-md ${activeLayer === "image" ? "bg-white/30" : ""} ${!imageUri ? "opacity-30" : ""}`}
-                  accessibilityRole="button"
-                >
-                  <Text className={`text-xs font-semibold ${activeLayer === "image" ? "text-white" : "text-white/60"}`}>Image</Text>
-                </TouchableOpacity>
-            </View>
           </View>
-        )}
+        </View>
+      )}
 
         {/* @ts-ignore */}
         <ViewShot ref={viewShotRef} options={{ format: "png", quality: 1.0 }} style={{ flex: 1 }} className="flex-1">
@@ -1233,38 +1238,40 @@ const MapViewer = ({
           )}
 
           {/* ─── Draggable trip info block ───────────────────────────────────── */}
-        <Animated.View
-          className="absolute bottom-0 left-0 right-0 px-6 pb-28 z-30"
-          style={{
-            transform: [{ translateX: textTranslateX }, { translateY: textTranslateY }, { scale: textDragScale }],
-            opacity: textDragOpacity,
-          }}
-          {...textPanResponder.panHandlers}
-          pointerEvents="box-none"
-        >
-          <View style={{ alignItems: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
-          <View className="flex-row items-center mb-2.5" style={{ justifyContent: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
-            <Ionicons name="airplane" size={14} color="rgba(255,255,255,0.65)" />
-            <Text className="text-white text-[18px] font-bold ml-1.5 tracking-[2px]" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>TRAVIE</Text>
-          </View>
-           <Text className="text-white font-extrabold mb-1.5" style={{ fontSize: titleFontSize, lineHeight: titleLineHeight, textAlign, textShadowColor: 'rgba(0,0,0,0.7)', textShadowOffset: { width: 1, height: 2 }, textShadowRadius: 6 }}>{editableTitle}</Text>
-          {showDestination && destination ? <Text className="text-white text-[16px] font-medium mb-1" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>{destination}</Text> : null}
-          {topActivityTypes.length > 0 && (
-            <View className="flex-row items-center gap-2 mt-2.5 mb-1" style={{ justifyContent: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
-              {topActivityTypes.map((type, i) => (
-                <View key={i} className="w-8 h-8 rounded-full bg-white/18 border border-white/35 justify-center items-center">
-                  <Text className="text-[16px] leading-5">{ACTIVITY_EMOJI[type] ?? "●"}</Text>
+          {!inline && (
+            <Animated.View
+              className="absolute bottom-0 left-0 right-0 px-6 pb-28 z-30"
+              style={{
+                transform: [{ translateX: textTranslateX }, { translateY: textTranslateY }, { scale: textDragScale }],
+                opacity: textDragOpacity,
+              }}
+              {...textPanResponder.panHandlers}
+              pointerEvents="box-none"
+            >
+              <View style={{ alignItems: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
+              <View className="flex-row items-center mb-2.5" style={{ justifyContent: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
+                <Ionicons name="airplane" size={14} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white text-[18px] font-bold ml-1.5 tracking-[2px]" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>TRAVIE</Text>
+              </View>
+               <Text className="text-white font-extrabold mb-1.5" style={{ fontSize: titleFontSize, lineHeight: titleLineHeight, textAlign, textShadowColor: 'rgba(0,0,0,0.7)', textShadowOffset: { width: 1, height: 2 }, textShadowRadius: 6 }}>{editableTitle}</Text>
+              {showDestination && destination ? <Text className="text-white text-[16px] font-medium mb-1" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>{destination}</Text> : null}
+              {topActivityTypes.length > 0 && (
+                <View className="flex-row items-center gap-2 mt-2.5 mb-1" style={{ justifyContent: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
+                  {topActivityTypes.map((type, i) => (
+                    <View key={i} className="w-8 h-8 rounded-full bg-white/18 border border-white/35 justify-center items-center">
+                      <Text className="text-[16px] leading-5">{ACTIVITY_EMOJI[type] ?? "●"}</Text>
+                    </View>
+                  ))}
                 </View>
-              ))}
-            </View>
+              )}
+              {showDateRange && dateRange ? <Text className="text-white text-[13px] font-normal mt-1.5" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>{dateRange}</Text> : null}
+              </View>
+            </Animated.View>
           )}
-          {showDateRange && dateRange ? <Text className="text-white text-[13px] font-normal mt-1.5" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>{dateRange}</Text> : null}
-          </View>
-        </Animated.View>
         </ViewShot>
 
         {/* ─── Vertical icon bar (bottom-right) ──────────────────────────── */}
-        {!settingsExpanded && (
+        {!inline && !settingsExpanded && (
         <View className="absolute bottom-8 right-2 z-40 flex-col gap-4">
           <TouchableOpacity
             onPress={handleCaptureAndShare}
@@ -1329,7 +1336,7 @@ const MapViewer = ({
         )}
 
         {/* Floating bottom toolbar */}
-        {settingsExpanded && (
+        {!inline && settingsExpanded && (
         <View className="absolute bottom-5 left-5 right-5 items-center z-40" pointerEvents="box-none">
             <Animated.View
               className="bg-white rounded-2xl shadow-lg mx-4 overflow-hidden w-full"
@@ -1582,6 +1589,15 @@ const MapViewer = ({
           </View>
         </Modal>
       </View>
+    );
+
+  if (inline) {
+    return mainContent;
+  }
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      {mainContent}
     </Modal>
   );
 };

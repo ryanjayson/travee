@@ -13,6 +13,8 @@ import { getExpenseCategoryColor } from "../../Forms/Expense/ExpenseCategoryIcon
 
 interface DetailsTabProps {
   travelPlan: TravelPlan;
+  scrollEnabled?: boolean;
+  onScrollY?: (y: number) => void;
 }
 
 const StatCard = ({
@@ -107,7 +109,7 @@ const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: stri
   );
 };
 
-const DetailsTab = ({ travelPlan }: DetailsTabProps) => {
+const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTabProps) => {
   const { colors } = useTheme();
   const travelId = travelPlan.travel.id || "";
 
