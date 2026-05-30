@@ -2,8 +2,8 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
-import React, { useContext, useEffect, useState } from "react";
-import { Modal, Text, TouchableOpacity, View } from "react-native";
+import React, { useContext, useEffect, useState, useRef } from "react";
+import { Modal, Text, TouchableOpacity, View, Animated } from "react-native";
 import ViewTravel from ".";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import { useTravelContext } from "../../../../context/TravelContext";
@@ -34,6 +34,16 @@ const ViewTripModal = ({
   const [scrollYVal, setScrollYVal] = useState<number>(0);
   const [isFabOpen, setIsFabOpen] = useState<boolean>(false);
 
+  const expandAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(expandAnim, {
+      toValue: expanded ? 1 : 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [expanded]);
+
   const progress = Math.min(Math.max(scrollYVal / 150, 0), 1);
   const headerBg = `rgba(255, 255, 255, ${progress})`;
   const headerBorder = `rgba(0, 0, 0, ${progress * 0.08})`;
@@ -41,17 +51,26 @@ const ViewTripModal = ({
   const r = Math.round(255 - (255 - 137) * progress);
   const g = Math.round(255 - (255 - 147) * progress);
   const b = Math.round(255 - (255 - 158) * progress);
-  const iconColor = expanded ? "#263F69" : `rgb(${r}, ${g}, ${b})`;
-  
-  const targetR = expanded ? 38 : 137;
-  const targetG = expanded ? 63 : 147;
-  const targetB = expanded ? 105 : 158;
-  const rFS = Math.round(255 - (255 - targetR) * progress);
-  const gFS = Math.round(255 - (255 - targetG) * progress);
-  const bFS = Math.round(255 - (255 - targetB) * progress);
-  const fullscreenIconColor = expanded ? "#263F69" : `rgb(${rFS}, ${gFS}, ${bFS})`;
+  const baseColor = `rgb(${r}, ${g}, ${b})`;
+  const iconColor = baseColor;
 
   const titleOpacity = Math.min(Math.max((scrollYVal - 40) / 60, 0), 1);
+
+  // Dynamic animations for the close/down icon
+  const closeOpacity = expandAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
+
+  const downOpacity = expandAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const iconRotation = expandAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "180deg"],
+  });
 
   // useContext never throws — returns null if outside NavigationContainer
   const navContext = useContext(NavigationContext);
@@ -171,7 +190,22 @@ const ViewTripModal = ({
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Icon name="close" size={32} color={iconColor} />
+            <Animated.View 
+              style={{ 
+                transform: [{ rotate: iconRotation }], 
+                width: 32, 
+                height: 32, 
+                justifyContent: 'center', 
+                alignItems: 'center' 
+              }}
+            >
+              <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
+                <Icon name="close" size={32} color={iconColor} />
+              </Animated.View>
+              <Animated.View style={{ position: 'absolute', opacity: downOpacity }}>
+                <Icon name="keyboard-arrow-up" size={32} color="#000000" />
+              </Animated.View>
+            </Animated.View>
           </TouchableOpacity>
           <View style={{ opacity: titleOpacity }}>
             <Text className="text-xl font-medium  min-w-[68%] w-[68%]" ellipsizeMode="tail" numberOfLines={1}>
@@ -184,24 +218,26 @@ const ViewTripModal = ({
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-             <Icon name="more-horiz" size={28} color={iconColor} />
+            <Animated.View style={{ width: 28, height: 28, justifyContent: 'center', alignItems: 'center' }}>
+              <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
+                <Icon name="more-horiz" size={28} color={iconColor} />
+              </Animated.View>
+              <Animated.View style={{ position: 'absolute', opacity: downOpacity }}>
+                <Icon name="more-horiz" size={28} color="#000000" />
+              </Animated.View>
+            </Animated.View>
           </TouchableOpacity>
-          <TouchableOpacity
-            className="pr-3.5 p-0.5 absolute right-[50px] pt-10"
-            onPress={() => setExpanded(p => !p)}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Icon name={expanded ? "fullscreen-exit" : "fullscreen"} size={26} color={fullscreenIconColor} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="pr-3.5 p-0.5 absolute right-[100px] pt-10"
-            onPress={() => setShowMapModal(true)}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Icon name="share" size={24} color={iconColor} />
-          </TouchableOpacity>
+          {/* Hide the Share/Map modal button completely when at full height */}
+          {!expanded && (
+            <TouchableOpacity
+              className="pr-3.5 p-0.5 absolute right-[50px] pt-10"
+              onPress={() => setShowMapModal(true)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Icon name="share" size={24} color={iconColor} />
+            </TouchableOpacity>
+          )}
           {/* <TouchableOpacity
             className="pr-3.5 p-0.5 absolute right-[135px] pt-10"
             onPress={() => setShowMapModal(true)}
@@ -217,6 +253,7 @@ const ViewTripModal = ({
               travelPlan={travelPlan} 
               onClose={handleCancel} 
               expanded={expanded} 
+              onExpandedChange={setExpanded}
               onScrollY={setScrollYVal}
               showMap={showMapModal}
               setShowMap={setShowMapModal}

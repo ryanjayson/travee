@@ -18,6 +18,7 @@ import {
   Portal,
   useTheme,
 } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
 import { ItineraryExpense, TravelPlan } from "../../../Travel/types/TravelDto";
@@ -39,6 +40,7 @@ interface ViewTravelProps {
   travelPlan: TravelPlan;
   onClose: () => void;
   expanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
   onScrollY?: (y: number) => void;
   showMap?: boolean;
   setShowMap?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -53,6 +55,7 @@ const ViewTravel = ({
   travelPlan, 
   onClose, 
   expanded, 
+  onExpandedChange,
   onScrollY,
   showMap = false,
   setShowMap,
@@ -103,6 +106,7 @@ const ViewTravel = ({
   const [activeTabId, setActiveTabId] = useState<string>("details");
 
   // --- Draggable Bottom Sheet Snap Values ---
+  const insets = useSafeAreaInsets();
   const { height: screenHeight } = Dimensions.get("window");
   const SNAP_MAX = 0;
   const SNAP_MID = screenHeight * 0.45;
@@ -121,17 +125,35 @@ const ViewTravel = ({
       toValue,
       tension: 80,
       friction: 12,
-      useNativeDriver: true,
-    }).start();
+      useNativeDriver: false, // Set to false to allow smooth layout/padding animations
+    }).start(() => {
+      onExpandedChange?.(toValue === SNAP_MAX);
+    });
   };
 
   useEffect(() => {
     if (expanded) {
       snapTo(SNAP_MAX);
+      onExpandedChange?.(true);
     } else {
       snapTo(SNAP_MID);
+      onExpandedChange?.(false);
     }
   }, [expanded]);
+
+  // Smoothly interpolate padding top as the sheet is dragged/scrolled up to full height
+  const headerPaddingTop = translateY.interpolate({
+    inputRange: [SNAP_MAX, SNAP_MID],
+    outputRange: [insets.top + 24, 12],
+    extrapolate: "clamp",
+  });
+
+  // Smoothly fade out the gray drag handle as the sheet approaches full screen height
+  const handleOpacity = translateY.interpolate({
+    inputRange: [SNAP_MAX, SNAP_MID],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
 
   const panResponder = useRef(
     PanResponder.create({
@@ -139,7 +161,7 @@ const ViewTravel = ({
         const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
         // Handle curved borders/shadows by allowing Y to be slightly above the sheet top (-30px)
         const shouldSet = touchStartRelativeY > -30 && touchStartRelativeY < 120;
-        console.log(`[PanResponder] onStartShouldSetPanResponder: pageY=${evt.nativeEvent.pageY}, snappedY=${snappedY.current}, relativeY=${touchStartRelativeY}, shouldSet=${shouldSet}`);
+        // console.log(`[PanResponder] onStartShouldSetPanResponder: pageY=${evt.nativeEvent.pageY}, snappedY=${snappedY.current}, relativeY=${touchStartRelativeY}, shouldSet=${shouldSet}`);
         return shouldSet;
       },
       // Capture phase: intercept vertical gestures BEFORE child ScrollViews/TouchableOpacities consume them
@@ -150,7 +172,7 @@ const ViewTravel = ({
         // Snapping/dragging ONLY allowed from Drag Handle & Trip Title areas (top 120px)
         const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
         if (touchStartRelativeY > -30 && touchStartRelativeY < 120) {
-          console.log(`[PanResponder] onMoveShouldSetPanResponderCapture: Capturing because in header/title area. relativeY=${touchStartRelativeY}`);
+          // console.log(`[PanResponder] onMoveShouldSetPanResponderCapture: Capturing because in header/title area. relativeY=${touchStartRelativeY}`);
           return true;
         }
 
@@ -170,7 +192,7 @@ const ViewTravel = ({
       // Prevent children from reclaiming the gesture once we've started dragging.
       onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: (evt, gestureState) => {
-        console.log(`[PanResponder] onPanResponderGrant: snappedY=${snappedY.current}`);
+        // console.log(`[PanResponder] onPanResponderGrant: snappedY=${snappedY.current}`);
         dragStartY.current = snappedY.current;
         translateY.setOffset(snappedY.current);
         translateY.setValue(0);
@@ -205,7 +227,7 @@ const ViewTravel = ({
             target = SNAP_MID;
           }
         }
-        console.log(`[PanResponder] onPanResponderRelease: nextY=${nextY}, velocityY=${velocityY}, target=${target}`);
+        // console.log(`[PanResponder] onPanResponderRelease: nextY=${nextY}, velocityY=${velocityY}, target=${target}`);
         snapTo(target);
       },
     })
@@ -518,19 +540,27 @@ const ViewTravel = ({
         ]}
       >
         {/* Drag Handle Area */}
-        <View 
-          className="w-full items-center py-3 bg-white"
-          style={{ borderTopLeftRadius: 32, borderTopRightRadius: 32 }}
+        <Animated.View 
+          className="w-full items-center bg-white"
+          style={{ 
+            borderTopLeftRadius: 32, 
+            borderTopRightRadius: 32,
+            paddingTop: headerPaddingTop,
+            paddingBottom: 12,
+          }}
           accessibilityRole="button"
           accessibilityLabel="Drag up or down to expand or collapse trip details sheet"
         >
-          <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
-        </View>
+          <Animated.View 
+            className="w-12 h-1.5 bg-gray-300 rounded-full" 
+            style={{ opacity: handleOpacity }}
+          />
+        </Animated.View>
 
         {/* Trip Title & Summary */}
         <View className="px-6 pb-4 bg-white flex-row justify-between items-start">
           <View className="flex-1 mr-4">
-            <Text className="text-3xl font-bold text-gray-800" numberOfLines={1}>
+            <Text className="text-3xl font-bold text-gray-800" numberOfLines={expanded ? undefined : 1}>
               {travelPlan.travel.title}
             </Text>
             <View className="flex-row items-center mt-1 flex-wrap">
