@@ -75,12 +75,25 @@ const Accordion: FC<AccordionProps> = ({
     }).start();
   }, [expanded, animationController]);
 
+  const hasShadowOrElevation = containerStyle && (
+    (containerStyle as any).elevation !== undefined ||
+    (containerStyle as any).shadowOpacity !== undefined ||
+    (containerStyle as any).shadowColor !== undefined
+  );
+
   return (
-    <View style={containerStyle} className="bg-white my-1.5 rounded-[20px] overflow-hidden border border-[#e0e0e0]">
+    <View
+      style={[
+        { overflow: hasShadowOrElevation ? "visible" : "hidden" },
+        containerStyle,
+      ]}
+      className="bg-white my-1.5 rounded-[20px] border border-[#e0e0e0]"
+    >
       {!disabled && (
         <TouchableOpacity
           onPress={toggleFullscreenAccordion}
           className="absolute right-[45px] top-5 z-10"
+          accessibilityRole="button"
         >
           <Animated.View>
             <Icon name="fullscreen" size={iconSize} color={iconColor} />
@@ -90,9 +103,20 @@ const Accordion: FC<AccordionProps> = ({
 
       <TouchableOpacity
         onPress={disabled ? undefined : toggleAccordion}
-        style={headerStyle}
+        style={[
+          headerStyle,
+          hasShadowOrElevation
+            ? {
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+                borderBottomLeftRadius: expanded ? 0 : 20,
+                borderBottomRightRadius: expanded ? 0 : 20,
+              }
+            : {},
+        ]}
         className={`flex-row justify-between items-center py-[18px] px-3 bg-[#f9f9f9] pr-[74px] ${expanded ? "pb-1" : ""}`}
         activeOpacity={disabled ? 1 : 0.8}
+        accessibilityRole="button"
       >
         <Text style={titleStyle} 
           className="text-lg font-semibold text-[#333] "
@@ -108,7 +132,12 @@ const Accordion: FC<AccordionProps> = ({
 
       {expanded && (
         <View
-          style={contentContainerStyle}
+          style={[
+            contentContainerStyle,
+            hasShadowOrElevation
+              ? { borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }
+              : {},
+          ]}
           className="overflow-hidden p-1 pb-3"
         >
           {children}

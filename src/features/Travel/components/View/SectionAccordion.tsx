@@ -136,7 +136,7 @@ const DraggableSectionItem = ({
         transform: [{ translateY: shiftAnim }],
         flex: 1,
         zIndex: isThisSectionDragging ? 9999 : 1,
-        elevation: isThisSectionDragging ? 10 : 1,
+        // elevation: isThisSectionDragging ? 10 : 1,
       }}
     >
       <DraggableSectionContainer
@@ -164,14 +164,14 @@ const DraggableSectionItem = ({
             {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) > mapIndex && (
               <View className="absolute -top-[10px] left-[22px] right-[12px] flex-row items-center z-50">
                 <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
-                <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
+                <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 " />
               </View>
             )}
 
             {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) < mapIndex && (
               <View className="absolute -bottom-[10px] left-[22px] right-[12px] flex-row items-center z-50">
                 <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
-                <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
+                <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 " />
               </View>
             )}
 
@@ -194,6 +194,20 @@ const DraggableSectionItem = ({
                 </Text>
               }
               headerStyle={{ backgroundColor: "#FFF" }}
+              containerStyle={
+                isSectionActive
+                  ? {
+                      borderColor: "#D0D5DD",
+                      borderWidth: 1.5,
+                      elevation: 10,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 10 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 15,
+                      backgroundColor: "#FFFFFF",
+                    }
+                  : undefined
+              }
             >
               <View
                 style={{ backgroundColor: "#FFF" }}
@@ -634,7 +648,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
             (sectionDragState?.sectionId !== section.id ||
               (sectionDragState?.dragIndex !== index &&
                 (sectionDragState?.dragIndex ?? -1) > index)) && (
-              <View className="absolute -top-[5px] left-[33px] right-[16px] flex-row items-center z-50">
+              <View className="absolute -top-[5px] left-[28px] right-[16px] flex-row items-center z-50">
                 <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
                 <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
               </View>
@@ -685,7 +699,7 @@ const SectionAccordion = ({ iterarysections, plainMode }: SectionAccordionProps)
             sectionDragState?.sectionId === section.id &&
             sectionDragState?.dragIndex !== index &&
             (sectionDragState?.dragIndex ?? -1) < index && (
-              <View className="absolute -bottom-[5px] left-[33px] right-[16px] flex-row items-center z-50">
+              <View className="absolute -bottom-[5px] left-[28px] right-[16px] flex-row items-center z-50">
                 <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
                 <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
               </View>

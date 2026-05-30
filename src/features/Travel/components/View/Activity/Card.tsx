@@ -64,6 +64,7 @@ const ActivityItemCard = ({
   const [showActivityViewModal, setShowActivityViewModal] =
     useState<boolean>(false);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
+  const [isAddPressed, setIsAddPressed] = useState<boolean>(false);
   const updateMutation = useUpdateActivityMutation();
 
   // --- Drag-to-reorder ---
@@ -358,15 +359,28 @@ const ActivityItemCard = ({
         }
       }}
     >
+
+    {!isLastItem && !isDragActive && !parentIsDragging && (
+        <TouchableHighlight 
+          underlayColor={"#263F69"}
+          className="absolute -bottom-4 left-2xl border border-gray-300 bg-gray-200 px-0.5 rounded-md z-50"
+          onPress={() => setShowMapModal(true)}
+          onShowUnderlay={() => setIsAddPressed(true)}
+          onHideUnderlay={() => setIsAddPressed(false)}
+        >
+          <Icon name="add" size={20} color={"#999"}/>
+        </TouchableHighlight>
+      )}
+
       <View className={`px-2 flex-row justify-between items-center relative `}>
         {!isDragActive && (
           <>
             {!isLastItem ? (
               <View className="w-1.5 items-center h-full absolute">
                 {isFirstItem ? (
-                  <View className="absolute h-1/2 w-1px top-1/2 left-[30px] z-0 border-l border-dashed border-gray-300"></View>
+                  <View className="absolute h-1/2 w-1px top-1/2 left-4xl z-0 border-l border-dashed border-gray-300"></View>
                 ) : (
-                  <View className="absolute h-full w-1px left-[30px] z-0 border-l border-dashed border-[#ccc]">
+                  <View className="absolute h-full w-1px left-4xl z-0 border-l border-dashed border-[#ccc]">
                   </View>
                 )}
               </View>
@@ -376,7 +390,7 @@ const ActivityItemCard = ({
                   <>
                   </>
                 ) : (
-                  <View className="absolute h-1/2 w-1px left-[30px] top-0 z-0 border-l border-dashed border-[#ccc]">
+                  <View className="absolute h-1/2 w-1px left-4xl top-0 z-0 border-l border-dashed border-[#ccc]">
                   </View>
                 )}
               </View>
@@ -489,7 +503,7 @@ const ActivityItemCard = ({
              </View>
           </View>
           
-          {/* <View className="flex-row justify-between items-center border-t border-gray-200 pt-1.5">
+          <View className="flex-row justify-between items-center border-t border-gray-200 pt-1.5">
             <View className="flex-row items-center mt-1 flex-wrap gap-5">
               <View className="flex-row items-center gap-1">
                     <Icon name="payments" size={24} color={"#888"} />
@@ -511,7 +525,7 @@ const ActivityItemCard = ({
                     </Text>
                   </View>
               </View>
-          </View> */}
+          </View>
       
         </TouchableOpacity>
           <View className="absolute right-4 bottom-4 ">
@@ -529,18 +543,17 @@ const ActivityItemCard = ({
                       : (<Icon name="check-box-outline-blank" size={24} color="#888" />)}
               </TouchableOpacity>
             </View>
-            {!isLastItem && !isDragActive && !parentIsDragging && (
-              <TouchableHighlight 
-                underlayColor={"#263F69"}
-                className="absolute -bottom-3 left-18px border border-gray-300 bg-gray-200 px-0.5 rounded-md z-50"
-                onPress={() => setShowMapModal(true)}
-              >
-                <Icon name="add" size={20} color={"#999"}/>
-              </TouchableHighlight>
-            )}
+         
  
       </View>
 
+     {isAddPressed && (
+        <View className="w-[85%] rounded-full left-5xl absolute -bottom-1">
+          <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40" />
+          <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50 absolute right-0 -bottom-1" />
+        </View>
+      )}
+      
       <ViewActivityModal
         id={itineraryEventActivity.id!}
         showModal={showActivityViewModal}

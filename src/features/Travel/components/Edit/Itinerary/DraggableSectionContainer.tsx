@@ -31,7 +31,17 @@ const DraggableSectionContainer = ({
   children,
 }: DraggableSectionContainerProps) => {
   const pan = useRef(new Animated.ValueXY()).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    Animated.timing(scaleAnim, {
+      toValue: isActive ? 1.03 : 1,
+      duration: 200,
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      useNativeDriver: false,
+    }).start();
+  }, [isActive]);
 
   const propsRef = useRef({ index, listLength, onDragMove, onDragEnd, dragIndex, hoverIndex, draggedHeight });
   useEffect(() => {
@@ -108,12 +118,14 @@ const DraggableSectionContainer = ({
   ).current;
 
   const animatedStyle = {
-    padding: 0,
-    transform: pan.getTranslateTransform(),
+    transform: [
+      ...pan.getTranslateTransform(),
+      { scale: scaleAnim },
+    ] as any,
     zIndex: isActive || isChildActive ? 9999 : 1,
-    // elevation: isActive || isChildActive ? 10 : 0,
-    opacity: isActive && !disableOpacity ? 0.6 : 1,
-    // backgroundColor: "red",//sActive ? "red" : "transparent",
+    elevation: 0,
+    opacity: 1,
+    backgroundColor: "transparent",
     flex: 1,
   };
 
