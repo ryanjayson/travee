@@ -14,6 +14,9 @@ import { useToast } from "../../../../context/ToastContext";
 interface SectionAccordionProps {
   iterarysections?: ItinerarySection[];
   plainMode?: boolean;
+  scrollEnabled?: boolean;
+  onScrollY?: (y: number) => void;
+  viewMode?: "plain" | "narrow" | "expanded";
 }
 
 const slowSpringAnimation = {
@@ -237,7 +240,13 @@ const DraggableSectionItem = ({
   );
 };
 
-const SectionAccordion = ({ iterarysections, plainMode, scrollEnabled = false, onScrollY }: SectionAccordionProps) => {
+const SectionAccordion = ({
+  iterarysections,
+  plainMode,
+  scrollEnabled = false,
+  onScrollY,
+  viewMode,
+}: SectionAccordionProps) => {
   const { generateSortOrder } = useLexicographicSort();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
@@ -659,6 +668,7 @@ const SectionAccordion = ({ iterarysections, plainMode, scrollEnabled = false, o
             isFirstItem={isFirstEvent}
             isLastItem={isLastEvent}
             plainMode={plainMode}
+            viewMode={viewMode}
             index={index}
             listLength={array.length}
             onDragStart={(idx: number, h: number) =>
