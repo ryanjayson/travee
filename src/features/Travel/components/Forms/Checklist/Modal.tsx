@@ -14,27 +14,29 @@ import {
   PanResponder,
 } from "react-native";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
-import { ItineraryActivity, ItineraryExpense } from "../../../types/TravelDto";
-import EditExpense from "./index";
+import { ChecklistItem, ItineraryActivity } from "../../../types/TravelDto";
+import EditChecklistItem from "./index";
 
-interface ExpenseModalProps {
+interface ChecklistModalProps {
   visible: boolean;
   onClose: () => void;
-  itineraryExpense: ItineraryExpense | null;
-  activityId?: string;
+  checklistItem: ChecklistItem | null;
   activities?: ItineraryActivity[];
+  travelId: string;
+  onOpenNewGroupModal?: () => void;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
 
-const ExpenseModal = ({
+const ChecklistModal = ({
   visible,
   onClose,
-  itineraryExpense,
-  activityId,
+  checklistItem,
   activities,
-}: ExpenseModalProps) => {
-  const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
+  travelId,
+  onOpenNewGroupModal,
+}: ChecklistModalProps) => {
+  const [modalHeight] = useState(screenHeight * 0.75);
   const { keyboardVisible } = useKeyboardVisible();
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
@@ -106,7 +108,7 @@ const ExpenseModal = ({
           friction: 12,
           useNativeDriver: true,
         }).start();
-      }
+      },
     })
   ).current;
 
@@ -161,26 +163,26 @@ const ExpenseModal = ({
   });
 
   return (
-    <Modal 
-      visible={visible} 
-      transparent 
+    <Modal
+      visible={visible}
+      transparent
       animationType="none"
       onRequestClose={handleCancel}
     >
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <Animated.View 
-          className="flex-1 justify-end" 
-          style={{ 
+        <Animated.View
+          className="flex-1 justify-end"
+          style={{
             backgroundColor: "rgba(0,0,0,0.5)",
-            opacity: backdropOpacity 
+            opacity: backdropOpacity,
           }}
         >
           <Animated.View
             {...sheetPanResponder.panHandlers}
-            className="rounded-t-[30px] bg-white"
+            className="rounded-t-[30px] bg-white overflow-hidden"
             style={[
               { height: keyboardVisible ? "100%" : modalHeight },
               {
@@ -191,14 +193,14 @@ const ExpenseModal = ({
                 shadowRadius: 16,
                 elevation: 24,
                 transform: [{ translateY }],
-              }
+              },
             ]}
           >
             <StatusBar style="dark" />
-            
+
             {/* Drag Handle Area */}
             {!keyboardVisible && (
-              <View 
+              <View
                 {...dragPanResponder.panHandlers}
                 className="w-full items-center py-4 bg-white rounded-t-[30px]"
               >
@@ -206,12 +208,14 @@ const ExpenseModal = ({
               </View>
             )}
 
-            <View 
-            {...(!keyboardVisible && dragPanResponder.panHandlers)}
-            className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
+            <View
+              {...(!keyboardVisible && dragPanResponder.panHandlers)}
+              className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200"
+              style={{ paddingTop: keyboardVisible ? 0 : 4 }}
+            >
               <View className="flex-row items-center gap-2">
                 <Text className="text-2xl text-gray-700 font-medium">
-                  {itineraryExpense?.id ? "Edit Expense" : "Add Expense"}
+                  {checklistItem?.id ? "Edit Item" : "Add Item"}
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
@@ -220,11 +224,12 @@ const ExpenseModal = ({
             </View>
 
             <View className="flex-1">
-              <EditExpense
-                itineraryExpense={itineraryExpense}
-                activityId={activityId}
+              <EditChecklistItem
+                travelId={travelId}
+                checklistItem={checklistItem}
                 activities={activities}
                 onClose={onClose}
+                onOpenNewGroupModal={onOpenNewGroupModal}
                 onScroll={(e) => {
                   const y = e.nativeEvent.contentOffset.y;
                   isAtTop.current = y <= 0;
@@ -238,4 +243,4 @@ const ExpenseModal = ({
   );
 };
 
-export default ExpenseModal;
+export default ChecklistModal;

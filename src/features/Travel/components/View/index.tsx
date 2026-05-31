@@ -21,10 +21,13 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
-import { ItineraryExpense, TravelPlan } from "../../../Travel/types/TravelDto";
+import { ItineraryExpense, TravelPlan, ChecklistItem } from "../../../Travel/types/TravelDto";
 import ExpenseModal from "../Forms/Expense/Modal";
 import NoteModal from "../Forms/Note/Modal";
+import ChecklistModal from "../Forms/Checklist/Modal";
+import ChecklistGroupModal from "../Forms/Checklist/ChecklistGroupModal";
 import ActivityModal from "../Edit/Itinerary/Activity/Modal";
+import { useSaveChecklistGroupMutation } from "../../hooks/useChecklist";
 import MapViewer from "../MapViewer";
 import ShareTripModal from "../ShareOverlay/ShareTripModal";
 import ChecklistTab from "./Tabs/ChecklistTab";
@@ -32,6 +35,7 @@ import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
 import ItineraryTab from "./Tabs/ItineraryTab";
 import NotesTab from "./Tabs/NotesTab";
+import MembersTab from "./Tabs/MembersTab";
 import TravelActionFAB from "./TravelActionFAB";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
@@ -92,6 +96,18 @@ const ViewTravel = ({
     }
   };
 
+  const handleSaveGroup = async (values: { title: string; description: string }) => {
+    await saveGroupMutation.mutateAsync({
+      travelId,
+      title: values.title,
+      description: values.description || undefined,
+      sortOrder: String(Date.now()),
+      userId: "current-user",
+      isOffline: true,
+    });
+    setShowGroupModal(false);
+  };
+
   const isMapVisible = setShowMap ? showMap : localShowMap;
   const setMapVisible = setShowMap ? setShowMap : localSetShowMap;
 
@@ -103,6 +119,10 @@ const ViewTravel = ({
   const [selectedExpense, setSelectedExpense] = useState<ItineraryExpense | null>(null);
   const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
   const [showActivityModal, setShowActivityModal] = useState<boolean>(false);
+  const [showChecklistModal, setShowChecklistModal] = useState<boolean>(false);
+  const [selectedChecklistItem, setSelectedChecklistItem] = useState<ChecklistItem | null>(null);
+  const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
+  const saveGroupMutation = useSaveChecklistGroupMutation();
   const [activeTabId, setActiveTabId] = useState<string>("details");
 
   // --- Draggable Bottom Sheet Snap Values ---
@@ -484,6 +504,15 @@ const ViewTravel = ({
         />
       ),
     },
+    {
+      id: "members",
+      title: "Members",
+      content: (
+        <MembersTab
+          travelPlan={travelPlan}
+        />
+      ),
+    },
   ];
 
   const handleViewModeActivity = (id: number) => {
@@ -603,7 +632,10 @@ const ViewTravel = ({
           setSelectedNote(null);
           setShowNoteModal(true);
         }}
-        onAddChecklist={() => console.log('Add Checklist')}
+        onAddChecklist={() => {
+          setSelectedChecklistItem(null);
+          setShowChecklistModal(true);
+        }}
         onAddExpense={() => {
           setSelectedExpense(null);
           setShowExpenseModal(true);
@@ -623,6 +655,22 @@ const ViewTravel = ({
         itineraryNote={selectedNote}
         activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
         onClose={() => setShowNoteModal(false)}
+      />
+
+      <ChecklistModal
+        visible={showChecklistModal}
+        checklistItem={selectedChecklistItem}
+        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
+        onClose={() => setShowChecklistModal(false)}
+        travelId={travelId}
+        onOpenNewGroupModal={() => setShowGroupModal(true)}
+      />
+
+      <ChecklistGroupModal
+        visible={showGroupModal}
+        onClose={() => setShowGroupModal(false)}
+        onSave={handleSaveGroup}
+        isSaving={saveGroupMutation.isPending}
       />
 
       <ActivityModal

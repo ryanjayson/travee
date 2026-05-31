@@ -24,6 +24,7 @@ import {
 } from "../../hooks/useChecklist";
 import { ChecklistItem, ItineraryActivity } from "../../types/TravelDto";
 import ChecklistGroupModal from "./Checklist/ChecklistGroupModal";
+import ChecklistModal from "./Checklist/Modal";
 
 
 type ContextType = "group" | "activity" | null;
@@ -57,6 +58,13 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
   const { confirm } = useConfirm();
 
   const [showGroupModal, setShowGroupModal] = useState(false);
+  const [showChecklistModal, setShowChecklistModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<ChecklistItem | null>(null);
+
+  const handleEditItem = (item: ChecklistItem) => {
+    setSelectedItem(item);
+    setShowChecklistModal(true);
+  };
   const [groupSearch, setGroupSearch] = useState("");
   const [selectedContext, setSelectedContext] = useState<ContextOption | null>(null);
   const [showContextDropdown, setShowContextDropdown] = useState(false);
@@ -170,7 +178,11 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
         {item.isDone && <Icon name="check" size={14} color="#FFF" />}
       </TouchableOpacity>
 
-      <View className="flex-1">
+      <TouchableOpacity
+        accessibilityRole="button"
+        onPress={() => handleEditItem(item)}
+        className="flex-1"
+      >
         <Text
           className={`text-base font-medium ${
             item.isDone ? "line-through text-gray-400" : "text-[#1A1A1A]"
@@ -188,7 +200,15 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
             Done by {item.checkedBy}
           </Text>
         )}
-      </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        accessibilityRole="button"
+        onPress={() => handleEditItem(item)}
+        className="p-1 opacity-40"
+      >
+        <Icon name="edit" size={18} color="#263F69" />
+      </TouchableOpacity>
 
       <TouchableOpacity
         accessibilityRole="button"
@@ -454,6 +474,15 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
         onClose={() => setShowGroupModal(false)}
         onSave={handleSaveGroup}
         isSaving={saveGroupMutation.isPending}
+      />
+
+      <ChecklistModal
+        visible={showChecklistModal}
+        checklistItem={selectedItem}
+        activities={activities}
+        onClose={() => setShowChecklistModal(false)}
+        travelId={travelId}
+        onOpenNewGroupModal={() => setShowGroupModal(true)}
       />
     </ScrollView>
   );
