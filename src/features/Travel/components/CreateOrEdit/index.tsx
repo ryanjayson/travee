@@ -30,6 +30,7 @@ export interface CreateOrEditProps {
   tripData?: Travel;
   mode?: "create" | "edit";
   hideSubmitButton?: boolean;
+  onScroll?: (event: any) => void;
 }
 
 export interface CreateOrEditRef {
@@ -38,7 +39,7 @@ export interface CreateOrEditRef {
   isValid: boolean;
 }
 
-const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, onStatusChange, tripData, mode = "create", hideSubmitButton }, ref) => {
+const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, onStatusChange, tripData, mode = "create", hideSubmitButton, onScroll }, ref) => {
   const navigation = useNavigation<any>();
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -296,6 +297,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         className="flex-1 p-[15px]" 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60 }}
+        // onScroll={onScroll}
+        // scrollEventThrottle={16}
       >
 {/* 
         {error && (

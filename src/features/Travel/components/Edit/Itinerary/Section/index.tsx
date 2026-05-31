@@ -32,13 +32,14 @@ interface Place {
 interface EditSectionProps {
   itinerarySection: ItinerarySection | null;
   onClose: () => void;
+  onScroll?: (event: any) => void;
 }
 
 const TravelSchema = Yup.object().shape({
   title: Yup.string().required("Title is required").min(2),
 });
 
-const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
+const EditSection = ({ itinerarySection, onClose, onScroll }: EditSectionProps) => {
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
@@ -114,7 +115,13 @@ const EditSection = ({ itinerarySection, onClose }: EditSectionProps) => {
     <View className="flex-1 justify-end bg-gray-100 rounded-t-[20px]">
           <StatusBar barStyle={"dark-content"} />
 
-          <ScrollView className="flex-1 p-[15px] bg-gray-100 pb-[100px]" showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+          <ScrollView 
+            className="flex-1 p-[15px] bg-gray-100 pb-[100px]" 
+            showsVerticalScrollIndicator={false} 
+            keyboardShouldPersistTaps="handled"
+            onScroll={onScroll}
+            scrollEventThrottle={16}
+          >
             <View className="mb-5">
               <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
               <TextInput

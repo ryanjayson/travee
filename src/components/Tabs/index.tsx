@@ -24,12 +24,13 @@ interface TabsProps {
   onTabChange?: (tabId: string) => void;
   expanded?: boolean;
   hasActionTripStatus?: boolean;
+  onScroll?: (event: any) => void;
 }
 
 type TabsType = "primary" | "secondary" | "default";
 
 // --- Component ---
-const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlledActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus }) => {
+const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlledActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus, onScroll }) => {
   const [activeTabId, setActiveTabId] = useState(
     initialActiveTabId || tabs[0]?.id
   );
@@ -164,7 +165,11 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
           )}
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView 
+          contentContainerStyle={{ paddingBottom: 100 }}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+        >
           {activeTab ? (
             activeTab.content
           ) : (

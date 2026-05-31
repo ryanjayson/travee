@@ -1,5 +1,5 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Animated,
   Dimensions,
@@ -9,6 +9,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  PanResponder,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Create from ".";
@@ -36,31 +37,174 @@ const CreateTripModal = ({
   const { keyboardVisible, isFloating } = useKeyboardVisible();
   const [tripStatus, setTripStatus] = useState(TravelStatus.Draft);
 
+  const translateY = useRef(new Animated.Value(screenHeight)).current;
+  const isAtTop = useRef(true);
+  const dragStartDy = useRef(0);
+
+  // Slide up transition on opening
+  useEffect(() => {
+    if (showModal) {
+      isAtTop.current = true; // Reset scroll position tracker
+      translateY.setValue(screenHeight);
+      Animated.spring(translateY, {
+        toValue: 0,
+        tension: 65,
+        friction: 11,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showModal]);
+
+  // Main sheet responder to capture downward drags only when at top scroll limit
+  const sheetPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        if (keyboardVisible) return false;
+        const { dy } = gestureState;
+        // If we are at the top and swipe down
+        if (isAtTop.current && dy > 8) {
+          return true;
+        }
+        return false;
+      },
+      onPanResponderGrant: (evt, gestureState) => {
+        dragStartDy.current = gestureState.dy;
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const currentDy = gestureState.dy - dragStartDy.current;
+        if (currentDy > 0) {
+          translateY.setValue(currentDy);
+        } else {
+          translateY.setValue(0);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const currentDy = gestureState.dy - dragStartDy.current;
+        if (currentDy > 120 || gestureState.vy > 0.5) {
+          Animated.timing(translateY, {
+            toValue: screenHeight,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowModal(false);
+          });
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            tension: 80,
+            friction: 12,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(translateY, {
+          toValue: 0,
+          tension: 80,
+          friction: 12,
+          useNativeDriver: true,
+        }).start();
+      }
+    })
+  ).current;
+
+  const dragPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          translateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 120 || gestureState.vy > 0.5) {
+          // Slide down completely and close
+          Animated.timing(translateY, {
+            toValue: screenHeight,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowModal(false);
+          });
+        } else {
+          // Snap back to top
+          Animated.spring(translateY, {
+            toValue: 0,
+            tension: 80,
+            friction: 12,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
   const handleCancel = () => {
-       setShowModal(false);
+    // Smoothly slide down first, then dismiss
+    Animated.timing(translateY, {
+      toValue: screenHeight,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowModal(false);
+    });
   };
+
+  // Interpolate backdrop opacity based on translateY position for smooth fading
+  const backdropOpacity = translateY.interpolate({
+    inputRange: [0, screenHeight],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
 
   return (
     <Modal visible={showModal} 
       transparent
-      animationType="none"
+      animationType="none" 
       onRequestClose={handleCancel}>
         <StatusBar style="dark" />
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
-        style={{ flex: 1, paddingBottom: 10}}
+        style={{ flex: 1 }}
       >
-        <View className="flex-1 bg-black/50 justify-end" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
+        <Animated.View 
+          className="flex-1 justify-end" 
+          style={{ 
+            backgroundColor: "rgba(0,0,0,0.5)",
+            opacity: backdropOpacity 
+          }}
+        >
           <Animated.View
+            {...sheetPanResponder.panHandlers}
             className="rounded-t-[30px] bg-white"
             style={[
               { height: keyboardVisible ? "100%" : modalHeight},
               {
-                paddingTop: keyboardVisible ? 40 : 4
+                paddingTop: keyboardVisible ? 24 : 0,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: -8 },
+                shadowOpacity: 0.12,
+                shadowRadius: 16,
+                elevation: 24,
+                transform: [{ translateY }],
               }
             ]}
           >
-            <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
+            {/* Drag Handle Area */}
+            {!keyboardVisible && (
+              <View 
+                {...dragPanResponder.panHandlers}
+                className="w-full items-center py-4 bg-white rounded-t-[30px]"
+              >
+                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              </View>
+            )}
+            <View 
+              {...(!keyboardVisible && dragPanResponder.panHandlers)}
+            className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
                 <View className="flex-row items-center gap-2">
                     <Text className="text-2xl text-gray-700 font-medium">
                     Create next trip
@@ -71,11 +215,20 @@ const CreateTripModal = ({
                     <Icon name="clear" size={36} color={"#333"} />
                 </TouchableOpacity>
             </View>
-            <View className="flex-1">
-              <Create onClose={handleCancel} onStatusChange={setTripStatus} tripData={tripData} />
+            <View className="flex-1"
+            >
+              
+              <Create 
+                onClose={handleCancel} 
+                onStatusChange={setTripStatus} 
+                tripData={tripData} 
+                onScroll={(e) => {
+                 handleCancel();
+                }}
+              />
             </View>
           </Animated.View>
-        </View>
+        </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
   );

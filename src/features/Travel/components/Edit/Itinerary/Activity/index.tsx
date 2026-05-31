@@ -48,6 +48,7 @@ interface EditActivityProps {
   itinerarySectionId?: string;
   itineraryActivity: ItineraryActivity | null;
   onClose: () => void;
+  onScroll?: (event: any) => void;
 }
 
 const TravelSchema = Yup.object().shape({
@@ -76,6 +77,7 @@ const EditActivity = ({
   itinerarySectionId,
   itineraryActivity,
   onClose,
+  onScroll,
 }: EditActivityProps) => {
   const toLocalDateStr = (dInput: any) => {
     if (!dInput) return null;
@@ -824,7 +826,7 @@ const EditActivity = ({
             <StatusBar barStyle={"dark-content"} />
 
             <View className="flex-1">
-              <Tabs tabs={tabData} initialActiveTabId="details" type="default" />
+              <Tabs tabs={tabData} initialActiveTabId="details" type="default" onScroll={onScroll} />
             </View>
 
             {!(isKeyboardVisible && isChecklistFocused) && (

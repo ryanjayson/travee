@@ -26,6 +26,7 @@ interface EditNoteProps {
   itineraryNote: ItineraryNote | null;
   activities?: ItineraryActivity[];
   onClose: () => void;
+  onScroll?: (event: any) => void;
 }
 
 const NoteSchema = Yup.object().shape({
@@ -42,7 +43,7 @@ export interface NoteFormValues {
   userId: string;
 }
 
-const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
+const EditNote = ({ itineraryNote, activities, onClose, onScroll }: EditNoteProps) => {
   const { selectedTravelPlan } = useTravelContext();
   const { userToken } = useAuth();
   const saveMutation = useSaveNoteMutation();
@@ -119,6 +120,8 @@ const EditNote = ({ itineraryNote, activities, onClose }: EditNoteProps) => {
             className="flex-1 p-[15px] bg-gray-100"
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            onScroll={onScroll}
+            scrollEventThrottle={16}
           >
             {/* Linked Activity */}
             <View className="mb-5">

@@ -110,7 +110,7 @@ const ViewTravel = ({
   const { height: screenHeight } = Dimensions.get("window");
   const SNAP_MAX = 0;
   const SNAP_MID = screenHeight * 0.45;
-  const SNAP_MIN = screenHeight - 170;
+  const SNAP_MIN = screenHeight - 100;
 
   // Track the last-snapped position manually because Animated.Value.addListener
   // does NOT fire reliably on Android when useNativeDriver: true.

@@ -28,6 +28,7 @@ interface EditExpenseProps {
   activityId?: string;
   activities?: ItineraryActivity[];
   onClose: () => void;
+  onScroll?: (event: any) => void;
 }
 
 const ExpenseSchema = Yup.object().shape({
@@ -57,6 +58,7 @@ const EditExpense = ({
   activityId,
   activities,
   onClose,
+  onScroll,
 }: EditExpenseProps) => {
   const { selectedTravelPlan } = useTravelContext();
   const { userToken } = useAuth();
@@ -122,6 +124,8 @@ const EditExpense = ({
             className="flex-1 p-[15px] bg-gray-100"
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="never"
+            onScroll={onScroll}
+            scrollEventThrottle={16}
           >
             <View className="mb-5">
               <Text className="text-xs font-semibold tracking-wider uppercase">Expense Title</Text>
