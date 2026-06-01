@@ -37,6 +37,7 @@ import SectionLookupModal from "../../../Lookups/SectionLookupModal";
 import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../../context/ToastContext";
+import DescriptionInput from "../../../../../../components/molecules/DescriptionInput";
 
 interface Place {
   id: string;
@@ -435,21 +436,12 @@ const EditActivity = ({
                 {/* Description */}
                 <View className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
-                  <TextInput
-                    mode="outlined"
-                    placeholder="Activity details"
-                    multiline
-                    numberOfLines={4}
+                  <DescriptionInput
                     value={values.description}
-                    onChangeText={handleChange("description")}
-                    onBlur={handleBlur("description")}
-                    outlineColor="#E0E0E0"
-                    activeOutlineColor="#263F69"
-                    theme={{ colors: { onSurfaceVariant: '#888' } }}
-                    outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                    style={{ marginTop: 6, height: 120 }}
-                    textAlignVertical="top"
-                    contentStyle={{ backgroundColor: "transparent" }}
+                    onChange={(text) => setFieldValue("description", text)}
+                    label="Description"
+                    placeholder="Activity details..."
+                    confirmLabel="Add"
                   />
                 </View>
 

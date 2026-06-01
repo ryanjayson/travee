@@ -23,6 +23,7 @@ import { ItineraryActivity, ItineraryExpense } from "../../../types/TravelDto";
 import ExpenseCategoryIcon from "./ExpenseCategoryIcon";
 import ActivityLookupModal from "../../Lookups/ActivityLookupModal";
 import ExpenseCategoryLookupModal from "../../Lookups/ExpenseCategoryLookupModal";
+import DescriptionInput from "../../../../../components/molecules/DescriptionInput";
 interface EditExpenseProps {
   itineraryExpense: ItineraryExpense | null;
   activityId?: string;
@@ -374,21 +375,13 @@ const EditExpense = ({
 
             <View className="mb-5">
               <Text className="text-xs font-semibold tracking-wider uppercase ">Notes</Text>
-              <TextInput
-                mode="outlined"
-                placeholder="Additional details..."
-                multiline
-                numberOfLines={4}
+              <DescriptionInput
                 value={formik.values.notes}
-                onChangeText={formik.handleChange("notes")}
-                onBlur={formik.handleBlur("notes")}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                theme={{ colors: { onSurfaceVariant: '#888' } }}
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ marginTop: 6, height: 120 }}
-                textAlignVertical="top"
-                contentStyle={{ backgroundColor: "transparent" }}
+                onChange={(text) => formik.setFieldValue("notes", text)}
+                label="Notes"
+                placeholder="Additional details..."
+                confirmLabel="Add"
+                disabled={isSaving}
               />
             </View>
           </ScrollView>

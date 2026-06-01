@@ -15,6 +15,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
+import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 import StatusBadge from "../../../../components/StatusBadge";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
 import TouchButton from "../../../../components/atoms/TouchButton";
@@ -427,21 +428,13 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
 
       <View className="mb-5">
         <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
-        <TextInput
-          mode="outlined"
-          placeholder="Describe your next trip"
+        <DescriptionInput
           value={formik.values.description}
-          onChangeText={formik.handleChange("description")}
-          onBlur={formik.handleBlur("description")}
+          onChange={(text) => formik.setFieldValue("description", text)}
+          label="Description"
+          placeholder="Describe your next trip..."
+          confirmLabel="Add"
           disabled={isSaving}
-          outlineColor="#E0E0E0"
-          activeOutlineColor="#263F69"
-          multiline
-          numberOfLines={4}
-          theme={{ colors: { onSurfaceVariant: '#888' } }}
-          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-          style={{ marginTop: 6, height: 100, fontSize: 14 }}
-          contentStyle={{ backgroundColor: "transparent" }}
         />
         <View className="flex-row items-center mt-3">
           <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mr-3">Status:</Text>
@@ -473,21 +466,13 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
 
           <View className="mb-5">
             <Text className="text-xs font-semibold tracking-wider uppercase">Notes</Text>
-            <TextInput
-              mode="outlined"
-              placeholder="Additional notes..."
+            <DescriptionInput
               value={formik.values.notes}
-              onChangeText={formik.handleChange("notes")}
-              onBlur={formik.handleBlur("notes")}
+              onChange={(text) => formik.setFieldValue("notes", text)}
+              label="Notes"
+              placeholder="Additional notes..."
+              confirmLabel="Save"
               disabled={isSaving}
-              outlineColor="#E0E0E0"
-              activeOutlineColor="#263F69"
-              multiline
-              numberOfLines={3}
-              theme={{ colors: { onSurfaceVariant: '#888' } }}
-              outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-              style={{ marginTop: 6, height: 80, fontSize: 14 }}
-              contentStyle={{ backgroundColor: "transparent" }}
             />
           </View>
 

@@ -31,12 +31,13 @@ interface ChecklistModalProps {
 }
 
 const { height: screenHeight } = Dimensions.get("window");
+const EMPTY_ARRAY: any[] = [];
 
 const ChecklistModal = ({
   visible,
   onClose,
   checklistItem,
-  activities,
+  activities = EMPTY_ARRAY,
   travelId,
   onOpenNewGroupModal,
 }: ChecklistModalProps) => {
@@ -69,7 +70,7 @@ const ChecklistModal = ({
   }, []);
 
   // Sibling lookup states & hooks
-  const { data: groups = [], isLoading: groupsLoading } = useChecklistGroups(travelId);
+  const { data: groups = EMPTY_ARRAY, isLoading: groupsLoading } = useChecklistGroups(travelId);
   const [selectedContext, setSelectedContext] = useState<ContextOption | null>(null);
   const [showContextModal, setShowContextModal] = useState(false);
 
@@ -79,7 +80,7 @@ const ChecklistModal = ({
       label: g.title,
       type: "group",
     }));
-    const activityOpts: ContextOption[] = (activities || [])
+    const activityOpts: ContextOption[] = activities
       .filter((a) => !!a.id && !!a.title)
       .map((a) => ({
         id: a.id!,
@@ -90,31 +91,39 @@ const ChecklistModal = ({
     return [...groupOpts, ...activityOpts];
   }, [groups, activities]);
 
-  // Synchronise edits
+  // Synchronise edits with deep equality guards to prevent infinite render loops
   useEffect(() => {
     if (checklistItem) {
       if (checklistItem.checklistGroupId) {
         const matchingGroup = groups.find((g) => g.id === checklistItem.checklistGroupId);
         if (matchingGroup) {
-          setSelectedContext({
+          const newContext: ContextOption = {
             id: matchingGroup.id!,
             label: matchingGroup.title,
             type: "group",
-          });
+          };
+          if (selectedContext?.id !== newContext.id || selectedContext?.type !== newContext.type) {
+            setSelectedContext(newContext);
+          }
         }
       } else if (checklistItem.activityId) {
-        const matchingActivity = (activities || []).find((a) => a.id === checklistItem.activityId);
+        const matchingActivity = activities.find((a) => a.id === checklistItem.activityId);
         if (matchingActivity) {
-          setSelectedContext({
+          const newContext: ContextOption = {
             id: matchingActivity.id!,
             label: matchingActivity.title || "Activity",
             type: "activity",
             activityType: (matchingActivity.type ?? ActivityType.none) as ActivityType,
-          });
+          };
+          if (selectedContext?.id !== newContext.id || selectedContext?.type !== newContext.type) {
+            setSelectedContext(newContext);
+          }
         }
       }
     } else {
-      setSelectedContext(null);
+      if (selectedContext !== null) {
+        setSelectedContext(null);
+      }
     }
   }, [checklistItem, groups, activities]);
 

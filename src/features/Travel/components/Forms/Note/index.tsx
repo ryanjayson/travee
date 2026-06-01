@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import * as Yup from "yup";
+import DescriptionInput from "../../../../../components/molecules/DescriptionInput";
 import TouchButton from "../../../../../components/atoms/TouchButton";
 import { useTravelContext } from "../../../../../context/TravelContext";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
@@ -176,21 +177,12 @@ const EditNote = ({ itineraryNote, activities, onClose, onScroll, onOpenActivity
             {/* Content */}
             <View className="mb-5">
               <Text className="text-xs font-semibold tracking-wider uppercase">Content</Text>
-              <TextInput
-                mode="outlined"
-                placeholder="Write your note here..."
-                multiline
-                numberOfLines={4}
+              <DescriptionInput
                 value={values.content}
-                onChangeText={handleChange("content")}
-                onBlur={handleBlur("content")}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                theme={{ colors: { onSurfaceVariant: '#888' } }}
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ marginTop: 6, height: 120 }}
-                textAlignVertical="top"
-                contentStyle={{ backgroundColor: "transparent" }}
+                onChange={(text) => setFieldValue("content", text)}
+                label="Content"
+                placeholder="Write your note here..."
+                confirmLabel="Save"
               />
             </View>
 

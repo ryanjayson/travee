@@ -23,6 +23,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
 import { DestinationDto, Travel } from "../../types/TravelDto";
 import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
+import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 
 export interface CreateOrEditProps {
   onClose: () => void;
@@ -636,47 +637,14 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
       <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
-          <TextInput
-            mode="outlined"
-            placeholder="Describe your this trip"
+          <DescriptionInput
             value={formik.values.description}
-            onChangeText={formik.handleChange("description")}
-            onBlur={formik.handleBlur("description")}
-            onFocus={(e) => {
-              setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd({ animated: true });
-              }, 120);
-            }}
-            error={formik.touched.description && Boolean(formik.errors.description)}
+            onChange={(text) => formik.setFieldValue("description", text)}
+            label="Description"
+            placeholder="Describe this trip..."
+            confirmLabel="Add"
             disabled={isSaving}
-            outlineColor="#E0E0E0"
-            activeOutlineColor="#263F69"
-            multiline
-            numberOfLines={4}
-            theme={{
-                  colors: {
-                    onSurfaceVariant: '#888', 
-                  },
-                }}
-                outlineStyle={{
-                  borderWidth: 1,
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: 16,
-                }}
-                style={{
-                  marginTop: 6,
-                  height: 120,
-                  fontSize: 14,
-                }}
-                textAlignVertical="top"
-                contentStyle={{
-                  backgroundColor: "transparent",
-                }}
           />
-          {formik.touched.description && formik.errors.description && (
-            <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.description as string}</Text>
-          )}
-          
         </View>
 
         {mode === "edit" && (
@@ -703,21 +671,13 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
             <View className="mb-5">
               <Text className="text-xs font-semibold tracking-wider uppercase">Notes</Text>
-              <TextInput
-                mode="outlined"
-                placeholder="Additional notes..."
+              <DescriptionInput
                 value={formik.values.notes}
-                onChangeText={formik.handleChange("notes")}
-                onBlur={formik.handleBlur("notes")}
+                onChange={(text) => formik.setFieldValue("notes", text)}
+                label="Notes"
+                placeholder="Additional notes..."
+                confirmLabel="Save"
                 disabled={isSaving}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                multiline
-                numberOfLines={3}
-                theme={{ colors: { onSurfaceVariant: '#888' } }}
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ marginTop: 6, height: 80, fontSize: 14 }}
-                contentStyle={{ backgroundColor: "transparent" }}
               />
             </View>
 
