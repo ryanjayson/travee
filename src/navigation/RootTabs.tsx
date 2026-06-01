@@ -17,6 +17,7 @@ import ChecklistModal from "../features/Travel/components/Forms/Checklist/Modal"
 import ChecklistGroupModal from "../features/Travel/components/Forms/Checklist/ChecklistGroupModal";
 import ActivityModal from "../features/Travel/components/Edit/Itinerary/Activity/Modal";
 import MemberModal from "../features/Travel/components/Forms/Member/Modal";
+import DescriptionModal from "../components/molecules/DescriptionInput/Modal";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
@@ -75,6 +76,8 @@ function RootTabsComponent() {
     closeActivityModal,
     memberModal,
     closeMemberModal,
+    descriptionModal,
+    closeDescriptionModal,
   } = useTravelContext();
   const insets = useSafeAreaInsets();
 
@@ -210,6 +213,16 @@ function RootTabsComponent() {
         editingMember={memberModal.editingMember}
         travelId={memberModal.travelId}
         onClose={closeMemberModal}
+      />
+      <DescriptionModal
+        visible={descriptionModal.visible}
+        onClose={closeDescriptionModal}
+        value={descriptionModal.value}
+        onConfirm={descriptionModal.onConfirm}
+        label={descriptionModal.label}
+        placeholder={descriptionModal.placeholder}
+        confirmLabel={descriptionModal.confirmLabel}
+        maxLength={descriptionModal.maxLength}
       />
     </View>      
  

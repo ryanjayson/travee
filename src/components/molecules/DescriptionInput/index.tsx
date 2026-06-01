@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   TouchableOpacity,
   View,
 } from "react-native";
 import { TextInput } from "react-native-paper";
-import DescriptionModal from "./Modal";
+import { useTravelContext } from "../../../context/TravelContext";
 
 
 interface DescriptionInputProps {
@@ -40,14 +40,22 @@ const DescriptionInput = ({
   maxLength,
   disabled = false,
 }: DescriptionInputProps) => {
-  const [modalVisible, setModalVisible] = useState(false);
+  const { openDescriptionModal } = useTravelContext();
 
   return (
     <View>
       {/* Tappable trigger — looks like a regular TextInput but opens the modal */}
       <TouchableOpacity
         activeOpacity={0.7}
-        onPress={() => !disabled && setModalVisible(true)}
+        onPress={() =>
+          !disabled &&
+          openDescriptionModal(value, onChange, {
+            label,
+            placeholder,
+            confirmLabel,
+            maxLength,
+          })
+        }
         disabled={disabled}
         accessibilityRole="button"
         accessibilityLabel={`${label} input, tap to edit`}
@@ -81,18 +89,6 @@ const DescriptionInput = ({
           />
         </View>
       </TouchableOpacity>
-
-      {/* Full-screen description modal */}
-      <DescriptionModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        value={value}
-        onConfirm={(text) => onChange(text)}
-        label={label}
-        placeholder={placeholder}
-        confirmLabel={confirmLabel}
-        maxLength={maxLength}
-      />
     </View>
   );
 };

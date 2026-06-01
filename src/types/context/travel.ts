@@ -50,6 +50,16 @@ export interface MemberModalState {
   travelId: string;
 }
 
+export interface DescriptionModalState {
+  visible: boolean;
+  value: string;
+  onConfirm: (text: string) => void;
+  label?: string;
+  placeholder?: string;
+  confirmLabel?: string;
+  maxLength?: number;
+}
+
 export interface TravelContextType {
   selectedTravelPlan: TravelPlanDetail | null;
   selectTravelPlan: (travelData: TravelPlanDetail) => void;
@@ -94,6 +104,19 @@ export interface TravelContextType {
     travelId?: string
   ) => void;
   closeMemberModal: () => void;
+
+  descriptionModal: DescriptionModalState;
+  openDescriptionModal: (
+    value: string,
+    onConfirm: (text: string) => void,
+    options?: {
+      label?: string;
+      placeholder?: string;
+      confirmLabel?: string;
+      maxLength?: number;
+    }
+  ) => void;
+  closeDescriptionModal: () => void;
 }
 
 
