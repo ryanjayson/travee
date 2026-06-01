@@ -19,11 +19,7 @@ import { useToast } from "../../../../../context/ToastContext";
 import { ItineraryActivity, ItineraryExpense, ItineraryNote, ChecklistItem } from "../../../types/TravelDto";
 import MapViewer from "../../MapViewer";
 import ViewActivityModal from "./Modal";
-import ActivityModal from "../../Edit/Itinerary/Activity/Modal";
-import ExpenseModal from "../../Forms/Expense/Modal";
-import NoteModal from "../../Forms/Note/Modal";
-import ChecklistModal from "../../Forms/Checklist/Modal";
-import ChecklistGroupModal from "../../Forms/Checklist/ChecklistGroupModal";
+import { useTravelContext } from "../../../../../context/TravelContext";
 
 interface ItineraryActivityProps {
   itineraryActivity: ItineraryActivity;
@@ -72,11 +68,12 @@ const ActivityItemCard = ({
   const [showActivityViewModal, setShowActivityViewModal] =
     useState<boolean>(false);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
-  const [showActivityModal, setShowActivityModal] = useState<boolean>(false);
-  const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
-  const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
-  const [showChecklistModal, setShowChecklistModal] = useState<boolean>(false);
-  const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
+  const {
+    openExpenseModal,
+    openNoteModal,
+    openChecklistModal,
+    openActivityModal,
+  } = useTravelContext();
   const [isAddPressed, setIsAddPressed] = useState<boolean>(false);
   const updateMutation = useUpdateActivityMutation();
 
@@ -377,7 +374,7 @@ const ActivityItemCard = ({
         <TouchableHighlight 
           underlayColor={"#263F69"}
           className={`absolute -bottom-4 left-2xl border border-gray-300 bg-gray-200 px-1px rounded-md z-100`}
-          onPress={() => setShowActivityModal(true)}
+          onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
           onShowUnderlay={() => setIsAddPressed(true)}
           onHideUnderlay={() => setIsAddPressed(false)}
         >
@@ -525,7 +522,19 @@ const ActivityItemCard = ({
             <View className="flex-row justify-between items-center border-t border-gray-200 pt-1.5">
               <View className="flex-row items-center mt-1 flex-wrap gap-5">
                 <TouchableOpacity
-                  onPress={() => setShowExpenseModal(true)}
+                  onPress={() => {
+                    openExpenseModal(
+                      {
+                        activityId: itineraryEventActivity.id!,
+                        travelId: itineraryEventActivity.travelId,
+                        title: "",
+                        amount: 0,
+                        dateTime: new Date(),
+                      } as ItineraryExpense,
+                      itineraryEventActivity.id!,
+                      [itineraryEventActivity]
+                    );
+                  }}
                   activeOpacity={0.6}
                   accessibilityRole="button"
                   accessibilityLabel={`Add Expense to ${itineraryEventActivity.title}`}
@@ -538,7 +547,19 @@ const ActivityItemCard = ({
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={() => setShowChecklistModal(true)}
+                  onPress={() => {
+                    openChecklistModal(
+                      {
+                        activityId: itineraryEventActivity.id!,
+                        travelId: itineraryEventActivity.travelId,
+                        title: "",
+                        isDone: false,
+                        sortOrder: "0",
+                      } as ChecklistItem,
+                      [itineraryEventActivity],
+                      itineraryEventActivity.travelId!
+                    );
+                  }}
                   activeOpacity={0.6}
                   accessibilityRole="button"
                   accessibilityLabel={`Add Checklist item to ${itineraryEventActivity.title}`}
@@ -551,7 +572,16 @@ const ActivityItemCard = ({
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={() => setShowNoteModal(true)}
+                  onPress={() => {
+                    openNoteModal(
+                      {
+                        activityId: itineraryEventActivity.id!,
+                        travelId: itineraryEventActivity.travelId,
+                        title: "",
+                      } as ItineraryNote,
+                      [itineraryEventActivity]
+                    );
+                  }}
                   activeOpacity={0.6}
                   accessibilityRole="button"
                   accessibilityLabel={`Add Note to ${itineraryEventActivity.title}`}
@@ -600,13 +630,6 @@ const ActivityItemCard = ({
         setShowModal={setShowActivityViewModal}
       />
 
-      <ActivityModal
-        visible={showActivityModal}
-        onClose={() => setShowActivityModal(false)}
-        itineraryActivity={null}
-        itinerarySectionId={itineraryActivity.sectionId || undefined}
-      />
-
       {itineraryEventActivity.destinationData?.coordinates && (
         <MapViewer
           visible={showMapModal}
@@ -616,56 +639,6 @@ const ActivityItemCard = ({
           zoom={12}
         />
       )}
-
-      {/* Expense Modal (pre-populated with this activity context) */}
-      <ExpenseModal
-        visible={showExpenseModal}
-        onClose={() => setShowExpenseModal(false)}
-        itineraryExpense={{
-          activityId: itineraryEventActivity.id!,
-          travelId: itineraryEventActivity.travelId,
-          title: "",
-          amount: 0,
-          dateTime: new Date(),
-        } as ItineraryExpense}
-        activityId={itineraryEventActivity.id!}
-        activities={[itineraryEventActivity]}
-      />
-
-      {/* Note Modal (pre-populated with this activity context) */}
-      <NoteModal
-        visible={showNoteModal}
-        onClose={() => setShowNoteModal(false)}
-        itineraryNote={{
-          activityId: itineraryEventActivity.id!,
-          travelId: itineraryEventActivity.travelId,
-          title: "",
-        } as ItineraryNote}
-        activities={[itineraryEventActivity]}
-      />
-
-      {/* Checklist Modal (pre-populated with this activity context) */}
-      <ChecklistModal
-        visible={showChecklistModal}
-        onClose={() => setShowChecklistModal(false)}
-        checklistItem={{
-          activityId: itineraryEventActivity.id!,
-          travelId: itineraryEventActivity.travelId,
-          title: "",
-          isDone: false,
-          sortOrder: "0",
-        } as ChecklistItem}
-        activities={[itineraryEventActivity]}
-        travelId={itineraryEventActivity.travelId!}
-        onOpenNewGroupModal={() => setShowGroupModal(true)}
-      />
-
-      {/* Sibling Checklist Group creation sheet */}
-      <ChecklistGroupModal
-        visible={showGroupModal}
-        onClose={() => setShowGroupModal(false)}
-        travelId={itineraryEventActivity.travelId!}
-      />
     </Animated.View>
   );
 };

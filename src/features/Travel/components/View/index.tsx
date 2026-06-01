@@ -22,12 +22,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
 import { ItineraryExpense, TravelPlan, ChecklistItem } from "../../../Travel/types/TravelDto";
-import ExpenseModal from "../Forms/Expense/Modal";
-import NoteModal from "../Forms/Note/Modal";
-import ChecklistModal from "../Forms/Checklist/Modal";
-import ChecklistGroupModal from "../Forms/Checklist/ChecklistGroupModal";
-import ActivityModal from "../Edit/Itinerary/Activity/Modal";
-import { useSaveChecklistGroupMutation } from "../../hooks/useChecklist";
+import { useTravelContext } from "../../../../context/TravelContext";
 import MapViewer from "../MapViewer";
 import ShareTripModal from "../ShareOverlay/ShareTripModal";
 import ChecklistTab from "./Tabs/ChecklistTab";
@@ -96,33 +91,20 @@ const ViewTravel = ({
     }
   };
 
-  const handleSaveGroup = async (values: { title: string; description: string }) => {
-    await saveGroupMutation.mutateAsync({
-      travelId,
-      title: values.title,
-      description: values.description || undefined,
-      sortOrder: String(Date.now()),
-      userId: "current-user",
-      isOffline: true,
-    });
-    setShowGroupModal(false);
-  };
+
 
   const isMapVisible = setShowMap ? showMap : localShowMap;
   const setMapVisible = setShowMap ? setShowMap : localSetShowMap;
 
   const isShareVisible = setShowShare ? showShare : localShowShare;
   const setShareVisible = setShowShare ? setShowShare : localSetShowShare;
-
+  const {
+    openExpenseModal,
+    openNoteModal,
+    openChecklistModal,
+    openActivityModal,
+  } = useTravelContext();
   const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
-  const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
-  const [selectedExpense, setSelectedExpense] = useState<ItineraryExpense | null>(null);
-  const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
-  const [showActivityModal, setShowActivityModal] = useState<boolean>(false);
-  const [showChecklistModal, setShowChecklistModal] = useState<boolean>(false);
-  const [selectedChecklistItem, setSelectedChecklistItem] = useState<ChecklistItem | null>(null);
-  const [showGroupModal, setShowGroupModal] = useState<boolean>(false);
-  const saveGroupMutation = useSaveChecklistGroupMutation();
   const [activeTabId, setActiveTabId] = useState<string>("details");
 
   // --- Draggable Bottom Sheet Snap Values ---
@@ -266,7 +248,7 @@ const ViewTravel = ({
     return parts[parts.length - 1] || destination;
   };
 
-  const [selectedNote, setSelectedNote] = useState<any | null>(null);
+
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
   const [showMoreButton, setShowMoreButton] = useState<boolean>(false);
   const countryName = extractCountryName(travelPlan.travel.destination);
@@ -475,8 +457,11 @@ const ViewTravel = ({
         <ExpensesTab 
           travelPlan={travelPlan} 
           onEditExpense={(expense) => {
-            setSelectedExpense(expense);
-            setShowExpenseModal(true);
+            openExpenseModal(
+              expense,
+              undefined,
+              travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+            );
           }}
         />
       ),
@@ -498,8 +483,10 @@ const ViewTravel = ({
         <NotesTab
           travelPlan={travelPlan}
           onEditNote={(note) => {
-            setSelectedNote(note);
-            setShowNoteModal(true);
+            openNoteModal(
+              note,
+              travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+            );
           }}
         />
       ),
@@ -621,63 +608,32 @@ const ViewTravel = ({
             expanded={true}
           />
         </View>
-      </Animated.View>
-
-      <TravelActionFAB 
+      </Animated.View>      <TravelActionFAB 
         currentTab={activeTabId}
         open={fabOpen}
         setOpen={setFabOpen}
         travelId={travelId}
         onAddNote={() => {
-          setSelectedNote(null);
-          setShowNoteModal(true);
+          openNoteModal(
+            null,
+            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+          );
         }}
         onAddChecklist={() => {
-          setSelectedChecklistItem(null);
-          setShowChecklistModal(true);
+          openChecklistModal(
+            null,
+            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
+            travelId
+          );
         }}
         onAddExpense={() => {
-          setSelectedExpense(null);
-          setShowExpenseModal(true);
+          openExpenseModal(
+            null,
+            undefined,
+            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+          );
         }}
-        onAddActivity={() => setShowActivityModal(true)}
-      />
-
-      <ExpenseModal
-        visible={showExpenseModal}
-        itineraryExpense={selectedExpense}
-        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
-        onClose={() => setShowExpenseModal(false)}
-      />
-
-      <NoteModal
-        visible={showNoteModal}
-        itineraryNote={selectedNote}
-        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
-        onClose={() => setShowNoteModal(false)}
-      />
-
-      <ChecklistModal
-        visible={showChecklistModal}
-        checklistItem={selectedChecklistItem}
-        activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
-        onClose={() => setShowChecklistModal(false)}
-        travelId={travelId}
-        onOpenNewGroupModal={() => setShowGroupModal(true)}
-      />
-
-      <ChecklistGroupModal
-        visible={showGroupModal}
-        onClose={() => setShowGroupModal(false)}
-        onSave={handleSaveGroup}
-        isSaving={saveGroupMutation.isPending}
-      />
-
-      <ActivityModal
-        visible={showActivityModal}
-        itineraryActivity={null}
-        itinerarySectionId={undefined}
-        onClose={() => setShowActivityModal(false)}
+        onAddActivity={() => openActivityModal(null, undefined)}
       />
 
       <ShareTripModal

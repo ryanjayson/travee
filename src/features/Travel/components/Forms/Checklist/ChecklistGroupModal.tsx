@@ -17,13 +17,13 @@ import {
 import { TextInput, useTheme } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
 import * as Yup from "yup";
+import { useSaveChecklistGroupMutation } from "../../../hooks/useChecklist";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 
 interface ChecklistGroupModalProps {
   visible: boolean;
   onClose: () => void;
-  onSave: (values: { title: string; description: string }) => Promise<void> | void;
-  isSaving?: boolean;
+  travelId: string;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -35,9 +35,10 @@ const GroupSchema = Yup.object().shape({
 const ChecklistGroupModal = ({
   visible,
   onClose,
-  onSave,
-  isSaving = false,
+  travelId,
 }: ChecklistGroupModalProps) => {
+  const saveGroupMutation = useSaveChecklistGroupMutation();
+  const isSaving = saveGroupMutation.isPending;
   const { colors } = useTheme();
   const { keyboardVisible } = useKeyboardVisible();
   const [modalHeight] = useState(screenHeight * 0.55);
@@ -160,8 +161,16 @@ const ChecklistGroupModal = ({
 
   const handleFormSubmit = async (values: { title: string; description: string }, { resetForm }: any) => {
     try {
-      await onSave(values);
+      await saveGroupMutation.mutateAsync({
+        travelId,
+        title: values.title,
+        description: values.description || undefined,
+        sortOrder: String(Date.now()),
+        userId: "current-user",
+        isOffline: true,
+      });
       resetForm();
+      handleCancel();
     } catch (error) {
       console.error("Save Checklist Group Error:", error);
     }

@@ -8,12 +8,71 @@ import React, {
   ReactNode,
   useContext,
 } from "react";
-import { TravelPlanDetail, TravelContextType } from "../types/context/travel";
+import {
+  TravelPlanDetail,
+  TravelContextType,
+  ExpenseModalState,
+  NoteModalState,
+  ChecklistModalState,
+  ChecklistGroupModalState,
+  ActivityModalState,
+  MemberModalState,
+} from "../types/context/travel";
+import {
+  ItineraryExpense,
+  ItineraryActivity,
+  ItineraryNote,
+  ChecklistItem,
+  TripMember,
+} from "../features/Travel/types/TravelDto";
 
 const initialContextValue: TravelContextType = {
   selectedTravelPlan: null,
   selectTravelPlan: (travelData: TravelPlanDetail) => {},
   clearTravelPlan: () => {}, // placeholder function
+  expenseModal: {
+    visible: false,
+    itineraryExpense: null,
+  },
+  openExpenseModal: () => {},
+  closeExpenseModal: () => {},
+
+  noteModal: {
+    visible: false,
+    itineraryNote: null,
+  },
+  openNoteModal: () => {},
+  closeNoteModal: () => {},
+
+  checklistModal: {
+    visible: false,
+    checklistItem: null,
+    travelId: "",
+  },
+  openChecklistModal: () => {},
+  closeChecklistModal: () => {},
+
+  checklistGroupModal: {
+    visible: false,
+    travelId: "",
+  },
+  openChecklistGroupModal: () => {},
+  closeChecklistGroupModal: () => {},
+
+  activityModal: {
+    visible: false,
+    itineraryActivity: null,
+  },
+  openActivityModal: () => {},
+  closeActivityModal: () => {},
+
+  memberModal: {
+    visible: false,
+    editingMember: null,
+    travelId: "",
+  },
+  openMemberModal: () => {},
+  closeMemberModal: () => {},
 };
 
 // Create the typed Context
@@ -31,6 +90,38 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
   const [selectedTravelPlan, setSelectedTravelPlan] =
     useState<TravelPlanDetail | null>(null);
 
+  const [expenseModal, setExpenseModal] = useState<ExpenseModalState>({
+    visible: false,
+    itineraryExpense: null,
+  });
+
+  const [noteModal, setNoteModal] = useState<NoteModalState>({
+    visible: false,
+    itineraryNote: null,
+  });
+
+  const [checklistModal, setChecklistModal] = useState<ChecklistModalState>({
+    visible: false,
+    checklistItem: null,
+    travelId: "",
+  });
+
+  const [checklistGroupModal, setChecklistGroupModal] = useState<ChecklistGroupModalState>({
+    visible: false,
+    travelId: "",
+  });
+
+  const [activityModal, setActivityModal] = useState<ActivityModalState>({
+    visible: false,
+    itineraryActivity: null,
+  });
+
+  const [memberModal, setMemberModal] = useState<MemberModalState>({
+    visible: false,
+    editingMember: null,
+    travelId: "",
+  });
+
   // Use useCallback and apply types to the function arguments
   const selectTravelPlan = useCallback((travelData: TravelPlanDetail) => {
     setSelectedTravelPlan(travelData);
@@ -40,15 +131,180 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     setSelectedTravelPlan(null);
   }, []);
 
+  const openExpenseModal = useCallback(
+    (
+      itineraryExpense: ItineraryExpense | null = null,
+      activityId?: string,
+      activities?: ItineraryActivity[]
+    ) => {
+      setExpenseModal({
+        visible: true,
+        itineraryExpense,
+        activityId,
+        activities,
+      });
+    },
+    []
+  );
+
+  const closeExpenseModal = useCallback(() => {
+    setExpenseModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
+  const openNoteModal = useCallback(
+    (
+      itineraryNote: ItineraryNote | null = null,
+      activities?: ItineraryActivity[]
+    ) => {
+      setNoteModal({
+        visible: true,
+        itineraryNote,
+        activities,
+      });
+    },
+    []
+  );
+
+  const closeNoteModal = useCallback(() => {
+    setNoteModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
+  const openChecklistModal = useCallback(
+    (
+      checklistItem: ChecklistItem | null = null,
+      activities?: ItineraryActivity[],
+      travelId: string = ""
+    ) => {
+      setChecklistModal({
+        visible: true,
+        checklistItem,
+        activities,
+        travelId,
+      });
+    },
+    []
+  );
+
+  const closeChecklistModal = useCallback(() => {
+    setChecklistModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
+  const openChecklistGroupModal = useCallback((travelId: string) => {
+    setChecklistGroupModal({
+      visible: true,
+      travelId,
+    });
+  }, []);
+
+  const closeChecklistGroupModal = useCallback(() => {
+    setChecklistGroupModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
+  const openActivityModal = useCallback(
+    (
+      itineraryActivity: ItineraryActivity | null = null,
+      itinerarySectionId?: string
+    ) => {
+      setActivityModal({
+        visible: true,
+        itineraryActivity,
+        itinerarySectionId,
+      });
+    },
+    []
+  );
+
+  const closeActivityModal = useCallback(() => {
+    setActivityModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
+  const openMemberModal = useCallback(
+    (
+      editingMember: TripMember | null = null,
+      travelId: string = ""
+    ) => {
+      setMemberModal({
+        visible: true,
+        editingMember,
+        travelId,
+      });
+    },
+    []
+  );
+
+  const closeMemberModal = useCallback(() => {
+    setMemberModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
   // Use useMemo and apply the context type to the value
   const contextValue = useMemo<TravelContextType>(
     () => ({
       selectedTravelPlan,
       selectTravelPlan,
       clearTravelPlan,
+      expenseModal,
+      openExpenseModal,
+      closeExpenseModal,
+      noteModal,
+      openNoteModal,
+      closeNoteModal,
+      checklistModal,
+      openChecklistModal,
+      closeChecklistModal,
+      checklistGroupModal,
+      openChecklistGroupModal,
+      closeChecklistGroupModal,
+      activityModal,
+      openActivityModal,
+      closeActivityModal,
+      memberModal,
+      openMemberModal,
+      closeMemberModal,
     }),
-    [selectedTravelPlan, selectTravelPlan, clearTravelPlan]
+    [
+      selectedTravelPlan,
+      selectTravelPlan,
+      clearTravelPlan,
+      expenseModal,
+      openExpenseModal,
+      closeExpenseModal,
+      noteModal,
+      openNoteModal,
+      closeNoteModal,
+      checklistModal,
+      openChecklistModal,
+      closeChecklistModal,
+      checklistGroupModal,
+      openChecklistGroupModal,
+      closeChecklistGroupModal,
+      activityModal,
+      openActivityModal,
+      closeActivityModal,
+      memberModal,
+      openMemberModal,
+      closeMemberModal,
+    ]
   );
+
+
 
   return (
     <TravelContext.Provider value={contextValue}>

@@ -4,9 +4,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { useTravelContext } from "../../../context/TravelContext";
 import CreateTripModal from '../../../features/Travel/components/CreateOrEdit/Modal';
-import ExpenseModal from '../../../features/Travel/components/Forms/Expense/Modal';
-import NoteModal from '../../../features/Travel/components/Forms/Note/Modal';
-import ActivityModal from '../../../features/Travel/components/Edit/Itinerary/Activity/Modal';
 import MapboxDestinationSelector, { MapboxPlace } from '../../../features/Travel/components/MapboxDestinationSelector';
 import ViewTravelModal from "../../../features/Travel/components/View/Modal";
 import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
@@ -20,12 +17,9 @@ interface HeroProps {
 
 const Hero = ({ ongoingTrip }: HeroProps) => {
   const navigation = useNavigation<any>();
-  const { selectedTravelPlan } = useTravelContext();
+  const { selectedTravelPlan, openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
-  const [showExpenseModal, setShowExpenseModal] = useState<boolean>(false);
-  const [showNoteModal, setShowNoteModal] = useState<boolean>(false);
-  const [showActivityModal, setShowActivityModal] = useState<boolean>(false);
   const [showMapSelector, setShowMapSelector] = useState<boolean>(false);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [prefilledTripData, setPrefilledTripData] = useState<any>(null);
@@ -256,26 +250,8 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
               </View>
             </Modal>
 
-            <ExpenseModal
-              visible={showExpenseModal}
-              itineraryExpense={null}
-              activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
-              onClose={() => setShowExpenseModal(false)}
-            />
 
-            <NoteModal
-              visible={showNoteModal}
-              itineraryNote={null}
-              activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
-              onClose={() => setShowNoteModal(false)}
-            />
 
-            <ActivityModal
-              visible={showActivityModal}
-              itineraryActivity={null}
-              itinerarySectionId={undefined}
-              onClose={() => setShowActivityModal(false)}
-            />
           </>
         )}
 
@@ -334,20 +310,48 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         </View>
 
         <View className="items-center">
-          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full border-2 border-gray-300' onPress={() => setShowActivityModal(true)}>
+          <TouchableOpacity 
+            className='items-center justify-center w-6xl h-6xl rounded-full border-2 border-gray-300' 
+            onPress={() => {
+              openActivityModal(null, undefined);
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Add Activity"
+          >
             <Ionicons name="walk-outline" size={24} color="#263F69" />
           </TouchableOpacity>
           <Text className="text-primary text-xs mt-2">Add Activity</Text>
         </View>
        
         <View className="items-center">
-          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' onPress={() => setShowExpenseModal(true)}>
+          <TouchableOpacity 
+            className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' 
+            onPress={() => {
+              openExpenseModal(
+                null,
+                undefined,
+                travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+              );
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Add Expense"
+          >
             <Ionicons name="cash" size={24} color="#263F69" />
           </TouchableOpacity>
           <Text className="text-primary text-xs mt-2">Add Expense</Text>
         </View>
         <View className="items-center">
-          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' onPress={() => setShowNoteModal(true)}>
+          <TouchableOpacity 
+            className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' 
+            onPress={() => {
+              openNoteModal(
+                null,
+                travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+              );
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Add Note"
+          >
             <Ionicons name="document-text-outline" size={24} color="#263F69" />
           </TouchableOpacity>
           <Text className="text-primary text-xs mt-2">Add Note</Text>

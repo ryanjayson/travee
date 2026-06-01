@@ -2,7 +2,7 @@ import * as React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomTabNavigationOptions } from "@react-navigation/bottom-tabs";
-import { TravelProvider } from "../context/TravelContext";
+import { TravelProvider, useTravelContext } from "../context/TravelContext";
 import { Text } from "react-native";
 
 import TravelCatalog from "../features/Travel/screens/TravelCatalog";
@@ -11,6 +11,12 @@ import HomeScreen from "../screens/HomeScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import CreateTravelModal from "../features/Travel/components/CreateOrEdit/Modal";
+import ExpenseModal from "../features/Travel/components/Forms/Expense/Modal";
+import NoteModal from "../features/Travel/components/Forms/Note/Modal";
+import ChecklistModal from "../features/Travel/components/Forms/Checklist/Modal";
+import ChecklistGroupModal from "../features/Travel/components/Forms/Checklist/ChecklistGroupModal";
+import ActivityModal from "../features/Travel/components/Edit/Itinerary/Activity/Modal";
+import MemberModal from "../features/Travel/components/Forms/Member/Modal";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
@@ -46,24 +52,31 @@ function iconForRoute(routeName: keyof RootTabsParamList, focused: boolean) {
 }
 
 const HomeTabScreen = () => {
-  return (
-    <TravelProvider>
-      <HomeScreen />
-    </TravelProvider>
-  );
+  return <HomeScreen />;
 };
 
 const TravelTab = () => {
-  return (
-    <TravelProvider>
-      <TravelCatalog />
-    </TravelProvider>
-  );
+  return <TravelCatalog />;
 };
 
-export function RootTabs() { 
+function RootTabsComponent() { 
   const [visibleCreateTravelModal, setVisibleCreateTravelModal] = React.useState(false);
-const insets = useSafeAreaInsets();
+  const {
+    expenseModal,
+    closeExpenseModal,
+    noteModal,
+    closeNoteModal,
+    checklistModal,
+    closeChecklistModal,
+    checklistGroupModal,
+    openChecklistGroupModal,
+    closeChecklistGroupModal,
+    activityModal,
+    closeActivityModal,
+    memberModal,
+    closeMemberModal,
+  } = useTravelContext();
+  const insets = useSafeAreaInsets();
 
   return (
     <>
@@ -160,9 +173,55 @@ const insets = useSafeAreaInsets();
         showModal={visibleCreateTravelModal}
         setShowModal={setVisibleCreateTravelModal}
       />
+      <ExpenseModal
+        visible={expenseModal.visible}
+        itineraryExpense={expenseModal.itineraryExpense}
+        activityId={expenseModal.activityId}
+        activities={expenseModal.activities}
+        onClose={closeExpenseModal}
+      />
+      <NoteModal
+        visible={noteModal.visible}
+        itineraryNote={noteModal.itineraryNote}
+        activities={noteModal.activities}
+        onClose={closeNoteModal}
+      />
+      <ChecklistModal
+        visible={checklistModal.visible}
+        checklistItem={checklistModal.checklistItem}
+        activities={checklistModal.activities}
+        travelId={checklistModal.travelId}
+        onClose={closeChecklistModal}
+        onOpenNewGroupModal={() => openChecklistGroupModal(checklistModal.travelId)}
+      />
+      <ChecklistGroupModal
+        visible={checklistGroupModal.visible}
+        travelId={checklistGroupModal.travelId}
+        onClose={closeChecklistGroupModal}
+      />
+      <ActivityModal
+        visible={activityModal.visible}
+        itineraryActivity={activityModal.itineraryActivity}
+        itinerarySectionId={activityModal.itinerarySectionId}
+        onClose={closeActivityModal}
+      />
+      <MemberModal
+        visible={memberModal.visible}
+        editingMember={memberModal.editingMember}
+        travelId={memberModal.travelId}
+        onClose={closeMemberModal}
+      />
     </View>      
  
     </>
 
+  );
+}
+
+export function RootTabs() {
+  return (
+    <TravelProvider>
+      <RootTabsComponent />
+    </TravelProvider>
   );
 }

@@ -144,19 +144,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
     }
   };
 
-  // ─── Save Group ─────────────────────────────────────────────────────────────
 
-  const handleSaveGroup = async (values: { title: string; description: string }) => {
-    await saveGroupMutation.mutateAsync({
-      travelId,
-      title: values.title,
-      description: values.description || undefined,
-      sortOrder: String(Date.now()),
-      userId: userToken || "current-user",
-      isOffline: true,
-    });
-    setShowGroupModal(false);
-  };
 
   // ─── Render Items grouped by context ───────────────────────────────────────
 
@@ -472,8 +460,7 @@ const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
       <ChecklistGroupModal
         visible={showGroupModal}
         onClose={() => setShowGroupModal(false)}
-        onSave={handleSaveGroup}
-        isSaving={saveGroupMutation.isPending}
+        travelId={travelId}
       />
 
       <ChecklistModal

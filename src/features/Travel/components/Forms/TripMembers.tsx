@@ -1,108 +1,37 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import {
   ActivityIndicator,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
-  Animated,
-  Dimensions,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
 } from "react-native";
-import { TextInput, useTheme } from "react-native-paper";
-import { StatusBar } from "expo-status-bar";
-import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
+import { useTheme } from "react-native-paper";
 import {
   useDeleteTripMemberMutation,
-  useSaveTripMemberMutation,
   useTripMembers,
 } from "../../hooks/useTripMembers";
 import { TripMember } from "../../types/TravelDto";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import { useToast } from "../../../../context/ToastContext";
+import { useTravelContext } from "../../../../context/TravelContext";
 
 interface TripMembersProps {
   travelId: string;
 }
 
-const { height: screenHeight } = Dimensions.get("window");
-
 const TripMembers = ({ travelId }: TripMembersProps) => {
   const { colors } = useTheme();
   const { confirm } = useConfirm();
   const { showToast } = useToast();
+  const { openMemberModal } = useTravelContext();
   
   // Queries & Mutations
   const { data: tripMembers = [], isLoading, isError, error } = useTripMembers(travelId);
-  const { mutate: saveMember, isPending: isSaving } = useSaveTripMemberMutation();
   const { mutate: deleteMember, isPending: isDeleting } = useDeleteTripMemberMutation(travelId);
 
-  // Form State
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [email, setEmail] = useState("");
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
 
-  const [modalHeight, setModalHeight] = useState(screenHeight * 0.70);
-  const { keyboardVisible, isFloating } = useKeyboardVisible();
-
-  const handleCloseModal = () => {
-    setName("");
-    setDescription("");
-    setEmail("");
-    setEditingMemberId(null);
-    setShowAddForm(false);
-  };
-
-  const handleOpenAddModal = () => {
-    setName("");
-    setDescription("");
-    setEmail("");
-    setEditingMemberId(null);
-    setShowAddForm(true);
-  };
-
-  const handleEditMemberPress = (member: TripMember) => {
-    setName(member.name);
-    setDescription(member.description || "");
-    setEmail(member.email || "");
-    setEditingMemberId(member.id || null);
-    setShowAddForm(true);
-  };
-
-  const handleAddMember = () => {
-    if (!name.trim()) {
-      showToast({ type: "error", message: "Member name is required." });
-      return;
-    }
-
-    if (email.trim() && !/\S+@\S+\.\S+/.test(email)) {
-      showToast({ type: "error", message: "Please enter a valid email address." });
-      return;
-    }
-
-    saveMember(
-      {
-        id: editingMemberId || undefined,
-        travelId,
-        name: name.trim(),
-        description: description.trim() || undefined,
-        email: email.trim() || undefined,
-      },
-      {
-        onSuccess: () => {
-          handleCloseModal();
-        },
-        onError: (err) => {
-          console.error("Save Member Error:", err);
-        },
-      }
-    );
-  };
 
   const handleDeleteMember = async (id: string, memberName: string) => {
     const isConfirmed = await confirm({
@@ -151,7 +80,7 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
       {/* Trigger Button to Open Modal */}
       <View className="mb-6">
         <TouchableOpacity
-          onPress={handleOpenAddModal}
+          onPress={() => openMemberModal(null, travelId)}
           style={{ backgroundColor: colors.primary }}
           className="flex-row items-center justify-center p-4 rounded-[16px] shadow-sm"
           activeOpacity={0.8}
@@ -174,122 +103,6 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
         </TouchableOpacity>
       </View>
 
-      {/* Add Member Bottom Sheet Modal */}
-      <Modal 
-        visible={showAddForm} 
-        transparent
-        animationType="slide"
-        onRequestClose={handleCloseModal}
-      >
-        <StatusBar style="dark" />
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
-          style={{ flex: 1 }}
-        >
-          <View className="flex-1 bg-black/50 justify-end" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-            <Animated.View
-              className="rounded-t-[30px] bg-white overflow-hidden"
-              style={[
-                { height: keyboardVisible ? "100%" : modalHeight },
-                {
-                  paddingTop: keyboardVisible ? 40 : 4
-                }
-              ]}
-            >
-              {/* Modal Header */}
-              <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
-                <View className="flex-row items-center gap-2">
-                  <Text className="text-2xl text-gray-700 font-medium">
-                    {editingMemberId ? "Edit Member" : "Add Member"}
-                  </Text>
-                </View>
-                <TouchableOpacity 
-                  onPress={handleCloseModal} 
-                  disabled={isSaving}
-                  accessibilityRole="button"
-                  accessibilityLabel="Close add member modal"
-                >
-                  <Icon name="clear" size={36} color="#333" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Scrollable Form Body */}
-              <ScrollView 
-                className="flex-1 p-5"
-                contentContainerStyle={{ paddingBottom: 40 }}
-                showsVerticalScrollIndicator={false}
-              >
-                <Text className="text-xs font-semibold tracking-wider uppercase mb-4 text-gray-500">
-                  New Member Details
-                </Text>
-
-                <View className="mb-4">
-                  <TextInput
-                    mode="outlined"
-                    label="Full Name"
-                    placeholder="e.g. John Doe"
-                    value={name}
-                    onChangeText={setName}
-                    outlineColor="#E0E0E0"
-                    activeOutlineColor={colors.primary}
-                    theme={{ colors: { onSurfaceVariant: '#888' } }}
-                    outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-                    style={{ height: 60 }}
-                  />
-                </View>
-
-                <View className="mb-4">
-                  <TextInput
-                    mode="outlined"
-                    label="Email Address (Optional)"
-                    placeholder="e.g. john@example.com"
-                    keyboardType="email-address"
-                    value={email}
-                    onChangeText={setEmail}
-                    outlineColor="#E0E0E0"
-                    activeOutlineColor={colors.primary}
-                    theme={{ colors: { onSurfaceVariant: '#888' } }}
-                    outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-                    style={{ height: 60 }}
-                  />
-                </View>
-
-                <View className="mb-6">
-                  <TextInput
-                    mode="outlined"
-                    label="Description (Optional)"
-                    placeholder="e.g. Co-pilot, Photographer"
-                    value={description}
-                    onChangeText={setDescription}
-                    outlineColor="#E0E0E0"
-                    activeOutlineColor={colors.primary}
-                    theme={{ colors: { onSurfaceVariant: '#888' } }}
-                    outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-                    style={{ height: 60 }}
-                  />
-                </View>
-
-                <TouchableOpacity
-                  onPress={handleAddMember}
-                  disabled={!name.trim() || isSaving}
-                  style={{ backgroundColor: colors.primary, opacity: name.trim() && !isSaving ? 1 : 0.6 }}
-                  className="flex-row items-center justify-center p-4 rounded-[16px] shadow-sm mb-6"
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                >
-                  <View className="flex-row items-center gap-2">
-                    <Icon name="check" size={20} color={colors.onPrimary} />
-                    <Text className="text-white text-base font-semibold">
-                      {isSaving ? "Saving..." : editingMemberId ? "Save Changes" : "Add Member"}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              </ScrollView>
-            </Animated.View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
-
       {/* Members List */}
       <View className="mb-6">
         <Text className="text-xs font-semibold tracking-wider uppercase mb-3 text-gray-500">
@@ -310,7 +123,7 @@ const TripMembers = ({ travelId }: TripMembersProps) => {
                 >
                   <TouchableOpacity 
                     className="flex-row items-center flex-1 pr-4"
-                    onPress={() => handleEditMemberPress(member)}
+                    onPress={() => openMemberModal(member, travelId)}
                     activeOpacity={0.7}
                     accessibilityRole="button"
                     accessibilityLabel={`Edit member ${member.name}`}

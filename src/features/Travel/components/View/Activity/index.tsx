@@ -18,8 +18,7 @@ import ExpensesTab from "./Tabs/ExpensesTab";
 import NotesTab from "./Tabs/NotesTab";
 import ChecklistTab from "./Tabs/ChecklistTab";
 import { FAB, Portal, Provider } from "react-native-paper";
-import ExpenseModal from "../../Forms/Expense/Modal";
-import NoteModal from "../../Forms/Note/Modal";
+import { useTravelContext } from "../../../../../context/TravelContext";
 
 import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import { ActivityType } from "../../../../../types/enums";
@@ -44,40 +43,47 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
   // Edit Activity modal
 
 
-  // Expense modal state – null = closed, object = create/edit
-  const [editingExpense, setEditingExpense] = useState<ItineraryExpense | null>(null);
-
-  // Note modal state – null = closed, object = create/edit
-  const [editingNote, setEditingNote] = useState<ItineraryNote | null>(null);
+  const { openExpenseModal, openNoteModal } = useTravelContext();
 
   // Stable callbacks so tabs don't re-render on unrelated state changes
   const handleOpenAddExpense = useCallback(() => {
     setFabOpen(false);
-    setEditingExpense({
-      activityId: id,
-      travelId: itineraryActivity?.travelId,
-      title: "",
-      amount: 0,
-      dateTime: new Date(),
-    } as ItineraryExpense);
-  }, [id, itineraryActivity?.travelId]);
+    openExpenseModal(
+      {
+        activityId: id,
+        travelId: itineraryActivity?.travelId,
+        title: "",
+        amount: 0,
+        dateTime: new Date(),
+      } as ItineraryExpense,
+      id,
+      itineraryActivity ? [itineraryActivity] : []
+    );
+  }, [id, itineraryActivity, openExpenseModal]);
 
   const handleOpenAddNote = useCallback(() => {
     setFabOpen(false);
-    setEditingNote({
-      activityId: id,
-      travelId: itineraryActivity?.travelId,
-      title: "",
-    } as ItineraryNote);
-  }, [id, itineraryActivity?.travelId]);
+    openNoteModal(
+      {
+        activityId: id,
+        travelId: itineraryActivity?.travelId,
+        title: "",
+      } as ItineraryNote,
+      itineraryActivity ? [itineraryActivity] : []
+    );
+  }, [id, itineraryActivity, openNoteModal]);
 
   const handleEditExpense = useCallback((expense: ItineraryExpense) => {
-    setEditingExpense(expense);
-  }, []);
+    openExpenseModal(
+      expense,
+      id,
+      itineraryActivity ? [itineraryActivity] : []
+    );
+  }, [id, itineraryActivity, openExpenseModal]);
 
   const handleEditNote = useCallback((note: ItineraryNote) => {
-    setEditingNote(note);
-  }, []);
+    openNoteModal(note, itineraryActivity ? [itineraryActivity] : []);
+  }, [itineraryActivity, openNoteModal]);
 
   const renderContent = () => {
     if (isLoading) {
@@ -230,26 +236,8 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
 
 
 
-        {/* Expense Modal (add or edit) */}
-        {itineraryActivity && (
-          <ExpenseModal
-            visible={editingExpense !== null}
-            itineraryExpense={editingExpense}
-            activityId={id}
-            activities={[itineraryActivity]}
-            onClose={() => setEditingExpense(null)}
-          />
-        )}
 
-        {/* Note Modal (add or edit) */}
-        {itineraryActivity && (
-          <NoteModal
-            visible={editingNote !== null}
-            itineraryNote={editingNote}
-            activities={[itineraryActivity]}
-            onClose={() => setEditingNote(null)}
-          />
-        )}
+
       </View>
     </Provider>
   );
