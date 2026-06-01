@@ -33,6 +33,7 @@ import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItem
 import { useTravelPlan } from "../../../../hooks/useTravel";
 import { DestinationDto, Images, ItineraryActivity, Attachment } from "../../../../types/TravelDto";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
+import SectionLookupModal from "../../../Lookups/SectionLookupModal";
 import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../../context/ToastContext";
@@ -45,10 +46,13 @@ interface Place {
 }
 
 interface EditActivityProps {
-  itinerarySectionId?: string;
   itineraryActivity: ItineraryActivity | null;
   onClose: () => void;
+  onOpenSectionModal: (sections: any[], currentId: string | undefined, onSelect: (id?: string) => void) => void;
+  onOpenPrimaryTypeModal: (currentType: ActivityType, onSelect: (type: ActivityType) => void) => void;
+  itinerarySectionId?: string;
   onScroll?: (event: any) => void;
+  onChildModalToggle?: (isOpen: boolean) => void;
 }
 
 const TravelSchema = Yup.object().shape({
@@ -78,6 +82,9 @@ const EditActivity = ({
   itineraryActivity,
   onClose,
   onScroll,
+  onChildModalToggle,
+  onOpenSectionModal,
+  onOpenPrimaryTypeModal,
 }: EditActivityProps) => {
   const toLocalDateStr = (dInput: any) => {
     if (!dInput) return null;
@@ -100,8 +107,6 @@ const EditActivity = ({
 
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
-  const [showPrimaryTypeModal, setShowPrimaryTypeModal] = useState<boolean>(false);
-  const [showSectionModal, setShowSectionModal] = useState<boolean>(false);
   const [isAllDay, setIsAllDay] = useState<boolean>(true);
   const [showTimePickerFor, setShowTimePickerFor] = useState<"startTime" | "endTime" | null>(null);
   const [showCalendarFor, setShowCalendarFor] = useState<"startDate" | "endDate" | null>(null);
@@ -118,12 +123,20 @@ const EditActivity = ({
       "keyboardDidHide",
       () => setIsKeyboardVisible(false)
     );
-
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
   }, []);
+
+  const isAnyChildModalOpen = showDestinationModal || (showCalendarFor !== null);
+
+  useEffect(() => {
+    onChildModalToggle?.(isAnyChildModalOpen);
+  }, [isAnyChildModalOpen, onChildModalToggle]);
+
+
+
   const updateMutation = useUpdateActivityMutation();
   const { selectedTravelPlan } = useTravelContext();
   const { userToken } = useAuth();
@@ -540,7 +553,13 @@ const EditActivity = ({
                 <View className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Itinerary Section</Text>
                   <TouchableOpacity 
-                    onPress={() => hasSections && setShowSectionModal(true)}
+                    onPress={() => {
+                      if (hasSections) {
+                        onOpenSectionModal(sections, values.sectionId, (id) => {
+                          setFieldValue("sectionId", id);
+                        });
+                      }
+                    }}
                     disabled={!hasSections}
                     className={`border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3 ${!hasSections ? 'opacity-50 bg-gray-100' : ''}`}
                     accessibilityRole="button"
@@ -558,7 +577,11 @@ const EditActivity = ({
                 <View className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
                   <TouchableOpacity 
-                    onPress={() => setShowPrimaryTypeModal(true)}
+                    onPress={() => {
+                      onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
+                        setFieldValue("type", type);
+                      });
+                    }}
                     className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
                     accessibilityRole="button"
                   >
@@ -919,63 +942,7 @@ const EditActivity = ({
               </View>
             </Modal>
 
-            <Modal
-              visible={showSectionModal}
-              transparent={true}
-              animationType="slide"
-              onRequestClose={() => setShowSectionModal(false)}
-            >
-              <View className="flex-1 justify-end" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-                <View className="bg-white rounded-t-[30px] max-h-[50%] min-h-[40%] w-full overflow-hidden">
-                  <View className="flex-row justify-between items-center p-6 border-b border-gray-200">
-                    <Text className="text-xl font-medium">
-                      Trip Sections
-                    </Text>
-                    <TouchableOpacity 
-                      onPress={() => setShowSectionModal(false)}
-                      accessibilityRole="button"
-                      accessibilityLabel="Close section selection modal"
-                    >
-                      <Icon name="close" size={24} color={colors.onSurfaceVariant} />
-                    </TouchableOpacity>
-                  </View>
-                  <ScrollView>
-                    {sections.map((section) => (
-                      <TouchableOpacity
-                        key={section.id}
-                        className="p-5 border-b border-gray-100 flex-row items-center gap-4"
-                        onPress={() => {
-                          setFieldValue("sectionId", section.id);
-                          setShowSectionModal(false);
-                        }}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Select section ${section.title}`}
-                      >
-                        <Icon name="folder" size={24} color="#263F69" />
-                        <Text className="text-base text-gray-800 flex-1">
-                           {section?.isDefaultSection ? "(Ungrouped)" : section.title}
-                        </Text>
-                        {values.sectionId === section.id && (
-                          <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              </View>
-            </Modal>
 
-            <ActivityTypeLookupModal
-              visible={showPrimaryTypeModal}
-              onClose={() => setShowPrimaryTypeModal(false)}
-              selectedType={values.type as ActivityType}
-              onSelect={(type) => {
-                setValues({
-                  ...values,
-                  type,
-                });
-              }}
-            />
 
             <DateTimePickerModal
               isVisible={showTimePickerFor !== null}

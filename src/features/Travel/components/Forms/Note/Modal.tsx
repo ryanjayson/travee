@@ -16,6 +16,7 @@ import {
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 import { ItineraryActivity, ItineraryNote } from "../../../types/TravelDto";
 import EditNote from "./index";
+import ActivityLookupModal from "../../Lookups/ActivityLookupModal";
 
 interface NoteModalProps {
   visible: boolean;
@@ -34,6 +35,46 @@ const NoteModal = ({
 }: NoteModalProps) => {
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
   const { keyboardVisible } = useKeyboardVisible();
+  const [isChildModalOpen, setIsChildModalOpen] = useState(false);
+  const childModalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleChildModalToggle = (isOpen: boolean) => {
+    if (childModalTimeoutRef.current) {
+      clearTimeout(childModalTimeoutRef.current);
+      childModalTimeoutRef.current = null;
+    }
+
+    if (isOpen) {
+      setIsChildModalOpen(true);
+    } else {
+      childModalTimeoutRef.current = setTimeout(() => {
+        setIsChildModalOpen(false);
+      }, 300);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (childModalTimeoutRef.current) {
+        clearTimeout(childModalTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [selectedActivityId, setSelectedActivityId] = useState<string | undefined>(undefined);
+  const [onSelectActivityCallback, setOnSelectActivityCallback] = useState<((id?: string) => void) | null>(null);
+
+  const handleOpenActivityModal = (currentId: string | undefined, onSelect: (id?: string) => void) => {
+    setSelectedActivityId(currentId);
+    setOnSelectActivityCallback(() => onSelect || null);
+    setShowActivityModal(true);
+  };
+
+  useEffect(() => {
+    handleChildModalToggle(showActivityModal);
+  }, [showActivityModal]);
+
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
@@ -59,7 +100,7 @@ const NoteModal = ({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        if (keyboardVisible) return false;
+        if (keyboardVisible || isChildModalOpen) return false;
         const { dy } = gestureState;
         // If we are at the top and swipe down
         if (isAtTop.current && dy > 8) {
@@ -159,79 +200,98 @@ const NoteModal = ({
   });
 
   return (
-    <Modal 
-      visible={visible} 
-      transparent 
-      animationType="none"
-      onRequestClose={handleCancel}
-    >
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
-        style={{ flex: 1 }}
+    <>
+      <Modal 
+        visible={visible} 
+        transparent 
+        animationType="none"
+        onRequestClose={() => {
+          if (isChildModalOpen) return;
+          handleCancel();
+        }}
       >
-        <Animated.View 
-          className="flex-1 justify-end" 
-          style={{ 
-            backgroundColor: "rgba(0,0,0,0.5)",
-            opacity: backdropOpacity 
-          }}
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+          style={{ flex: 1 }}
         >
-          <Animated.View
-            {...sheetPanResponder.panHandlers}
-            className="rounded-t-[30px] bg-white"
-            style={[
-              { height: keyboardVisible ? "100%" : modalHeight },
-              {
-                paddingTop: keyboardVisible ? 24 : 0,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -8 },
-                shadowOpacity: 0.12,
-                shadowRadius: 16,
-                elevation: 24,
-                transform: [{ translateY }],
-              }
-            ]}
+          <Animated.View 
+            className="flex-1 justify-end" 
+            style={{ 
+              backgroundColor: "rgba(0,0,0,0.5)",
+              opacity: backdropOpacity 
+            }}
           >
-            <StatusBar style="dark" />
-            
-            {/* Drag Handle Area */}
-            {!keyboardVisible && (
-              <View 
-                {...dragPanResponder.panHandlers}
-                className="w-full items-center py-4 bg-white rounded-t-[30px]"
-              >
-                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
-              </View>
-            )}
+            <Animated.View
+              {...sheetPanResponder.panHandlers}
+              className="rounded-t-[30px] bg-white"
+              style={[
+                { height: keyboardVisible ? "100%" : modalHeight },
+                {
+                  paddingTop: keyboardVisible ? 24 : 0,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: -8 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 16,
+                  elevation: 24,
+                  transform: [{ translateY }],
+                }
+              ]}
+            >
+              <StatusBar style="dark" />
+              
+              {/* Drag Handle Area */}
+              {!keyboardVisible && (
+                <View 
+                  {...dragPanResponder.panHandlers}
+                  className="w-full items-center py-4 bg-white rounded-t-[30px]"
+                >
+                  <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+                </View>
+              )}
 
-            <View
-            {...(!keyboardVisible && dragPanResponder.panHandlers)}
-            className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
-              <View className="flex-row items-center gap-2">
-                <Text className="text-2xl text-gray-700 font-medium">
-                  {itineraryNote?.id ? "Edit Note" : "Add Note"}
-                </Text>
+              <View
+              {...(!keyboardVisible && dragPanResponder.panHandlers)}
+              className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-2xl text-gray-700 font-medium">
+                    {itineraryNote?.id ? "Edit Note" : "Add Note"}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={handleCancel}>
+                  <Icon name="clear" size={36} color={"#333"} />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={handleCancel}>
-                <Icon name="clear" size={36} color={"#333"} />
-              </TouchableOpacity>
-            </View>
 
-            <View className="flex-1">
-              <EditNote
-                itineraryNote={itineraryNote}
-                activities={activities}
-                onClose={onClose}
-                onScroll={(e) => {
-                  const y = e.nativeEvent.contentOffset.y;
-                  isAtTop.current = y <= 0;
-                }}
-              />
-            </View>
+              <View className="flex-1">
+                <EditNote
+                  itineraryNote={itineraryNote}
+                  activities={activities}
+                  onClose={onClose}
+                  onOpenActivityModal={handleOpenActivityModal}
+                  onScroll={(e) => {
+                    const y = e.nativeEvent.contentOffset.y;
+                    isAtTop.current = y <= 0;
+                  }}
+                />
+              </View>
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </Modal>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      <ActivityLookupModal
+        visible={showActivityModal}
+        onClose={() => setShowActivityModal(false)}
+        activities={activities}
+        selectedActivityId={selectedActivityId}
+        onSelect={(activityId) => {
+          if (onSelectActivityCallback) {
+            onSelectActivityCallback(activityId);
+          }
+          setShowActivityModal(false);
+        }}
+      />
+    </>
   );
 };
 

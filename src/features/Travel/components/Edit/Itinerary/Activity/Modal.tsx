@@ -19,6 +19,9 @@ import * as ImagePicker from "expo-image-picker";
 import { parseExtractedText } from "../../../../utils/ocrParser";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useTheme } from "react-native-paper";
+import { ActivityType } from "../../../../../../types/enums";
+import SectionLookupModal from "../../../Lookups/SectionLookupModal";
+import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
 
 interface ActivityModalProps {
   visible: boolean;
@@ -40,6 +43,61 @@ const ActivityModal = ({
   const [error, setError] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<Partial<ItineraryActivity> | null>(null);
   const [isOcrPending, setIsOcrPending] = useState(false);
+  const [isChildModalOpen, setIsChildModalOpen] = useState(false);
+  const childModalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleChildModalToggle = (isOpen: boolean) => {
+    if (childModalTimeoutRef.current) {
+      clearTimeout(childModalTimeoutRef.current);
+      childModalTimeoutRef.current = null;
+    }
+
+    if (isOpen) {
+      setIsChildModalOpen(true);
+    } else {
+      childModalTimeoutRef.current = setTimeout(() => {
+        setIsChildModalOpen(false);
+      }, 300);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (childModalTimeoutRef.current) {
+        clearTimeout(childModalTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Hoisted lookup modal states & handlers
+  const [showSectionModal, setShowSectionModal] = useState(false);
+  const [showPrimaryTypeModal, setShowPrimaryTypeModal] = useState(false);
+
+  const [sections, setSections] = useState<any[]>([]);
+  const [selectedSectionId, setSelectedSectionId] = useState<string | undefined>(undefined);
+  const [onSelectSectionCallback, setOnSelectSectionCallback] = useState<((id?: string) => void) | null>(null);
+
+  const [selectedActivityType, setSelectedActivityType] = useState<ActivityType | undefined>(undefined);
+  const [onSelectActivityTypeCallback, setOnSelectActivityTypeCallback] = useState<((type: ActivityType) => void) | null>(null);
+
+  const handleOpenSectionModal = (sectionsList: any[], currentId?: string, onSelect?: (id?: string) => void) => {
+    setSections(sectionsList);
+    setSelectedSectionId(currentId);
+    setOnSelectSectionCallback(() => onSelect || null);
+    setShowSectionModal(true);
+  };
+
+  const handleOpenPrimaryTypeModal = (currentType?: ActivityType, onSelect?: (type: ActivityType) => void) => {
+    setSelectedActivityType(currentType);
+    setOnSelectActivityTypeCallback(() => onSelect || null);
+    setShowPrimaryTypeModal(true);
+  };
+
+  useEffect(() => {
+    const isAnyChildOpen = showSectionModal || showPrimaryTypeModal;
+    handleChildModalToggle(isAnyChildOpen);
+  }, [showSectionModal, showPrimaryTypeModal]);
+
   const { confirm } = useConfirm();
   const { colors } = useTheme();
   const { keyboardVisible } = useKeyboardVisible();
@@ -68,10 +126,10 @@ const ActivityModal = ({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        if (keyboardVisible) return false;
-        const { dy } = gestureState;
-        // If we are at the top and swipe down
-        if (isAtTop.current && dy > 8) {
+        if (keyboardVisible || isChildModalOpen) return false;
+        const { dx, dy } = gestureState;
+        // Verify downward swipe and ensure vertical dominance to not block other gestures
+        if (isAtTop.current && dy > 8 && Math.abs(dy) > Math.abs(dx)) {
           return true;
         }
         return false;
@@ -288,88 +346,122 @@ const ActivityModal = ({
     extrapolate: "clamp",
   });
 
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} transparent animationType="none"
-      onRequestClose={handleCancel}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
-        style={{ flex: 1 }}
-      >
-        <Animated.View 
-          className="flex-1 justify-end" 
-          style={{ 
-            backgroundColor: "rgba(0,0,0,0.5)",
-            opacity: backdropOpacity 
-          }}
+    <>
+      <Modal visible={visible} transparent animationType="none"
+        onRequestClose={() => {
+          if (isChildModalOpen) return;
+          handleCancel();
+        }}>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+          style={{ flex: 1 }}
         >
-          <Animated.View
-            {...sheetPanResponder.panHandlers}
-            className="rounded-t-[30px] bg-white"
-            style={[
-              { height: "100%"},
-              {
-                paddingTop: keyboardVisible ? 24 : 0,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -8 },
-                shadowOpacity: 0.12,
-                shadowRadius: 16,
-                elevation: 24,
-                transform: [{ translateY }],
-              }
-            ]}
+          <Animated.View 
+            className="flex-1 justify-end" 
+            style={{ 
+              backgroundColor: "rgba(0,0,0,0.5)",
+              opacity: backdropOpacity 
+            }}
           >
-            <StatusBar style="dark" />
-            
-            {/* Drag Handle Area */}
-            {!keyboardVisible && (
-              <View 
-                {...dragPanResponder.panHandlers}
-                className="w-full items-center py-4 bg-white rounded-t-[30px]"
-              >
-                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
-              </View>
-            )}
-
-            <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
-                <View className="flex-row items-center gap-2">
-                    <Text className="text-2xl text-gray-700 font-medium">
-                        {itineraryActivity?.id ? "Edit Activity" : "Add Activity"}
-                    </Text>
+            <Animated.View
+              {...sheetPanResponder.panHandlers}
+              className="rounded-t-[30px] bg-white"
+              style={[
+                { height: "100%"},
+                {
+                  paddingTop: keyboardVisible ? 24 : 0,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: -8 },
+                  shadowOpacity: 0.12,
+                  shadowRadius: 16,
+                  elevation: 24,
+                  transform: [{ translateY }],
+                }
+              ]}
+            >
+              <StatusBar style="dark" />
+              
+              {/* Drag Handle Area */}
+              {!keyboardVisible && (
+                <View 
+                  {...dragPanResponder.panHandlers}
+                  className="w-full items-center py-4 bg-white rounded-t-[30px]"
+                >
+                  <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
                 </View>
-                <View className="flex-row items-center gap-4">
-                    {isOcrPending ? (
-                      <ActivityIndicator size="small" color={colors.primary} />
-                    ) : (
-                      <TouchableOpacity 
-                        onPress={handleTextExtraction} 
-                        disabled={isSaving}
-                        accessibilityRole="button"
-                        accessibilityLabel="Extract details from booking receipt or ticket image"
-                      >
-                          <Icon name="camera-alt" size={28} color={colors.primary} />
+              )}
+
+              <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
+                  <View className="flex-row items-center gap-2">
+                      <Text className="text-2xl text-gray-700 font-medium">
+                          {itineraryActivity?.id ? "Edit Activity" : "Add Activity"}
+                      </Text>
+                  </View>
+                  <View className="flex-row items-center gap-4">
+                      {isOcrPending ? (
+                        <ActivityIndicator size="small" color={colors.primary} />
+                      ) : (
+                        <TouchableOpacity 
+                          onPress={handleTextExtraction} 
+                          disabled={isSaving}
+                          accessibilityRole="button"
+                          accessibilityLabel="Extract details from booking receipt or ticket image"
+                        >
+                            <Icon name="camera-alt" size={28} color={colors.primary} />
+                        </TouchableOpacity>
+                      )}
+                      <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
+                          <Icon name="clear" size={36} color={colors.onSurfaceVariant || "#333"} />
                       </TouchableOpacity>
-                    )}
-                    <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-                        <Icon name="clear" size={36} color={colors.onSurfaceVariant || "#333"} />
-                    </TouchableOpacity>
-                </View>
-            </View>
-
-            <View className="flex-1">
-                 <EditActivity
-                itinerarySectionId={itinerarySectionId}
-                itineraryActivity={extractedData ? { ...itineraryActivity, ...extractedData } as any : itineraryActivity}
-                onClose={onClose}
-                onScroll={(e) => {
-                  const y = e.nativeEvent.contentOffset.y;
-                  isAtTop.current = y <= 0;
-                }}
-              />
+                  </View>
               </View>
+
+              <View className="flex-1">
+                <EditActivity
+                  itinerarySectionId={itinerarySectionId}
+                  itineraryActivity={extractedData ? { ...itineraryActivity, ...extractedData } as any : itineraryActivity}
+                  onClose={onClose}
+                  onOpenSectionModal={handleOpenSectionModal}
+                  onOpenPrimaryTypeModal={handleOpenPrimaryTypeModal}
+                  onScroll={(e) => {
+                    const y = e.nativeEvent.contentOffset.y;
+                    isAtTop.current = y <= 0;
+                  }}
+                />
+              </View>
+            </Animated.View>
           </Animated.View>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </Modal>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      <SectionLookupModal
+        visible={showSectionModal}
+        onClose={() => setShowSectionModal(false)}
+        sections={sections}
+        selectedSectionId={selectedSectionId}
+        onSelect={(sectionId) => {
+          if (onSelectSectionCallback) {
+            onSelectSectionCallback(sectionId);
+          }
+          setShowSectionModal(false);
+        }}
+      />
+
+      <ActivityTypeLookupModal
+        visible={showPrimaryTypeModal}
+        onClose={() => setShowPrimaryTypeModal(false)}
+        selectedType={selectedActivityType}
+        onSelect={(type) => {
+          if (onSelectActivityTypeCallback) {
+            onSelectActivityTypeCallback(type);
+          }
+          setShowPrimaryTypeModal(false);
+        }}
+      />
+    </>
   );
 };
 

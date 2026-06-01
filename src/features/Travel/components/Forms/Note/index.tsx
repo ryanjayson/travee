@@ -21,11 +21,11 @@ import { useDeleteNoteMutation, useSaveNoteMutation } from "../../../hooks/useNo
 import { ItineraryActivity, ItineraryNote } from "../../../types/TravelDto";
 import { useConfirm } from "../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../context/ToastContext";
-
 interface EditNoteProps {
   itineraryNote: ItineraryNote | null;
-  activities?: ItineraryActivity[];
   onClose: () => void;
+  onOpenActivityModal: (currentId: string | undefined, onSelect: (id?: string) => void) => void;
+  activities?: ItineraryActivity[];
   onScroll?: (event: any) => void;
 }
 
@@ -43,12 +43,12 @@ export interface NoteFormValues {
   userId: string;
 }
 
-const EditNote = ({ itineraryNote, activities, onClose, onScroll }: EditNoteProps) => {
+const EditNote = ({ itineraryNote, activities, onClose, onScroll, onOpenActivityModal }: EditNoteProps) => {
   const { selectedTravelPlan } = useTravelContext();
   const { userToken } = useAuth();
   const saveMutation = useSaveNoteMutation();
   const deleteMutation = useDeleteNoteMutation();
-  const [showActivityModal, setShowActivityModal] = useState(false);
+
   const { confirm } = useConfirm();
   const { showToast } = useToast();
 
@@ -127,7 +127,11 @@ const EditNote = ({ itineraryNote, activities, onClose, onScroll }: EditNoteProp
             <View className="mb-5">
               <Text className="text-xs font-semibold tracking-wider uppercase">Linked Activity (Optional)</Text>
               <TouchableOpacity
-                onPress={() => setShowActivityModal(true)}
+                onPress={() => {
+                  onOpenActivityModal(values.activityId, (id) => {
+                    setFieldValue("activityId", id);
+                  });
+                }}
                 className="mt-2 border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-4 flex-row items-center gap-3 h-7xl"
                 accessibilityRole="button"
               >
@@ -259,61 +263,7 @@ const EditNote = ({ itineraryNote, activities, onClose, onScroll }: EditNoteProp
               className="h-7xl p-6"
             />
           </View>
-                
-
-          {/* Activity Selection Modal */}
-          <Modal
-            visible={showActivityModal}
-            transparent
-            animationType="fade"
-            onRequestClose={() => setShowActivityModal(false)}
-          >
-            <View className="flex-1 justify-center items-center bg-black/50 p-5">
-              <View className="bg-white rounded-[30px] shadow-lg w-full max-h-[80%] overflow-hidden">
-                <View className="flex-row justify-between items-center p-4 border-b border-gray-200">
-                  <Text className="text-lg font-bold text-[#263F69]">Select Activity</Text>
-                  <TouchableOpacity accessibilityRole="button" onPress={() => setShowActivityModal(false)}>
-                    <Icon name="close" size={24} color="#666" />
-                  </TouchableOpacity>
-                </View>
-                <ScrollView>
-                  <TouchableOpacity
-                    className="p-4 border-b border-gray-100 flex-row items-center gap-4"
-                    accessibilityRole="button"
-                    onPress={() => { setFieldValue("activityId", undefined); setShowActivityModal(false); }}
-                  >
-                    <Icon name="event-busy" size={24} color="#666" />
-                    <Text className="text-base text-gray-800">None</Text>
-                    {!values.activityId && (
-                      <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
-                    )}
-                  </TouchableOpacity>
-                  {activities?.map((activity) => (
-                    <TouchableOpacity
-                      key={activity.id}
-                      className="p-4 border-b border-gray-100 flex-row items-center gap-4"
-                      accessibilityRole="button"
-                      onPress={() => { setFieldValue("activityId", activity.id); setShowActivityModal(false); }}
-                    >
-                      <Icon name="event-note" size={24} color="#183B7A" />
-                      <View className="flex-1">
-                        <Text className="text-base text-gray-800 font-medium">{activity.title}</Text>
-                        {activity.startDate && (
-                          <Text className="text-xs text-gray-500">
-                            {new Date(activity.startDate).toLocaleDateString()}
-                          </Text>
-                        )}
-                      </View>
-                      {values.activityId === activity.id && (
-                        <Icon name="check" size={24} color="#263F69" style={{ marginLeft: "auto" }} />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </View>
-          </Modal>
-        </View>
+                        </View>
       )}
     </Formik>
   );

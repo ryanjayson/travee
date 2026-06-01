@@ -13,29 +13,39 @@ import {
   TouchableOpacity,
   View,
   Text,
+  ActivityIndicator,
 } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../components/ActivityIcon";
-import { ItineraryActivity } from "../../types/TravelDto";
+import { ActivityType } from "../../../../types/enums";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 
-interface ActivityLookupModalProps {
+interface ContextOption {
+  id: string;
+  label: string;
+  type: "group" | "activity";
+  activityType?: ActivityType;
+}
+
+interface ContextLookupModalProps {
   visible: boolean;
   onClose: () => void;
-  activities?: ItineraryActivity[];
-  selectedActivityId?: string;
-  onSelect: (activityId?: string) => void;
+  options: ContextOption[];
+  selectedOptionId?: string;
+  onSelect: (option: ContextOption) => void;
+  isLoading?: boolean;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
 
-const ActivityLookupModal = ({
+const ContextLookupModal = ({
   visible,
   onClose,
-  activities = [],
-  selectedActivityId,
+  options = [],
+  selectedOptionId,
   onSelect,
-}: ActivityLookupModalProps) => {
+  isLoading = false,
+}: ContextLookupModalProps) => {
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [modalHeight] = useState(screenHeight * 0.78);
@@ -159,15 +169,14 @@ const ActivityLookupModal = ({
     });
   };
 
-  const handleSelect = (activityId?: string) => {
-    onSelect(activityId);
+  const handleSelect = (option: ContextOption) => {
+    onSelect(option);
     handleCancel();
   };
 
-  const filteredActivities = activities.filter((activity) =>
-    activity.title.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
   const backdropOpacity = translateY.interpolate({
     inputRange: [0, screenHeight],
     outputRange: [1, 0],
@@ -233,7 +242,7 @@ const ActivityLookupModal = ({
                   className="text-2xl font-bold"
                   style={{ color: colors.primary || "#263F69" }}
                 >
-                  Select Activity
+                  Categorise Task
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
@@ -245,7 +254,7 @@ const ActivityLookupModal = ({
             <View className="px-6 py-4 border-b border-gray-200">
               <TextInput
                 mode="outlined"
-                placeholder="Search for trip activity to link"
+                placeholder="Search groups or activities..."
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 right={
@@ -275,30 +284,46 @@ const ActivityLookupModal = ({
                 scrollEventThrottle={16}
                 keyboardShouldPersistTaps="handled"
               >
-                {filteredActivities.map((activity) => (
-                  <TouchableOpacity
-                    key={activity.id}
-                    className="p-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
-                    onPress={() => handleSelect(activity.id)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Select activity ${activity.title}`}
-                  >
-                    <ActivityIcon type={activity.type as any} size={24} />
-                    <View className="flex-1">
-                      <Text className="text-base text-gray-800 font-medium">
-                        {activity.title}
-                      </Text>
-                      {activity.startDate && (
-                        <Text className="text-xs text-gray-500">
-                          {new Date(activity.startDate).toLocaleDateString()}
-                        </Text>
+                {isLoading ? (
+                  <View className="p-10 items-center">
+                    <ActivityIndicator size="large" color={colors.primary} />
+                  </View>
+                ) : filteredOptions.length === 0 ? (
+                  <View className="p-10 items-center">
+                    <Text className="text-gray-400 text-sm">No matches found</Text>
+                  </View>
+                ) : (
+                  filteredOptions.map((option) => (
+                    <TouchableOpacity
+                      key={`${option.type}-${option.id}`}
+                      className="p-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
+                      onPress={() => handleSelect(option)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Select ${option.type} ${option.label}`}
+                    >
+                      {option.type === "group" ? (
+                        <Icon name="folder" size={24} color="#263F69" />
+                      ) : (
+                        <ActivityIcon
+                          type={(option.activityType ?? ActivityType.none) as ActivityType}
+                          size={24}
+                          color="#666"
+                        />
                       )}
-                    </View>
-                    {selectedActivityId === activity.id && (
-                      <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
-                    )}
-                  </TouchableOpacity>
-                ))}
+                      <View className="flex-1">
+                        <Text className="text-base text-gray-800 font-medium">
+                          {option.label}
+                        </Text>
+                        <Text className="text-xs text-gray-400 capitalize">
+                          {option.type}
+                        </Text>
+                      </View>
+                      {selectedOptionId === option.id && (
+                        <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
+                      )}
+                    </TouchableOpacity>
+                  ))
+                )}
               </ScrollView>
             </View>
           </Animated.View>
@@ -308,4 +333,5 @@ const ActivityLookupModal = ({
   );
 };
 
-export default ActivityLookupModal;
+export default ContextLookupModal;
+export type { ContextOption };

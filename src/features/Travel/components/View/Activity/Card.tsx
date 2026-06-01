@@ -391,9 +391,9 @@ const ActivityItemCard = ({
             {!isLastItem ? (
               <View className="w-1.5 items-center h-full absolute">
                 {isFirstItem ? (
-                  <View className={`absolute h-1/2 w-1px top-1/2 left-${viewMode === 'narrow' ? '[29px]' : '4xl'} z-0 border-l border-dashed border-gray-300`}></View>
+                  <View className={`absolute h-1/2 w-1px top-1/2 ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-gray-300`}></View>
                 ) : (
-                  <View className={`absolute h-full w-1px left-${viewMode === 'narrow' ? '[29px]' : '4xl'} z-0 border-l border-dashed border-[#ccc]`}>
+                  <View className={`absolute h-full w-1px ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-[#ccc]`}>
                   </View>
                 )}
               </View>
@@ -403,7 +403,7 @@ const ActivityItemCard = ({
                   <>
                   </>
                 ) : (
-                  <View className={`absolute h-1/2 w-1px left-${viewMode === 'narrow' ? '[29px]' : '4xl'} top-0 z-0 border-l border-dashed border-[#ccc]`}>
+                  <View className={`absolute h-1/2 w-1px ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} top-0 z-0 border-l border-dashed border-[#ccc]`}>
                   </View>
                 )}
               </View>
@@ -494,7 +494,7 @@ const ActivityItemCard = ({
               <View className="flex-2">
                 <View className="flex-row justify-between items-start mb-1 gap-x-2">
                   <Text className={`text-lg font-semibold text-[#333] leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
-                      {itineraryEventActivity.title} = dsds
+                      {itineraryEventActivity.title}
                   </Text>
                 </View>
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
