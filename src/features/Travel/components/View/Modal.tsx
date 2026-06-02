@@ -184,29 +184,32 @@ const ViewTripModal = ({
             borderBottomColor: headerBorder,
           }}
         >
-          <TouchableOpacity
+
+      <TouchableOpacity
             className="pr-3.5 p-0.5 left-2"
             onPress={handleCancel}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Close travel plan details"
+            disabled={expanded}
           >
             <Animated.View 
               style={{ 
-                transform: [{ rotate: iconRotation }], 
+                // transform: [{ rotate: iconRotation }], 
                 width: 32, 
                 height: 32, 
                 justifyContent: 'center', 
-                alignItems: 'center' 
+                alignItems: 'center',
+                opacity: closeOpacity,
               }}
             >
-              <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
+              <Animated.View style={{ position: 'absolute' }}>
                 <Icon name="close" size={32} color={iconColor} />
-              </Animated.View>
-              <Animated.View style={{ position: 'absolute', opacity: downOpacity }}>
-                <Icon name="keyboard-arrow-up" size={32} color="#000000" />
               </Animated.View>
             </Animated.View>
           </TouchableOpacity>
+    
           <View style={{ opacity: titleOpacity }}>
             <Text className="text-xl font-medium  min-w-[68%] w-[68%]" ellipsizeMode="tail" numberOfLines={1}>
               {travelPlan && `${travelPlan.travel.title}`}
@@ -217,6 +220,8 @@ const ViewTripModal = ({
             onPress={() => setShowTravelNavigationModal(true)}  
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="More options"
           >
             <Animated.View style={{ width: 28, height: 28, justifyContent: 'center', alignItems: 'center' }}>
               <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
@@ -247,7 +252,7 @@ const ViewTripModal = ({
             <Icon name="map" size={28} color={iconColor} />
           </TouchableOpacity> */}
         </View>
-        <View className="bg-white flex-1 mt-[-82px]">
+        <View className="bg-white flex-1 mt-[-82px] ">
           {travelPlan && (
             <ViewTravel 
               travelPlan={travelPlan} 

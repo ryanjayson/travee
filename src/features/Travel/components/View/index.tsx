@@ -157,6 +157,13 @@ const ViewTravel = ({
     extrapolate: "clamp",
   });
 
+  // Smoothly reveal the down icon as the sheet approaches full screen height
+  const downIconOpacity = translateY.interpolate({
+    inputRange: [SNAP_MAX, SNAP_MID],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => {
@@ -555,6 +562,8 @@ const ViewTravel = ({
           },
         ]}
       >
+
+        
         {/* Drag Handle Area */}
         <Animated.View 
           className="w-full items-center bg-white"
@@ -573,9 +582,56 @@ const ViewTravel = ({
           />
         </Animated.View>
 
+
+        <Animated.View
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: insets.top,
+              // bottom: 0,
+              justifyContent: 'center',
+              opacity: downIconOpacity,
+            }}
+            pointerEvents={currentSnap === SNAP_MAX ? "auto" : "none"}
+          >
+            <TouchableOpacity
+              className="pr-3.5 p-0.5"
+              onPress={() => snapTo(SNAP_MID)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="Collapse trip details sheet"
+            >
+              <View 
+                style={{ 
+                  width: 32, 
+                  height: 32, 
+                  justifyContent: 'center', 
+                  alignItems: 'center' 
+                }}
+              >
+                <Icon name="keyboard-arrow-down" size={32} color="#263F69" />
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+          
+          
+
         {/* Trip Title & Summary */}
-        <View className="px-6 pb-4 bg-white flex-row justify-between items-start">
-          <View className="flex-1 mr-4">
+        <View className="px-6 pb-4 bg-white flex-row justify-between items-start relative">
+
+          <Animated.View
+            className="flex-1 mr-4"
+            style={{
+                // transform: [{ scaleY: expanded ? 0 : 0 }], 
+
+              // height: translateY.interpolate({
+              //   inputRange: [SNAP_MAX, SNAP_MID],
+              //   outputRange: [100, 40],
+              //   extrapolate: "clamp",
+              // })
+            }}
+          >
             <Text className="text-3xl font-bold text-gray-800" numberOfLines={expanded ? undefined : 1}>
               {travelPlan.travel.title}
             </Text>
@@ -594,7 +650,7 @@ const ViewTravel = ({
                   : ""}
               </Text>
             </View>
-          </View>
+          </Animated.View>
           <StatusBadge type={1} status={travelPlan.travel.status!} />
         </View>
 

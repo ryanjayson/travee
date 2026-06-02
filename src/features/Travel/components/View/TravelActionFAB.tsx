@@ -155,7 +155,7 @@ const TravelActionFAB = ({
           style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0, 0, 0, 0.75)'}]}
           onPress={() => setOpen(false)}
         />
-      )}: 
+      )}
       <Animated.View
         style={[{
           position: 'absolute',
