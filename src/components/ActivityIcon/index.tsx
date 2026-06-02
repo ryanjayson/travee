@@ -9,6 +9,7 @@ type ActivityTypeProps = {
   type: ActivityType;
   size?: number;
   color?: string;
+  showIconOnly?: boolean;
 };
 
 interface ActivityIcon {
@@ -226,6 +227,7 @@ const ActivityIcon = ({
   type,
   size = 20,
   color,
+  showIconOnly = false,
 }: ActivityTypeProps) => {
   const activityIcon = getIcon(type);
 
@@ -233,6 +235,16 @@ const ActivityIcon = ({
   const resolvedColor = color ?? activityIcon.color;
 
   const getIconDisplay = (activityIcon: ActivityIcon) => {
+    if (showIconOnly) {
+      if (activityIcon.iconSet == IconSetProvider.feather) {
+        return <Feather name={activityIcon.iconName as any} size={size} color={resolvedColor} />;
+      } else if (activityIcon.iconSet == IconSetProvider.ionic) {
+        return <Ionicons name={activityIcon.iconName as any} size={size} color={resolvedColor} />;
+      } else if (activityIcon.iconSet == IconSetProvider.material) {
+        return <Icon name={activityIcon.iconName as any} size={size} color={resolvedColor} />;
+      }
+    }
+
     if (activityIcon.iconSet == IconSetProvider.feather) {
       return <View style={{ borderColor: resolvedColor + '90', borderWidth: 1.5, borderRadius: 50, backgroundColor: resolvedColor + '50' }} className="rounded-full p-3"><Feather name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
     } else if (activityIcon.iconSet == IconSetProvider.ionic) {

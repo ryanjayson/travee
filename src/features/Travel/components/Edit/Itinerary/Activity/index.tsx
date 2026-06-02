@@ -578,7 +578,7 @@ const EditActivity = ({
                     accessibilityRole="button"
                   >
                     {values.type != null && values.type !== ActivityType.none ? (
-                      <ActivityIcon type={values.type as number} size={24} />
+                      <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
                     ) : (
                       <Icon name="style" size={24} color={"#B3B3B3"} />
                     )}

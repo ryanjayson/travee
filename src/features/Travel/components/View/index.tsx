@@ -1,18 +1,16 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useState, useRef, useEffect } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-  View,
-  Text,
-  RefreshControl,
-  PanResponder,
   Dimensions,
+  Image,
+  PanResponder,
   StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import {
   Portal,
@@ -21,16 +19,16 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
-import { ItineraryExpense, TravelPlan, ChecklistItem } from "../../../Travel/types/TravelDto";
 import { useTravelContext } from "../../../../context/TravelContext";
+import { TravelPlan } from "../../../Travel/types/TravelDto";
 import MapViewer from "../MapViewer";
 import ShareTripModal from "../ShareOverlay/ShareTripModal";
 import ChecklistTab from "./Tabs/ChecklistTab";
 import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
 import ItineraryTab from "./Tabs/ItineraryTab";
-import NotesTab from "./Tabs/NotesTab";
 import MembersTab from "./Tabs/MembersTab";
+import NotesTab from "./Tabs/NotesTab";
 import TravelActionFAB from "./TravelActionFAB";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
@@ -112,7 +110,7 @@ const ViewTravel = ({
   const { height: screenHeight } = Dimensions.get("window");
   const SNAP_MAX = 0;
   const SNAP_MID = screenHeight * 0.45;
-  const SNAP_MIN = screenHeight - 100;
+  const SNAP_MIN = screenHeight - 108;
 
   // Track the last-snapped position manually because Animated.Value.addListener
   // does NOT fire reliably on Android when useNativeDriver: true.
@@ -120,9 +118,11 @@ const ViewTravel = ({
   const dragStartY = useRef(0);
 
   const translateY = useRef(new Animated.Value(SNAP_MID)).current;
+  const [currentSnap, setCurrentSnap] = useState(SNAP_MID);
 
   const snapTo = (toValue: number) => {
     snappedY.current = toValue;
+    setCurrentSnap(toValue);
     Animated.spring(translateY, {
       toValue,
       tension: 80,
@@ -608,11 +608,13 @@ const ViewTravel = ({
             expanded={true}
           />
         </View>
-      </Animated.View>      <TravelActionFAB 
+      </Animated.View>
+      <TravelActionFAB 
         currentTab={activeTabId}
         open={fabOpen}
         setOpen={setFabOpen}
         travelId={travelId}
+        isIncreasePosition={currentSnap === SNAP_MIN}
         onAddNote={() => {
           openNoteModal(
             null,
