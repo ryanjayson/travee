@@ -138,7 +138,7 @@ const Accordion: FC<AccordionProps> = ({
               ? { borderBottomLeftRadius: 20, borderBottomRightRadius: 20 }
               : {},
           ]}
-          className="overflow-hidden p-1 pb-3"
+          className="overflow-hidden"
         >
           {children}
         </View>

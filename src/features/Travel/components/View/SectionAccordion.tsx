@@ -10,6 +10,7 @@ import { ActivityType } from "../../../../types/enums";
 import { useLexicographicSort } from "../../../../hooks/useLexicographicSort";
 import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../services/local/travelService";
 import { useToast } from "../../../../context/ToastContext";
+import ActivityIcon from "../../../../components/ActivityIcon";
 
 interface SectionAccordionProps {
   iterarysections?: ItinerarySection[];
@@ -178,16 +179,16 @@ const DraggableSectionItem = ({
               </View>
             )}
 
-            <View
+            {/* <View
               className="absolute left-3 top-xl z-50 flex-row items-center justify-center w-[30px] h-[30px]"
               {...panHandlers}
             >
               <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
-            </View>
+            </View> */}
 
             <Accordion
               title={
-                <Text style={{ marginLeft: 30 }} className="text-lg font-semibold text-[#333]">
+                <Text style={{ marginLeft: 30 }} className=" text-lg font-semibold text-[#333] underline">
                   {section.startDate && (
                     <Text className="text-[#999]">
                       {`${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
@@ -212,8 +213,9 @@ const DraggableSectionItem = ({
                   : undefined
               }
             >
+              
               <View
-                style={{ backgroundColor: "#FFF" }}
+                style={{ backgroundColor: "#FFF"}}
                 collapsable={false}
                 ref={(ref) => {
                   if (ref && section.id) sectionRefs.current[section.id] = ref;
@@ -224,6 +226,9 @@ const DraggableSectionItem = ({
                     {section.description}
                   </Text>
                 )}
+            
+              <View className={`absolute h-full w-1px left-[32px] border-l border-dashed border-[#ccc]`}></View>
+
                 {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                   renderActivityCards(section, section.itineraryActivity)
                 ) : (
@@ -745,6 +750,8 @@ const SectionAccordion = ({
                   >
                     {section.itineraryActivity &&
                       renderActivityCards(section, section.itineraryActivity)}
+                    <View className={`absolute top-5xl h-full w-1px ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-[#ccc]`}></View>
+           
                   </View>
                 );
               } else if (plainMode) {
@@ -783,6 +790,9 @@ const SectionAccordion = ({
                 const mapIndex = subSections.findIndex(s => s.id === section.id);
                 const subSectionsLength = subSections.length;
                 return (
+                  <View>
+                    <View className={`absolute top-5xl h-full w-1px left-[33px] z-0 border-l border-dashed border-[#ccc]`}></View>
+
                   <DraggableSectionItem
                     key={section.id}
                     section={section}
@@ -800,9 +810,20 @@ const SectionAccordion = ({
                     renderActivityCards={renderActivityCards}
                     sectionRefs={sectionRefs}
                   />
+                  </View>
                 );
               }
             })}
+
+
+            <View className="flex-1 p-2 ml-xl mt-xl  bg-red-200 w-4xl h-4xl rounded-full">
+              <ActivityIcon
+                  type={ActivityType.borderCrossing}
+                  size={20}
+                  showIconOnly={true}
+                />
+            </View>
+           
         </View>
       </ScrollView>
     </View>

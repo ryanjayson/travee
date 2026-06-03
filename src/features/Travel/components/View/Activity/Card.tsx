@@ -360,7 +360,10 @@ const ActivityItemCard = ({
 
   return (
     <Animated.View
-      style={dragEnabled ? dragAnimatedStyle : undefined}
+      style={[
+        dragEnabled ? dragAnimatedStyle : undefined,
+        viewMode === 'expanded' ? { paddingBottom: 16 } : undefined
+      ]}
       {...(dragEnabled ? panResponder.panHandlers : {})}
       onLayout={(e) => {
         const { height } = e.nativeEvent.layout;
@@ -370,22 +373,10 @@ const ActivityItemCard = ({
       }}
     >
 
-    {(!isLastItem && !isDragActive && !parentIsDragging) && viewMode === 'expanded' && (
-        <TouchableHighlight 
-          underlayColor={"#263F69"}
-          className={`absolute -bottom-4 left-2xl border border-gray-300 bg-gray-200 px-1px rounded-md z-100`}
-          onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
-          onShowUnderlay={() => setIsAddPressed(true)}
-          onHideUnderlay={() => setIsAddPressed(false)}
-        >
-          <Icon name="add" size={20} color={"#999"}/>
-        </TouchableHighlight>
-      )}
-
       <View className={`px-2 flex-row justify-between items-center relative `}>
         {!isDragActive && (
           <>
-            {!isLastItem ? (
+            {/* {isLastItem ? (
               <View className="w-1.5 items-center h-full absolute">
                 {isFirstItem ? (
                   <View className={`absolute h-1/2 w-1px top-1/2 ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-gray-300`}></View>
@@ -404,7 +395,10 @@ const ActivityItemCard = ({
                   </View>
                 )}
               </View>
-            )}
+            )} */}
+
+                  {/* <View className={`absolute h-1/2 w-1px top-1/2 ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-gray-300`}></View> */}
+
             <TouchableOpacity
               // activeOpacity={0.7}
               onLongPress={handleLongPress}
@@ -425,7 +419,28 @@ const ActivityItemCard = ({
                 size={viewMode === 'narrow' ? 15 : 24}
               />
             </TouchableOpacity>
+
+         
           </>
+        )}
+
+        {(!isLastItem && !isDragActive && !parentIsDragging) && viewMode === 'expanded' && (
+        <TouchableHighlight 
+          underlayColor={"transparent"}
+          className={`absolute h-6xl w-6xl -bottom-10px left-lg z-9999 `}
+          onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
+          onShowUnderlay={() => setIsAddPressed(true)}
+          onHideUnderlay={() => setIsAddPressed(false)}
+          accessibilityRole="button"
+            accessibilityLabel="Add activity"
+          >
+            <View
+                className={`${isAddPressed ? 'border-[#263F69] bg-[#263F69] rounded-full' : 'border-gray-300 rounded-md '} left-1px absolute m-2 mt-2xl border px-1px z-9999`}
+            >
+            <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`}/>
+
+            </View>
+          </TouchableHighlight>
         )}
 
         <TouchableOpacity
@@ -441,7 +456,7 @@ const ActivityItemCard = ({
           }}
           accessibilityRole="button"
           className={`w-[100px] border border-solid border-[#e0e0e0] rounded-xl grow ml-3 ${
-            isNarrow ? "my-2 p-2" : "my-4 p-2.5"
+            isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")
           } ${
             itineraryEventActivity.isDone
               ? "opacity-50 border border-success-700 bg-success-25"
@@ -596,30 +611,31 @@ const ActivityItemCard = ({
             </View>
           )}
         </TouchableOpacity>
-          <View className={`absolute right-4 ${isNarrow ? "top-[34%]" : "bottom-7"}`}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={handleToggleDone}
-                className="flex-row items-center gap-1.5"
-              >
-                {!isNarrow && (
-                  <Text className="text-[10px] text-[#999] font-medium uppercase tracking-tight">
-                    {itineraryEventActivity.isDone ? "" : "Mark as done"}
-                  </Text>
-                )}
-                
-                  {itineraryEventActivity.isDone ? 
-                      (<Icon name="check" size={24} color="#0c6134" />)
-                      : (<Icon name="check-box-outline-blank" size={24} color="#888" />)}
-              </TouchableOpacity>
-            </View>
-         
- 
+        
+        <View className={`absolute right-4 ${isNarrow ? "top-[34%]" : "bottom-7"}`}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handleToggleDone}
+              className="flex-row items-center gap-1.5"
+            >
+              {!isNarrow && (
+                <Text className="text-[10px] text-[#999] font-medium uppercase tracking-tight">
+                  {itineraryEventActivity.isDone ? "" : "Mark as done"}
+                </Text>
+              )}
+              
+                {itineraryEventActivity.isDone ? 
+                    (<Icon name="check" size={24} color="#0c6134" />)
+                    : (<Icon name="check-box-outline-blank" size={24} color="#888" />)}
+            </TouchableOpacity>
+        </View>
+
+       
       </View>
 
      {isAddPressed && (
         <View className="w-[85%] rounded-full left-5xl absolute -bottom-1">
-          <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40" />
+          <View className="flex-1 h-xxs bg-[#183B7A] rounded-full z-40" />
           <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50 absolute right-0 -bottom-1" />
         </View>
       )}
