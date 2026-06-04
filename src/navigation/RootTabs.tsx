@@ -18,6 +18,7 @@ import ChecklistGroupModal from "../features/Travel/components/Forms/Checklist/C
 import ActivityModal from "../features/Travel/components/Edit/Itinerary/Activity/Modal";
 import MemberModal from "../features/Travel/components/Forms/Member/Modal";
 import DescriptionModal from "../components/molecules/DescriptionInput/Modal";
+import MapboxDestinationSelectorModal from "../features/Travel/components/MapboxDestinationSelector/Modal";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
@@ -78,6 +79,8 @@ function RootTabsComponent() {
     closeMemberModal,
     descriptionModal,
     closeDescriptionModal,
+    destinationModal,
+    closeDestinationModal,
   } = useTravelContext();
   const insets = useSafeAreaInsets();
 
@@ -223,6 +226,17 @@ function RootTabsComponent() {
         placeholder={descriptionModal.placeholder}
         confirmLabel={descriptionModal.confirmLabel}
         maxLength={descriptionModal.maxLength}
+      />
+      <MapboxDestinationSelectorModal
+        visible={destinationModal.visible}
+        initialValue={destinationModal.initialValue}
+        onSelect={(place) => {
+          if (destinationModal.onSelect) {
+            destinationModal.onSelect(place);
+          }
+          closeDestinationModal();
+        }}
+        onClose={closeDestinationModal}
       />
     </View>      
  

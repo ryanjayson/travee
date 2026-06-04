@@ -5,6 +5,7 @@ import {
   ChecklistItem,
   TripMember,
 } from "../../features/Travel/types/TravelDto";
+import { MapboxPlace } from "../../features/Travel/components/MapboxDestinationSelector";
 
 export interface TravelPlanDetail {
   id: string;
@@ -58,6 +59,12 @@ export interface DescriptionModalState {
   placeholder?: string;
   confirmLabel?: string;
   maxLength?: number;
+}
+
+export interface DestinationModalState {
+  visible: boolean;
+  initialValue?: string;
+  onSelect?: (place: MapboxPlace) => void;
 }
 
 export interface TravelContextType {
@@ -117,6 +124,13 @@ export interface TravelContextType {
     }
   ) => void;
   closeDescriptionModal: () => void;
+
+  destinationModal: DestinationModalState;
+  openDestinationModal: (
+    initialValue?: string,
+    onSelect?: (place: MapboxPlace) => void
+  ) => void;
+  closeDestinationModal: () => void;
 }
 
 

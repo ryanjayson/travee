@@ -18,7 +18,9 @@ import {
   ActivityModalState,
   MemberModalState,
   DescriptionModalState,
+  DestinationModalState,
 } from "../types/context/travel";
+import { MapboxPlace } from "../features/Travel/components/MapboxDestinationSelector";
 import {
   ItineraryExpense,
   ItineraryActivity,
@@ -82,6 +84,14 @@ const initialContextValue: TravelContextType = {
   },
   openDescriptionModal: () => {},
   closeDescriptionModal: () => {},
+
+  destinationModal: {
+    visible: false,
+    initialValue: "",
+    onSelect: () => {},
+  },
+  openDestinationModal: () => {},
+  closeDestinationModal: () => {},
 };
 
 // Create the typed Context
@@ -135,6 +145,12 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     visible: false,
     value: "",
     onConfirm: () => {},
+  });
+
+  const [destinationModal, setDestinationModal] = useState<DestinationModalState>({
+    visible: false,
+    initialValue: "",
+    onSelect: () => {},
   });
 
   // Use useCallback and apply types to the function arguments
@@ -297,6 +313,27 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     }));
   }, []);
 
+  const openDestinationModal = useCallback(
+    (
+      initialValue: string = "",
+      onSelect?: (place: MapboxPlace) => void
+    ) => {
+      setDestinationModal({
+        visible: true,
+        initialValue,
+        onSelect,
+      });
+    },
+    []
+  );
+
+  const closeDestinationModal = useCallback(() => {
+    setDestinationModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
   // Use useMemo and apply the context type to the value
   const contextValue = useMemo<TravelContextType>(
     () => ({
@@ -324,6 +361,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       descriptionModal,
       openDescriptionModal,
       closeDescriptionModal,
+      destinationModal,
+      openDestinationModal,
+      closeDestinationModal,
     }),
     [
       selectedTravelPlan,
@@ -350,6 +390,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       descriptionModal,
       openDescriptionModal,
       closeDescriptionModal,
+      destinationModal,
+      openDestinationModal,
+      closeDestinationModal,
     ]
   );
 

@@ -1,22 +1,22 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
+  SectionList,
   ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StyleSheet,
 } from "react-native";
-import WebView from "react-native-webview";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { useTheme } from "react-native-paper";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
-const MAPBOX_GEOCODING_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places";
 const MAPBOX_SEARCHBOX_URL = "https://api.mapbox.com/search/searchbox/v1/forward";
 
 export interface MapboxPlace {
@@ -24,6 +24,7 @@ export interface MapboxPlace {
   name: string;
   fullName: string;
   country?: string;
+  countryCode?: string;
   type: string;
   coordinates: {
     latitude: number;
@@ -38,31 +39,93 @@ interface MapboxDestinationSelectorProps {
 }
 
 const FILTER_OPTIONS = [
-  { id: 'country', label: 'Country', icon: 'flag' },
-  { id: 'region', label: 'Region', icon: 'map' },
-  { id: 'place', label: 'City', icon: 'location-city' },
-  { id: 'poi', label: 'POI', icon: 'place' },
+  { id: "country", label: "Country", icon: "flag" },
+  { id: "region", label: "Region", icon: "map" },
+  { id: "place", label: "City", icon: "location-city" },
+  { id: "poi", label: "POI", icon: "place" },
 ] as const;
-type FilterType = typeof FILTER_OPTIONS[number]['id'];
+
+type FilterType = typeof FILTER_OPTIONS[number]["id"];
+
+const COUNTRY_NAME_TO_CODE: Record<string, string> = {
+  "united states": "US",
+  "united kingdom": "GB",
+  "japan": "JP",
+  "france": "FR",
+  "germany": "DE",
+  "italy": "IT",
+  "canada": "CA",
+  "australia": "AU",
+  "china": "CN",
+  "south korea": "KR",
+  "philippines": "PH",
+  "spain": "ES",
+  "mexico": "MX",
+  "brazil": "BR",
+  "india": "IN",
+  "singapore": "SG",
+  "thailand": "TH",
+  "malaysia": "MY",
+  "vietnam": "VN",
+  "indonesia": "ID",
+  "taiwan": "TW",
+  "hong kong": "HK",
+  "new zealand": "NZ",
+  "switzerland": "CH",
+  "netherlands": "NL",
+  "belgium": "BE",
+  "sweden": "SE",
+  "norway": "NO",
+  "denmark": "DK",
+  "finland": "FI",
+  "russia": "RU",
+  "turkey": "TR",
+  "united arab emirates": "AE",
+  "saudi arabia": "SA",
+  "south africa": "ZA",
+  "egypt": "EG",
+  "morocco": "MA",
+  "greece": "GR",
+  "portugal": "PT",
+  "austria": "AT",
+  "ireland": "IE",
+};
+
+const getFlagEmoji = (countryCode?: string) => {
+  if (!countryCode) return "📍";
+  const cleanCode = countryCode.split("-")[0].trim().toUpperCase();
+  if (cleanCode.length !== 2) return "📍";
+
+  const codePoints = cleanCode
+    .split("")
+    .map((char) => 127397 + char.charCodeAt(0));
+  try {
+    return String.fromCodePoint(...codePoints);
+  } catch (e) {
+    return "📍";
+  }
+};
+
+const getGroupTitle = (type: string) => {
+  const t = type.toLowerCase();
+  if (t === "country") return "Countries";
+  if (t === "region" || t === "state" || t === "province") return "States & Regions";
+  if (t === "place" || t === "locality" || t === "city" || t === "district") return "Cities";
+  return "Other Locations";
+};
 
 const MapboxDestinationSelector = ({
   onClose,
   onSelect,
   initialValue = "",
 }: MapboxDestinationSelectorProps) => {
+  const { colors } = useTheme();
   const [query, setQuery] = useState(initialValue);
   const [activeFilter, setActiveFilter] = useState<FilterType | null>(null);
   const [results, setResults] = useState<MapboxPlace[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [selectedPin, setSelectedPin] = useState<{
-    latitude: number;
-    longitude: number;
-    name: string;
-    fullName: string;
-  } | null>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const webViewRef = useRef<WebView>(null);
 
   const searchPlaces = useCallback(async (text: string, filter: FilterType | null = null) => {
     if (text.length < 2) {
@@ -78,17 +141,15 @@ const MapboxDestinationSelector = ({
       if (filter) {
         url += `&types=${filter}`;
       }
-      console.log(url);
 
       const response = await fetch(url);
       const data = await response.json();
-      console.log(data.features);
 
       if (data.features && data.features.length > 0) {
         const places: MapboxPlace[] = data.features.map((feature: any) => {
           const props = feature.properties || {};
           const geom = feature.geometry || {};
-          
+
           let countryName;
           if (Array.isArray(feature.context)) {
             countryName = feature.context.find((c: any) => c.id?.startsWith("country"))?.text;
@@ -96,13 +157,30 @@ const MapboxDestinationSelector = ({
             countryName = props.context.country.name;
           }
 
+          let countryCode;
+          if (props.context && props.context.country) {
+            countryCode = props.context.country.country_code;
+          } else if (Array.isArray(feature.context)) {
+            const countryItem = feature.context.find((c: any) => c.id?.startsWith("country"));
+            countryCode = countryItem?.properties?.country_code || countryItem?.short_code;
+          }
+
           const isCountry = (feature.place_type && feature.place_type.includes("country")) || props.feature_type === "country";
 
+          // Fallback dictionary for flags
+          if (!countryCode && countryName) {
+            countryCode = COUNTRY_NAME_TO_CODE[countryName.toLowerCase()];
+          }
+          if (!countryCode && props.name && isCountry) {
+            countryCode = COUNTRY_NAME_TO_CODE[props.name.toLowerCase()];
+          }
+
           return {
-            id: props.mapbox_id || feature.id || Math.random().toString(),   
+            id: props.mapbox_id || feature.id || Math.random().toString(),
             name: props.name || feature.text || "Unknown Place",
             fullName: props.full_address || props.place_formatted || feature.place_name || props.name || feature.text || "",
             country: countryName || (isCountry ? (props.name || feature.text) : undefined),
+            countryCode: countryCode,
             type: props.feature_type || (feature.place_type ? feature.place_type[0] : "place"),
             coordinates: {
               longitude: geom.coordinates ? geom.coordinates[0] : (feature.center ? feature.center[0] : 0),
@@ -144,183 +222,26 @@ const MapboxDestinationSelector = ({
     }
   };
 
-  const handleSearchSelect = (place: MapboxPlace) => {
-    Keyboard.dismiss();
-    setShowResults(false);
-    setQuery(place.name);
-    setSelectedPin({
-      latitude: place.coordinates.latitude,
-      longitude: place.coordinates.longitude,
-      name: place.name,
-      fullName: place.fullName,
+  const getGroupedSections = () => {
+    const sectionsMap: Record<string, MapboxPlace[]> = {
+      "Countries": [],
+      "States & Regions": [],
+      "Cities": [],
+      "Other Locations": [],
+    };
+
+    results.forEach((place) => {
+      const title = getGroupTitle(place.type);
+      sectionsMap[title].push(place);
     });
 
-    // Fly the map to the selected location
-    webViewRef.current?.injectJavaScript(`
-      flyToLocation(${place.coordinates.longitude}, ${place.coordinates.latitude}, "${place.name.replace(/"/g, '\\"')}");
-      true;
-    `);
-  };
-
-  const handleConfirmSelection = () => {
-    if (selectedPin) {
-      onSelect({
-        id: `pin-${selectedPin.latitude}-${selectedPin.longitude}`,
-        name: selectedPin.name,
-        fullName: selectedPin.fullName,
-        type: "place",
-        coordinates: {
-          latitude: selectedPin.latitude,
-          longitude: selectedPin.longitude,
-        },
-      });
-    }
-  };
-
-  const handleWebViewMessage = (event: any) => {
-    try {
-      const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === "pinDragged" || data.type === "mapClicked") {
-        setSelectedPin({
-          latitude: data.latitude,
-          longitude: data.longitude,
-          name: data.name || "Dropped Pin",
-          fullName: data.fullName || `${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}`,
-        });
-        setQuery(data.name || "Dropped Pin");
-      }
-    } catch (e) {
-      // ignore parse errors
-    }
-  };
-
-  // Reverse geocode a coordinate to get place name
-  const reverseGeocodeJS = `
-    async function reverseGeocode(lng, lat) {
-      try {
-        const res = await fetch(
-          'https://api.mapbox.com/geocoding/v5/mapbox.places/' + lng + ',' + lat + '.json?access_token=' + mapboxToken + '&limit=1&language=en'
-        );
-        const data = await res.json();
-        if (data.features && data.features.length > 0) {
-          return {
-            name: data.features[0].text,
-            fullName: data.features[0].place_name
-          };
-        }
-        return { name: 'Dropped Pin', fullName: lat.toFixed(4) + ', ' + lng.toFixed(4) };
-      } catch(e) {
-        return { name: 'Dropped Pin', fullName: lat.toFixed(4) + ', ' + lng.toFixed(4) };
-      }
-    }
-  `;
-
-  const mapHTML = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-      <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
-      <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { overflow: hidden; }
-        #map { width: 100%; height: 100vh; }
-        .pin-instruction {
-          position: absolute;
-          bottom: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(0,0,0,0.7);
-          color: #fff;
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 13px;
-          font-family: -apple-system, sans-serif;
-          pointer-events: none;
-          z-index: 10;
-          white-space: nowrap;
-        }
-      </style>
-    </head>
-    <body>
-      <div id="map"></div>
-      <div class="pin-instruction" id="instruction">Tap the map or drag the pin</div>
-      <script>
-        const mapboxToken = '${MAPBOX_ACCESS_TOKEN}';
-        mapboxgl.accessToken = mapboxToken;
-
-        ${reverseGeocodeJS}
-
-        const map = new mapboxgl.Map({
-          container: 'map',
-          style: 'mapbox://styles/mapbox/streets-v12',
-          center: [121.0, 14.5],
-          zoom: 5,
-          attributionControl: false,
-        });
-
-        let marker = null;
-
-        function createOrMoveMarker(lng, lat) {
-          if (marker) {
-            marker.setLngLat([lng, lat]);
-          } else {
-            marker = new mapboxgl.Marker({
-              color: '#263F69',
-              draggable: true,
-            })
-              .setLngLat([lng, lat])
-              .addTo(map);
-
-            marker.on('dragend', async function() {
-              const lngLat = marker.getLngLat();
-              const place = await reverseGeocode(lngLat.lng, lngLat.lat);
-              window.ReactNativeWebView.postMessage(JSON.stringify({
-                type: 'pinDragged',
-                latitude: lngLat.lat,
-                longitude: lngLat.lng,
-                name: place.name,
-                fullName: place.fullName,
-              }));
-            });
-          }
-          // Hide instruction after first interaction
-          document.getElementById('instruction').style.display = 'none';
-        }
-
-        // Tap on map to drop/move pin
-        map.on('click', async function(e) {
-          const { lng, lat } = e.lngLat;
-          createOrMoveMarker(lng, lat);
-          const place = await reverseGeocode(lng, lat);
-          window.ReactNativeWebView.postMessage(JSON.stringify({
-            type: 'mapClicked',
-            latitude: lat,
-            longitude: lng,
-            name: place.name,
-            fullName: place.fullName,
-          }));
-        });
-
-        // Called from React Native when a search result is selected
-        function flyToLocation(lng, lat, name) {
-          map.flyTo({ center: [lng, lat], zoom: 13, duration: 1500 });
-          createOrMoveMarker(lng, lat);
-        }
-      </script>
-    </body>
-    </html>
-  `;
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "country": return "flag";
-      case "region": return "map";
-      case "place": return "location-city";
-      case "locality": return "place";
-      default: return "place";
-    }
+    const orderedTitles = ["Countries", "States & Regions", "Cities", "Other Locations"];
+    return orderedTitles
+      .map((title) => ({
+        title,
+        data: sectionsMap[title],
+      }))
+      .filter((section) => section.data.length > 0);
   };
 
   const getTypeLabel = (type: string) => {
@@ -333,55 +254,126 @@ const MapboxDestinationSelector = ({
     }
   };
 
-  const renderItem = ({ item }: { item: MapboxPlace }) => (
-    <TouchableOpacity
-      className="flex-row items-center px-5 py-3 border-b border-gray-100"
-      onPress={() => handleSearchSelect(item)}
-      activeOpacity={0.6}
-    >
-      <View className="w-9 h-9 rounded-full bg-[#EEF2F9] items-center justify-center mr-3">
-        <Icon name={getTypeIcon(item.type)} size={18} color="#183B7A" />
-      </View>
-      <View className="flex-1">
-        <Text className="text-sm font-medium text-gray-900">{item.name}</Text>
-        <Text className="text-xs text-gray-500 mt-0.5" numberOfLines={1}>
-          {item.fullName}
-        </Text>
-      </View>
-      <View className="px-2 py-0.5 rounded-full bg-gray-100">
-        <Text className="text-[10px] text-gray-500">{getTypeLabel(item.type)}</Text>
-      </View>
-    </TouchableOpacity>
+  const renderItem = ({ item }: { item: MapboxPlace }) => {
+    const flag = getFlagEmoji(item.countryCode);
+    return (
+      <TouchableOpacity
+        style={styles.itemContainer}
+        onPress={() => {
+          onSelect(item);
+          onClose();
+        }}
+        activeOpacity={0.6}
+        accessibilityRole="button"
+        accessibilityLabel={`Select ${item.name}, ${item.fullName || ""}`}
+      >
+        <View style={styles.flagContainer}>
+          <Text style={styles.flagText}>{flag}</Text>
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          {item.fullName && item.fullName !== item.name ? (
+            <Text style={styles.itemAddress} numberOfLines={2}>
+              {item.fullName}
+            </Text>
+          ) : null}
+        </View>
+        <View style={styles.badgeContainer}>
+          <Text style={styles.badgeText}>
+            {item.type.replace(/_/g, " ")}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderSectionHeader = ({ section: { title } }: { section: { title: string } }) => (
+    <View style={styles.sectionHeaderContainer}>
+      <Text style={styles.sectionHeaderText}>{title}</Text>
+    </View>
   );
 
+  const renderEmptyState = () => {
+    if (query.trim().length === 0) {
+      return (
+        <ScrollView
+          contentContainerStyle={styles.emptyStateContainer}
+          keyboardShouldPersistTaps="always"
+        >
+          <Icon name="explore" size={64} color="#C6D4E2" style={{ marginBottom: 16 }} />
+          <Text style={styles.emptyStateTitle}>Find your next destination</Text>
+          <Text style={styles.emptyStateSubtitle}>
+            Type a country, city, or region to start planning your itinerary.
+          </Text>
+        </ScrollView>
+      );
+    }
+
+    if (!isLoading && results.length === 0) {
+      return (
+        <ScrollView
+          contentContainerStyle={styles.emptyStateContainer}
+          keyboardShouldPersistTaps="always"
+        >
+          <Icon name="search-off" size={64} color="#C6D4E2" style={{ marginBottom: 16 }} />
+          <Text style={styles.emptyStateTitle}>No locations found</Text>
+          <Text style={styles.emptyStateSubtitle}>
+            We couldn't find any results for "{query}". Try a different spelling or search term.
+          </Text>
+        </ScrollView>
+      );
+    }
+
+    return null;
+  };
+
   return (
-    <View className="flex-1 bg-white pt-[40px]">
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.keyboardContainer}
+    >
       {/* Header */}
-      <View className="bg-white z-20 pb-3 border-b border-gray-200">
-        <View className="flex-row items-center px-3 pt-3">
+      <View style={styles.headerBorderContainer}>
+        <View style={styles.headerRow}>
           <TouchableOpacity
             onPress={onClose}
-            className="p-1.5 mr-1"
+            style={styles.backButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
-            <Icon name="arrow-back" size={24} color="#183B7A" />
+            <Icon name="arrow-back" size={24} color={colors.primary} />
           </TouchableOpacity>
 
-          <View className="flex-1 flex-row items-center bg-[#F5F6FA] rounded-xl px-3 h-12">
-            <Icon name="search" size={22} color="#999" />
+          <View style={styles.searchInputContainer}>
+            <Icon name="search" size={22} color="#999" style={{ marginRight: 8 }} />
             <TextInput
-              className="flex-1 text-base text-gray-900 ml-2"
-              placeholder={activeFilter ? `Search ${getTypeLabel(activeFilter)}...` : "Search place to visit..."}
+              style={styles.searchInput}
+              placeholder={
+                activeFilter ? `Search ${getTypeLabel(activeFilter)}...` : "Search destination..."
+              }
               placeholderTextColor="#999"
               value={query}
               onChangeText={handleTextChange}
-              onFocus={() => { if (results.length > 0) setShowResults(true); }}
+              onFocus={() => {
+                if (results.length > 0) setShowResults(true);
+              }}
               returnKeyType="search"
               autoCapitalize="words"
               autoCorrect={false}
+              autoFocus={true}
             />
             {query.length > 0 && (
-              <TouchableOpacity onPress={() => { setQuery(""); setResults([]); setShowResults(false); }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setQuery("");
+                  setResults([]);
+                  setShowResults(false);
+                }}
+                style={{ padding: 4 }}
+                accessibilityRole="button"
+                accessibilityLabel="Clear search text"
+              >
                 <Icon name="close" size={20} color="#999" />
               </TouchableOpacity>
             )}
@@ -389,8 +381,8 @@ const MapboxDestinationSelector = ({
         </View>
 
         {/* Filter Toggle */}
-        <View className="flex-row items-center px-4 mt-3">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <View style={styles.filterRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="always">
             {FILTER_OPTIONS.map((filter) => {
               const isActive = activeFilter === filter.id;
               return (
@@ -398,19 +390,29 @@ const MapboxDestinationSelector = ({
                   key={filter.id}
                   onPress={() => handleFilterSelect(filter.id)}
                   activeOpacity={0.7}
-                  className={`flex-row items-center px-3 py-1.5 mr-2 rounded-full border ${
-                    isActive ? "bg-[#EEF2F9] border-[#263F69]" : "bg-white border-gray-200"
-                  }`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Filter by ${filter.label}`}
+                  style={[
+                    styles.filterChip,
+                    {
+                      borderColor: isActive ? colors.primary : "#EAECF0",
+                      backgroundColor: isActive ? `${colors.primary}15` : "#FFFFFF",
+                    },
+                  ]}
                 >
                   <Icon
                     name={filter.icon as any}
                     size={16}
-                    color={isActive ? "#263F69" : "#666"}
+                    color={isActive ? colors.primary : "#666"}
                   />
                   <Text
-                    className={`ml-1.5 text-xs font-medium ${
-                      isActive ? "text-[#263F69]" : "text-gray-600"
-                    }`}
+                    style={[
+                      styles.filterChipText,
+                      {
+                        color: isActive ? colors.primary : "#475467",
+                        fontWeight: isActive ? "600" : "500",
+                      },
+                    ]}
                   >
                     {filter.label}
                   </Text>
@@ -421,65 +423,178 @@ const MapboxDestinationSelector = ({
         </View>
       </View>
 
-      {/* Map */}
-      <View className="flex-1">
-        <WebView
-          ref={webViewRef}
-          source={{ html: mapHTML }}
-          onMessage={handleWebViewMessage}
-          javaScriptEnabled
-          domStorageEnabled
-          scrollEnabled={false}
-          style={{ flex: 1 }}
-        />
-      </View>
-
-      {/* Search Results Overlay */}
-      {showResults && results.length > 0 && (
-        <View className="absolute top-[105px] left-0 right-0 bg-white z-30 max-h-[350px] rounded-b-xl"
-          style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 8 }}
-        >
-          {isLoading && (
-            <View className="py-4 items-center">
-              <ActivityIndicator size="small" color="#183B7A" />
-            </View>
-          )}
-          <FlatList
-            data={results}
+      {/* Main Content Area */}
+      <View style={{ flex: 1 }}>
+        {isLoading && results.length === 0 ? (
+          <View style={styles.centeredContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+          </View>
+        ) : query.trim().length === 0 || results.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <SectionList
+            sections={getGroupedSections()}
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
-            keyboardShouldPersistTaps="handled"
+            renderSectionHeader={renderSectionHeader}
+            keyboardShouldPersistTaps="always"
             showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              isLoading ? (
+                <View style={{ paddingVertical: 12, alignItems: "center" }}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                </View>
+              ) : null
+            }
           />
-        </View>
-      )}
-
-      {/* Selected Pin Info + Confirm Button */}
-      {selectedPin && (
-        <View className="absolute bottom-0 left-0 right-0 bg-white px-4 pt-3 pb-6 rounded-t-2xl z-20"
-          style={{ shadowColor: '#000', shadowOffset: { width: 0, height: -3 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 10 }}
-        >
-          <View className="flex-row items-center mb-3">
-            <View className="w-10 h-10 rounded-full bg-[#EEF2F9] items-center justify-center mr-3">
-              <Icon name="location-on" size={22} color="#263F69" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-base font-semibold text-gray-900">{selectedPin.name}</Text>
-              <Text className="text-xs text-gray-500 mt-0.5" numberOfLines={1}>{selectedPin.fullName}</Text>
-            </View>
-          </View>
-          <TouchableOpacity
-            className="bg-[#263F69] rounded-[30px] py-4 items-center"
-            activeOpacity={0.7}
-            onPress={handleConfirmSelection}
-            accessibilityRole="button"
-          >
-            <Text className="text-white font-semibold text-base">Select this location</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+        )}
+      </View>
+    </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  keyboardContainer: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    paddingTop: Platform.OS === "android" ? 40 : 50,
+  },
+  headerBorderContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#EAECF0",
+    backgroundColor: "#FFFFFF",
+    paddingBottom: 12,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingTop: 8,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 4,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5F6FA",
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    height: 48,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#101828",
+    paddingVertical: 0,
+  },
+  filterRow: {
+    paddingHorizontal: 16,
+    marginTop: 12,
+  },
+  filterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginRight: 8,
+    borderRadius: 9999,
+    borderWidth: 1,
+  },
+  filterChipText: {
+    marginLeft: 6,
+    fontSize: 12,
+  },
+  itemContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F2F4F7",
+    backgroundColor: "#FFFFFF",
+  },
+  flagContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#F2F4F7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  flagText: {
+    fontSize: 20,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  itemName: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#101828",
+  },
+  itemAddress: {
+    fontSize: 12,
+    color: "#667085",
+    marginTop: 2,
+  },
+  badgeContainer: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 9999,
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1,
+    borderColor: "#EAECF0",
+  },
+  badgeText: {
+    fontSize: 10,
+    color: "#667085",
+    fontWeight: "500",
+    textTransform: "capitalize",
+  },
+  sectionHeaderContainer: {
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#EAECF0",
+  },
+  sectionHeaderText: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#475467",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  emptyStateContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+  },
+  emptyStateTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#101828",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  emptyStateSubtitle: {
+    fontSize: 14,
+    color: "#667085",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 export default MapboxDestinationSelector;
