@@ -19,6 +19,7 @@ import { StatusBar } from "expo-status-bar";
 import * as Yup from "yup";
 import { useSaveChecklistGroupMutation } from "../../../hooks/useChecklist";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface ChecklistGroupModalProps {
   visible: boolean;
@@ -41,6 +42,7 @@ const ChecklistGroupModal = ({
   const isSaving = saveGroupMutation.isPending;
   const { colors } = useTheme();
   const { keyboardVisible } = useKeyboardVisible();
+  const insets = useSafeAreaInsets();
   const [modalHeight] = useState(screenHeight * 0.55);
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
@@ -207,7 +209,7 @@ const ChecklistGroupModal = ({
             style={[
               { height: keyboardVisible ? "100%" : modalHeight },
               {
-                paddingTop: keyboardVisible ? 24 : 0,
+                paddingTop: keyboardVisible ? insets.top + 10 : 0,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: -8 },
                 shadowOpacity: 0.12,
@@ -240,7 +242,7 @@ const ChecklistGroupModal = ({
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
-                <Icon name="clear" size={36} color={"#333"} />
+                <Icon name="clear" size={24} color={"#999"} />
               </TouchableOpacity>
             </View>
 

@@ -254,7 +254,7 @@ const MemberModal = ({
                 accessibilityRole="button"
                 accessibilityLabel="Close add member modal"
               >
-                <Icon name="clear" size={36} color="#333" />
+                <Icon name="clear" size={24} color="#999" />
               </TouchableOpacity>
             </View>
 

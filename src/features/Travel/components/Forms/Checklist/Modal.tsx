@@ -14,6 +14,7 @@ import {
   PanResponder,
 } from "react-native";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChecklistItem, ItineraryActivity } from "../../../types/TravelDto";
 import EditChecklistItem from "./index";
 import { useMemo } from "react";
@@ -43,6 +44,7 @@ const ChecklistModal = ({
 }: ChecklistModalProps) => {
   const [modalHeight] = useState(screenHeight * 0.75);
   const { keyboardVisible } = useKeyboardVisible();
+  const insets = useSafeAreaInsets();
   const [isChildModalOpen, setIsChildModalOpen] = useState(false);
   const childModalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -300,7 +302,7 @@ const ChecklistModal = ({
               style={[
                 { height: keyboardVisible ? "100%" : modalHeight },
                 {
-                  paddingTop: keyboardVisible ? 24 : 0,
+                  paddingTop: keyboardVisible ? insets.top + 10 : 0,
                   shadowColor: "#000",
                   shadowOffset: { width: 0, height: -8 },
                   shadowOpacity: 0.12,
@@ -333,7 +335,7 @@ const ChecklistModal = ({
                   </Text>
                 </View>
                 <TouchableOpacity onPress={handleCancel}>
-                  <Icon name="clear" size={36} color={"#333"} />
+                  <Icon name="clear" size={24} color={"#999"} />
                 </TouchableOpacity>
               </View>
 

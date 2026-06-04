@@ -18,6 +18,7 @@ import { TextInput, useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { ItineraryActivity } from "../../types/TravelDto";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface ActivityLookupModalProps {
   visible: boolean;
@@ -40,6 +41,7 @@ const ActivityLookupModal = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [modalHeight] = useState(screenHeight * 0.78);
   const { keyboardVisible } = useKeyboardVisible();
+  const insets = useSafeAreaInsets();
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
@@ -200,7 +202,7 @@ const ActivityLookupModal = ({
             style={[
               { height: keyboardVisible ? "100%" : modalHeight },
               {
-                paddingTop: keyboardVisible ? 24 : 0,
+                paddingTop: keyboardVisible ? insets.top + 10 : 0,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: -8 },
                 shadowOpacity: 0.12,
@@ -237,7 +239,7 @@ const ActivityLookupModal = ({
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
-                <Icon name="clear" size={36} color={"#333"} />
+                <Icon name="clear" size={24} color={"#999"} />
               </TouchableOpacity>
             </View>
 

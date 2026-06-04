@@ -17,6 +17,7 @@ import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
 import { ItineraryActivity } from "../../../../types/TravelDto";
 import * as ImagePicker from "expo-image-picker";
 import { parseExtractedText } from "../../../../utils/ocrParser";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useTheme } from "react-native-paper";
 import { ActivityType } from "../../../../../../types/enums";
@@ -101,6 +102,7 @@ const ActivityModal = ({
   const { confirm } = useConfirm();
   const { colors } = useTheme();
   const { keyboardVisible } = useKeyboardVisible();
+  const insets = useSafeAreaInsets();
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
@@ -372,7 +374,7 @@ const ActivityModal = ({
               style={[
                 { height: "100%"},
                 {
-                  paddingTop: keyboardVisible ? 24 : 0,
+                  paddingTop: insets.top + 20,
                   shadowColor: "#000",
                   shadowOffset: { width: 0, height: -8 },
                   shadowOpacity: 0.12,
@@ -385,14 +387,12 @@ const ActivityModal = ({
               <StatusBar style="dark" />
               
               {/* Drag Handle Area */}
-              {!keyboardVisible && (
-                <View 
-                  {...dragPanResponder.panHandlers}
-                  className="w-full items-center py-4 bg-white rounded-t-[30px]"
-                >
-                  <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
-                </View>
-              )}
+              {/* <View 
+                {...dragPanResponder.panHandlers}
+                className="w-full items-center py-4 bg-white rounded-t-[30px]"
+              >
+                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              </View> */}
 
               <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
                   <View className="flex-row items-center gap-2">
@@ -410,11 +410,11 @@ const ActivityModal = ({
                           accessibilityRole="button"
                           accessibilityLabel="Extract details from booking receipt or ticket image"
                         >
-                            <Icon name="camera-alt" size={28} color={colors.primary} />
+                            <Icon name="camera-alt" size={24} color={colors.primary} />
                         </TouchableOpacity>
                       )}
                       <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-                          <Icon name="clear" size={36} color={colors.onSurfaceVariant || "#333"} />
+                          <Icon name="clear" size={24} color={colors.onSurfaceVariant || "#333"} />
                       </TouchableOpacity>
                   </View>
               </View>

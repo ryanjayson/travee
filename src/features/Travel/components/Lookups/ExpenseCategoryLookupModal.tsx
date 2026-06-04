@@ -18,6 +18,7 @@ import { TextInput, useTheme } from "react-native-paper";
 import { ExpenseCategory } from "../../../../types/enums";
 import ExpenseCategoryIcon from "../Forms/Expense/ExpenseCategoryIcon";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface ExpenseCategoryLookupModalProps {
   visible: boolean;
@@ -38,6 +39,7 @@ const ExpenseCategoryLookupModal = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [modalHeight] = useState(screenHeight * 0.78);
   const { keyboardVisible } = useKeyboardVisible();
+  const insets = useSafeAreaInsets();
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
@@ -206,7 +208,7 @@ const ExpenseCategoryLookupModal = ({
             style={[
               { height: keyboardVisible ? "100%" : modalHeight },
               {
-                paddingTop: keyboardVisible ? 24 : 0,
+                paddingTop: keyboardVisible ? insets.top + 10 : 0,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: -8 },
                 shadowOpacity: 0.12,
@@ -243,7 +245,7 @@ const ExpenseCategoryLookupModal = ({
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
-                <Icon name="clear" size={36} color={"#333"} />
+                <Icon name="clear" size={24} color={"#999"} />
               </TouchableOpacity>
             </View>
 

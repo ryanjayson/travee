@@ -18,7 +18,7 @@ import { TextInput, useTheme } from "react-native-paper";
 import { ActivityType } from "../../../../types/enums";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 interface ActivityTypeLookupModalProps {
   visible: boolean;
   onClose: () => void;
@@ -38,7 +38,8 @@ const ActivityTypeLookupModal = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [modalHeight] = useState(screenHeight * 0.78);
   const { keyboardVisible } = useKeyboardVisible();
-
+  const insets = useSafeAreaInsets();
+  
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
   const dragStartDy = useRef(0);
@@ -198,6 +199,7 @@ const ActivityTypeLookupModal = ({
           style={{
             backgroundColor: "rgba(0,0,0,0.5)",
             opacity: backdropOpacity,
+            paddingTop: keyboardVisible ? insets.top + 10 : 0,
           }}
         >
           <Animated.View

@@ -12,6 +12,8 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTravelContext } from "../../../../../context/TravelContext";
 import { useItineraryActivity } from "../../../hooks/useActivity";
 import ActivityModal from "../../Edit/Itinerary/Activity/Modal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 
 interface ViewActivityModalProps {
   id: string;
@@ -26,8 +28,10 @@ const ViewActivityModal = ({
   showModal = false,
   setShowModal,
 }: ViewActivityModalProps) => {
+  const insets = useSafeAreaInsets();
   const modalHeight = useMemo(() => screenHeight, []);
   const { selectedTravelPlan } = useTravelContext();
+  const { keyboardVisible, isFloating } = useKeyboardVisible();
   
   // Fetch activity data here to pass to Edit Modal
   const { data: itineraryActivity } = useItineraryActivity(id);
@@ -46,7 +50,10 @@ const ViewActivityModal = ({
       <View className="flex-1 bg-white justify-start">
         <Animated.View 
           className="bg-white rounded-t-xl overflow-hidden" 
-          style={{ height: modalHeight, paddingTop: 40 }}
+          style={{ 
+            height: modalHeight, 
+            paddingTop: insets.top
+          }}
         >
           <View className="p-1.5 flex-row items-center justify-between border-b border-gray-100">
             <View className="flex-row items-center">
@@ -70,7 +77,7 @@ const ViewActivityModal = ({
               accessibilityRole="button"
               accessibilityLabel="Edit activity"
             >
-              <Icon name="edit" size={28} color="#777" />
+              <Icon name="edit" size={24} color="#777" />
             </TouchableOpacity>
           </View>
 

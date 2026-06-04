@@ -17,6 +17,7 @@ import StatusBadge from "../../../../components/StatusBadge";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { TravelStatus } from "../../../../types/enums";
 import { Travel } from "../../types/TravelDto";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface AddTripModalProps {
   showModal?: boolean;
@@ -36,7 +37,7 @@ const CreateTripModal = ({
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
   const { keyboardVisible, isFloating } = useKeyboardVisible();
   const [tripStatus, setTripStatus] = useState(TravelStatus.Draft);
-
+  const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
   const dragStartDy = useRef(0);
@@ -183,7 +184,7 @@ const CreateTripModal = ({
             style={[
               { height: keyboardVisible ? "100%" : modalHeight},
               {
-                paddingTop: keyboardVisible ? 24 : 0,
+                paddingTop: keyboardVisible ? insets.top + 10 : 0,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: -8 },
                 shadowOpacity: 0.12,
@@ -212,7 +213,7 @@ const CreateTripModal = ({
                     <StatusBadge status={tripStatus} />
                 </View>
                 <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-                    <Icon name="clear" size={36} color={"#333"} />
+                    <Icon name="clear" size={24} color={"#999"} />
                 </TouchableOpacity>
             </View>
             <View className="flex-1"

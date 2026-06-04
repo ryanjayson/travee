@@ -424,10 +424,10 @@ const ActivityItemCard = ({
           </>
         )}
 
-        {(!isLastItem && !isDragActive && !parentIsDragging) && viewMode === 'expanded' && (
+        {(!isDragActive && !parentIsDragging) && viewMode === 'expanded' && (
         <TouchableHighlight 
-          underlayColor={"transparent"}
-          className={`absolute h-6xl w-6xl -bottom-10px left-lg z-9999 `}
+          underlayColor={"none"}
+          className={`absolute h-6xl w-6xl -bottom-[30px] left-lg z-9999 `}
           onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
           onShowUnderlay={() => setIsAddPressed(true)}
           onHideUnderlay={() => setIsAddPressed(false)}
@@ -435,7 +435,7 @@ const ActivityItemCard = ({
             accessibilityLabel="Add activity"
           >
             <View
-                className={`${isAddPressed ? 'border-[#263F69] bg-[#263F69] rounded-full' : 'border-gray-300 rounded-md '} left-1px absolute m-2 mt-2xl border px-1px z-9999`}
+                className={`${isAddPressed ? 'border-[#183B7A] bg-[#183B7A] rounded-full' : 'border-gray-300 rounded-md '} left-1px absolute m-2 mt-2xl border px-1px z-9999`}
             >
             <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`}/>
 
@@ -629,12 +629,11 @@ const ActivityItemCard = ({
                     : (<Icon name="check-box-outline-blank" size={24} color="#888" />)}
             </TouchableOpacity>
         </View>
-
        
       </View>
 
      {isAddPressed && (
-        <View className="w-[85%] rounded-full left-5xl absolute -bottom-1">
+        <View className="w-[85%] rounded-full left-6xl absolute bottom-0">
           <View className="flex-1 h-xxs bg-[#183B7A] rounded-full z-40" />
           <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50 absolute right-0 -bottom-1" />
         </View>

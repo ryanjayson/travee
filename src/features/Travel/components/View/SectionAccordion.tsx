@@ -61,6 +61,7 @@ interface DraggableSectionItemProps {
   masterSectionBounds: React.MutableRefObject<Record<string, { pageY: number; height: number }>>;
   renderActivityCards: (section: ItinerarySection, activities: ItineraryActivity[]) => React.ReactNode;
   sectionRefs: React.MutableRefObject<Record<string, any>>;
+  viewMode?: "plain" | "narrow" | "expanded";
 }
 
 const DraggableSectionItem = ({
@@ -78,6 +79,7 @@ const DraggableSectionItem = ({
   masterSectionBounds,
   renderActivityCards,
   sectionRefs,
+  viewMode,
 }: DraggableSectionItemProps) => {
   const shiftAnim = useRef(new Animated.Value(0)).current;
   const lastTargetShift = useRef(0);
@@ -197,7 +199,7 @@ const DraggableSectionItem = ({
                   {section.title}
                 </Text>
               }
-              headerStyle={{ backgroundColor: "#FFF" }}
+              headerStyle={{ backgroundColor: "#FFF", paddingStart: 14 }}
               containerStyle={
                 isSectionActive
                   ? {
@@ -214,20 +216,24 @@ const DraggableSectionItem = ({
               }
             >
               
+              {section.description && section.description.trim() !== "" && (
+                <View className="bg-white flex-1 p-2 z-100">
+                  <Text className="text-sm text-[#555] leading-5 p-2 pt-0">
+                  {section.description}
+                </Text>
+                </View>
+              )}
+
               <View
-                style={{ backgroundColor: "#FFF"}}
+                style={{ backgroundColor: "#FFF", paddingBottom: 20, paddingEnd: 5}}
                 collapsable={false}
                 ref={(ref) => {
                   if (ref && section.id) sectionRefs.current[section.id] = ref;
                 }}
               >
-                {section.description && section.description.trim() !== "" && (
-                  <Text className="text-sm text-[#555] leading-5 p-2 pt-0">
-                    {section.description}
-                  </Text>
-                )}
             
-              <View className={`absolute h-full w-1px left-[32px] border-l border-dashed border-[#ccc]`}></View>
+            
+              <View className={`absolute h-full w-1px  border-l border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[28px]" : "left-4xl"}`}></View>
 
                 {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                   renderActivityCards(section, section.itineraryActivity)
@@ -791,7 +797,7 @@ const SectionAccordion = ({
                 const subSectionsLength = subSections.length;
                 return (
                   <View>
-                    <View className={`absolute top-5xl h-full w-1px left-[33px] z-0 border-l border-dashed border-[#ccc]`}></View>
+                    <View className={`absolute top-5xl h-full w-1px  z-0 border-l border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[29px]" : "left-[33px]"}`}></View>
 
                   <DraggableSectionItem
                     key={section.id}
@@ -809,6 +815,7 @@ const SectionAccordion = ({
                     masterSectionBounds={masterSectionBounds}
                     renderActivityCards={renderActivityCards}
                     sectionRefs={sectionRefs}
+                    viewMode={viewMode}
                   />
                   </View>
                 );

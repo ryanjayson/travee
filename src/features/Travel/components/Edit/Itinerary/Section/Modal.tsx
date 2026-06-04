@@ -16,6 +16,7 @@ import EditSection from "../Section";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
 import { ItinerarySection } from "../../../../types/TravelDto";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface SectionModalProps {
   visible: boolean;
@@ -34,6 +35,7 @@ const SectionModal = ({
   const [isSaving, setIsSaving] = useState(false);
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.6);
   const { keyboardVisible } = useKeyboardVisible();
+  const insets = useSafeAreaInsets();
   
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
@@ -183,7 +185,7 @@ const SectionModal = ({
             style={[
               { height: keyboardVisible ? "100%" : modalHeight },
               {
-                paddingTop: keyboardVisible ? 24 : 0,
+                paddingTop: keyboardVisible ? insets.top + 10 : 0,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: -8 },
                 shadowOpacity: 0.12,
@@ -214,7 +216,7 @@ const SectionModal = ({
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-                <Icon name="clear" size={36} color={"#333"} />
+                <Icon name="clear" size={24} color={"#333"} />
               </TouchableOpacity>
             </View>
 
