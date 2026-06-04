@@ -78,6 +78,31 @@ export interface ActivityFormValues {
   attachments: Attachment[];
 }
 
+const FormInitHandler = ({
+  values,
+  setFieldValue,
+  itineraryActivity,
+  onOpenPrimaryTypeModal,
+}: {
+  values: any;
+  setFieldValue: any;
+  itineraryActivity: any;
+  onOpenPrimaryTypeModal: any;
+}) => {
+  useEffect(() => {
+    if (!itineraryActivity?.id && values.type === ActivityType.none) {
+      const timer = setTimeout(() => {
+        onOpenPrimaryTypeModal(values.type, (type: any) => {
+          setFieldValue("type", type);
+        });
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [itineraryActivity?.id]);
+
+  return null;
+};
+
 const EditActivity = ({
   itinerarySectionId,
   itineraryActivity,
@@ -433,17 +458,33 @@ const EditActivity = ({
                   )}
                 </View>
 
-                {/* Description */}
+       {/* Activity Type */}
                 <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
-                  <DescriptionInput
-                    value={values.description}
-                    onChange={(text) => setFieldValue("description", text)}
-                    label="Description"
-                    placeholder="Activity details..."
-                    confirmLabel="Add"
-                  />
+                  <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
+                  <TouchableOpacity 
+                    onPress={() => {
+                      onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
+                        setFieldValue("type", type);
+                      });
+                    }}
+                    className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
+                    accessibilityRole="button"
+                  >
+                    {values.type != null ? (
+                      <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
+                    ) : (
+                      <Icon name="style" size={24} color={"#B3B3B3"} />
+                    )}
+                    <Text className="text-base text-gray-800 capitalize font-medium">
+                      {values.type != null
+                        ? values.type === ActivityType.none
+                          ? "No Type"
+                          : String(ActivityType[values.type as number]).replace(/([A-Z])/g, ' $1').trim()
+                        : "Select Type..."}
+                    </Text>
+                  </TouchableOpacity>
                 </View>
+
 
                 {/* Date & Time */}
                 <View className="mb-5">
@@ -543,7 +584,10 @@ const EditActivity = ({
 
                 {/* Itinerary Section */}
                 <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Itinerary Section</Text>
+                  <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Section</Text>
+                  <Text className={`text-base text-gray-400 opacity-80`}>
+                    Select the itinerary section where you want to add this activity.
+                  </Text>
                   <TouchableOpacity 
                     onPress={() => {
                       if (hasSections) {
@@ -564,30 +608,17 @@ const EditActivity = ({
                     {hasSections && <Icon name="keyboard-arrow-down" size={24} color="#666" />}
                   </TouchableOpacity>
                 </View>
-
-                {/* Activity Type */}
+         
+                {/* Description */}
                 <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
-                  <TouchableOpacity 
-                    onPress={() => {
-                      onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
-                        setFieldValue("type", type);
-                      });
-                    }}
-                    className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
-                    accessibilityRole="button"
-                  >
-                    {values.type != null && values.type !== ActivityType.none ? (
-                      <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
-                    ) : (
-                      <Icon name="style" size={24} color={"#B3B3B3"} />
-                    )}
-                    <Text className="text-base text-gray-800 capitalize font-medium">
-                      {values.type != null && values.type !== ActivityType.none
-                        ? String(ActivityType[values.type as number]).replace(/([A-Z])/g, ' $1').trim()
-                        : "Select Type..."}
-                    </Text>
-                  </TouchableOpacity>
+                  <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
+                  <DescriptionInput
+                    value={values.description}
+                    onChange={(text) => setFieldValue("description", text)}
+                    label="Description"
+                    placeholder="Activity details..."
+                    confirmLabel="Add"
+                  />
                 </View>
 
                 {/* Delete Activity */}
@@ -839,6 +870,12 @@ const EditActivity = ({
         return (
           <View className="flex-1 bg-gray-100 overflow-hidden">
             <StatusBar barStyle={"dark-content"} />
+            <FormInitHandler
+              values={values}
+              setFieldValue={setFieldValue}
+              itineraryActivity={itineraryActivity}
+              onOpenPrimaryTypeModal={onOpenPrimaryTypeModal}
+            />
 
             <View className="flex-1">
               <Tabs tabs={tabData} initialActiveTabId="details" type="default" onScroll={onScroll} />

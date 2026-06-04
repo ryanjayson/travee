@@ -310,14 +310,16 @@ debugger;
                     onPress={() => setShowPrimaryTypeModal(true)}
                     className="border rounded-2xl h-[64px] border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
                   >
-                    {values.type != null && values.type !== ActivityType.none ? (
+                    {values.type != null ? (
                       <ActivityIcon type={values.type as number} size={32} color="#183B7A" />
                     ) : (
                       <Icon name="style" size={32} color={"#B3B3B3"} />
                     )}
                     <Text className="text-base text-gray-800 capitalize font-medium">
-                      {values.type != null && values.type !== ActivityType.none
-                        ? String(ActivityType[values.type as number]).replace(/([A-Z])/g, ' $1').trim()
+                      {values.type != null
+                        ? values.type === ActivityType.none
+                          ? "No Type"
+                          : String(ActivityType[values.type as number]).replace(/([A-Z])/g, ' $1').trim()
                         : "Select Type..."}
                     </Text>
                   </TouchableOpacity>
@@ -445,7 +447,7 @@ debugger;
                         >
                           <ActivityIcon type={ActivityType[key as keyof typeof ActivityType]} size={24} color="#183B7A" />
                           <Text className="text-base text-gray-800 capitalize">
-                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                            {key === "none" ? "No Type" : key.replace(/([A-Z])/g, ' $1').trim()}
                           </Text>
                         </TouchableOpacity>
                       ))}

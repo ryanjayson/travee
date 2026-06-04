@@ -167,13 +167,18 @@ const ActivityTypeLookupModal = ({
     .filter((key) => isNaN(Number(key)))
     .map((key) => {
       const typeValue = ActivityType[key as keyof typeof ActivityType];
-      const displayName = key.replace(/([A-Z])/g, " $1").trim();
+      const displayName = key === "none" ? "No Type" : key.replace(/([A-Z])/g, " $1").trim();
       return { key, typeValue, displayName };
     });
 
   const filteredTypes = types.filter((t) =>
     t.displayName.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const noneItem = filteredTypes.find((t) => t.key === "none");
+  const commonKeys = ["flight", "checkIn", "checkOut"];
+  const commonList = filteredTypes.filter((t) => commonKeys.includes(t.key));
+  const otherList = filteredTypes.filter((t) => !commonKeys.includes(t.key) && t.key !== "none");
 
   const backdropOpacity = translateY.interpolate({
     inputRange: [0, screenHeight],
@@ -199,16 +204,16 @@ const ActivityTypeLookupModal = ({
           style={{
             backgroundColor: "rgba(0,0,0,0.5)",
             opacity: backdropOpacity,
-            paddingTop: keyboardVisible ? insets.top + 10 : 0,
+            // paddingTop: keyboardVisible ? insets.top + 10 : 0,
           }}
         >
           <Animated.View
             {...sheetPanResponder.panHandlers}
             className="rounded-t-[30px] bg-white overflow-hidden"
             style={[
-              { height: keyboardVisible ? "100%" : modalHeight },
+              { height: "100%" },
               {
-                paddingTop: keyboardVisible ? 24 : 0,
+                paddingTop: insets.top + 20,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: -8 },
                 shadowOpacity: 0.12,
@@ -219,16 +224,6 @@ const ActivityTypeLookupModal = ({
             ]}
           >
             <StatusBar style="dark" />
-
-            {/* Drag Handle Area */}
-            {!keyboardVisible && (
-              <View
-                {...dragPanResponder.panHandlers}
-                className="w-full items-center py-4 bg-white rounded-t-[30px]"
-              >
-                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
-              </View>
-            )}
 
             {/* Header */}
             <View
@@ -241,11 +236,11 @@ const ActivityTypeLookupModal = ({
                   className="text-2xl font-bold"
                   style={{ color: colors.primary || "#263F69" }}
                 >
-                  Select Activity Type
+                  Select type
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
-                <Icon name="clear" size={36} color={"#333"} />
+                <Icon name="clear" size={24} color={"#999"} />
               </TouchableOpacity>
             </View>
 
@@ -281,25 +276,113 @@ const ActivityTypeLookupModal = ({
                   isAtTop.current = y <= 0;
                 }}
                 scrollEventThrottle={16}
-                keyboardShouldPersistTaps="handled"
+                keyboardShouldPersistTaps="always"
               >
-                {filteredTypes.map(({ key, typeValue, displayName }) => (
+                {noneItem && (
                   <TouchableOpacity
-                    key={key}
+                    key={noneItem.key}
                     className="p-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
-                    onPress={() => handleSelect(typeValue)}
+                    onPress={() => handleSelect(noneItem.typeValue)}
                     accessibilityRole="button"
-                    accessibilityLabel={`Select activity type ${displayName}`}
+                    accessibilityLabel={`Select activity type ${noneItem.displayName}`}
                   >
-                    <ActivityIcon type={typeValue} size={24} />
+                    <ActivityIcon type={noneItem.typeValue} size={24} />
                     <Text className="text-base text-gray-800 flex-1 capitalize">
-                      {displayName}
+                      {noneItem.displayName}
                     </Text>
-                    {selectedType === typeValue && (
+                    {(selectedType === noneItem.typeValue || selectedType === undefined) && (
                       <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
                     )}
                   </TouchableOpacity>
-                ))}
+                )}
+
+                {commonList.length > 0 && (
+                  <View>
+                    <View
+                      style={{
+                        backgroundColor: "#F9FAFB",
+                        paddingHorizontal: 20,
+                        paddingVertical: 8,
+                        borderTopWidth: 1,
+                        borderBottomWidth: 1,
+                        borderColor: "#EAECF0",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: "700",
+                          color: "#475467",
+                          letterSpacing: 1,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Common
+                      </Text>
+                    </View>
+                    {commonList.map(({ key, typeValue, displayName }) => (
+                      <TouchableOpacity
+                        key={key}
+                        className="p-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
+                        onPress={() => handleSelect(typeValue)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Select activity type ${displayName}`}
+                      >
+                        <ActivityIcon type={typeValue} size={24} />
+                        <Text className="text-base text-gray-800 flex-1 capitalize">
+                          {displayName}
+                        </Text>
+                        {selectedType === typeValue && (
+                          <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                {otherList.length > 0 && (
+                  <View>
+                    <View
+                      style={{
+                        backgroundColor: "#F9FAFB",
+                        paddingHorizontal: 20,
+                        paddingVertical: 8,
+                        borderTopWidth: 1,
+                        borderBottomWidth: 1,
+                        borderColor: "#EAECF0",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: "700",
+                          color: "#475467",
+                          letterSpacing: 1,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        More
+                      </Text>
+                    </View>
+                    {otherList.map(({ key, typeValue, displayName }) => (
+                      <TouchableOpacity
+                        key={key}
+                        className="p-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
+                        onPress={() => handleSelect(typeValue)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Select activity type ${displayName}`}
+                      >
+                        <ActivityIcon type={typeValue} size={24} />
+                        <Text className="text-base text-gray-800 flex-1 capitalize">
+                          {displayName}
+                        </Text>
+                        {selectedType === typeValue && (
+                          <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
               </ScrollView>
             </View>
           </Animated.View>

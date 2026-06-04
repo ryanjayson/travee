@@ -596,14 +596,14 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                     >
                       <Icon name="close" size={28} color="#333" />
                     </TouchableOpacity>
-                    <Text className="text-xl font-bold">Select Travel Dates</Text>
+                    <Text className="text-xl font-bold">Travel Dates</Text>
                     <View className="w-10" />
                   </View>
 
                   {/* Calendar List */}
                   <View className="flex-1">
                     <CalendarList
-                      pastScrollRange={0}
+                      pastScrollRange={36}
                       futureScrollRange={12}
                       scrollEnabled={true}
                       horizontal={false}
@@ -625,7 +625,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                       minDate={new Date().toISOString().split('T')[0]}
                       markedDates={getPeriodMarkedDates(tempDepartureDate, tempReturnDate)}
                       theme={{
-                        todayTextColor: '#263F69',
+                        // todayTextColor: '#B42318',
+                        todayBackgroundColor: '#B42318',
                         selectedDayBackgroundColor: '#263F69',
                         selectedDayTextColor: '#ffffff',
                       }}
