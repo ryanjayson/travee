@@ -13,7 +13,8 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import StatusBadge from "../../../components/StatusBadge";
 import Tabs from "../../../components/Tabs/index";
 import { useTravelContext } from "../../../context/TravelContext";
-import { TravelStatus } from "../../../types/enums";
+import { TravelStatus, TripType } from "../../../types/enums";
+import TripIcon from "../../../components/TripIcon";
 import ViewTravelModal from "../components/View/Modal";
 import { useTravels } from "../hooks/useTravel";
 import { Travel } from "../types/TravelDto";
@@ -100,9 +101,14 @@ const TravelCatalog = () => {
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
           <View className="p-4 border border-[#E0E0E0] rounded-xl">
             <View className="flex-row justify-between items-start mb-3">
-              <View className="flex-1">
-                <Text className="text-lg font-medium text-primary">{travel.title}</Text>
-                <Text className="text-sm  text-[#666]">{travel.destination}</Text>
+              <View className="flex-row items-center gap-3 flex-1 mr-2">
+                {travel.type != null && travel.type !== TripType.none && (
+                  <TripIcon type={travel.type} size={20} showIconOnly={true} />
+                )}
+                <View className="flex-1">
+                  <Text className="text-lg font-medium text-primary">{travel.title}</Text>
+                  <Text className="text-sm  text-[#666]">{travel.destination}</Text>
+                </View>
               </View>
               <View className="flex-row items-center justify-between mt-2">
                 <StatusBadge status={effectiveStatus} />

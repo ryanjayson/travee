@@ -262,5 +262,16 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 18,
+      steps: [
+        addColumns({
+          table: "travels",
+          columns: [
+            { name: "type", type: "number", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

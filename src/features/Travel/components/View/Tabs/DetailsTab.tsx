@@ -4,7 +4,8 @@ import { ScrollView, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Svg, { Circle, G } from "react-native-svg";
 import ActivityIcon from "../../../../../components/ActivityIcon";
-import { ActivityType, ExpenseCategory } from "../../../../../types/enums";
+import { ActivityType, ExpenseCategory, TripType } from "../../../../../types/enums";
+import TripIcon from "../../../../../components/TripIcon";
 import { TravelPlan } from "../../../../Travel/types/TravelDto";
 import { useChecklistGroups, useChecklistItems } from "../../../hooks/useChecklist";
 import { useItineraryExpenses } from "../../../hooks/useExpense";
@@ -211,7 +212,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
             sub={doneActivities > 0 ? `${doneActivities} completed` : "None done yet"}
             accent="#263F69"
           />
-            <StatCard
+          <StatCard
             icon="playlist-add-check"
             label="Checklist"
             value={`${doneChecklist}/${totalChecklist}`}
@@ -219,6 +220,18 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
             accent="#059669"
           />
         </View>
+
+        {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
+          <View className="bg-white rounded-2xl border border-[#e0e0e0] p-4 mb-3 flex-row items-center gap-4">
+            <TripIcon type={travelPlan.travel.type} size={24} />
+            <View className="flex-1">
+              <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Trip Type</Text>
+              <Text className="text-base font-bold text-[#1A1A1A] capitalize">
+                {String(TripType[travelPlan.travel.type]).replace(/([A-Z])/g, " $1").trim()}
+              </Text>
+            </View>
+          </View>
+        )}
 
 
         {/* <View className="flex-row flex-wrap gap-3">

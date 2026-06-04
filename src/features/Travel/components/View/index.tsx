@@ -18,6 +18,8 @@ import {
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import StatusBadge from "../../../../components/StatusBadge";
+import { TripType } from "../../../../types/enums";
+import TripIcon from "../../../../components/TripIcon";
 import Tabs from "../../../../components/Tabs";
 import { useTravelContext } from "../../../../context/TravelContext";
 import { TravelPlan } from "../../../Travel/types/TravelDto";
@@ -366,9 +368,14 @@ const ViewTravel = ({
       <View className="flex-2 bg-white border-t border-gray-300 rounded-t-4xl -mt-7">
         <View className="p-6">
           <View className="flex-row justify-between items-start">
-            <Text className="text-4xl font-bold  mb-2 flex-1 mr-4">
-              {travelPlan?.travel.title}
-            </Text>
+            <View className="flex-row items-center gap-3 flex-1 mr-4">
+              {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
+                <TripIcon type={travelPlan.travel.type} size={28} showIconOnly={true} />
+              )}
+              <Text className="text-4xl font-bold mb-2 flex-1" numberOfLines={2}>
+                {travelPlan?.travel.title}
+              </Text>
+            </View>
             <StatusBadge type={1} status={travelPlan.travel.status!} />
           </View>
           <View className="flex-row items-center flex-wrap bg-gray-50 rounded-lg p-2">
@@ -632,9 +639,14 @@ const ViewTravel = ({
               // })
             }}
           >
-            <Text className="text-3xl font-bold text-gray-800" numberOfLines={expanded ? undefined : 1}>
-              {travelPlan.travel.title}
-            </Text>
+            <View className="flex-row items-center gap-3">
+              {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
+                <TripIcon type={travelPlan.travel.type} size={24} showIconOnly={true} />
+              )}
+              <Text className="text-3xl font-bold text-gray-800 flex-1" numberOfLines={expanded ? undefined : 1}>
+                {travelPlan.travel.title}
+              </Text>
+            </View>
             <View className="flex-row items-center mt-1 flex-wrap">
               <Icon name="location-pin" size={14} color="#B42318" />
               <Text className="text-xs text-gray-500 font-medium ml-0.5 mr-3" numberOfLines={1}>

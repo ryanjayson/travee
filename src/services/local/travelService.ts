@@ -22,6 +22,7 @@ export const getTravelsLocally = async (): Promise<any[]> => {
     notes: t.notes,
     isOffline: t.isOffline,
     isArchived: t.isArchived,
+    type: t.type,
   }));
 };
 
@@ -41,6 +42,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
       notes: t.notes,
       isOffline: t.isOffline,
       isArchived: t.isArchived,
+      type: t.type,
     };
 
     const sections = await database.get<Section>("itinerary_sections").query(
@@ -128,6 +130,7 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           notes: travelData.notes,
           isOffline: true,
           isArchived: travelData.isArchived ?? false,
+          type: travelData.type ?? null,
         });
       });
       return travel;
@@ -145,6 +148,7 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           notes: travelData.notes,
           isOffline: true,
           isArchived: travelData.isArchived ?? false,
+          type: travelData.type ?? null,
         });
       });
 

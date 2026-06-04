@@ -18,7 +18,9 @@ import { Checkbox, TextInput } from "react-native-paper";
 import * as Yup from "yup";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
-import { TravelStatus } from "../../../../types/enums";
+import { TravelStatus, TripType } from "../../../../types/enums";
+import TripIcon from "../../../../components/TripIcon";
+import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
 import { useNavigation } from "@react-navigation/native";
 import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
 import { DestinationDto, Travel } from "../../types/TravelDto";
@@ -64,19 +66,15 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     { id: "3", label: "International", selected: false },
   ];
 
-  const activityOptions = [
-    { id: "1", label: "Ride", selected: false },
-    { id: "2", label: "Camp", selected: false },
-    { id: "3", label: "Hike", selected: false },
-    { id: "4", label: "Event", selected: false },
-    { id: "5", label: "Concert", selected: false },
-    { id: "6", label: "Marathon", selected: false },
-    { id: "8", label: "Shopping", selected: false },
-    { id: "9", label: "Forum", selected: false },
-    { id: "10", label: "Workshop", selected: false },
-    { id: "11", label: "Symposium", selected: false },
-    { id: "12", label: "Colloquium", selected: false },
-  ];
+  const [showTripTypeModal, setShowTripTypeModal] = useState(false);
+
+  const activityOptions = Object.keys(TripType)
+    .filter((key) => isNaN(Number(key)) && key !== "none")
+    .map((key) => {
+      const typeVal = TripType[key as keyof typeof TripType];
+      const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, " $1");
+      return { id: String(typeVal), label: displayName, selected: false };
+    });
 
   const CreateTripSchema = Yup.object().shape({
     title: Yup.string().required("Trip title is required").min(2, "Trip title is too short, make it more descriptive"),
@@ -93,6 +91,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       budget: tripData?.budget || "",
       notes: tripData?.notes || "",
       createSectionsBasedOnDates: false,
+      type: tripData?.type ?? TripType.none,
     },
     enableReinitialize: true,
     validationSchema: CreateTripSchema,
@@ -108,6 +107,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         endOrReturnDate: values.endOrReturnDate || undefined,
         budget: values.budget,
         notes: values.notes, 
+        type: values.type !== TripType.none ? values.type : undefined,
         status: (() => {
           if (!values.startOrDepartureDate || !values.endOrReturnDate) return TravelStatus.Draft;
           const today = new Date();
@@ -444,6 +444,36 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           </Modal>
         </View>
 
+        <View className="mb-5">
+          <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Trip Type</Text>
+          <TouchableOpacity 
+            onPress={() => setShowTripTypeModal(true)}
+            className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
+            accessibilityRole="button"
+            activeOpacity={0.7}
+          >
+            {formik.values.type != null && formik.values.type !== TripType.none ? (
+              <TripIcon type={formik.values.type} size={24} showIconOnly={true} />
+            ) : (
+              <Icon name="style" size={24} color={"#B3B3B3"} />
+            )}
+            <Text className="text-base text-gray-800 capitalize font-medium">
+              {formik.values.type != null && formik.values.type !== TripType.none
+                ? String(TripType[formik.values.type]).replace(/([A-Z])/g, ' $1').trim()
+                : "Select Trip Type..."}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <TripTypeLookupModal
+          visible={showTripTypeModal}
+          onClose={() => setShowTripTypeModal(false)}
+          selectedType={formik.values.type}
+          onSelect={(type) => {
+            formik.setFieldValue("type", type);
+          }}
+        />
+
         {mode === "edit" && (
           <View className="mb-5 z-10">
             <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
@@ -453,7 +483,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
         <View className="">
           <Text className="text-xs font-semibold tracking-wider uppercase">Travel dates</Text>
-          <View className="flex-row mb-2 gap-3 -mt-3px">
+          <View className="flex-row mb-2 gap-1 -mt-3px items-center">
             <View className="flex-1">
               <View className="relative mt-sm">
                 <TextInput
@@ -565,6 +595,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                 </View>
               </Modal>
             </View>
+            <Icon name="arrow-forward" size={24} color="#999" className="mt-sm" />
             <View className="flex-1">
               <View className="relative mt-sm">
                 <TextInput
@@ -628,7 +659,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                       </Text>
 
                         <Text className={`text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-80' : 'text-gray-400'}`}>
-                          When checked it will create itinerary sections based on travel dates. Travel dates should be set to create.
+                          When checked it will create itinerary sections based on dates. Travel dates should be set to create.
                       </Text>
                     </TouchableOpacity>
           </View>

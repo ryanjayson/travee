@@ -78,3 +78,27 @@ export enum ExpenseCategory {
   Laundry = 17,
   Others = 18,
 }
+
+export enum TripType {
+  none = 0,
+  ride = 1,
+  camp = 2,
+  hike = 3,
+  event = 4,
+  concert = 5,
+  marathon = 6,
+  shopping = 8,
+  forum = 9,
+  workshop = 10,
+  symposium = 11,
+  colloquium = 12,
+  vacation = 13,
+  business = 14,
+  roadtrip = 15,
+  solo = 16,
+  family = 17,
+  backpacking = 18,
+  motorcycleRide = 19,
+  motoCamping = 20,
+}
+

@@ -20,6 +20,7 @@ export default class Travel extends Model {
   @text("notes") notes!: string | null;
   @field("is_offline") isOffline!: boolean;
   @field("is_archived") isArchived!: boolean;
+  @field("type") type!: number | null;
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
 

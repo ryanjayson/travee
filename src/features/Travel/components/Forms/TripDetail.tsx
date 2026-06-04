@@ -21,7 +21,9 @@ import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSele
 import TouchButton from "../../../../components/atoms/TouchButton";
 import { useUpdateTravel, useTravels } from "../../hooks/useTravel";
 import { Travel, UpdateTravelData, DestinationDto } from "../../types/TravelDto";
-import { TravelStatus } from "../../../../types/enums";
+import { TravelStatus, TripType } from "../../../../types/enums";
+import TripIcon from "../../../../components/TripIcon";
+import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
 
 interface TripDetailProps {
   tripData?: Travel;
@@ -50,19 +52,15 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
     { id: "3", label: "International", selected: false },
   ];
 
-  const activityOptions = [
-    { id: "1", label: "Ride", selected: false },
-    { id: "2", label: "Camp", selected: false },
-    { id: "3", label: "Hike", selected: false },
-    { id: "4", label: "Event", selected: false },
-    { id: "5", label: "Concert", selected: false },
-    { id: "6", label: "Marathon", selected: false },
-    { id: "8", label: "Shopping", selected: false },
-    { id: "9", label: "Forum", selected: false },
-    { id: "10", label: "Workshop", selected: false },
-    { id: "11", label: "Symposium", selected: false },
-    { id: "12", label: "Colloquium", selected: false },
-  ];
+  const [showTripTypeModal, setShowTripTypeModal] = useState(false);
+
+  const activityOptions = Object.keys(TripType)
+    .filter((key) => isNaN(Number(key)) && key !== "none")
+    .map((key) => {
+      const typeVal = TripType[key as keyof typeof TripType];
+      const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, " $1");
+      return { id: String(typeVal), label: displayName, selected: false };
+    });
 
   const formik = useFormik({
     initialValues: {
@@ -75,6 +73,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
       budget: tripData?.budget || "",
       notes: tripData?.notes || "",
       createSectionsBasedOnDates: false,
+      type: tripData?.type ?? TripType.none,
     },
     enableReinitialize: true,
     validationSchema: TravelSchema,
@@ -90,6 +89,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
         endOrReturnDate: values.endOrReturnDate || undefined,
         budget: values.budget,
         notes: values.notes,
+        type: values.type !== TripType.none ? values.type : undefined,
         status: (() => {
           if (!values.startOrDepartureDate || !values.endOrReturnDate) return TravelStatus.Draft;
           const today = new Date();
@@ -305,6 +305,36 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           />
         </Modal>
       </View>
+
+      <View className="mb-5">
+        <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Trip Type</Text>
+        <TouchableOpacity 
+          onPress={() => setShowTripTypeModal(true)}
+          className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
+          accessibilityRole="button"
+          activeOpacity={0.7}
+        >
+          {formik.values.type != null && formik.values.type !== TripType.none ? (
+            <TripIcon type={formik.values.type} size={24} showIconOnly={true} />
+          ) : (
+            <Icon name="style" size={24} color={"#B3B3B3"} />
+          )}
+          <Text className="text-base text-gray-800 capitalize font-medium">
+            {formik.values.type != null && formik.values.type !== TripType.none
+              ? String(TripType[formik.values.type]).replace(/([A-Z])/g, ' $1').trim()
+              : "Select Trip Type..."}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <TripTypeLookupModal
+        visible={showTripTypeModal}
+        onClose={() => setShowTripTypeModal(false)}
+        selectedType={formik.values.type}
+        onSelect={(type) => {
+          formik.setFieldValue("type", type);
+        }}
+      />
 
       {mode === "edit" && (
         <View className="mb-5 z-10">

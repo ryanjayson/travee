@@ -1,4 +1,4 @@
-import { ActivityType, TravelStatus, ExpenseCategory } from "../../../types/enums";
+import { ActivityType, TravelStatus, ExpenseCategory, TripType } from "../../../types/enums";
 
 export interface TravelPlan {
   travel: Travel;
@@ -89,6 +89,7 @@ export interface Travel {
   isArchived?: boolean;
   tripMembers?: TripMember[];
   memberSplitBills?: MemberSplitBill[];
+  type?: TripType;
 }
 
 export interface ItinerarySection {
@@ -187,6 +188,7 @@ export interface CreateTravelData {
   status?: TravelStatus;
   isOffline?: boolean;
   createSectionsBasedOnDates?: boolean;
+  type?: TripType;
 }
 
 export interface DestinationDto {
@@ -209,4 +211,5 @@ export interface UpdateTravelData {
   budget?: string;
   notes?: string;
   status?: TravelStatus;
+  type?: TripType;
 }
