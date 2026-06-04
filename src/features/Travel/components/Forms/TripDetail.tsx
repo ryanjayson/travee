@@ -53,6 +53,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
   ];
 
   const [showTripTypeModal, setShowTripTypeModal] = useState(false);
+  const [suggestionApplied, setSuggestionApplied] = useState(false);
 
   const activityOptions = Object.keys(TripType)
     .filter((key) => isNaN(Number(key)) && key !== "none")
@@ -165,6 +166,12 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
     }
   }, [effectiveStatus, onStatusChange]);
 
+  React.useEffect(() => {
+    if (mode === "create") {
+      setShowDestinationModal(true);
+    }
+  }, [mode]);
+
   const { data: travels } = useTravels();
 
   const generateBlockedDates = () => {
@@ -210,6 +217,31 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
 
   const blockedDates = generateBlockedDates();
 
+  const getCityOnly = (destination?: string): string => {
+    if (!destination) return "";
+    return destination.split(',')[0].trim();
+  };
+
+  const getTripTypeName = (type: TripType) => {
+    if (type === undefined || type === null || type === TripType.none) return "";
+    return String(TripType[type]).replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  };
+
+  const formatDepartureDate = (date: Date | null | undefined) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${month}/${year}`;
+  };
+
+  const tripTypeName = getTripTypeName(formik.values.type);
+  const cityName = getCityOnly(formik.values.destination);
+  const dateStr = formatDepartureDate(formik.values.startOrDepartureDate);
+
+  const hasAllThree = !!cityName && !!formik.values.startOrDepartureDate && formik.values.type !== TripType.none;
+  const suggestion = hasAllThree ? `${tripTypeName} in ${cityName} - ${dateStr}` : "";
+
   return (
     <ScrollView className="flex-1 p-[15px] bg-gray-50" showsVerticalScrollIndicator={false}>
       {error && (
@@ -237,6 +269,22 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           style={{ marginTop: 6 }}
           contentStyle={{ backgroundColor: "transparent" }}
         />
+        {suggestion && !suggestionApplied ? (
+          <TouchableOpacity 
+            onPress={() => {
+              formik.setFieldValue("title", suggestion);
+              setSuggestionApplied(true);
+            }}
+            className="mt-2.5 ml-1"
+            accessibilityRole="button"
+            accessibilityLabel={`Apply suggested title: ${suggestion}`}
+            activeOpacity={0.7}
+          >
+            <Text className="text-xs font-medium" style={{ color: colors.primary }}>
+              Suggested: <Text className="underline">{suggestion}</Text>
+            </Text>
+          </TouchableOpacity>
+        ) : null}
         {formik.touched.title && formik.errors.title && (
           <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.title as string}</Text>
         )}
@@ -300,6 +348,11 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
                 coordinates: { longitude: place.coordinates.longitude, latitude: place.coordinates.latitude },
               } as DestinationDto);
               setShowDestinationModal(false);
+              if (mode === "create") {
+                setTimeout(() => {
+                  setShowStartDatePicker(true);
+                }, 300);
+              }
             }}
             initialValue={formik.values.destination}
           />
@@ -373,6 +426,11 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
                   onDayPress={(day: any) => {
                     formik.setFieldValue("startOrDepartureDate", new Date(day.timestamp));
                     setShowStartDatePicker(false);
+                    if (mode === "create") {
+                      setTimeout(() => {
+                        setShowEndDatePicker(true);
+                      }, 300);
+                    }
                   }}
                   minDate={new Date().toISOString().split('T')[0]}
                   enableSwipeMonths={true}
@@ -419,6 +477,11 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
                   onDayPress={(day: any) => {
                     formik.setFieldValue("endOrReturnDate", new Date(day.timestamp));
                     setShowEndDatePicker(false);
+                    if (mode === "create") {
+                      setTimeout(() => {
+                        setShowTripTypeModal(true);
+                      }, 300);
+                    }
                   }}
                   enableSwipeMonths={true}
                   markedDates={{

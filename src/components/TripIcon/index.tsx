@@ -126,6 +126,18 @@ const tripIcons: TripIconConfig[] = [
     iconName: "backpack",
     color: "#8BC34A",
   },
+  {
+    iconSet: IconSetProvider.material,
+    tripType: TripType.motorcycleRide,
+    iconName: "motorcycle",
+    color: "#FF9800",
+  },
+  {
+    iconSet: IconSetProvider.material,
+    tripType: TripType.motoCamping,
+    iconName: "forest",
+    color: "#4CAF50",
+  },
 ];
 
 export { tripIcons };

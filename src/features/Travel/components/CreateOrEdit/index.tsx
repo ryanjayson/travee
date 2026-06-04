@@ -14,7 +14,7 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { Calendar, CalendarList } from "react-native-calendars";
-import { Checkbox, TextInput } from "react-native-paper";
+import { Checkbox, TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
@@ -43,6 +43,7 @@ export interface CreateOrEditRef {
 }
 
 const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, onStatusChange, tripData, mode = "create", hideSubmitButton, onScroll }, ref) => {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -67,6 +68,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
   ];
 
   const [showTripTypeModal, setShowTripTypeModal] = useState(false);
+  const [suggestionApplied, setSuggestionApplied] = useState(false);
 
   const activityOptions = Object.keys(TripType)
     .filter((key) => isNaN(Number(key)) && key !== "none")
@@ -290,6 +292,36 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     }
   }, [effectiveStatus, onStatusChange]);
 
+  React.useEffect(() => {
+    if (mode === "create") {
+      setShowDestinationModal(true);
+    }
+  }, [mode]);
+
+  const getCityOnly = (destination?: string): string => {
+    if (!destination) return "";
+    return destination.split(',')[0].trim();
+  };
+
+  const getTripTypeName = (type: TripType) => {
+    if (type === undefined || type === null || type === TripType.none) return "";
+    return String(TripType[type]).replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+  };
+
+  const formatDepartureDate = (date: Date | null | undefined) => {
+    if (!date) return "";
+    const d = new Date(date);
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${month}/${year}`;
+  };
+
+  const tripTypeName = getTripTypeName(formik.values.type);
+  const cityName = getCityOnly(formik.values.destination);
+  const dateStr = formatDepartureDate(formik.values.startOrDepartureDate);
+
+  const hasAllThree = !!cityName && !!formik.values.startOrDepartureDate && formik.values.type !== TripType.none;
+  const suggestion = hasAllThree ? `${tripTypeName} in ${cityName} - ${dateStr}` : "";
 
   return (
     <View className="flex-1 bg-gray-100 overflow-hidden">
@@ -340,6 +372,22 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               backgroundColor: "transparent",
             }}
           />
+          {suggestion && !suggestionApplied ? (
+            <TouchableOpacity 
+              onPress={() => {
+                formik.setFieldValue("title", suggestion);
+                setSuggestionApplied(true);
+              }}
+              className="mt-2.5 ml-1"
+              accessibilityRole="button"
+              accessibilityLabel={`Apply suggested title: ${suggestion}`}
+              activeOpacity={0.7}
+            >
+              <Text className="text-xs font-medium" style={{ color: colors.primary }}>
+                Suggested: <Text className="underline">{suggestion}</Text>
+              </Text>
+            </TouchableOpacity>
+          ) : null}
           {formik.touched.title && formik.errors.title && (
             <Text className="text-error text-sm mt-1 ml-1">{formik.errors.title as string}</Text>
           )}
@@ -424,7 +472,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             onRequestClose={() => setShowDestinationModal(false)}
           >
              <Animated.View className="bg-white flex-1">
-                         <MapboxDestinationSelector
+                          <MapboxDestinationSelector
               onClose={() => setShowDestinationModal(false)}
               onSelect={(place: MapboxPlace) => {
                 formik.setFieldValue("destination", place.fullName);
@@ -436,6 +484,13 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   },
                 } as DestinationDto);
                 setShowDestinationModal(false);
+                if (mode === "create") {
+                  setTimeout(() => {
+                    setTempDepartureDate(formik.values.startOrDepartureDate ? new Date(formik.values.startOrDepartureDate) : null);
+                    setTempReturnDate(formik.values.endOrReturnDate ? new Date(formik.values.endOrReturnDate) : null);
+                    setShowStartDatePicker(true);
+                  }, 300);
+                }
               }}
               initialValue={formik.values.destination}
             />
@@ -587,6 +642,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                           formik.setFieldValue("endOrReturnDate", tempReturnDate);
                         }
                         setShowStartDatePicker(false);
+                        if (mode === "create") {
+                          setTimeout(() => {
+                            setShowTripTypeModal(true);
+                          }, 300);
+                        }
                       }}
                       disabled={!tempDepartureDate}
                       className="h-7xl p-6"
