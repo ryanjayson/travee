@@ -67,6 +67,15 @@ export interface DestinationModalState {
   onSelect?: (place: MapboxPlace) => void;
 }
 
+export interface FlightModalState {
+  visible: boolean;
+  onConfirm?: (flightData: {
+    departureAirport: any;
+    arrivalAirport: any;
+    departureDate: Date;
+  }) => void;
+}
+
 export interface TravelContextType {
   selectedTravelPlan: TravelPlanDetail | null;
   selectTravelPlan: (travelData: TravelPlanDetail) => void;
@@ -131,6 +140,16 @@ export interface TravelContextType {
     onSelect?: (place: MapboxPlace) => void
   ) => void;
   closeDestinationModal: () => void;
+
+  flightModal: FlightModalState;
+  openFlightModal: (
+    onConfirm: (flightData: {
+      departureAirport: any;
+      arrivalAirport: any;
+      departureDate: Date;
+    }) => void
+  ) => void;
+  closeFlightModal: () => void;
 }
 
 

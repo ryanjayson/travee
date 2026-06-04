@@ -19,6 +19,7 @@ import {
   MemberModalState,
   DescriptionModalState,
   DestinationModalState,
+  FlightModalState,
 } from "../types/context/travel";
 import { MapboxPlace } from "../features/Travel/components/MapboxDestinationSelector";
 import {
@@ -92,6 +93,12 @@ const initialContextValue: TravelContextType = {
   },
   openDestinationModal: () => {},
   closeDestinationModal: () => {},
+
+  flightModal: {
+    visible: false,
+  },
+  openFlightModal: () => {},
+  closeFlightModal: () => {},
 };
 
 // Create the typed Context
@@ -151,6 +158,10 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     visible: false,
     initialValue: "",
     onSelect: () => {},
+  });
+
+  const [flightModal, setFlightModal] = useState<FlightModalState>({
+    visible: false,
   });
 
   // Use useCallback and apply types to the function arguments
@@ -334,6 +345,29 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     }));
   }, []);
 
+  const openFlightModal = useCallback(
+    (
+      onConfirm: (flightData: {
+        departureAirport: any;
+        arrivalAirport: any;
+        departureDate: Date;
+      }) => void
+    ) => {
+      setFlightModal({
+        visible: true,
+        onConfirm,
+      });
+    },
+    []
+  );
+
+  const closeFlightModal = useCallback(() => {
+    setFlightModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
   // Use useMemo and apply the context type to the value
   const contextValue = useMemo<TravelContextType>(
     () => ({
@@ -364,6 +398,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       destinationModal,
       openDestinationModal,
       closeDestinationModal,
+      flightModal,
+      openFlightModal,
+      closeFlightModal,
     }),
     [
       selectedTravelPlan,
@@ -393,6 +430,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       destinationModal,
       openDestinationModal,
       closeDestinationModal,
+      flightModal,
+      openFlightModal,
+      closeFlightModal,
     ]
   );
 

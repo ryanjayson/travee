@@ -273,5 +273,29 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 19,
+      steps: [
+        createTable({
+          name: "flight_details",
+          columns: [
+            { name: "activity_id", type: "string", isIndexed: true },
+            { name: "departure_airport", type: "string" },
+            { name: "arrival_airport", type: "string" },
+            { name: "departure_date", type: "number" },
+            { name: "arrival_date", type: "number", isOptional: true },
+            { name: "flight_number", type: "string", isOptional: true },
+            { name: "airline", type: "string", isOptional: true },
+            { name: "gate", type: "string", isOptional: true },
+            { name: "terminal", type: "string", isOptional: true },
+            { name: "seat_number", type: "string", isOptional: true },
+            { name: "booking_reference", type: "string", isOptional: true },
+            { name: "price", type: "number", isOptional: true },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
   ],
 });

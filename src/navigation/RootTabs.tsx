@@ -19,6 +19,7 @@ import ActivityModal from "../features/Travel/components/Edit/Itinerary/Activity
 import MemberModal from "../features/Travel/components/Forms/Member/Modal";
 import DescriptionModal from "../components/molecules/DescriptionInput/Modal";
 import MapboxDestinationSelectorModal from "../features/Travel/components/MapboxDestinationSelector/Modal";
+import FlightModal from "../features/Travel/components/Forms/Flight/FlightModal";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
@@ -81,6 +82,8 @@ function RootTabsComponent() {
     closeDescriptionModal,
     destinationModal,
     closeDestinationModal,
+    flightModal,
+    closeFlightModal,
   } = useTravelContext();
   const insets = useSafeAreaInsets();
 
@@ -237,6 +240,16 @@ function RootTabsComponent() {
           closeDestinationModal();
         }}
         onClose={closeDestinationModal}
+      />
+      <FlightModal
+        visible={flightModal.visible}
+        onConfirm={(flightData) => {
+          if (flightModal.onConfirm) {
+            flightModal.onConfirm(flightData);
+          }
+          closeFlightModal();
+        }}
+        onClose={closeFlightModal}
       />
     </View>      
  

@@ -24,6 +24,7 @@ import * as Yup from "yup";
 import ActivityIcon, { activityIcons } from "../../../../../../components/ActivityIcon";
 import TouchButton from "../../../../../../components/atoms/TouchButton";
 import Tabs from "../../../../../../components/Tabs";
+import FlightTab from "./Tabs/FlightTab";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import { ActivityType } from "../../../../../../types/enums";
@@ -76,6 +77,19 @@ export interface ActivityFormValues {
   destinationData?: DestinationDto;
   images: Images[];
   attachments: Attachment[];
+  flightDetails?: {
+    departureAirport: string;
+    arrivalAirport: string;
+    departureDate: Date | string | null;
+    arrivalDate?: Date | string | null;
+    flightNumber?: string | null;
+    airline?: string | null;
+    gate?: string | null;
+    terminal?: string | null;
+    seatNumber?: string | null;
+    bookingReference?: string | null;
+    price?: string | number | null;
+  } | null;
 }
 
 const FormInitHandler = ({
@@ -83,17 +97,26 @@ const FormInitHandler = ({
   setFieldValue,
   itineraryActivity,
   onOpenPrimaryTypeModal,
+  openFlightModal,
+  handleFlightSelect,
 }: {
   values: any;
   setFieldValue: any;
   itineraryActivity: any;
   onOpenPrimaryTypeModal: any;
+  openFlightModal: any;
+  handleFlightSelect: any;
 }) => {
   useEffect(() => {
     if (!itineraryActivity?.id && values.type === ActivityType.none) {
       const timer = setTimeout(() => {
         onOpenPrimaryTypeModal(values.type, (type: any) => {
           setFieldValue("type", type);
+          if (type === ActivityType.flight) {
+            openFlightModal((flightData: any) => {
+              handleFlightSelect(flightData, setFieldValue);
+            });
+          }
         });
       }, 350);
       return () => clearTimeout(timer);
@@ -131,6 +154,73 @@ const EditActivity = ({
     return `${hours}:${minutes}`;
   };
 
+  const formatFlightDateTime = (dateVal: any) => {
+    if (!dateVal) return "Not Set";
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return "Not Set";
+    return d.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const handleFlightSelect = (flightData: any, setFieldValue: any) => {
+    const { departureAirport, arrivalAirport, departureDate } = flightData;
+    
+    // 1. Title: e.g. "Flight to Manila"
+    const arrCity = arrivalAirport.type === "city" 
+      ? arrivalAirport.name 
+      : arrivalAirport.city_name;
+    setFieldValue("title", `Flight to ${arrCity}`);
+    
+    // 2. Destination: departure airport (e.g. "Singapore (SIN)")
+    const depCity = departureAirport.type === "city" 
+      ? departureAirport.name 
+      : departureAirport.city_name;
+    setFieldValue("destination", `${depCity} (${departureAirport.code})`);
+    
+    // 3. DestinationData: set coordinates and detail fields based on departure airport
+    setFieldValue("destinationData", {
+      id: departureAirport.id,
+      coordinates: {
+        longitude: departureAirport.coordinates.lon,
+        latitude: departureAirport.coordinates.lat,
+      },
+    });
+    
+    // 4. Start Date: YYYY-MM-DD
+    const year = departureDate.getFullYear();
+    const month = String(departureDate.getMonth() + 1).padStart(2, '0');
+    const day = String(departureDate.getDate()).padStart(2, '0');
+    setFieldValue("startDate", `${year}-${month}-${day}`);
+    
+    // 5. Start Time: HH:MM
+    const hours = String(departureDate.getHours()).padStart(2, '0');
+    const minutes = String(departureDate.getMinutes()).padStart(2, '0');
+    setFieldValue("startTime", `${hours}:${minutes}`);
+    
+    // 6. Description: Flight details prefill
+    const depName = departureAirport.type === "city" && departureAirport.main_airport_name
+      ? departureAirport.main_airport_name
+      : departureAirport.name;
+    const arrName = arrivalAirport.type === "city" && arrivalAirport.main_airport_name
+      ? arrivalAirport.main_airport_name
+      : arrivalAirport.name;
+    setFieldValue(
+      "description",
+      `Flight from ${depName} (${departureAirport.code}) to ${arrName} (${arrivalAirport.code})`
+    );
+
+    // 7. Flight details nested properties
+    setFieldValue("flightDetails.departureAirport", `${depName} (${departureAirport.code})`);
+    setFieldValue("flightDetails.arrivalAirport", `${arrName} (${arrivalAirport.code})`);
+    setFieldValue("flightDetails.departureDate", departureDate);
+  };
+
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
   const [isAllDay, setIsAllDay] = useState<boolean>(true);
@@ -139,6 +229,7 @@ const EditActivity = ({
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
   const [isChecklistFocused, setIsChecklistFocused] = useState<boolean>(false);
+  const [showFlightDatePickerFor, setShowFlightDatePickerFor] = useState<"departureDate" | "arrivalDate" | null>(null);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -164,7 +255,7 @@ const EditActivity = ({
 
 
   const updateMutation = useUpdateActivityMutation();
-  const { selectedTravelPlan } = useTravelContext();
+  const { selectedTravelPlan, openFlightModal } = useTravelContext();
   const { userToken } = useAuth();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
@@ -360,6 +451,25 @@ const EditActivity = ({
         isOffline: true,
         travelId: values.travelId,
         attachments: values.attachments,
+        flightDetails: values.type === ActivityType.flight && values.flightDetails
+          ? {
+              departureAirport: values.flightDetails.departureAirport,
+              arrivalAirport: values.flightDetails.arrivalAirport,
+              departureDate: values.flightDetails.departureDate
+                ? new Date(values.flightDetails.departureDate)
+                : new Date(),
+              arrivalDate: values.flightDetails.arrivalDate
+                ? new Date(values.flightDetails.arrivalDate)
+                : null,
+              flightNumber: values.flightDetails.flightNumber || null,
+              airline: values.flightDetails.airline || null,
+              gate: values.flightDetails.gate || null,
+              terminal: values.flightDetails.terminal || null,
+              seatNumber: values.flightDetails.seatNumber || null,
+              bookingReference: values.flightDetails.bookingReference || null,
+              price: values.flightDetails.price ? Number(values.flightDetails.price) : null,
+            }
+          : null,
       };
 
       await updateMutation.mutateAsync(payload);
@@ -410,6 +520,37 @@ const EditActivity = ({
         destinationData: itineraryActivity?.destinationData || (itineraryActivity?.id ? undefined : itineraryActivity?.destinationData),
         images: itineraryActivity?.images || [],
         attachments: itineraryActivity?.attachments || [],
+        flightDetails: itineraryActivity?.flightDetails
+          ? {
+              departureAirport: itineraryActivity.flightDetails.departureAirport || "",
+              arrivalAirport: itineraryActivity.flightDetails.arrivalAirport || "",
+              departureDate: itineraryActivity.flightDetails.departureDate
+                ? new Date(itineraryActivity.flightDetails.departureDate)
+                : null,
+              arrivalDate: itineraryActivity.flightDetails.arrivalDate
+                ? new Date(itineraryActivity.flightDetails.arrivalDate)
+                : null,
+              flightNumber: itineraryActivity.flightDetails.flightNumber || "",
+              airline: itineraryActivity.flightDetails.airline || "",
+              gate: itineraryActivity.flightDetails.gate || "",
+              terminal: itineraryActivity.flightDetails.terminal || "",
+              seatNumber: itineraryActivity.flightDetails.seatNumber || "",
+              bookingReference: itineraryActivity.flightDetails.bookingReference || "",
+              price: itineraryActivity.flightDetails.price != null ? String(itineraryActivity.flightDetails.price) : "",
+            }
+          : {
+              departureAirport: "",
+              arrivalAirport: "",
+              departureDate: null,
+              arrivalDate: null,
+              flightNumber: "",
+              airline: "",
+              gate: "",
+              terminal: "",
+              seatNumber: "",
+              bookingReference: "",
+              price: "",
+            },
       }}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}
@@ -430,7 +571,29 @@ const EditActivity = ({
         const selectedSection = sections.find((s) => s.id === values.sectionId);
         const selectedSectionName = selectedSection?.isDefaultSection ? "(Ungrouped)" :  selectedSection?.title || "";
 
-        const tabData = [
+        const tabData = [];
+
+        if (values.type === ActivityType.flight) {
+          tabData.push({
+            id: "flight",
+            title: "Flight",
+            content: (
+              <FlightTab
+                values={values}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+                setFieldValue={setFieldValue}
+                colors={colors}
+                openFlightModal={openFlightModal}
+                setShowFlightDatePickerFor={setShowFlightDatePickerFor}
+                formatFlightDateTime={formatFlightDateTime}
+                handleFlightSelect={handleFlightSelect}
+              />
+            ),
+          });
+        }
+
+        tabData.push(
           {
             id: "details",
             title: "Details",
@@ -458,82 +621,97 @@ const EditActivity = ({
                   )}
                 </View>
 
-       {/* Activity Type */}
+                {/* Activity Type */}
                 <View className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
-                  <TouchableOpacity 
-                    onPress={() => {
-                      onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
-                        setFieldValue("type", type);
-                      });
-                    }}
-                    className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
-                    accessibilityRole="button"
-                  >
-                    {values.type != null ? (
-                      <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
-                    ) : (
-                      <Icon name="style" size={24} color={"#B3B3B3"} />
-                    )}
-                    <Text className="text-base text-gray-800 capitalize font-medium">
-                      {values.type != null
-                        ? values.type === ActivityType.none
-                          ? "No Type"
-                          : String(ActivityType[values.type as number]).replace(/([A-Z])/g, ' $1').trim()
-                        : "Select Type..."}
-                    </Text>
-                  </TouchableOpacity>
+                  {(() => {
+                    const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
+                    return (
+                      <TouchableOpacity 
+                        onPress={() => {
+                          onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
+                            setFieldValue("type", type);
+                            if (type === ActivityType.flight) {
+                              openFlightModal((flightData: any) => {
+                                handleFlightSelect(flightData, setFieldValue);
+                              });
+                            }
+                          });
+                        }}
+                        disabled={isTypeDisabled}
+                        accessibilityRole="button"
+                        accessibilityState={{ disabled: isTypeDisabled }}
+                        className={`border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 mt-1 flex-row items-center gap-3 ${
+                          isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
+                        }`}
+                      >
+                        {values.type != null ? (
+                          <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
+                        ) : (
+                          <Icon name="style" size={24} color={"#B3B3B3"} />
+                        )}
+                        <Text className="text-base text-gray-800 capitalize font-medium">
+                          {values.type != null
+                            ? values.type === ActivityType.none
+                              ? "No Type"
+                              : String(ActivityType[values.type as number]).replace(/([A-Z])/g, ' $1').trim()
+                            : "Select Type..."}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })()}
                 </View>
-
 
                 {/* Date & Time */}
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
-                  <View className="flex-row items-center gap-4 mt-2">
-                    <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
-                      <TouchableOpacity 
-                        onPress={() => setShowCalendarFor("startDate")}
-                        className="flex-1 flex-row items-center p-5 gap-2"
-                        accessibilityRole="button"
-                      >
-                        <Icon name="calendar-today" size={24} color="#999" />
-                        <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
-                          {values.startDate ? String(values.startDate) : "Date"}
-                        </Text>
-                      </TouchableOpacity>
-                      {values.startDate && (
+                {values.type !== ActivityType.flight && (
+                  <View className="mb-5">
+                    <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
+                    <View className="flex-row items-center gap-4 mt-2">
+                      <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
                         <TouchableOpacity 
-                          onPress={() => setValues({...values, startDate: null, startTime: ""} as any)}
-                          className="pr-4 py-3"
+                          onPress={() => setShowCalendarFor("startDate")}
+                          className="flex-1 flex-row items-center p-5 gap-2"
                           accessibilityRole="button"
                         >
-                          <Icon name="close" size={22} color="#999" />
+                          <Icon name="calendar-today" size={24} color="#999" />
+                          <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
+                            {values.startDate ? String(values.startDate) : "Date"}
+                          </Text>
                         </TouchableOpacity>
-                      )}
-                    </View>
-                    <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
-                      <TouchableOpacity 
-                        onPress={() => setShowTimePickerFor("startTime")}
-                        className="flex-1 flex-row items-center p-5 gap-2"
-                        accessibilityRole="button"
-                      >
-                        <Icon name="access-time" size={24} color="#888" />
-                        <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
-                          {values.startTime ? String(values.startTime) : "Time"}
-                        </Text>
-                      </TouchableOpacity>
-                      {values.startTime !== "" && (
+                        {values.startDate && (
+                          <TouchableOpacity 
+                            onPress={() => setValues({...values, startDate: null, startTime: ""} as any)}
+                            className="pr-4 py-3"
+                            accessibilityRole="button"
+                          >
+                            <Icon name="close" size={22} color="#999" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                      <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
                         <TouchableOpacity 
-                          onPress={() => setValues({...values, startTime: ""} as any)}
-                          className="pr-4 py-3"
+                          onPress={() => setShowTimePickerFor("startTime")}
+                          className="flex-1 flex-row items-center p-5 gap-2"
                           accessibilityRole="button"
                         >
-                          <Icon name="close" size={22} color="#999" />
+                          <Icon name="access-time" size={24} color="#888" />
+                          <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
+                            {values.startTime ? String(values.startTime) : "Time"}
+                          </Text>
                         </TouchableOpacity>
-                      )}
+                        {values.startTime !== "" && (
+                          <TouchableOpacity 
+                            onPress={() => setValues({...values, startTime: ""} as any)}
+                            className="pr-4 py-3"
+                            accessibilityRole="button"
+                          >
+                            <Icon name="close" size={22} color="#999" />
+                          </TouchableOpacity>
+                        )}
+                      </View>
                     </View>
                   </View>
-                </View>
+                )}
 
                 {/* Location */}
                 <View className="mb-5">
@@ -865,7 +1043,7 @@ const EditActivity = ({
               </View>
             ),
           },
-        ];
+        );
 
         return (
           <View className="flex-1 bg-gray-100 overflow-hidden">
@@ -875,10 +1053,12 @@ const EditActivity = ({
               setFieldValue={setFieldValue}
               itineraryActivity={itineraryActivity}
               onOpenPrimaryTypeModal={onOpenPrimaryTypeModal}
+              openFlightModal={openFlightModal}
+              handleFlightSelect={handleFlightSelect}
             />
 
             <View className="flex-1">
-              <Tabs tabs={tabData} initialActiveTabId="details" type="default" onScroll={onScroll} />
+              <Tabs tabs={tabData} initialActiveTabId={values.type === ActivityType.flight ? "flight" : "details"} type="default" onScroll={onScroll} />
             </View>
 
             {!(isKeyboardVisible && isChecklistFocused) && (
@@ -1008,6 +1188,26 @@ const EditActivity = ({
                 setShowTimePickerFor(null);
               }}
               onCancel={() => setShowTimePickerFor(null)}
+            />
+
+            <DateTimePickerModal
+              isVisible={showFlightDatePickerFor !== null}
+              mode="datetime"
+              date={(() => {
+                const targetVal = showFlightDatePickerFor && values.flightDetails?.[showFlightDatePickerFor];
+                if (targetVal) {
+                  const d = new Date(targetVal);
+                  return isNaN(d.getTime()) ? new Date() : d;
+                }
+                return new Date();
+              })()}
+              onConfirm={(date) => {
+                if (showFlightDatePickerFor) {
+                  setFieldValue(`flightDetails.${showFlightDatePickerFor}`, date);
+                }
+                setShowFlightDatePickerFor(null);
+              }}
+              onCancel={() => setShowFlightDatePickerFor(null)}
             />
           </View>
         );

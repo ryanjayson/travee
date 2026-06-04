@@ -90,16 +90,17 @@ const ItineraryTab = ({ travelPlan, plainMode: initialPlainMode }: ItineraryTabP
                 onPress={() => handleModeChange(mode)}
                 style={{
                   backgroundColor: isActive ? colors.primary || "#263F69" : "transparent",
-                  width: 36,
-                  height: 36,
+                  width: 28,
+                  height: 28,
                   borderRadius: 18,
                   alignItems: "center",
                   justifyContent: "center",
+                  marginHorizontal: 2
                 }}
               >
                 <MaterialIcons
                   name={config.icon}
-                  size={20}
+                  size={18}
                   color={isActive ? "#FFF" : "#666"}
                 />
               </TouchableOpacity>

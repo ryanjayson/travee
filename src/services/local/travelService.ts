@@ -3,6 +3,37 @@ import { Q } from "@nozbe/watermelondb";
 import Travel from "../../db/models/Travel";
 import Section from "../../db/models/Section";
 import Activity from "../../db/models/Activity";
+import FlightDetails from "../../db/models/FlightDetails";
+
+export const fetchLocalFlightDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const flightDetailsList = await database.get<FlightDetails>("flight_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (flightDetailsList.length > 0) {
+      const f = flightDetailsList[0];
+      return {
+        id: f.id,
+        activityId: f.activity.id,
+        departureAirport: f.departureAirport,
+        arrivalAirport: f.arrivalAirport,
+        departureDate: f.departureDate,
+        arrivalDate: f.arrivalDate,
+        flightNumber: f.flightNumber,
+        airline: f.airline,
+        gate: f.gate,
+        terminal: f.terminal,
+        seatNumber: f.seatNumber,
+        bookingReference: f.bookingReference,
+        price: f.price,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local flight details:", err);
+    return null;
+  }
+};
 
 export const getTravelsLocally = async (): Promise<any[]> => {
   const offlineTravels = await database.get<Travel>("travels").query(
@@ -61,6 +92,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         const notesCount = await database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount();
         const expensesCount = await database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount();
         const checklistCount = await database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount();
+        const flightDetails = await fetchLocalFlightDetails(a.id);
 
         return {
           id: a.id,
@@ -83,6 +115,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           notesCount,
           expensesCount,
           checklistCount,
+          flightDetails,
         };
       }));
 
@@ -229,8 +262,9 @@ export const saveSectionLocally = async (sectionData: any, id?: string) => {
 
 export const saveActivityLocally = async (activityData: any, id?: string) => {
   return await database.write(async () => {
+    let activity;
     if (id) {
-      const activity = await database.get<Activity>("itinerary_activities").find(id.toString());
+      activity = await database.get<Activity>("itinerary_activities").find(id.toString());
       await activity.update((a) => {
         Object.assign(a, {
           title: activityData.title,
@@ -252,9 +286,8 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           attachments: JSON.stringify(activityData.attachments || []),
         });
       });
-      return activity;
     } else {
-      return await database.get<Activity>("itinerary_activities").create((a) => {
+      activity = await database.get<Activity>("itinerary_activities").create((a) => {
         if (activityData.sectionId) {
           a.section.id = activityData.sectionId.toString();
         }
@@ -277,6 +310,51 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
         });
       });
     }
+
+    // Save associated flight details
+    if (activityData.type === 1 && activityData.flightDetails) {
+      const flightDetailsCollection = database.get<FlightDetails>("flight_details");
+      const existingDetails = await flightDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((f) => {
+          Object.assign(f, {
+            departureAirport: activityData.flightDetails.departureAirport,
+            arrivalAirport: activityData.flightDetails.arrivalAirport,
+            departureDate: activityData.flightDetails.departureDate ? new Date(activityData.flightDetails.departureDate) : new Date(),
+            arrivalDate: activityData.flightDetails.arrivalDate ? new Date(activityData.flightDetails.arrivalDate) : null,
+            flightNumber: activityData.flightDetails.flightNumber,
+            airline: activityData.flightDetails.airline,
+            gate: activityData.flightDetails.gate,
+            terminal: activityData.flightDetails.terminal,
+            seatNumber: activityData.flightDetails.seatNumber,
+            bookingReference: activityData.flightDetails.bookingReference,
+            price: activityData.flightDetails.price != null ? Number(activityData.flightDetails.price) : null,
+          });
+        });
+      } else {
+        await flightDetailsCollection.create((f) => {
+          f.activity.id = activity.id;
+          Object.assign(f, {
+            departureAirport: activityData.flightDetails.departureAirport,
+            arrivalAirport: activityData.flightDetails.arrivalAirport,
+            departureDate: activityData.flightDetails.departureDate ? new Date(activityData.flightDetails.departureDate) : new Date(),
+            arrivalDate: activityData.flightDetails.arrivalDate ? new Date(activityData.flightDetails.arrivalDate) : null,
+            flightNumber: activityData.flightDetails.flightNumber,
+            airline: activityData.flightDetails.airline,
+            gate: activityData.flightDetails.gate,
+            terminal: activityData.flightDetails.terminal,
+            seatNumber: activityData.flightDetails.seatNumber,
+            bookingReference: activityData.flightDetails.bookingReference,
+            price: activityData.flightDetails.price != null ? Number(activityData.flightDetails.price) : null,
+          });
+        });
+      }
+    }
+
+    return activity;
   });
 };
 
@@ -286,6 +364,7 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
     const notesCount = await database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount();
     const expensesCount = await database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount();
     const checklistCount = await database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount();
+    const flightDetails = await fetchLocalFlightDetails(a.id);
 
     return {
       id: a.id,
@@ -308,6 +387,7 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
       notesCount,
       expensesCount,
       checklistCount,
+      flightDetails,
     };
   } catch (err) {
     throw new Error(`Itinerary Activity not found locally with ID: ${id}`);
@@ -321,15 +401,15 @@ export const getAllActivitiesWithDestinationLocally = async (): Promise<any[]> =
 
   return activities.map((a) => ({
     id: a.id,
-    travelId: a.travelId,
-    sectionId: a.sectionId,
+    travelId: (a as any).travelId,
+    sectionId: (a as any).sectionId || a.section?.id,
     title: a.title,
     description: a.description,
     destination: a.destination,
     destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
     startDate: a.startDate,
     endDate: a.endDate,
-    status: a.status,
+    status: (a as any).status,
     isOffline: a.isOffline,
     type: a.type,
     isDone: a.isDone,
