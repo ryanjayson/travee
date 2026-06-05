@@ -4,6 +4,36 @@ import Travel from "../../db/models/Travel";
 import Section from "../../db/models/Section";
 import Activity from "../../db/models/Activity";
 import FlightDetails from "../../db/models/FlightDetails";
+import AccomodationDetails from "../../db/models/AccomodationDetails";
+
+export const fetchLocalAccomodationDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const accomodationDetailsList = await database.get<AccomodationDetails>("accomodation_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (accomodationDetailsList.length > 0) {
+      const a = accomodationDetailsList[0];
+      return {
+        id: a.id,
+        activityId: a.activity.id,
+        accomodationName: a.accomodationName,
+        address: a.address,
+        checkinDateTime: a.checkinDateTime,
+        checkoutDateTime: a.checkoutDateTime,
+        websiteAddress: a.websiteAddress,
+        bookingReference: a.bookingReference,
+        bookingStatus: a.bookingStatus,
+        contactNumber: a.contactNumber,
+        emailAddress: a.emailAddress,
+        contactName: a.contactName,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local accomodation details:", err);
+    return null;
+  }
+};
 
 export const fetchLocalFlightDetails = async (activityId: string): Promise<any | null> => {
   try {
@@ -93,6 +123,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         const expensesCount = await database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount();
         const checklistCount = await database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount();
         const flightDetails = await fetchLocalFlightDetails(a.id);
+        const accomodationDetails = await fetchLocalAccomodationDetails(a.id);
 
         return {
           id: a.id,
@@ -116,6 +147,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           expensesCount,
           checklistCount,
           flightDetails,
+          accomodationDetails,
         };
       }));
 
@@ -354,6 +386,47 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
       }
     }
 
+    // Save associated accomodation details
+    if (activityData.type === 27 && activityData.accomodationDetails) {
+      const accomodationDetailsCollection = database.get<AccomodationDetails>("accomodation_details");
+      const existingDetails = await accomodationDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((f) => {
+          Object.assign(f, {
+            accomodationName: activityData.accomodationDetails.accomodationName,
+            address: activityData.accomodationDetails.address,
+            checkinDateTime: activityData.accomodationDetails.checkinDateTime ? new Date(activityData.accomodationDetails.checkinDateTime) : new Date(),
+            checkoutDateTime: activityData.accomodationDetails.checkoutDateTime ? new Date(activityData.accomodationDetails.checkoutDateTime) : null,
+            websiteAddress: activityData.accomodationDetails.websiteAddress,
+            bookingReference: activityData.accomodationDetails.bookingReference,
+            bookingStatus: activityData.accomodationDetails.bookingStatus,
+            contactNumber: activityData.accomodationDetails.contactNumber,
+            emailAddress: activityData.accomodationDetails.emailAddress,
+            contactName: activityData.accomodationDetails.contactName,
+          });
+        });
+      } else {
+        await accomodationDetailsCollection.create((f) => {
+          f.activity.id = activity.id;
+          Object.assign(f, {
+            accomodationName: activityData.accomodationDetails.accomodationName,
+            address: activityData.accomodationDetails.address,
+            checkinDateTime: activityData.accomodationDetails.checkinDateTime ? new Date(activityData.accomodationDetails.checkinDateTime) : new Date(),
+            checkoutDateTime: activityData.accomodationDetails.checkoutDateTime ? new Date(activityData.accomodationDetails.checkoutDateTime) : null,
+            websiteAddress: activityData.accomodationDetails.websiteAddress,
+            bookingReference: activityData.accomodationDetails.bookingReference,
+            bookingStatus: activityData.accomodationDetails.bookingStatus,
+            contactNumber: activityData.accomodationDetails.contactNumber,
+            emailAddress: activityData.accomodationDetails.emailAddress,
+            contactName: activityData.accomodationDetails.contactName,
+          });
+        });
+      }
+    }
+
     return activity;
   });
 };
@@ -365,6 +438,7 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
     const expensesCount = await database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount();
     const checklistCount = await database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount();
     const flightDetails = await fetchLocalFlightDetails(a.id);
+    const accomodationDetails = await fetchLocalAccomodationDetails(a.id);
 
     return {
       id: a.id,
@@ -388,6 +462,7 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
       expensesCount,
       checklistCount,
       flightDetails,
+      accomodationDetails,
     };
   } catch (err) {
     throw new Error(`Itinerary Activity not found locally with ID: ${id}`);
@@ -438,6 +513,23 @@ export const getAllActivitiesLocally = async (): Promise<any[]> => {
   }));
 };
 
+const deleteActivityDetails = async (activityId: string) => {
+  const expenses = await database.get<any>("itinerary_expenses").query(Q.where("activity_id", activityId)).fetch();
+  for (const exp of expenses) await exp.destroyPermanently();
+  
+  const notes = await database.get<any>("itinerary_notes").query(Q.where("activity_id", activityId)).fetch();
+  for (const note of notes) await note.destroyPermanently();
+  
+  const checklists = await database.get<any>("checklist_items").query(Q.where("activity_id", activityId)).fetch();
+  for (const cl of checklists) await cl.destroyPermanently();
+
+  const flights = await database.get<any>("flight_details").query(Q.where("activity_id", activityId)).fetch();
+  for (const fl of flights) await fl.destroyPermanently();
+
+  const accomodations = await database.get<any>("accomodation_details").query(Q.where("activity_id", activityId)).fetch();
+  for (const acc of accomodations) await acc.destroyPermanently();
+};
+
 /** Permanently deletes a locally-stored travel and all its sections/activities/expenses/notes/checklists. */
 export const deleteTravelLocally = async (id: string): Promise<void> => {
   await database.write(async () => {
@@ -453,16 +545,7 @@ export const deleteTravelLocally = async (id: string): Promise<void> => {
         Q.where("section_id", section.id)
       ).fetch();
       for (const activity of activities) {
-        // Delete expenses, notes, checklists for this activity
-        const expenses = await database.get<any>("itinerary_expenses").query(Q.where("activity_id", activity.id)).fetch();
-        for (const exp of expenses) await exp.destroyPermanently();
-        
-        const notes = await database.get<any>("itinerary_notes").query(Q.where("activity_id", activity.id)).fetch();
-        for (const note of notes) await note.destroyPermanently();
-        
-        const checklists = await database.get<any>("checklist_items").query(Q.where("activity_id", activity.id)).fetch();
-        for (const cl of checklists) await cl.destroyPermanently();
-
+        await deleteActivityDetails(activity.id);
         await activity.destroyPermanently();
       }
       await section.destroyPermanently();
@@ -481,15 +564,7 @@ export const deleteSectionLocally = async (id: string): Promise<void> => {
       Q.where("section_id", section.id)
     ).fetch();
     for (const activity of activities) {
-      const expenses = await database.get<any>("itinerary_expenses").query(Q.where("activity_id", activity.id)).fetch();
-      for (const exp of expenses) await exp.destroyPermanently();
-      
-      const notes = await database.get<any>("itinerary_notes").query(Q.where("activity_id", activity.id)).fetch();
-      for (const note of notes) await note.destroyPermanently();
-      
-      const checklists = await database.get<any>("checklist_items").query(Q.where("activity_id", activity.id)).fetch();
-      for (const cl of checklists) await cl.destroyPermanently();
-
+      await deleteActivityDetails(activity.id);
       await activity.destroyPermanently();
     }
     await section.destroyPermanently();
@@ -500,16 +575,7 @@ export const deleteSectionLocally = async (id: string): Promise<void> => {
 export const deleteActivityLocally = async (id: string): Promise<void> => {
   await database.write(async () => {
     const activity = await database.get<Activity>("itinerary_activities").find(id);
-    
-    const expenses = await database.get<any>("itinerary_expenses").query(Q.where("activity_id", activity.id)).fetch();
-    for (const exp of expenses) await exp.destroyPermanently();
-    
-    const notes = await database.get<any>("itinerary_notes").query(Q.where("activity_id", activity.id)).fetch();
-    for (const note of notes) await note.destroyPermanently();
-    
-    const checklists = await database.get<any>("checklist_items").query(Q.where("activity_id", activity.id)).fetch();
-    for (const cl of checklists) await cl.destroyPermanently();
-
+    await deleteActivityDetails(activity.id);
     await activity.destroyPermanently();
   });
 };

@@ -167,7 +167,8 @@ const ActivityTypeLookupModal = ({
     .filter((key) => isNaN(Number(key)))
     .map((key) => {
       const typeValue = ActivityType[key as keyof typeof ActivityType];
-      const displayName = key === "none" ? "No Type" : key.replace(/([A-Z])/g, " $1").trim();
+      const _displayName = key === "none" ? "No Type" : key.replace(/([A-Z])/g, " $1").trim();
+      const displayName = key === "cafeRestaurant" ? "Cafe or Restaurant" : _displayName
       return { key, typeValue, displayName };
     });
 
@@ -176,7 +177,7 @@ const ActivityTypeLookupModal = ({
   );
 
   const noneItem = filteredTypes.find((t) => t.key === "none");
-  const commonKeys = ["flight", "checkIn", "checkOut"];
+  const commonKeys = ["flight", "cafeRestaurant", "accomodation"];
   const commonList = filteredTypes.filter((t) => commonKeys.includes(t.key));
   const otherList = filteredTypes.filter((t) => !commonKeys.includes(t.key) && t.key !== "none");
 

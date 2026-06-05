@@ -10,7 +10,7 @@ export enum ActivityType {
   checkIn = 2,
   checkOut = 3,
   taxi = 4,
-  cafe = 5,
+  cafeRestaurant = 5,
   food = 6,
   walk = 7,
   sightseeing = 8,
@@ -32,6 +32,7 @@ export enum ActivityType {
   nightOut = 24,
   bike = 25,
   borderCrossing = 26,
+  accomodation = 27,
 }
 
 export enum StatusType {

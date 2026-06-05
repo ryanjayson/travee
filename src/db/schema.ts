@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 19,
+  version: 20,
   tables: [
     tableSchema({
       name: "travels",
@@ -213,6 +213,24 @@ export const schema = appSchema({
         { name: "seat_number", type: "string", isOptional: true },
         { name: "booking_reference", type: "string", isOptional: true },
         { name: "price", type: "number", isOptional: true },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "accomodation_details",
+      columns: [
+        { name: "activity_id", type: "string", isIndexed: true },
+        { name: "accomodation_name", type: "string" },
+        { name: "address", type: "string", isOptional: true },
+        { name: "checkin_date_time", type: "number" },
+        { name: "checkout_date_time", type: "number", isOptional: true },
+        { name: "website_address", type: "string", isOptional: true },
+        { name: "booking_reference", type: "string", isOptional: true },
+        { name: "booking_status", type: "string", isOptional: true },
+        { name: "contact_number", type: "string", isOptional: true },
+        { name: "email_address", type: "string", isOptional: true },
+        { name: "contact_name", type: "string", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],

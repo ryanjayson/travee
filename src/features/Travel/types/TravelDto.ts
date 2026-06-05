@@ -127,6 +127,21 @@ export interface FlightDetailsDto {
   price?: number | null;
 }
 
+export interface AccomodationDetailsDto {
+  id?: string;
+  activityId?: string;
+  accomodationName: string;
+  address?: string | null;
+  checkinDateTime: Date | string;
+  checkoutDateTime?: Date | string | null;
+  websiteAddress?: string | null;
+  bookingReference?: string | null;
+  bookingStatus?: string | null;
+  contactNumber?: string | null;
+  emailAddress?: string | null;
+  contactName?: string | null;
+}
+
 export interface ItineraryActivity {
   //TODO might use ItineraryEvent for both section and event
   //TODO change id to type to UUID
@@ -155,6 +170,7 @@ export interface ItineraryActivity {
   isDone?: boolean;
   attachments?: Attachment[];
   flightDetails?: FlightDetailsDto | null;
+  accomodationDetails?: AccomodationDetailsDto | null;
 }
 export interface Attachment {
   name: string;

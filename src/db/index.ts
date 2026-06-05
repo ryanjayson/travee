@@ -15,6 +15,7 @@ import ErrorLog from "./models/ErrorLog";
 import TripMember from "./models/TripMember";
 import MemberSplitBill from "./models/MemberSplitBill";
 import FlightDetails from "./models/FlightDetails";
+import AccomodationDetails from "./models/AccomodationDetails";
 import { logger, ErrorSeverity } from "../services/errorLogger";
 
 const adapter = new SQLiteAdapter({
@@ -38,5 +39,5 @@ const adapter = new SQLiteAdapter({
 
 export const database = new Database({
   adapter,
-  modelClasses: [Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem, UserProfile, ErrorLog, TripMember, MemberSplitBill, FlightDetails],
+  modelClasses: [Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem, UserProfile, ErrorLog, TripMember, MemberSplitBill, FlightDetails, AccomodationDetails],
 });

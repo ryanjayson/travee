@@ -25,6 +25,7 @@ import ActivityIcon, { activityIcons } from "../../../../../../components/Activi
 import TouchButton from "../../../../../../components/atoms/TouchButton";
 import Tabs from "../../../../../../components/Tabs";
 import FlightTab from "./Tabs/FlightTab";
+import AccomodationTab from "./Tabs/AccomodationTab";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import { ActivityType } from "../../../../../../types/enums";
@@ -89,6 +90,18 @@ export interface ActivityFormValues {
     seatNumber?: string | null;
     bookingReference?: string | null;
     price?: string | number | null;
+  } | null;
+  accomodationDetails?: {
+    accomodationName: string;
+    address?: string | null;
+    checkinDateTime: Date | string | null;
+    checkoutDateTime?: Date | string | null;
+    websiteAddress?: string | null;
+    bookingReference?: string | null;
+    bookingStatus?: string | null;
+    contactNumber?: string | null;
+    emailAddress?: string | null;
+    contactName?: string | null;
   } | null;
 }
 
@@ -230,6 +243,7 @@ const EditActivity = ({
   const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
   const [isChecklistFocused, setIsChecklistFocused] = useState<boolean>(false);
   const [showFlightDatePickerFor, setShowFlightDatePickerFor] = useState<"departureDate" | "arrivalDate" | null>(null);
+  const [showAccomodationDatePickerFor, setShowAccomodationDatePickerFor] = useState<"checkinDateTime" | "checkoutDateTime" | null>(null);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -373,12 +387,20 @@ const EditActivity = ({
 
       // Build proper Date objects from strings
       let finalStartDate: Date | undefined = undefined;
-      if (values.startDate) {
+      if (values.type === ActivityType.flight && values.flightDetails?.departureDate) {
+        finalStartDate = new Date(values.flightDetails.departureDate);
+      } else if (values.type === ActivityType.accomodation && values.accomodationDetails?.checkinDateTime) {
+        finalStartDate = new Date(values.accomodationDetails.checkinDateTime);
+      } else if (values.startDate) {
         finalStartDate = new Date(`${values.startDate}T${values.startTime}:00`);
       }
 
       let finalEndDate: Date | undefined = undefined;
-      if (values.endDate) {
+      if (values.type === ActivityType.flight && values.flightDetails?.arrivalDate) {
+        finalEndDate = new Date(values.flightDetails.arrivalDate);
+      } else if (values.type === ActivityType.accomodation && values.accomodationDetails?.checkoutDateTime) {
+        finalEndDate = new Date(values.accomodationDetails.checkoutDateTime);
+      } else if (values.endDate) {
         finalEndDate = new Date(`${values.endDate}T${values.endTime}:00`);
       }
 
@@ -470,6 +492,24 @@ const EditActivity = ({
               price: values.flightDetails.price ? Number(values.flightDetails.price) : null,
             }
           : null,
+        accomodationDetails: values.type === ActivityType.accomodation && values.accomodationDetails
+          ? {
+              accomodationName: values.accomodationDetails.accomodationName,
+              address: values.accomodationDetails.address || null,
+              checkinDateTime: values.accomodationDetails.checkinDateTime
+                ? new Date(values.accomodationDetails.checkinDateTime)
+                : new Date(),
+              checkoutDateTime: values.accomodationDetails.checkoutDateTime
+                ? new Date(values.accomodationDetails.checkoutDateTime)
+                : null,
+              websiteAddress: values.accomodationDetails.websiteAddress || null,
+              bookingReference: values.accomodationDetails.bookingReference || null,
+              bookingStatus: values.accomodationDetails.bookingStatus || null,
+              contactNumber: values.accomodationDetails.contactNumber || null,
+              emailAddress: values.accomodationDetails.emailAddress || null,
+              contactName: values.accomodationDetails.contactName || null,
+            }
+          : null,
       };
 
       await updateMutation.mutateAsync(payload);
@@ -551,6 +591,35 @@ const EditActivity = ({
               bookingReference: "",
               price: "",
             },
+        accomodationDetails: itineraryActivity?.accomodationDetails
+          ? {
+              accomodationName: itineraryActivity.accomodationDetails.accomodationName || "",
+              address: itineraryActivity.accomodationDetails.address || "",
+              checkinDateTime: itineraryActivity.accomodationDetails.checkinDateTime
+                ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
+                : null,
+              checkoutDateTime: itineraryActivity.accomodationDetails.checkoutDateTime
+                ? new Date(itineraryActivity.accomodationDetails.checkoutDateTime)
+                : null,
+              websiteAddress: itineraryActivity.accomodationDetails.websiteAddress || "",
+              bookingReference: itineraryActivity.accomodationDetails.bookingReference || "",
+              bookingStatus: itineraryActivity.accomodationDetails.bookingStatus || "",
+              contactNumber: itineraryActivity.accomodationDetails.contactNumber || "",
+              emailAddress: itineraryActivity.accomodationDetails.emailAddress || "",
+              contactName: itineraryActivity.accomodationDetails.contactName || "",
+            }
+          : {
+              accomodationName: "",
+              address: "",
+              checkinDateTime: null,
+              checkoutDateTime: null,
+              websiteAddress: "",
+              bookingReference: "",
+              bookingStatus: "",
+              contactNumber: "",
+              emailAddress: "",
+              contactName: "",
+            },
       }}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}
@@ -588,6 +657,24 @@ const EditActivity = ({
                 setShowFlightDatePickerFor={setShowFlightDatePickerFor}
                 formatFlightDateTime={formatFlightDateTime}
                 handleFlightSelect={handleFlightSelect}
+              />
+            ),
+          });
+        }
+
+        if (values.type === ActivityType.accomodation) {
+          tabData.push({
+            id: "accomodation",
+            title: "Accomodation",
+            content: (
+              <AccomodationTab
+                values={values}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+                setFieldValue={setFieldValue}
+                colors={colors}
+                setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
+                formatAccomodationDateTime={formatFlightDateTime}
               />
             ),
           });
@@ -663,7 +750,7 @@ const EditActivity = ({
                 </View>
 
                 {/* Date & Time */}
-                {values.type !== ActivityType.flight && (
+                {values.type !== ActivityType.flight && values.type !== ActivityType.accomodation && (
                   <View className="mb-5">
                     <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
                     <View className="flex-row items-center gap-4 mt-2">
@@ -1058,7 +1145,7 @@ const EditActivity = ({
             />
 
             <View className="flex-1">
-              <Tabs tabs={tabData} initialActiveTabId={values.type === ActivityType.flight ? "flight" : "details"} type="default" onScroll={onScroll} />
+              <Tabs tabs={tabData} initialActiveTabId={values.type === ActivityType.flight ? "flight" : (values.type === ActivityType.accomodation ? "accomodation" : "details")} type="default" onScroll={onScroll} />
             </View>
 
             {!(isKeyboardVisible && isChecklistFocused) && (
@@ -1208,6 +1295,26 @@ const EditActivity = ({
                 setShowFlightDatePickerFor(null);
               }}
               onCancel={() => setShowFlightDatePickerFor(null)}
+            />
+
+            <DateTimePickerModal
+              isVisible={showAccomodationDatePickerFor !== null}
+              mode="datetime"
+              date={(() => {
+                const targetVal = showAccomodationDatePickerFor && values.accomodationDetails?.[showAccomodationDatePickerFor];
+                if (targetVal) {
+                  const d = new Date(targetVal);
+                  return isNaN(d.getTime()) ? new Date() : d;
+                }
+                return new Date();
+              })()}
+              onConfirm={(date) => {
+                if (showAccomodationDatePickerFor) {
+                  setFieldValue(`accomodationDetails.${showAccomodationDatePickerFor}`, date);
+                }
+                setShowAccomodationDatePickerFor(null);
+              }}
+              onCancel={() => setShowAccomodationDatePickerFor(null)}
             />
           </View>
         );

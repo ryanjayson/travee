@@ -72,8 +72,8 @@ const activityIcons: ActivityIcon[] = [
   },
   {
     iconSet: IconSetProvider.material,
-    activityType: ActivityType.cafe,
-    name: ActivityType.cafe,
+    activityType: ActivityType.cafeRestaurant,
+    name: ActivityType.cafeRestaurant,
     iconName: "local-cafe",
     color: "#795548", // brown hsl(16)
   },
@@ -210,6 +210,13 @@ const activityIcons: ActivityIcon[] = [
     name: ActivityType.borderCrossing,
     iconName: "flag",
     color: "#D32F2F", // dark-red hsl(0)
+  },
+  {
+    iconSet: IconSetProvider.material,
+    activityType: ActivityType.accomodation,
+    name: ActivityType.accomodation,
+    iconName: "hotel",
+    color: "#9C27B0", // purple hsl(291)
   },
 ];
 

@@ -464,25 +464,26 @@ const ActivityItemCard = ({
           } ${isDragActive ? "opacity-100 shadow-2xl" : ""}`}
         >
           <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
+          {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
+                <View 
+                  style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '20' }} 
+                  className="items-end rounded-xs px-2 py-0.5"
+                >
+                  <Text 
+                    style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }} 
+                    className="text-[10px] tracking-wider uppercase font-extrabold"
+                  >
+                    {getActivityTypeDetails(itineraryEventActivity.type).text}
+                  </Text>
+                </View>
+              )}
             <View className="">
               <Text className="text-xs font-semibold text-[#606060] ">
-                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute:   '2-digit' })}
+                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute:   '2-digit' })}
               </Text>
             </View>
 
-            {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
-              <View 
-                style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '20' }} 
-                className="items-end rounded-xs px-2 py-0.5"
-              >
-                <Text 
-                  style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }} 
-                  className="text-[10px] tracking-wider uppercase font-extrabold"
-                >
-                  {getActivityTypeDetails(itineraryEventActivity.type).text}
-                </Text>
-              </View>
-            )}
+            
           </View>
 
 

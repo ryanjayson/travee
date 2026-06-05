@@ -387,6 +387,7 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
 const getActivityTypeLabel = (type: ActivityType): string => {
   switch (type) {
     case ActivityType.flight: return "Flight";
+    case ActivityType.accomodation: return "Accomodation";
     case ActivityType.checkIn: return "Hotel";
     case ActivityType.checkOut: return "Check-out";
     case ActivityType.train: return "Train";
@@ -394,7 +395,7 @@ const getActivityTypeLabel = (type: ActivityType): string => {
     case ActivityType.bus: return "Bus";
     case ActivityType.ferry: return "Ferry";
     case ActivityType.food: return "Restaurant";
-    case ActivityType.cafe: return "Cafe";
+    case ActivityType.cafeRestaurant: return "Cafe / Restaurant";
     case ActivityType.sightseeing: return "Sightseeing";
     case ActivityType.shopping: return "Shopping";
     case ActivityType.museum: return "Museum";
