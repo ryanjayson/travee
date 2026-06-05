@@ -12,6 +12,7 @@ interface AccomodationTabProps {
   colors: any;
   setShowAccomodationDatePickerFor: any;
   formatAccomodationDateTime: any;
+  onOpenPoiModal: (category: "accommodation" | "cafeRestaurant" | "attraction") => void;
 }
 
 const FloatingLabelInput = (props: any) => (
@@ -28,6 +29,7 @@ export default function AccomodationTab({
   colors,
   setShowAccomodationDatePickerFor,
   formatAccomodationDateTime,
+  onOpenPoiModal,
 }: AccomodationTabProps) {
   return (
     <View className="flex-1 pb-6 pt-2 px-5">
@@ -38,6 +40,7 @@ export default function AccomodationTab({
           value={values.accomodationDetails?.accomodationName || ""}
           onChangeText={handleChange("accomodationDetails.accomodationName")}
           onBlur={handleBlur("accomodationDetails.accomodationName")}
+          onPress={() => onOpenPoiModal("accommodation")}
         />
       </View>
 

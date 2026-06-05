@@ -37,6 +37,7 @@ import { DestinationDto, Images, ItineraryActivity, Attachment } from "../../../
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
 import SectionLookupModal from "../../../Lookups/SectionLookupModal";
 import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
+import PoiLookupModal, { MapboxPoi } from "../../../Lookups/PoiLookupModal";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../../context/ToastContext";
 import DescriptionInput from "../../../../../../components/molecules/DescriptionInput";
@@ -244,6 +245,8 @@ const EditActivity = ({
   const [isChecklistFocused, setIsChecklistFocused] = useState<boolean>(false);
   const [showFlightDatePickerFor, setShowFlightDatePickerFor] = useState<"departureDate" | "arrivalDate" | null>(null);
   const [showAccomodationDatePickerFor, setShowAccomodationDatePickerFor] = useState<"checkinDateTime" | "checkoutDateTime" | null>(null);
+  const [showPoiModal, setShowPoiModal] = useState<boolean>(false);
+  const [poiModalInitialCategory, setPoiModalInitialCategory] = useState<"accommodation" | "cafeRestaurant" | "attraction">("accommodation");
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -260,7 +263,7 @@ const EditActivity = ({
     };
   }, []);
 
-  const isAnyChildModalOpen = showDestinationModal || (showCalendarFor !== null);
+  const isAnyChildModalOpen = showDestinationModal || (showCalendarFor !== null) || showPoiModal;
 
   useEffect(() => {
     onChildModalToggle?.(isAnyChildModalOpen);
@@ -675,6 +678,10 @@ const EditActivity = ({
                 colors={colors}
                 setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
                 formatAccomodationDateTime={formatFlightDateTime}
+                onOpenPoiModal={(category: "accommodation" | "cafeRestaurant" | "attraction") => {
+                  setPoiModalInitialCategory(category);
+                  setShowPoiModal(true);
+                }}
               />
             ),
           });
@@ -1180,6 +1187,47 @@ const EditActivity = ({
                     } as DestinationDto
                   });
                   setShowDestinationModal(false);
+                }}
+              />
+            </Modal>
+
+            <Modal
+              visible={showPoiModal}
+              animationType="slide"
+              transparent
+              onRequestClose={() => setShowPoiModal(false)}
+            >
+              <PoiLookupModal
+                visible={showPoiModal}
+                onClose={() => setShowPoiModal(false)}
+                initialCategory={poiModalInitialCategory}
+                proximity={travelPlan?.travel?.destinationData?.coordinates}
+                onSelect={(poi: MapboxPoi) => {
+                  setFieldValue("accomodationDetails.accomodationName", poi.name);
+                  if (poi.address) {
+                    setFieldValue("accomodationDetails.address", poi.address);
+                  }
+                  if (poi.website) {
+                    setFieldValue("accomodationDetails.websiteAddress", poi.website);
+                  }
+                  if (poi.phone) {
+                    setFieldValue("accomodationDetails.contactNumber", poi.phone);
+                  }
+
+                  // Auto-populate the activity's main destination and coordinates if they are empty
+                  if (!values.destination) {
+                    setFieldValue("destination", poi.name);
+                  }
+                  if (!values.destinationData) {
+                    setFieldValue("destinationData", {
+                      id: poi.id,
+                      coordinates: {
+                        longitude: poi.coordinates.longitude,
+                        latitude: poi.coordinates.latitude,
+                      },
+                    } as DestinationDto);
+                  }
+                  setShowPoiModal(false);
                 }}
               />
             </Modal>
