@@ -24,9 +24,7 @@ interface FloatingLabelInputProps {
   keyboardType?: "default" | "numeric";
   editable?: boolean;
   placeholder?: string;
-  left?: React.ReactNode;
   right?: React.ReactNode;
-  contentStyle?: any;
   onPress?: () => void;
 }
 
@@ -39,41 +37,61 @@ const FloatingLabelInput = ({
   keyboardType = "default",
   editable = true,
   placeholder,
-  left,
   right,
-  contentStyle,
   onPress,
 }: FloatingLabelInputProps) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [labelWidth, setLabelWidth] = useState(0);
   const anim = useRef(new Animated.Value(value !== "" ? 1 : 0)).current;
 
   useEffect(() => {
-    Animated.timing(anim, {
+    Animated.spring(anim, {
       toValue: (isFocused || value !== "") ? 1 : 0,
-      duration: 180,
-      useNativeDriver: false,
+      damping: 18,
+      stiffness: 220,
+      useNativeDriver: true,
     }).start();
   }, [isFocused, value]);
 
   const animatedLabelStyle = {
     position: "absolute" as const,
-    left: left ? 58 : 16,
+    left: 16,
     color: '#98A2B3',
-    top: anim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [22, 12],
-    }),
-    fontSize: anim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [16, 12],
-    }),
+    top: 20,
+    fontSize: 16,
     zIndex: 10,
-    fontWeight: "500" as const,
+    fontWeight: "400" as const,
+    transform: [
+      {
+        translateY: anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -8],
+        }),
+      },
+      {
+        translateX: anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, -labelWidth * 0.125], // Compensates center-scaling shift: (1 - 0.75) * (width / 2) = 0.125 * width
+        }),
+      },
+      {
+        scale: anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 0.75],
+        }),
+      },
+    ] as any,
   };
 
   return (
     <View className="relative flex-1">
-      <Animated.Text style={animatedLabelStyle} pointerEvents="none">
+      <Animated.Text
+        style={animatedLabelStyle}
+        pointerEvents="none"
+        onLayout={(e) => {
+          setLabelWidth(e.nativeEvent.layout.width);
+        }}
+      >
         {label}
       </Animated.Text>
       <TextInput
@@ -96,8 +114,7 @@ const FloatingLabelInput = ({
         theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
         outlineStyle={{ borderWidth: 1, backgroundColor: "#FFF", borderRadius: 16 }}
         style={{ height: 64 }}
-        contentStyle={contentStyle || { backgroundColor: "transparent", paddingTop: 16 }}
-        left={left}
+        contentStyle={{ backgroundColor: "transparent", paddingTop: 16 }}
         right={right}
       />
       {onPress && (
@@ -151,7 +168,6 @@ export default function FlightTab({
       <View className="mb-5">
         <FloatingLabelInput
           label="Departure Airport"
-          // placeholder="e.g. Singapore Changi (SIN)"
           value={values.flightDetails?.departureAirport || ""}
           onChangeText={handleChange("flightDetails.departureAirport")}
           onBlur={handleBlur("flightDetails.departureAirport")}
@@ -162,11 +178,8 @@ export default function FlightTab({
       <View className="flex-row gap-4 mb-5">
         <FloatingLabelInput
           label="Departure Date & Time"
-          // placeholder="Select date & time"
           value={values.flightDetails?.departureDate ? formatFlightDateTime(values.flightDetails.departureDate) : ""}
           editable={false}
-          left={<TextInput.Icon icon="calendar" color="#999" className="pt-xl mr-0" />}
-          contentStyle={{ backgroundColor: "transparent", paddingTop: 16, marginLeft: 42 }}
           right={
             values.flightDetails?.departureDate ? (
               <TextInput.Icon
@@ -174,7 +187,9 @@ export default function FlightTab({
                 color="#999"
                 onPress={() => setFieldValue("flightDetails.departureDate", null)}
               />
-            ) : null
+            ) : (
+              <TextInput.Icon icon="calendar" color="#999" />
+            )
           }
           onPress={() => setShowFlightDatePickerFor("departureDate")}
         />
@@ -188,7 +203,6 @@ export default function FlightTab({
       <View className="mb-5">
         <FloatingLabelInput
           label="Arrival Airport"
-          // placeholder="e.g. London Heathrow (LHR)"
           value={values.flightDetails?.arrivalAirport || ""}
           onChangeText={handleChange("flightDetails.arrivalAirport")}
           onBlur={handleBlur("flightDetails.arrivalAirport")}
@@ -201,8 +215,6 @@ export default function FlightTab({
           label="Arrival Date & Time"
           value={values.flightDetails?.arrivalDate ? formatFlightDateTime(values.flightDetails.arrivalDate) : ""}
           editable={false}
-          left={<TextInput.Icon icon="calendar" color="#999" className="pt-xl mr-0" />}
-          contentStyle={{ backgroundColor: "transparent", paddingTop: 16, marginLeft: 42 }}
           right={
             values.flightDetails?.arrivalDate ? (
               <TextInput.Icon
@@ -210,7 +222,9 @@ export default function FlightTab({
                 color="#999"
                 onPress={() => setFieldValue("flightDetails.arrivalDate", null)}
               />
-            ) : null
+            ) : (
+              <TextInput.Icon icon="calendar" color="#999" />
+            )
           }
           onPress={() => setShowFlightDatePickerFor("arrivalDate")}
         />
