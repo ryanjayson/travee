@@ -38,8 +38,6 @@ export const fetchTravel = async (travelId: string): Promise<Travel> => {
     );
   }
 
-  console.log("DATA", JSON.stringify(response.json()));
-
   // Parse the JSON response and assert the return type
   return response.json() as Promise<Travel>;
 };

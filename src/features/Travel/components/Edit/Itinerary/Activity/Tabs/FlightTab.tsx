@@ -9,7 +9,6 @@ interface FlightTabProps {
   handleChange: any;
   handleBlur: any;
   setFieldValue: any;
-  colors: any;
   openFlightModal: any;
   setShowFlightDatePickerFor: any;
   formatFlightDateTime: any;
@@ -22,7 +21,6 @@ export default function FlightTab({
   handleChange,
   handleBlur,
   setFieldValue,
-  colors,
   openFlightModal,
   setShowFlightDatePickerFor,
   formatFlightDateTime,
@@ -41,7 +39,7 @@ export default function FlightTab({
         accessibilityRole="button"
         accessibilityLabel="Search airport and fill flight details"
       >
-        <Icon name="local-airport" size={26} color={colors.primary} />
+        <Icon name="local-airport" size={26} color={"#263F69"} />
         <View className="flex-1">
           <Text className="text-base font-semibold text-gray-800">
             Search for Airport
@@ -50,7 +48,7 @@ export default function FlightTab({
             Lookup airports worldwide to populate dates and destination.
           </Text>
         </View>
-        <Icon name="search" size={20} color={colors.primary} />
+        <Icon name="search" size={20} color={"#263F69"} />
       </TouchableOpacity>
 
       {/* Departure Airport */}

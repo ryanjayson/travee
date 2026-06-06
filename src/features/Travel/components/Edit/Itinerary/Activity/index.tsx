@@ -629,7 +629,6 @@ const EditActivity = ({
         setValues,
         setFieldValue,
       }) => {
-        const { colors } = useTheme();
         const sections = travelPlan?.itinerarySection || [];
         const hasSections = sections.length > 0;
         const selectedSection = sections.find((s) => s.id === values.sectionId);
@@ -647,7 +646,6 @@ const EditActivity = ({
                 handleChange={handleChange}
                 handleBlur={handleBlur}
                 setFieldValue={setFieldValue}
-                colors={colors}
                 openFlightModal={openFlightModal}
                 setShowFlightDatePickerFor={setShowFlightDatePickerFor}
                 formatFlightDateTime={formatFlightDateTime}
@@ -810,7 +808,7 @@ const EditActivity = ({
                     )}
                   </View>
 
-                  
+
                   {/* Activity Type */}
                   <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5">
                     <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
