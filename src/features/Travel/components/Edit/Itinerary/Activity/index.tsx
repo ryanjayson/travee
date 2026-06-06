@@ -175,9 +175,9 @@ const EditActivity = ({
     const d = new Date(dateVal);
     if (isNaN(d.getTime())) return "Not Set";
     return d.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      year: "2-digit",
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
@@ -710,45 +710,7 @@ const EditActivity = ({
 
                 {/* Activity Details Accordion */}
                 <SimpleAccordion key="activity-details-accordion" title="Activity Details" defaultExpanded={true}>
-                  {/* Activity Type */}
-                  <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5">
-                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
-                    {(() => {
-                      const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
-                      return (
-                        <TouchableOpacity 
-                          onPress={() => {
-                            onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
-                              setFieldValue("type", type);
-                              if (type === ActivityType.flight) {
-                                setActiveTabId("flight");
-                                openFlightModal((flightData: any) => {
-                                  handleFlightSelect(flightData, setFieldValue);
-                                });
-                              } else {
-                                setActiveTabId("details");
-                              }
-                            });
-                          }}
-                          disabled={isTypeDisabled}
-                          accessibilityRole="button"
-                          accessibilityState={{ disabled: isTypeDisabled }}
-                          className={`border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 mt-1 flex-row items-center gap-3 ${
-                            isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
-                          }`}
-                        >
-                          {values.type != null ? (
-                            <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
-                          ) : (
-                            <Icon name="style" size={24} color={"#B3B3B3"} />
-                          )}
-                          <Text className="text-base text-gray-800 capitalize font-medium">
-                            {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })()}
-                  </View>
+
 
                   {/* Date & Time */}
                   {values.type !== ActivityType.flight && values.type !== ActivityType.accomodation && (
@@ -847,6 +809,48 @@ const EditActivity = ({
                       </TouchableOpacity>
                     )}
                   </View>
+
+                  
+                  {/* Activity Type */}
+                  <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5">
+                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
+                    {(() => {
+                      const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
+                      return (
+                        <TouchableOpacity 
+                          onPress={() => {
+                            onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
+                              setFieldValue("type", type);
+                              if (type === ActivityType.flight) {
+                                setActiveTabId("flight");
+                                openFlightModal((flightData: any) => {
+                                  handleFlightSelect(flightData, setFieldValue);
+                                });
+                              } else {
+                                setActiveTabId("details");
+                              }
+                            });
+                          }}
+                          disabled={isTypeDisabled}
+                          accessibilityRole="button"
+                          accessibilityState={{ disabled: isTypeDisabled }}
+                          className={`border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 mt-1 flex-row items-center gap-3 ${
+                            isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
+                          }`}
+                        >
+                          {values.type != null ? (
+                            <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
+                          ) : (
+                            <Icon name="style" size={24} color={"#B3B3B3"} />
+                          )}
+                          <Text className="text-base text-gray-800 capitalize font-medium">
+                            {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })()}
+                  </View>
+
 
                   {/* Itinerary Section */}
                   <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-5">

@@ -75,10 +75,17 @@ export default function AccomodationTab({
         />
       </View>
  
-      {/* Check-in Date & Time */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkinDateTime"] = el; }} className="flex-row gap-4 mb-5">
+
+ <View className="flex-row gap-2 justify-start items-center mb-2">
+        <Text className="text-xs font-bold tracking-wider uppercase">
+          Check-in/out date & time
+        </Text>
+       </View>
+ <View className="flex-row justify-center items-center mb-5">
+{/* Check-in Date & Time */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkinDateTime"] = el; }} className="flex-1 gap-4 ">
         <FloatingLabelInput
-          label="Check-in Date & Time"
+          label="Check-in"
           value={values.accomodationDetails?.checkinDateTime ? formatAccomodationDateTime(values.accomodationDetails.checkinDateTime) : ""}
           editable={false}
           right={
@@ -95,11 +102,11 @@ export default function AccomodationTab({
           onPress={() => setShowAccomodationDatePickerFor("checkinDateTime")}
         />
       </View>
- 
+      <Icon name="arrow-forward" size={16} color="#999" className="mt-sm" />
       {/* Check-out Date & Time */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkoutDateTime"] = el; }} className="flex-row gap-4 mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkoutDateTime"] = el; }} className="flex-1 gap-4">
         <FloatingLabelInput
-          label="Check-out Date & Time"
+          label="Check-out"
           value={values.accomodationDetails?.checkoutDateTime ? formatAccomodationDateTime(values.accomodationDetails.checkoutDateTime) : ""}
           editable={false}
           right={
@@ -116,6 +123,8 @@ export default function AccomodationTab({
           onPress={() => setShowAccomodationDatePickerFor("checkoutDateTime")}
         />
       </View>
+ </View>
+      
 
       {/* Website Address */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.websiteAddress"] = el; }} className="mb-5">
@@ -181,6 +190,12 @@ export default function AccomodationTab({
             onBlur={handleBlur("accomodationDetails.bookingStatus")}
           />
         </View>
+      </View>
+
+       <View className="flex-row gap-2 justify-start items-center mb-2">
+        <Text className="text-xs font-bold tracking-wider uppercase">
+          Contact
+        </Text>
       </View>
 
       {/* Contact Name */}

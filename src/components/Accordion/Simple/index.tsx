@@ -8,6 +8,7 @@ export interface SimpleAccordionProps {
   expanded?: boolean;
   onToggle?: (expanded: boolean) => void;
   defaultExpanded?: boolean;
+  disabled?: boolean;
 }
 
 export const SimpleAccordion = ({
@@ -16,6 +17,7 @@ export const SimpleAccordion = ({
   expanded: controlledExpanded,
   onToggle,
   defaultExpanded = false,
+  disabled = false,
 }: SimpleAccordionProps) => {
   const [localExpanded, setLocalExpanded] = useState(defaultExpanded);
 
@@ -34,9 +36,11 @@ export const SimpleAccordion = ({
     <View style={styles.container}>
       <TouchableOpacity
         onPress={toggle}
-        activeOpacity={0.7}
+        activeOpacity={disabled ? 1 : 0.7}
+        disabled={disabled}
         className="flex-row justify-between items-center py-4"
         accessibilityRole="button"
+        accessibilityState={{ disabled }}
         accessibilityLabel={`${title} section`}
       >
         <View className="flex-row gap-2 justify-start items-center">
@@ -46,7 +50,9 @@ export const SimpleAccordion = ({
           </Text>
         </View>
                
-        <Icon name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={22} color="#263F69" />
+        {!disabled && (
+          <Icon name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={22} color="#263F69" />
+        )}
       </TouchableOpacity>
       
       {isExpanded && (
