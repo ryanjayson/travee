@@ -25,12 +25,13 @@ interface TabsProps {
   expanded?: boolean;
   hasActionTripStatus?: boolean;
   onScroll?: (event: any) => void;
+  scrollViewRef?: React.RefObject<ScrollView>;
 }
 
 type TabsType = "primary" | "secondary" | "default";
 
 // --- Component ---
-const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlledActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus, onScroll }) => {
+const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlledActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus, onScroll, scrollViewRef }) => {
   const [activeTabId, setActiveTabId] = useState(
     initialActiveTabId || tabs[0]?.id
   );
@@ -166,6 +167,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
         </View>
       ) : (
         <ScrollView 
+          ref={scrollViewRef}
           contentContainerStyle={{ paddingBottom: 100 }}
           onScroll={onScroll}
           scrollEventThrottle={16}

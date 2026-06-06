@@ -14,6 +14,7 @@ interface FlightTabProps {
   setShowFlightDatePickerFor: any;
   formatFlightDateTime: any;
   handleFlightSelect: (flightData: any, setFieldValue: any) => void;
+  fieldRefs?: React.RefObject<{ [key: string]: any }>;
 }
 
 export default function FlightTab({
@@ -26,6 +27,7 @@ export default function FlightTab({
   setShowFlightDatePickerFor,
   formatFlightDateTime,
   handleFlightSelect,
+  fieldRefs,
 }: FlightTabProps) {
   return (
     <View className="flex-1 pb-6 pt-2 px-5">
@@ -52,7 +54,7 @@ export default function FlightTab({
       </TouchableOpacity>
 
       {/* Departure Airport */}
-      <View className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureAirport"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Departure Airport"
           value={values.flightDetails?.departureAirport || ""}
@@ -62,7 +64,7 @@ export default function FlightTab({
       </View>
 
       {/* Departure Date & Time */}
-      <View className="flex-row gap-4 mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureDate"] = el; }} className="flex-row gap-4 mb-5">
         <FloatingLabelInput
           label="Departure Date & Time"
           value={values.flightDetails?.departureDate ? formatFlightDateTime(values.flightDetails.departureDate) : ""}
@@ -87,7 +89,7 @@ export default function FlightTab({
       </View>
 
       {/* Arrival Airport */}
-      <View className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalAirport"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Arrival Airport"
           value={values.flightDetails?.arrivalAirport || ""}
@@ -97,7 +99,7 @@ export default function FlightTab({
       </View>
 
       {/* Arrival Date & Time */}
-      <View className="flex-row gap-4 mb-10">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalDate"] = el; }} className="flex-row gap-4 mb-10">
         <FloatingLabelInput
           label="Arrival Date & Time"
           value={values.flightDetails?.arrivalDate ? formatFlightDateTime(values.flightDetails.arrivalDate) : ""}
@@ -118,55 +120,61 @@ export default function FlightTab({
       </View>
 
       {/* Flight Number & Airline */}
-      <View className="flex-row gap-4 mb-6">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.flightNumber"] = el; }} className="flex-row gap-4 mb-6">
         <FloatingLabelInput
           label="Flight Number"
           value={values.flightDetails?.flightNumber || ""}
           onChangeText={handleChange("flightDetails.flightNumber")}
           onBlur={handleBlur("flightDetails.flightNumber")}
         />
-        <FloatingLabelInput
-          label="Airline"
-          value={values.flightDetails?.airline || ""}
-          onChangeText={handleChange("flightDetails.airline")}
-          onBlur={handleBlur("flightDetails.airline")}
-        />
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.airline"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Airline"
+            value={values.flightDetails?.airline || ""}
+            onChangeText={handleChange("flightDetails.airline")}
+            onBlur={handleBlur("flightDetails.airline")}
+          />
+        </View>
       </View>
 
       {/* Gate & Terminal */}
-      <View className="flex-row gap-4 mb-6">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.gate"] = el; }} className="flex-row gap-4 mb-6">
         <FloatingLabelInput
           label="Gate"
           value={values.flightDetails?.gate || ""}
           onChangeText={handleChange("flightDetails.gate")}
           onBlur={handleBlur("flightDetails.gate")}
         />
-        <FloatingLabelInput
-          label="Terminal"
-          value={values.flightDetails?.terminal || ""}
-          onChangeText={handleChange("flightDetails.terminal")}
-          onBlur={handleBlur("flightDetails.terminal")}
-        />
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.terminal"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Terminal"
+            value={values.flightDetails?.terminal || ""}
+            onChangeText={handleChange("flightDetails.terminal")}
+            onBlur={handleBlur("flightDetails.terminal")}
+          />
+        </View>
       </View>
 
       {/* Seat Number & Booking Reference */}
-      <View className="flex-row gap-4 mb-6">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.seatNumber"] = el; }} className="flex-row gap-4 mb-6">
         <FloatingLabelInput
           label="Seat Number"
           value={values.flightDetails?.seatNumber || ""}
           onChangeText={handleChange("flightDetails.seatNumber")}
           onBlur={handleBlur("flightDetails.seatNumber")}
         />
-        <FloatingLabelInput
-          label="Booking Reference"
-          value={values.flightDetails?.bookingReference || ""}
-          onChangeText={handleChange("flightDetails.bookingReference")}
-          onBlur={handleBlur("flightDetails.bookingReference")}
-        />
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.bookingReference"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Booking Reference"
+            value={values.flightDetails?.bookingReference || ""}
+            onChangeText={handleChange("flightDetails.bookingReference")}
+            onBlur={handleBlur("flightDetails.bookingReference")}
+          />
+        </View>
       </View>
 
       {/* Price */}
-      <View className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.price"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Price"
           keyboardType="numeric"

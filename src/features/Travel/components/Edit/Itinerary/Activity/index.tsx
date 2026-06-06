@@ -2,14 +2,15 @@ import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
-import { Formik } from "formik";
-import React, { useState, useEffect } from "react";
+import { Formik, useFormikContext } from "formik";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Image,
   Keyboard,
+  LayoutAnimation,
   Modal,
   ScrollView,
   StatusBar,
@@ -24,6 +25,7 @@ import * as Yup from "yup";
 import ActivityIcon, { activityIcons } from "../../../../../../components/ActivityIcon";
 import TouchButton from "../../../../../../components/atoms/TouchButton";
 import Tabs from "../../../../../../components/Tabs";
+import SimpleAccordion from "../../../../../../components/Accordion/Simple";
 import FlightTab from "./Tabs/FlightTab";
 import AccomodationTab from "./Tabs/AccomodationTab";
 import { useTravelContext } from "../../../../../../context/TravelContext";
@@ -247,6 +249,11 @@ const EditActivity = ({
   const [showAccomodationDatePickerFor, setShowAccomodationDatePickerFor] = useState<"checkinDateTime" | "checkoutDateTime" | null>(null);
   const [showPoiModal, setShowPoiModal] = useState<boolean>(false);
   const [poiModalInitialCategory, setPoiModalInitialCategory] = useState<"accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp">("accommodation");
+  const scrollViewRef = useRef<ScrollView>(null);
+  const fieldRefs = useRef<{ [key: string]: any }>({});
+  const [activeTabId, setActiveTabId] = useState<string>(
+    itineraryActivity?.type === ActivityType.flight ? "flight" : "details"
+  );
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -559,70 +566,55 @@ const EditActivity = ({
         startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? toLocalTimeStr(itineraryActivity.startDate) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
         endDate: itineraryActivity?.endDate ? toLocalDateStr(itineraryActivity.endDate) : null,
         endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? toLocalTimeStr(itineraryActivity.endDate) : "09:00",
-        destination: itineraryActivity?.destination || (itineraryActivity?.id ? "" : itineraryActivity?.destination || ""),
-        destinationData: itineraryActivity?.destinationData || (itineraryActivity?.id ? undefined : itineraryActivity?.destinationData),
+        destination: itineraryActivity?.destination || "",
+        destinationData: itineraryActivity?.destinationData || undefined,
         images: itineraryActivity?.images || [],
         attachments: itineraryActivity?.attachments || [],
-        flightDetails: itineraryActivity?.flightDetails
-          ? {
-              departureAirport: itineraryActivity.flightDetails.departureAirport || "",
-              arrivalAirport: itineraryActivity.flightDetails.arrivalAirport || "",
-              departureDate: itineraryActivity.flightDetails.departureDate
-                ? new Date(itineraryActivity.flightDetails.departureDate)
-                : null,
-              arrivalDate: itineraryActivity.flightDetails.arrivalDate
-                ? new Date(itineraryActivity.flightDetails.arrivalDate)
-                : null,
-              flightNumber: itineraryActivity.flightDetails.flightNumber || "",
-              airline: itineraryActivity.flightDetails.airline || "",
-              gate: itineraryActivity.flightDetails.gate || "",
-              terminal: itineraryActivity.flightDetails.terminal || "",
-              seatNumber: itineraryActivity.flightDetails.seatNumber || "",
-              bookingReference: itineraryActivity.flightDetails.bookingReference || "",
-              price: itineraryActivity.flightDetails.price != null ? String(itineraryActivity.flightDetails.price) : "",
-            }
-          : {
-              departureAirport: "",
-              arrivalAirport: "",
-              departureDate: null,
-              arrivalDate: null,
-              flightNumber: "",
-              airline: "",
-              gate: "",
-              terminal: "",
-              seatNumber: "",
-              bookingReference: "",
-              price: "",
-            },
-        accomodationDetails: itineraryActivity?.accomodationDetails
-          ? {
-              accomodationName: itineraryActivity.accomodationDetails.accomodationName || "",
-              address: itineraryActivity.accomodationDetails.address || "",
-              checkinDateTime: itineraryActivity.accomodationDetails.checkinDateTime
-                ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
-                : null,
-              checkoutDateTime: itineraryActivity.accomodationDetails.checkoutDateTime
-                ? new Date(itineraryActivity.accomodationDetails.checkoutDateTime)
-                : null,
-              websiteAddress: itineraryActivity.accomodationDetails.websiteAddress || "",
-              bookingReference: itineraryActivity.accomodationDetails.bookingReference || "",
-              bookingStatus: itineraryActivity.accomodationDetails.bookingStatus || "",
-              contactNumber: itineraryActivity.accomodationDetails.contactNumber || "",
-              emailAddress: itineraryActivity.accomodationDetails.emailAddress || "",
-              contactName: itineraryActivity.accomodationDetails.contactName || "",
-            }
-          : {
-              accomodationName: "",
-              address: "",
-              checkinDateTime: null,
-              checkoutDateTime: null,
-              websiteAddress: "",
-              bookingReference: "",
-              bookingStatus: "",
-              contactNumber: "",
-              emailAddress: "",
-              contactName: "",
-            },
+        flightDetails: {
+          departureAirport: itineraryActivity?.flightDetails?.departureAirport || "",
+          arrivalAirport: itineraryActivity?.flightDetails?.arrivalAirport || "",
+          departureDate: itineraryActivity?.flightDetails?.departureDate
+            ? new Date(itineraryActivity.flightDetails.departureDate)
+            : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.startDate
+                ? new Date(itineraryActivity.startDate)
+                : null),
+          arrivalDate: itineraryActivity?.flightDetails?.arrivalDate
+            ? new Date(itineraryActivity.flightDetails.arrivalDate)
+            : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.endDate
+                ? new Date(itineraryActivity.endDate)
+                : null),
+          flightNumber: itineraryActivity?.flightDetails?.flightNumber || "",
+          airline: itineraryActivity?.flightDetails?.airline || "",
+          gate: itineraryActivity?.flightDetails?.gate || "",
+          terminal: itineraryActivity?.flightDetails?.terminal || "",
+          seatNumber: itineraryActivity?.flightDetails?.seatNumber || "",
+          bookingReference: itineraryActivity?.flightDetails?.bookingReference || "",
+          price: itineraryActivity?.flightDetails?.price != null ? String(itineraryActivity.flightDetails.price) : "",
+        },
+        accomodationDetails: {
+          accomodationName: (itineraryActivity?.accomodationDetails?.accomodationName || "").trim() !== ""
+            ? itineraryActivity.accomodationDetails.accomodationName
+            : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.title || "" : ""),
+          address: (itineraryActivity?.accomodationDetails?.address || "").trim() !== ""
+            ? itineraryActivity.accomodationDetails.address
+            : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.destination || "" : ""),
+          checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime
+            ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
+            : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.startDate
+                ? new Date(itineraryActivity.startDate)
+                : null),
+          checkoutDateTime: itineraryActivity?.accomodationDetails?.checkoutDateTime
+            ? new Date(itineraryActivity.accomodationDetails.checkoutDateTime)
+            : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.endDate
+                ? new Date(itineraryActivity.endDate)
+                : null),
+          websiteAddress: itineraryActivity?.accomodationDetails?.websiteAddress || "",
+          bookingReference: itineraryActivity?.accomodationDetails?.bookingReference || "",
+          bookingStatus: itineraryActivity?.accomodationDetails?.bookingStatus || "",
+          contactNumber: itineraryActivity?.accomodationDetails?.contactNumber || "",
+          emailAddress: itineraryActivity?.accomodationDetails?.emailAddress || "",
+          contactName: itineraryActivity?.accomodationDetails?.contactName || "",
+        },
       }}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}
@@ -660,32 +652,12 @@ const EditActivity = ({
                 setShowFlightDatePickerFor={setShowFlightDatePickerFor}
                 formatFlightDateTime={formatFlightDateTime}
                 handleFlightSelect={handleFlightSelect}
+                fieldRefs={fieldRefs}
               />
             ),
           });
         }
 
-        if (values.type === ActivityType.accomodation) {
-          tabData.push({
-            id: "accomodation",
-            title: "Accomodation",
-            content: (
-              <AccomodationTab
-                values={values}
-                handleChange={handleChange}
-                handleBlur={handleBlur}
-                setFieldValue={setFieldValue}
-                colors={colors}
-                setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
-                formatAccomodationDateTime={formatFlightDateTime}
-                onOpenPoiModal={(category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => {
-                  setPoiModalInitialCategory(category);
-                  setShowPoiModal(true);
-                }}
-              />
-            ),
-          });
-        }
 
         tabData.push(
           {
@@ -694,7 +666,7 @@ const EditActivity = ({
             content: (
               <View className="flex-1 pt-2 px-5">
                 {/* Title */}
-                <View className="mb-5">
+                <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
                   <TextInput
                     mode="outlined"
@@ -715,179 +687,206 @@ const EditActivity = ({
                   )}
                 </View>
 
-                {/* Activity Type */}
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
-                  {(() => {
-                    const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
-                    return (
-                      <TouchableOpacity 
-                        onPress={() => {
-                          onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
-                            setFieldValue("type", type);
-                            if (type === ActivityType.flight) {
-                              openFlightModal((flightData: any) => {
-                                handleFlightSelect(flightData, setFieldValue);
-                              });
-                            }
-                          });
-                        }}
-                        disabled={isTypeDisabled}
-                        accessibilityRole="button"
-                        accessibilityState={{ disabled: isTypeDisabled }}
-                        className={`border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 mt-1 flex-row items-center gap-3 ${
-                          isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
-                        }`}
-                      >
-                        {values.type != null ? (
-                          <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
-                        ) : (
-                          <Icon name="style" size={24} color={"#B3B3B3"} />
-                        )}
-                        <Text className="text-base text-gray-800 capitalize font-medium">
-                          {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })()}
-                </View>
 
-                {/* Date & Time */}
-                {values.type !== ActivityType.flight && values.type !== ActivityType.accomodation && (
-                  <View className="mb-5">
-                    <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
-                    <View className="flex-row items-center gap-4 mt-2">
-                      <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
-                        <TouchableOpacity 
-                          onPress={() => setShowCalendarFor("startDate")}
-                          className="flex-1 flex-row items-center p-5 gap-2"
-                          accessibilityRole="button"
-                        >
-                          <Icon name="calendar-today" size={24} color="#999" />
-                          <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
-                            {values.startDate ? String(values.startDate) : "Date"}
-                          </Text>
-                        </TouchableOpacity>
-                        {values.startDate && (
-                          <TouchableOpacity 
-                            onPress={() => setValues({...values, startDate: null, startTime: ""} as any)}
-                            className="pr-4 py-3"
-                            accessibilityRole="button"
-                          >
-                            <Icon name="close" size={22} color="#999" />
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                      <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
-                        <TouchableOpacity 
-                          onPress={() => setShowTimePickerFor("startTime")}
-                          className="flex-1 flex-row items-center p-5 gap-2"
-                          accessibilityRole="button"
-                        >
-                          <Icon name="access-time" size={24} color="#888" />
-                          <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
-                            {values.startTime ? String(values.startTime) : "Time"}
-                          </Text>
-                        </TouchableOpacity>
-                        {values.startTime !== "" && (
-                          <TouchableOpacity 
-                            onPress={() => setValues({...values, startTime: ""} as any)}
-                            className="pr-4 py-3"
-                            accessibilityRole="button"
-                          >
-                            <Icon name="close" size={22} color="#999" />
-                          </TouchableOpacity>
-                        )}
-                      </View>
-                    </View>
-                  </View>
+                {/* Accomodation Details Accordion */}
+                {values.type === ActivityType.accomodation && (
+                  <AccomodationTab
+                      values={values}
+                      handleChange={handleChange}
+                      handleBlur={handleBlur}
+                      setFieldValue={setFieldValue}
+                      colors={colors}
+                      setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
+                      formatAccomodationDateTime={formatFlightDateTime}
+                      onOpenPoiModal={(category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => {
+                        setPoiModalInitialCategory(category);
+                        setShowPoiModal(true);
+                      }}
+                      noPadding={true}
+                      fieldRefs={fieldRefs}
+                    />
                 )}
 
-                {/* Location */}
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Location</Text>
-                  {values.destinationData ? (() => {
-                    const { longitude, latitude } = values.destinationData.coordinates;
-                    const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
-                    return (
-                      <TouchableOpacity 
-                        activeOpacity={0.8} 
+
+                {/* Activity Details Accordion */}
+                <SimpleAccordion key="activity-details-accordion" title="Activity Details" defaultExpanded={true}>
+                  {/* Activity Type */}
+                  <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5">
+                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
+                    {(() => {
+                      const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
+                      return (
+                        <TouchableOpacity 
+                          onPress={() => {
+                            onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
+                              setFieldValue("type", type);
+                              if (type === ActivityType.flight) {
+                                setActiveTabId("flight");
+                                openFlightModal((flightData: any) => {
+                                  handleFlightSelect(flightData, setFieldValue);
+                                });
+                              } else {
+                                setActiveTabId("details");
+                              }
+                            });
+                          }}
+                          disabled={isTypeDisabled}
+                          accessibilityRole="button"
+                          accessibilityState={{ disabled: isTypeDisabled }}
+                          className={`border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 mt-1 flex-row items-center gap-3 ${
+                            isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
+                          }`}
+                        >
+                          {values.type != null ? (
+                            <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
+                          ) : (
+                            <Icon name="style" size={24} color={"#B3B3B3"} />
+                          )}
+                          <Text className="text-base text-gray-800 capitalize font-medium">
+                            {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })()}
+                  </View>
+
+                  {/* Date & Time */}
+                  {values.type !== ActivityType.flight && values.type !== ActivityType.accomodation && (
+                    <View ref={(el) => { fieldRefs.current["startDate"] = el; }} className="mb-5">
+                      <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
+                      <View className="flex-row items-center gap-4 mt-2">
+                        <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
+                          <TouchableOpacity 
+                            onPress={() => setShowCalendarFor("startDate")}
+                            className="flex-1 flex-row items-center p-5 gap-2"
+                            accessibilityRole="button"
+                          >
+                            <Icon name="calendar-today" size={24} color="#999" />
+                            <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
+                              {values.startDate ? String(values.startDate) : "Date"}
+                            </Text>
+                          </TouchableOpacity>
+                          {values.startDate && (
+                            <TouchableOpacity 
+                              onPress={() => setValues({...values, startDate: null, startTime: ""} as any)}
+                              className="pr-4 py-3"
+                              accessibilityRole="button"
+                            >
+                              <Icon name="close" size={22} color="#999" />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                        <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
+                          <TouchableOpacity 
+                            onPress={() => setShowTimePickerFor("startTime")}
+                            className="flex-1 flex-row items-center p-5 gap-2"
+                            accessibilityRole="button"
+                          >
+                            <Icon name="access-time" size={24} color="#888" />
+                            <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
+                              {values.startTime ? String(values.startTime) : "Time"}
+                            </Text>
+                          </TouchableOpacity>
+                          {values.startTime !== "" && (
+                            <TouchableOpacity 
+                              onPress={() => setValues({...values, startTime: ""} as any)}
+                              className="pr-4 py-3"
+                              accessibilityRole="button"
+                            >
+                              <Icon name="close" size={22} color="#999" />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+                  )}
+
+                  {/* Location */}
+                  <View ref={(el) => { fieldRefs.current["destination"] = el; }} className="mb-5">
+                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Location</Text>
+                    {values.destinationData ? (() => {
+                      const { longitude, latitude } = values.destinationData.coordinates;
+                      const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+                      return (
+                        <TouchableOpacity 
+                          activeOpacity={0.8} 
+                          onPress={() => setShowDestinationModal(true)}
+                          className="mt-1"
+                          accessibilityRole="button"
+                        >
+                          <View className="rounded-2xl overflow-hidden border border-gray-100">
+                            <Image source={{ uri: mapUrl }} style={{ width: '100%', height: 120, borderRadius: 16 }} resizeMode="cover" />
+                            <View className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded-full flex-row items-center">
+                              <Icon name="location-on" size={12} color="#FFF" />
+                              <Text className="text-white text-[10px] ml-1">{values.destination}</Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })() : (
+                      <TouchableOpacity
+                        activeOpacity={0.7}
                         onPress={() => setShowDestinationModal(true)}
-                        className="mt-1"
                         accessibilityRole="button"
                       >
-                        <View className="rounded-2xl overflow-hidden border border-gray-100">
-                          <Image source={{ uri: mapUrl }} style={{ width: '100%', height: 120, borderRadius: 16 }} resizeMode="cover" />
-                          <View className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded-full flex-row items-center">
-                            <Icon name="location-on" size={12} color="#FFF" />
-                            <Text className="text-white text-[10px] ml-1">{values.destination}</Text>
-                          </View>
+                        <View pointerEvents="none">
+                          <TextInput
+                            mode="outlined"
+                            placeholder="Search city or country..."
+                            value=""
+                            editable={false}
+                            outlineColor="#E0E0E0"
+                            activeOutlineColor="#263F69"
+                            left={<TextInput.Icon icon="map-marker" color="#999" />}
+                            theme={{ colors: { onSurfaceVariant: '#888' } }}
+                            outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                            style={{ marginTop: 6, height: 64 }}
+                            contentStyle={{ backgroundColor: "transparent" }}
+                          />
                         </View>
                       </TouchableOpacity>
-                    );
-                  })() : (
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      onPress={() => setShowDestinationModal(true)}
-                      accessibilityRole="button"
-                    >
-                      <View pointerEvents="none">
-                        <TextInput
-                          mode="outlined"
-                          placeholder="Search city or country..."
-                          value=""
-                          editable={false}
-                          outlineColor="#E0E0E0"
-                          activeOutlineColor="#263F69"
-                          left={<TextInput.Icon icon="map-marker" color="#999" />}
-                          theme={{ colors: { onSurfaceVariant: '#888' } }}
-                          outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                          style={{ marginTop: 6, height: 64 }}
-                          contentStyle={{ backgroundColor: "transparent" }}
-                        />
-                      </View>
-                    </TouchableOpacity>
-                  )}
-                </View>
+                    )}
+                  </View>
 
-                {/* Itinerary Section */}
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Section</Text>
-                  <Text className={`text-base text-gray-400 opacity-80`}>
-                    Select the itinerary section where you want to add this activity.
-                  </Text>
-                  <TouchableOpacity 
-                    onPress={() => {
-                      if (hasSections) {
-                        onOpenSectionModal(sections, values.sectionId, (id) => {
-                          setFieldValue("sectionId", id);
-                        });
-                      }
-                    }}
-                    disabled={!hasSections}
-                    className={`border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3 ${!hasSections ? 'opacity-50 bg-gray-100' : ''}`}
-                    accessibilityRole="button"
-                    accessibilityLabel="Select itinerary section"
-                  >
-                    <Icon name="folder" size={24} color={hasSections ? "#263F69" : "#B3B3B3"} />
-                    <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
-                      {selectedSectionName || (hasSections ? "Select Section..." : "No Sections Available")}
+                  {/* Itinerary Section */}
+                  <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-5">
+                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Section</Text>
+                    <Text className={`text-base text-gray-400 opacity-80`}>
+                      Select the itinerary section where you want to add this activity.
                     </Text>
-                    {hasSections && <Icon name="keyboard-arrow-down" size={24} color="#666" />}
-                  </TouchableOpacity>
-                </View>
-         
-                {/* Description */}
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
-                  <DescriptionInput
-                    value={values.description}
-                    onChange={(text) => setFieldValue("description", text)}
-                    label="Description"
-                    placeholder="Activity details..."
-                    confirmLabel="Add"
-                  />
-                </View>
+                    <TouchableOpacity 
+                      onPress={() => {
+                        if (hasSections) {
+                          onOpenSectionModal(sections, values.sectionId, (id) => {
+                            setFieldValue("sectionId", id);
+                          });
+                        }
+                      }}
+                      disabled={!hasSections}
+                      className={`border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3 ${!hasSections ? 'opacity-50 bg-gray-100' : ''}`}
+                      accessibilityRole="button"
+                      accessibilityLabel="Select itinerary section"
+                    >
+                      <Icon name="folder" size={24} color={hasSections ? "#263F69" : "#B3B3B3"} />
+                      <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
+                        {selectedSectionName || (hasSections ? "Select Section..." : "No Sections Available")}
+                      </Text>
+                      {hasSections && <Icon name="keyboard-arrow-down" size={24} color="#666" />}
+                    </TouchableOpacity>
+                  </View>
+           
+                  {/* Description */}
+                  <View ref={(el) => { fieldRefs.current["description"] = el; }} className="mb-5">
+                    <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
+                    <DescriptionInput
+                      value={values.description}
+                      onChange={(text) => setFieldValue("description", text)}
+                      label="Description"
+                      placeholder="Activity details..."
+                      confirmLabel="Add"
+                    />
+                  </View>
+                </SimpleAccordion>
 
                 {/* Delete Activity */}
                 {itineraryActivity?.id && (
@@ -1138,6 +1137,12 @@ const EditActivity = ({
         return (
           <View className="flex-1 bg-gray-100 overflow-hidden">
             <StatusBar barStyle={"dark-content"} />
+            <FormikErrorScroller
+              scrollViewRef={scrollViewRef}
+              fieldRefs={fieldRefs}
+              activeTabId={activeTabId}
+              setActiveTabId={setActiveTabId}
+            />
             <FormInitHandler
               values={values}
               setFieldValue={setFieldValue}
@@ -1148,7 +1153,14 @@ const EditActivity = ({
             />
 
             <View className="flex-1">
-              <Tabs tabs={tabData} initialActiveTabId={values.type === ActivityType.flight ? "flight" : (values.type === ActivityType.accomodation ? "accomodation" : "details")} type="default" onScroll={onScroll} />
+              <Tabs 
+                tabs={tabData} 
+                activeTabId={activeTabId}
+                onTabChange={setActiveTabId}
+                type="default" 
+                onScroll={onScroll} 
+                scrollViewRef={scrollViewRef}
+              />
             </View>
 
             {!(isKeyboardVisible && isChecklistFocused) && (
@@ -1368,5 +1380,78 @@ const EditActivity = ({
 };
 
 export default EditActivity;
+
+const FormikErrorScroller = ({
+  scrollViewRef,
+  fieldRefs,
+  activeTabId,
+  setActiveTabId,
+}: {
+  scrollViewRef: React.RefObject<ScrollView>;
+  fieldRefs: React.RefObject<{ [key: string]: any }>;
+  activeTabId: string;
+  setActiveTabId: (tabId: string) => void;
+}) => {
+  const { errors, submitCount, isValidating } = useFormikContext<any>();
+
+  useEffect(() => {
+    if (submitCount > 0 && Object.keys(errors).length > 0 && !isValidating) {
+      const getFirstErrorKey = (obj: any, prefix = ""): string => {
+        for (const key of Object.keys(obj)) {
+          const val = obj[key];
+          const path = prefix ? `${prefix}.${key}` : key;
+          if (typeof val === "string") {
+            return path;
+          } else if (typeof val === "object" && val !== null) {
+            const subPath = getFirstErrorKey(val, path);
+            if (subPath) return subPath;
+          }
+        }
+        return "";
+      };
+
+      const firstErrorKey = getFirstErrorKey(errors);
+      if (!firstErrorKey) return;
+
+      // Determine target tab
+      let targetTab = "details";
+      if (firstErrorKey.startsWith("flightDetails.")) {
+        targetTab = "flight";
+      }
+
+      if (activeTabId !== targetTab) {
+        setActiveTabId(targetTab);
+      }
+
+      const performScroll = () => {
+        const ref = fieldRefs.current[firstErrorKey];
+        if (ref && scrollViewRef.current) {
+          const scrollViewNode = scrollViewRef.current;
+          ref.measureLayout(
+            scrollViewNode,
+            (x: number, y: number) => {
+              scrollViewNode.scrollTo({ y: Math.max(0, y - 20), animated: true });
+            },
+            () => {
+              // Fallback measure
+              ref.measure((x, y, w, h, px, py) => {
+                scrollViewNode.scrollTo({ y: Math.max(0, y - 20), animated: true });
+              });
+            }
+          );
+        }
+      };
+
+      // Wait a tick for tab content or layout to render
+      if (activeTabId !== targetTab) {
+        setTimeout(performScroll, 200);
+      } else {
+        performScroll();
+      }
+    }
+  }, [submitCount, isValidating]);
+
+  return null;
+};
 
 

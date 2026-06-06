@@ -13,6 +13,8 @@ interface AccomodationTabProps {
   setShowAccomodationDatePickerFor: any;
   formatAccomodationDateTime: any;
   onOpenPoiModal: (category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => void;
+  noPadding?: boolean;
+  fieldRefs?: React.RefObject<{ [key: string]: any }>;
 }
 
 const FloatingLabelInput = (props: any) => (
@@ -30,22 +32,41 @@ export default function AccomodationTab({
   setShowAccomodationDatePickerFor,
   formatAccomodationDateTime,
   onOpenPoiModal,
+  noPadding = false,
+  fieldRefs,
 }: AccomodationTabProps) {
   return (
-    <View className="flex-1 pb-6 pt-2 px-5">
+    <View className={`flex-1 pb-6 pt-2 ${noPadding ? "" : "px-5"}`}>
+      <View className="flex-row gap-2 justify-start items-center mb-5">
+        <Icon name="hotel" size={20} color="#000" />
+        <Text className="text-md font-bold tracking-wider uppercase">
+          Accommodation Details
+        </Text>
+       </View>
       {/* Accomodation Name */}
-      <View className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.accomodationName"] = el; }} className="mb-5">
         <FloatingLabelInput
-          label="Accomodation Name"
+          label="Accomodation Name"   
           value={values.accomodationDetails?.accomodationName || ""}
           onChangeText={handleChange("accomodationDetails.accomodationName")}
           onBlur={handleBlur("accomodationDetails.accomodationName")}
           onPress={() => onOpenPoiModal("accommodation")}
+          right={
+            values.accomodationDetails?.checkinDateTime ? (
+              <TextInput.Icon
+                icon="close"
+                color="#999"
+                onPress={() => setFieldValue("accomodationDetails.checkinDateTime", null)}
+              />
+            ) : (
+              <TextInput.Icon icon="map-marker-radius-outline" color="#999" />
+            )
+          }
         />
       </View>
-
+ 
       {/* Address */}
-      <View className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.address"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Address"
           value={values.accomodationDetails?.address || ""}
@@ -53,9 +74,9 @@ export default function AccomodationTab({
           onBlur={handleBlur("accomodationDetails.address")}
         />
       </View>
-
+ 
       {/* Check-in Date & Time */}
-      <View className="flex-row gap-4 mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkinDateTime"] = el; }} className="flex-row gap-4 mb-5">
         <FloatingLabelInput
           label="Check-in Date & Time"
           value={values.accomodationDetails?.checkinDateTime ? formatAccomodationDateTime(values.accomodationDetails.checkinDateTime) : ""}
@@ -74,9 +95,9 @@ export default function AccomodationTab({
           onPress={() => setShowAccomodationDatePickerFor("checkinDateTime")}
         />
       </View>
-
+ 
       {/* Check-out Date & Time */}
-      <View className="flex-row gap-4 mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkoutDateTime"] = el; }} className="flex-row gap-4 mb-5">
         <FloatingLabelInput
           label="Check-out Date & Time"
           value={values.accomodationDetails?.checkoutDateTime ? formatAccomodationDateTime(values.accomodationDetails.checkoutDateTime) : ""}
@@ -97,7 +118,7 @@ export default function AccomodationTab({
       </View>
 
       {/* Website Address */}
-      <View className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.websiteAddress"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Website Address"
           value={values.accomodationDetails?.websiteAddress || ""}
@@ -145,23 +166,25 @@ export default function AccomodationTab({
       </View>
 
       {/* Booking Reference & Booking Status */}
-      <View className="flex-row gap-4 mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.bookingReference"] = el; }} className="flex-row gap-4 mb-5">
         <FloatingLabelInput
           label="Booking Reference"
           value={values.accomodationDetails?.bookingReference || ""}
           onChangeText={handleChange("accomodationDetails.bookingReference")}
           onBlur={handleBlur("accomodationDetails.bookingReference")}
         />
-        <FloatingLabelInput
-          label="Booking Status"
-          value={values.accomodationDetails?.bookingStatus || ""}
-          onChangeText={handleChange("accomodationDetails.bookingStatus")}
-          onBlur={handleBlur("accomodationDetails.bookingStatus")}
-        />
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Booking Status"
+            value={values.accomodationDetails?.bookingStatus || ""}
+            onChangeText={handleChange("accomodationDetails.bookingStatus")}
+            onBlur={handleBlur("accomodationDetails.bookingStatus")}
+          />
+        </View>
       </View>
 
       {/* Contact Name */}
-      <View className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.contactName"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Contact Name"
           value={values.accomodationDetails?.contactName || ""}
@@ -171,19 +194,21 @@ export default function AccomodationTab({
       </View>
 
       {/* Contact Number & Email Address */}
-      <View className="flex-row gap-4 mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.contactNumber"] = el; }} className="flex-row gap-4 mb-5">
         <FloatingLabelInput
           label="Contact Number"
           value={values.accomodationDetails?.contactNumber || ""}
           onChangeText={handleChange("accomodationDetails.contactNumber")}
           onBlur={handleBlur("accomodationDetails.contactNumber")}
         />
-        <FloatingLabelInput
-          label="Email Address"
-          value={values.accomodationDetails?.emailAddress || ""}
-          onChangeText={handleChange("accomodationDetails.emailAddress")}
-          onBlur={handleBlur("accomodationDetails.emailAddress")}
-        />
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.emailAddress"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Email Address"
+            value={values.accomodationDetails?.emailAddress || ""}
+            onChangeText={handleChange("accomodationDetails.emailAddress")}
+            onBlur={handleBlur("accomodationDetails.emailAddress")}
+          />
+        </View>
       </View>
     </View>
   );

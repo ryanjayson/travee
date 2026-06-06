@@ -5,6 +5,7 @@ import Section from "../../db/models/Section";
 import Activity from "../../db/models/Activity";
 import FlightDetails from "../../db/models/FlightDetails";
 import AccomodationDetails from "../../db/models/AccomodationDetails";
+import { ActivityType } from "../../types/enums";
 
 export const fetchLocalAccomodationDetails = async (activityId: string): Promise<any | null> => {
   try {
@@ -344,7 +345,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
     }
 
     // Save associated flight details
-    if (activityData.type === 1 && activityData.flightDetails) {
+    if (activityData.type === ActivityType.flight && activityData.flightDetails) {
       const flightDetailsCollection = database.get<FlightDetails>("flight_details");
       const existingDetails = await flightDetailsCollection.query(
         Q.where("activity_id", activity.id)
@@ -387,7 +388,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
     }
 
     // Save associated accomodation details
-    if (activityData.type === 27 && activityData.accomodationDetails) {
+    if (activityData.type === ActivityType.accomodation && activityData.accomodationDetails) {
       const accomodationDetailsCollection = database.get<AccomodationDetails>("accomodation_details");
       const existingDetails = await accomodationDetailsCollection.query(
         Q.where("activity_id", activity.id)
