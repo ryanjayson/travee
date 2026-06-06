@@ -12,7 +12,7 @@ import {
   Easing,
 } from "react-native";
 import ActivityIcon, { activityIcons } from "../../../../../components/ActivityIcon";
-import { ActivityType } from "../../../../../types/enums";
+import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { useConfirm } from "../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../context/ToastContext";
@@ -303,10 +303,7 @@ const ActivityItemCard = ({
     if (type == null) return { text: "None", color: "#9E9E9E" };
     const iconConfig = activityIcons.find((i) => i.activityType === type);
     const color = iconConfig?.color ?? "#9E9E9E";
-    const typeName = ActivityType[type];
-    const text = typeName 
-      ? String(typeName).replace(/([A-Z])/g, ' $1').trim()
-      : "None";
+    const text = type != null ? getActivityTypeLabel(type) : "None";
     return { text, color };
   };
 

@@ -15,10 +15,24 @@ import {
   Text,
 } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
-import { ActivityType } from "../../../../types/enums";
+import { ActivityType, getActivityTypeLabel } from "../../../../types/enums";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const ACTIVITY_TYPE_SUBTEXT: Record<string, string> = {
+  accomodation: "Checkin and checkout",
+  cafeRestaurant: "Food, eat, drink, snack, coffee, bar, lounge, pub",
+  nature: "Beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano",
+  shopppingAndService: "Spa, events, festivals, parties, show, tour guide, clothes store, supermarket, convenience store, atm, bank, pharmacy, gas station",
+  entertainmentAndRecreation: "Park, museum, gym, cinema, stadium, zoo, concert",
+  transportation: "Ride, bike, boat, bus, taxi, train, ferry",
+  hikeOrCamp: "Mountain, forest, jungle, cave, desert, canyon, volcano, campground",
+  motorcycleRide: "Motorbike",
+  rideRental: "RV, yacht, motorbike, motorcycle, car, bike",
+};
+
+
 interface ActivityTypeLookupModalProps {
   visible: boolean;
   onClose: () => void;
@@ -167,8 +181,7 @@ const ActivityTypeLookupModal = ({
     .filter((key) => isNaN(Number(key)))
     .map((key) => {
       const typeValue = ActivityType[key as keyof typeof ActivityType];
-      const _displayName = key === "none" ? "No Type" : key.replace(/([A-Z])/g, " $1").trim();
-      const displayName = key === "cafeRestaurant" ? "Cafe or Restaurant" : _displayName
+      const displayName = getActivityTypeLabel(typeValue);
       return { key, typeValue, displayName };
     });
 
@@ -234,10 +247,10 @@ const ActivityTypeLookupModal = ({
             >
               <View className="flex-row items-center gap-2">
                 <Text 
-                  className="text-2xl font-bold"
+                  className="text-2xl"
                   style={{ color: colors.primary || "#263F69" }}
                 >
-                  Select type
+                  Select activity type
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
@@ -330,9 +343,16 @@ const ActivityTypeLookupModal = ({
                         accessibilityLabel={`Select activity type ${displayName}`}
                       >
                         <ActivityIcon type={typeValue} size={24} />
-                        <Text className="text-base text-gray-800 flex-1 capitalize">
-                          {displayName}
-                        </Text>
+                        <View className="flex-1">
+                          <Text className="text-base text-gray-800 capitalize">
+                            {displayName}
+                          </Text>
+                          {ACTIVITY_TYPE_SUBTEXT[key] ? (
+                            <Text style={{ fontSize: 12, color: "#667085", marginTop: 0 }}>
+                              {ACTIVITY_TYPE_SUBTEXT[key]}
+                            </Text>
+                          ) : null}
+                        </View>
                         {selectedType === typeValue && (
                           <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
                         )}
@@ -374,9 +394,16 @@ const ActivityTypeLookupModal = ({
                         accessibilityLabel={`Select activity type ${displayName}`}
                       >
                         <ActivityIcon type={typeValue} size={24} />
-                        <Text className="text-base text-gray-800 flex-1 capitalize">
-                          {displayName}
-                        </Text>
+                        <View className="flex-1">
+                          <Text className="text-base text-gray-800 capitalize">
+                            {displayName}
+                          </Text>
+                          {ACTIVITY_TYPE_SUBTEXT[key] ? (
+                            <Text style={{ fontSize: 12, color: "#667085", marginTop: 0 }}>
+                              {ACTIVITY_TYPE_SUBTEXT[key]}
+                            </Text>
+                          ) : null}
+                        </View>
                         {selectedType === typeValue && (
                           <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
                         )}

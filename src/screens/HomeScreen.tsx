@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAllActivities } from '../features/Travel/hooks/useActivity';
 import { useTravels } from '../features/Travel/hooks/useTravel';
 import { Travel } from '../features/Travel/types/TravelDto';
-import { ActivityType, TravelStatus } from '../types/enums';
+import { ActivityType, TravelStatus, getActivityTypeLabel } from '../types/enums';
 import Hero from '../components/Home/Hero/index';
 import UpcomingTrips from '../components/Home/UpcomingTrips';
 import { useTravelContext } from "../context/TravelContext";
@@ -75,8 +75,8 @@ const HomeScreen = () => {
     return Object.entries(counts)
       .map(([typeStr, count]) => {
         const type = parseInt(typeStr, 10);
-        const typeName = ActivityType[type];
-        return { type, typeName: typeName ? typeName.charAt(0).toUpperCase() + typeName.slice(1) : 'Unknown', count };
+        const label = getActivityTypeLabel(type);
+        return { type, typeName: label || 'Unknown', count };
       })
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
@@ -84,9 +84,21 @@ const HomeScreen = () => {
 
   const getIconForActivityType = (type?: number) => {
     const map: Record<number, string> = {
-      1: 'airplane', 2: 'log-in', 3: 'log-out', 4: 'car',
-      5: 'cafe', 6: 'restaurant', 7: 'walk', 8: 'camera',
-      9: 'cart', 10: 'briefcase', 11: 'bicycle', 12: 'bed',
+      [ActivityType.flight]: 'airplane',
+      [ActivityType.accomodation]: 'bed',
+      [ActivityType.cafeRestaurant]: 'restaurant',
+      [ActivityType.nature]: 'leaf',
+      [ActivityType.shopppingAndService]: 'cart',
+      [ActivityType.entertainmentAndRecreation]: 'film',
+      [ActivityType.transportation]: 'bus',
+      [ActivityType.walk]: 'walk',
+      [ActivityType.sightseeing]: 'camera',
+      [ActivityType.preparation]: 'construct',
+      [ActivityType.rest]: 'bed',
+      [ActivityType.hikeOrCamp]: 'compass',
+      [ActivityType.motorcycleRide]: 'bicycle',
+      [ActivityType.meetup]: 'people',
+      [ActivityType.rideRental]: 'car',
     };
     return (map[type ?? 0] ?? 'location') as any;
   };

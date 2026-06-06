@@ -1,9 +1,9 @@
 import {
   Travel,
-  TravelStatus,
   CreateTravelData,
   UpdateTravelData,
 } from "../../features/Travel/types/TravelDto";
+import { TravelStatus } from "../../types/enums";
 import { ActivitySection } from "../../dtos/ItineraryDto";
 
 // API base URL

@@ -38,7 +38,7 @@ interface PoiLookupModalProps {
   visible: boolean;
   onClose: () => void;
   onSelect: (poi: MapboxPoi) => void;
-  initialCategory?: "accommodation" | "cafeRestaurant" | "attraction";
+  initialCategory?: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp";
   proximity?: {
     latitude: number;
     longitude: number;
@@ -50,19 +50,37 @@ const POI_CATEGORIES = [
     id: "accommodation",
     label: "Accommodation",
     icon: "hotel",
-    value: "hotel,lodging,motel,hostel,resort,bed_and_breakfast,campground",
+    value: "hotel,lodging,motel,hostel,resort,bed_and_breakfast",
   },
   {
     id: "cafeRestaurant",
     label: "Cafe & Restaurant",
     icon: "restaurant",
-    value: "restaurant,food,fast_food,cafe,coffee_shop",
+    value: "restaurant,cafe,bar,pub,fast_food,coffee_shop",
   },
   {
-    id: "attraction",
-    label: "Attraction",
-    icon: "explore",
-    value: "tourist_attraction,museum,monument,historic_site,theme_park",
+    id: "nature",
+    label: "Nature",
+    icon: "terrain",
+    value: "beach,mountain,lake,river,waterfall,forest,jungle,cave,desert,volcano",
+  },
+  {
+    id: "shopppingAndService",
+    label: "Shopping & Service",
+    icon: "shopping-bag",
+    value: "shopping,mall,supermarket,clothing_store,convenience_store,spa,bank,gas_station,pharmacy",
+  },
+  {
+    id: "entertainmentAndRecreation",
+    label: "Entertainment & Recreation",
+    icon: "local-play",
+    value: "theme_park,cinema,park,museum,stadium,zoo,concert",
+  },
+  {
+    id: "hikeOrCamp",
+    label: "Hike & Camp",
+    icon: "hiking",
+    value: "campground,camping,mountain,forest,jungle",
   },
 ] as const;
 

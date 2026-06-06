@@ -1,6 +1,6 @@
 import React from "react";
 import { View, TextInput } from "react-native";
-import CommentSection from "../../CommentSection";
+import CommentSection from "../../../CommentSection";
 
 const AddComment = () => (
   <View

@@ -57,7 +57,7 @@ export const sampleActivities: ItineraryActivity[] = [
       "Continue south and turn right after the Parco Department Store down toward the Spain Slope, Tokyu Hands and Center Gai. Check out the famous Shibuya Crossing and Hachiko Statue next to Shibuya Station.",
     commentsCount: 19,
     notesCount: 3,
-    primaryType: ActivityType.shopping,
+    primaryType: ActivityType.shopppingAndService,
   },
   {
     id: 5,

@@ -21,7 +21,7 @@ import { FAB, Portal, Provider } from "react-native-paper";
 import { useTravelContext } from "../../../../../context/TravelContext";
 
 import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
-import { ActivityType } from "../../../../../types/enums";
+import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
 
 interface ViewTripActivityProps {
   id: string;
@@ -174,7 +174,7 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
               {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.none && (
                 <View className="mt-1 self-start bg-blue-50 px-2 py-0.5 rounded-full">
                   <Text className="text-xs font-semibold text-[#263F69] uppercase tracking-wider">
-                    {String(ActivityType[itineraryActivity.type]).replace(/([A-Z])/g, ' $1').trim()}
+                    {getActivityTypeLabel(itineraryActivity.type)}
                   </Text>
                 </View>
               )}

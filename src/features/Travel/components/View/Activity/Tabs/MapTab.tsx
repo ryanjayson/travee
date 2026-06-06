@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import ActivityLocationMap from "../../ActivityLocationMap";
+import ActivityLocationMap from "../../../ActivityLocationMap";
 
 const MapTab = () => {
   return (

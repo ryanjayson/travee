@@ -44,42 +44,42 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
       keywords: ["flight", "airline", "airport", "boarding pass", "e-ticket", "pnr", "carrier", "gate", "terminal", "layover", "cabin", "seat", "flight number", "airplane", "airways", "airlines"]
     },
     hotel: {
-      type: ActivityType.checkIn,
+      type: ActivityType.accomodation,
       label: "Hotel",
       keywords: ["hotel", "motel", "resort", "inn", "suites", "accommodation", "check-in", "check-out", "booking.com", "expedia", "agoda", "reception", "breakfast", "night stay", "lodging"]
     },
     airbnb: {
-      type: ActivityType.checkIn,
+      type: ActivityType.accomodation,
       label: "Airbnb",
       keywords: ["airbnb", "homestay", "host", "guest house", "villa", "apartment stay", "stay details", "house rules", "shared room", "superhost"]
     },
     train: {
-      type: ActivityType.train,
+      type: ActivityType.transportation,
       label: "Train",
       keywords: ["train", "railway", "rail", "eurostar", "amtrak", "shinkansen", "carriage", "platform", "track", "station", "express train", "jr pass", "tgv"]
     },
     car: {
-      type: ActivityType.taxi,
+      type: ActivityType.rideRental,
       label: "Car Rental",
       keywords: ["car rental", "car hire", "hertz", "avis", "enterprise", "sixt", "budget car", "rental agreement", "vehicle lease", "pick-up location", "drop-off", "driver license"]
     },
     taxi: {
-      type: ActivityType.taxi,
+      type: ActivityType.transportation,
       label: "Taxi",
       keywords: ["taxi", "cab", "uber", "grab", "lyft", "ride-sharing", "metered fare", "taxi receipt", "driver details"]
     },
     ferry: {
-      type: ActivityType.ferry,
+      type: ActivityType.transportation,
       label: "Ferry",
       keywords: ["ferry", "pier", "port", "boat", "ferry terminal", "ferry ticket", "catamaran", "hydrofoil", "seacat"]
     },
     bus: {
-      type: ActivityType.bus,
+      type: ActivityType.transportation,
       label: "Bus",
       keywords: ["bus", "coach", "greyhound", "flixbus", "bus station", "terminal bus", "bus ticket", "shuttle", "transit link"]
     },
     cruise: {
-      type: ActivityType.ferry,
+      type: ActivityType.transportation,
       label: "Cruise",
       keywords: ["cruise", "ship", "cruise line", "royal caribbean", "carnival", "msc cruise", "cabin number", "deck number", "port of call", "cruise terminal", "boarding card"]
     },
@@ -383,38 +383,6 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
   };
 };
 
-/** Helper to convert ActivityType to human-readable labels */
-const getActivityTypeLabel = (type: ActivityType): string => {
-  switch (type) {
-    case ActivityType.flight: return "Flight";
-    case ActivityType.accomodation: return "Accomodation";
-    case ActivityType.checkIn: return "Hotel";
-    case ActivityType.checkOut: return "Check-out";
-    case ActivityType.train: return "Train";
-    case ActivityType.taxi: return "Taxi";
-    case ActivityType.bus: return "Bus";
-    case ActivityType.ferry: return "Ferry";
-    case ActivityType.food: return "Restaurant";
-    case ActivityType.cafeRestaurant: return "Cafe / Restaurant";
-    case ActivityType.sightseeing: return "Sightseeing";
-    case ActivityType.shopping: return "Shopping";
-    case ActivityType.museum: return "Museum";
-    case ActivityType.walk: return "Walk";
-    case ActivityType.ride: return "Ride";
-    case ActivityType.rest: return "Rest";
-    case ActivityType.hike: return "Hike";
-    case ActivityType.beach: return "Beach";
-    case ActivityType.sports: return "Sports";
-    case ActivityType.spa: return "Spa";
-    case ActivityType.meetup: return "Meetup";
-    case ActivityType.photography: return "Photography";
-    case ActivityType.concert: return "Concert";
-    case ActivityType.nightOut: return "Night Out";
-    case ActivityType.bike: return "Bike";
-    case ActivityType.borderCrossing: return "Border Crossing";
-    default: return "Activity";
-  }
-};
 
 /** Converts recognized date string formats to standard YYYY-MM-DD */
 const parseDateString = (dateStr: string): string | null => {

@@ -4,7 +4,7 @@ import { ScrollView, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import Svg, { Circle, G } from "react-native-svg";
 import ActivityIcon from "../../../../../components/ActivityIcon";
-import { ActivityType, ExpenseCategory, TripType } from "../../../../../types/enums";
+import { ActivityType, ExpenseCategory, TripType, getActivityTypeLabel } from "../../../../../types/enums";
 import TripIcon from "../../../../../components/TripIcon";
 import { TravelPlan } from "../../../../Travel/types/TravelDto";
 import { useChecklistGroups, useChecklistItems } from "../../../hooks/useChecklist";
@@ -144,11 +144,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
       .sort((a, b) => b.count - a.count);
   }, [allActivities]);
 
-  const activityTypeName = (type: number) =>
-    Object.keys(ActivityType)
-      .filter((k) => isNaN(Number(k)) && ActivityType[k as keyof typeof ActivityType] === type)
-      .map((k) => k.replace(/([A-Z])/g, " $1").trim())
-      .join("") || "Other";
+  const activityTypeName = (type: number) => getActivityTypeLabel(type);
 
   // ─── Checklist group breakdown ──────────────────────────────────────────────
   const groupBreakdown = useMemo(() => {

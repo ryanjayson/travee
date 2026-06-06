@@ -15,10 +15,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import EditActivity from "../Edit/Itinerary/Activity";
+import EditActivity from "./index";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
-import { ItineraryActivity } from "../../types/TravelDto";
+import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
+import { ItineraryActivity } from "../../../types/TravelDto";
 
 interface ActivityModalProps {
   visible: boolean;

@@ -14,15 +14,15 @@ import { Calendar } from "react-native-calendars";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import TouchButton from "../../../../components/atoms/TouchButton";
+import TouchButton from "../../../../../components/atoms/TouchButton";
 import { Divider, Switch } from 'react-native-paper';
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Image } from "react-native";
-import { DestinationDto, ItineraryActivity } from "../../types/TravelDto";
-import { ActivityType } from "../../../../types/enums";
-import { useUpdateActivityMutation, useDeleteActivityMutation } from "../../hooks/useActivity";
-import { useTravelContext } from "../../../../context/TravelContext";
-import ActivityIcon from "../../../atoms/ActivityIcon";
+import { DestinationDto, ItineraryActivity } from "../../../types/TravelDto";
+import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
+import { useUpdateActivityMutation, useDeleteActivityMutation } from "../../../hooks/useActivity";
+import { useTravelContext } from "../../../../../context/TravelContext";
+import ActivityIcon from "../../../../../components/ActivityIcon";
 import MapboxDestinationSelector, { MapboxPlace } from "../../MapboxDestinationSelector";
 
 interface Place {
@@ -316,11 +316,7 @@ debugger;
                       <Icon name="style" size={32} color={"#B3B3B3"} />
                     )}
                     <Text className="text-base text-gray-800 capitalize font-medium">
-                      {values.type != null
-                        ? values.type === ActivityType.none
-                          ? "No Type"
-                          : String(ActivityType[values.type as number]).replace(/([A-Z])/g, ' $1').trim()
-                        : "Select Type..."}
+                      {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -447,7 +443,7 @@ debugger;
                         >
                           <ActivityIcon type={ActivityType[key as keyof typeof ActivityType]} size={24} color="#183B7A" />
                           <Text className="text-base text-gray-800 capitalize">
-                            {key === "none" ? "No Type" : key.replace(/([A-Z])/g, ' $1').trim()}
+                            {getActivityTypeLabel(ActivityType[key as keyof typeof ActivityType])}
                           </Text>
                         </TouchableOpacity>
                       ))}

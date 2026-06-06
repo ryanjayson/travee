@@ -28,7 +28,7 @@ import FlightTab from "./Tabs/FlightTab";
 import AccomodationTab from "./Tabs/AccomodationTab";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
-import { ActivityType } from "../../../../../../types/enums";
+import { ActivityType, getActivityTypeLabel } from "../../../../../../types/enums";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
 import { useDeleteActivityMutation, useUpdateActivityMutation } from "../../../../hooks/useActivity";
 import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItemMutation, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
@@ -246,7 +246,7 @@ const EditActivity = ({
   const [showFlightDatePickerFor, setShowFlightDatePickerFor] = useState<"departureDate" | "arrivalDate" | null>(null);
   const [showAccomodationDatePickerFor, setShowAccomodationDatePickerFor] = useState<"checkinDateTime" | "checkoutDateTime" | null>(null);
   const [showPoiModal, setShowPoiModal] = useState<boolean>(false);
-  const [poiModalInitialCategory, setPoiModalInitialCategory] = useState<"accommodation" | "cafeRestaurant" | "attraction">("accommodation");
+  const [poiModalInitialCategory, setPoiModalInitialCategory] = useState<"accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp">("accommodation");
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -678,7 +678,7 @@ const EditActivity = ({
                 colors={colors}
                 setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
                 formatAccomodationDateTime={formatFlightDateTime}
-                onOpenPoiModal={(category: "accommodation" | "cafeRestaurant" | "attraction") => {
+                onOpenPoiModal={(category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => {
                   setPoiModalInitialCategory(category);
                   setShowPoiModal(true);
                 }}
@@ -745,11 +745,7 @@ const EditActivity = ({
                           <Icon name="style" size={24} color={"#B3B3B3"} />
                         )}
                         <Text className="text-base text-gray-800 capitalize font-medium">
-                          {values.type != null
-                            ? values.type === ActivityType.none
-                              ? "No Type"
-                              : String(ActivityType[values.type as number]).replace(/([A-Z])/g, ' $1').trim()
-                            : "Select Type..."}
+                          {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
                         </Text>
                       </TouchableOpacity>
                     );

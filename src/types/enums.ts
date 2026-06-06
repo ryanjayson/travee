@@ -7,32 +7,37 @@ export enum IconSetProvider {
 export enum ActivityType {
   none = 0,
   flight = 1,
-  checkIn = 2,
-  checkOut = 3,
-  taxi = 4,
-  cafeRestaurant = 5,
-  food = 6,
-  walk = 7,
-  sightseeing = 8,
-  shopping = 9,
-  preparation = 10,
-  ride = 11,
+  accomodation = 3, // checkin and checkout
+  cafeRestaurant = 4, // food, eat, drink, snack, coffee, bar, lounge, pub
+  //more
+  nature = 5, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
+  shopppingAndService = 6, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
+  entertainmentAndRecreation = 7, //park, museum, gym, cinema, stadium, zoo, concert
+  transportation = 8, // ride, bike, boat, bus, taxi, train, ferry
+  walk = 9,
+  sightseeing = 10,
+  preparation = 11,
   rest = 12,
-  bus = 13,
-  train = 14,
-  ferry = 15,
-  hike = 16,
-  museum = 17,
-  beach = 18,
-  sports = 19,
-  spa = 20,
-  meetup = 21,
-  photography = 22,
-  concert = 23,
-  nightOut = 24,
-  bike = 25,
-  borderCrossing = 26,
-  accomodation = 27,
+  hikeOrCamp = 13, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
+  motorcycleRide = 14, // motorbike
+  meetup = 15,
+  rideRental = 16, // RV, yatch, Motorbike, Motorcycle, car, bike
+
+
+
+
+
+  // borderCrossing = 26,
+  // checkIn = 2,
+  // checkOut = 3,
+  // taxi = 4,
+  // food = 6,
+  // bus = 13,
+  // train = 14,
+  // ferry = 15,
+  // spa = 20,
+  // bike = 25,
+
 }
 
 export enum StatusType {
@@ -102,4 +107,44 @@ export enum TripType {
   motorcycleRide = 19,
   motoCamping = 20,
 }
+
+export function getActivityTypeLabel(type: ActivityType): string {
+  switch (type) {
+    case ActivityType.none:
+      return "No Type";
+    case ActivityType.flight:
+      return "Flight";
+    case ActivityType.accomodation:
+      return "Accommodation";
+    case ActivityType.cafeRestaurant:
+      return "Cafe or Restaurant";
+    case ActivityType.nature:
+      return "Nature";
+    case ActivityType.shopppingAndService:
+      return "Shopping & Service";
+    case ActivityType.entertainmentAndRecreation:
+      return "Entertainment & Recreation";
+    case ActivityType.transportation:
+      return "Transportation";
+    case ActivityType.walk:
+      return "Walk";
+    case ActivityType.sightseeing:
+      return "Sightseeing";
+    case ActivityType.preparation:
+      return "Preparation";
+    case ActivityType.rest:
+      return "Rest";
+    case ActivityType.hikeOrCamp:
+      return "Hike or Camp";
+    case ActivityType.motorcycleRide:
+      return "Motorcycle Ride";
+    case ActivityType.meetup:
+      return "Meetup";
+    case ActivityType.rideRental:
+      return "Ride Rental";
+    default:
+      return "Other";
+  }
+}
+
 

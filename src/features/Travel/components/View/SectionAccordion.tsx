@@ -825,7 +825,7 @@ const SectionAccordion = ({
 
             <View className="flex-1 p-2 ml-xl mt-xl  bg-red-200 w-4xl h-4xl rounded-full">
               <ActivityIcon
-                  type={ActivityType.borderCrossing}
+                  type={ActivityType.transportation}
                   size={20}
                   showIconOnly={true}
                 />

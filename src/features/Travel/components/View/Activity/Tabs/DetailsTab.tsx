@@ -1,6 +1,6 @@
 import React from "react";
 import { View } from "react-native";
-import { ItineraryActivity } from "../../../types/TravelDto";
+import { ItineraryActivity } from "../../../../types/TravelDto";
 
 interface DetailsTabProps {
   itineraryActivity?: ItineraryActivity;

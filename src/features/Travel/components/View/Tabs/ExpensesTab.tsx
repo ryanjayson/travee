@@ -12,6 +12,8 @@ import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 interface ExpensesTabProps {
   travelPlan: TravelPlan;
   onEditExpense?: (expense: ItineraryExpense) => void;
+  scrollEnabled?: boolean;
+  onScrollY?: (y: number) => void;
 }
 
 

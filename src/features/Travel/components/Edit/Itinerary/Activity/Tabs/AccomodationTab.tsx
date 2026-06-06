@@ -12,7 +12,7 @@ interface AccomodationTabProps {
   colors: any;
   setShowAccomodationDatePickerFor: any;
   formatAccomodationDateTime: any;
-  onOpenPoiModal: (category: "accommodation" | "cafeRestaurant" | "attraction") => void;
+  onOpenPoiModal: (category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => void;
 }
 
 const FloatingLabelInput = (props: any) => (
