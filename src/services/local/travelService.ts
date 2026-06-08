@@ -5,6 +5,8 @@ import Section from "../../db/models/Section";
 import Activity from "../../db/models/Activity";
 import FlightDetails from "../../db/models/FlightDetails";
 import AccomodationDetails from "../../db/models/AccomodationDetails";
+import SightseeingDetails from "../../db/models/SightseeingDetails";
+import HikeOrCampDetails from "../../db/models/HikeOrCampDetails";
 import { ActivityType, TravelStatus } from "../../types/enums";
 import { safeJsonParse } from "../../utils/safeJsonParse";
 
@@ -67,6 +69,61 @@ export const fetchLocalFlightDetails = async (activityId: string): Promise<any |
   }
 };
 
+export const fetchLocalSightseeingDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const sightseeingDetailsList = await database.get<SightseeingDetails>("sightseeing_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (sightseeingDetailsList.length > 0) {
+      const s = sightseeingDetailsList[0];
+      return {
+        id: s.id,
+        activityId: s.activity.id,
+        attractionName: s.attractionName,
+        address: s.address,
+        entryFee: s.entryFee,
+        websiteAddress: s.websiteAddress,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local sightseeing details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalHikeOrCampDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const hikeOrCampDetailsList = await database.get<HikeOrCampDetails>("hike_or_camp_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (hikeOrCampDetailsList.length > 0) {
+      const h = hikeOrCampDetailsList[0];
+      return {
+        id: h.id,
+        activityId: h.activity.id,
+        trailOrSiteName: h.trailOrSiteName,
+        address: h.address,
+        subType: h.subType,
+        estimatedDistanceKm: h.estimatedDistanceKm,
+        campsiteName: h.campsiteName,
+        permitRequired: h.permitRequired,
+        contactPerson: h.contactPerson,
+        contactNumber: h.contactNumber,
+        websiteAddress: h.websiteAddress,
+        reservationLink: h.reservationLink,
+        checkinDateTime: h.checkinDateTime,
+        checkoutDateTime: h.checkoutDateTime,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local hike or camp details:", err);
+    return null;
+  }
+};
+
+
 export const getTravelsLocally = async (): Promise<any[]> => {
   const offlineTravels = await database.get<Travel>("travels").query(
     Q.where("is_offline", true)
@@ -119,13 +176,15 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
     // This replaces the N+1 pattern (5 queries × N activities) with 5 flat
     // queries total. Each result is reduced into a Map keyed by activity_id
     // so lookups below are O(1).
-    const [allNotes, allExpenses, allChecklists, allFlights, allAccomodations] =
+    const [allNotes, allExpenses, allChecklists, allFlights, allAccomodations, allSightseeings, allHikeOrCamps] =
       await Promise.all([
         database.get("itinerary_notes").query(Q.where("travel_id", travelId)).fetch(),
         database.get("itinerary_expenses").query(Q.where("travel_id", travelId)).fetch(),
         database.get("checklist_items").query(Q.where("travel_id", travelId)).fetch(),
         database.get<FlightDetails>("flight_details").query().fetch(),
         database.get<AccomodationDetails>("accomodation_details").query().fetch(),
+        database.get<SightseeingDetails>("sightseeing_details").query().fetch(),
+        database.get<HikeOrCampDetails>("hike_or_camp_details").query().fetch(),
       ]);
 
     // Count maps: activityId → count
@@ -190,6 +249,43 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         });
       }
     }
+    const sightseeingDetailsMap = new Map<string, any>();
+    for (const s of allSightseeings) {
+      const aid = (s as any)._raw?.activity_id as string | undefined;
+      if (aid && !sightseeingDetailsMap.has(aid)) {
+        sightseeingDetailsMap.set(aid, {
+          id: s.id,
+          activityId: aid,
+          attractionName: s.attractionName,
+          address: s.address,
+          entryFee: s.entryFee,
+          websiteAddress: s.websiteAddress,
+        });
+      }
+    }
+
+    const hikeOrCampDetailsMap = new Map<string, any>();
+    for (const h of allHikeOrCamps) {
+      const aid = (h as any)._raw?.activity_id as string | undefined;
+      if (aid && !hikeOrCampDetailsMap.has(aid)) {
+        hikeOrCampDetailsMap.set(aid, {
+          id: h.id,
+          activityId: aid,
+          trailOrSiteName: h.trailOrSiteName,
+          address: h.address,
+          subType: h.subType,
+          estimatedDistanceKm: h.estimatedDistanceKm,
+          campsiteName: h.campsiteName,
+          permitRequired: h.permitRequired,
+          contactPerson: h.contactPerson,
+          contactNumber: h.contactNumber,
+          websiteAddress: h.websiteAddress,
+          reservationLink: h.reservationLink,
+          checkinDateTime: h.checkinDateTime,
+          checkoutDateTime: h.checkoutDateTime,
+        });
+      }
+    }
     // ─────────────────────────────────────────────────────────────────────────
 
     const itinerarySection = await Promise.all(sections.map(async (s) => {
@@ -221,6 +317,8 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         checklistCount: checklistCountMap.get(a.id) ?? 0,
         flightDetails: flightDetailsMap.get(a.id) ?? null,
         accomodationDetails: accomodationDetailsMap.get(a.id) ?? null,
+        sightseeingDetails: sightseeingDetailsMap.get(a.id) ?? null,
+        hikeOrCampDetails: hikeOrCampDetailsMap.get(a.id) ?? null,
       }));
 
       return {
@@ -499,6 +597,80 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
       }
     }
 
+    // Save associated sightseeing details
+    if (activityData.type === ActivityType.sightseeing && activityData.sightseeingDetails) {
+      const sightseeingDetailsCollection = database.get<SightseeingDetails>("sightseeing_details");
+      const existingDetails = await sightseeingDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((s) => {
+          Object.assign(s, {
+            attractionName: activityData.sightseeingDetails.attractionName,
+            address: activityData.sightseeingDetails.address,
+            entryFee: activityData.sightseeingDetails.entryFee,
+            websiteAddress: activityData.sightseeingDetails.websiteAddress,
+          });
+        });
+      } else {
+        await sightseeingDetailsCollection.create((s) => {
+          s.activity.id = activity.id;
+          Object.assign(s, {
+            attractionName: activityData.sightseeingDetails.attractionName,
+            address: activityData.sightseeingDetails.address,
+            entryFee: activityData.sightseeingDetails.entryFee,
+            websiteAddress: activityData.sightseeingDetails.websiteAddress,
+          });
+        });
+      }
+    }
+
+    // Save associated hike or camp details
+    if (activityData.type === ActivityType.hikeOrCamp && activityData.hikeOrCampDetails) {
+      const hikeOrCampDetailsCollection = database.get<HikeOrCampDetails>("hike_or_camp_details");
+      const existingDetails = await hikeOrCampDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((h) => {
+          Object.assign(h, {
+            trailOrSiteName: activityData.hikeOrCampDetails.trailOrSiteName,
+            address: activityData.hikeOrCampDetails.address,
+            subType: activityData.hikeOrCampDetails.subType,
+            estimatedDistanceKm: activityData.hikeOrCampDetails.estimatedDistanceKm,
+            campsiteName: activityData.hikeOrCampDetails.campsiteName,
+            permitRequired: activityData.hikeOrCampDetails.permitRequired,
+            contactPerson: activityData.hikeOrCampDetails.contactPerson,
+            contactNumber: activityData.hikeOrCampDetails.contactNumber,
+            websiteAddress: activityData.hikeOrCampDetails.websiteAddress,
+            reservationLink: activityData.hikeOrCampDetails.reservationLink,
+            checkinDateTime: activityData.hikeOrCampDetails.checkinDateTime ? new Date(activityData.hikeOrCampDetails.checkinDateTime) : null,
+            checkoutDateTime: activityData.hikeOrCampDetails.checkoutDateTime ? new Date(activityData.hikeOrCampDetails.checkoutDateTime) : null,
+          });
+        });
+      } else {
+        await hikeOrCampDetailsCollection.create((h) => {
+          h.activity.id = activity.id;
+          Object.assign(h, {
+            trailOrSiteName: activityData.hikeOrCampDetails.trailOrSiteName,
+            address: activityData.hikeOrCampDetails.address,
+            subType: activityData.hikeOrCampDetails.subType,
+            estimatedDistanceKm: activityData.hikeOrCampDetails.estimatedDistanceKm,
+            campsiteName: activityData.hikeOrCampDetails.campsiteName,
+            permitRequired: activityData.hikeOrCampDetails.permitRequired,
+            contactPerson: activityData.hikeOrCampDetails.contactPerson,
+            contactNumber: activityData.hikeOrCampDetails.contactNumber,
+            websiteAddress: activityData.hikeOrCampDetails.websiteAddress,
+            reservationLink: activityData.hikeOrCampDetails.reservationLink,
+            checkinDateTime: activityData.hikeOrCampDetails.checkinDateTime ? new Date(activityData.hikeOrCampDetails.checkinDateTime) : null,
+            checkoutDateTime: activityData.hikeOrCampDetails.checkoutDateTime ? new Date(activityData.hikeOrCampDetails.checkoutDateTime) : null,
+          });
+        });
+      }
+    }
+
     return activity;
   });
 };
@@ -507,13 +679,15 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
   try {
     const a = await database.get<Activity>("itinerary_activities").find(id);
     // Run all counts and detail fetches in parallel — no N+1 for a single activity
-    const [notesCount, expensesCount, checklistCount, flightDetails, accomodationDetails] =
+    const [notesCount, expensesCount, checklistCount, flightDetails, accomodationDetails, sightseeingDetails, hikeOrCampDetails] =
       await Promise.all([
         database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount(),
         database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount(),
         database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount(),
         fetchLocalFlightDetails(a.id),
         fetchLocalAccomodationDetails(a.id),
+        fetchLocalSightseeingDetails(a.id),
+        fetchLocalHikeOrCampDetails(a.id),
       ]);
 
     return {
@@ -539,6 +713,8 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
       checklistCount,
       flightDetails,
       accomodationDetails,
+      sightseeingDetails,
+      hikeOrCampDetails,
     };
   } catch (err) {
     throw new Error(`Itinerary Activity not found locally with ID: ${id}`);
@@ -593,14 +769,16 @@ export const getAllActivitiesLocally = async (): Promise<any[]> => {
  * a single database.write() transaction without mixing reads and writes.
  */
 const collectActivityDependencies = async (activityId: string): Promise<any[]> => {
-  const [expenses, notes, checklists, flights, accomodations] = await Promise.all([
+  const [expenses, notes, checklists, flights, accomodations, sightseeings, hikeOrCamps] = await Promise.all([
     database.get<any>("itinerary_expenses").query(Q.where("activity_id", activityId)).fetch(),
     database.get<any>("itinerary_notes").query(Q.where("activity_id", activityId)).fetch(),
     database.get<any>("checklist_items").query(Q.where("activity_id", activityId)).fetch(),
     database.get<any>("flight_details").query(Q.where("activity_id", activityId)).fetch(),
     database.get<any>("accomodation_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("sightseeing_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("hike_or_camp_details").query(Q.where("activity_id", activityId)).fetch(),
   ]);
-  return [...expenses, ...notes, ...checklists, ...flights, ...accomodations];
+  return [...expenses, ...notes, ...checklists, ...flights, ...accomodations, ...sightseeings, ...hikeOrCamps];
 };
 
 /** Permanently deletes a locally-stored travel and all its sections/activities/expenses/notes/checklists. */

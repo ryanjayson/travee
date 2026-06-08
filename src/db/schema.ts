@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 20,
+  version: 21,
   tables: [
     tableSchema({
       name: "travels",
@@ -231,6 +231,38 @@ export const schema = appSchema({
         { name: "contact_number", type: "string", isOptional: true },
         { name: "email_address", type: "string", isOptional: true },
         { name: "contact_name", type: "string", isOptional: true },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "sightseeing_details",
+      columns: [
+        { name: "activity_id", type: "string", isIndexed: true },
+        { name: "attraction_name", type: "string" },
+        { name: "address", type: "string", isOptional: true },
+        { name: "entry_fee", type: "string", isOptional: true },
+        { name: "website_address", type: "string", isOptional: true },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "hike_or_camp_details",
+      columns: [
+        { name: "activity_id", type: "string", isIndexed: true },
+        { name: "trail_or_site_name", type: "string" },
+        { name: "address", type: "string", isOptional: true },
+        { name: "sub_type", type: "string", isOptional: true },
+        { name: "estimated_distance_km", type: "string", isOptional: true },
+        { name: "campsite_name", type: "string", isOptional: true },
+        { name: "permit_required", type: "boolean", isOptional: true },
+        { name: "contact_person", type: "string", isOptional: true },
+        { name: "contact_number", type: "string", isOptional: true },
+        { name: "website_address", type: "string", isOptional: true },
+        { name: "reservation_link", type: "string", isOptional: true },
+        { name: "checkin_date_time", type: "number", isOptional: true },
+        { name: "checkout_date_time", type: "number", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],

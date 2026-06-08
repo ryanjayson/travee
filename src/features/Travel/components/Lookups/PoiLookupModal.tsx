@@ -32,7 +32,9 @@ export interface MapboxPoi {
   website?: string;
   category?: string;
   maki?: string;
+  poiCategories?: string[];
 }
+
 
 interface PoiLookupModalProps {
   visible: boolean;
@@ -146,6 +148,7 @@ const PoiLookupModal = ({
               website: props.metadata?.website,
               category: props.poi_category ? props.poi_category[0] : undefined,
               maki: props.maki,
+              poiCategories: props.poi_category || [],
             };
           });
           setResults(pois);

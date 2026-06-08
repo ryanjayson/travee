@@ -28,6 +28,19 @@ import Tabs from "../../../../../../components/Tabs";
 import SimpleAccordion from "../../../../../../components/Accordion/Simple";
 import FlightTab from "./Tabs/FlightTab";
 import AccomodationTab from "./Tabs/AccomodationTab";
+import CafeRestaurantTab from "./Tabs/CafeRestaurantTab";
+import NatureTab from "./Tabs/NatureTab";
+import ShoppingTab from "./Tabs/ShoppingTab";
+import EntertainmentTab from "./Tabs/EntertainmentTab";
+import TransportationTab from "./Tabs/TransportationTab";
+import WalkTab from "./Tabs/WalkTab";
+import SightseeingTab from "./Tabs/SightseeingTab";
+import PreparationTab from "./Tabs/PreparationTab";
+import RestTab from "./Tabs/RestTab";
+import HikeOrCampTab from "./Tabs/HikeOrCampTab";
+import MotorcycleRideTab from "./Tabs/MotorcycleRideTab";
+import MeetupTab from "./Tabs/MeetupTab";
+import RideRentalTab from "./Tabs/RideRentalTab";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import { ActivityType, getActivityTypeLabel } from "../../../../../../types/enums";
@@ -106,6 +119,106 @@ export interface ActivityFormValues {
     emailAddress?: string | null;
     contactName?: string | null;
   } | null;
+  cafeRestaurantDetails?: {
+    restaurantName: string;
+    address?: string | null;
+    cuisine?: string | null;
+    priceRange?: string | null;
+    reservationLink?: string | null;
+    websiteAddress?: string | null;
+    contactNumber?: string | null;
+  } | null;
+  natureDetails?: {
+    spotName: string;
+    address?: string | null;
+    subType?: string | null;
+    entryFee?: string | null;
+  } | null;
+  shoppingDetails?: {
+    venueName: string;
+    address?: string | null;
+    subType?: string | null;
+    websiteAddress?: string | null;
+  } | null;
+  entertainmentDetails?: {
+    venueName: string;
+    address?: string | null;
+    subType?: string | null;
+    websiteAddress?: string | null;
+    ticketPrice?: string | null;
+    bookingReference?: string | null;
+  } | null;
+  transportationDetails?: {
+    mode?: string | null;
+    operatorProvider?: string | null;
+    pickupLocation?: string | null;
+    dropoffLocation?: string | null;
+    bookingReference?: string | null;
+    price?: string | null;
+  } | null;
+  walkDetails?: {
+    routeName?: string | null;
+    estimatedDistanceKm?: string | null;
+    estimatedDuration?: string | null;
+  } | null;
+  sightseeingDetails?: {
+    attractionName: string;
+    address?: string | null;
+    entryFee?: string | null;
+    websiteAddress?: string | null;
+  } | null;
+  preparationDetails?: {
+    taskLabel?: string | null;
+    deadlineDateTime?: Date | string | null;
+    priority?: string | null;
+    notes?: string | null;
+  } | null;
+  restDetails?: {
+    restLocationName?: string | null;
+    restLocationType?: string | null;
+  } | null;
+  hikeOrCampDetails?: {
+    trailOrSiteName: string;
+    address?: string | null;
+    subType?: string | null;
+    estimatedDistanceKm?: string | null;
+    campsiteName?: string | null;
+    permitRequired?: boolean | null;
+    contactPerson?: string | null;
+    contactNumber?: string | null;
+    websiteAddress?: string | null;
+    reservationLink?: string | null;
+    checkinDateTime?: Date | string | null;
+    checkoutDateTime?: Date | string | null;
+  } | null;
+  motorcycleRideDetails?: {
+    routeName?: string | null;
+    startingPoint?: string | null;
+    endingPoint?: string | null;
+    estimatedDistanceKm?: string | null;
+    roadType?: string | null;
+    bikeModel?: string | null;
+    fuelStops?: string | null;
+  } | null;
+  meetupDetails?: {
+    venueName: string;
+    address?: string | null;
+    hostOrOrganizer?: string | null;
+    numberOfPeople?: string | null;
+    meetupType?: string | null;
+    rsvpLink?: string | null;
+  } | null;
+  rideRentalDetails?: {
+    providerName: string;
+    address?: string | null;
+    vehicleType?: string | null;
+    pickupLocation?: string | null;
+    dropoffLocation?: string | null;
+    rentalStartDateTime?: Date | string | null;
+    rentalEndDateTime?: Date | string | null;
+    bookingReference?: string | null;
+    price?: string | null;
+  } | null;
 }
 
 const FormInitHandler = ({
@@ -141,6 +254,75 @@ const FormInitHandler = ({
 
   return null;
 };
+
+const NATURE_SUBTYPES = [
+  "Beach", "Mountain", "Lake", "River", "Waterfall", "Forest", "Jungle", "Cave", "Desert", "Canyon", "Volcano",
+];
+
+const SHOPPING_SUBTYPES = [
+  "Mall", "Market", "Clothes Store", "Supermarket", "Convenience Store", "Spa", "ATM", "Bank", "Pharmacy", "Gas Station",
+];
+
+const ENTERTAINMENT_SUBTYPES = [
+  "Park", "Museum", "Gym", "Cinema", "Stadium", "Zoo", "Concert", "Theme Park",
+];
+
+const getCuisineFromCategories = (categories: string[]): string | undefined => {
+  if (!categories || !Array.isArray(categories)) return undefined;
+  const genericTerms = ["restaurant", "cafe", "bar", "pub", "food", "establishment", "eating_room", "bakery", "fast_food", "coffee_shop", "bistro"];
+  const cuisine = categories.find(c => !genericTerms.includes(c.toLowerCase()));
+  if (cuisine) {
+    return cuisine
+      .split("_")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+  return undefined;
+};
+
+const matchNatureSubtype = (poi: any): string | null => {
+  const categories = [poi.category, ...(poi.poiCategories || []), poi.maki].filter(Boolean) as string[];
+  for (const cat of categories) {
+    const matched = NATURE_SUBTYPES.find(sub => cat.toLowerCase().includes(sub.toLowerCase()));
+    if (matched) return matched;
+  }
+  return null;
+};
+
+const matchShoppingSubtype = (poi: any): string | null => {
+  const categories = [poi.category, ...(poi.poiCategories || []), poi.maki].filter(Boolean) as string[];
+  for (const cat of categories) {
+    const norm = cat.toLowerCase();
+    if (norm.includes("mall") || norm.includes("shopping_mall")) return "Mall";
+    if (norm.includes("market")) return "Market";
+    if (norm.includes("clothing") || norm.includes("clothes")) return "Clothes Store";
+    if (norm.includes("supermarket") || norm.includes("grocery")) return "Supermarket";
+    if (norm.includes("convenience")) return "Convenience Store";
+    if (norm.includes("spa") || norm.includes("beauty")) return "Spa";
+    if (norm.includes("atm")) return "ATM";
+    if (norm.includes("bank")) return "Bank";
+    if (norm.includes("pharmacy") || norm.includes("drugstore")) return "Pharmacy";
+    if (norm.includes("gas") || norm.includes("petrol")) return "Gas Station";
+  }
+  return null;
+};
+
+const matchEntertainmentSubtype = (poi: any): string | null => {
+  const categories = [poi.category, ...(poi.poiCategories || []), poi.maki].filter(Boolean) as string[];
+  for (const cat of categories) {
+    const norm = cat.toLowerCase();
+    if (norm.includes("theme_park")) return "Theme Park";
+    if (norm.includes("cinema") || norm.includes("theater")) return "Cinema";
+    if (norm.includes("park")) return "Park";
+    if (norm.includes("museum")) return "Museum";
+    if (norm.includes("gym") || norm.includes("fitness") || norm.includes("sports_club")) return "Gym";
+    if (norm.includes("stadium") || norm.includes("arena")) return "Stadium";
+    if (norm.includes("zoo") || norm.includes("aquarium")) return "Zoo";
+    if (norm.includes("concert") || norm.includes("music_venue")) return "Concert";
+  }
+  return null;
+};
+
 
 const EditActivity = ({
   itinerarySectionId,
@@ -247,13 +429,15 @@ const EditActivity = ({
   const [isChecklistFocused, setIsChecklistFocused] = useState<boolean>(false);
   const [showFlightDatePickerFor, setShowFlightDatePickerFor] = useState<"departureDate" | "arrivalDate" | null>(null);
   const [showAccomodationDatePickerFor, setShowAccomodationDatePickerFor] = useState<"checkinDateTime" | "checkoutDateTime" | null>(null);
+  const [showPreparationDeadlinePicker, setShowPreparationDeadlinePicker] = useState<boolean>(false);
+  const [showRideRentalDatePickerFor, setShowRideRentalDatePickerFor] = useState<"rentalStartDateTime" | "rentalEndDateTime" | null>(null);
+  const [showHikeOrCampDatePickerFor, setShowHikeOrCampDatePickerFor] = useState<"checkinDateTime" | "checkoutDateTime" | null>(null);
   const [showPoiModal, setShowPoiModal] = useState<boolean>(false);
   const [poiModalInitialCategory, setPoiModalInitialCategory] = useState<"accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp">("accommodation");
+  const [poiTargetType, setPoiTargetType] = useState<string>("accommodation");
   const scrollViewRef = useRef<ScrollView>(null);
   const fieldRefs = useRef<{ [key: string]: any }>({});
-  const [activeTabId, setActiveTabId] = useState<string>(
-    itineraryActivity?.type === ActivityType.flight ? "flight" : "details"
-  );
+  const [activeTabId, setActiveTabId] = useState<string>("details");
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -403,6 +587,8 @@ const EditActivity = ({
         finalStartDate = new Date(values.flightDetails.departureDate);
       } else if (values.type === ActivityType.accomodation && values.accomodationDetails?.checkinDateTime) {
         finalStartDate = new Date(values.accomodationDetails.checkinDateTime);
+      } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkinDateTime) {
+        finalStartDate = new Date(values.hikeOrCampDetails.checkinDateTime);
       } else if (values.startDate) {
         finalStartDate = new Date(`${values.startDate}T${values.startTime}:00`);
       }
@@ -412,6 +598,8 @@ const EditActivity = ({
         finalEndDate = new Date(values.flightDetails.arrivalDate);
       } else if (values.type === ActivityType.accomodation && values.accomodationDetails?.checkoutDateTime) {
         finalEndDate = new Date(values.accomodationDetails.checkoutDateTime);
+      } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkoutDateTime) {
+        finalEndDate = new Date(values.hikeOrCampDetails.checkoutDateTime);
       } else if (values.endDate) {
         finalEndDate = new Date(`${values.endDate}T${values.endTime}:00`);
       }
@@ -522,6 +710,142 @@ const EditActivity = ({
               contactName: values.accomodationDetails.contactName || null,
             }
           : null,
+        cafeRestaurantDetails: values.type === ActivityType.cafeRestaurant && values.cafeRestaurantDetails
+          ? {
+              restaurantName: values.cafeRestaurantDetails.restaurantName,
+              address: values.cafeRestaurantDetails.address || null,
+              cuisine: values.cafeRestaurantDetails.cuisine || null,
+              priceRange: values.cafeRestaurantDetails.priceRange || null,
+              reservationLink: values.cafeRestaurantDetails.reservationLink || null,
+              websiteAddress: values.cafeRestaurantDetails.websiteAddress || null,
+              contactNumber: values.cafeRestaurantDetails.contactNumber || null,
+            }
+          : null,
+        natureDetails: values.type === ActivityType.nature && values.natureDetails
+          ? {
+              spotName: values.natureDetails.spotName,
+              address: values.natureDetails.address || null,
+              subType: values.natureDetails.subType || null,
+              entryFee: values.natureDetails.entryFee || null,
+            }
+          : null,
+        shoppingDetails: values.type === ActivityType.shopppingAndService && values.shoppingDetails
+          ? {
+              venueName: values.shoppingDetails.venueName,
+              address: values.shoppingDetails.address || null,
+              subType: values.shoppingDetails.subType || null,
+              websiteAddress: values.shoppingDetails.websiteAddress || null,
+            }
+          : null,
+        entertainmentDetails: values.type === ActivityType.entertainmentAndRecreation && values.entertainmentDetails
+          ? {
+              venueName: values.entertainmentDetails.venueName,
+              address: values.entertainmentDetails.address || null,
+              subType: values.entertainmentDetails.subType || null,
+              websiteAddress: values.entertainmentDetails.websiteAddress || null,
+              ticketPrice: values.entertainmentDetails.ticketPrice || null,
+              bookingReference: values.entertainmentDetails.bookingReference || null,
+            }
+          : null,
+        transportationDetails: values.type === ActivityType.transportation && values.transportationDetails
+          ? {
+              mode: values.transportationDetails.mode || null,
+              operatorProvider: values.transportationDetails.operatorProvider || null,
+              pickupLocation: values.transportationDetails.pickupLocation || null,
+              dropoffLocation: values.transportationDetails.dropoffLocation || null,
+              bookingReference: values.transportationDetails.bookingReference || null,
+              price: values.transportationDetails.price || null,
+            }
+          : null,
+        walkDetails: values.type === ActivityType.walk && values.walkDetails
+          ? {
+              routeName: values.walkDetails.routeName || null,
+              estimatedDistanceKm: values.walkDetails.estimatedDistanceKm || null,
+              estimatedDuration: values.walkDetails.estimatedDuration || null,
+            }
+          : null,
+        sightseeingDetails: values.type === ActivityType.sightseeing && values.sightseeingDetails
+          ? {
+              attractionName: values.sightseeingDetails.attractionName,
+              address: values.sightseeingDetails.address || null,
+              entryFee: values.sightseeingDetails.entryFee || null,
+              websiteAddress: values.sightseeingDetails.websiteAddress || null,
+            }
+          : null,
+        preparationDetails: values.type === ActivityType.preparation && values.preparationDetails
+          ? {
+              taskLabel: values.preparationDetails.taskLabel || null,
+              deadlineDateTime: values.preparationDetails.deadlineDateTime
+                ? new Date(values.preparationDetails.deadlineDateTime)
+                : null,
+              priority: values.preparationDetails.priority || null,
+              notes: values.preparationDetails.notes || null,
+            }
+          : null,
+        restDetails: values.type === ActivityType.rest && values.restDetails
+          ? {
+              restLocationName: values.restDetails.restLocationName || null,
+              restLocationType: values.restDetails.restLocationType || null,
+            }
+          : null,
+        hikeOrCampDetails: values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails
+          ? {
+              trailOrSiteName: values.hikeOrCampDetails.trailOrSiteName,
+              address: values.hikeOrCampDetails.address || null,
+              subType: values.hikeOrCampDetails.subType || null,
+              estimatedDistanceKm: values.hikeOrCampDetails.estimatedDistanceKm || null,
+              campsiteName: values.hikeOrCampDetails.campsiteName || null,
+              permitRequired: values.hikeOrCampDetails.permitRequired ?? null,
+              contactPerson: values.hikeOrCampDetails.contactPerson || null,
+              contactNumber: values.hikeOrCampDetails.contactNumber || null,
+              websiteAddress: values.hikeOrCampDetails.websiteAddress || null,
+              reservationLink: values.hikeOrCampDetails.reservationLink || null,
+              checkinDateTime: values.hikeOrCampDetails.checkinDateTime
+                ? new Date(values.hikeOrCampDetails.checkinDateTime)
+                : null,
+              checkoutDateTime: values.hikeOrCampDetails.checkoutDateTime
+                ? new Date(values.hikeOrCampDetails.checkoutDateTime)
+                : null,
+            }
+          : null,
+        motorcycleRideDetails: values.type === ActivityType.motorcycleRide && values.motorcycleRideDetails
+          ? {
+              routeName: values.motorcycleRideDetails.routeName || null,
+              startingPoint: values.motorcycleRideDetails.startingPoint || null,
+              endingPoint: values.motorcycleRideDetails.endingPoint || null,
+              estimatedDistanceKm: values.motorcycleRideDetails.estimatedDistanceKm || null,
+              roadType: values.motorcycleRideDetails.roadType || null,
+              bikeModel: values.motorcycleRideDetails.bikeModel || null,
+              fuelStops: values.motorcycleRideDetails.fuelStops || null,
+            }
+          : null,
+        meetupDetails: values.type === ActivityType.meetup && values.meetupDetails
+          ? {
+              venueName: values.meetupDetails.venueName,
+              address: values.meetupDetails.address || null,
+              hostOrOrganizer: values.meetupDetails.hostOrOrganizer || null,
+              numberOfPeople: values.meetupDetails.numberOfPeople || null,
+              meetupType: values.meetupDetails.meetupType || null,
+              rsvpLink: values.meetupDetails.rsvpLink || null,
+            }
+          : null,
+        rideRentalDetails: values.type === ActivityType.rideRental && values.rideRentalDetails
+          ? {
+              providerName: values.rideRentalDetails.providerName,
+              address: values.rideRentalDetails.address || null,
+              vehicleType: values.rideRentalDetails.vehicleType || null,
+              pickupLocation: values.rideRentalDetails.pickupLocation || null,
+              dropoffLocation: values.rideRentalDetails.dropoffLocation || null,
+              rentalStartDateTime: values.rideRentalDetails.rentalStartDateTime
+                ? new Date(values.rideRentalDetails.rentalStartDateTime)
+                : null,
+              rentalEndDateTime: values.rideRentalDetails.rentalEndDateTime
+                ? new Date(values.rideRentalDetails.rentalEndDateTime)
+                : null,
+              bookingReference: values.rideRentalDetails.bookingReference || null,
+              price: values.rideRentalDetails.price || null,
+            }
+          : null,
       };
 
       await updateMutation.mutateAsync(payload);
@@ -614,6 +938,116 @@ const EditActivity = ({
       emailAddress: itineraryActivity?.accomodationDetails?.emailAddress || "",
       contactName: itineraryActivity?.accomodationDetails?.contactName || "",
     },
+    cafeRestaurantDetails: {
+      restaurantName: itineraryActivity?.cafeRestaurantDetails?.restaurantName || "",
+      address: itineraryActivity?.cafeRestaurantDetails?.address || "",
+      cuisine: itineraryActivity?.cafeRestaurantDetails?.cuisine || "",
+      priceRange: itineraryActivity?.cafeRestaurantDetails?.priceRange || "",
+      reservationLink: itineraryActivity?.cafeRestaurantDetails?.reservationLink || "",
+      websiteAddress: itineraryActivity?.cafeRestaurantDetails?.websiteAddress || "",
+      contactNumber: itineraryActivity?.cafeRestaurantDetails?.contactNumber || "",
+    },
+    natureDetails: {
+      spotName: itineraryActivity?.natureDetails?.spotName || "",
+      address: itineraryActivity?.natureDetails?.address || "",
+      subType: itineraryActivity?.natureDetails?.subType || null,
+      entryFee: itineraryActivity?.natureDetails?.entryFee || "",
+    },
+    shoppingDetails: {
+      venueName: itineraryActivity?.shoppingDetails?.venueName || "",
+      address: itineraryActivity?.shoppingDetails?.address || "",
+      subType: itineraryActivity?.shoppingDetails?.subType || null,
+      websiteAddress: itineraryActivity?.shoppingDetails?.websiteAddress || "",
+    },
+    entertainmentDetails: {
+      venueName: itineraryActivity?.entertainmentDetails?.venueName || "",
+      address: itineraryActivity?.entertainmentDetails?.address || "",
+      subType: itineraryActivity?.entertainmentDetails?.subType || null,
+      websiteAddress: itineraryActivity?.entertainmentDetails?.websiteAddress || "",
+      ticketPrice: itineraryActivity?.entertainmentDetails?.ticketPrice || "",
+      bookingReference: itineraryActivity?.entertainmentDetails?.bookingReference || "",
+    },
+    transportationDetails: {
+      mode: itineraryActivity?.transportationDetails?.mode || null,
+      operatorProvider: itineraryActivity?.transportationDetails?.operatorProvider || "",
+      pickupLocation: itineraryActivity?.transportationDetails?.pickupLocation || "",
+      dropoffLocation: itineraryActivity?.transportationDetails?.dropoffLocation || "",
+      bookingReference: itineraryActivity?.transportationDetails?.bookingReference || "",
+      price: itineraryActivity?.transportationDetails?.price || "",
+    },
+    walkDetails: {
+      routeName: itineraryActivity?.walkDetails?.routeName || "",
+      estimatedDistanceKm: itineraryActivity?.walkDetails?.estimatedDistanceKm || "",
+      estimatedDuration: itineraryActivity?.walkDetails?.estimatedDuration || "",
+    },
+    sightseeingDetails: {
+      attractionName: itineraryActivity?.sightseeingDetails?.attractionName || "",
+      address: itineraryActivity?.sightseeingDetails?.address || "",
+      entryFee: itineraryActivity?.sightseeingDetails?.entryFee || "",
+      websiteAddress: itineraryActivity?.sightseeingDetails?.websiteAddress || "",
+    },
+    preparationDetails: {
+      taskLabel: itineraryActivity?.preparationDetails?.taskLabel || "",
+      deadlineDateTime: itineraryActivity?.preparationDetails?.deadlineDateTime
+        ? new Date(itineraryActivity.preparationDetails.deadlineDateTime)
+        : null,
+      priority: itineraryActivity?.preparationDetails?.priority || null,
+      notes: itineraryActivity?.preparationDetails?.notes || "",
+    },
+    restDetails: {
+      restLocationName: itineraryActivity?.restDetails?.restLocationName || "",
+      restLocationType: itineraryActivity?.restDetails?.restLocationType || null,
+    },
+    hikeOrCampDetails: {
+      trailOrSiteName: itineraryActivity?.hikeOrCampDetails?.trailOrSiteName || "",
+      address: itineraryActivity?.hikeOrCampDetails?.address || "",
+      subType: itineraryActivity?.hikeOrCampDetails?.subType || null,
+      estimatedDistanceKm: itineraryActivity?.hikeOrCampDetails?.estimatedDistanceKm || "",
+      campsiteName: itineraryActivity?.hikeOrCampDetails?.campsiteName || "",
+      permitRequired: itineraryActivity?.hikeOrCampDetails?.permitRequired ?? false,
+      contactPerson: itineraryActivity?.hikeOrCampDetails?.contactPerson || "",
+      contactNumber: itineraryActivity?.hikeOrCampDetails?.contactNumber || "",
+      websiteAddress: itineraryActivity?.hikeOrCampDetails?.websiteAddress || "",
+      reservationLink: itineraryActivity?.hikeOrCampDetails?.reservationLink || "",
+      checkinDateTime: itineraryActivity?.hikeOrCampDetails?.checkinDateTime
+        ? new Date(itineraryActivity.hikeOrCampDetails.checkinDateTime)
+        : null,
+      checkoutDateTime: itineraryActivity?.hikeOrCampDetails?.checkoutDateTime
+        ? new Date(itineraryActivity.hikeOrCampDetails.checkoutDateTime)
+        : null,
+    },
+    motorcycleRideDetails: {
+      routeName: itineraryActivity?.motorcycleRideDetails?.routeName || "",
+      startingPoint: itineraryActivity?.motorcycleRideDetails?.startingPoint || "",
+      endingPoint: itineraryActivity?.motorcycleRideDetails?.endingPoint || "",
+      estimatedDistanceKm: itineraryActivity?.motorcycleRideDetails?.estimatedDistanceKm || "",
+      roadType: itineraryActivity?.motorcycleRideDetails?.roadType || "",
+      bikeModel: itineraryActivity?.motorcycleRideDetails?.bikeModel || "",
+      fuelStops: itineraryActivity?.motorcycleRideDetails?.fuelStops || "",
+    },
+    meetupDetails: {
+      venueName: itineraryActivity?.meetupDetails?.venueName || "",
+      address: itineraryActivity?.meetupDetails?.address || "",
+      hostOrOrganizer: itineraryActivity?.meetupDetails?.hostOrOrganizer || "",
+      numberOfPeople: itineraryActivity?.meetupDetails?.numberOfPeople || "",
+      meetupType: itineraryActivity?.meetupDetails?.meetupType || null,
+      rsvpLink: itineraryActivity?.meetupDetails?.rsvpLink || "",
+    },
+    rideRentalDetails: {
+      providerName: itineraryActivity?.rideRentalDetails?.providerName || "",
+      address: itineraryActivity?.rideRentalDetails?.address || "",
+      vehicleType: itineraryActivity?.rideRentalDetails?.vehicleType || null,
+      pickupLocation: itineraryActivity?.rideRentalDetails?.pickupLocation || "",
+      dropoffLocation: itineraryActivity?.rideRentalDetails?.dropoffLocation || "",
+      rentalStartDateTime: itineraryActivity?.rideRentalDetails?.rentalStartDateTime
+        ? new Date(itineraryActivity.rideRentalDetails.rentalStartDateTime)
+        : null,
+      rentalEndDateTime: itineraryActivity?.rideRentalDetails?.rentalEndDateTime
+        ? new Date(itineraryActivity.rideRentalDetails.rentalEndDateTime)
+        : null,
+      bookingReference: itineraryActivity?.rideRentalDetails?.bookingReference || "",
+      price: itineraryActivity?.rideRentalDetails?.price || "",
+    },
   };
 
   const memoizedInitialValues = useMemo<ActivityFormValues>(() => initialValues, [
@@ -649,25 +1083,7 @@ const EditActivity = ({
 
         const tabData = [];
 
-        if (values.type === ActivityType.flight) {
-          tabData.push({
-            id: "flight",
-            title: "Flight",
-            content: (
-              <FlightTab
-                values={values}
-                handleChange={handleChange}
-                handleBlur={handleBlur}
-                setFieldValue={setFieldValue}
-                openFlightModal={openFlightModal}
-                setShowFlightDatePickerFor={setShowFlightDatePickerFor}
-                formatFlightDateTime={formatFlightDateTime}
-                handleFlightSelect={handleFlightSelect}
-                fieldRefs={fieldRefs}
-              />
-            ),
-          });
-        }
+
 
 
         tabData.push(
@@ -709,7 +1125,8 @@ const EditActivity = ({
                       colors={colors}
                       setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
                       formatAccomodationDateTime={formatFlightDateTime}
-                      onOpenPoiModal={(category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => {
+                      onOpenPoiModal={(category) => {
+                        setPoiTargetType("accommodation");
                         setPoiModalInitialCategory(category);
                         setShowPoiModal(true);
                       }}
@@ -718,6 +1135,225 @@ const EditActivity = ({
                     />
                 )}
 
+                {/* Flight Details Accordion */}
+                {values.type === ActivityType.flight && (
+                  <FlightTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    openFlightModal={openFlightModal}
+                    setShowFlightDatePickerFor={setShowFlightDatePickerFor}
+                    formatFlightDateTime={formatFlightDateTime}
+                    handleFlightSelect={handleFlightSelect}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Cafe / Restaurant Details */}
+                {values.type === ActivityType.cafeRestaurant && (
+                  <CafeRestaurantTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("cafeRestaurant");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Nature Details */}
+                {values.type === ActivityType.nature && (
+                  <NatureTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("nature");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Shopping & Service Details */}
+                {values.type === ActivityType.shopppingAndService && (
+                  <ShoppingTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("shoppingDetails");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Entertainment & Recreation Details */}
+                {values.type === ActivityType.entertainmentAndRecreation && (
+                  <EntertainmentTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("entertainmentDetails");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Transportation Details */}
+                {values.type === ActivityType.transportation && (
+                  <TransportationTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Walk Details */}
+                {values.type === ActivityType.walk && (
+                  <WalkTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Sightseeing Details */}
+                {values.type === ActivityType.sightseeing && (
+                  <SightseeingTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("sightseeing");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Preparation Details */}
+                {values.type === ActivityType.preparation && (
+                  <PreparationTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    formatDateTime={formatFlightDateTime}
+                    onOpenDatePicker={() => setShowPreparationDeadlinePicker(true)}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Rest Details */}
+                {values.type === ActivityType.rest && (
+                  <RestTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Hike or Camp Details */}
+                {values.type === ActivityType.hikeOrCamp && (
+                  <HikeOrCampTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("hikeOrCamp");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    formatDateTime={formatFlightDateTime}
+                    onOpenCheckinPicker={() => setShowHikeOrCampDatePickerFor("checkinDateTime")}
+                    onOpenCheckoutPicker={() => setShowHikeOrCampDatePickerFor("checkoutDateTime")}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Motorcycle Ride Details */}
+                {values.type === ActivityType.motorcycleRide && (
+                  <MotorcycleRideTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Meetup Details */}
+                {values.type === ActivityType.meetup && (
+                  <MeetupTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("meetup");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Ride Rental Details */}
+                {values.type === ActivityType.rideRental && (
+                  <RideRentalTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("rideRental");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    formatDateTime={formatFlightDateTime}
+                    onOpenRentalStartPicker={() => setShowRideRentalDatePickerFor("rentalStartDateTime")}
+                    onOpenRentalEndPicker={() => setShowRideRentalDatePickerFor("rentalEndDateTime")}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
 
                 {/* Activity Details Accordion */}
                 <SimpleAccordion key="activity-details-accordion" title="Activity Details" defaultExpanded={true}>
@@ -832,13 +1468,11 @@ const EditActivity = ({
                           onPress={() => {
                             onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
                               setFieldValue("type", type);
+                              setActiveTabId("details");
                               if (type === ActivityType.flight) {
-                                setActiveTabId("flight");
                                 openFlightModal((flightData: any) => {
                                   handleFlightSelect(flightData, setFieldValue);
                                 });
-                              } else {
-                                setActiveTabId("details");
                               }
                             });
                           }}
@@ -1226,15 +1860,49 @@ const EditActivity = ({
                 initialCategory={poiModalInitialCategory}
                 proximity={travelPlan?.travel?.destinationData?.coordinates}
                 onSelect={(poi: MapboxPoi) => {
-                  setFieldValue("accomodationDetails.accomodationName", poi.name);
-                  if (poi.address) {
-                    setFieldValue("accomodationDetails.address", poi.address);
-                  }
-                  if (poi.website) {
-                    setFieldValue("accomodationDetails.websiteAddress", poi.website);
-                  }
-                  if (poi.phone) {
-                    setFieldValue("accomodationDetails.contactNumber", poi.phone);
+                  // Route field population based on which detail type opened the modal
+                  if (poiTargetType === "accommodation") {
+                    setFieldValue("accomodationDetails.accomodationName", poi.name);
+                    if (poi.address) setFieldValue("accomodationDetails.address", poi.address);
+                    if (poi.website) setFieldValue("accomodationDetails.websiteAddress", poi.website);
+                    if (poi.phone) setFieldValue("accomodationDetails.contactNumber", poi.phone);
+                  } else if (poiTargetType === "cafeRestaurant") {
+                    setFieldValue("cafeRestaurantDetails.restaurantName", poi.name);
+                    if (poi.address) setFieldValue("cafeRestaurantDetails.address", poi.address);
+                    if (poi.website) setFieldValue("cafeRestaurantDetails.websiteAddress", poi.website);
+                    if (poi.phone) setFieldValue("cafeRestaurantDetails.contactNumber", poi.phone);
+                    const cuisine = getCuisineFromCategories(poi.poiCategories || []);
+                    if (cuisine) setFieldValue("cafeRestaurantDetails.cuisine", cuisine);
+                  } else if (poiTargetType === "nature") {
+                    setFieldValue("natureDetails.spotName", poi.name);
+                    if (poi.address) setFieldValue("natureDetails.address", poi.address);
+                    const subType = matchNatureSubtype(poi);
+                    if (subType) setFieldValue("natureDetails.subType", subType);
+                  } else if (poiTargetType === "shoppingDetails") {
+                    setFieldValue("shoppingDetails.venueName", poi.name);
+                    if (poi.address) setFieldValue("shoppingDetails.address", poi.address);
+                    if (poi.website) setFieldValue("shoppingDetails.websiteAddress", poi.website);
+                    const subType = matchShoppingSubtype(poi);
+                    if (subType) setFieldValue("shoppingDetails.subType", subType);
+                  } else if (poiTargetType === "entertainmentDetails") {
+                    setFieldValue("entertainmentDetails.venueName", poi.name);
+                    if (poi.address) setFieldValue("entertainmentDetails.address", poi.address);
+                    if (poi.website) setFieldValue("entertainmentDetails.websiteAddress", poi.website);
+                    const subType = matchEntertainmentSubtype(poi);
+                    if (subType) setFieldValue("entertainmentDetails.subType", subType);
+                  } else if (poiTargetType === "sightseeing") {
+                    setFieldValue("sightseeingDetails.attractionName", poi.name);
+                    if (poi.address) setFieldValue("sightseeingDetails.address", poi.address);
+                    if (poi.website) setFieldValue("sightseeingDetails.websiteAddress", poi.website);
+                  } else if (poiTargetType === "hikeOrCamp") {
+                    setFieldValue("hikeOrCampDetails.trailOrSiteName", poi.name);
+                    if (poi.address) setFieldValue("hikeOrCampDetails.address", poi.address);
+                  } else if (poiTargetType === "meetup") {
+                    setFieldValue("meetupDetails.venueName", poi.name);
+                    if (poi.address) setFieldValue("meetupDetails.address", poi.address);
+                  } else if (poiTargetType === "rideRental") {
+                    setFieldValue("rideRentalDetails.providerName", poi.name);
+                    if (poi.address) setFieldValue("rideRentalDetails.address", poi.address);
                   }
 
                   // Auto-populate the activity's main destination and coordinates if they are empty
@@ -1387,6 +2055,58 @@ const EditActivity = ({
               }}
               onCancel={() => setShowAccomodationDatePickerFor(null)}
             />
+
+            {/* Preparation Deadline Picker */}
+            <DateTimePickerModal
+              isVisible={showPreparationDeadlinePicker}
+              mode="datetime"
+              date={(() => {
+                const v = values.preparationDetails?.deadlineDateTime;
+                if (v) { const d = new Date(v); return isNaN(d.getTime()) ? new Date() : d; }
+                return new Date();
+              })()}
+              onConfirm={(date) => {
+                setFieldValue("preparationDetails.deadlineDateTime", date);
+                setShowPreparationDeadlinePicker(false);
+              }}
+              onCancel={() => setShowPreparationDeadlinePicker(false)}
+            />
+
+            {/* Ride Rental Date Pickers */}
+            <DateTimePickerModal
+              isVisible={showRideRentalDatePickerFor !== null}
+              mode="datetime"
+              date={(() => {
+                const targetVal = showRideRentalDatePickerFor && values.rideRentalDetails?.[showRideRentalDatePickerFor];
+                if (targetVal) { const d = new Date(targetVal); return isNaN(d.getTime()) ? new Date() : d; }
+                return new Date();
+              })()}
+              onConfirm={(date) => {
+                if (showRideRentalDatePickerFor) {
+                  setFieldValue(`rideRentalDetails.${showRideRentalDatePickerFor}`, date);
+                }
+                setShowRideRentalDatePickerFor(null);
+              }}
+              onCancel={() => setShowRideRentalDatePickerFor(null)}
+            />
+
+            {/* Hike Or Camp Date Pickers */}
+            <DateTimePickerModal
+              isVisible={showHikeOrCampDatePickerFor !== null}
+              mode="datetime"
+              date={(() => {
+                const targetVal = showHikeOrCampDatePickerFor && values.hikeOrCampDetails?.[showHikeOrCampDatePickerFor];
+                if (targetVal) { const d = new Date(targetVal); return isNaN(d.getTime()) ? new Date() : d; }
+                return new Date();
+              })()}
+              onConfirm={(date) => {
+                if (showHikeOrCampDatePickerFor) {
+                  setFieldValue(`hikeOrCampDetails.${showHikeOrCampDatePickerFor}`, date);
+                }
+                setShowHikeOrCampDatePickerFor(null);
+              }}
+              onCancel={() => setShowHikeOrCampDatePickerFor(null)}
+            />
           </View>
         );
       }}
@@ -1430,9 +2150,6 @@ const FormikErrorScroller = ({
 
       // Determine target tab
       let targetTab = "details";
-      if (firstErrorKey.startsWith("flightDetails.")) {
-        targetTab = "flight";
-      }
 
       if (activeTabId !== targetTab) {
         setActiveTabId(targetTab);

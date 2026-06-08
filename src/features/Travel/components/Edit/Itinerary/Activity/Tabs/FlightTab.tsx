@@ -1,7 +1,7 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
-import { TextInput } from "react-native-paper";
+import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
 
 interface FlightTabProps {
@@ -13,6 +13,7 @@ interface FlightTabProps {
   setShowFlightDatePickerFor: any;
   formatFlightDateTime: any;
   handleFlightSelect: (flightData: any, setFieldValue: any) => void;
+  noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
 }
 
@@ -25,21 +26,32 @@ export default function FlightTab({
   setShowFlightDatePickerFor,
   formatFlightDateTime,
   handleFlightSelect,
+  noPadding = false,
   fieldRefs,
 }: FlightTabProps) {
+  const { colors } = useTheme();
+
   return (
-    <View className="flex-1 pb-6 pt-2 px-5">
+    <View className={`flex-1 pb-6 pt-2 ${noPadding ? "" : "px-5"}`}>
+      <View className="flex-row gap-2 justify-start items-center mb-5">
+        <Icon name="local-airport" size={20} color="#000" />
+        <Text className="text-md font-bold tracking-wider uppercase">
+          Flight Details
+        </Text>
+      </View>
+
       <TouchableOpacity
         onPress={() => {
           openFlightModal((flightData: any) => {
             handleFlightSelect(flightData, setFieldValue);
           });
         }}
-        className="mb-10 mt-3 p-4 rounded-2xl border border-dashed border-[#263F69] bg-blue-50/50 flex-row items-center gap-3 active:bg-blue-50"
+        className="mb-10 mt-3 p-4 rounded-2xl border border-dashed bg-blue-50/50 flex-row items-center gap-3 active:bg-blue-50"
+        style={{ borderColor: colors.primary }}
         accessibilityRole="button"
         accessibilityLabel="Search airport and fill flight details"
       >
-        <Icon name="local-airport" size={26} color={"#263F69"} />
+        <Icon name="local-airport" size={26} color={colors.primary} />
         <View className="flex-1">
           <Text className="text-base font-semibold text-gray-800">
             Search for Airport
@@ -48,7 +60,7 @@ export default function FlightTab({
             Lookup airports worldwide to populate dates and destination.
           </Text>
         </View>
-        <Icon name="search" size={20} color={"#263F69"} />
+        <Icon name="search" size={20} color={colors.primary} />
       </TouchableOpacity>
 
       {/* Departure Airport */}
@@ -83,7 +95,7 @@ export default function FlightTab({
       </View>
 
       <View className="flex-1 items-center justify-center mb-5 ">
-        <Icon name="arrow-downward" size={24} color="#263F69"/>
+        <Icon name="arrow-downward" size={24} color={colors.primary}/>
       </View>
 
       {/* Arrival Airport */}
