@@ -5,7 +5,8 @@ import Section from "../../db/models/Section";
 import Activity from "../../db/models/Activity";
 import FlightDetails from "../../db/models/FlightDetails";
 import AccomodationDetails from "../../db/models/AccomodationDetails";
-import { ActivityType } from "../../types/enums";
+import { ActivityType, TravelStatus } from "../../types/enums";
+import { safeJsonParse } from "../../utils/safeJsonParse";
 
 export const fetchLocalAccomodationDetails = async (activityId: string): Promise<any | null> => {
   try {
@@ -72,11 +73,11 @@ export const getTravelsLocally = async (): Promise<any[]> => {
   ).fetch();
 
   return offlineTravels.map((t) => ({
-    id: t.id, // Note: WatermelonDB uses string IDs, but DTO expects number/string
+    id: t.id,
     title: t.title,
     description: t.description,
     destination: t.destination,
-    destinationData: t.destinationData ? JSON.parse(t.destinationData) : undefined,
+    destinationData: safeJsonParse(t.destinationData, undefined),
     startOrDepartureDate: t.startOrDepartureDate,
     endOrReturnDate: t.endOrReturnDate,
     status: t.status,
@@ -90,13 +91,14 @@ export const getTravelsLocally = async (): Promise<any[]> => {
 
 export const getTravelPlanLocally = async (id: number | string): Promise<any> => {
   try {
-    const t = await database.get<Travel>("travels").find(id.toString());
+    const travelId = id.toString();
+    const t = await database.get<Travel>("travels").find(travelId);
     const travelDto = {
       id: t.id,
       title: t.title,
       description: t.description,
       destination: t.destination,
-      destinationData: t.destinationData ? JSON.parse(t.destinationData) : undefined,
+      destinationData: safeJsonParse(t.destinationData, undefined),
       startOrDepartureDate: t.startOrDepartureDate,
       endOrReturnDate: t.endOrReturnDate,
       status: t.status,
@@ -108,10 +110,87 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
     };
 
     const sections = await database.get<Section>("itinerary_sections").query(
-      Q.where("travel_id", id.toString()),
+      Q.where("travel_id", travelId),
       Q.sortBy("is_default_section", Q.desc),
       Q.sortBy("sort_order", Q.asc)
     ).fetch();
+
+    // ── Bulk-fetch all activity-level related records for this travel ──────────
+    // This replaces the N+1 pattern (5 queries × N activities) with 5 flat
+    // queries total. Each result is reduced into a Map keyed by activity_id
+    // so lookups below are O(1).
+    const [allNotes, allExpenses, allChecklists, allFlights, allAccomodations] =
+      await Promise.all([
+        database.get("itinerary_notes").query(Q.where("travel_id", travelId)).fetch(),
+        database.get("itinerary_expenses").query(Q.where("travel_id", travelId)).fetch(),
+        database.get("checklist_items").query(Q.where("travel_id", travelId)).fetch(),
+        database.get<FlightDetails>("flight_details").query().fetch(),
+        database.get<AccomodationDetails>("accomodation_details").query().fetch(),
+      ]);
+
+    // Count maps: activityId → count
+    const notesCountMap = new Map<string, number>();
+    for (const n of allNotes as any[]) {
+      const aid = n._raw?.activity_id as string | null;
+      if (aid) notesCountMap.set(aid, (notesCountMap.get(aid) ?? 0) + 1);
+    }
+
+    const expensesCountMap = new Map<string, number>();
+    for (const e of allExpenses as any[]) {
+      const aid = e._raw?.activity_id as string | null;
+      if (aid) expensesCountMap.set(aid, (expensesCountMap.get(aid) ?? 0) + 1);
+    }
+
+    const checklistCountMap = new Map<string, number>();
+    for (const c of allChecklists as any[]) {
+      const aid = c._raw?.activity_id as string | null;
+      if (aid) checklistCountMap.set(aid, (checklistCountMap.get(aid) ?? 0) + 1);
+    }
+
+    // Detail maps: activityId → first matching record (shaped DTO)
+    const flightDetailsMap = new Map<string, any>();
+    for (const f of allFlights) {
+      const aid = (f as any)._raw?.activity_id as string | undefined;
+      if (aid && !flightDetailsMap.has(aid)) {
+        flightDetailsMap.set(aid, {
+          id: f.id,
+          activityId: aid,
+          departureAirport: f.departureAirport,
+          arrivalAirport: f.arrivalAirport,
+          departureDate: f.departureDate,
+          arrivalDate: f.arrivalDate,
+          flightNumber: f.flightNumber,
+          airline: f.airline,
+          gate: f.gate,
+          terminal: f.terminal,
+          seatNumber: f.seatNumber,
+          bookingReference: f.bookingReference,
+          price: f.price,
+        });
+      }
+    }
+
+    const accomodationDetailsMap = new Map<string, any>();
+    for (const a of allAccomodations) {
+      const aid = (a as any)._raw?.activity_id as string | undefined;
+      if (aid && !accomodationDetailsMap.has(aid)) {
+        accomodationDetailsMap.set(aid, {
+          id: a.id,
+          activityId: aid,
+          accomodationName: a.accomodationName,
+          address: a.address,
+          checkinDateTime: a.checkinDateTime,
+          checkoutDateTime: a.checkoutDateTime,
+          websiteAddress: a.websiteAddress,
+          bookingReference: a.bookingReference,
+          bookingStatus: a.bookingStatus,
+          contactNumber: a.contactNumber,
+          emailAddress: a.emailAddress,
+          contactName: a.contactName,
+        });
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     const itinerarySection = await Promise.all(sections.map(async (s) => {
       const activities = await database.get<Activity>("itinerary_activities").query(
@@ -119,37 +198,29 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         Q.sortBy("sort_order", Q.asc)
       ).fetch();
 
-      const itineraryActivity = await Promise.all(activities.map(async (a) => {
-        const notesCount = await database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount();
-        const expensesCount = await database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount();
-        const checklistCount = await database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount();
-        const flightDetails = await fetchLocalFlightDetails(a.id);
-        const accomodationDetails = await fetchLocalAccomodationDetails(a.id);
-
-        return {
-          id: a.id,
-          sectionId: s.id,
-          title: a.title,
-          description: a.description,
-          destination: a.destination,
-          destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
-          startDate: a.startDate,
-          endDate: a.endDate,
-          budget: a.budget,
-          notes: a.notes,
-          isOffline: a.isOffline,
-          sortOrder: a.sortOrder,
-          type: a.type,
-          secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
-          images: a.images ? JSON.parse(a.images) : undefined,
-          isDone: a.isDone,
-          attachments: a.attachments ? JSON.parse(a.attachments) : undefined,
-          notesCount,
-          expensesCount,
-          checklistCount,
-          flightDetails,
-          accomodationDetails,
-        };
+      const itineraryActivity = activities.map((a) => ({
+        id: a.id,
+        sectionId: s.id,
+        title: a.title,
+        description: a.description,
+        destination: a.destination,
+        destinationData: safeJsonParse(a.destinationData, undefined),
+        startDate: a.startDate,
+        endDate: a.endDate,
+        budget: a.budget,
+        notes: a.notes,
+        isOffline: a.isOffline,
+        sortOrder: a.sortOrder,
+        type: a.type,
+        secondaryType: safeJsonParse(a.secondaryType, undefined),
+        images: safeJsonParse(a.images, undefined),
+        isDone: a.isDone,
+        attachments: safeJsonParse(a.attachments, undefined),
+        notesCount: notesCountMap.get(a.id) ?? 0,
+        expensesCount: expensesCountMap.get(a.id) ?? 0,
+        checklistCount: checklistCountMap.get(a.id) ?? 0,
+        flightDetails: flightDetailsMap.get(a.id) ?? null,
+        accomodationDetails: accomodationDetailsMap.get(a.id) ?? null,
       }));
 
       return {
@@ -435,11 +506,15 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
 export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
   try {
     const a = await database.get<Activity>("itinerary_activities").find(id);
-    const notesCount = await database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount();
-    const expensesCount = await database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount();
-    const checklistCount = await database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount();
-    const flightDetails = await fetchLocalFlightDetails(a.id);
-    const accomodationDetails = await fetchLocalAccomodationDetails(a.id);
+    // Run all counts and detail fetches in parallel — no N+1 for a single activity
+    const [notesCount, expensesCount, checklistCount, flightDetails, accomodationDetails] =
+      await Promise.all([
+        database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount(),
+        database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount(),
+        database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount(),
+        fetchLocalFlightDetails(a.id),
+        fetchLocalAccomodationDetails(a.id),
+      ]);
 
     return {
       id: a.id,
@@ -447,7 +522,7 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
       title: a.title,
       description: a.description,
       destination: a.destination,
-      destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
+      destinationData: safeJsonParse(a.destinationData, undefined),
       startDate: a.startDate,
       endDate: a.endDate,
       budget: a.budget,
@@ -455,10 +530,10 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
       isOffline: a.isOffline,
       sortOrder: a.sortOrder,
       type: a.type,
-      secondaryType: a.secondaryType ? JSON.parse(a.secondaryType) : undefined,
-      images: a.images ? JSON.parse(a.images) : undefined,
+      secondaryType: safeJsonParse(a.secondaryType, undefined),
+      images: safeJsonParse(a.images, undefined),
       isDone: a.isDone,
-      attachments: a.attachments ? JSON.parse(a.attachments) : undefined,
+      attachments: safeJsonParse(a.attachments, undefined),
       notesCount,
       expensesCount,
       checklistCount,
@@ -482,7 +557,7 @@ export const getAllActivitiesWithDestinationLocally = async (): Promise<any[]> =
     title: a.title,
     description: a.description,
     destination: a.destination,
-    destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
+    destinationData: safeJsonParse(a.destinationData, undefined),
     startDate: a.startDate,
     endDate: a.endDate,
     status: (a as any).status,
@@ -497,15 +572,13 @@ export const getAllActivitiesLocally = async (): Promise<any[]> => {
 
   return activities.map((a) => ({
     id: a.id,
-    // travelId: a.travelId,
     sectionId: a.section.id,
     title: a.title,
     description: a.description,
     destination: a.destination,
-    destinationData: a.destinationData ? JSON.parse(a.destinationData) : undefined,
+    destinationData: safeJsonParse(a.destinationData, undefined),
     startDate: a.startDate,
     endDate: a.endDate,
-    // status: a.status,
     isOffline: a.isOffline,
     type: a.type,
     isDone: a.isDone,
@@ -514,58 +587,76 @@ export const getAllActivitiesLocally = async (): Promise<any[]> => {
   }));
 };
 
-const deleteActivityDetails = async (activityId: string) => {
-  const expenses = await database.get<any>("itinerary_expenses").query(Q.where("activity_id", activityId)).fetch();
-  for (const exp of expenses) await exp.destroyPermanently();
-  
-  const notes = await database.get<any>("itinerary_notes").query(Q.where("activity_id", activityId)).fetch();
-  for (const note of notes) await note.destroyPermanently();
-  
-  const checklists = await database.get<any>("checklist_items").query(Q.where("activity_id", activityId)).fetch();
-  for (const cl of checklists) await cl.destroyPermanently();
-
-  const flights = await database.get<any>("flight_details").query(Q.where("activity_id", activityId)).fetch();
-  for (const fl of flights) await fl.destroyPermanently();
-
-  const accomodations = await database.get<any>("accomodation_details").query(Q.where("activity_id", activityId)).fetch();
-  for (const acc of accomodations) await acc.destroyPermanently();
+/**
+ * Reads all dependent records for an activity BEFORE entering a write block.
+ * Returns them as plain arrays so the caller can batch-destroy them inside
+ * a single database.write() transaction without mixing reads and writes.
+ */
+const collectActivityDependencies = async (activityId: string): Promise<any[]> => {
+  const [expenses, notes, checklists, flights, accomodations] = await Promise.all([
+    database.get<any>("itinerary_expenses").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("itinerary_notes").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("checklist_items").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("flight_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("accomodation_details").query(Q.where("activity_id", activityId)).fetch(),
+  ]);
+  return [...expenses, ...notes, ...checklists, ...flights, ...accomodations];
 };
 
 /** Permanently deletes a locally-stored travel and all its sections/activities/expenses/notes/checklists. */
 export const deleteTravelLocally = async (id: string): Promise<void> => {
-  await database.write(async () => {
-    const travel = await database.get<Travel>("travels").find(id);
+  // ── Phase 1: Reads (outside write block) ──────────────────────────────────
+  const travel = await database.get<Travel>("travels").find(id);
+  const sections = await database.get<Section>("itinerary_sections").query(
+    Q.where("travel_id", id)
+  ).fetch();
 
-    // Delete all activities belonging to this travel's sections
-    const sections = await database.get<Section>("itinerary_sections").query(
-      Q.where("travel_id", id)
+  // Collect activities and all their dependent records before writing
+  const activitiesBySectionId = new Map<string, Activity[]>();
+  const dependenciesByActivityId = new Map<string, any[]>();
+
+  for (const section of sections) {
+    const activities = await database.get<Activity>("itinerary_activities").query(
+      Q.where("section_id", section.id)
     ).fetch();
+    activitiesBySectionId.set(section.id, activities);
+    for (const activity of activities) {
+      dependenciesByActivityId.set(activity.id, await collectActivityDependencies(activity.id));
+    }
+  }
 
+  // ── Phase 2: Writes (all batched in one transaction) ───────────────────────
+  await database.write(async () => {
     for (const section of sections) {
-      const activities = await database.get<Activity>("itinerary_activities").query(
-        Q.where("section_id", section.id)
-      ).fetch();
+      const activities = activitiesBySectionId.get(section.id) ?? [];
       for (const activity of activities) {
-        await deleteActivityDetails(activity.id);
+        const deps = dependenciesByActivityId.get(activity.id) ?? [];
+        for (const dep of deps) await dep.destroyPermanently();
         await activity.destroyPermanently();
       }
       await section.destroyPermanently();
     }
-
     await travel.destroyPermanently();
   });
 };
 
 /** Permanently deletes a locally-stored section and all its activities. */
 export const deleteSectionLocally = async (id: string): Promise<void> => {
+  // Phase 1: Reads
+  const section = await database.get<Section>("itinerary_sections").find(id);
+  const activities = await database.get<Activity>("itinerary_activities").query(
+    Q.where("section_id", section.id)
+  ).fetch();
+  const dependenciesByActivityId = new Map<string, any[]>();
+  for (const activity of activities) {
+    dependenciesByActivityId.set(activity.id, await collectActivityDependencies(activity.id));
+  }
+
+  // Phase 2: Writes
   await database.write(async () => {
-    const section = await database.get<Section>("itinerary_sections").find(id);
-    
-    const activities = await database.get<Activity>("itinerary_activities").query(
-      Q.where("section_id", section.id)
-    ).fetch();
     for (const activity of activities) {
-      await deleteActivityDetails(activity.id);
+      const deps = dependenciesByActivityId.get(activity.id) ?? [];
+      for (const dep of deps) await dep.destroyPermanently();
       await activity.destroyPermanently();
     }
     await section.destroyPermanently();
@@ -574,9 +665,13 @@ export const deleteSectionLocally = async (id: string): Promise<void> => {
 
 /** Permanently deletes a locally-stored activity. */
 export const deleteActivityLocally = async (id: string): Promise<void> => {
+  // Phase 1: Reads (outside write block)
+  const activity = await database.get<Activity>("itinerary_activities").find(id);
+  const deps = await collectActivityDependencies(activity.id);
+
+  // Phase 2: Writes (all batched atomically)
   await database.write(async () => {
-    const activity = await database.get<Activity>("itinerary_activities").find(id);
-    await deleteActivityDetails(activity.id);
+    for (const dep of deps) await dep.destroyPermanently();
     await activity.destroyPermanently();
   });
 };
@@ -586,7 +681,7 @@ export const cancelTravelLocally = async (id: string): Promise<void> => {
   await database.write(async () => {
     const travel = await database.get<Travel>("travels").find(id);
     await travel.update((t) => {
-      t.status = 5; // TravelStatus.Cancelled
+      t.status = TravelStatus.Cancelled;
     });
   });
 };

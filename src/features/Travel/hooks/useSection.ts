@@ -1,12 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../../../context/ToastContext";
 import { API_BASE_URL } from "@env";
-import { ItinerarySection } from "../types/TravelDto"; // Assuming Itinerary is needed for caching
+import { ItinerarySection } from "../types/TravelDto";
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { Travel } from "../../../dtos/TravelDto";
 import { TravelPlan } from "../types/TravelDto";
 import { ApiResponse } from "../../../types/api";
 import { saveSectionLocally, deleteSectionLocally } from "../../../services/local/travelService";
+import { fetchWithTimeout } from "../../../utils/fetchWithTimeout";
 
 // 1. Define the API endpoint constant for clarity and reuse
 const ACTIVITY_SECTIONS_ENDPOINT = `${API_BASE_URL}/itinerarySection`;
@@ -57,7 +58,7 @@ export const useUpdateSectionMutation = () => {
 
       const options = postRequestOptions("");
 
-      const response = await fetch(ACTIVITY_SECTIONS_ENDPOINT, {
+      const response = await fetchWithTimeout(ACTIVITY_SECTIONS_ENDPOINT, {
         method: section.id ? "PUT" : "POST",
         headers: options.headers,
         body: JSON.stringify({ ...section, isOffline: true }),
@@ -212,10 +213,10 @@ export const useDeleteSectionMutation = () => {
       // Returns void because DELETE often returns 204 No Content
       const options = postRequestOptions(""); // Assume this provides headers/auth
 
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${ACTIVITY_SECTIONS_ENDPOINT}/${variables.sectionId}`,
         {
-          method: "DELETE", // Use the DELETE method
+          method: "DELETE",
           headers: options.headers,
         },
       );
@@ -280,7 +281,7 @@ export const useUpdateSectionSortOrderMutation = () => {
       const options = postRequestOptions("");
 
       console.log("SECTION_VAR", variables);
-      const response = await fetch(`${ACTIVITY_SECTIONS_ENDPOINT}/move`, {
+      const response = await fetchWithTimeout(`${ACTIVITY_SECTIONS_ENDPOINT}/move`, {
         method: "POST",
         headers: options.headers,
         body: JSON.stringify(variables),

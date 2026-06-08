@@ -29,7 +29,23 @@ ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
   originalHandler(error, isFatal);
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Retry once on failure; a second auto-retry on mobile usually just
+      // stalls the UI further on a poor connection.
+      retry: 1,
+      // Treat cached data as fresh for 30 s to avoid unnecessary refetches
+      // when navigating between screens rapidly.
+      staleTime: 30 * 1000,
+    },
+    mutations: {
+      // Mutations (create/update/delete) should never auto-retry —
+      // retrying a write blindly can cause duplicate records.
+      retry: 0,
+    },
+  },
+});
 
 /**
  * Mounts inside QueryClientProvider so useTripStatusCheck can access

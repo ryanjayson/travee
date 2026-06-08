@@ -3,7 +3,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { Formik, useFormikContext } from "formik";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -289,6 +289,8 @@ const EditActivity = ({
   } = useTravelPlan(selectedTravelPlan?.id || "");
   const currentSection = travelPlan?.itinerarySection?.find(s => s.id === itinerarySectionId);
   const { confirm } = useConfirm();
+  // Move useTheme to component top level (Rules of Hooks: must not be called inside callbacks)
+  const { colors } = useTheme();
 
   // Checklist state
   const [newCheckTitle, setNewCheckTitle] = useState("");
@@ -551,71 +553,82 @@ const EditActivity = ({
     }
   };
 
+  const initialValues: ActivityFormValues = {
+    travelId: selectedTravelPlan?.id,
+    sectionId: itinerarySectionId || (travelPlan?.itinerarySection?.[0]?.id || ""),
+    id: itineraryActivity?.id,
+    title: itineraryActivity?.title || "",
+    description: itineraryActivity?.description || "",
+    type: itineraryActivity?.type ?? ActivityType.none,
+    sortOrder: itineraryActivity?.sortOrder || "",
+    startDate: itineraryActivity?.startDate ? toLocalDateStr(itineraryActivity.startDate) : (currentSection?.startDate ? toLocalDateStr(currentSection.startDate) : null),
+    startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? toLocalTimeStr(itineraryActivity.startDate) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
+    endDate: itineraryActivity?.endDate ? toLocalDateStr(itineraryActivity.endDate) : null,
+    endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? toLocalTimeStr(itineraryActivity.endDate) : "09:00",
+    destination: itineraryActivity?.destination || "",
+    destinationData: itineraryActivity?.destinationData || undefined,
+    images: itineraryActivity?.images || [],
+    attachments: itineraryActivity?.attachments || [],
+    flightDetails: {
+      departureAirport: itineraryActivity?.flightDetails?.departureAirport || "",
+      arrivalAirport: itineraryActivity?.flightDetails?.arrivalAirport || "",
+      departureDate: itineraryActivity?.flightDetails?.departureDate
+        ? new Date(itineraryActivity.flightDetails.departureDate)
+        : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.startDate
+            ? new Date(itineraryActivity.startDate)
+            : null),
+      arrivalDate: itineraryActivity?.flightDetails?.arrivalDate
+        ? new Date(itineraryActivity.flightDetails.arrivalDate)
+        : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.endDate
+            ? new Date(itineraryActivity.endDate)
+            : null),
+      flightNumber: itineraryActivity?.flightDetails?.flightNumber || "",
+      airline: itineraryActivity?.flightDetails?.airline || "",
+      gate: itineraryActivity?.flightDetails?.gate || "",
+      terminal: itineraryActivity?.flightDetails?.terminal || "",
+      seatNumber: itineraryActivity?.flightDetails?.seatNumber || "",
+      bookingReference: itineraryActivity?.flightDetails?.bookingReference || "",
+      price: itineraryActivity?.flightDetails?.price != null ? String(itineraryActivity.flightDetails.price) : "",
+    },
+    accomodationDetails: {
+      accomodationName: (itineraryActivity?.accomodationDetails?.accomodationName || "").trim() !== ""
+        ? itineraryActivity.accomodationDetails.accomodationName
+        : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.title || "" : ""),
+      address: (itineraryActivity?.accomodationDetails?.address || "").trim() !== ""
+        ? itineraryActivity.accomodationDetails.address
+        : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.destination || "" : ""),
+      checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime
+        ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
+        : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.startDate
+            ? new Date(itineraryActivity.startDate)
+            : null),
+      checkoutDateTime: itineraryActivity?.accomodationDetails?.checkoutDateTime
+        ? new Date(itineraryActivity.accomodationDetails.checkoutDateTime)
+        : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.endDate
+            ? new Date(itineraryActivity.endDate)
+            : null),
+      websiteAddress: itineraryActivity?.accomodationDetails?.websiteAddress || "",
+      bookingReference: itineraryActivity?.accomodationDetails?.bookingReference || "",
+      bookingStatus: itineraryActivity?.accomodationDetails?.bookingStatus || "",
+      contactNumber: itineraryActivity?.accomodationDetails?.contactNumber || "",
+      emailAddress: itineraryActivity?.accomodationDetails?.emailAddress || "",
+      contactName: itineraryActivity?.accomodationDetails?.contactName || "",
+    },
+  };
+
+  const memoizedInitialValues = useMemo<ActivityFormValues>(() => initialValues, [
+    itineraryActivity?.id,
+    itineraryActivity?.updatedAt,
+    itinerarySectionId,
+    selectedTravelPlan?.id,
+    travelPlan?.itinerarySection?.[0]?.id,
+    currentSection?.startDate,
+  ]);
+
   return (
     <Formik<ActivityFormValues>
       enableReinitialize={true}
-      initialValues={{
-        travelId: selectedTravelPlan?.id,
-        sectionId: itinerarySectionId || (travelPlan?.itinerarySection?.[0]?.id || ""),
-        id: itineraryActivity?.id,
-        title: itineraryActivity?.title || "",
-        description: itineraryActivity?.description || "",
-        type: itineraryActivity?.type ?? ActivityType.none,
-        sortOrder: itineraryActivity?.sortOrder || "",
-        startDate: itineraryActivity?.startDate ? toLocalDateStr(itineraryActivity.startDate) : (currentSection?.startDate ? toLocalDateStr(currentSection.startDate) : null),
-        startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? toLocalTimeStr(itineraryActivity.startDate) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
-        endDate: itineraryActivity?.endDate ? toLocalDateStr(itineraryActivity.endDate) : null,
-        endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? toLocalTimeStr(itineraryActivity.endDate) : "09:00",
-        destination: itineraryActivity?.destination || "",
-        destinationData: itineraryActivity?.destinationData || undefined,
-        images: itineraryActivity?.images || [],
-        attachments: itineraryActivity?.attachments || [],
-        flightDetails: {
-          departureAirport: itineraryActivity?.flightDetails?.departureAirport || "",
-          arrivalAirport: itineraryActivity?.flightDetails?.arrivalAirport || "",
-          departureDate: itineraryActivity?.flightDetails?.departureDate
-            ? new Date(itineraryActivity.flightDetails.departureDate)
-            : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.startDate
-                ? new Date(itineraryActivity.startDate)
-                : null),
-          arrivalDate: itineraryActivity?.flightDetails?.arrivalDate
-            ? new Date(itineraryActivity.flightDetails.arrivalDate)
-            : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.endDate
-                ? new Date(itineraryActivity.endDate)
-                : null),
-          flightNumber: itineraryActivity?.flightDetails?.flightNumber || "",
-          airline: itineraryActivity?.flightDetails?.airline || "",
-          gate: itineraryActivity?.flightDetails?.gate || "",
-          terminal: itineraryActivity?.flightDetails?.terminal || "",
-          seatNumber: itineraryActivity?.flightDetails?.seatNumber || "",
-          bookingReference: itineraryActivity?.flightDetails?.bookingReference || "",
-          price: itineraryActivity?.flightDetails?.price != null ? String(itineraryActivity.flightDetails.price) : "",
-        },
-        accomodationDetails: {
-          accomodationName: (itineraryActivity?.accomodationDetails?.accomodationName || "").trim() !== ""
-            ? itineraryActivity.accomodationDetails.accomodationName
-            : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.title || "" : ""),
-          address: (itineraryActivity?.accomodationDetails?.address || "").trim() !== ""
-            ? itineraryActivity.accomodationDetails.address
-            : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.destination || "" : ""),
-          checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime
-            ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
-            : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.startDate
-                ? new Date(itineraryActivity.startDate)
-                : null),
-          checkoutDateTime: itineraryActivity?.accomodationDetails?.checkoutDateTime
-            ? new Date(itineraryActivity.accomodationDetails.checkoutDateTime)
-            : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.endDate
-                ? new Date(itineraryActivity.endDate)
-                : null),
-          websiteAddress: itineraryActivity?.accomodationDetails?.websiteAddress || "",
-          bookingReference: itineraryActivity?.accomodationDetails?.bookingReference || "",
-          bookingStatus: itineraryActivity?.accomodationDetails?.bookingStatus || "",
-          contactNumber: itineraryActivity?.accomodationDetails?.contactNumber || "",
-          emailAddress: itineraryActivity?.accomodationDetails?.emailAddress || "",
-          contactName: itineraryActivity?.accomodationDetails?.contactName || "",
-        },
-      }}
+      initialValues={memoizedInitialValues}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}
     >

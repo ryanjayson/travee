@@ -8,6 +8,7 @@ import { archiveTravelLocally, cancelTravelLocally, deleteTravelLocally, getTrav
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { CreateTravelData, Travel, TravelPlan } from "../types/TravelDto";
 import { TravelStatus } from "../../../types/enums";
+import { fetchWithTimeout } from "../../../utils/fetchWithTimeout";
 
 const TRAVEL_ENDPOINT = `${API_BASE_URL}/travel`;
 const TRAVEL_QUERY_KEY = ["travel"];
@@ -48,7 +49,7 @@ export const useUpdateTravel = () => {
       const method = id ? "PUT" : "POST";
 
       console.log(`${method} PAYLOAD to ${url}`, JSON.stringify(data));
-      const response = await fetch(url, {
+      const response = await fetchWithTimeout(url, {
         method: method,
         headers: options.headers,
         body: JSON.stringify({ ...data, isOffline: true }),

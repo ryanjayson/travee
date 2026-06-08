@@ -18,7 +18,7 @@ import TripIcon from "../../../components/TripIcon";
 import ViewTravelModal from "../components/View/Modal";
 import { useTravels } from "../hooks/useTravel";
 import { Travel } from "../types/TravelDto";
-import TravelDetailPage from "./TravelDetail";
+// import TravelDetailPage from "./TravelDetail";
 
 const TravelCatalog = () => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
@@ -340,10 +340,11 @@ const TravelCatalog = () => {
 
   if (showTravelDetail && selectedTravel) {
     return (
-      <TravelDetailPage
-        travelData={selectedTravel}
-        onBack={handleBackFromTravelDetail}
-      />
+      // <TravelDetailPage
+      //   travelData={selectedTravel}
+      //   onBack={handleBackFromTravelDetail}
+      // />
+      <></>
     );
   }
 

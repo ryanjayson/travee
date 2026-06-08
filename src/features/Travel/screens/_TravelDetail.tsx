@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import Itinerary from "../../../components/itinerary";
-import { travelService } from "../../../services/travelService";
+// import { travelService } from "../../../services/travelService";
 import { ActivitySection } from "../../../dtos/ItineraryDto";
 import { Travel } from "../../Travel/types/TravelDto";
 import { TravelStatus } from "../../../types/enums";
@@ -87,8 +87,8 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
     const fetchItinerary = async () => {
       setLoading(true);
       try {
-        const data = await travelService.getTravelItinerary(travelData.id!);
-        setItineraryData(data);
+        // const data = await travelService.getTravelItinerary(travelData.id!);
+        setItineraryData([]);
       } catch (error) {
         console.error("Error fetching itinerary:", error);
       } finally {

@@ -13,7 +13,6 @@ import {
   useTravelContext
 } from "../../../context/TravelContext";
 import { Friend } from "../../../data/sampleFriends";
-import { sampleTravel } from "../../../data/travels";
 import {
   ItineraryActivity,
   ItinerarySection,
@@ -35,7 +34,6 @@ const EditTravelPlan = () => {
   // @ts-ignore
   const { travelId } = route.params || {};
 
-  const [travelData, setTravelData] = useState<Travel>(sampleTravel[0]);
   const [activeTab, setActiveTab] = useState<TabType>("itinerary");
 
   const [addMemberModalVisible, setAddMemberModalVisible] = useState(false);

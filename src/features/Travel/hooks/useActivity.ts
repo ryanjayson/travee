@@ -11,6 +11,7 @@ import { fetchItineraryActivity } from "../../../services/api/itinerary";
 import { ApiResponse } from "../../../types/api";
 import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity, getAllActivitiesWithDestinationLocally, deleteActivityLocally, getAllActivitiesLocally } from "../../../services/local/travelService";
 import { UpdateSortVariables } from "../types/ActivityDto";
+import { fetchWithTimeout } from "../../../utils/fetchWithTimeout";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
 const ITINERARY_QUERY_KEY = ["itineraryActivity"];
@@ -59,7 +60,7 @@ export const useUpdateActivityMutation = () => {
       }
 
       const options = postRequestOptions("");
-      const response = await fetch(ACTIVITY_ENDPOINT, {
+      const response = await fetchWithTimeout(ACTIVITY_ENDPOINT, {
         method: activity.id ? "PUT" : "POST",
         headers: options.headers,
         body: JSON.stringify({ ...activity, isOffline: true }),
@@ -206,7 +207,7 @@ export const useDeleteActivityMutation = () => {
 
       const options = postRequestOptions("");
 
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${ACTIVITY_ENDPOINT}/${variables.activityId}`,
         {
           method: "DELETE", // Use the DELETE method
@@ -280,7 +281,7 @@ export const useUpdateActivitySortOrderMutation = () => {
     mutationFn: async (variables: UpdateSortVariables): Promise<void> => {
       const options = postRequestOptions("");
 
-      const response = await fetch(`${ACTIVITY_ENDPOINT}/move`, {
+      const response = await fetchWithTimeout(`${ACTIVITY_ENDPOINT}/move`, {
         method: "POST",
         headers: options.headers,
         body: JSON.stringify(variables),
