@@ -18,6 +18,17 @@ import FlightDetails from "./models/FlightDetails";
 import AccomodationDetails from "./models/AccomodationDetails";
 import SightseeingDetails from "./models/SightseeingDetails";
 import HikeOrCampDetails from "./models/HikeOrCampDetails";
+import CafeRestaurantDetails from "./models/CafeRestaurantDetails";
+import NatureDetails from "./models/NatureDetails";
+import ShoppingDetails from "./models/ShoppingDetails";
+import EntertainmentDetails from "./models/EntertainmentDetails";
+import TransportationDetails from "./models/TransportationDetails";
+import WalkDetails from "./models/WalkDetails";
+import PreparationDetails from "./models/PreparationDetails";
+import RestDetails from "./models/RestDetails";
+import MotorcycleRideDetails from "./models/MotorcycleRideDetails";
+import MeetupDetails from "./models/MeetupDetails";
+import RideRentalDetails from "./models/RideRentalDetails";
 import { logger, ErrorSeverity } from "../services/errorLogger";
 
 const adapter = new SQLiteAdapter({
@@ -41,5 +52,10 @@ const adapter = new SQLiteAdapter({
 
 export const database = new Database({
   adapter,
-  modelClasses: [Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem, UserProfile, ErrorLog, TripMember, MemberSplitBill, FlightDetails, AccomodationDetails, SightseeingDetails, HikeOrCampDetails],
+  modelClasses: [
+    Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem, UserProfile, ErrorLog, TripMember, MemberSplitBill,
+    FlightDetails, AccomodationDetails, SightseeingDetails, HikeOrCampDetails, CafeRestaurantDetails, NatureDetails,
+    ShoppingDetails, EntertainmentDetails, TransportationDetails, WalkDetails, PreparationDetails, RestDetails,
+    MotorcycleRideDetails, MeetupDetails, RideRentalDetails
+  ],
 });

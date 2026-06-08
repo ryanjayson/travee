@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, TouchableOpacity, Animated, StyleProp, TextStyle } from "react-native";
+import { View, TouchableOpacity, Animated, StyleProp, TextStyle, KeyboardTypeOptions } from "react-native";
 import { TextInput } from "react-native-paper";
 
 export interface FloatingLabelInputProps {
@@ -8,12 +8,14 @@ export interface FloatingLabelInputProps {
   onChangeText?: (text: string) => void;
   onBlur?: (e: any) => void;
   onFocus?: () => void;
-  keyboardType?: "default" | "numeric";
+  keyboardType?: KeyboardTypeOptions;
   editable?: boolean;
   placeholder?: string;
   right?: React.ReactNode;
   onPress?: () => void;
   contentStyle?: StyleProp<TextStyle>;
+  multiline?: boolean;
+  numberOfLines?: number;
 }
 
 export default function FloatingLabelInput({
@@ -28,6 +30,8 @@ export default function FloatingLabelInput({
   right,
   onPress,
   contentStyle,
+  multiline,
+  numberOfLines,
 }: FloatingLabelInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
@@ -90,6 +94,8 @@ export default function FloatingLabelInput({
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         editable={editable}
+        multiline={multiline}
+        numberOfLines={numberOfLines}
         onFocus={() => {
           setIsFocused(true);
           onFocus?.();
@@ -102,8 +108,8 @@ export default function FloatingLabelInput({
         activeOutlineColor="#263F69"
         theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
         outlineStyle={{ borderWidth: 1, backgroundColor: "#FFF", borderRadius: 16 }}
-        style={{ height: 64 }}
-        contentStyle={[{ backgroundColor: "transparent", paddingTop: 16 }, contentStyle]}
+        style={multiline ? undefined : { height: 64 }}
+        contentStyle={[{ backgroundColor: "transparent", paddingTop: multiline ? 8 : 16 }, contentStyle]}
         right={right}
       />
       {onPress && (

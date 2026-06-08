@@ -7,6 +7,17 @@ import FlightDetails from "../../db/models/FlightDetails";
 import AccomodationDetails from "../../db/models/AccomodationDetails";
 import SightseeingDetails from "../../db/models/SightseeingDetails";
 import HikeOrCampDetails from "../../db/models/HikeOrCampDetails";
+import CafeRestaurantDetails from "../../db/models/CafeRestaurantDetails";
+import NatureDetails from "../../db/models/NatureDetails";
+import ShoppingDetails from "../../db/models/ShoppingDetails";
+import EntertainmentDetails from "../../db/models/EntertainmentDetails";
+import TransportationDetails from "../../db/models/TransportationDetails";
+import WalkDetails from "../../db/models/WalkDetails";
+import PreparationDetails from "../../db/models/PreparationDetails";
+import RestDetails from "../../db/models/RestDetails";
+import MotorcycleRideDetails from "../../db/models/MotorcycleRideDetails";
+import MeetupDetails from "../../db/models/MeetupDetails";
+import RideRentalDetails from "../../db/models/RideRentalDetails";
 import { ActivityType, TravelStatus } from "../../types/enums";
 import { safeJsonParse } from "../../utils/safeJsonParse";
 
@@ -123,6 +134,272 @@ export const fetchLocalHikeOrCampDetails = async (activityId: string): Promise<a
   }
 };
 
+export const fetchLocalCafeRestaurantDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<CafeRestaurantDetails>("cafe_restaurant_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        restaurantName: item.restaurantName,
+        address: item.address,
+        cuisine: item.cuisine,
+        priceRange: item.priceRange,
+        reservationLink: item.reservationLink,
+        websiteAddress: item.websiteAddress,
+        contactNumber: item.contactNumber,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local cafe restaurant details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalNatureDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<NatureDetails>("nature_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        spotName: item.spotName,
+        address: item.address,
+        subType: item.subType,
+        entryFee: item.entryFee,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local nature details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalShoppingDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<ShoppingDetails>("shopping_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        venueName: item.venueName,
+        address: item.address,
+        subType: item.subType,
+        websiteAddress: item.websiteAddress,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local shopping details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalEntertainmentDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<EntertainmentDetails>("entertainment_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        venueName: item.venueName,
+        address: item.address,
+        subType: item.subType,
+        websiteAddress: item.websiteAddress,
+        ticketPrice: item.ticketPrice,
+        bookingReference: item.bookingReference,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local entertainment details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalTransportationDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<TransportationDetails>("transportation_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        mode: item.mode,
+        operatorProvider: item.operatorProvider,
+        pickupLocation: item.pickupLocation,
+        dropoffLocation: item.dropoffLocation,
+        bookingReference: item.bookingReference,
+        price: item.price,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local transportation details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalWalkDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<WalkDetails>("walk_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        routeName: item.routeName,
+        estimatedDistanceKm: item.estimatedDistanceKm,
+        estimatedDuration: item.estimatedDuration,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local walk details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalPreparationDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<PreparationDetails>("preparation_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        taskLabel: item.taskLabel,
+        deadlineDateTime: item.deadlineDateTime,
+        priority: item.priority,
+        notes: item.notes,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local preparation details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalRestDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<RestDetails>("rest_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        restLocationName: item.restLocationName,
+        restLocationType: item.restLocationType,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local rest details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalMotorcycleRideDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<MotorcycleRideDetails>("motorcycle_ride_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        routeName: item.routeName,
+        startingPoint: item.startingPoint,
+        endingPoint: item.endingPoint,
+        estimatedDistanceKm: item.estimatedDistanceKm,
+        roadType: item.roadType,
+        bikeModel: item.bikeModel,
+        fuelStops: item.fuelStops,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local motorcycle ride details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalMeetupDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<MeetupDetails>("meetup_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        venueName: item.venueName,
+        address: item.address,
+        hostOrOrganizer: item.hostOrOrganizer,
+        numberOfPeople: item.numberOfPeople,
+        meetupType: item.meetupType,
+        rsvpLink: item.rsvpLink,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local meetup details:", err);
+    return null;
+  }
+};
+
+export const fetchLocalRideRentalDetails = async (activityId: string): Promise<any | null> => {
+  try {
+    const list = await database.get<RideRentalDetails>("ride_rental_details").query(
+      Q.where("activity_id", activityId)
+    ).fetch();
+    if (list.length > 0) {
+      const item = list[0];
+      return {
+        id: item.id,
+        activityId: item.activity.id,
+        providerName: item.providerName,
+        address: item.address,
+        vehicleType: item.vehicleType,
+        pickupLocation: item.pickupLocation,
+        dropoffLocation: item.dropoffLocation,
+        rentalStartDateTime: item.rentalStartDateTime,
+        rentalEndDateTime: item.rentalEndDateTime,
+        bookingReference: item.bookingReference,
+        price: item.price,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.error("Error fetching local ride rental details:", err);
+    return null;
+  }
+};
 
 export const getTravelsLocally = async (): Promise<any[]> => {
   const offlineTravels = await database.get<Travel>("travels").query(
@@ -176,16 +453,45 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
     // This replaces the N+1 pattern (5 queries × N activities) with 5 flat
     // queries total. Each result is reduced into a Map keyed by activity_id
     // so lookups below are O(1).
-    const [allNotes, allExpenses, allChecklists, allFlights, allAccomodations, allSightseeings, allHikeOrCamps] =
-      await Promise.all([
-        database.get("itinerary_notes").query(Q.where("travel_id", travelId)).fetch(),
-        database.get("itinerary_expenses").query(Q.where("travel_id", travelId)).fetch(),
-        database.get("checklist_items").query(Q.where("travel_id", travelId)).fetch(),
-        database.get<FlightDetails>("flight_details").query().fetch(),
-        database.get<AccomodationDetails>("accomodation_details").query().fetch(),
-        database.get<SightseeingDetails>("sightseeing_details").query().fetch(),
-        database.get<HikeOrCampDetails>("hike_or_camp_details").query().fetch(),
-      ]);
+    const [
+      allNotes,
+      allExpenses,
+      allChecklists,
+      allFlights,
+      allAccomodations,
+      allSightseeings,
+      allHikeOrCamps,
+      allCafeRestaurants,
+      allNatures,
+      allShoppings,
+      allEntertainments,
+      allTransportations,
+      allWalks,
+      allPreparations,
+      allRests,
+      allMotorcycles,
+      allMeetups,
+      allRideRentals
+    ] = await Promise.all([
+      database.get("itinerary_notes").query(Q.where("travel_id", travelId)).fetch(),
+      database.get("itinerary_expenses").query(Q.where("travel_id", travelId)).fetch(),
+      database.get("checklist_items").query(Q.where("travel_id", travelId)).fetch(),
+      database.get<FlightDetails>("flight_details").query().fetch(),
+      database.get<AccomodationDetails>("accomodation_details").query().fetch(),
+      database.get<SightseeingDetails>("sightseeing_details").query().fetch(),
+      database.get<HikeOrCampDetails>("hike_or_camp_details").query().fetch(),
+      database.get<CafeRestaurantDetails>("cafe_restaurant_details").query().fetch(),
+      database.get<NatureDetails>("nature_details").query().fetch(),
+      database.get<ShoppingDetails>("shopping_details").query().fetch(),
+      database.get<EntertainmentDetails>("entertainment_details").query().fetch(),
+      database.get<TransportationDetails>("transportation_details").query().fetch(),
+      database.get<WalkDetails>("walk_details").query().fetch(),
+      database.get<PreparationDetails>("preparation_details").query().fetch(),
+      database.get<RestDetails>("rest_details").query().fetch(),
+      database.get<MotorcycleRideDetails>("motorcycle_ride_details").query().fetch(),
+      database.get<MeetupDetails>("meetup_details").query().fetch(),
+      database.get<RideRentalDetails>("ride_rental_details").query().fetch(),
+    ]);
 
     // Count maps: activityId → count
     const notesCountMap = new Map<string, number>();
@@ -286,6 +592,185 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         });
       }
     }
+
+    const cafeRestaurantDetailsMap = new Map<string, any>();
+    for (const item of allCafeRestaurants) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !cafeRestaurantDetailsMap.has(aid)) {
+        cafeRestaurantDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          restaurantName: item.restaurantName,
+          address: item.address,
+          cuisine: item.cuisine,
+          priceRange: item.priceRange,
+          reservationLink: item.reservationLink,
+          websiteAddress: item.websiteAddress,
+          contactNumber: item.contactNumber,
+        });
+      }
+    }
+
+    const natureDetailsMap = new Map<string, any>();
+    for (const item of allNatures) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !natureDetailsMap.has(aid)) {
+        natureDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          spotName: item.spotName,
+          address: item.address,
+          subType: item.subType,
+          entryFee: item.entryFee,
+        });
+      }
+    }
+
+    const shoppingDetailsMap = new Map<string, any>();
+    for (const item of allShoppings) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !shoppingDetailsMap.has(aid)) {
+        shoppingDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          venueName: item.venueName,
+          address: item.address,
+          subType: item.subType,
+          websiteAddress: item.websiteAddress,
+        });
+      }
+    }
+
+    const entertainmentDetailsMap = new Map<string, any>();
+    for (const item of allEntertainments) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !entertainmentDetailsMap.has(aid)) {
+        entertainmentDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          venueName: item.venueName,
+          address: item.address,
+          subType: item.subType,
+          websiteAddress: item.websiteAddress,
+          ticketPrice: item.ticketPrice,
+          bookingReference: item.bookingReference,
+        });
+      }
+    }
+
+    const transportationDetailsMap = new Map<string, any>();
+    for (const item of allTransportations) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !transportationDetailsMap.has(aid)) {
+        transportationDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          mode: item.mode,
+          operatorProvider: item.operatorProvider,
+          pickupLocation: item.pickupLocation,
+          dropoffLocation: item.dropoffLocation,
+          bookingReference: item.bookingReference,
+          price: item.price,
+        });
+      }
+    }
+
+    const walkDetailsMap = new Map<string, any>();
+    for (const item of allWalks) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !walkDetailsMap.has(aid)) {
+        walkDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          routeName: item.routeName,
+          estimatedDistanceKm: item.estimatedDistanceKm,
+          estimatedDuration: item.estimatedDuration,
+        });
+      }
+    }
+
+    const preparationDetailsMap = new Map<string, any>();
+    for (const item of allPreparations) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !preparationDetailsMap.has(aid)) {
+        preparationDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          taskLabel: item.taskLabel,
+          deadlineDateTime: item.deadlineDateTime,
+          priority: item.priority,
+          notes: item.notes,
+        });
+      }
+    }
+
+    const restDetailsMap = new Map<string, any>();
+    for (const item of allRests) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !restDetailsMap.has(aid)) {
+        restDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          restLocationName: item.restLocationName,
+          restLocationType: item.restLocationType,
+        });
+      }
+    }
+
+    const motorcycleRideDetailsMap = new Map<string, any>();
+    for (const item of allMotorcycles) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !motorcycleRideDetailsMap.has(aid)) {
+        motorcycleRideDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          routeName: item.routeName,
+          startingPoint: item.startingPoint,
+          endingPoint: item.endingPoint,
+          estimatedDistanceKm: item.estimatedDistanceKm,
+          roadType: item.roadType,
+          bikeModel: item.bikeModel,
+          fuelStops: item.fuelStops,
+        });
+      }
+    }
+
+    const meetupDetailsMap = new Map<string, any>();
+    for (const item of allMeetups) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !meetupDetailsMap.has(aid)) {
+        meetupDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          venueName: item.venueName,
+          address: item.address,
+          hostOrOrganizer: item.hostOrOrganizer,
+          numberOfPeople: item.numberOfPeople,
+          meetupType: item.meetupType,
+          rsvpLink: item.rsvpLink,
+        });
+      }
+    }
+
+    const rideRentalDetailsMap = new Map<string, any>();
+    for (const item of allRideRentals) {
+      const aid = (item as any)._raw?.activity_id as string | undefined;
+      if (aid && !rideRentalDetailsMap.has(aid)) {
+        rideRentalDetailsMap.set(aid, {
+          id: item.id,
+          activityId: aid,
+          providerName: item.providerName,
+          address: item.address,
+          vehicleType: item.vehicleType,
+          pickupLocation: item.pickupLocation,
+          dropoffLocation: item.dropoffLocation,
+          rentalStartDateTime: item.rentalStartDateTime,
+          rentalEndDateTime: item.rentalEndDateTime,
+          bookingReference: item.bookingReference,
+          price: item.price,
+        });
+      }
+    }
     // ─────────────────────────────────────────────────────────────────────────
 
     const itinerarySection = await Promise.all(sections.map(async (s) => {
@@ -319,6 +804,17 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         accomodationDetails: accomodationDetailsMap.get(a.id) ?? null,
         sightseeingDetails: sightseeingDetailsMap.get(a.id) ?? null,
         hikeOrCampDetails: hikeOrCampDetailsMap.get(a.id) ?? null,
+        cafeRestaurantDetails: cafeRestaurantDetailsMap.get(a.id) ?? null,
+        natureDetails: natureDetailsMap.get(a.id) ?? null,
+        shoppingDetails: shoppingDetailsMap.get(a.id) ?? null,
+        entertainmentDetails: entertainmentDetailsMap.get(a.id) ?? null,
+        transportationDetails: transportationDetailsMap.get(a.id) ?? null,
+        walkDetails: walkDetailsMap.get(a.id) ?? null,
+        preparationDetails: preparationDetailsMap.get(a.id) ?? null,
+        restDetails: restDetailsMap.get(a.id) ?? null,
+        motorcycleRideDetails: motorcycleRideDetailsMap.get(a.id) ?? null,
+        meetupDetails: meetupDetailsMap.get(a.id) ?? null,
+        rideRentalDetails: rideRentalDetailsMap.get(a.id) ?? null,
       }));
 
       return {
@@ -671,6 +1167,353 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
       }
     }
 
+    // Save associated cafe restaurant details
+    if (activityData.type === ActivityType.cafeRestaurant && activityData.cafeRestaurantDetails) {
+      const cafeRestaurantDetailsCollection = database.get<CafeRestaurantDetails>("cafe_restaurant_details");
+      const existingDetails = await cafeRestaurantDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((c) => {
+          Object.assign(c, {
+            restaurantName: activityData.cafeRestaurantDetails.restaurantName,
+            address: activityData.cafeRestaurantDetails.address,
+            cuisine: activityData.cafeRestaurantDetails.cuisine,
+            priceRange: activityData.cafeRestaurantDetails.priceRange,
+            reservationLink: activityData.cafeRestaurantDetails.reservationLink,
+            websiteAddress: activityData.cafeRestaurantDetails.websiteAddress,
+            contactNumber: activityData.cafeRestaurantDetails.contactNumber,
+          });
+        });
+      } else {
+        await cafeRestaurantDetailsCollection.create((c) => {
+          c.activity.id = activity.id;
+          Object.assign(c, {
+            restaurantName: activityData.cafeRestaurantDetails.restaurantName,
+            address: activityData.cafeRestaurantDetails.address,
+            cuisine: activityData.cafeRestaurantDetails.cuisine,
+            priceRange: activityData.cafeRestaurantDetails.priceRange,
+            reservationLink: activityData.cafeRestaurantDetails.reservationLink,
+            websiteAddress: activityData.cafeRestaurantDetails.websiteAddress,
+            contactNumber: activityData.cafeRestaurantDetails.contactNumber,
+          });
+        });
+      }
+    }
+
+    // Save associated nature details
+    if (activityData.type === ActivityType.nature && activityData.natureDetails) {
+      const natureDetailsCollection = database.get<NatureDetails>("nature_details");
+      const existingDetails = await natureDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((n) => {
+          Object.assign(n, {
+            spotName: activityData.natureDetails.spotName,
+            address: activityData.natureDetails.address,
+            subType: activityData.natureDetails.subType,
+            entryFee: activityData.natureDetails.entryFee,
+          });
+        });
+      } else {
+        await natureDetailsCollection.create((n) => {
+          n.activity.id = activity.id;
+          Object.assign(n, {
+            spotName: activityData.natureDetails.spotName,
+            address: activityData.natureDetails.address,
+            subType: activityData.natureDetails.subType,
+            entryFee: activityData.natureDetails.entryFee,
+          });
+        });
+      }
+    }
+
+    // Save associated shopping details
+    if (activityData.type === ActivityType.shopppingAndService && activityData.shoppingDetails) {
+      const shoppingDetailsCollection = database.get<ShoppingDetails>("shopping_details");
+      const existingDetails = await shoppingDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((s) => {
+          Object.assign(s, {
+            venueName: activityData.shoppingDetails.venueName,
+            address: activityData.shoppingDetails.address,
+            subType: activityData.shoppingDetails.subType,
+            websiteAddress: activityData.shoppingDetails.websiteAddress,
+          });
+        });
+      } else {
+        await shoppingDetailsCollection.create((s) => {
+          s.activity.id = activity.id;
+          Object.assign(s, {
+            venueName: activityData.shoppingDetails.venueName,
+            address: activityData.shoppingDetails.address,
+            subType: activityData.shoppingDetails.subType,
+            websiteAddress: activityData.shoppingDetails.websiteAddress,
+          });
+        });
+      }
+    }
+
+    // Save associated entertainment details
+    if (activityData.type === ActivityType.entertainmentAndRecreation && activityData.entertainmentDetails) {
+      const entertainmentDetailsCollection = database.get<EntertainmentDetails>("entertainment_details");
+      const existingDetails = await entertainmentDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((e) => {
+          Object.assign(e, {
+            venueName: activityData.entertainmentDetails.venueName,
+            address: activityData.entertainmentDetails.address,
+            subType: activityData.entertainmentDetails.subType,
+            websiteAddress: activityData.entertainmentDetails.websiteAddress,
+            ticketPrice: activityData.entertainmentDetails.ticketPrice,
+            bookingReference: activityData.entertainmentDetails.bookingReference,
+          });
+        });
+      } else {
+        await entertainmentDetailsCollection.create((e) => {
+          e.activity.id = activity.id;
+          Object.assign(e, {
+            venueName: activityData.entertainmentDetails.venueName,
+            address: activityData.entertainmentDetails.address,
+            subType: activityData.entertainmentDetails.subType,
+            websiteAddress: activityData.entertainmentDetails.websiteAddress,
+            ticketPrice: activityData.entertainmentDetails.ticketPrice,
+            bookingReference: activityData.entertainmentDetails.bookingReference,
+          });
+        });
+      }
+    }
+
+    // Save associated transportation details
+    if (activityData.type === ActivityType.transportation && activityData.transportationDetails) {
+      const transportationDetailsCollection = database.get<TransportationDetails>("transportation_details");
+      const existingDetails = await transportationDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((t) => {
+          Object.assign(t, {
+            mode: activityData.transportationDetails.mode,
+            operatorProvider: activityData.transportationDetails.operatorProvider,
+            pickupLocation: activityData.transportationDetails.pickupLocation,
+            dropoffLocation: activityData.transportationDetails.dropoffLocation,
+            bookingReference: activityData.transportationDetails.bookingReference,
+            price: activityData.transportationDetails.price,
+          });
+        });
+      } else {
+        await transportationDetailsCollection.create((t) => {
+          t.activity.id = activity.id;
+          Object.assign(t, {
+            mode: activityData.transportationDetails.mode,
+            operatorProvider: activityData.transportationDetails.operatorProvider,
+            pickupLocation: activityData.transportationDetails.pickupLocation,
+            dropoffLocation: activityData.transportationDetails.dropoffLocation,
+            bookingReference: activityData.transportationDetails.bookingReference,
+            price: activityData.transportationDetails.price,
+          });
+        });
+      }
+    }
+
+    // Save associated walk details
+    if (activityData.type === ActivityType.walk && activityData.walkDetails) {
+      const walkDetailsCollection = database.get<WalkDetails>("walk_details");
+      const existingDetails = await walkDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((w) => {
+          Object.assign(w, {
+            routeName: activityData.walkDetails.routeName,
+            estimatedDistanceKm: activityData.walkDetails.estimatedDistanceKm,
+            estimatedDuration: activityData.walkDetails.estimatedDuration,
+          });
+        });
+      } else {
+        await walkDetailsCollection.create((w) => {
+          w.activity.id = activity.id;
+          Object.assign(w, {
+            routeName: activityData.walkDetails.routeName,
+            estimatedDistanceKm: activityData.walkDetails.estimatedDistanceKm,
+            estimatedDuration: activityData.walkDetails.estimatedDuration,
+          });
+        });
+      }
+    }
+
+    // Save associated preparation details
+    if (activityData.type === ActivityType.preparation && activityData.preparationDetails) {
+      const preparationDetailsCollection = database.get<PreparationDetails>("preparation_details");
+      const existingDetails = await preparationDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((p) => {
+          Object.assign(p, {
+            taskLabel: activityData.preparationDetails.taskLabel,
+            deadlineDateTime: activityData.preparationDetails.deadlineDateTime ? new Date(activityData.preparationDetails.deadlineDateTime) : null,
+            priority: activityData.preparationDetails.priority,
+            notes: activityData.preparationDetails.notes,
+          });
+        });
+      } else {
+        await preparationDetailsCollection.create((p) => {
+          p.activity.id = activity.id;
+          Object.assign(p, {
+            taskLabel: activityData.preparationDetails.taskLabel,
+            deadlineDateTime: activityData.preparationDetails.deadlineDateTime ? new Date(activityData.preparationDetails.deadlineDateTime) : null,
+            priority: activityData.preparationDetails.priority,
+            notes: activityData.preparationDetails.notes,
+          });
+        });
+      }
+    }
+
+    // Save associated rest details
+    if (activityData.type === ActivityType.rest && activityData.restDetails) {
+      const restDetailsCollection = database.get<RestDetails>("rest_details");
+      const existingDetails = await restDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((r) => {
+          Object.assign(r, {
+            restLocationName: activityData.restDetails.restLocationName,
+            restLocationType: activityData.restDetails.restLocationType,
+          });
+        });
+      } else {
+        await restDetailsCollection.create((r) => {
+          r.activity.id = activity.id;
+          Object.assign(r, {
+            restLocationName: activityData.restDetails.restLocationName,
+            restLocationType: activityData.restDetails.restLocationType,
+          });
+        });
+      }
+    }
+
+    // Save associated motorcycle ride details
+    if (activityData.type === ActivityType.motorcycleRide && activityData.motorcycleRideDetails) {
+      const motorcycleRideDetailsCollection = database.get<MotorcycleRideDetails>("motorcycle_ride_details");
+      const existingDetails = await motorcycleRideDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((m) => {
+          Object.assign(m, {
+            routeName: activityData.motorcycleRideDetails.routeName,
+            startingPoint: activityData.motorcycleRideDetails.startingPoint,
+            endingPoint: activityData.motorcycleRideDetails.endingPoint,
+            estimatedDistanceKm: activityData.motorcycleRideDetails.estimatedDistanceKm,
+            roadType: activityData.motorcycleRideDetails.roadType,
+            bikeModel: activityData.motorcycleRideDetails.bikeModel,
+            fuelStops: activityData.motorcycleRideDetails.fuelStops,
+          });
+        });
+      } else {
+        await motorcycleRideDetailsCollection.create((m) => {
+          m.activity.id = activity.id;
+          Object.assign(m, {
+            routeName: activityData.motorcycleRideDetails.routeName,
+            startingPoint: activityData.motorcycleRideDetails.startingPoint,
+            endingPoint: activityData.motorcycleRideDetails.endingPoint,
+            estimatedDistanceKm: activityData.motorcycleRideDetails.estimatedDistanceKm,
+            roadType: activityData.motorcycleRideDetails.roadType,
+            bikeModel: activityData.motorcycleRideDetails.bikeModel,
+            fuelStops: activityData.motorcycleRideDetails.fuelStops,
+          });
+        });
+      }
+    }
+
+    // Save associated meetup details
+    if (activityData.type === ActivityType.meetup && activityData.meetupDetails) {
+      const meetupDetailsCollection = database.get<MeetupDetails>("meetup_details");
+      const existingDetails = await meetupDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((m) => {
+          Object.assign(m, {
+            venueName: activityData.meetupDetails.venueName,
+            address: activityData.meetupDetails.address,
+            hostOrOrganizer: activityData.meetupDetails.hostOrOrganizer,
+            numberOfPeople: activityData.meetupDetails.numberOfPeople,
+            meetupType: activityData.meetupDetails.meetupType,
+            rsvpLink: activityData.meetupDetails.rsvpLink,
+          });
+        });
+      } else {
+        await meetupDetailsCollection.create((m) => {
+          m.activity.id = activity.id;
+          Object.assign(m, {
+            venueName: activityData.meetupDetails.venueName,
+            address: activityData.meetupDetails.address,
+            hostOrOrganizer: activityData.meetupDetails.hostOrOrganizer,
+            numberOfPeople: activityData.meetupDetails.numberOfPeople,
+            meetupType: activityData.meetupDetails.meetupType,
+            rsvpLink: activityData.meetupDetails.rsvpLink,
+          });
+        });
+      }
+    }
+
+    // Save associated ride rental details
+    if (activityData.type === ActivityType.rideRental && activityData.rideRentalDetails) {
+      const rideRentalDetailsCollection = database.get<RideRentalDetails>("ride_rental_details");
+      const existingDetails = await rideRentalDetailsCollection.query(
+        Q.where("activity_id", activity.id)
+      ).fetch();
+
+      if (existingDetails.length > 0) {
+        await existingDetails[0].update((r) => {
+          Object.assign(r, {
+            providerName: activityData.rideRentalDetails.providerName,
+            address: activityData.rideRentalDetails.address,
+            vehicleType: activityData.rideRentalDetails.vehicleType,
+            pickupLocation: activityData.rideRentalDetails.pickupLocation,
+            dropoffLocation: activityData.rideRentalDetails.dropoffLocation,
+            rentalStartDateTime: activityData.rideRentalDetails.rentalStartDateTime ? new Date(activityData.rideRentalDetails.rentalStartDateTime) : null,
+            rentalEndDateTime: activityData.rideRentalDetails.rentalEndDateTime ? new Date(activityData.rideRentalDetails.rentalEndDateTime) : null,
+            bookingReference: activityData.rideRentalDetails.bookingReference,
+            price: activityData.rideRentalDetails.price,
+          });
+        });
+      } else {
+        await rideRentalDetailsCollection.create((r) => {
+          r.activity.id = activity.id;
+          Object.assign(r, {
+            providerName: activityData.rideRentalDetails.providerName,
+            address: activityData.rideRentalDetails.address,
+            vehicleType: activityData.rideRentalDetails.vehicleType,
+            pickupLocation: activityData.rideRentalDetails.pickupLocation,
+            dropoffLocation: activityData.rideRentalDetails.dropoffLocation,
+            rentalStartDateTime: activityData.rideRentalDetails.rentalStartDateTime ? new Date(activityData.rideRentalDetails.rentalStartDateTime) : null,
+            rentalEndDateTime: activityData.rideRentalDetails.rentalEndDateTime ? new Date(activityData.rideRentalDetails.rentalEndDateTime) : null,
+            bookingReference: activityData.rideRentalDetails.bookingReference,
+            price: activityData.rideRentalDetails.price,
+          });
+        });
+      }
+    }
+
     return activity;
   });
 };
@@ -679,16 +1522,45 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
   try {
     const a = await database.get<Activity>("itinerary_activities").find(id);
     // Run all counts and detail fetches in parallel — no N+1 for a single activity
-    const [notesCount, expensesCount, checklistCount, flightDetails, accomodationDetails, sightseeingDetails, hikeOrCampDetails] =
-      await Promise.all([
-        database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount(),
-        database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount(),
-        database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount(),
-        fetchLocalFlightDetails(a.id),
-        fetchLocalAccomodationDetails(a.id),
-        fetchLocalSightseeingDetails(a.id),
-        fetchLocalHikeOrCampDetails(a.id),
-      ]);
+    const [
+      notesCount,
+      expensesCount,
+      checklistCount,
+      flightDetails,
+      accomodationDetails,
+      sightseeingDetails,
+      hikeOrCampDetails,
+      cafeRestaurantDetails,
+      natureDetails,
+      shoppingDetails,
+      entertainmentDetails,
+      transportationDetails,
+      walkDetails,
+      preparationDetails,
+      restDetails,
+      motorcycleRideDetails,
+      meetupDetails,
+      rideRentalDetails
+    ] = await Promise.all([
+      database.get("itinerary_notes").query(Q.where("activity_id", a.id)).fetchCount(),
+      database.get("itinerary_expenses").query(Q.where("activity_id", a.id)).fetchCount(),
+      database.get("checklist_items").query(Q.where("activity_id", a.id)).fetchCount(),
+      fetchLocalFlightDetails(a.id),
+      fetchLocalAccomodationDetails(a.id),
+      fetchLocalSightseeingDetails(a.id),
+      fetchLocalHikeOrCampDetails(a.id),
+      fetchLocalCafeRestaurantDetails(a.id),
+      fetchLocalNatureDetails(a.id),
+      fetchLocalShoppingDetails(a.id),
+      fetchLocalEntertainmentDetails(a.id),
+      fetchLocalTransportationDetails(a.id),
+      fetchLocalWalkDetails(a.id),
+      fetchLocalPreparationDetails(a.id),
+      fetchLocalRestDetails(a.id),
+      fetchLocalMotorcycleRideDetails(a.id),
+      fetchLocalMeetupDetails(a.id),
+      fetchLocalRideRentalDetails(a.id),
+    ]);
 
     return {
       id: a.id,
@@ -715,6 +1587,17 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
       accomodationDetails,
       sightseeingDetails,
       hikeOrCampDetails,
+      cafeRestaurantDetails,
+      natureDetails,
+      shoppingDetails,
+      entertainmentDetails,
+      transportationDetails,
+      walkDetails,
+      preparationDetails,
+      restDetails,
+      motorcycleRideDetails,
+      meetupDetails,
+      rideRentalDetails,
     };
   } catch (err) {
     throw new Error(`Itinerary Activity not found locally with ID: ${id}`);
@@ -769,7 +1652,26 @@ export const getAllActivitiesLocally = async (): Promise<any[]> => {
  * a single database.write() transaction without mixing reads and writes.
  */
 const collectActivityDependencies = async (activityId: string): Promise<any[]> => {
-  const [expenses, notes, checklists, flights, accomodations, sightseeings, hikeOrCamps] = await Promise.all([
+  const [
+    expenses,
+    notes,
+    checklists,
+    flights,
+    accomodations,
+    sightseeings,
+    hikeOrCamps,
+    cafeRestaurants,
+    natures,
+    shoppings,
+    entertainments,
+    transportations,
+    walks,
+    preparations,
+    rests,
+    motorcycles,
+    meetups,
+    rideRentals
+  ] = await Promise.all([
     database.get<any>("itinerary_expenses").query(Q.where("activity_id", activityId)).fetch(),
     database.get<any>("itinerary_notes").query(Q.where("activity_id", activityId)).fetch(),
     database.get<any>("checklist_items").query(Q.where("activity_id", activityId)).fetch(),
@@ -777,8 +1679,38 @@ const collectActivityDependencies = async (activityId: string): Promise<any[]> =
     database.get<any>("accomodation_details").query(Q.where("activity_id", activityId)).fetch(),
     database.get<any>("sightseeing_details").query(Q.where("activity_id", activityId)).fetch(),
     database.get<any>("hike_or_camp_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("cafe_restaurant_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("nature_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("shopping_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("entertainment_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("transportation_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("walk_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("preparation_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("rest_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("motorcycle_ride_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("meetup_details").query(Q.where("activity_id", activityId)).fetch(),
+    database.get<any>("ride_rental_details").query(Q.where("activity_id", activityId)).fetch(),
   ]);
-  return [...expenses, ...notes, ...checklists, ...flights, ...accomodations, ...sightseeings, ...hikeOrCamps];
+  return [
+    ...expenses,
+    ...notes,
+    ...checklists,
+    ...flights,
+    ...accomodations,
+    ...sightseeings,
+    ...hikeOrCamps,
+    ...cafeRestaurants,
+    ...natures,
+    ...shoppings,
+    ...entertainments,
+    ...transportations,
+    ...walks,
+    ...preparations,
+    ...rests,
+    ...motorcycles,
+    ...meetups,
+    ...rideRentals
+  ];
 };
 
 /** Permanently deletes a locally-stored travel and all its sections/activities/expenses/notes/checklists. */
