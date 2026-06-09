@@ -427,6 +427,23 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
   try {
     const travelId = id.toString();
     const t = await database.get<Travel>("travels").find(travelId);
+
+    const settings = await database.get("trip_settings").query(Q.where("travel_id", travelId)).fetch();
+    let tripSetting = null;
+    if (settings.length > 0) {
+      const s = settings[0] as any;
+      tripSetting = {
+        id: s.id,
+        travelId: travelId,
+        currency: s.currency,
+        timezone: s.timezone,
+        itineraryView: s.itineraryView,
+        allowItemReordering: s.allowItemReordering,
+        createdAt: s.createdAt,
+        updatedAt: s.updatedAt,
+      };
+    }
+
     const travelDto = {
       id: t.id,
       title: t.title,
@@ -441,6 +458,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
       isOffline: t.isOffline,
       isArchived: t.isArchived,
       type: t.type,
+      tripSetting,
     };
 
     const sections = await database.get<Section>("itinerary_sections").query(
@@ -838,6 +856,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
     return {
       travel: travelDto,
       itinerarySection,
+      tripSetting,
     };
   } catch (err) {
     throw new Error(`Travel Plan not found locally with ID: ${id}`);

@@ -11,6 +11,7 @@ export interface Travel {
   createdAt?: string;
   updatedAt?: string;
   itinerarySection?: ItinerarySection[];
+  tripSetting?: TripSetting | null;
 }
 
 export interface ItinerarySection {
@@ -51,4 +52,15 @@ export enum TravelStatus {
     Completed = 2,
     Archieved = 3,
     Cancelled = 4
+}
+
+export interface TripSetting {
+  id?: string;
+  travelId: string;
+  currency: string;
+  timezone: string;
+  itineraryView: "plain" | "compact" | "detailed";
+  allowItemReordering: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }

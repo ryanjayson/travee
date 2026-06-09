@@ -29,6 +29,7 @@ import RestDetails from "./models/RestDetails";
 import MotorcycleRideDetails from "./models/MotorcycleRideDetails";
 import MeetupDetails from "./models/MeetupDetails";
 import RideRentalDetails from "./models/RideRentalDetails";
+import TripSetting from "./models/TripSetting";
 import { logger, ErrorSeverity } from "../services/errorLogger";
 
 const adapter = new SQLiteAdapter({
@@ -56,6 +57,6 @@ export const database = new Database({
     Travel, Section, Activity, Expense, Note, ChecklistGroup, ChecklistItem, UserProfile, ErrorLog, TripMember, MemberSplitBill,
     FlightDetails, AccomodationDetails, SightseeingDetails, HikeOrCampDetails, CafeRestaurantDetails, NatureDetails,
     ShoppingDetails, EntertainmentDetails, TransportationDetails, WalkDetails, PreparationDetails, RestDetails,
-    MotorcycleRideDetails, MeetupDetails, RideRentalDetails
+    MotorcycleRideDetails, MeetupDetails, RideRentalDetails, TripSetting
   ],
 });

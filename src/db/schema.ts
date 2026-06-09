@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 22,
+  version: 23,
   tables: [
     tableSchema({
       name: "travels",
@@ -409,6 +409,18 @@ export const schema = appSchema({
         { name: "rental_end_date_time", type: "number", isOptional: true },
         { name: "booking_reference", type: "string", isOptional: true },
         { name: "price", type: "string", isOptional: true },
+        { name: "created_at", type: "number" },
+        { name: "updated_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "trip_settings",
+      columns: [
+        { name: "travel_id", type: "string", isIndexed: true },
+        { name: "currency", type: "string" },
+        { name: "timezone", type: "string" },
+        { name: "itinerary_view", type: "string" },
+        { name: "allow_item_reordering", type: "boolean" },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],

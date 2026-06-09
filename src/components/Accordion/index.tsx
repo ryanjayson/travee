@@ -18,6 +18,7 @@ import {
   ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface AccordionProps extends PropsWithChildren {
   title: React.ReactNode | string;
@@ -50,6 +51,7 @@ const Accordion: FC<AccordionProps> = ({
   const animationController = useRef(
     new Animated.Value(defaultExpanded ? 1 : 0)
   ).current;
+  const insets = useSafeAreaInsets();
 
   const toggleAccordion = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -100,7 +102,7 @@ const Accordion: FC<AccordionProps> = ({
           </Animated.View>
         </TouchableOpacity>
       )}
-
+ 
       <TouchableOpacity
         onPress={disabled ? undefined : toggleAccordion}
         style={[
@@ -150,13 +152,13 @@ const Accordion: FC<AccordionProps> = ({
         transparent={false}
         onRequestClose={() => setFullscreen(false)} 
       >
-        <View style={headerStyle} className="flex-row justify-between items-center py-0 px-3 bg-[#f9f9f9]">
+        <View style={[headerStyle, {paddingTop: insets.top}]} className="flex-row justify-between items-center py-0 px-3 bg-[#f9f9f9]">
           <Text style={titleStyle} className="text-xl font-semibold text-[#333]">{title}</Text>
 
           <TouchableOpacity
             onPress={() => setFullscreen(false)}
             style={headerStyle}
-            className="flex-row justify-between items-center py-[18px] px-3 bg-[#f9f9f9]"
+            className="flex-row justify-between items-center py-18px px-3 bg-[#f9f9f9]"
             activeOpacity={0.8}
           >
             <Animated.View>

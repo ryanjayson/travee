@@ -6,6 +6,7 @@ export interface TravelPlan {
   itineraryExpense?: ItineraryExpense[];
   tripMembers?: TripMember[];
   memberSplitBills?: MemberSplitBill[];
+  tripSetting?: TripSetting | null;
 }
 
 export interface ItineraryExpense {
@@ -90,6 +91,18 @@ export interface Travel {
   tripMembers?: TripMember[];
   memberSplitBills?: MemberSplitBill[];
   type?: TripType;
+  tripSetting?: TripSetting | null;
+}
+
+export interface TripSetting {
+  id?: string;
+  travelId: string;
+  currency: string;
+  timezone: string;
+  itineraryView: "plain" | "compact" | "detailed";
+  allowItemReordering: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface ItinerarySection {

@@ -636,9 +636,9 @@ const ViewTravel = ({
             }}
           >
             <View className="flex-row items-center gap-3">
-              {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
+              {/* {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
                 <TripIcon type={travelPlan.travel.type} size={24} showIconOnly={true} />
-              )}
+              )} */}
               <Text className="text-3xl font-bold text-gray-800 flex-1" numberOfLines={expanded ? undefined : 1}>
                 {travelPlan.travel.title}
               </Text>

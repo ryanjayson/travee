@@ -4,6 +4,7 @@ import {
   ItineraryNote,
   ChecklistItem,
   TripMember,
+  TripSetting,
 } from "../../features/Travel/types/TravelDto";
 import { MapboxPlace } from "../../features/Travel/components/MapboxDestinationSelector";
 
@@ -20,6 +21,7 @@ export interface TravelPlanDetail {
   isOffline?: boolean;
   isArchived?: boolean;
   type?: number;
+  tripSetting?: TripSetting | null;
 }
 
 export interface ExpenseModalState {

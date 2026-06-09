@@ -508,5 +508,22 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 23,
+      steps: [
+        createTable({
+          name: "trip_settings",
+          columns: [
+            { name: "travel_id", type: "string", isIndexed: true },
+            { name: "currency", type: "string" },
+            { name: "timezone", type: "string" },
+            { name: "itinerary_view", type: "string" },
+            { name: "allow_item_reordering", type: "boolean" },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
   ],
 });

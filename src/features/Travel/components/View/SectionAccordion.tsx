@@ -18,6 +18,8 @@ interface SectionAccordionProps {
   scrollEnabled?: boolean;
   onScrollY?: (y: number) => void;
   viewMode?: "plain" | "narrow" | "expanded";
+  allowItemReordering?: boolean;
+  onInteraction?: () => void;
 }
 
 const slowSpringAnimation = {
@@ -62,6 +64,7 @@ interface DraggableSectionItemProps {
   renderActivityCards: (section: ItinerarySection, activities: ItineraryActivity[]) => React.ReactNode;
   sectionRefs: React.MutableRefObject<Record<string, any>>;
   viewMode?: "plain" | "narrow" | "expanded";
+  allowItemReordering?: boolean;
 }
 
 const DraggableSectionItem = ({
@@ -80,6 +83,7 @@ const DraggableSectionItem = ({
   renderActivityCards,
   sectionRefs,
   viewMode,
+  allowItemReordering = true,
 }: DraggableSectionItemProps) => {
   const shiftAnim = useRef(new Animated.Value(0)).current;
   const lastTargetShift = useRef(0);
@@ -149,7 +153,7 @@ const DraggableSectionItem = ({
         key={section.id}
         index={mapIndex}
         listLength={subSectionsLength}
-        onDragStart={onMasterDragStart}
+        onDragStart={allowItemReordering ? onMasterDragStart : undefined}
         onDragMove={onMasterDragMove}
         onDragEnd={onMasterDragEnd}
         isChildActive={sectionDragState?.sectionId === section.id}
@@ -181,23 +185,26 @@ const DraggableSectionItem = ({
               </View>
             )}
 
-            {/* <View
-              className="absolute left-3 top-xl z-50 flex-row items-center justify-center w-[30px] h-[30px]"
-              {...panHandlers}
-            >
-              <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
-            </View> */}
-
             <Accordion
               title={
-                <Text style={{ marginLeft: 30 }} className=" text-lg font-semibold text-[#333] underline">
-                  {section.startDate && (
-                    <Text className="text-[#999]">
-                      {`${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
-                    </Text>
+                <View>
+                  {allowItemReordering && (
+                    <View
+                      className="absolute  top-0 z-50 flex-row items-center justify-center w-[30px]"
+                      {...panHandlers}
+                    >
+                      <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
+                    </View>
                   )}
-                  {section.title}
-                </Text>
+                  <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className=" text-lg font-semibold text-[#333] underline">
+                    {section.startDate && (
+                      <Text className="text-[#999]">
+                        {`${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
+                      </Text>
+                    )}
+                    {section.title}
+                  </Text>
+                </View>
               }
               headerStyle={{ backgroundColor: "#FFF", paddingStart: 14 }}
               containerStyle={
@@ -232,9 +239,7 @@ const DraggableSectionItem = ({
                 }}
               >
             
-            
               <View className={`absolute h-full w-1px  border-l border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[28px]" : "left-4xl"}`}></View>
-
                 {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                   renderActivityCards(section, section.itineraryActivity)
                 ) : (
@@ -257,6 +262,8 @@ const SectionAccordion = ({
   scrollEnabled = false,
   onScrollY,
   viewMode,
+  allowItemReordering = true,
+  onInteraction,
 }: SectionAccordionProps) => {
   const { generateSortOrder } = useLexicographicSort();
   const queryClient = useQueryClient();
@@ -682,16 +689,16 @@ const SectionAccordion = ({
             viewMode={viewMode}
             index={index}
             listLength={array.length}
-            onDragStart={(idx: number, h: number) =>
-              handleSectionActivityDragStart(section.id || "", idx, h)
+            onDragStart={allowItemReordering ? (idx: number, h: number) =>
+              handleSectionActivityDragStart(section.id || "", idx, h) : undefined
             }
-            onDragEnd={(fromIdx: number, _toIdx: number) =>
+            onDragEnd={allowItemReordering ? (fromIdx: number, _toIdx: number) =>
               handleSectionActivityDragEnd(
                 section.id || "",
                 eventActivity,
                 fromIdx,
                 0,
-              )
+              ) : undefined
             }
             onDragMove={(currentIndex, dy, moveY) =>
               handleDragMove(
@@ -737,6 +744,10 @@ const SectionAccordion = ({
         onScroll={(e) => {
           // console.log(e)
           scrollOffset.current = e.nativeEvent.contentOffset.y;
+          onInteraction?.();
+        }}
+        onTouchStart={() => {
+          onInteraction?.();
         }}
         scrollEventThrottle={16}
         className="flex-1"
@@ -817,6 +828,7 @@ const SectionAccordion = ({
                     renderActivityCards={renderActivityCards}
                     sectionRefs={sectionRefs}
                     viewMode={viewMode}
+                    allowItemReordering={allowItemReordering}
                   />
                   </View>
                 );
