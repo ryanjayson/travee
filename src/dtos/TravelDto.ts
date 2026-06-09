@@ -49,7 +49,7 @@ export interface UpdateTravelData {
 export enum TravelStatus {
     Draft = 0,
     Upcoming = 1,
-    Completed = 2,
+    Past = 2,
     Archieved = 3,
     Cancelled = 4
 }

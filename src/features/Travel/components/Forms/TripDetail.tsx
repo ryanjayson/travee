@@ -97,7 +97,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           today.setHours(0, 0, 0, 0);
           const end = new Date(values.endOrReturnDate);
           end.setHours(0, 0, 0, 0);
-          if (end < today) return TravelStatus.Completed;
+          if (end < today) return TravelStatus.Past;
           const start = new Date(values.startOrDepartureDate);
           start.setHours(0, 0, 0, 0);
           return start > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
@@ -140,7 +140,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
   const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
 
   const getEffectiveStatus = (): TravelStatus => {
-    if (tripData && (tripData.status === TravelStatus.Completed || 
+    if (tripData && (tripData.status === TravelStatus.Past || 
         tripData.status === TravelStatus.Archieved || 
         tripData.status === TravelStatus.Cancelled)) {
       return tripData.status;
@@ -151,7 +151,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
 
     const endOrReturnDate = new Date(formik.values.endOrReturnDate);
     endOrReturnDate.setHours(0, 0, 0, 0);
-    if (endOrReturnDate < today) return TravelStatus.Completed;
+    if (endOrReturnDate < today) return TravelStatus.Past;
 
     const startOrDepartureDate = new Date(formik.values.startOrDepartureDate);
     startOrDepartureDate.setHours(0, 0, 0, 0);
@@ -184,7 +184,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
     travels.forEach((t: any) => {
       // Don't block dates for the trip we're currently editing
       if (tripData && t.id === tripData.id) return;
-      if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return;
+      if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past].includes(t.status as TravelStatus)) return;
       
       if (t.startOrDepartureDate) {
         const start = new Date(t.startOrDepartureDate);

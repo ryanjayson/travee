@@ -21,7 +21,7 @@ const HomeScreen = () => {
 
   const currentYear = new Date().getFullYear();
   const startDate = new Date(currentYear, 0, 1);
-  const completedTripIds = travels?.filter(t => t.status === TravelStatus.Completed).map(t => t.id) || [];
+  const completedTripIds = travels?.filter(t => t.status === TravelStatus.Past).map(t => t.id) || [];
   // const activitiesFromCompletedTrips = allActivities?.filter(a => a.travelId && completedTripIds.includes(a.travelId)) || [];
   
   const activityCountsByDay: Record<string, number> = {};
@@ -48,7 +48,7 @@ const HomeScreen = () => {
     let completed = 0, upcoming = 0;
     travels.forEach(t => {
       if (t.isArchived || t.status === TravelStatus.Cancelled || t.status === TravelStatus.Archieved) return;
-      if (t.status === TravelStatus.Completed) { completed++; return; }
+      if (t.status === TravelStatus.Past) { completed++; return; }
       if (t.status === TravelStatus.Upcoming)  { upcoming++;  return; }
       if (t.startOrDepartureDate) {
         const start = new Date(t.startOrDepartureDate); start.setHours(0, 0, 0, 0);
@@ -105,7 +105,7 @@ const HomeScreen = () => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return travels
       .filter(t => {
-        if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed, TravelStatus.Ongoing].includes(t.status as TravelStatus)) return false;
+        if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past, TravelStatus.Ongoing].includes(t.status as TravelStatus)) return false;
         if (!t.startOrDepartureDate) return false;
         const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);
         return s > today;

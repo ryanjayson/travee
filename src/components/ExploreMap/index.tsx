@@ -43,7 +43,7 @@ const ExploreMap = ({ markers, viewBy = "country" }: ExploreMapProps) => {
           cursor: pointer;
           border: 2px solid #FFF;
         }
-        .status-completed {
+        .status-past {
           background: #34699A; /* Dark blue for visited */
         }
         .status-tovisit {
@@ -64,7 +64,7 @@ const ExploreMap = ({ markers, viewBy = "country" }: ExploreMapProps) => {
         const VIEW_BY = '${viewBy}';
 
         function getMarkerClass(status) {
-          if (status === 3) return 'status-completed'; // Completed
+          if (status === 3) return 'status-past'; // Past
           if (status === 1 || status === 2) return 'status-tovisit'; // Upcoming or Ongoing
           return 'status-default';
         }
@@ -220,7 +220,7 @@ const ExploreMap = ({ markers, viewBy = "country" }: ExploreMapProps) => {
                        'fill-color': [
                            'match',
                            ['get', 'status'],
-                           3, '#34699A', // Completed (Dark Blue)
+                           3, '#34699A', // Past (Dark Blue)
                            1, '#78A2CC', // Upcoming (Light Blue)
                            2, '#78A2CC', // Ongoing (Light Blue)
                            '#dc3545'

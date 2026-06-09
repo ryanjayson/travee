@@ -14,8 +14,8 @@ export const getStatusConfig = (status: TravelStatus) => {
       return { label: "Upcoming", bg: "bg-[#B9E6FE]", text: "text-[#263F69]" };
     case TravelStatus.Ongoing:
       return { label: "Ongoing", bg: "bg-success-100", text: "text-success-600" };
-    case TravelStatus.Completed:
-      return { label: "Completed", bg: "bg-[#E8F5E8]", text: "text-[#2E7D32]" };
+    case TravelStatus.Past:
+      return { label: "Past", bg: "bg-[#E8F5E8]", text: "text-[#2E7D32]" };
     case TravelStatus.Archieved:
       return { label: "Archived", bg: "bg-[#FFEBEE]", text: "text-[#D32F2F]" };
     case TravelStatus.Cancelled:

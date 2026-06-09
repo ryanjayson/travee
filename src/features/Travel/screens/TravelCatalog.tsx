@@ -37,7 +37,7 @@ const TravelCatalog = () => {
   };
 
   const getEffectiveStatus = (travel: Travel): TravelStatus => {
-    if (travel.status === TravelStatus.Completed || 
+    if (travel.status === TravelStatus.Past || 
         travel.status === TravelStatus.Archieved || 
         travel.status === TravelStatus.Cancelled) {
       return travel.status || TravelStatus.Draft;
@@ -300,9 +300,9 @@ const TravelCatalog = () => {
       content: renderContentForStatus(TravelStatus.Draft, "📝", "No Drafts", "Your saved drafts will appear here"),
     },
     {
-      id: "completed",
-      title: `Completed (${getTravelsByStatus(TravelStatus.Completed).length})`,
-      content: renderContentForStatus(TravelStatus.Completed, "📸", "No Completed Travels", "Your travel memories will appear here"),
+      id: "past",
+      title: `Past (${getTravelsByStatus(TravelStatus.Past).length})`,
+      content: renderContentForStatus(TravelStatus.Past, "📸", "No Past Travels", "Your travel memories will appear here"),
     },
     {
       id: "archived",

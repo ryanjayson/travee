@@ -28,7 +28,7 @@ export function ExploreScreen() {
         }))
         .filter((m) => {
           if (filter === "all") return true;
-          if (filter === "visited") return m.status === TravelStatus.Completed;
+          if (filter === "visited") return m.status === TravelStatus.Past;
           if (filter === "tovisit") return m.status === TravelStatus.Upcoming || m.status === TravelStatus.Ongoing;
           return true;
         });
@@ -40,12 +40,12 @@ export function ExploreScreen() {
           latitude: a.destinationData!.coordinates.latitude,
           longitude: a.destinationData!.coordinates.longitude,
           title: a.destination || a.title,
-          status: a.isDone ? TravelStatus.Completed : TravelStatus.Upcoming,
+          status: a.isDone ? TravelStatus.Past : TravelStatus.Upcoming,
           isCity: true,
         }))
         .filter((m) => {
           if (filter === "all") return true;
-          if (filter === "visited") return m.status === TravelStatus.Completed;
+          if (filter === "visited") return m.status === TravelStatus.Past;
           if (filter === "tovisit") return m.status === TravelStatus.Upcoming || m.status === TravelStatus.Ongoing;
           return true;
         });

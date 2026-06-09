@@ -63,7 +63,7 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
   const [loading, setLoading] = useState(true);
 
   const getEffectiveStatus = (travel: Travel): TravelStatus => {
-    if (travel.status === TravelStatus.Completed || 
+    if (travel.status === TravelStatus.Past || 
         travel.status === TravelStatus.Archieved || 
         travel.status === TravelStatus.Cancelled) {
       return travel.status || TravelStatus.Draft;
@@ -74,7 +74,7 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
 
     const endOrReturnDate = new Date(travel.endOrReturnDate);
     endOrReturnDate.setHours(0, 0, 0, 0);
-    if (endOrReturnDate < today) return TravelStatus.Completed;
+    if (endOrReturnDate < today) return TravelStatus.Past;
 
     const startOrDepartureDate = new Date(travel.startOrDepartureDate);
     startOrDepartureDate.setHours(0, 0, 0, 0);

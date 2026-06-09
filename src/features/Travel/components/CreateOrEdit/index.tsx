@@ -116,7 +116,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           today.setHours(0, 0, 0, 0);
           const end = new Date(values.endOrReturnDate);
           end.setHours(0, 0, 0, 0);
-          if (end < today) return TravelStatus.Completed;
+          if (end < today) return TravelStatus.Past;
           const start = new Date(values.startOrDepartureDate);
           start.setHours(0, 0, 0, 0);
           return start > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
@@ -183,7 +183,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
   const { data: travels } = useTravels();
 
   const getEffectiveStatus = (): TravelStatus => {
-    if (tripData && (tripData.status === TravelStatus.Completed || 
+    if (tripData && (tripData.status === TravelStatus.Past || 
         tripData.status === TravelStatus.Archieved || 
         tripData.status === TravelStatus.Cancelled)) {
       return tripData.status;
@@ -194,7 +194,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     
     const endOrReturnDate = new Date(formik.values.endOrReturnDate);
     endOrReturnDate.setHours(0, 0, 0, 0);
-    if (endOrReturnDate < today) return TravelStatus.Completed;
+    if (endOrReturnDate < today) return TravelStatus.Past;
 
     const startOrDepartureDate = new Date(formik.values.startOrDepartureDate);
     startOrDepartureDate.setHours(0, 0, 0, 0);
@@ -210,7 +210,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
     travels.forEach((t: any) => {
       if (tripData && t.id === tripData.id) return;
-      if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Completed].includes(t.status as TravelStatus)) return;
+      if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past].includes(t.status as TravelStatus)) return;
       
       if (t.startOrDepartureDate) {
         const start = new Date(t.startOrDepartureDate);
@@ -221,17 +221,16 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         if (end >= today) {
           let current = new Date(start);
           const isOngoing = start <= today && end >= today;
-          const color = isOngoing ? '#E3F2FD' : '#E8F5E8';
-          const textColor = isOngoing ? '#263F69' : '#2E7D32';
+          const color = isOngoing ? '#E8F5E8' : '#E3F2FD';
+          const textColor = isOngoing ? '#2E7D32' : '#263F69';
 
           while (current <= end) {
             const dateStr = current.toISOString().split('T')[0];
             dates[dateStr] = {
-              disabled: true,
               disableTouchEvent: true,
               selected: true,
-              selectedColor: color,
-              selectedTextColor: textColor,
+              color: color,
+              textColor: textColor,
             };
             current.setDate(current.getDate() + 1);
           }
@@ -273,7 +272,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           marked[midStr] = {
             selected: true,
             color: '#263F6920',
-            textColor: '#263F69',
+            textColor: '#ffffff',
           };
           currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -622,12 +621,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                           setTempReturnDate(pressedDate);
                         }
                       }}
-                      minDate={new Date().toISOString().split('T')[0]}
                       markedDates={getPeriodMarkedDates(tempDepartureDate, tempReturnDate)}
                       theme={{
-                        // todayTextColor: '#B42318',
+                        todayTextColor: '#FFFFFF',
                         todayBackgroundColor: '#B42318',
-                        selectedDayBackgroundColor: '#263F69',
+                        selectedDayBackgroundColor: '#FFFFFF',
                         selectedDayTextColor: '#ffffff',
                       }}
                     />

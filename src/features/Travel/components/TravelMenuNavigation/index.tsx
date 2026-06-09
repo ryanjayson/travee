@@ -19,7 +19,7 @@ const TravelMenuNavigation = ({
   onSelect,
   travel,
 }: TravelMenuNavigationProps) => {
-  const isCompleted = travel?.status === TravelStatus.Completed;
+  const isPast = travel?.status === TravelStatus.Past;
   const isCancelled = travel?.status === TravelStatus.Cancelled;
   const isArchived = travel?.isArchived || travel?.status === TravelStatus.Archieved;
 
@@ -91,9 +91,9 @@ const TravelMenuNavigation = ({
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            className={`flex-row items-center justify-between px-4 py-3 ${(isCompleted || isCancelled || isArchived) ? 'opacity-50' : ''}`}
+            className={`flex-row items-center justify-between px-4 py-3 ${(isPast || isCancelled || isArchived) ? 'opacity-50' : ''}`}
             activeOpacity={0.7}
-            disabled={isCompleted || isCancelled || isArchived}
+            disabled={isPast || isCancelled || isArchived}
             onPress={() => {
               onSelect(TravelMenuAction.Cancel);
               setShowModal(false);

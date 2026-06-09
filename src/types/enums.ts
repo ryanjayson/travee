@@ -33,7 +33,7 @@ export enum TravelStatus {
   Draft = 0,
   Upcoming = 1,
   Ongoing = 2,
-  Completed = 3,
+  Past = 3,
   Archieved = 4,
   Cancelled = 5,
 }
