@@ -105,9 +105,9 @@ export function getActivityTypeLabel(type: ActivityType): string {
     case ActivityType.nature:
       return "Nature";
     case ActivityType.shopppingAndService:
-      return "Shopping & Service";
+      return "Shopping";
     case ActivityType.entertainmentAndRecreation:
-      return "Entertainment & Recreation";
+      return "Entertainment";
     case ActivityType.transportation:
       return "Transportation";
     case ActivityType.walk:

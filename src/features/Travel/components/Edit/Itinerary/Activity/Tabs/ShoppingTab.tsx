@@ -46,7 +46,7 @@ export default function ShoppingTab({
       <View className="flex-row gap-2 justify-start items-center mb-5">
         <Icon name="shopping-bag" size={20} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">
-          Shopping & Service Details
+          Shopping or Service Details
         </Text>
       </View>
 

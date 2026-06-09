@@ -42,7 +42,7 @@ const CreateTravelPlan = ({ travel, navigation }: AddTravelProps) => {
   const updateMutation = useUpdateTravel();
 
   const handleSaveTravel = async (travelData: CreateTravelData) => {
-    const result = await updateMutation.mutateAsync(travelData);
+    const result = await updateMutation.mutateAsync({ data: travelData });
     if (result.isSuccess) {
       setIsSaving(false);
       navigation.navigate("EditTravelPlan", {

@@ -9,6 +9,7 @@ import { ActivityType, TravelStatus, getActivityTypeLabel } from '../types/enums
 import Hero from '../components/Home/Hero/index';
 import UpcomingTrips from '../components/Home/UpcomingTrips';
 import { useTravelContext } from "../context/TravelContext";
+import { TravelPlanDetail } from '../types/context/travel';
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
@@ -35,14 +36,10 @@ const HomeScreen = () => {
     if (!travels) return;
     const trip = travels?.find(t => t.status === TravelStatus.Ongoing) ?? null;
     setCurrentOngoingTrip(trip);
-    const tripDetails = {
-        id: trip?.id,
-        title: trip?.title,
-      };
 
-      if (trip) {
-        selectTravelPlan(tripDetails);
-      }
+    if (trip && trip.id) {
+      selectTravelPlan(trip as TravelPlanDetail);
+    }
   }, [travels]);
 
   const getTripStats = () => {

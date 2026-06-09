@@ -66,22 +66,6 @@ const TravelActionFAB = ({
   const actions = useMemo(() => {
     const list = [
       {
-        id: 'activity',
-        icon: 'calendar-plus',
-        label: 'Add Activity',
-        labelTextColor: 'white',
-        style: {
-            elevation: 0,
-            borderRadius: 50,
-            padding: 6,
-            backgroundColor: '#263F69',
-            marginRight: -6,
-            marginBottom: 10
-        },
-        color: 'white',
-        onPress: onAddActivity,
-      },
-      {
         id: 'note',
         icon: 'note-text',
         label: 'Add Note',
@@ -129,21 +113,37 @@ const TravelActionFAB = ({
         color: 'white',
         onPress: onAddExpense,
       },
+       {
+        id: 'activity',
+        icon: 'calendar-plus',
+        label: 'Add Activity',
+        labelTextColor: 'white',
+        style: {
+            elevation: 0,
+            borderRadius: 50,
+            padding: 6,
+            backgroundColor: '#263F69',
+            marginRight: -6,
+            marginBottom: 10
+        },
+        color: 'white',
+        onPress: onAddActivity,
+      },
     ];
 
-    let targetId = '';
-    if (currentTab === 'itinerary') targetId = 'activity';
-    else if (currentTab === 'expenses') targetId = 'expense';
-    else if (currentTab === 'checklist') targetId = 'checklist';
-    else if (currentTab === 'notes') targetId = 'note';
+    // let targetId = '';
+    // if (currentTab === 'itinerary') targetId = 'activity';
+    // else if (currentTab === 'expenses') targetId = 'expense';
+    // else if (currentTab === 'checklist') targetId = 'checklist';
+    // else if (currentTab === 'notes') targetId = 'note';
 
-    if (targetId) {
-      const match = list.find(item => item.id === targetId);
-      if (match) {
-        const filtered = list.filter(item => item.id !== targetId);
-        return [...filtered, match];
-      }
-    }
+    // if (targetId) {
+    //   const match = list.find(item => item.id === targetId);
+    //   if (match) {
+    //     const filtered = list.filter(item => item.id !== targetId);
+    //     return [...filtered, match];
+    //   }
+    // }
     return list;
   }, [currentTab, onAddActivity, onAddNote, onAddChecklist, onAddExpense]);
 

@@ -10,8 +10,16 @@ import { MapboxPlace } from "../../features/Travel/components/MapboxDestinationS
 export interface TravelPlanDetail {
   id: string;
   title: string;
-  // startOrDepartureDate: Date | string | undefined;
-  // endOrReturnDate: Date | string | undefined;
+  description?: string;
+  destination?: string;
+  startOrDepartureDate?: Date | string;
+  endOrReturnDate?: Date | string;
+  status?: any;
+  budget?: string;
+  notes?: string;
+  isOffline?: boolean;
+  isArchived?: boolean;
+  type?: number;
 }
 
 export interface ExpenseModalState {

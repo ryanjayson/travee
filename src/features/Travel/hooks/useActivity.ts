@@ -9,9 +9,11 @@ import {
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { fetchItineraryActivity } from "../../../services/api/itinerary";
 import { ApiResponse } from "../../../types/api";
-import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity, getAllActivitiesWithDestinationLocally, deleteActivityLocally, getAllActivitiesLocally } from "../../../services/local/travelService";
+import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity, getAllActivitiesWithDestinationLocally, deleteActivityLocally, getAllActivitiesLocally, getTravelPlanLocally } from "../../../services/local/travelService";
 import { UpdateSortVariables } from "../types/ActivityDto";
 import { fetchWithTimeout } from "../../../utils/fetchWithTimeout";
+import { useTravelContext } from "../../../context/TravelContext";
+import { TravelPlanDetail } from "../../../types/context/travel";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
 const ITINERARY_QUERY_KEY = ["itineraryActivity"];
@@ -24,11 +26,13 @@ type MutationError = Error;
 type DeleteVariables = {
   sectionId: string;
   activityId: string;
+  travelId?: string;
 };
 
 export const useUpdateActivityMutation = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   const updateActivityMutation = useMutation<
     MutationData,
@@ -90,6 +94,20 @@ export const useUpdateActivityMutation = () => {
         queryClient.invalidateQueries({
           queryKey: ["travel", variables.travelId],
         });
+
+        queryClient.invalidateQueries({
+          queryKey: ["selectedTravelPlan", variables.travelId],
+        });
+
+        getTravelPlanLocally(variables.travelId).then((localPlan) => {
+          if (localPlan?.travel && selectedTravelPlan && String(selectedTravelPlan.id) === String(variables.travelId)) {
+            selectTravelPlan({
+              ...selectedTravelPlan,
+              ...localPlan.travel,
+              id: variables.travelId,
+            });
+          }
+        }).catch((err) => console.warn("Failed to update travelContext on activity save:", err));
       }
 
       queryClient.invalidateQueries({
@@ -106,73 +124,69 @@ export const useUpdateActivityMutation = () => {
         message: variables.id ? "Activity updated successfully!" : "Activity created successfully!",
       });
       
-      // Keep manual update logic for performance, but invalidate is the source of truth 
-      // TODO: might separate POST and PUT for clarity
-      //commented for now but will add on online mode
-      // queryClient.setQueryData(
-      //   ["selectedTravelPlan"],
-      //   (oldData: TravelPlan | undefined) => {
-      //     if (!oldData) return undefined;
-      //     const sections = oldData.itinerarySection || [];
+      // Optimistically/synchronously update query cache for instant UI rendering
+      if (variables.travelId) {
+        queryClient.setQueryData<TravelPlan | undefined>(
+          ["selectedTravelPlan", variables.travelId],
+          (oldData) => {
+            if (!oldData) return undefined;
+            const sections = oldData.itinerarySection || [];
+            const activityId = variables.id || data?.data?.id;
 
-      //     const sectionIndex = sections.findIndex(
-      //       (s) => s.id === variables.sectionId,
-      //     );
+            if (!activityId) return oldData;
 
-      //     let newSections: typeof oldData.itinerarySection;
+            // 1. Remove the activity if it exists in any section (handles edits, moved sections)
+            let updatedSections = sections.map((s) => {
+              if (s.itineraryActivity) {
+                return {
+                  ...s,
+                  itineraryActivity: s.itineraryActivity.filter((a) => a.id !== activityId),
+                };
+              }
+              return s;
+            });
 
-      //     if (sectionIndex > -1) {
-      //       newSections = sections.map((s, index) => {
-      //         // Update target section
-      //         if (index === sectionIndex) {
-      //           let newActivities: typeof s.itineraryActivity;
-      //           const activities = s.itineraryActivity || [];
-      //           const activityIndex = activities.findIndex(
-      //             (activity) => activity.id === variables.id,
-      //           );
+            // 2. Insert/append the activity to the target section
+            const targetSectionId = variables.sectionId || "";
+            const targetSectionIndex = updatedSections.findIndex((s) => s.id === targetSectionId);
 
-      //           if (activityIndex > -1) {
-      //             newActivities = activities.map((activity, idx) => {
-      //               if (idx === activityIndex) {
-      //                 return {
-      //                   ...activity,
-      //                   ...variables,
-      //                 };
-      //               }
-      //               return activity;
-      //             });
-      //           } else {
-      //             const activityId = data.data?.id || variables.id;
-      //             const addedActivity = {
-      //               ...variables,
-      //               id: activityId,
-      //             };
-      //             newActivities = [...activities, addedActivity];
-      //           }
+            if (targetSectionIndex > -1) {
+              const updatedActivity = {
+                ...variables,
+                id: activityId,
+              };
 
-      //           return {
-      //             ...s,
-      //             itineraryActivity: newActivities,
-      //           };
-      //         }
+              updatedSections = updatedSections.map((s, index) => {
+                if (index === targetSectionIndex) {
+                  return {
+                    ...s,
+                    itineraryActivity: [...(s.itineraryActivity || []), updatedActivity],
+                  };
+                }
+                return s;
+              });
+            }
 
-      //         // Remove from source section (if moved cross-section)
-      //         if (s.itineraryActivity?.some((a) => a.id === variables.id)) {
-      //           return {
-      //             ...s,
-      //             itineraryActivity: s.itineraryActivity.filter((a) => a.id !== variables.id),
-      //           };
-      //         }
+            return {
+              ...oldData,
+              itinerarySection: updatedSections,
+            };
+          }
+        );
+      }
 
-      //         return s;
-      //       });
-      //     }
-      //     return {
-      //       ...oldData,
-      //       itinerarySection: newSections,
-      //     };
-      //   },
-      // );
+      if (variables.id) {
+        queryClient.setQueryData<ItineraryActivity | undefined>(
+          [ITINERARY_QUERY_KEY, variables.id],
+          (oldData) => {
+            if (!oldData) return undefined;
+            return {
+              ...oldData,
+              ...variables,
+            };
+          }
+        );
+      }
     },
     // 6. Keep error handling concise
     onError: (error) => {
@@ -191,6 +205,7 @@ export const useUpdateActivityMutation = () => {
 export const useDeleteActivityMutation = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   return useMutation({
     mutationFn: async (variables: DeleteVariables): Promise<void> => {
@@ -235,6 +250,49 @@ export const useDeleteActivityMutation = () => {
     },
     onSuccess: (data: void, variables: DeleteVariables) => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+
+      if (variables.travelId) {
+        queryClient.invalidateQueries({
+          queryKey: ["travel", variables.travelId],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["selectedTravelPlan", variables.travelId],
+        });
+
+        getTravelPlanLocally(variables.travelId).then((localPlan) => {
+          if (localPlan?.travel && selectedTravelPlan && String(selectedTravelPlan.id) === String(variables.travelId)) {
+            selectTravelPlan({
+              ...selectedTravelPlan,
+              ...localPlan.travel,
+              id: variables.travelId,
+            });
+          }
+        }).catch((err) => console.warn("Failed to update travelContext on activity delete:", err));
+
+        // Optimistically/synchronously update query cache for instant UI rendering
+        queryClient.setQueryData<TravelPlan | undefined>(
+          ["selectedTravelPlan", variables.travelId],
+          (oldData) => {
+            if (!oldData) return undefined;
+            const sections = oldData.itinerarySection || [];
+            const updatedSections = sections.map((s) => {
+              if (s.id === variables.sectionId && s.itineraryActivity) {
+                return {
+                  ...s,
+                  itineraryActivity: s.itineraryActivity.filter((a) => a.id !== variables.activityId),
+                };
+              }
+              return s;
+            });
+            return {
+              ...oldData,
+              itinerarySection: updatedSections,
+            };
+          }
+        );
+      }
+
       showToast({
         type: "success",
         message: "Activity deleted successfully!",

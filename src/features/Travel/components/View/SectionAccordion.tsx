@@ -735,6 +735,7 @@ const SectionAccordion = ({
       <ScrollView
         ref={scrollViewRef}
         onScroll={(e) => {
+          // console.log(e)
           scrollOffset.current = e.nativeEvent.contentOffset.y;
         }}
         scrollEventThrottle={16}
@@ -756,7 +757,7 @@ const SectionAccordion = ({
                   >
                     {section.itineraryActivity &&
                       renderActivityCards(section, section.itineraryActivity)}
-                    <View className={`absolute top-5xl h-full w-1px ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-[#ccc]`}></View>
+                    <View className={`absolute  h-full w-1px ${viewMode === 'narrow' ? 'left-[29px] top-5xl' : 'left-4xl top-8xl'} z-0 border-l border-dashed border-[#ccc]`}></View>
            
                   </View>
                 );
@@ -822,13 +823,8 @@ const SectionAccordion = ({
               }
             })}
 
-
-            <View className="flex-1 p-2 ml-xl mt-xl  bg-red-200 w-4xl h-4xl rounded-full">
-              <ActivityIcon
-                  type={ActivityType.transportation}
-                  size={20}
-                  showIconOnly={true}
-                />
+            <View className={`flex-1 p-2 mt-2xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-lg" : " ml-xl"}`}>
+                <Ionicons name="flag" size={20} color="#F97066" />
             </View>
            
         </View>

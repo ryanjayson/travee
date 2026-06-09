@@ -30,8 +30,8 @@ export default function DateTime({
             accessibilityRole="button"
             accessibilityLabel="Select date"
           >
-            <Icon name="calendar-today" size={24} color="#999" />
-            <Text className={`text-md font-medium ${startDate ? "text-gray-800" : "text-gray-500"}`}>
+            <Icon name="calendar-today" size={24} color="#98A2B3" />
+            <Text className={`text-lg  ${startDate ? "text-gray-800" : "text-[#98A2B3]"}`}>
               {startDate ? String(startDate) : "Date"}
             </Text>
           </TouchableOpacity>
@@ -42,7 +42,7 @@ export default function DateTime({
               accessibilityRole="button"
               accessibilityLabel="Clear date"
             >
-              <Icon name="close" size={22} color="#999" />
+              <Icon name="close" size={22} color="#98A2B3" />
             </TouchableOpacity>
           )}
         </View>
@@ -53,8 +53,8 @@ export default function DateTime({
             accessibilityRole="button"
             accessibilityLabel="Select time"
           >
-            <Icon name="access-time" size={24} color="#888" />
-            <Text className={`text-md font-medium ${startDate ? "text-gray-800" : "text-gray-500"}`}>
+            <Icon name="access-time" size={24} color="#98A2B3" />
+            <Text className={`text-lg ${startDate ? "text-gray-800" : "text-[#98A2B3]"}`}>
               {startTime ? String(startTime) : "Time"}
             </Text>
           </TouchableOpacity>

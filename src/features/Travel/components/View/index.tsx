@@ -321,129 +321,129 @@ const ViewTravel = ({
     return markers;
   };
 
-  const HeaderSection = () => (
-    <View>
-      <View className="flex-1">
-        <View className="flex-1 bg-white">
-          {travelPlan.travel.destinationData?.coordinates ? (
-            <TouchableOpacity 
-              activeOpacity={0.9} 
-              onPress={() => {
-                setShowDestinationOnlyMap(true)
-                setMapVisible(true)}}
-              className="w-full relative"
-            >
-              <Image
-                source={{
-                  uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
-                }}
-                className="w-full h-[200px] "
-                style={{ resizeMode: "cover" }}
-              />
-              <LinearGradient
-                colors={["rgba(0, 0, 0, 0.75)", "rgba(0, 0, 0, 0.5)"]}
-                start={{ x: 0.1, y: 0 }}
-                end={{ x: 0.7, y: 1 }}
-                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-              />
-            </TouchableOpacity>
-          ) : (
-            <View className="relative w-full h-[200px]">
-              <Image
-                source={require("../../../../assets/images/japan.jpg")}
-                className="w-full h-[200px]"
-                style={{ resizeMode: "cover" }}
-              />
-              <LinearGradient
-                colors={["rgba(0, 0, 0, 0.70)", "rgba(0, 0, 0, 0.30)"]}
-                start={{ x: 0.1, y: 0 }}
-                end={{ x: 0.7, y: 1 }}
-                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-              />
-            </View>
-          )}
-        </View>
-      </View>
+  // const HeaderSection = () => (
+  //   <View>
+  //     <View className="flex-1">
+  //       <View className="flex-1 bg-white">
+  //         {travelPlan.travel.destinationData?.coordinates ? (
+  //           <TouchableOpacity 
+  //             activeOpacity={0.9} 
+  //             onPress={() => {
+  //               setShowDestinationOnlyMap(true)
+  //               setMapVisible(true)}}
+  //             className="w-full relative"
+  //           >
+  //             <Image
+  //               source={{
+  //                 uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
+  //               }}
+  //               className="w-full h-[200px] "
+  //               style={{ resizeMode: "cover" }}
+  //             />
+  //             <LinearGradient
+  //               colors={["rgba(0, 0, 0, 0.75)", "rgba(0, 0, 0, 0.5)"]}
+  //               start={{ x: 0.1, y: 0 }}
+  //               end={{ x: 0.7, y: 1 }}
+  //               style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+  //             />
+  //           </TouchableOpacity>
+  //         ) : (
+  //           <View className="relative w-full h-[200px]">
+  //             <Image
+  //               source={require("../../../../assets/images/japan.jpg")}
+  //               className="w-full h-[200px]"
+  //               style={{ resizeMode: "cover" }}
+  //             />
+  //             <LinearGradient
+  //               colors={["rgba(0, 0, 0, 0.70)", "rgba(0, 0, 0, 0.30)"]}
+  //               start={{ x: 0.1, y: 0 }}
+  //               end={{ x: 0.7, y: 1 }}
+  //               style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+  //             />
+  //           </View>
+  //         )}
+  //       </View>
+  //     </View>
 
-      <View className="flex-2 bg-white border-t border-gray-300 rounded-t-4xl -mt-7">
-        <View className="p-6">
-          <View className="flex-row justify-between items-start">
-            <View className="flex-row items-center gap-3 flex-1 mr-4">
-              {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
-                <TripIcon type={travelPlan.travel.type} size={28} showIconOnly={true} />
-              )}
-              <Text className="text-4xl font-bold mb-2 flex-1" numberOfLines={2}>
-                {travelPlan?.travel.title}
-              </Text>
-            </View>
-            <StatusBadge type={1} status={travelPlan.travel.status!} />
-          </View>
-          <View className="flex-row items-center flex-wrap bg-gray-50 rounded-lg p-2">
-            <View className="flex-row items-center my-1 pr-3 border-r border-[#DDD]">
-              <View className="flex-row items-center">
-                <Icon name="calendar-month" size={28} color={"#858585"} />
-              <View className="flex-col px-1">
-                <Text className="text-xs text-tertiary leading-3">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
-                    ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
-                    : ""}</Text>
-                <Text className="text-lg font-bold text-secondary line-clamp-1 leading-6">
-                  {travelPlan.travel?.startOrDepartureDate
-                    ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day:"2-digit"})
-                    : ""}
+  //     <View className="flex-2 bg-white border-t border-gray-300 rounded-t-4xl -mt-7">
+  //       <View className="p-6">
+  //         <View className="flex-row justify-between items-start">
+  //           <View className="flex-row items-center gap-3 flex-1 mr-4">
+  //             {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
+  //               <TripIcon type={travelPlan.travel.type} size={28} showIconOnly={true} />
+  //             )}
+  //             <Text className="text-4xl font-bold mb-2 flex-1" numberOfLines={2}>
+  //               {travelPlan?.travel.title}
+  //             </Text>
+  //           </View>
+  //           <StatusBadge type={1} status={travelPlan.travel.status!} />
+  //         </View>
+  //         <View className="flex-row items-center flex-wrap bg-gray-50 rounded-lg p-2">
+  //           <View className="flex-row items-center my-1 pr-3 border-r border-[#DDD]">
+  //             <View className="flex-row items-center">
+  //               <Icon name="calendar-month" size={28} color={"#858585"} />
+  //             <View className="flex-col px-1">
+  //               <Text className="text-xs text-tertiary leading-3">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
+  //                   ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
+  //                   : ""}</Text>
+  //               <Text className="text-lg font-bold text-secondary line-clamp-1 leading-6">
+  //                 {travelPlan.travel?.startOrDepartureDate
+  //                   ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day:"2-digit"})
+  //                   : ""}
 
-                    - {travelPlan.travel?.endOrReturnDate
-                    ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day:"2-digit" })
-                    : ""}
-                </Text>
-                </View>              
-              </View>
-            </View>
-            <View className="flex-row items-center my-1 pl-3">
-                <TouchableOpacity 
-                  activeOpacity={0.8}
-                  className="flex-row items-center my-1 mr-2 "
-                  onPress={() => travelPlan.travel.destinationData?.coordinates && setMapVisible(true)}
-                >
-                  <Icon name="location-pin" size={24} color={"#B42318"} />
+  //                   - {travelPlan.travel?.endOrReturnDate
+  //                   ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day:"2-digit" })
+  //                   : ""}
+  //               </Text>
+  //               </View>              
+  //             </View>
+  //           </View>
+  //           <View className="flex-row items-center my-1 pl-3">
+  //               <TouchableOpacity 
+  //                 activeOpacity={0.8}
+  //                 className="flex-row items-center my-1 mr-2 "
+  //                 onPress={() => travelPlan.travel.destinationData?.coordinates && setMapVisible(true)}
+  //               >
+  //                 <Icon name="location-pin" size={24} color={"#B42318"} />
                
-                {travelPlan.travel.destination ? (
-                  <Text className="text-[#183B7A] font-medium mx-1 " numberOfLines={1} ellipsizeMode="tail">
-                  {travelPlan.travel.destination}
-                </Text>
-                ) : (
-                  <Text className="text-tertiary italic text-base  mx-1 " numberOfLines={1} ellipsizeMode="tail">
-                  Not set
-                </Text>
-                )}
-              </TouchableOpacity>
-            </View>
+  //               {travelPlan.travel.destination ? (
+  //                 <Text className="text-[#183B7A] font-medium mx-1 " numberOfLines={1} ellipsizeMode="tail">
+  //                 {travelPlan.travel.destination}
+  //               </Text>
+  //               ) : (
+  //                 <Text className="text-tertiary italic text-base  mx-1 " numberOfLines={1} ellipsizeMode="tail">
+  //                 Not set
+  //               </Text>
+  //               )}
+  //             </TouchableOpacity>
+  //           </View>
         
-          </View>
+  //         </View>
 
-          <View className="mt-2.5">
-            <Text 
-              className="text-base text-tertiary leading-6"
-              numberOfLines={isDescriptionExpanded ? undefined : 3}
-              onTextLayout={(e) => {
-                if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
-                  setShowMoreButton(true);
-                }
-              }}
-            >
-              {travelPlan.travel.description || null}
-            </Text>
-            {showMoreButton && (
-              <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
-                <Text className="text-secondary font-medium mt-1">
-                  {isDescriptionExpanded ? "Show less" : "Show more"}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-      </View>
-    </View>
-  );
+  //         <View className="mt-2.5">
+  //           <Text 
+  //             className="text-base text-tertiary leading-6"
+  //             numberOfLines={isDescriptionExpanded ? undefined : 3}
+  //             onTextLayout={(e) => {
+  //               if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
+  //                 setShowMoreButton(true);
+  //               }
+  //             }}
+  //           >
+  //             {travelPlan.travel.description || null}
+  //           </Text>
+  //           {showMoreButton && (
+  //             <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+  //               <Text className="text-secondary font-medium mt-1">
+  //                 {isDescriptionExpanded ? "Show less" : "Show more"}
+  //               </Text>
+  //             </TouchableOpacity>
+  //           )}
+  //         </View>
+  //       </View>
+  //     </View>
+  //   </View>
+  // );
 
   const tabData = [
     {
@@ -515,10 +515,6 @@ const ViewTravel = ({
       ),
     },
   ];
-
-  const handleViewModeActivity = (id: number) => {
-    setShowActivityViewModal(true);
-  };
 
 
   return (

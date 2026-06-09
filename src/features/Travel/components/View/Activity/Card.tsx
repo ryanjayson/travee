@@ -474,9 +474,12 @@ const ActivityItemCard = ({
                   </Text>
                 </View>
               )}
-            <View className="">
+            <View className="flex-row gap-1">
+              <Text className="text-xs font-bold text-[#000] ">
+                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: '2-digit', month: '2-digit' })}
+              </Text>
               <Text className="text-xs font-semibold text-[#606060] ">
-                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute:   '2-digit' })}
+                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute:   '2-digit' })}
               </Text>
             </View>
 
@@ -509,7 +512,7 @@ const ActivityItemCard = ({
                 </View>
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
                   <TouchableOpacity 
-                    className="flex-row w-3/4 items-center text-ellipsis opacity-80 bg-gray-100 rounded-sm p-1 pr-4"
+                    className="flex-row items-center text-ellipsis opacity-80 bg-gray-100 rounded-sm p-1 pr-4"
                     onPress={() => setShowMapModal(true)}
                   >
                     <Icon name="location-pin" size={12} color={"#B42318"} />

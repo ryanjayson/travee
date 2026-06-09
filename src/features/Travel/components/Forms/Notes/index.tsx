@@ -119,6 +119,7 @@ debugger;
       deleteActivityMutation({
         sectionId: itinerarySectionId,
         activityId: activityId,
+        travelId: selectedTravelPlan?.id,
       });
       if (!isPending) {
         onClose();

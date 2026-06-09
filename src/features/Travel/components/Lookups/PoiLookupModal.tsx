@@ -56,7 +56,7 @@ const POI_CATEGORIES = [
   },
   {
     id: "cafeRestaurant",
-    label: "Cafe & Restaurant",
+    label: "Cafe or Restaurant",
     icon: "restaurant",
     value: "restaurant,cafe,bar,pub,fast_food,coffee_shop",
   },
@@ -68,19 +68,19 @@ const POI_CATEGORIES = [
   },
   {
     id: "shopppingAndService",
-    label: "Shopping & Service",
+    label: "Shopping",
     icon: "shopping-bag",
     value: "shopping,mall,supermarket,clothing_store,convenience_store,spa,bank,gas_station,pharmacy",
   },
   {
     id: "entertainmentAndRecreation",
-    label: "Entertainment & Recreation",
+    label: "Entertainment",
     icon: "local-play",
     value: "theme_park,cinema,park,museum,stadium,zoo,concert",
   },
   {
     id: "hikeOrCamp",
-    label: "Hike & Camp",
+    label: "Hike or Camp",
     icon: "hiking",
     value: "campground,camping,mountain,forest,jungle",
   },

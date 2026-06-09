@@ -7,6 +7,7 @@ import { Modal, Text, TouchableOpacity, View, Animated } from "react-native";
 import ViewTravel from ".";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import { useTravelContext } from "../../../../context/TravelContext";
+import { TravelPlanDetail } from "../../../../types/context/travel";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
 import { TravelMenuAction } from "../../../../types/enums";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
@@ -75,11 +76,32 @@ const ViewTripModal = ({
   // useContext never throws — returns null if outside NavigationContainer
   const navContext = useContext(NavigationContext);
   const navigation = navContext as NativeStackNavigationProp<RootStackParamList> | null;
-  const { clearTravelPlan } = useTravelContext();
+  const { clearTravelPlan, selectedTravelPlan, selectTravelPlan } = useTravelContext();
   const {
     data: travelPlan,
     refetch,
   } = useTravelPlan(travelId);
+
+  useEffect(() => {
+    if (travelPlan?.travel?.id) {
+      const current = travelPlan.travel;
+      if (
+        selectedTravelPlan?.id !== current.id ||
+        selectedTravelPlan?.title !== current.title ||
+        selectedTravelPlan?.destination !== current.destination ||
+        selectedTravelPlan?.startOrDepartureDate !== current.startOrDepartureDate ||
+        selectedTravelPlan?.endOrReturnDate !== current.endOrReturnDate ||
+        selectedTravelPlan?.status !== current.status ||
+        selectedTravelPlan?.budget !== current.budget ||
+        selectedTravelPlan?.notes !== current.notes ||
+        selectedTravelPlan?.isOffline !== current.isOffline ||
+        selectedTravelPlan?.isArchived !== current.isArchived ||
+        selectedTravelPlan?.type !== current.type
+      ) {
+        selectTravelPlan(current as TravelPlanDetail);
+      }
+    }
+  }, [travelPlan?.travel, selectedTravelPlan]);
 
   useEffect(() => {
     console.log("SELECTED", travelPlan);

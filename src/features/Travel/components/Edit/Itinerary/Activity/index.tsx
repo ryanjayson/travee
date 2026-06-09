@@ -898,6 +898,7 @@ const EditActivity = ({
         deleteActivityMutation({
           sectionId: itinerarySectionId,
           activityId: activityId,
+          travelId: selectedTravelPlan?.id,
         });
         onClose();
       }
@@ -1110,9 +1111,6 @@ const EditActivity = ({
 
         const tabData = [];
 
-
-
-
         tabData.push(
           {
             id: "details",
@@ -1132,7 +1130,7 @@ const EditActivity = ({
                       error={touched.title && Boolean(errors.title)}
                       outlineColor="#E0E0E0"
                       activeOutlineColor="#263F69"
-                      theme={{ colors: { onSurfaceVariant: '#888' } }}
+                      theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
                       outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                       style={{ marginTop: 6, height: 64 }}
                       contentStyle={{ backgroundColor: "transparent", paddingRight: 60 }}
@@ -1140,7 +1138,7 @@ const EditActivity = ({
                     />
                     <Text
                       className="absolute right-4 bottom-3 text-xs"
-                      style={{ color: colors.onSurfaceVariant || '#888' }}
+                      style={{ color: '#98A2B3' }}
                     >
                       {(values.title || "").length}/20
                     </Text>

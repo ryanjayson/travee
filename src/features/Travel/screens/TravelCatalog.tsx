@@ -13,6 +13,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import StatusBadge from "../../../components/StatusBadge";
 import Tabs from "../../../components/Tabs/index";
 import { useTravelContext } from "../../../context/TravelContext";
+import { TravelPlanDetail } from "../../../types/context/travel";
 import { TravelStatus, TripType } from "../../../types/enums";
 import TripIcon from "../../../components/TripIcon";
 import ViewTravelModal from "../components/View/Modal";
@@ -57,11 +58,7 @@ const TravelCatalog = () => {
 
   const handleViewModeTravel = (travel: Travel) => {
     if (travel && travel.id) {
-      const tripDetails = {
-        id: travel.id,
-        title: travel.title,
-      };
-      selectTravelPlan(tripDetails);
+      selectTravelPlan(travel as TravelPlanDetail);
       setSelectedTravel(travel);
       setShowTravelViewModal(true);
     }
@@ -256,7 +253,7 @@ const TravelCatalog = () => {
                         key={trip.id}
                         activeOpacity={0.7}
                         onPress={() => {
-                          selectTravelPlan(trip);
+                          selectTravelPlan(trip as TravelPlanDetail);
                           setShowTravelDetail(true);
                         }}
                         style={{
