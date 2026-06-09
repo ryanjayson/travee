@@ -48,8 +48,14 @@ export default function ShoppingTab({
           value={values.shoppingDetails?.venueName || ""}
           onChangeText={handleChange("shoppingDetails.venueName")}
           onBlur={handleBlur("shoppingDetails.venueName")}
-          onPress={() => onOpenPoiModal("shopppingAndService")}
-          right={<TextInput.Icon icon="map-marker-radius-outline" color="#999" />}
+          right={
+            <TextInput.Icon
+              style={{ backgroundColor: "#F2F4F7" }}
+              icon="map-marker-radius-outline"
+              color="#263f69"
+              onPress={() => onOpenPoiModal("shopppingAndService")}
+            />
+          }
         />
       </View>
 

@@ -56,7 +56,6 @@ export default function WalkTab({
             value={values.walkDetails?.estimatedDuration || ""}
             onChangeText={handleChange("walkDetails.estimatedDuration")}
             onBlur={handleBlur("walkDetails.estimatedDuration")}
-            placeholder="e.g. 1h 30min"
           />
         </View>
       </View>

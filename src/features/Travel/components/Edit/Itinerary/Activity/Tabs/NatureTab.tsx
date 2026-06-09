@@ -48,8 +48,14 @@ export default function NatureTab({
           value={values.natureDetails?.spotName || ""}
           onChangeText={handleChange("natureDetails.spotName")}
           onBlur={handleBlur("natureDetails.spotName")}
-          onPress={() => onOpenPoiModal("nature")}
-          right={<TextInput.Icon icon="map-marker-radius-outline" color="#999" />}
+          right={
+            <TextInput.Icon
+              style={{ backgroundColor: "#F2F4F7" }}
+              icon="map-marker-radius-outline"
+              color="#263f69"
+              onPress={() => onOpenPoiModal("nature")}
+            />
+          }
         />
       </View>
 

@@ -40,6 +40,18 @@ const ActivityModal = ({
   itineraryActivity,
   itinerarySectionId,
 }: ActivityModalProps) => {
+  const [currentActivity, setCurrentActivity] = useState<ItineraryActivity | null>(itineraryActivity);
+
+  useEffect(() => {
+    if (visible) {
+      setCurrentActivity(itineraryActivity);
+      setIsSaving(false);
+      setError(null);
+      setExtractedData(null);
+      setIsOcrPending(false);
+    }
+  }, [visible, itineraryActivity]);
+
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<Partial<ItineraryActivity> | null>(null);
@@ -208,11 +220,7 @@ const ActivityModal = ({
     })
   ).current;
 
-  useEffect(() => {
-    if (!visible) {
-      setExtractedData(null);
-    }
-  }, [visible]);
+
 
   const handleTextExtraction = async () => {
     // 1. PRIVACY CONFIRMATION (Explicitly verifying that ML Kit runs 100% on-device offline)
@@ -397,7 +405,7 @@ const ActivityModal = ({
               <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
                   <View className="flex-row items-center gap-2">
                       <Text className="text-2xl text-gray-700 font-medium">
-                          {itineraryActivity?.id ? "Edit Activity" : "Add Activity"}
+                          {currentActivity?.id ? "Edit Activity" : "Add Activity"}
                       </Text>
                   </View>
                   <View className="flex-row items-center gap-4">
@@ -413,17 +421,25 @@ const ActivityModal = ({
                             <Icon name="camera-alt" size={24} color={colors.primary} />
                         </TouchableOpacity>
                       )}
-                      <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
+                      <TouchableOpacity 
+                        onPress={handleCancel} 
+                        disabled={isSaving}
+                        accessibilityRole="button"
+                        accessibilityLabel="Close modal"
+                      >
                           <Icon name="clear" size={24} color={colors.onSurfaceVariant || "#333"} />
                       </TouchableOpacity>
                   </View>
               </View>
-
+ 
               <View className="flex-1">
                 <EditActivity
                   itinerarySectionId={itinerarySectionId}
-                  itineraryActivity={extractedData ? { ...itineraryActivity, ...extractedData } as any : itineraryActivity}
+                  itineraryActivity={extractedData ? { ...currentActivity, ...extractedData } as any : currentActivity}
                   onClose={onClose}
+                  onSaveSuccess={(saved) => {
+                    setCurrentActivity(saved);
+                  }}
                   onOpenSectionModal={handleOpenSectionModal}
                   onOpenPrimaryTypeModal={handleOpenPrimaryTypeModal}
                   onScroll={(e) => {

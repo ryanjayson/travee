@@ -43,8 +43,14 @@ export default function CafeRestaurantTab({
           value={values.cafeRestaurantDetails?.restaurantName || ""}
           onChangeText={handleChange("cafeRestaurantDetails.restaurantName")}
           onBlur={handleBlur("cafeRestaurantDetails.restaurantName")}
-          onPress={() => onOpenPoiModal("cafeRestaurant")}
-          right={<TextInput.Icon icon="map-marker-radius-outline" color="#999" />}
+          right={
+            <TextInput.Icon
+              style={{ backgroundColor: "#F2F4F7" }}
+              icon="map-marker-radius-outline"
+              color="#263f69"
+              onPress={() => onOpenPoiModal("cafeRestaurant")}
+            />
+          }
         />
       </View>
 
@@ -88,18 +94,33 @@ export default function CafeRestaurantTab({
           contentStyle={{ textDecorationLine: "underline" }}
           right={
             values.cafeRestaurantDetails?.websiteAddress ? (
-              <TouchableOpacity
+              <TextInput.Icon
+                icon={() => (
+                  <Text
+                    style={{
+                      color: colors?.primary || "#263F69",
+                      textDecorationLine: "underline",
+                      fontWeight: "bold",
+                      fontSize: 16,
+                      marginTop: 2,
+                    }}
+                  >
+                    Open
+                  </Text>
+                )}
+                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
                 onPress={() => {
                   let url = values.cafeRestaurantDetails.websiteAddress;
-                  if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
-                  if (url) Linking.openURL(url).catch(console.error);
+                  if (url) {
+                    if (!/^https?:\/\//i.test(url)) {
+                      url = "https://" + url;
+                    }
+                    Linking.openURL(url).catch((err) =>
+                      console.error("Failed to open URL", err)
+                    );
+                  }
                 }}
-                accessibilityRole="button"
-                accessibilityLabel="Open website in browser"
-                style={{ height: "100%", justifyContent: "center", alignItems: "center", paddingRight: 16, paddingTop: 16 }}
-              >
-                <Text style={{ color: colors?.primary || "#263F69", textDecorationLine: "underline", fontWeight: "bold", fontSize: 16 }}>Open</Text>
-              </TouchableOpacity>
+              />
             ) : null
           }
         />

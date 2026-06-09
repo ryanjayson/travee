@@ -26,7 +26,7 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.none,
     name: ActivityType.none,
     iconName: "ellipse",
-    color: "#9E9E9E", // grey
+    color: "#F04438", // grey
   },
   {
     iconSet: IconSetProvider.ionic,
@@ -177,7 +177,7 @@ const ActivityIcon = ({
   };
 
   return (
-    <View>
+    <View >
       {activityIcon && getIconDisplay(activityIcon)}
     </View>
   );

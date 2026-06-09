@@ -1,7 +1,7 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import { useTheme } from "react-native-paper";
+import { useTheme, TextInput } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
 
 type PoiCategory = "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp";
@@ -46,8 +46,14 @@ export default function MeetupTab({
           value={values.meetupDetails?.venueName || ""}
           onChangeText={handleChange("meetupDetails.venueName")}
           onBlur={handleBlur("meetupDetails.venueName")}
-          onPress={() => onOpenPoiModal("entertainmentAndRecreation")}
-          right={<Icon name="map-marker-radius-outline" size={20} color="#999" />}
+          right={
+            <TextInput.Icon
+              style={{ backgroundColor: "#F2F4F7" }}
+              icon="map-marker-radius-outline"
+              color="#263f69"
+              onPress={() => onOpenPoiModal("entertainmentAndRecreation")}
+            />
+          }
         />
       </View>
 

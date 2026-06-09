@@ -48,8 +48,14 @@ export default function EntertainmentTab({
           value={values.entertainmentDetails?.venueName || ""}
           onChangeText={handleChange("entertainmentDetails.venueName")}
           onBlur={handleBlur("entertainmentDetails.venueName")}
-          onPress={() => onOpenPoiModal("entertainmentAndRecreation")}
-          right={<TextInput.Icon icon="map-marker-radius-outline" color="#999" />}
+          right={
+            <TextInput.Icon
+              style={{ backgroundColor: "#F2F4F7" }}
+              icon="map-marker-radius-outline"
+              color="#263f69"
+              onPress={() => onOpenPoiModal("entertainmentAndRecreation")}
+            />
+          }
         />
       </View>
 

@@ -48,6 +48,7 @@ import { useAuth } from "../../../../../Auth/hooks/AuthContext";
 import { useDeleteActivityMutation, useUpdateActivityMutation } from "../../../../hooks/useActivity";
 import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItemMutation, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
 import { useTravelPlan } from "../../../../hooks/useTravel";
+import { fetchLocalItineraryActivity } from "../../../../../../services/local/travelService";
 import { DestinationDto, Images, ItineraryActivity, Attachment } from "../../../../types/TravelDto";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
 import SectionLookupModal from "../../../Lookups/SectionLookupModal";
@@ -72,10 +73,14 @@ interface EditActivityProps {
   itinerarySectionId?: string;
   onScroll?: (event: any) => void;
   onChildModalToggle?: (isOpen: boolean) => void;
+  onSaveSuccess?: (activity: ItineraryActivity) => void;
 }
 
 const TravelSchema = Yup.object().shape({
-  title: Yup.string().required("Activity title is required").min(2, "Activity title is too short, make it more descriptive"),
+  title: Yup.string()
+    .required("Activity title is required")
+    .min(2, "Activity title is too short, make it more descriptive")
+    .max(20, "Activity title must be at most 20 characters"),
 });
 
 export interface ActivityFormValues {
@@ -332,6 +337,7 @@ const EditActivity = ({
   onChildModalToggle,
   onOpenSectionModal,
   onOpenPrimaryTypeModal,
+  onSaveSuccess,
 }: EditActivityProps) => {
   const toLocalDateStr = (dInput: any) => {
     if (!dInput) return null;
@@ -848,12 +854,33 @@ const EditActivity = ({
           : null,
       };
 
-      await updateMutation.mutateAsync(payload);
+      const result = await updateMutation.mutateAsync(payload);
+      const savedId = result?.data?.id || (result as any)?.id;
+
       showToast({
         type: "success",
         message: values.id ? "Activity updated successfully!" : "Activity created successfully!",
       });
-      onClose();
+
+      if (!values.id && savedId) {
+        try {
+          let fullActivity = result?.data;
+          const isLocal = isNaN(Number(savedId));
+          if (isLocal) {
+            fullActivity = await fetchLocalItineraryActivity(savedId);
+          }
+          if (fullActivity) {
+            onSaveSuccess?.(fullActivity);
+          } else {
+            onClose();
+          }
+        } catch (err) {
+          console.error("Failed to transition to edit mode:", err);
+          onClose();
+        }
+      } else {
+        onClose();
+      }
     }
   };
 
@@ -1095,20 +1122,29 @@ const EditActivity = ({
                 {/* Title */}
                 <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
-                  <TextInput
-                    mode="outlined"
-                    placeholder="e.g. Museum Visit"
-                    value={values.title}
-                    onChangeText={handleChange("title")}
-                    onBlur={handleBlur("title")}
-                    error={touched.title && Boolean(errors.title)}
-                    outlineColor="#E0E0E0"
-                    activeOutlineColor="#263F69"
-                    theme={{ colors: { onSurfaceVariant: '#888' } }}
-                    outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                    style={{ marginTop: 6, height: 64 }}
-                    contentStyle={{ backgroundColor: "transparent" }}
-                  />
+                  <View className="relative justify-center">
+                    <TextInput
+                      mode="outlined"
+                      placeholder="e.g. Museum Visit"
+                      value={values.title}
+                      onChangeText={handleChange("title")}
+                      onBlur={handleBlur("title")}
+                      error={touched.title && Boolean(errors.title)}
+                      outlineColor="#E0E0E0"
+                      activeOutlineColor="#263F69"
+                      theme={{ colors: { onSurfaceVariant: '#888' } }}
+                      outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                      style={{ marginTop: 6, height: 64 }}
+                      contentStyle={{ backgroundColor: "transparent", paddingRight: 60 }}
+                      maxLength={100}
+                    />
+                    <Text
+                      className="absolute right-4 bottom-3 text-xs"
+                      style={{ color: colors.onSurfaceVariant || '#888' }}
+                    >
+                      {(values.title || "").length}/20
+                    </Text>
+                  </View>
                   {touched.title && errors.title && (
                     <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
                   )}
@@ -1488,7 +1524,7 @@ const EditActivity = ({
                           ) : (
                             <Icon name="style" size={24} color={"#B3B3B3"} />
                           )}
-                          <Text className="text-base text-gray-800 capitalize font-medium">
+                          <Text className="text-base text-gray-800 font-medium capitalize">
                             {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
                           </Text>
                         </TouchableOpacity>
@@ -1533,6 +1569,7 @@ const EditActivity = ({
                       label="Description"
                       placeholder="Activity details..."
                       confirmLabel="Add"
+                      maxLength={500}
                     />
                   </View>
                 </SimpleAccordion>

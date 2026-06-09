@@ -116,7 +116,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
         activeOpacity={tab.disabled ? 1 : 0.5}
         disabled={tab.disabled}
       >
-        <View className="flex-row items-center gap-1.5">
+        <View className="flex-row items-center gap-1.5 ">
           {isOngoingWithActiveTrip && (
             <Animated.View 
               style={{ opacity: pulseAnim }}

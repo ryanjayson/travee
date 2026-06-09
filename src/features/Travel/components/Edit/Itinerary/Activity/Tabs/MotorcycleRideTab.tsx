@@ -76,7 +76,6 @@ export default function MotorcycleRideTab({
             value={values.motorcycleRideDetails?.roadType || ""}
             onChangeText={handleChange("motorcycleRideDetails.roadType")}
             onBlur={handleBlur("motorcycleRideDetails.roadType")}
-            placeholder="e.g. Highway, Off-road"
           />
         </View>
       </View>
@@ -97,7 +96,6 @@ export default function MotorcycleRideTab({
             value={values.motorcycleRideDetails?.fuelStops || ""}
             onChangeText={handleChange("motorcycleRideDetails.fuelStops")}
             onBlur={handleBlur("motorcycleRideDetails.fuelStops")}
-            placeholder="e.g. Town A, Town B"
           />
         </View>
       </View>

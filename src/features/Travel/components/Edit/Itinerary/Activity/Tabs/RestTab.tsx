@@ -42,7 +42,6 @@ export default function RestTab({
           value={values.restDetails?.restLocationName || ""}
           onChangeText={handleChange("restDetails.restLocationName")}
           onBlur={handleBlur("restDetails.restLocationName")}
-          placeholder="e.g. Airbnb, Car, Hostel..."
         />
       </View>
 

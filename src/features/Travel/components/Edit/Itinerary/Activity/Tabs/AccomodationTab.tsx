@@ -50,17 +50,13 @@ export default function AccomodationTab({
           value={values.accomodationDetails?.accomodationName || ""}
           onChangeText={handleChange("accomodationDetails.accomodationName")}
           onBlur={handleBlur("accomodationDetails.accomodationName")}
-          onPress={() => onOpenPoiModal("accommodation")}
           right={
-            values.accomodationDetails?.checkinDateTime ? (
-              <TextInput.Icon
-                icon="close"
-                color="#999"
-                onPress={() => setFieldValue("accomodationDetails.checkinDateTime", null)}
-              />
-            ) : (
-              <TextInput.Icon icon="map-marker-radius-outline" color="#999" />
-            )
+            <TextInput.Icon
+              style={{ backgroundColor: "#F2F4F7" }}
+              icon="map-marker-radius-outline"
+              color="#263f69"
+              onPress={() => onOpenPoiModal("accommodation")}
+            />
           }
         />
       </View>
@@ -136,7 +132,22 @@ export default function AccomodationTab({
           contentStyle={{ textDecorationLine: "underline" }}
           right={
             values.accomodationDetails?.websiteAddress ? (
-              <TouchableOpacity
+              <TextInput.Icon
+                icon={() => (
+                  <Text
+                    style={{
+                      color: colors?.primary || "#263F69",
+                      textDecorationLine: "underline",
+                      fontWeight: "bold",
+                      fontSize: 14,
+                      marginTop: 2,
+                      opacity: 0.8,
+                    }}
+                  >
+                    open
+                  </Text>
+                )}
+                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
                 onPress={() => {
                   let url = values.accomodationDetails.websiteAddress;
                   if (url) {
@@ -148,27 +159,7 @@ export default function AccomodationTab({
                     );
                   }
                 }}
-                accessibilityRole="button"
-                accessibilityLabel="Open website in browser"
-                style={{
-                  height: "100%",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  paddingRight: 16,
-                  paddingTop: 16,
-                }}
-              >
-                <Text
-                  style={{
-                    color: colors?.primary || "#263F69",
-                    textDecorationLine: "underline",
-                    fontWeight: "bold",
-                    fontSize: 16,
-                  }}
-                >
-                  Open
-                </Text>
-              </TouchableOpacity>
+              />
             ) : null
           }
         />

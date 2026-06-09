@@ -52,8 +52,14 @@ export default function HikeOrCampTab({
           value={values.hikeOrCampDetails?.trailOrSiteName || ""}
           onChangeText={handleChange("hikeOrCampDetails.trailOrSiteName")}
           onBlur={handleBlur("hikeOrCampDetails.trailOrSiteName")}
-          onPress={() => onOpenPoiModal("hikeOrCamp")}
-          right={<TextInput.Icon icon="map-marker-radius-outline" color="#999" />}
+          right={
+            <TextInput.Icon
+              style={{ backgroundColor: "#F2F4F7" }}
+              icon="map-marker-radius-outline"
+              color="#263f69"
+              onPress={() => onOpenPoiModal("hikeOrCamp")}
+            />
+          }
         />
       </View>
 

@@ -22,22 +22,6 @@ export enum ActivityType {
   motorcycleRide = 14, // motorbike
   meetup = 15,
   rideRental = 16, // RV, yatch, Motorbike, Motorcycle, car, bike
-
-
-
-
-
-  // borderCrossing = 26,
-  // checkIn = 2,
-  // checkOut = 3,
-  // taxi = 4,
-  // food = 6,
-  // bus = 13,
-  // train = 14,
-  // ferry = 15,
-  // spa = 20,
-  // bike = 25,
-
 }
 
 export enum StatusType {
