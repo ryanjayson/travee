@@ -233,11 +233,6 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
             color="white"
           />
         </Portal>
-
-
-
-
-
       </View>
     </Provider>
   );
