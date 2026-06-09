@@ -2,6 +2,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { View, Text } from "react-native";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import DateTime from "../DateTime";
 
 interface MotorcycleRideTabProps {
   values: any;
@@ -10,6 +11,10 @@ interface MotorcycleRideTabProps {
   setFieldValue: any;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+  onPressDate?: () => void;
+  onPressTime?: () => void;
+  onClearDate?: () => void;
+  onClearTime?: () => void;
 }
 
 export default function MotorcycleRideTab({
@@ -19,6 +24,10 @@ export default function MotorcycleRideTab({
   setFieldValue,
   noPadding = false,
   fieldRefs,
+  onPressDate,
+  onPressTime,
+  onClearDate,
+  onClearTime,
 }: MotorcycleRideTabProps) {
   return (
     <View className={`flex-1 pb-6 pt-2 ${noPadding ? "" : "px-5"}`}>
@@ -99,6 +108,17 @@ export default function MotorcycleRideTab({
           />
         </View>
       </View>
+
+      {onPressDate && onPressTime && onClearDate && onClearTime && (
+        <DateTime
+          startDate={values.startDate}
+          startTime={values.startTime}
+          onPressDate={onPressDate}
+          onPressTime={onPressTime}
+          onClearDate={onClearDate}
+          onClearTime={onClearTime}
+        />
+      )}
     </View>
   );
 }

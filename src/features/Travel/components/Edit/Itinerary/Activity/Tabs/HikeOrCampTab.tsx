@@ -1,6 +1,6 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
-import { View, Text, TouchableOpacity, Switch } from "react-native";
+import { View, Text, TouchableOpacity, Switch, Linking } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
 
@@ -200,6 +200,39 @@ export default function HikeOrCampTab({
           value={values.hikeOrCampDetails?.websiteAddress || ""}
           onChangeText={handleChange("hikeOrCampDetails.websiteAddress")}
           onBlur={handleBlur("hikeOrCampDetails.websiteAddress")}
+          contentStyle={{ textDecorationLine: "underline" }}
+          right={
+            values.hikeOrCampDetails?.websiteAddress ? (
+              <TextInput.Icon
+                icon={() => (
+                  <Text
+                    style={{
+                      color: colors?.primary || "#263F69",
+                      textDecorationLine: "underline",
+                      fontWeight: "bold",
+                      fontSize: 14,
+                      marginTop: 2,
+                      opacity: 0.8,
+                    }}
+                  >
+                    open
+                  </Text>
+                )}
+                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                onPress={() => {
+                  let url = values.hikeOrCampDetails.websiteAddress;
+                  if (url) {
+                    if (!/^https?:\/\//i.test(url)) {
+                      url = "https://" + url;
+                    }
+                    Linking.openURL(url).catch((err) =>
+                      console.error("Failed to open URL", err)
+                    );
+                  }
+                }}
+              />
+            ) : null
+          }
         />
       </View>
 

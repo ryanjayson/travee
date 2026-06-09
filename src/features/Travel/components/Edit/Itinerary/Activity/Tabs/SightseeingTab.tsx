@@ -3,6 +3,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, Linking } from "react-native";
 import { useTheme, TextInput } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import DateTime from "../DateTime";
 
 type PoiCategory = "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp";
 
@@ -14,6 +15,10 @@ interface SightseeingTabProps {
   onOpenPoiModal: (category: PoiCategory) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+  onPressDate?: () => void;
+  onPressTime?: () => void;
+  onClearDate?: () => void;
+  onClearTime?: () => void;
 }
 
 export default function SightseeingTab({
@@ -24,6 +29,10 @@ export default function SightseeingTab({
   onOpenPoiModal,
   noPadding = false,
   fieldRefs,
+  onPressDate,
+  onPressTime,
+  onClearDate,
+  onClearTime,
 }: SightseeingTabProps) {
   const { colors } = useTheme();
 
@@ -64,6 +73,17 @@ export default function SightseeingTab({
         />
       </View>
 
+      {onPressDate && onPressTime && onClearDate && onClearTime && (
+        <DateTime
+          startDate={values.startDate}
+          startTime={values.startTime}
+          onPressDate={onPressDate}
+          onPressTime={onPressTime}
+          onClearDate={onClearDate}
+          onClearTime={onClearTime}
+        />
+      )}
+
       {/* Entry Fee */}
       <View className="mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["sightseeingDetails.entryFee"] = el; }} className="flex-1">
@@ -84,6 +104,39 @@ export default function SightseeingTab({
           value={values.sightseeingDetails?.websiteAddress || ""}
           onChangeText={handleChange("sightseeingDetails.websiteAddress")}
           onBlur={handleBlur("sightseeingDetails.websiteAddress")}
+          contentStyle={{ textDecorationLine: "underline" }}
+          right={
+            values.sightseeingDetails?.websiteAddress ? (
+              <TextInput.Icon
+                icon={() => (
+                  <Text
+                    style={{
+                      color: colors?.primary || "#263F69",
+                      textDecorationLine: "underline",
+                      fontWeight: "bold",
+                      fontSize: 14,
+                      marginTop: 2,
+                      opacity: 0.8,
+                    }}
+                  >
+                    open
+                  </Text>
+                )}
+                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                onPress={() => {
+                  let url = values.sightseeingDetails.websiteAddress;
+                  if (url) {
+                    if (!/^https?:\/\//i.test(url)) {
+                      url = "https://" + url;
+                    }
+                    Linking.openURL(url).catch((err) =>
+                      console.error("Failed to open URL", err)
+                    );
+                  }
+                }}
+              />
+            ) : null
+          }
         />
       </View>
     </View>

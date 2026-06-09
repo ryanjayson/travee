@@ -1,8 +1,9 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import DateTime from "../DateTime";
 
 type PoiCategory = "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp";
 
@@ -18,6 +19,10 @@ interface EntertainmentTabProps {
   onOpenPoiModal: (category: PoiCategory) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+  onPressDate?: () => void;
+  onPressTime?: () => void;
+  onClearDate?: () => void;
+  onClearTime?: () => void;
 }
 
 export default function EntertainmentTab({
@@ -28,6 +33,10 @@ export default function EntertainmentTab({
   onOpenPoiModal,
   noPadding = false,
   fieldRefs,
+  onPressDate,
+  onPressTime,
+  onClearDate,
+  onClearTime,
 }: EntertainmentTabProps) {
   const { colors } = useTheme();
   const currentSubType = values.entertainmentDetails?.subType || null;
@@ -68,6 +77,17 @@ export default function EntertainmentTab({
           onBlur={handleBlur("entertainmentDetails.address")}
         />
       </View>
+
+      {onPressDate && onPressTime && onClearDate && onClearTime && (
+        <DateTime
+          startDate={values.startDate}
+          startTime={values.startTime}
+          onPressDate={onPressDate}
+          onPressTime={onPressTime}
+          onClearDate={onClearDate}
+          onClearTime={onClearTime}
+        />
+      )}
 
       {/* Sub-type tags */}
       <View className="mb-5">
@@ -128,6 +148,39 @@ export default function EntertainmentTab({
           value={values.entertainmentDetails?.websiteAddress || ""}
           onChangeText={handleChange("entertainmentDetails.websiteAddress")}
           onBlur={handleBlur("entertainmentDetails.websiteAddress")}
+          contentStyle={{ textDecorationLine: "underline" }}
+          right={
+            values.entertainmentDetails?.websiteAddress ? (
+              <TextInput.Icon
+                icon={() => (
+                  <Text
+                    style={{
+                      color: colors?.primary || "#263F69",
+                      textDecorationLine: "underline",
+                      fontWeight: "bold",
+                      fontSize: 14,
+                      marginTop: 2,
+                      opacity: 0.8,
+                    }}
+                  >
+                    open
+                  </Text>
+                )}
+                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                onPress={() => {
+                  let url = values.entertainmentDetails.websiteAddress;
+                  if (url) {
+                    if (!/^https?:\/\//i.test(url)) {
+                      url = "https://" + url;
+                    }
+                    Linking.openURL(url).catch((err) =>
+                      console.error("Failed to open URL", err)
+                    );
+                  }
+                }}
+              />
+            ) : null
+          }
         />
       </View>
     </View>

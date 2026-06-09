@@ -1146,7 +1146,11 @@ const EditActivity = ({
                     </Text>
                   </View>
                   {touched.title && errors.title && (
-                    <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
+                    <View className="flex flex-row items-center mt-1">
+                      <Icon name="info-outline" size={14} color="#fb2c36" />
+                      <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
+                    </View>
+                   
                   )}
                 </View>
 
@@ -1201,6 +1205,10 @@ const EditActivity = ({
                     }}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1218,6 +1226,10 @@ const EditActivity = ({
                     }}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1235,6 +1247,10 @@ const EditActivity = ({
                     }}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1252,6 +1268,10 @@ const EditActivity = ({
                     }}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1264,6 +1284,10 @@ const EditActivity = ({
                     setFieldValue={setFieldValue}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1276,6 +1300,10 @@ const EditActivity = ({
                     setFieldValue={setFieldValue}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1293,6 +1321,10 @@ const EditActivity = ({
                     }}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1319,6 +1351,10 @@ const EditActivity = ({
                     setFieldValue={setFieldValue}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1351,6 +1387,10 @@ const EditActivity = ({
                     setFieldValue={setFieldValue}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1368,6 +1408,10 @@ const EditActivity = ({
                     }}
                     noPadding={true}
                     fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
+                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
                 )}
 
@@ -1392,62 +1436,13 @@ const EditActivity = ({
                 )}
 
                 {/* Activity Details Accordion */}
-                <SimpleAccordion key="activity-details-accordion" title="Activity Details" defaultExpanded={true}>
+                <SimpleAccordion key="activity-details-accordion" title="Other Details" defaultExpanded={true}>
 
 
-                  {/* Date & Time */}
-                  {values.type !== ActivityType.flight && values.type !== ActivityType.accomodation && (
-                    <View ref={(el) => { fieldRefs.current["startDate"] = el; }} className="mb-5">
-                      <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
-                      <View className="flex-row items-center gap-4 mt-2">
-                        <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
-                          <TouchableOpacity 
-                            onPress={() => setShowCalendarFor("startDate")}
-                            className="flex-1 flex-row items-center p-5 gap-2"
-                            accessibilityRole="button"
-                          >
-                            <Icon name="calendar-today" size={24} color="#999" />
-                            <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
-                              {values.startDate ? String(values.startDate) : "Date"}
-                            </Text>
-                          </TouchableOpacity>
-                          {values.startDate && (
-                            <TouchableOpacity 
-                              onPress={() => setValues({...values, startDate: null, startTime: ""} as any)}
-                              className="pr-4 py-3"
-                              accessibilityRole="button"
-                            >
-                              <Icon name="close" size={22} color="#999" />
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                        <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
-                          <TouchableOpacity 
-                            onPress={() => setShowTimePickerFor("startTime")}
-                            className="flex-1 flex-row items-center p-5 gap-2"
-                            accessibilityRole="button"
-                          >
-                            <Icon name="access-time" size={24} color="#888" />
-                            <Text className={`text-md font-medium ${values.startDate ? "text-gray-800" : "text-gray-500"}`}>
-                              {values.startTime ? String(values.startTime) : "Time"}
-                            </Text>
-                          </TouchableOpacity>
-                          {values.startTime !== "" && (
-                            <TouchableOpacity 
-                              onPress={() => setValues({...values, startTime: ""} as any)}
-                              className="pr-4 py-3"
-                              accessibilityRole="button"
-                            >
-                              <Icon name="close" size={22} color="#999" />
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                      </View>
-                    </View>
-                  )}
+                  {/* Date & Time fields removed from main form and injected into specific tabs */}
 
                   {/* Location */}
-                  <View ref={(el) => { fieldRefs.current["destination"] = el; }} className="mb-5">
+                  {/* <View ref={(el) => { fieldRefs.current["destination"] = el; }} className="mb-5">
                     <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Location</Text>
                     {values.destinationData ? (() => {
                       const { longitude, latitude } = values.destinationData.coordinates;
@@ -1491,7 +1486,7 @@ const EditActivity = ({
                         </View>
                       </TouchableOpacity>
                     )}
-                  </View>
+                  </View> */}
 
 
                   {/* Activity Type */}

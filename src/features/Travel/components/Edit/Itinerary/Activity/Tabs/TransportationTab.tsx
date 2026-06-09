@@ -3,6 +3,7 @@ import React from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useTheme } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import DateTime from "../DateTime";
 
 const TRANSPORT_MODES = [
   "Ride", "Bike", "Boat", "Bus", "Taxi", "Train", "Ferry", "Tuk-tuk", "Jeepney",
@@ -15,6 +16,10 @@ interface TransportationTabProps {
   setFieldValue: any;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+  onPressDate?: () => void;
+  onPressTime?: () => void;
+  onClearDate?: () => void;
+  onClearTime?: () => void;
 }
 
 export default function TransportationTab({
@@ -24,6 +29,10 @@ export default function TransportationTab({
   setFieldValue,
   noPadding = false,
   fieldRefs,
+  onPressDate,
+  onPressTime,
+  onClearDate,
+  onClearTime,
 }: TransportationTabProps) {
   const { colors } = useTheme();
   const currentMode = values.transportationDetails?.mode || null;
@@ -118,6 +127,17 @@ export default function TransportationTab({
           />
         </View>
       </View>
+
+      {onPressDate && onPressTime && onClearDate && onClearTime && (
+        <DateTime
+          startDate={values.startDate}
+          startTime={values.startTime}
+          onPressDate={onPressDate}
+          onPressTime={onPressTime}
+          onClearDate={onClearDate}
+          onClearTime={onClearTime}
+        />
+      )}
     </View>
   );
 }

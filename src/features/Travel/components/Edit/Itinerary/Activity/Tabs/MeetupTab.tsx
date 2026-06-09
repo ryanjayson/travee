@@ -3,6 +3,7 @@ import React from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useTheme, TextInput } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import DateTime from "../DateTime";
 
 type PoiCategory = "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp";
 
@@ -16,6 +17,10 @@ interface MeetupTabProps {
   onOpenPoiModal: (category: PoiCategory) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+  onPressDate?: () => void;
+  onPressTime?: () => void;
+  onClearDate?: () => void;
+  onClearTime?: () => void;
 }
 
 export default function MeetupTab({
@@ -26,6 +31,10 @@ export default function MeetupTab({
   onOpenPoiModal,
   noPadding = false,
   fieldRefs,
+  onPressDate,
+  onPressTime,
+  onClearDate,
+  onClearTime,
 }: MeetupTabProps) {
   const { colors } = useTheme();
   const currentType = values.meetupDetails?.meetupType || null;
@@ -66,6 +75,17 @@ export default function MeetupTab({
           onBlur={handleBlur("meetupDetails.address")}
         />
       </View>
+
+      {onPressDate && onPressTime && onClearDate && onClearTime && (
+        <DateTime
+          startDate={values.startDate}
+          startTime={values.startTime}
+          onPressDate={onPressDate}
+          onPressTime={onPressTime}
+          onClearDate={onClearDate}
+          onClearTime={onClearTime}
+        />
+      )}
 
       {/* Type tags */}
       <View className="mb-5">

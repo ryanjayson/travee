@@ -177,7 +177,7 @@ const ActivityIcon = ({
   };
 
   return (
-    <View >
+    <View>
       {activityIcon && getIconDisplay(activityIcon)}
     </View>
   );

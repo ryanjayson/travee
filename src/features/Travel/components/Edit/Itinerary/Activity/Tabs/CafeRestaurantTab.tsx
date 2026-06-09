@@ -3,6 +3,7 @@ import React from "react";
 import { View, Text, Linking, TouchableOpacity } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import DateTime from "../DateTime";
 
 type PoiCategory = "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp";
 
@@ -14,6 +15,10 @@ interface CafeRestaurantTabProps {
   onOpenPoiModal: (category: PoiCategory) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+  onPressDate?: () => void;
+  onPressTime?: () => void;
+  onClearDate?: () => void;
+  onClearTime?: () => void;
 }
 
 export default function CafeRestaurantTab({
@@ -24,6 +29,10 @@ export default function CafeRestaurantTab({
   onOpenPoiModal,
   noPadding = false,
   fieldRefs,
+  onPressDate,
+  onPressTime,
+  onClearDate,
+  onClearTime,
 }: CafeRestaurantTabProps) {
   const { colors } = useTheme();
 
@@ -64,6 +73,17 @@ export default function CafeRestaurantTab({
         />
       </View>
 
+      {onPressDate && onPressTime && onClearDate && onClearTime && (
+        <DateTime
+          startDate={values.startDate}
+          startTime={values.startTime}
+          onPressDate={onPressDate}
+          onPressTime={onPressTime}
+          onClearDate={onClearDate}
+          onClearTime={onClearTime}
+        />
+      )}
+
       {/* Cuisine & Price Range */}
       <View className="flex-row gap-4 mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.cuisine"] = el; }} style={{ flex: 1 }}>
@@ -101,11 +121,12 @@ export default function CafeRestaurantTab({
                       color: colors?.primary || "#263F69",
                       textDecorationLine: "underline",
                       fontWeight: "bold",
-                      fontSize: 16,
+                      fontSize: 14,
                       marginTop: 2,
+                      opacity: 0.8,
                     }}
                   >
-                    Open
+                    open
                   </Text>
                 )}
                 style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
