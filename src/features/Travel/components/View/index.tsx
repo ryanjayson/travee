@@ -626,7 +626,7 @@ const ViewTravel = ({
           <Animated.View
             className="flex-1 mr-4"
             style={{
-                // transform: [{ scaleY: expanded ? 0 : 0 }], 
+              //   transform: [{ scaleY: expanded ? 0 : 0 }], 
 
               // height: translateY.interpolate({
               //   inputRange: [SNAP_MAX, SNAP_MID],
@@ -637,9 +637,9 @@ const ViewTravel = ({
           >
             <View className="flex-row items-center gap-3">
               {/* {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
-                <TripIcon type={travelPlan.travel.type} size={24} showIconOnly={true} />
+                <TripIcon type={travelPlan.travel.type} size={24} showIconOnly={true} /> 
               )} */}
-              <Text className="text-3xl font-bold text-gray-800 flex-1" numberOfLines={expanded ? undefined : 1}>
+              <Text className="text-3xl font-bold text-gray-800 flex-1" numberOfLines={currentSnap === SNAP_MIN ? 1 : undefined}>
                 {travelPlan.travel.title}
               </Text>
             </View>
@@ -663,7 +663,10 @@ const ViewTravel = ({
         </View>
 
         {/* Tabbed Content */}
-        <View className="flex-1 bg-gray-100">
+        <Animated.View 
+          className="flex-1 bg-gray-100"
+          style={{ paddingBottom: translateY }}
+        >
           <Tabs 
             tabs={tabData} 
             initialActiveTabId="details" 
@@ -671,7 +674,7 @@ const ViewTravel = ({
             onTabChange={setActiveTabId} 
             expanded={true}
           />
-        </View>
+        </Animated.View>
       </Animated.View>
       <TravelActionFAB 
         currentTab={activeTabId}

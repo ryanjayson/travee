@@ -3,7 +3,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { Formik, useFormikContext } from "formik";
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -430,6 +430,7 @@ const EditActivity = ({
   const [isAllDay, setIsAllDay] = useState<boolean>(true);
   const [showTimePickerFor, setShowTimePickerFor] = useState<"startTime" | "endTime" | null>(null);
   const [showCalendarFor, setShowCalendarFor] = useState<"startDate" | "endDate" | null>(null);
+  const handleCloseCalendar = useCallback(() => setShowCalendarFor(null), []);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
   const [isChecklistFocused, setIsChecklistFocused] = useState<boolean>(false);
@@ -1134,13 +1135,13 @@ const EditActivity = ({
                       outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                       style={{ marginTop: 6, height: 64 }}
                       contentStyle={{ backgroundColor: "transparent", paddingRight: 60 }}
-                      maxLength={100}
+                      maxLength={40}
                     />
                     <Text
                       className="absolute right-4 bottom-3 text-xs"
                       style={{ color: '#98A2B3' }}
                     >
-                      {(values.title || "").length}/20
+                      {(values.title || "").length}/40
                     </Text>
                   </View>
                   {touched.title && errors.title && (
@@ -1148,7 +1149,6 @@ const EditActivity = ({
                       <Icon name="info-outline" size={14} color="#fb2c36" />
                       <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
                     </View>
-                   
                   )}
                 </View>
 
@@ -1953,59 +1953,14 @@ const EditActivity = ({
               />
             </Modal>
 
-            <Modal 
-              visible={showCalendarFor !== null} 
-              transparent={false} 
-              animationType="slide"
-              onRequestClose={() => setShowCalendarFor(null)}
-            >
-              <View className="flex-1 bg-white pt-12">
-                <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
-                  <TouchableOpacity 
-                    onPress={() => setShowCalendarFor(null)}
-                    accessibilityRole="button"
-                    accessibilityLabel="Close date selector"
-                  >
-                    <Icon name="close" size={28} color="#333" />
-                  </TouchableOpacity>
-                  <Text className="text-xl font-bold">Select Date</Text>
-                  <View className="w-10" />
-                </View>
-
-                <View className="flex-1">
-                  <CalendarList
-                    current={(showCalendarFor === "startDate" ? values.startDate : values.endDate) || undefined}
-                    pastScrollRange={12}
-                    futureScrollRange={24}
-                    scrollEnabled={true}
-                    horizontal={false}
-                    showsVerticalScrollIndicator={true}
-                    hideArrows={true}
-                    onDayPress={(day: any) => {
-                      if (showCalendarFor === "startDate") {
-                        setValues({ ...values, startDate: day.dateString });
-                      } else {
-                        setValues({ ...values, endDate: day.dateString });
-                      }
-                      setShowCalendarFor(null);
-                    }}
-                    markedDates={{
-                      [(showCalendarFor === "startDate" ? values.startDate : values.endDate) || ""]: {
-                        selected: true,
-                        selectedColor: '#263F69',
-                      }
-                    }}
-                    theme={{
-                      todayTextColor: '#263F69',
-                      todayBackgroundColor: '#E3F2FD',
-                      textDayFontWeight: 'bold',
-                      selectedDayBackgroundColor: '#263F69',
-                      selectedDayTextColor: '#ffffff',
-                    }}
-                  />
-                </View>
-              </View>
-            </Modal>
+            <ActivityCalendarModal
+              visible={showCalendarFor !== null}
+              showCalendarFor={showCalendarFor}
+              startDate={values.startDate}
+              endDate={values.endDate}
+              onClose={handleCloseCalendar}
+              setFieldValue={setFieldValue}
+            />
 
 
 
@@ -2215,5 +2170,96 @@ const FormikErrorScroller = ({
 
   return null;
 };
+
+interface ActivityCalendarModalProps {
+  visible: boolean;
+  onClose: () => void;
+  showCalendarFor: "startDate" | "endDate" | null;
+  startDate: string | null;
+  endDate: string | null;
+  setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
+}
+
+const ACTIVITY_CALENDAR_THEME = {
+  todayTextColor: "#263F69",
+  todayBackgroundColor: "#E3F2FD",
+  textDayFontWeight: "bold" as const,
+  selectedDayBackgroundColor: "#263F69",
+  selectedDayTextColor: "#ffffff",
+};
+
+const ActivityCalendarModal: React.FC<ActivityCalendarModalProps> = React.memo(({
+  visible,
+  onClose,
+  showCalendarFor,
+  startDate,
+  endDate,
+  setFieldValue,
+}) => {
+  const { colors } = useTheme();
+
+  const markedDates = useMemo(() => {
+    const selectedDate = (showCalendarFor === "startDate" ? startDate : endDate) || "";
+    if (!selectedDate) return {};
+    return {
+      [selectedDate]: {
+        selected: true,
+        selectedColor: "#263F69",
+      },
+    };
+  }, [showCalendarFor, startDate, endDate]);
+
+  const handleDayPress = useCallback(
+    (day: any) => {
+      if (showCalendarFor) {
+        setFieldValue(showCalendarFor, day.dateString);
+      }
+      onClose();
+    },
+    [showCalendarFor, setFieldValue, onClose]
+  );
+
+  return (
+    <Modal
+      visible={visible}
+      transparent={false}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View className="flex-1 bg-white pt-12">
+        <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
+          <TouchableOpacity
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel="Close date selector"
+          >
+            <Icon name="close" size={28} color={colors.onSurface} />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold">Select Date</Text>
+          <View className="w-10" />
+        </View>
+
+        <View className="flex-1">
+          <CalendarList
+            current={(showCalendarFor === "startDate" ? startDate : endDate) || undefined}
+            pastScrollRange={12}
+            futureScrollRange={24}
+            scrollEnabled={true}
+            horizontal={false}
+            showsVerticalScrollIndicator={true}
+            hideArrows={true}
+            onDayPress={handleDayPress}
+            markedDates={markedDates}
+            theme={ACTIVITY_CALENDAR_THEME}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={5}
+            windowSize={5}
+            initialNumToRender={4}
+          />
+        </View>
+      </View>
+    </Modal>
+  );
+});
 
 
