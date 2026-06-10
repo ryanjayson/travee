@@ -17,7 +17,8 @@ import { MAPBOX_ACCESS_TOKEN } from "@env";
 import CheckboxGroup from "../../../../components/GroupCheckboxes";
 import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 import StatusBadge from "../../../../components/StatusBadge";
-import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
+import MapboxDestinationSelectorModal from "../MapboxDestinationSelector/Modal";
+import { MapboxPlace } from "../MapboxDestinationSelector";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import { useUpdateTravel, useTravels } from "../../hooks/useTravel";
 import { Travel, UpdateTravelData, DestinationDto } from "../../types/TravelDto";
@@ -336,27 +337,24 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           );
         })()}
 
-        <Modal visible={showDestinationModal} 
-          transparent
-          animationType="slide" onRequestClose={() => setShowDestinationModal(false)}>
-          <MapboxDestinationSelector
-            onClose={() => setShowDestinationModal(false)}
-            onSelect={(place: MapboxPlace) => {
-              formik.setFieldValue("destination", place.fullName);
-              formik.setFieldValue("destinationData", {
-                id: place.id,
-                coordinates: { longitude: place.coordinates.longitude, latitude: place.coordinates.latitude },
-              } as DestinationDto);
-              setShowDestinationModal(false);
-              if (mode === "create") {
-                setTimeout(() => {
-                  setShowStartDatePicker(true);
-                }, 300);
-              }
-            }}
-            initialValue={formik.values.destination}
-          />
-        </Modal>
+        <MapboxDestinationSelectorModal
+          visible={showDestinationModal}
+          onClose={() => setShowDestinationModal(false)}
+          onSelect={(place: MapboxPlace) => {
+            formik.setFieldValue("destination", place.fullName);
+            formik.setFieldValue("destinationData", {
+              id: place.id,
+              coordinates: { longitude: place.coordinates.longitude, latitude: place.coordinates.latitude },
+            } as DestinationDto);
+            setShowDestinationModal(false);
+            if (mode === "create") {
+              setTimeout(() => {
+                setShowStartDatePicker(true);
+              }, 300);
+            }
+          }}
+          initialValue={formik.values.destination}
+        />
       </View>
 
       <View className="mb-5">

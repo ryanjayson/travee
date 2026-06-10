@@ -52,7 +52,8 @@ import { fetchLocalItineraryActivity } from "../../../../../../services/local/tr
 import { DestinationDto, Images, ItineraryActivity, Attachment } from "../../../../types/TravelDto";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
 import SectionLookupModal from "../../../Lookups/SectionLookupModal";
-import MapboxDestinationSelector, { MapboxPlace } from "../../../MapboxDestinationSelector";
+import MapboxDestinationSelectorModal from "../../../MapboxDestinationSelector/Modal";
+import { MapboxPlace } from "../../../MapboxDestinationSelector";
 import PoiLookupModal, { MapboxPoi } from "../../../Lookups/PoiLookupModal";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../../context/ToastContext";
@@ -1529,7 +1530,7 @@ const EditActivity = ({
                   {/* Itinerary Section */}
                   <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-5">
                     <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Section</Text>
-                    <Text className={`text-base text-gray-400 opacity-80`}>
+                         <Text className={`text-sm text-gray-500`}>
                       Select the itinerary section where you want to add this activity.
                     </Text>
                     <TouchableOpacity 
@@ -1853,30 +1854,24 @@ const EditActivity = ({
                </View>
             )}
 
-            <Modal
+            <MapboxDestinationSelectorModal
               visible={showDestinationModal}
-              animationType="slide"
-              transparent
-              onRequestClose={() => setShowDestinationModal(false)}
-            >
-              <MapboxDestinationSelector
-                onClose={() => setShowDestinationModal(false)}
-                onSelect={(place: MapboxPlace) => {
-                  setValues({
-                    ...values,
-                    destination: place.fullName,
-                    destinationData: {
-                      id: place.id,
-                      coordinates: {
-                        longitude: place.coordinates.longitude,
-                        latitude: place.coordinates.latitude,
-                      },
-                    } as DestinationDto
-                  });
-                  setShowDestinationModal(false);
-                }}
-              />
-            </Modal>
+              onClose={() => setShowDestinationModal(false)}
+              onSelect={(place: MapboxPlace) => {
+                setValues({
+                  ...values,
+                  destination: place.fullName,
+                  destinationData: {
+                    id: place.id,
+                    coordinates: {
+                      longitude: place.coordinates.longitude,
+                      latitude: place.coordinates.latitude,
+                    },
+                  } as DestinationDto
+                });
+                setShowDestinationModal(false);
+              }}
+            />
 
             <Modal
               visible={showPoiModal}

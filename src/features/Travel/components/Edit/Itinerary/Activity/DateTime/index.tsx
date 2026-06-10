@@ -22,6 +22,9 @@ export default function DateTime({
   return (
     <View className="mb-5">
       <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
+      <Text className={`text-sm text-gray-500`}>
+       Activities with a set date and time are sorted based on their scheduled date and time and cannot be reordered.
+      </Text>
       <View className="flex-row items-center gap-4 mt-2">
         <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-[64px]">
           <TouchableOpacity 

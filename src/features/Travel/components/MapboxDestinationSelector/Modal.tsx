@@ -1,5 +1,5 @@
-import React from "react";
-import { Modal } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Modal, Keyboard, Platform } from "react-native";
 import MapboxDestinationSelector, { MapboxPlace } from "./index";
 
 interface MapboxDestinationSelectorModalProps {
@@ -15,12 +15,37 @@ const MapboxDestinationSelectorModal = ({
   onSelect,
   initialValue = "",
 }: MapboxDestinationSelectorModalProps) => {
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === "android" ? "keyboardDidShow" : "keyboardWillShow",
+      () => setIsKeyboardVisible(true)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === "android" ? "keyboardDidHide" : "keyboardWillHide",
+      () => setIsKeyboardVisible(false)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const handleRequestClose = () => {
+    if (isKeyboardVisible) {
+      Keyboard.dismiss();
+    } else {
+      onClose();
+    }
+  };
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
       transparent={false}
-      onRequestClose={onClose}
+      onRequestClose={handleRequestClose}
     >
       <MapboxDestinationSelector
         onClose={onClose}

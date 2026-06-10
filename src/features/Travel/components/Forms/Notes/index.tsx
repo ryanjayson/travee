@@ -23,7 +23,8 @@ import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
 import { useUpdateActivityMutation, useDeleteActivityMutation } from "../../../hooks/useActivity";
 import { useTravelContext } from "../../../../../context/TravelContext";
 import ActivityIcon from "../../../../../components/ActivityIcon";
-import MapboxDestinationSelector, { MapboxPlace } from "../../MapboxDestinationSelector";
+import MapboxDestinationSelectorModal from "../../MapboxDestinationSelector/Modal";
+import { MapboxPlace } from "../../MapboxDestinationSelector";
 
 interface Place {
   id: string;
@@ -348,30 +349,24 @@ debugger;
                />
              </View>
 
-            <Modal
+            <MapboxDestinationSelectorModal
               visible={showDestinationModal}
-              animationType="slide"
-              transparent
-              onRequestClose={() => setShowDestinationModal(false)}
-            >
-              <MapboxDestinationSelector
-                onClose={() => setShowDestinationModal(false)}
-                onSelect={(place: MapboxPlace) => {
-                  setValues({
-                    ...values,
-                    destination: place.fullName,
-                    destinationData: {
-                      id: place.id,
-                      coordinates: {
-                        longitude: place.coordinates.longitude,
-                        latitude: place.coordinates.latitude,
-                      },
-                    } as DestinationDto
-                  });
-                  setShowDestinationModal(false);
-                }}
-              />
-            </Modal>
+              onClose={() => setShowDestinationModal(false)}
+              onSelect={(place: MapboxPlace) => {
+                setValues({
+                  ...values,
+                  destination: place.fullName,
+                  destinationData: {
+                    id: place.id,
+                    coordinates: {
+                      longitude: place.coordinates.longitude,
+                      latitude: place.coordinates.latitude,
+                    },
+                  } as DestinationDto
+                });
+                setShowDestinationModal(false);
+              }}
+            />
 
             <Modal
               visible={showCalendarFor !== null}

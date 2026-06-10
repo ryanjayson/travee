@@ -275,6 +275,7 @@ const ActivityItemCard = ({
   ).current;
 
   const handleLongPress = () => {
+    if (!onDragStart || !onDragEnd) return;
     if (itineraryEventActivity.startDate) {
       showToast({
         type: "info",

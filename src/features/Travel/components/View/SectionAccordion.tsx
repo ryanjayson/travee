@@ -1,26 +1,79 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, ScrollView, Animated, LayoutAnimation, Dimensions, Easing } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, ScrollView, Animated, LayoutAnimation, Dimensions, Easing, Switch, TouchableOpacity, Pressable } from "react-native";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import Accordion from "../../../../components/Accordion";
 import ActivityItemCard from "./Activity/Card";
 import DraggableSectionContainer from "../Edit/Itinerary/DraggableSectionContainer";
-import { ItineraryActivity, ItinerarySection } from "../../../Travel/types/TravelDto";
+import { ItineraryActivity, ItinerarySection, TravelPlan } from "../../../Travel/types/TravelDto";
 import { ActivityType } from "../../../../types/enums";
 import { useLexicographicSort } from "../../../../hooks/useLexicographicSort";
 import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../services/local/travelService";
 import { useToast } from "../../../../context/ToastContext";
 import ActivityIcon from "../../../../components/ActivityIcon";
+import { useTheme } from "react-native-paper";
+import { useTripSetting, useUpdateTripSetting } from "../../hooks/useTripSetting";
 
 interface SectionAccordionProps {
-  iterarysections?: ItinerarySection[];
-  plainMode?: boolean;
-  scrollEnabled?: boolean;
-  onScrollY?: (y: number) => void;
-  viewMode?: "plain" | "narrow" | "expanded";
-  allowItemReordering?: boolean;
-  onInteraction?: () => void;
+  travelPlan: TravelPlan;
 }
+
+// Tactile spring layout animation configuration
+const springConfig = {
+  duration: 300,
+  create: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
+  update: {
+    type: LayoutAnimation.Types.spring,
+    springDamping: 0.8,
+  },
+  delete: {
+    type: LayoutAnimation.Types.easeInEaseOut,
+    property: LayoutAnimation.Properties.opacity,
+  },
+};
+
+// Icons and labels configuration for each view mode
+const viewModeConfig = {
+  plain: {
+    icon: "view-headline" as const,
+    label: "Plain list view",
+  },
+  narrow: {
+    icon: "format-list-bulleted" as const,
+    label: "Compact view",
+  },
+  expanded: {
+    icon: "view-list" as const,
+    label: "Detailed view",
+  },
+};
+
+const toViewMode = (itineraryView?: string): "plain" | "narrow" | "expanded" => {
+  switch (itineraryView) {
+    case "plain":
+      return "plain";
+    case "compact":
+      return "narrow";
+    case "detailed":
+    default:
+      return "expanded";
+  }
+};
+
+const toItineraryView = (viewMode: "plain" | "narrow" | "expanded"): "plain" | "compact" | "detailed" => {
+  switch (viewMode) {
+    case "plain":
+      return "plain";
+    case "narrow":
+      return "compact";
+    case "expanded":
+    default:
+      return "detailed";
+  }
+};
 
 const slowSpringAnimation = {
   duration: 1000,
@@ -257,17 +310,84 @@ const DraggableSectionItem = ({
 };
 
 const SectionAccordion = ({
-  iterarysections,
-  plainMode,
-  scrollEnabled = false,
-  onScrollY,
-  viewMode,
-  allowItemReordering = true,
-  onInteraction,
+  travelPlan,
 }: SectionAccordionProps) => {
   const { generateSortOrder } = useLexicographicSort();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { colors } = useTheme();
+
+  const iterarysections = travelPlan.itinerarySection;
+  const travelId = travelPlan.travel.id || "";
+  const { data: dbSetting } = useTripSetting(travelId);
+  const updateSettingMutation = useUpdateTripSetting();
+
+  // Combine fetched settings, travel payload settings, and defaults
+  const currentSetting = dbSetting || travelPlan.travel.tripSetting || travelPlan.tripSetting;
+
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: isAtTop ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [isAtTop]);
+
+  const [viewMode, setViewMode] = useState<"plain" | "narrow" | "expanded">("expanded");
+  const [allowItemReordering, setAllowItemReordering] = useState(true);
+
+  // Reactively synchronize local states when database settings update
+  useEffect(() => {
+    if (currentSetting) {
+      setViewMode(toViewMode(currentSetting.itineraryView));
+      setAllowItemReordering(currentSetting.allowItemReordering);
+    }
+  }, [currentSetting]);
+
+  const toggleSettings = () => {
+    LayoutAnimation.configureNext(springConfig);
+    setIsSettingsExpanded((prev) => !prev);
+  };
+
+  const collapseSettings = () => {
+    if (isSettingsExpanded) {
+      LayoutAnimation.configureNext(springConfig);
+      setIsSettingsExpanded(false);
+    }
+  };
+
+  const handleModeChange = (mode: "plain" | "narrow" | "expanded") => {
+    LayoutAnimation.configureNext(springConfig);
+    setViewMode(mode);
+
+    const itineraryView = toItineraryView(mode);
+    updateSettingMutation.mutate({
+      id: currentSetting?.id,
+      travelId,
+      currency: currentSetting?.currency || "PHP",
+      timezone: currentSetting?.timezone || "Asia/Manila",
+      itineraryView,
+      allowItemReordering,
+    });
+  };
+
+  const handleReorderToggle = (value: boolean) => {
+    setAllowItemReordering(value);
+
+    const itineraryView = toItineraryView(viewMode);
+    updateSettingMutation.mutate({
+      id: currentSetting?.id,
+      travelId,
+      currency: currentSetting?.currency || "PHP",
+      timezone: currentSetting?.timezone || "Asia/Manila",
+      itineraryView,
+      allowItemReordering: value,
+    });
+  };
 
   // --- Local mutable sections state ---
   const [sections, setSections] = useState<ItinerarySection[]>([]);
@@ -685,7 +805,7 @@ const SectionAccordion = ({
             itineraryActivity={eventActivity}
             isFirstItem={isFirstEvent}
             isLastItem={isLastEvent}
-            plainMode={plainMode}
+            plainMode={viewMode === "plain"}
             viewMode={viewMode}
             index={index}
             listLength={array.length}
@@ -742,20 +862,24 @@ const SectionAccordion = ({
       <ScrollView
         ref={scrollViewRef}
         onScroll={(e) => {
-          // console.log(e)
           scrollOffset.current = e.nativeEvent.contentOffset.y;
-          onInteraction?.();
+          const atTop = e.nativeEvent.contentOffset.y <= 5;
+          if (atTop !== isAtTop) {
+            setIsAtTop(atTop);
+          }
+          if (e.nativeEvent.contentOffset.y > 5) {
+            collapseSettings();
+          }
         }}
         onTouchStart={() => {
-          onInteraction?.();
+          collapseSettings();
         }}
         scrollEventThrottle={16}
         className="flex-1"
         scrollEnabled={!sectionDragState?.isDragging && !masterDragState.isDragging}
       >
-        <View className="flex-1 p-3">
-          {sections &&
-            sections.map((section, index) => {
+        <View className="flex-1 p-3 pt-6xl">
+            {sections.map((section, index) => {
               const isDefaultSection = section.isDefaultSection;
               if (isDefaultSection) {
                 return (
@@ -772,7 +896,7 @@ const SectionAccordion = ({
            
                   </View>
                 );
-              } else if (plainMode) {
+              } else if (viewMode === "plain") {
                 return (
                   <View key={section.id} className="mb-2">
                     <View className="flex-row items-center gap-2 py-3">
@@ -841,6 +965,101 @@ const SectionAccordion = ({
            
         </View>
       </ScrollView>
+
+      {/* Settings Accordion Header */}
+      <Animated.View
+        pointerEvents={isAtTop ? "auto" : "none"}
+        style={{
+          opacity: fadeAnim,
+          zIndex: isAtTop ? 10 : 0,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+        }}
+      >
+        <TouchableOpacity
+          onPress={toggleSettings}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Toggle Display Settings"
+          className={`flex-row items-center justify-between px-5 py-3 ${isSettingsExpanded ? " bg-white" : ""}`}
+        >
+          <View className="flex-row items-center gap-3" />
+          <View className="flex-row items-center gap-2">
+            <MaterialIcons name="settings" size={20} color={colors.primary} />
+            <MaterialIcons
+              name={isSettingsExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+              size={22}
+              color="#667085"
+            />
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/* Settings Accordion Body */}
+      {isSettingsExpanded && (
+        <Pressable
+          onStartShouldSetResponder={() => true}
+          className="bg-white border-b border-gray-200 px-5 py-4 gap-4 absolute z-50 top-5xl right-0 w-full"
+        >
+          {/* View Mode Selection Row */}
+          <View className="flex-row items-center justify-between">
+            <View>
+              <Text className="text-sm font-semibold text-gray-900">View Style</Text>
+              <Text className="text-xs text-gray-500 mt-0.5">Choose layout style for activities</Text>
+            </View>
+            <View className="flex-row bg-gray-100 rounded-full p-1 border border-gray-200">
+              {(["plain", "narrow", "expanded"] as const).map((mode) => {
+                const isActive = viewMode === mode;
+                const config = viewModeConfig[mode];
+                return (
+                  <TouchableOpacity
+                    key={mode}
+                    accessibilityRole="button"
+                    accessibilityLabel={config.label}
+                    accessibilityState={{ selected: isActive }}
+                    onPress={() => handleModeChange(mode)}
+                    style={{
+                      backgroundColor: isActive ? colors.primary || "#263F69" : "transparent",
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginHorizontal: 3
+                    }}
+                  >
+                    <MaterialIcons
+                      name={config.icon}
+                      size={20}
+                      color={isActive ? "#FFF" : "#666"}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Divider */}
+          <View className="h-[1px] bg-gray-100" />
+
+          {/* Reordering Permission Row */}
+          <View className="flex-row items-center justify-between">
+            <View>
+              <Text className="text-sm font-semibold text-gray-900">Allow drag & drop reordering</Text>
+              <Text className="text-xs text-gray-500 mt-0.5">Toggle section and activity sorting</Text>
+            </View>
+            <Switch
+              value={allowItemReordering}
+              onValueChange={handleReorderToggle}
+              trackColor={{ false: "#D0D5DD", true: `${colors.primary}80` }}
+              thumbColor={allowItemReordering ? colors.primary : "#F2F4F7"}
+              ios_backgroundColor="#D0D5DD"
+            />
+          </View>
+        </Pressable>
+      )}
     </View>
   );
 };

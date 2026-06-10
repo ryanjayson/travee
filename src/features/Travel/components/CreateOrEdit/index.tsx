@@ -24,7 +24,8 @@ import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
 import { useNavigation } from "@react-navigation/native";
 import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
 import { DestinationDto, Travel } from "../../types/TravelDto";
-import MapboxDestinationSelector, { MapboxPlace } from "../MapboxDestinationSelector";
+import MapboxDestinationSelectorModal from "../MapboxDestinationSelector/Modal";
+import { MapboxPlace } from "../MapboxDestinationSelector";
 import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 
 export interface CreateOrEditProps {
@@ -275,7 +276,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               activeOutlineColor="#263F69"
               theme={{
                 colors: {
-                  onSurfaceVariant: '#888', 
+                  onSurfaceVariant: '#98A2B3', 
                 },
               }}
               outlineStyle={{
@@ -317,10 +318,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             </TouchableOpacity>
           ) : null}
           {formik.touched.title && formik.errors.title && (
-            <View className="flex flex-row items-center mt-1">
-              <Icon name="info-outline" size={14} color="#fb2c36" />
-              <Text className="text-red-500 text-xs ml-1" >{formik.errors.title as string}</Text>
-            </View>
+ <View className="flex flex-row items-center mt-1">
+                      <Icon name="info-outline" size={14} color="#fb2c36" />
+                      <Text className="text-red-500 text-xs ml-1" >{formik.errors.title as string}</Text>
+                    </View>
+            
           )}
         </View>
 
@@ -347,7 +349,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                     left={<TextInput.Icon icon="map-marker" color="#999" />}
                     theme={{
                       colors: {
-                        onSurfaceVariant: '#888', 
+                        onSurfaceVariant: '#98A2B3', 
                       },
                     }}
                     outlineStyle={{
@@ -396,40 +398,34 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             );
           })()}
 
-          <Modal
+          <MapboxDestinationSelectorModal
             visible={showDestinationModal}
-            animationType="slide"
-            transparent
-            onRequestClose={() => setShowDestinationModal(false)}
-          >
-             <Animated.View className="bg-white flex-1">
-                          <MapboxDestinationSelector
-              onClose={() => setShowDestinationModal(false)}
-              onSelect={(place: MapboxPlace) => {
-                formik.setFieldValue("destination", place.fullName);
-                formik.setFieldValue("destinationData", {
-                  id: place.id,
-                  coordinates: {
-                    longitude: place.coordinates.longitude,
-                    latitude: place.coordinates.latitude,
-                  },
-                } as DestinationDto);
-                setShowDestinationModal(false);
-                if (mode === "create") {
-                  setTimeout(() => {
-                    setShowStartDatePicker(true);
-                  }, 300);
-                }
-              }}
-              initialValue={formik.values.destination}
-            />
-                    </Animated.View>
-       
-          </Modal>
+            onClose={() => setShowDestinationModal(false)}
+            onSelect={(place: MapboxPlace) => {
+              formik.setFieldValue("destination", place.fullName);
+              formik.setFieldValue("destinationData", {
+                id: place.id,
+                coordinates: {
+                  longitude: place.coordinates.longitude,
+                  latitude: place.coordinates.latitude,
+                },
+              } as DestinationDto);
+              setShowDestinationModal(false);
+              if (mode === "create") {
+                setTimeout(() => {
+                  setShowStartDatePicker(true);
+                }, 300);
+              }
+            }}
+            initialValue={formik.values.destination}
+          />
         </View>
 
         <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Trip Type</Text>
+            <Text className={`text-base text-gray-500`}>
+              Trip type helps organize activities and recommendations.
+          </Text>
           <TouchableOpacity 
             onPress={() => setShowTripTypeModal(true)}
             className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
@@ -441,11 +437,17 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             ) : (
               <Icon name="style" size={24} color={"#B3B3B3"} />
             )}
-            <Text className="text-base text-gray-800 capitalize font-medium">
               {formik.values.type != null && formik.values.type !== TripType.none
-                ? String(TripType[formik.values.type]).replace(/([A-Z])/g, ' $1').trim()
-                : "Select Trip Type..."}
-            </Text>
+                ? (
+                   <Text className="text-md text-[#000000] capitalize"> 
+                    {String(TripType[formik.values.type]).replace(/([A-Z])/g, ' $1').trim()}
+                  </Text>
+                )
+               : (
+                <Text className="text-md text-[#98A2B3]"> 
+                    Select travel purpose
+                </Text>
+               )}
           </TouchableOpacity>
         </View>
 
@@ -481,7 +483,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   activeOutlineColor="#263F69"
                   theme={{
                       colors: {
-                        onSurfaceVariant: '#888', 
+                        onSurfaceVariant: '#98A2B3', 
                       },
                     }}
                     outlineStyle={{
@@ -540,7 +542,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   activeOutlineColor="#263F69"
                   theme={{
                       colors: {
-                        onSurfaceVariant: '#888', 
+                        onSurfaceVariant: '#98A2B3', 
                       },
                     }}
                     outlineStyle={{
@@ -587,7 +589,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                         Generate sections
                       </Text>
 
-                        <Text className={`text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-80' : 'text-gray-400'}`}>
+                        <Text className={`text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-80' : 'text-gray-500'}`}>
                           When checked it will create itinerary sections based on dates. Travel dates should be set to create.
                       </Text>
                     </TouchableOpacity>

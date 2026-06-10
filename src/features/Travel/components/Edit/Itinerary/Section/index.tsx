@@ -161,7 +161,7 @@ const EditSection = ({ itinerarySection, onClose, onScroll }: EditSectionProps) 
                 activeOutlineColor="#263F69"
                   theme={{
               colors: {
-                onSurfaceVariant: '#888', 
+                onSurfaceVariant: '#98A2B3', 
               },
             }}
             outlineStyle={{

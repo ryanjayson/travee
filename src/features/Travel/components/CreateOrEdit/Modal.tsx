@@ -165,7 +165,8 @@ const CreateTripModal = ({
     <Modal visible={showModal} 
       transparent
       animationType="none" 
-      onRequestClose={handleCancel}>
+      onRequestClose={handleCancel}
+      >
         <StatusBar style="dark" />
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
