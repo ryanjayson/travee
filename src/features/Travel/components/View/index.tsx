@@ -32,6 +32,7 @@ import ItineraryTab from "./Tabs/ItineraryTab";
 import MembersTab from "./Tabs/MembersTab";
 import NotesTab from "./Tabs/NotesTab";
 import TravelActionFAB from "./TravelActionFAB";
+import SectionModal from "../Edit/Itinerary/Section/Modal";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -65,6 +66,7 @@ const ViewTravel = ({
   setFabOpen,
 }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
+  const [showSectionModal, setShowSectionModal] = useState<boolean>(false);
   const [localShowMap, localSetShowMap] = useState<boolean>(false);
   const [localShowShare, localSetShowShare] = useState<boolean>(false);
   const { colors } = useTheme();
@@ -256,7 +258,6 @@ const ViewTravel = ({
     const parts = destination.split(',').map(p => p.trim());
     return parts[parts.length - 1] || destination;
   };
-
 
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
   const [showMoreButton, setShowMoreButton] = useState<boolean>(false);
@@ -703,6 +704,13 @@ const ViewTravel = ({
           );
         }}
         onAddActivity={() => openActivityModal(null, undefined)}
+        onAddSection={() => setShowSectionModal(true)}
+      />
+
+      <SectionModal
+        visible={showSectionModal}
+        onClose={() => setShowSectionModal(false)}
+        itinerarySection={null}
       />
 
       <ShareTripModal

@@ -9,6 +9,7 @@ interface TravelActionFABProps {
   onAddChecklist: () => void;
   onAddExpense: () => void;
   onAddActivity: () => void;
+  onAddSection: () => void;
   currentTab?: string;
   open?: boolean;
   setOpen?: (open: boolean) => void;
@@ -21,6 +22,7 @@ const TravelActionFAB = ({
   onAddChecklist, 
   onAddExpense, 
   onAddActivity, 
+  onAddSection,
   currentTab = 'details',
   open: controlledOpen,
   setOpen: controlledSetOpen,
@@ -65,6 +67,22 @@ const TravelActionFAB = ({
 
   const actions = useMemo(() => {
     const list = [
+      {
+        id: 'section',
+        icon: 'folder-plus',
+        label: 'Add Section',
+        labelTextColor: 'white',
+        style: {
+            elevation: 0,
+            borderRadius: 50,
+            padding: 6,
+            backgroundColor: '#263F69',
+            marginRight: -6,
+            marginBottom: 10
+        },
+        color: 'white',
+        onPress: onAddSection,
+      },
       {
         id: 'note',
         icon: 'note-text',
@@ -129,6 +147,7 @@ const TravelActionFAB = ({
         color: 'white',
         onPress: onAddActivity,
       },
+
     ];
 
     // let targetId = '';
@@ -145,7 +164,7 @@ const TravelActionFAB = ({
     //   }
     // }
     return list;
-  }, [currentTab, onAddActivity, onAddNote, onAddChecklist, onAddExpense]);
+  }, [currentTab, onAddActivity, onAddNote, onAddChecklist, onAddExpense, onAddSection]);
 
   return (
     <Portal>

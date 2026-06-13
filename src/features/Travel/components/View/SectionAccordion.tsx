@@ -933,7 +933,7 @@ const SectionAccordion = ({
                 const subSectionsLength = subSections.length;
                 return (
                   <View>
-                    <View className={`absolute top-5xl h-full w-1px  z-0 border-l border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[29px]" : "left-[33px]"}`}></View>
+                    {/* <View className={`absolute top-5xl h-full w-1px  z-0 border-l border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[29px]" : "left-[33px]"}`}></View> */}
 
                   <DraggableSectionItem
                     key={section.id}
@@ -959,10 +959,10 @@ const SectionAccordion = ({
               }
             })}
 
-            <View className={`flex-1 p-2 mt-2xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-lg" : " ml-xl"}`}>
-                <Ionicons name="flag" size={20} color="#F97066" />
-            </View>
-           
+          <View className={`flex-1 p-2 mt-2xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-lg" : " ml-xl"}`}>
+              <Ionicons name="flag" size={20} color="#F97066" />
+          </View>
+            
         </View>
       </ScrollView>
 
@@ -1022,9 +1022,9 @@ const SectionAccordion = ({
                     onPress={() => handleModeChange(mode)}
                     style={{
                       backgroundColor: isActive ? colors.primary || "#263F69" : "transparent",
-                      width: 36,
-                      height: 36,
-                      borderRadius: 18,
+                      width: 30,
+                      height: 30,
+                      borderRadius: 16,
                       alignItems: "center",
                       justifyContent: "center",
                       marginHorizontal: 3

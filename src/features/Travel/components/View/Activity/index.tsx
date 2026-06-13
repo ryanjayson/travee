@@ -19,6 +19,7 @@ import NotesTab from "./Tabs/NotesTab";
 import ChecklistTab from "./Tabs/ChecklistTab";
 import { FAB, Portal, Provider } from "react-native-paper";
 import { useTravelContext } from "../../../../../context/TravelContext";
+import { activityIcons } from "../../../../../components/ActivityIcon";
 
 import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
@@ -39,10 +40,8 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
 
   const [fabOpen, setFabOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-
-  // Edit Activity modal
-
-
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
+  const [showMoreButton, setShowMoreButton] = useState<boolean>(false);
   const { openExpenseModal, openNoteModal } = useTravelContext();
 
   // Stable callbacks so tabs don't re-render on unrelated state changes
@@ -60,6 +59,15 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
       itineraryActivity ? [itineraryActivity] : []
     );
   }, [id, itineraryActivity, openExpenseModal]);
+
+
+  const getActivityTypeDetails = (type: any) => {
+    if (type == null) return { text: "None", color: "#9E9E9E" };
+    const iconConfig = activityIcons.find((i) => i.activityType === type);
+    const color = iconConfig?.color ?? "#9E9E9E";
+    const text = type != null ? getActivityTypeLabel(type) : "None";
+    return { text, color };
+  };
 
   const handleOpenAddNote = useCallback(() => {
     setFabOpen(false);
@@ -111,19 +119,20 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
 
   const tabData = [
     { id: "details", title: "Details", content: <DetailsTab itineraryActivity={itineraryActivity} /> },
-    { id: "checklist", title: "Checklist", content: <ChecklistTab activityId={id} /> },
     {
       id: "expenses",
       title: "Expenses",
       content: <ExpensesTab activityId={id} onEditExpense={handleEditExpense} />
 ,
     },
+    { id: "checklist", title: "Checklist", content: <ChecklistTab activityId={id} /> },
+
     {
       id: "notes",
       title: "Notes",
       content: <NotesTab activityId={id} onEditNote={handleEditNote} />,
     },
-    { id: "map", title: "Map", content: <></> },
+    { id: "files", title: "Files", content: <></> },
   ];
 
   return (
@@ -166,26 +175,51 @@ const ViewItineraryActivity = ({ id, onClose }: ViewTripActivityProps) => {
         {/* Activity header with edit button */}
         <View className="px-4 pt-4 pb-2 bg-white">
           <View className="flex-row items-start justify-between">
-            <View className="flex-1 pr-3">
-              <Text style={Typography.h2}>{itineraryActivity?.title}</Text>
-              <Text className="my-1 text-gray-600 leading-5">
-                {itineraryActivity?.description}
-              </Text>
+            <View className="flex-1">
               {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.none && (
-                <View className="mt-1 self-start bg-blue-50 px-2 py-0.5 rounded-full">
-                  <Text className="text-xs font-semibold text-[#263F69] uppercase tracking-wider">
-                    {getActivityTypeLabel(itineraryActivity.type)}
-                  </Text>
-                </View>
+                 <View className={`flex-row items-center`}>
+                  <View 
+                      style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + '20' }} 
+                      className="items-end rounded-xs px-2 py-0.5"
+                    >
+                      <Text 
+                        style={{ color: getActivityTypeDetails(itineraryActivity.type).color }} 
+                        className="text-[10px] tracking-wider uppercase font-extrabold"
+                      >
+                        {getActivityTypeDetails(itineraryActivity.type).text}
+                      </Text>
+                    </View>
+                  </View>
               )}
+              <Text className="text-3xl mt-2">{itineraryActivity?.title}</Text>
+                {itineraryActivity?.description && (
+                    <View className="">
+                      <Text 
+                        className="text-base text-tertiary leading-6 mt-2"
+                        numberOfLines={isDescriptionExpanded ? undefined : 2}
+                        onTextLayout={(e) => {
+                          if (!showMoreButton && e.nativeEvent.lines.length >= 2) {
+                            setShowMoreButton(true);
+                          }
+                        }}
+                      >
+                        {itineraryActivity?.description || null}
+                      </Text>
+                      {showMoreButton && (
+                        <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+                          <Text className="text-secondary font-medium mt-1">
+                            {isDescriptionExpanded ? "Show less" : "Show more"}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                )}
             </View>
-
-
           </View>
         </View>
 
         {/* Tabs */}
-        <View className="pt-1 flex-1 bg-gray-100">
+        <View className="flex-1 bg-gray-100">
           {renderContent()}
         </View>
 

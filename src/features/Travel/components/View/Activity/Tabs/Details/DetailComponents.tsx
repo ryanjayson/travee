@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, Linking } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
+import { FlightDetailsCard } from "./FlightDetailsCard";
 import {
   FlightDetailsDto,
   AccomodationDetailsDto,
@@ -99,58 +100,9 @@ const formatDate = (dateValue: Date | string | null | undefined) => {
 };
 
 export const FlightDetails = ({ data }: { data?: FlightDetailsDto | null }) => {
-  const { colors } = useTheme();
   if (!data) return <Text className="text-gray-500 italic p-4 text-center">No flight details available.</Text>;
 
-  return (
-    <DetailCard title="Flight Information" icon="flight">
-      <View 
-        className="flex-row items-center justify-between p-4 rounded-xl border mb-4"
-        style={{
-          backgroundColor: `${colors.primary}0D`,
-          borderColor: `${colors.primary}1A`,
-        }}
-      >
-        <View className="flex-1">
-          <Text className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Departure</Text>
-          <Text className="text-2xl font-semibold" style={{ color: colors.primary }}>{data.departureAirport || "N/A"}</Text>
-          <Text className="text-xs text-gray-600 mt-1">{formatDate(data.departureDate)}</Text>
-        </View>
-        <Icon name="arrow-forward" size={20} color={colors.primary} style={{ marginHorizontal: 8 }} />
-        <View className="flex-1 items-end">
-          <Text className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Arrival</Text>
-          <Text className="text-2xl font-semibold" style={{ color: colors.primary }}>{data.arrivalAirport || "N/A"}</Text>
-          <Text className="text-xs text-gray-600 mt-1">{data.arrivalDate ? formatDate(data.arrivalDate) : "N/A"}</Text>
-        </View>
-      </View>
-
-      <View className="flex-row flex-wrap">
-        <View className="w-1/2">
-          <Field label="Airline" value={data.airline} icon="business" />
-        </View>
-        <View className="w-1/2">
-          <Field label="Flight Number" value={data.flightNumber} icon="confirmation-number" />
-        </View>
-        <View className="w-1/2">
-          <Field label="Terminal" value={data.terminal} icon="place" />
-        </View>
-        <View className="w-1/2">
-          <Field label="Gate" value={data.gate} icon="door-sliding" />
-        </View>
-        <View className="w-1/2">
-          <Field label="Seat" value={data.seatNumber} icon="event-seat" />
-        </View>
-        <View className="w-1/2">
-          <Field label="Booking Ref" value={data.bookingReference} icon="bookmark-border" />
-        </View>
-        {data.price ? (
-          <View className="w-1/2">
-            <Field label="Price" value={`₱${data.price}`} icon="attach-money" />
-          </View>
-        ) : null}
-      </View>
-    </DetailCard>
-  );
+  return <FlightDetailsCard data={data} />;
 };
 
 export const AccomodationDetails = ({ data }: { data?: AccomodationDetailsDto | null }) => {

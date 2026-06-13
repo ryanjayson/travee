@@ -417,7 +417,6 @@ const ActivityItemCard = ({
                 size={viewMode === 'narrow' ? 15 : 24}
               />
             </TouchableOpacity>
-
          
           </>
         )}
@@ -436,7 +435,6 @@ const ActivityItemCard = ({
                 className={`${isAddPressed ? 'border-[#183B7A] bg-[#183B7A] rounded-full' : 'border-gray-300 rounded-md '} left-1px absolute m-2 mt-2xl border px-1px z-9999`}
             >
             <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`}/>
-
             </View>
           </TouchableHighlight>
         )}

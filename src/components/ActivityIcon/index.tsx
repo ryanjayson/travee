@@ -168,11 +168,11 @@ const ActivityIcon = ({
     }
 
     if (activityIcon.iconSet == IconSetProvider.feather) {
-      return <View style={{ borderColor: resolvedColor + '90', borderWidth: 1.5, borderRadius: 50, backgroundColor: resolvedColor + '50' }} className="rounded-full p-3"><Feather name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
+      return <View style={{ borderColor: resolvedColor + '20', borderWidth: 1, borderRadius: 50, backgroundColor: resolvedColor + '20' }} className="rounded-full p-3"><Feather name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
     } else if (activityIcon.iconSet == IconSetProvider.ionic) {
-      return <View style={{ borderColor: resolvedColor + '90', borderWidth: 1.5, borderRadius: 50, backgroundColor: resolvedColor + '50' }} className="rounded-full p-3"><Ionicons name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
+      return <View style={{ borderColor: resolvedColor + '20', borderWidth: 1, borderRadius: 50, backgroundColor: resolvedColor + '20' }} className="rounded-full p-3"><Ionicons name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
     } else if (activityIcon.iconSet == IconSetProvider.material) {
-      return <View style={{ borderColor: resolvedColor + '90', borderWidth: 1, borderRadius: 50, backgroundColor: resolvedColor + '50' }} className="rounded-full p-3"><Icon name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
+      return <View style={{ borderColor: resolvedColor + '20', borderWidth: 1, borderRadius: 50, backgroundColor: resolvedColor + '20' }} className="rounded-full p-3"><Icon name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
     }
   };
 
