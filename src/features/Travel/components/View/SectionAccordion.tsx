@@ -932,8 +932,8 @@ const SectionAccordion = ({
                 const mapIndex = subSections.findIndex(s => s.id === section.id);
                 const subSectionsLength = subSections.length;
                 return (
-                  <View>
-                    {/* <View className={`absolute top-5xl h-full w-1px  z-0 border-l border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[29px]" : "left-[33px]"}`}></View> */}
+                  <View key={section.id}>
+                    <View className={`absolute top-5xl h-full w-1px  z-0 border-l border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[29px]" : "left-[33px]"}`}></View>
 
                   <DraggableSectionItem
                     key={section.id}

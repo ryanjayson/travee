@@ -188,6 +188,7 @@ const ViewTripModal = ({
       visible={showModal}
       transparent={true}
       animationType="none"
+      statusBarTranslucent={true}
       onRequestClose={() => {
         if (isFabOpen) {
           setIsFabOpen(false);

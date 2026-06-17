@@ -14,6 +14,7 @@ interface TabItem {
   title: string;
   content: ReactNode;
   disabled?: boolean;
+  icon?: string | ReactNode;
 }
 
 interface TabsProps {
@@ -123,6 +124,23 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
               className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-300' : 'bg-green-500'}`}
             />
           )}
+          {tab.icon && (
+            typeof tab.icon === "string" ? (
+              <Icon 
+                name={tab.icon as any} 
+                size={20} 
+                color={
+                  type === "primary"
+                    ? (isActive ? "white" : (tab.disabled ? "#D0D5DD" : "#667085"))
+                    : type === "secondary"
+                    ? (isActive ? "#263F69" : (tab.disabled ? "#E0E0E0" : "#667085"))
+                    : (isActive ? (isOngoingWithActiveTrip ? "#17B26A" : "#101828") : (tab.disabled ? "#98A2B3" : "#475467"))
+                }
+              />
+            ) : (
+              tab.icon
+            )
+          )}
           <Text className={textClass}>
             {displayTitle}
           </Text>
@@ -136,7 +154,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
   if (type === "secondary") {
     wrapperStyle = "bg-white border-b border-gray-100";
   } else if (type === "default") {
-    wrapperStyle = "";
+    // wrapperStyle = "";
   } else { // "primary"
     wrapperStyle = "bg-white border-b border-gray-100";
   }

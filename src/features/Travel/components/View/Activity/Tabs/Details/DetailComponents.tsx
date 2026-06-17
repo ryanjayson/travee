@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Linking } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { FlightDetailsCard } from "./FlightDetailsCard";
+import { AccomodationDetailsCard } from "./AccomodationDetailsCard";
 import {
   FlightDetailsDto,
   AccomodationDetailsDto,
@@ -108,40 +109,7 @@ export const FlightDetails = ({ data }: { data?: FlightDetailsDto | null }) => {
 export const AccomodationDetails = ({ data }: { data?: AccomodationDetailsDto | null }) => {
   if (!data) return <Text className="text-gray-500 italic p-4 text-center">No accommodation details available.</Text>;
 
-  return (
-    <DetailCard title="Accommodation Details" icon="hotel">
-      <Field label="Hotel Name" value={data.accomodationName} icon="business" />
-      <Field label="Address" value={data.address} icon="location-on" />
-      <View className="flex-row">
-        <View className="w-1/2">
-          <Field label="Check-in" value={formatDate(data.checkinDateTime)} icon="login" />
-        </View>
-        <View className="w-1/2">
-          <Field label="Check-out" value={data.checkoutDateTime ? formatDate(data.checkoutDateTime) : "N/A"} icon="logout" />
-        </View>
-      </View>
-      <View className="flex-row flex-wrap">
-        <View className="w-1/2">
-          <Field label="Booking Reference" value={data.bookingReference} icon="bookmark" />
-        </View>
-        <View className="w-1/2">
-          <Field label="Status" value={data.bookingStatus} icon="info" />
-        </View>
-        <View className="w-1/2">
-          <Field label="Contact Name" value={data.contactName} icon="person" />
-        </View>
-        <View className="w-1/2">
-          <Field label="Contact Number" value={data.contactNumber} icon="phone" onPress={data.contactNumber ? () => handleCall(data.contactNumber!) : undefined} />
-        </View>
-        <View className="w-1/2">
-          <Field label="Email Address" value={data.emailAddress} icon="email" onPress={data.emailAddress ? () => handleEmail(data.emailAddress!) : undefined} />
-        </View>
-        <View className="w-full">
-          <Field label="Website" value={data.websiteAddress} icon="language" isLink onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress!) : undefined} />
-        </View>
-      </View>
-    </DetailCard>
-  );
+  return <AccomodationDetailsCard data={data} />;
 };
 
 export const CafeRestaurantDetails = ({ data }: { data?: CafeRestaurantDetailsDto | null }) => {

@@ -1,5 +1,7 @@
 import React from "react";
-import { ScrollView, View, Text } from "react-native";
+import { ScrollView, View, Text, Dimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { ItineraryActivity } from "../../../../types/TravelDto";
 import { ActivityType } from "../../../../../../types/enums";
 import {
@@ -25,6 +27,12 @@ interface DetailsTabProps {
 }
 
 const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
+  const insets = useSafeAreaInsets();
+  const { height: screenHeight } = Dimensions.get("window");
+  const yOffset = insets.top + 60;
+  const parentHeight = screenHeight - yOffset;
+  const paddingBottom = parentHeight * 0.35 + 40; // 35% sheet height + extra spacing
+
   if (!itineraryActivity) return null;
 
   const renderDetails = () => {
@@ -65,9 +73,21 @@ const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
   };
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }} className="bg-gray-25 flex-1">
-      <View className="p-4">{renderDetails()}</View>
-    </ScrollView>
+    <View className="flex-1 relative">
+      {/* <LinearGradient
+        colors={["rgba(33, 150, 243, 0.20)", "#FFFFFF"]}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+        }}
+      /> */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }} className="flex-1">
+        <View className="p-3">{renderDetails()}</View>
+      </ScrollView>
+    </View>
   );
 };
 
