@@ -61,7 +61,7 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.shopppingAndService,
     name: ActivityType.shopppingAndService,
     iconName: "shopping-bag",
-    color: "#E91E63", // pink hsl(340)
+    color: "#a20564", // pink hsl(340)
   },
   {
     iconSet: IconSetProvider.material,
@@ -75,7 +75,7 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.transportation,
     name: ActivityType.transportation,
     iconName: "directions-bus",
-    color: "#00BCD4", // cyan hsl(187)
+    color: "#02899a", // cyan hsl(187)
   },
   {
     iconSet: IconSetProvider.ionic,
@@ -89,7 +89,7 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.sightseeing,
     name: ActivityType.sightseeing,
     iconName: "photo-camera",
-    color: "#FF9800", // orange hsl(36)
+    color: "#d28008", // orange hsl(36)
   },
   {
     iconSet: IconSetProvider.material,
@@ -117,7 +117,7 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.motorcycleRide,
     name: ActivityType.motorcycleRide,
     iconName: "motorcycle",
-    color: "#F57F17", // dark-amber hsl(41)
+    color: "#156994", // dark-amber hsl(41)
   },
   {
     iconSet: IconSetProvider.material,
@@ -131,7 +131,7 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.rideRental,
     name: ActivityType.rideRental,
     iconName: "directions-car",
-    color: "#3F51B5", // indigo hsl(231)
+    color: "#384690", // indigo hsl(231)
   },
 ];
 

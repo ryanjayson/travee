@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import ActivityModal from "../../Edit/Itinerary/Activity/Modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 import { activityIcons } from "../../../../../components/ActivityIcon";
+import { ActivityType } from "../../../../../types/enums";
 
 // AnimatedIcon removed to prevent TypeError on setNativeProps
 
@@ -26,6 +27,21 @@ interface ViewActivityModalProps {
 }
 
 const { height: screenHeight } = Dimensions.get("window");
+
+const is60PercentSnap = (type?: ActivityType) => {
+  if (type == null) return false;
+  return [
+    ActivityType.preparation,
+    ActivityType.shopppingAndService,
+    ActivityType.nature,
+    ActivityType.transportation,
+    ActivityType.sightseeing,
+    ActivityType.rest,
+    ActivityType.walk,
+    ActivityType.meetup,
+    ActivityType.entertainmentAndRecreation,
+  ].includes(type);
+};
 
 const ViewActivityModal = ({
   id,
@@ -48,23 +64,35 @@ const ViewActivityModal = ({
   const parentHeight = screenHeight - yOffset;
 
   const SNAP_90 = parentHeight * 0.1;
-  const SNAP_35 = parentHeight * 0.65;
+  const SNAP_MIN = is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65;
 
-  const translateY = useRef(new Animated.Value(SNAP_35)).current;
+  const translateY = useRef(new Animated.Value(SNAP_MIN)).current;
+
+  useEffect(() => {
+    if (itineraryActivity) {
+      const minSnap = is60PercentSnap(itineraryActivity.type) ? parentHeight * 0.4 : parentHeight * 0.65;
+      translateY.setValue(minSnap);
+    }
+  }, [itineraryActivity, parentHeight, translateY]);
 
   const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity?.type)?.color || "#9E9E9E";
 
-  const animatedBgColor = translateY.interpolate({
-    inputRange: [SNAP_90, SNAP_35],
-    outputRange: ["rgba(0, 0, 0, 0.55)", "transparent"],
-    extrapolate: "clamp",
-  });
+  const { animatedBgColor, overlayOpacity } = useMemo(() => {
+    const minSnap = is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65;
+    return {
+      animatedBgColor: translateY.interpolate({
+        inputRange: [SNAP_90, minSnap],
+        outputRange: ["rgba(0, 0, 0, 0.55)", "transparent"],
+        extrapolate: "clamp",
+      }),
+      overlayOpacity: translateY.interpolate({
+        inputRange: [SNAP_90, minSnap],
+        outputRange: [0.55, 0],
+        extrapolate: "clamp",
+      }),
+    };
+  }, [translateY, itineraryActivity?.type, parentHeight, SNAP_90]);
 
-  const overlayOpacity = translateY.interpolate({
-    inputRange: [SNAP_90, SNAP_35],
-    outputRange: [0.55, 0],
-    extrapolate: "clamp",
-  });
 
   return (
     <Modal

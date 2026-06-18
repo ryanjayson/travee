@@ -34,6 +34,22 @@ interface ViewTripActivityProps {
   translateY?: Animated.Value;
 }
 
+const is60PercentSnap = (type?: ActivityType) => {
+  if (type == null) return false;
+  return [
+    ActivityType.preparation,
+    ActivityType.shopppingAndService,
+    ActivityType.nature,
+    ActivityType.transportation,
+    ActivityType.sightseeing,
+    ActivityType.rest,
+    ActivityType.walk,
+    ActivityType.meetup,
+    ActivityType.entertainmentAndRecreation,
+    ActivityType.motorcycleRide,
+  ].includes(type);
+};
+
 const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: ViewTripActivityProps) => {
   const {
     data: itineraryActivity,
@@ -56,21 +72,31 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
 
   // Snap points represent the translateY value (offset from top of parent container)
   // 90% sheet height: translateY = parentHeight * 0.1
-  // 35% sheet height: translateY = parentHeight * 0.65
+  // Min sheet height: based on activity type (60% for preparation -> 0.4 offset; 35% default -> 0.65 offset)
   const SNAP_90 = parentHeight * 0.1;
-  const SNAP_35 = parentHeight * 0.65;
+  const SNAP_MIN = is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65;
 
-  const snappedY = useRef(SNAP_35);
+  const snappedY = useRef(SNAP_MIN);
   const dragStartY = useRef(0);
 
   // Use passed translateY prop or fallback to local Animated.Value
-  const translateYRef = useRef(translateYProp || new Animated.Value(SNAP_35));
+  const translateYRef = useRef(translateYProp || new Animated.Value(SNAP_MIN));
   const translateY = translateYProp || translateYRef.current;
-  const [currentSnap, setCurrentSnap] = useState(SNAP_35);
+  const [currentSnap, setCurrentSnap] = useState(SNAP_MIN);
+
+  // Dynamically update snap configurations once itineraryActivity loads
+  React.useEffect(() => {
+    if (itineraryActivity) {
+      const minSnap = is60PercentSnap(itineraryActivity.type) ? parentHeight * 0.4 : parentHeight * 0.65;
+      snappedY.current = minSnap;
+      setCurrentSnap(minSnap);
+      translateY.setValue(minSnap);
+    }
+  }, [itineraryActivity, parentHeight]);
 
   // Slowly changing black overlay opacity as sheet is panned/scrolled towards SNAP_90
   const overlayOpacity = translateY.interpolate({
-    inputRange: [SNAP_90, SNAP_35],
+    inputRange: [SNAP_90, SNAP_MIN],
     outputRange: [0.55, 0],
     extrapolate: "clamp",
   });
@@ -122,15 +148,15 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
         const nextY = dragStartY.current + gestureState.dy;
         const velocityY = gestureState.vy;
 
-        let target = SNAP_35;
+        let target = SNAP_MIN;
         if (velocityY < -0.3) {
           target = SNAP_90;
         } else if (velocityY > 0.3) {
-          target = SNAP_35;
+          target = SNAP_MIN;
         } else {
           const dist90 = Math.abs(nextY - SNAP_90);
-          const dist35 = Math.abs(nextY - SNAP_35);
-          target = dist90 < dist35 ? SNAP_90 : SNAP_35;
+          const distMin = Math.abs(nextY - SNAP_MIN);
+          target = dist90 < distMin ? SNAP_90 : SNAP_MIN;
         }
         snapTo(target);
       },
@@ -288,8 +314,8 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
         {/* Background Details Tab */}
         <Pressable
           onPress={() => {
-            if (snappedY.current !== SNAP_35) {
-              snapTo(SNAP_35);
+            if (snappedY.current !== SNAP_MIN) {
+              snapTo(SNAP_MIN);
             }
           }}
           style={{ height: parentHeight, width: "100%" }}
