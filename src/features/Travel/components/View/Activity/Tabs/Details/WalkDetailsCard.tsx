@@ -16,46 +16,33 @@ export const WalkDetailsCard: React.FC<WalkDetailsCardProps> = ({ data }) => {
   const { colors } = useTheme();
 
   return (
-    <View className="rounded-3xl mb-6 shadow-md overflow-hidden">
-      {/* Header Banner */}
-      <View
-        className="flex-row items-center justify-between rounded-t-3xl px-5 py-4 border-2 border-gray-500 mt-2"
-        style={{ backgroundColor: `${walkColor}1A` }}
-      >
-        <View className="flex-row items-center gap-2">
-          <Icon name="directions-walk" size={20} color={walkColor} />
-          <Text className="text-gray-700 font-bold text-sm tracking-wider uppercase">
-            WALKING ROUTE
-          </Text>
-        </View>
-      </View>
-
+    <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4 border-l-2 border-r-2 border-b-2 border-gray-500 rounded-b-3xl bg-white">
-        <View className="mb-2">
-          <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest">
+      <View className="p-4">
+        <View className="mb-4">
+          <Text className="text-xs font-semibold text-white uppercase tracking-widest">
             Route Name
-          </Text>++--
-          <Text className="text-4xl font-semibold tracking-tight mb-1" style={{ color: walkColor }}>
+          </Text>
+          <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.routeName || "N/A"}
           </Text>
         </View>
 
         {/* Row of details: Distance & Duration */}
-        <View className="flex-1 pt-4 gap-4 border-t border-dashed border-gray-200">
+        <View className="flex-1 pt-4 gap-4 border-t border-dashed border-green-800">
           <View className="flex-1">
-            <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Est. Distance
             </Text>
-            <Text className="text-lg font-extrabold text-gray-400">
+            <Text className="text-xl font-semibold text-white/80">
               {data.estimatedDistanceKm ? `${data.estimatedDistanceKm} Km` : "N/A"}
             </Text>
           </View>
           <View className="flex-1">
-            <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Est. Duration
             </Text>
-            <Text className="text-lg font-extrabold text-gray-400">
+            <Text className="text-xl font-semibold text-white/80">
               {data.estimatedDuration || "N/A"}
             </Text>
           </View>
@@ -64,4 +51,3 @@ export const WalkDetailsCard: React.FC<WalkDetailsCardProps> = ({ data }) => {
     </View>
   );
 };
-

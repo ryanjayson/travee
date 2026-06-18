@@ -54,7 +54,7 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.nature,
     name: ActivityType.nature,
     iconName: "terrain",
-    color: "#4CAF50", // green hsl(122)
+    color: "#165135", // green hsl(122)
   },
   {
     iconSet: IconSetProvider.material,

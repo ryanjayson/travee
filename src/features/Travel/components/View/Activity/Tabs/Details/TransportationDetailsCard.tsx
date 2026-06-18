@@ -19,6 +19,52 @@ const handleOpenLink = (url: string) => {
   }
 };
 
+const Field = ({
+  label,
+  value,
+  icon,
+  onPress,
+  isLink,
+}: {
+  label: string;
+  value?: string | number | null;
+  icon?: string;
+  onPress?: () => void;
+  isLink?: boolean;
+}) => {
+  if (value === undefined || value === null || String(value).trim() === "") return null;
+
+  return (
+    <View className="flex-row items-start mb-3 gap-6">
+      {icon ? (
+        <View style={{ alignItems: "center", justifyContent: "center" }}>
+          <Icon name={icon as any} size={24} color={"#fffefe"} />
+        </View>
+      ) : null}
+      <View className="flex-1">
+        <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
+        {onPress ? (
+          <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
+            <Text
+              className="text-lg font-medium"
+              style={{
+                color: "#ffffff",
+                textDecorationLine: isLink ? "underline" : "none",
+                opacity: 0.6,
+              }}
+            >
+              {value}
+            </Text>
+            {isLink && <Icon name="open-in-new" size={16} color={"#005d69"} />}
+          </TouchableOpacity>
+        ) : (
+          <Text className="text-lg font-semibold text-white opacity-60">{value}</Text>
+        )}
+      </View>
+    </View>
+  );
+};
+
 export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps> = ({ data }) => {
   const { colors } = useTheme();
 
@@ -33,47 +79,34 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
   };
 
   return (
-    <View className="rounded-3xl mb-6 shadow-md overflow-hidden">
-      {/* Header Banner */}
-      <View
-        className="flex-row items-center justify-between rounded-t-3xl px-5 py-4 border-2 border-gray-500 mt-2"
-        style={{ backgroundColor: `${transColor}1A` }}
-      >
-        <View className="flex-row items-center gap-2">
-          <Icon name="directions-bus" size={20} color={transColor} />
-          <Text className="text-gray-700 font-bold text-sm tracking-wider uppercase">
-            TRANSPORTATION / TRANSIT
-          </Text>
-        </View>
-      </View>
-
+    <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4 border-l-2 border-r-2 border-gray-500 bg-white">
-        <View className="mb-2">
-          <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+      <View className="p-4">
+        <View className="mb-4">
+          <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
             Operator / Provider
           </Text>
-          <Text className="text-3xl font-extrabold tracking-tight mb-1" style={{ color: transColor }}>
+          <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.operatorProvider || "N/A"}
           </Text>
         </View>
 
         {/* Mode & Price Row */}
-        <View className="flex-row items-center justify-between pt-3 border-t border-dashed border-gray-200 mb-4">
+        <View className="flex-row items-center justify-between pt-4 border-t border-dashed border-cyan-800 mb-4">
           <View className="flex-1">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Transit Mode
             </Text>
-            <Text className="text-base font-extrabold text-gray-800 capitalize">
+            <Text className="text-xl font-semibold text-white/80 capitalize">
               {data.mode || "N/A"}
             </Text>
           </View>
           {data.price ? (
             <View className="flex-1 items-end">
-              <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
                 Price
               </Text>
-              <Text className="text-base font-extrabold text-emerald-600">
+              <Text className="text-xl font-semibold text-white/80">
                 ₱{Number(data.price).toLocaleString()}
               </Text>
             </View>
@@ -82,18 +115,18 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
 
         {/* Pickup Location */}
         {data.pickupLocation ? (
-          <View className="mb-3 pt-3 border-t border-gray-100">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+          <View className="mb-3 pt-3 border-t border-gray-100/10">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Pickup Point
             </Text>
             <TouchableOpacity
               onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.pickupLocation || "")}`)}
-              className="flex-row items-center gap-1"
+              className="flex-row items-center gap-6 mt-1"
               activeOpacity={0.7}
               accessibilityRole="button"
             >
-              <Icon name="pin-drop" size={16} color={transColor} />
-              <Text className="text-base text-gray-700 underline flex-1" numberOfLines={2}>
+              <Icon name="pin-drop" size={24} color="#FFFFFF" />
+              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
                 {data.pickupLocation}
               </Text>
             </TouchableOpacity>
@@ -102,18 +135,18 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
 
         {/* Dropoff Location */}
         {data.dropoffLocation ? (
-          <View className="mb-1 pt-3 border-t border-gray-100">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+          <View className="mb-1 pt-3 border-t border-gray-100/10">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Dropoff Point
             </Text>
             <TouchableOpacity
               onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.dropoffLocation || "")}`)}
-              className="flex-row items-center gap-1"
+              className="flex-row items-center gap-6 mt-1"
               activeOpacity={0.7}
               accessibilityRole="button"
             >
-              <Icon name="place" size={16} color={transColor} />
-              <Text className="text-base text-gray-700 underline flex-1" numberOfLines={2}>
+              <Icon name="place" size={24} color="#FFFFFF" />
+              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
                 {data.dropoffLocation}
               </Text>
             </TouchableOpacity>
@@ -122,28 +155,14 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
       </View>
 
       {/* Stub Area */}
-      <View className="p-5 pt-3 border-2 border-t-0 -mt-0.5 border-gray-500 rounded-b-3xl bg-white">
+      <View className="p-5 pt-3">
         <View className="flex-row justify-between mb-1 gap-4">
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">
-              Booking Ref
-            </Text>
-            {data.bookingReference ? (
-              <TouchableOpacity
-                onPress={() => handleCopy(data.bookingReference || "", "Booking reference")}
-                className="flex-row items-center gap-1"
-                activeOpacity={0.7}
-                accessibilityRole="button"
-              >
-                <Text className="text-base font-bold text-gray-800">
-                  {data.bookingReference}
-                </Text>
-                <Icon name="content-copy" size={18} color="#667085" />
-              </TouchableOpacity>
-            ) : (
-              <Text className="text-base font-bold text-gray-800">N/A</Text>
-            )}
-          </View>
+          <Field
+            label="Booking Ref"
+            value={data.bookingReference}
+            icon="confirmation-number"
+            onPress={data.bookingReference ? () => handleCopy(data.bookingReference || "", "Booking reference") : undefined}
+          />
         </View>
       </View>
     </View>
