@@ -71,7 +71,7 @@ const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
       case ActivityType.rideRental:
         return <RideRentalDetails data={itineraryActivity.rideRentalDetails} />;
       default:
-        return <Text className="text-gray-500 italic p-4 text-center">No type-specific details available.</Text>;
+        return <Text className="text-white p-4 text-center">No type-specific details available.</Text>;
     }
   };
 

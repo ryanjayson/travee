@@ -2,8 +2,6 @@ import React from "react";
 import { View, Text, TouchableOpacity, Clipboard, ToastAndroid, Platform, Alert, Linking } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { AccomodationDetailsDto } from "../../../../../types/TravelDto";
-import ActivityIcon, { activityIcons } from "../../../../../../../components/ActivityIcon";
-import { ActivityType } from "../../../../../../../types/enums";
 
 interface AccomodationDetailsCardProps {
   data: AccomodationDetailsDto;
@@ -19,8 +17,6 @@ const safeFormatTime = (dateValue: Date | string | null | undefined) => {
     return "--:--";
   }
 };
-
-const accomodationColor = activityIcons.find((icon) => icon.name === ActivityType.accomodation)?.color || "#9C27B0";
 
 const safeFormatDate = (dateValue: Date | string | null | undefined) => {
   if (!dateValue) return "N/A";
@@ -68,35 +64,35 @@ const Field = ({
   if (value === undefined || value === null || String(value).trim() === "") return null;
 
   return (
-    <View className="flex-row items-start mb-2 gap-6">
+    <View className="flex-row items-start mb-3 gap-6">
       {icon ? (
         <View
-        style={{
-          backgroundColor:accomodationColor + "20",
-          padding: 12,
-          borderRadius: 12,
-          width: 40,
-          height: 40,
-        }}>
-          <Icon name={icon as any} size={16} color={accomodationColor + "95"} />
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon name={icon as any} size={24} color={"#fffefe"} />
         </View>
       ) : null}
       <View className="flex-1">
-        <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-0.5">{label}</Text>
+        <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
         {onPress ? (
           <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
-            <Text className={`text-base font-bold`}
-            style={{
-              color: isLink ? accomodationColor : "#182230",
-              textDecorationLine: isLink ? "underline" : "none",
-            }}
+            <Text
+              className="text-lg font-medium"
+              style={{
+                color: "#ffffff",
+                textDecorationLine: isLink ? "underline" : "none",
+                opacity: 0.6,
+              }}
             >
               {value}
             </Text>
-            {isLink && <Icon name="open-in-new" size={18} color={accomodationColor + "80"} />}
+            {isLink && <Icon name="open-in-new" size={16} color={"#FFFFFF"} style={{ opacity: 0.6 }} />}
           </TouchableOpacity>
         ) : (
-          <Text className="text-base font-semibold text-gray-800">{value}</Text>
+          <Text className="text-lg font-semibold text-white opacity-60">{value}</Text>
         )}
       </View>
     </View>
@@ -104,7 +100,6 @@ const Field = ({
 };
 
 export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = ({ data }) => {
-
   const handleCopy = (text: string, label: string) => {
     if (!text) return;
     Clipboard.setString(text);
@@ -116,48 +111,25 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
   };
 
   return (
-    <View className="rounded-3xl mb-6 shadow-md overflow-hidden">
-      {/* Header Banner */}
-      <View
-        className="flex-row items-center justify-between rounded-t-3xl px-5 py-4 border-2 border-gray-500 mt-2"
-        style={{ backgroundColor: `${accomodationColor}1A` }}
-      >
-        <View className="flex-row items-center gap-2">
-          <Icon name="hotel" size={20} color={accomodationColor} />
-          <Text className="text-gray-700 font-bold text-sm tracking-wider uppercase">
-            STAY RESERVATION
-          </Text>
-        </View>
-        {data.bookingStatus ? (
-          <View className="px-3 py-1 rounded-full"
-            style={{ backgroundColor: `${accomodationColor}1C` }}>
-            <Text className="text-white text-xs font-bold tracking-wide uppercase">
-              {data.bookingStatus}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-
-      {/* Stay Details Body */}
-      <View className="p-4 border-l-2 border-r-2 border-gray-500 bg-white">
-        <View className="mb-2">
-          <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+    <View className="rounded-3xl mb-6 overflow-hidden">
+      {/* Main Details Body */}
+      <View className="p-4">
+        <View className="mb-4">
+          <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
             Accommodation / Hotel
           </Text>
-          <Text className="text-3xl font-extrabold tracking-tight mb-1" style={{
-            color: accomodationColor
-          }}>
+          <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.accomodationName || "N/A"}
           </Text>
           {data.address ? (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center gap-1 mt-1"
+              className="flex-row items-center gap-6 mt-1"
               activeOpacity={0.7}
               accessibilityRole="button"
             >
-              <Icon name="location-on" size={14} color="#667085" />
-              <Text className="text-base text-gray-500 underline flex-1" numberOfLines={2}>
+              <Icon name="location-on" size={24} color="#FFFFFF" />
+              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
                 {data.address}
               </Text>
             </TouchableOpacity>
@@ -165,47 +137,43 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
         </View>
 
         {/* Check-in & Check-out Row */}
-        <View className="flex-row items-center justify-between pt-2 border-t border-dashed border-gray-200">
-          {/* Check-in */}
+        <View className="flex-row items-center justify-between pt-4 border-t border-dashed" style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}>
           <View className="flex-1">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Check-in
             </Text>
-            <Text className="text-base font-extrabold text-gray-800">
+            <Text className="text-xl font-semibold text-white/80">
               {safeFormatTime(data.checkinDateTime)}
             </Text>
-            <Text className="text-xxs font-medium text-gray-500 mt-0.5">
+            <Text className="text-xxs font-medium text-white/80 mt-0.5">
               {safeFormatDate(data.checkinDateTime)}
             </Text>
           </View>
 
-          {/* Stay Arrow Indicator */}
           <View className="px-3 items-center justify-center">
-            <Icon name="arrow-forward" size={18} color={`${accomodationColor}`} />
+            <Icon name="arrow-forward" size={18} color={"#FFFFFF"} />
           </View>
 
-          {/* Check-out */}
           <View className="flex-1 items-end">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Check-out
             </Text>
-            <Text className="text-base font-extrabold text-gray-800 text-right">
+            <Text className="text-xl font-semibold text-white/80 text-right">
               {data.checkoutDateTime ? safeFormatTime(data.checkoutDateTime) : "--:--"}
             </Text>
-            <Text className="text-xxs font-medium text-gray-500 mt-0.5 text-right">
+            <Text className="text-xxs font-medium text-white/80 mt-0.5 text-right">
               {data.checkoutDateTime ? safeFormatDate(data.checkoutDateTime) : "N/A"}
             </Text>
           </View>
         </View>
       </View>
 
-
       {/* Stay Voucher Stub */}
-      <View className="p-5 pt-3 border-2 border-t-0 -mt-0.5 border-gray-500 rounded-b-3xl bg-white">
-        {/* Row 1: Booking Reference & Contact Person */}
-        <View className="flex-row justify-between mb-4 gap-4 ">
+      <View className="p-5 pt-3">
+        {/* Row 1: Booking Reference & Website address */}
+        <View className="flex-row justify-between mb-4 gap-4">
           <View className="flex-1">
-            <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Booking Ref
             </Text>
             {data.bookingReference ? (
@@ -215,78 +183,53 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
                 activeOpacity={0.7}
                 accessibilityRole="button"
               >
-                <Text className="text-base font-bold text-gray-800">
+                <Text className="text-base font-bold text-white/80">
                   {data.bookingReference}
                 </Text>
-                <Icon name="content-copy" size={18} color="#667085" />
+                <Icon name="content-copy" size={18} color="#FFFFFF" style={{ opacity: 0.6 }} />
               </TouchableOpacity>
             ) : (
-              <Text className="text-base font-bold text-gray-800">N/A</Text>
+              <Text className="text-base font-bold text-white/80">N/A</Text>
             )}
           </View>
 
-
-        {/* Row 3: Website address */}
-        {data.websiteAddress ? (
-
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">
-              Website
-            </Text>
-            {data.websiteAddress ? (
+          {data.websiteAddress ? (
+            <View className="flex-1">
+              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+                Website
+              </Text>
               <TouchableOpacity
-                onPress={() => handleCopy(data.websiteAddress || "", "Website")}
+                onPress={() => handleOpenLink(data.websiteAddress || "")}
                 className="flex-row items-center gap-1"
                 activeOpacity={0.7}
                 accessibilityRole="button"
               >
-                <Icon name="link" size={18} color="#667085" />
-                <Text className="text-base font-bold text-gray-800">
+                <Icon name="link" size={18} color="#FFFFFF" style={{ opacity: 0.6 }} />
+                <Text className="text-base font-bold text-white/80 underline" numberOfLines={1}>
                   {data.websiteAddress}
                 </Text>
               </TouchableOpacity>
-            ) : (
-              <Text className="text-base font-bold text-gray-800">N/A</Text>
-            )}
-          </View>
-        ) : null} 
-
+            </View>
+          ) : null}
         </View>
 
-
-
-        {/* Row 2: Contact Numbers & Email */}
-        <View className="flex-1 justify-between mb-4 gap-4 pt-6 border-t-2  border-gray-200">
-            <View className="flex-1 items-end">
-            <Field label="Contact Person" value={data.contactName} icon="person" />
-          </View>
-          <View className="flex-1">
-            <Field 
-              label="Contact Number" 
-              value={data.contactNumber} 
-              icon="phone" 
-              onPress={data.contactNumber ? () => handleCall(data.contactNumber!) : undefined} 
-            />
-          </View>
-
-          <View className="flex-1 items-end">
-            <Field 
-              label="Email Address" 
-              value={data.emailAddress} 
-              icon="email" 
-              onPress={data.emailAddress ? () => handleEmail(data.emailAddress!) : undefined} 
-            />
-          </View>
+        {/* Row 2: Contact Info */}
+        <View className="flex-col gap-1 pt-4 border-t" style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}>
+          <Field label="Contact Person" value={data.contactName} icon="person" />
+          <Field
+            label="Contact Number"
+            value={data.contactNumber}
+            icon="phone"
+            onPress={data.contactNumber ? () => handleCall(data.contactNumber!) : undefined}
+          />
+          <Field
+            label="Email Address"
+            value={data.emailAddress}
+            icon="email"
+            onPress={data.emailAddress ? () => handleEmail(data.emailAddress!) : undefined}
+          />
         </View>
-
-      
-
-
       </View>
-
-
-
-
     </View>
   );
 };

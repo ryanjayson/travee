@@ -25,7 +25,7 @@ import { useTravelContext } from "../../../../../context/TravelContext";
 import { activityIcons } from "../../../../../components/ActivityIcon";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
+import { ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
 
 interface ViewTripActivityProps {
@@ -47,7 +47,46 @@ const is60PercentSnap = (type?: ActivityType) => {
     ActivityType.meetup,
     ActivityType.entertainmentAndRecreation,
     ActivityType.motorcycleRide,
+    ActivityType.cafeRestaurant,
   ].includes(type);
+};
+
+const hasActivityDetails = (activity?: ItineraryActivity | null) => {
+  if (!activity) return false;
+  switch (activity.type) {
+    case ActivityType.flight:
+      return !!activity.flightDetails;
+    case ActivityType.accomodation:
+      return !!activity.accomodationDetails;
+    case ActivityType.cafeRestaurant:
+      return !!activity.cafeRestaurantDetails;
+    case ActivityType.nature:
+      return !!activity.natureDetails;
+    case ActivityType.shopppingAndService:
+      return !!activity.shoppingDetails;
+    case ActivityType.entertainmentAndRecreation:
+      return !!activity.entertainmentDetails;
+    case ActivityType.transportation:
+      return !!activity.transportationDetails;
+    case ActivityType.walk:
+      return !!activity.walkDetails;
+    case ActivityType.sightseeing:
+      return !!activity.sightseeingDetails;
+    case ActivityType.preparation:
+      return !!activity.preparationDetails;
+    case ActivityType.rest:
+      return !!activity.restDetails;
+    case ActivityType.hikeOrCamp:
+      return !!activity.hikeOrCampDetails;
+    case ActivityType.motorcycleRide:
+      return !!activity.motorcycleRideDetails;
+    case ActivityType.meetup:
+      return !!activity.meetupDetails;
+    case ActivityType.rideRental:
+      return !!activity.rideRentalDetails;
+    default:
+      return false;
+  }
 };
 
 const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: ViewTripActivityProps) => {
@@ -74,7 +113,10 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
   // 90% sheet height: translateY = parentHeight * 0.1
   // Min sheet height: based on activity type (60% for preparation -> 0.4 offset; 35% default -> 0.65 offset)
   const SNAP_90 = parentHeight * 0.1;
-  const SNAP_MIN = is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65;
+  const hasDetails = hasActivityDetails(itineraryActivity);
+  const SNAP_MIN = hasDetails
+    ? (is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65)
+    : SNAP_90;
 
   const snappedY = useRef(SNAP_MIN);
   const dragStartY = useRef(0);
@@ -87,16 +129,19 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
   // Dynamically update snap configurations once itineraryActivity loads
   React.useEffect(() => {
     if (itineraryActivity) {
-      const minSnap = is60PercentSnap(itineraryActivity.type) ? parentHeight * 0.4 : parentHeight * 0.65;
+      const minSnap = hasActivityDetails(itineraryActivity)
+        ? (is60PercentSnap(itineraryActivity.type) ? parentHeight * 0.4 : parentHeight * 0.65)
+        : SNAP_90;
       snappedY.current = minSnap;
       setCurrentSnap(minSnap);
       translateY.setValue(minSnap);
     }
-  }, [itineraryActivity, parentHeight]);
+  }, [itineraryActivity, parentHeight, SNAP_90]);
 
   // Slowly changing black overlay opacity as sheet is panned/scrolled towards SNAP_90
+  const rangeEnd = SNAP_MIN === SNAP_90 ? SNAP_90 + 1 : SNAP_MIN;
   const overlayOpacity = translateY.interpolate({
-    inputRange: [SNAP_90, SNAP_MIN],
+    inputRange: [SNAP_90, rangeEnd],
     outputRange: [0.55, 0],
     extrapolate: "clamp",
   });

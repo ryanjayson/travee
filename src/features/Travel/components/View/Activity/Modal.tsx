@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 import { activityIcons } from "../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../types/enums";
+import { ItineraryActivity } from "../../../types/TravelDto";
 
 // AnimatedIcon removed to prevent TypeError on setNativeProps
 
@@ -40,7 +41,47 @@ const is60PercentSnap = (type?: ActivityType) => {
     ActivityType.walk,
     ActivityType.meetup,
     ActivityType.entertainmentAndRecreation,
+    ActivityType.motorcycleRide,
+    ActivityType.cafeRestaurant,
   ].includes(type);
+};
+
+const hasActivityDetails = (activity?: ItineraryActivity | null) => {
+  if (!activity) return false;
+  switch (activity.type) {
+    case ActivityType.flight:
+      return !!activity.flightDetails;
+    case ActivityType.accomodation:
+      return !!activity.accomodationDetails;
+    case ActivityType.cafeRestaurant:
+      return !!activity.cafeRestaurantDetails;
+    case ActivityType.nature:
+      return !!activity.natureDetails;
+    case ActivityType.shopppingAndService:
+      return !!activity.shoppingDetails;
+    case ActivityType.entertainmentAndRecreation:
+      return !!activity.entertainmentDetails;
+    case ActivityType.transportation:
+      return !!activity.transportationDetails;
+    case ActivityType.walk:
+      return !!activity.walkDetails;
+    case ActivityType.sightseeing:
+      return !!activity.sightseeingDetails;
+    case ActivityType.preparation:
+      return !!activity.preparationDetails;
+    case ActivityType.rest:
+      return !!activity.restDetails;
+    case ActivityType.hikeOrCamp:
+      return !!activity.hikeOrCampDetails;
+    case ActivityType.motorcycleRide:
+      return !!activity.motorcycleRideDetails;
+    case ActivityType.meetup:
+      return !!activity.meetupDetails;
+    case ActivityType.rideRental:
+      return !!activity.rideRentalDetails;
+    default:
+      return false;
+  }
 };
 
 const ViewActivityModal = ({
@@ -64,34 +105,43 @@ const ViewActivityModal = ({
   const parentHeight = screenHeight - yOffset;
 
   const SNAP_90 = parentHeight * 0.1;
-  const SNAP_MIN = is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65;
+  const hasDetails = hasActivityDetails(itineraryActivity);
+  const SNAP_MIN = hasDetails
+    ? (is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65)
+    : SNAP_90;
 
   const translateY = useRef(new Animated.Value(SNAP_MIN)).current;
 
   useEffect(() => {
     if (itineraryActivity) {
-      const minSnap = is60PercentSnap(itineraryActivity.type) ? parentHeight * 0.4 : parentHeight * 0.65;
+      const minSnap = hasActivityDetails(itineraryActivity)
+        ? (is60PercentSnap(itineraryActivity.type) ? parentHeight * 0.4 : parentHeight * 0.65)
+        : SNAP_90;
       translateY.setValue(minSnap);
     }
-  }, [itineraryActivity, parentHeight, translateY]);
+  }, [itineraryActivity, parentHeight, translateY, SNAP_90]);
 
   const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity?.type)?.color || "#9E9E9E";
 
   const { animatedBgColor, overlayOpacity } = useMemo(() => {
-    const minSnap = is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65;
+    const minSnap = hasActivityDetails(itineraryActivity)
+      ? (is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65)
+      : SNAP_90;
+    const rangeEnd = minSnap === SNAP_90 ? SNAP_90 + 1 : minSnap;
+
     return {
       animatedBgColor: translateY.interpolate({
-        inputRange: [SNAP_90, minSnap],
+        inputRange: [SNAP_90, rangeEnd],
         outputRange: ["rgba(0, 0, 0, 0.55)", "transparent"],
         extrapolate: "clamp",
       }),
       overlayOpacity: translateY.interpolate({
-        inputRange: [SNAP_90, minSnap],
+        inputRange: [SNAP_90, rangeEnd],
         outputRange: [0.55, 0],
         extrapolate: "clamp",
       }),
     };
-  }, [translateY, itineraryActivity?.type, parentHeight, SNAP_90]);
+  }, [translateY, itineraryActivity, parentHeight, SNAP_90]);
 
 
   return (
@@ -126,12 +176,27 @@ const ViewActivityModal = ({
             paddingHorizontal: 8,
             position: "relative",
           }}>
+            {/* Background overlay is rendered first so that it sits behind buttons */}
+            <Animated.View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "#000000",
+                opacity: overlayOpacity,
+                zIndex: 0,
+              }}
+            />
+
             <TouchableOpacity
               onPress={handleCancel}
               activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               accessibilityRole="button"
-              style={{ padding: 4 }}
+              style={{ padding: 4, zIndex: 1 }}
             >
               <View className="p-2 rounded-full bg-white/10">
                 <Icon name="chevron-left" size={24} color="#FFFFFF" />
@@ -143,23 +208,10 @@ const ViewActivityModal = ({
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel="Edit activity"
-              style={{ padding: 8, marginRight: 8 }}
+              style={{ padding: 8, marginRight: 8, zIndex: 1 }}
             >
               <Icon name="edit" size={24} color="#FFFFFF" />
             </TouchableOpacity>
-
-            <Animated.View
-              pointerEvents="none"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "#000000",
-                opacity: overlayOpacity,
-              }}
-            />
           </View>
 
           <Activity id={id} onClose={handleCancel} translateY={translateY} />
