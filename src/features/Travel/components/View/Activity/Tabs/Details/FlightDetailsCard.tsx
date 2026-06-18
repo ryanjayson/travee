@@ -101,20 +101,20 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
   ];
 
   return (
-    <View className=" rounded-3xl  border-gray-150 mb-6 shadow-md overflow-hidden ">
+    <View className="rounded-3xl border-gray-150 mb-6 shadow-md overflow-hidden bg-white mt-4">
       {/* Header Banner */}
       <View
-        className="flex-row items-center justify-between rounded-t-3xl px-5 py-4 border-2  border-gray-500 mt-2 bg-[#2196F3]/50"
+        className="flex-row items-center justify-between rounded-t-3xl px-5 py-4 border-2 border-b-0 border-gray-500  bg-white"
       // style={{ backgroundColor: "red" }}
       >
         <View className="flex-row items-center gap-2">
-          <Icon name="flight" size={20} color="white" />
+          <Icon name="flight" size={20} color="#2196F3" />
           <Text className="text-gray-500 font-bold text-sm tracking-wider uppercase">
             {data.airline || "BOARDING PASS"}
           </Text>
         </View>
         {data.flightNumber ? (
-          <View className="bg-white/20 px-3 py-1 rounded-full">
+          <View className="bg-[#2196F3]/80 px-3 py-1 rounded-full">
             <Text className="text-white text-xs font-bold tracking-wide">
               {data.flightNumber}
             </Text>
@@ -123,12 +123,12 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
       </View>
 
       {/* Ticket Body */}
-      <View className="p-5 border-l-2 border-r-2 border-gray-500 bg-white">
+      <View className="p-5 border-l-2 border-r-2 border-gray-500 bg-white -mt-1">
         {/* Route Row */}
         <View className="flex-row items-center justify-between mb-4">
           {/* Departure Airport */}
           <View className="flex-1">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">
               Departure
             </Text>
             {(() => {
@@ -178,7 +178,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
 
           {/* Arrival Airport */}
           <View className="flex-1 items-end">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-1">
               Arrival
             </Text>
             {(() => {
@@ -241,54 +241,54 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
           className="absolute left-[-12px] w-7 h-7 rounded-full bg-gray-25 border-2 border-gray-500"
           style={{
             transform: [{ translateX: 0 }],
-            backgroundColor: "#FCFCFD",
+            backgroundColor: "#2196F3",
           }}
         />
         {/* Dashed Perforation Line */}
         <View
           className="flex-1 mx-4"
           style={{
-            height: 2,
+            height: 1,
             borderStyle: "dashed",
-            borderWidth: 2,
+            borderWidth: 1,
             borderColor: "#EAECF0",
             borderRadius: 1,
           }}
         />
         {/* Right Notch */}
         <View
-          className="absolute right-[-12px] w-7 h-7 rounded-full bg-gray-25 border-2 border-gray-500"
+          className="absolute right-[-12px] w-7 h-7 rounded-full border-2 border-gray-500"
           style={{
-            backgroundColor: "#FCFCFD",
+            backgroundColor: "#2196F3",
           }}
         />
       </View>
 
       {/* Ticket Stub */}
-      <View className="p-5 pt-2 border-2 border-t-0 -mt-0.5 border-gray-500 rounded-b-3xl bg-white">
+      <View className="p-5 pt-2 border-2 -mt-[2px] border-t-0 border-gray-500 rounded-b-3xl bg-white">
         {/* Grid Row 1: Gate, Terminal, Seat */}
         <View className="flex-row justify-between mb-4 gap-2">
           <View className="flex-1">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
               Terminal
             </Text>
-            <Text className="text-sm font-bold text-gray-800">
+            <Text className="text-lg font-bold text-gray-400">
               {data.terminal || "N/A"}
             </Text>
           </View>
           <View className="flex-1 items-center">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
               Gate
             </Text>
-            <Text className="text-sm font-bold text-gray-800">
+            <Text className="text-lg font-bold text-gray-400">
               {data.gate || "N/A"}
             </Text>
           </View>
           <View className="flex-1 items-end">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
               Seat
             </Text>
-            <Text className="text-sm font-bold text-gray-800">
+            <Text className="text-lg font-bold text-gray-400">
               {data.seatNumber || "N/A"}
             </Text>
           </View>
@@ -297,7 +297,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
         {/* Grid Row 2: Booking Ref & Price */}
         <View className="flex-row items-center justify-between mb-6 pt-2 border-t border-gray-100">
           <View className="flex-1">
-            <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
               Booking Ref
             </Text>
             {data.bookingReference ? (
@@ -307,13 +307,13 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
                 activeOpacity={0.7}
                 accessibilityRole="button"
               >
-                <Text className="text-sm font-bold text-primary">
+                <Text className="text-lg font-bold text-gray-400">
                   {data.bookingReference}
                 </Text>
                 <Icon name="content-copy" size={12} color={"263F69"} />
               </TouchableOpacity>
             ) : (
-              <Text className="text-sm font-bold text-gray-800">N/A</Text>
+              <Text className="text-lg font-bold text-gray-400">N/A</Text>
             )}
           </View>
 

@@ -110,7 +110,7 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.hikeOrCamp,
     name: ActivityType.hikeOrCamp,
     iconName: "hiking",
-    color: "#558B2F", // dark-green hsl(86)
+    color: "#429862", // dark-green hsl(86)
   },
   {
     iconSet: IconSetProvider.material,

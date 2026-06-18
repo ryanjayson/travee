@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { ItineraryActivity } from "../../../../types/TravelDto";
 import { ActivityType } from "../../../../../../types/enums";
+import { activityIcons } from "../../../../../../components/ActivityIcon";
 import {
   FlightDetails,
   AccomodationDetails,
@@ -34,6 +35,8 @@ const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
   const paddingBottom = parentHeight * 0.35 + 40; // 35% sheet height + extra spacing
 
   if (!itineraryActivity) return null;
+
+  const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity.type)?.color || "#9E9E9E";
 
   const renderDetails = () => {
     switch (itineraryActivity.type) {
@@ -73,7 +76,10 @@ const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
   };
 
   return (
-    <View className="flex-1 relative">
+    <View className="flex-1 relative"
+    style={{
+      backgroundColor: activityColor,
+    }}>
       {/* <LinearGradient
         colors={["rgba(33, 150, 243, 0.20)", "#FFFFFF"]}
         style={{
@@ -85,7 +91,7 @@ const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
         }}
       /> */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }} className="flex-1">
-        <View className="p-3">{renderDetails()}</View>
+        <View className="px-3">{renderDetails()}</View>
       </ScrollView>
     </View>
   );

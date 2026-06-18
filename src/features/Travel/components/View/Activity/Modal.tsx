@@ -15,6 +15,7 @@ import { useItineraryActivity } from "../../../hooks/useActivity";
 import ActivityModal from "../../Edit/Itinerary/Activity/Modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
+import { activityIcons } from "../../../../../components/ActivityIcon";
 
 // AnimatedIcon removed to prevent TypeError on setNativeProps
 
@@ -51,26 +52,17 @@ const ViewActivityModal = ({
 
   const translateY = useRef(new Animated.Value(SNAP_35)).current;
 
-  const formattedStartDate = selectedTravelPlan?.startOrDepartureDate ? selectedTravelPlan.startOrDepartureDate.toLocaleString("en-US", { month: "short", day: "2-digit" }) : "";
-  const formattedEndDate = selectedTravelPlan?.endOrReturnDate ? selectedTravelPlan.endOrReturnDate.toLocaleString("en-US", { month: "short", day: "2-digit" }) : "";
-
-  // Opacity of the white header elements (1 at SNAP_90, 0 at SNAP_35)
-  const whiteOpacity = translateY.interpolate({
-    inputRange: [SNAP_90, SNAP_35],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
-
-  // Opacity of the dark header elements (0 at SNAP_90, 1 at SNAP_35)
-  const darkOpacity = translateY.interpolate({
-    inputRange: [SNAP_90, SNAP_35],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
+  const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity?.type)?.color || "#9E9E9E";
 
   const animatedBgColor = translateY.interpolate({
     inputRange: [SNAP_90, SNAP_35],
-    outputRange: ["rgba(0, 0, 0, 0.55)", "#FFFFFF"],
+    outputRange: ["rgba(0, 0, 0, 0.55)", "transparent"],
+    extrapolate: "clamp",
+  });
+
+  const overlayOpacity = translateY.interpolate({
+    inputRange: [SNAP_90, SNAP_35],
+    outputRange: [0.55, 0],
     extrapolate: "clamp",
   });
 
@@ -82,8 +74,8 @@ const ViewActivityModal = ({
       statusBarTranslucent={true}
       onRequestClose={handleCancel}
     >
-      <StatusBar style="dark" />
-      <View style={{ flex: 1, backgroundColor: "#FFFFFF", justifyContent: "flex-start" }}>
+      <StatusBar style="light" />
+      <View style={{ flex: 1, backgroundColor: activityColor, justifyContent: "flex-start" }}>
 
         <Animated.View 
           style={{ 
@@ -95,131 +87,51 @@ const ViewActivityModal = ({
             paddingTop: insets.top,
           }}
         >
+          {/* Header View using activity background color, showing only back and edit icons */}
           <View style={{ 
-            height: 52, width: "100%", position: "relative" }}>
-            {/* White overlay header when expanded (SNAP_90) */}
-            <Animated.View 
-              style={{ 
+            height: 52, 
+            width: "100%", 
+            backgroundColor: activityColor,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingHorizontal: 8,
+            position: "relative",
+          }}>
+            <TouchableOpacity
+              onPress={handleCancel}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              style={{ padding: 4 }}
+            >
+              <View className="p-2 rounded-full bg-white/10">
+                <Icon name="chevron-left" size={24} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setShowEditActivityModal(true)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Edit activity"
+              style={{ padding: 8, marginRight: 8 }}
+            >
+              <Icon name="edit" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+
+            <Animated.View
+              pointerEvents="none"
+              style={{
                 position: "absolute",
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                padding: 6,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                borderBottomWidth: 1,
-                borderBottomColor: "transparent",
-                // backgroundColor: animatedBgColor,
-                opacity: whiteOpacity,
+                backgroundColor: "#000000",
+                opacity: overlayOpacity,
               }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <TouchableOpacity
-                  onPress={handleCancel}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  accessibilityRole="button"
-                  style={{ paddingRight: 14, padding: 2 }}
-                >
-                  <Icon name="chevron-left" size={36} color="#FFFFFF" />
-                </TouchableOpacity>
-     
-
-              <View className="flex flex-col">
-                <Text 
-                  style={{ 
-                    fontSize: 16,
-                    fontWeight: "500",
-                    color: "#FFFFFF",
-                  }}
-                >
-                  {selectedTravelPlan?.title}
-                </Text>
-                    <Text 
-                  style={{ 
-                    fontSize: 12,
-                    color: "#FFFFFF",
-                  }}
-                >
-                  {formattedStartDate} - {formattedEndDate}
-                </Text>
-              </View>
-
-              </View>
-
-              <TouchableOpacity
-                onPress={() => setShowEditActivityModal(true)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="Edit activity"
-                style={{ padding: 8, marginRight: 8 }}
-              >
-                <Icon name="edit" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-            </Animated.View>
-
-            {/* Dark text / white bg header when collapsed (SNAP_35) */}
-            <Animated.View 
-              style={{ 
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                padding: 6,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                borderBottomWidth: 1,
-                borderBottomColor: "#f3f4f6",
-                // backgroundColor: animatedBgColor,
-                opacity: darkOpacity,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <TouchableOpacity
-                  onPress={handleCancel}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                  accessibilityRole="button"
-                  style={{ paddingRight: 14, padding: 2 }}
-                >
-                  <Icon name="chevron-left" size={36} color="#777777" />
-                </TouchableOpacity>
-     
-              <View className="flex flex-col">
-                <Text 
-                  style={{ 
-                    fontSize: 16,
-                    fontWeight: "500",
-                    color: "#000000",
-                  }}
-                >
-                  {selectedTravelPlan?.title}
-                </Text>
-                    <Text 
-                  style={{ 
-                    fontSize: 12,
-                    color: "#000000",
-                  }}
-                >
-                  {formattedStartDate} - {formattedEndDate}
-                </Text>
-              </View>
-              </View>
-
-              <TouchableOpacity
-                onPress={() => setShowEditActivityModal(true)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="Edit activity"
-                style={{ padding: 8, marginRight: 8 }}
-              >
-                <Icon name="edit" size={24} color="#777777" />
-              </TouchableOpacity>
-            </Animated.View>
+            />
           </View>
 
           <Activity id={id} onClose={handleCancel} translateY={translateY} />
@@ -237,5 +149,5 @@ const ViewActivityModal = ({
     </Modal>
   );
 };
- 
+
 export default ViewActivityModal;

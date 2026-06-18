@@ -324,11 +324,14 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
               backgroundColor: "#FFFFFF",
               borderTopLeftRadius: 32,
               borderTopRightRadius: 32,
-              // shadowColor: "#000",
-              // shadowOffset: { width: 0, height: -8 },
-              // shadowOpacity: 0.12,
-              // shadowRadius: 16,
-              // elevation: 24,
+              // borderWidth: 2,
+              borderBottomWidth: 0,
+              borderColor: "#E5E7EB",
+              shadowColor: "#000",
+              shadowOffset: { width: 1, height: 1},
+              shadowOpacity: 1,
+              shadowRadius: 26,
+              elevation: 34,
             },
           ]}
         >
@@ -363,7 +366,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
                           className="text-base text-tertiary leading-6 mt-2"
                           numberOfLines={isDescriptionExpanded ? undefined : 2}
                           onTextLayout={(e) => {
-                            if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
+                            if (!showMoreButton && e.nativeEvent.lines.length >= 2) {
                               setShowMoreButton(true);
                             }
                           }}

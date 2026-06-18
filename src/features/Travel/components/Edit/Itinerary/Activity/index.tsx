@@ -81,7 +81,7 @@ const TravelSchema = Yup.object().shape({
   title: Yup.string()
     .required("Activity title is required")
     .min(2, "Activity title is too short, make it more descriptive")
-    .max(20, "Activity title must be at most 20 characters"),
+    .max(40, "Activity title must be at most 40 characters"),
 });
 
 export interface ActivityFormValues {
