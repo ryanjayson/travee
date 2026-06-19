@@ -886,8 +886,9 @@ const EditActivity = ({
     }
   };
 
-  const handleDeleteActivity = async (activityId: string) => {
-    if (itinerarySectionId && activityId) {
+  const handleDeleteActivity = async (activityId: string, sectionId?: string) => {
+    const targetSectionId = sectionId || itineraryActivity?.sectionId || itinerarySectionId;
+    if (targetSectionId && activityId) {
       const isConfirmed = await confirm({
         title: "Delete Activity",
         message: "Are you sure you want to delete this activity? All associated expenses, notes, and checklist items will also be permanently deleted. This action is irreversible.",
@@ -898,7 +899,7 @@ const EditActivity = ({
 
       if (isConfirmed) {
         deleteActivityMutation({
-          sectionId: itinerarySectionId,
+          sectionId: targetSectionId,
           activityId: activityId,
           travelId: selectedTravelPlan?.id,
         });
@@ -1573,7 +1574,7 @@ const EditActivity = ({
                   <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200">
                     <TouchableOpacity 
                       className="flex-row items-center gap-2.5 justify-center py-2"
-                      onPress={() => handleDeleteActivity(itineraryActivity?.id || "")}
+                      onPress={() => handleDeleteActivity(itineraryActivity?.id || "", values.sectionId)}
                       disabled={isPending}
                       accessibilityRole="button"
                     >

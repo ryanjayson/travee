@@ -90,29 +90,30 @@ export const useUpdateActivityMutation = () => {
         queryKey: ["travel"],
       });
 
-      if (variables.travelId) {
+      queryClient.invalidateQueries({
+        queryKey: ["selectedTravelPlan"],
+      });
+
+      const targetTravelId = variables.travelId || selectedTravelPlan?.id;
+      if (targetTravelId) {
         queryClient.invalidateQueries({
-          queryKey: ["travel", variables.travelId],
+          queryKey: ["travel", targetTravelId],
         });
 
         queryClient.invalidateQueries({
-          queryKey: ["selectedTravelPlan", variables.travelId],
+          queryKey: ["selectedTravelPlan", targetTravelId],
         });
 
-        getTravelPlanLocally(variables.travelId).then((localPlan) => {
-          if (localPlan?.travel && selectedTravelPlan && String(selectedTravelPlan.id) === String(variables.travelId)) {
+        getTravelPlanLocally(targetTravelId).then((localPlan) => {
+          if (localPlan?.travel && selectedTravelPlan && String(selectedTravelPlan.id) === String(targetTravelId)) {
             selectTravelPlan({
               ...selectedTravelPlan,
               ...localPlan.travel,
-              id: variables.travelId,
+              id: targetTravelId,
             });
           }
         }).catch((err) => console.warn("Failed to update travelContext on activity save:", err));
       }
-
-      queryClient.invalidateQueries({
-        queryKey: ["selectedTravelPlan"],
-      });
 
       if (variables.id) {
         queryClient.invalidateQueries({
@@ -125,9 +126,9 @@ export const useUpdateActivityMutation = () => {
       });
       
       // Optimistically/synchronously update query cache for instant UI rendering
-      if (variables.travelId) {
+      if (targetTravelId) {
         queryClient.setQueryData<TravelPlan | undefined>(
-          ["selectedTravelPlan", variables.travelId],
+          ["selectedTravelPlan", targetTravelId],
           (oldData) => {
             if (!oldData) return undefined;
             const sections = oldData.itinerarySection || [];
@@ -232,7 +233,7 @@ export const useDeleteActivityMutation = () => {
 
       if (!response.ok) {
         // Handle error response (e.g., 404 Not Found, 403 Forbidden)
-        let errorMessage = `Failed to delete section ${variables.activityId}. Status: ${response.status}`;
+        let errorMessage = `Failed to delete activity ${variables.activityId}. Status: ${response.status}`;
 
         // Only try to parse JSON if status is not 204 (No Content)
         if (response.status !== 204) {
@@ -245,39 +246,60 @@ export const useDeleteActivityMutation = () => {
         }
         throw new Error(errorMessage);
       }
+
+      // Also clean up any local cache or data locally in local DB
+      try {
+        await deleteActivityLocally(variables.activityId);
+      } catch (err) {
+        console.log("Activity not found locally during online deletion cleanup:", err);
+      }
+
       // Success (204 No Content): return nothing
       return;
     },
     onSuccess: (data: void, variables: DeleteVariables) => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
 
-      if (variables.travelId) {
+      const targetTravelId = variables.travelId || selectedTravelPlan?.id;
+      if (targetTravelId) {
         queryClient.invalidateQueries({
-          queryKey: ["travel", variables.travelId],
+          queryKey: ["travel", targetTravelId],
         });
 
         queryClient.invalidateQueries({
-          queryKey: ["selectedTravelPlan", variables.travelId],
+          queryKey: ["selectedTravelPlan", targetTravelId],
         });
 
-        getTravelPlanLocally(variables.travelId).then((localPlan) => {
-          if (localPlan?.travel && selectedTravelPlan && String(selectedTravelPlan.id) === String(variables.travelId)) {
+        queryClient.invalidateQueries({
+          queryKey: ["checklistItems", targetTravelId],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["itineraryExpenses", targetTravelId],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["itineraryNotes", targetTravelId],
+        });
+
+        getTravelPlanLocally(targetTravelId).then((localPlan) => {
+          if (localPlan?.travel && selectedTravelPlan && String(selectedTravelPlan.id) === String(targetTravelId)) {
             selectTravelPlan({
               ...selectedTravelPlan,
               ...localPlan.travel,
-              id: variables.travelId,
+              id: targetTravelId,
             });
           }
         }).catch((err) => console.warn("Failed to update travelContext on activity delete:", err));
 
-        // Optimistically/synchronously update query cache for instant UI rendering
+        // Optimistically/synchronously update query cache for instant UI rendering across all sections
         queryClient.setQueryData<TravelPlan | undefined>(
-          ["selectedTravelPlan", variables.travelId],
+          ["selectedTravelPlan", targetTravelId],
           (oldData) => {
             if (!oldData) return undefined;
             const sections = oldData.itinerarySection || [];
             const updatedSections = sections.map((s) => {
-              if (s.id === variables.sectionId && s.itineraryActivity) {
+              if (s.itineraryActivity) {
                 return {
                   ...s,
                   itineraryActivity: s.itineraryActivity.filter((a) => a.id !== variables.activityId),
@@ -291,6 +313,21 @@ export const useDeleteActivityMutation = () => {
             };
           }
         );
+      }
+
+      if (variables.activityId) {
+        queryClient.removeQueries({
+          queryKey: ["itineraryActivity", variables.activityId],
+        });
+        queryClient.removeQueries({
+          queryKey: ["checklistItemsByActivity", variables.activityId],
+        });
+        queryClient.removeQueries({
+          queryKey: ["itineraryExpensesByActivity", variables.activityId],
+        });
+        queryClient.removeQueries({
+          queryKey: ["itineraryNotesByActivity", variables.activityId],
+        });
       }
 
       showToast({

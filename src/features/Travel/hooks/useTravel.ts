@@ -67,20 +67,35 @@ export const useUpdateTravel = () => {
       queryClient.invalidateQueries({
         queryKey: TRAVEL_QUERY_KEY,
       });
-      if (variables.id) {
-        queryClient.invalidateQueries({
-          queryKey: [TRAVEL_QUERY_KEY, variables.id],
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["selectedTravelPlan"],
+      });
 
-      const updatedId = variables.id || res?.data?.id || (res as any)?.id;
-      if (updatedId && selectedTravelPlan?.id === updatedId) {
-        const updatedPlan = res?.data || res;
-        selectTravelPlan({
-          ...selectedTravelPlan,
-          ...updatedPlan,
-          id: updatedId,
-          title: variables.data.title || selectedTravelPlan.title,
+      const updatedId = variables.id || res?.data?.id || (res as any)?.id || selectedTravelPlan?.id;
+      if (updatedId) {
+        queryClient.invalidateQueries({
+          queryKey: [TRAVEL_QUERY_KEY, updatedId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["selectedTravelPlan", updatedId],
+        });
+
+        getTravelPlanLocally(updatedId).then((localPlan) => {
+          if (localPlan?.travel) {
+            selectTravelPlan({
+              ...selectedTravelPlan,
+              ...localPlan.travel,
+              id: updatedId,
+            });
+          }
+        }).catch(() => {
+          const updatedPlan = res?.data || res;
+          selectTravelPlan({
+            ...selectedTravelPlan,
+            ...updatedPlan,
+            id: updatedId,
+            title: variables.data.title || selectedTravelPlan?.title || updatedPlan?.title,
+          });
         });
       }
 

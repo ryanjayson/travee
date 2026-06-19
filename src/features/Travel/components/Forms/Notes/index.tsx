@@ -25,6 +25,7 @@ import { useTravelContext } from "../../../../../context/TravelContext";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import MapboxDestinationSelectorModal from "../../MapboxDestinationSelector/Modal";
 import { MapboxPlace } from "../../MapboxDestinationSelector";
+import { useConfirm } from "../../../../../context/ConfirmContext";
 
 interface Place {
   id: string;
@@ -75,6 +76,7 @@ const EditActivity = ({
   const { selectedTravelPlan } = useTravelContext();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
+  const { confirm } = useConfirm();
 
   const handleSaveActivity = async (
     values: ActivityFormValues,
@@ -115,15 +117,26 @@ debugger;
     }
   };
 
-  const handleDeleteActivity = (activityId: string) => {
-    if (itinerarySectionId && activityId) {
-      deleteActivityMutation({
-        sectionId: itinerarySectionId,
-        activityId: activityId,
-        travelId: selectedTravelPlan?.id,
+  const handleDeleteActivity = async (activityId: string, sectionId?: string) => {
+    const targetSectionId = sectionId || itinerarySectionId || itineraryActivity?.sectionId;
+    if (targetSectionId && activityId) {
+      const isConfirmed = await confirm({
+        title: "Delete Activity",
+        message: "Are you sure you want to delete this activity? All associated expenses, notes, and checklist items will also be permanently deleted. This action is irreversible.",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        type: "danger",
       });
-      if (!isPending) {
-        onClose();
+
+      if (isConfirmed) {
+        deleteActivityMutation({
+          sectionId: targetSectionId,
+          activityId: activityId,
+          travelId: selectedTravelPlan?.id,
+        });
+        if (!isPending) {
+          onClose();
+        }
       }
     }
   };
@@ -328,7 +341,7 @@ debugger;
                   <View className="mt-5 pt-5 border-t border-[#E0E0E0]">
                     <TouchableOpacity 
                       className="flex-row items-center gap-2.5 justify-center py-2"
-                      onPress={() => handleDeleteActivity(itineraryActivity?.id || "")}
+                      onPress={() => handleDeleteActivity(itineraryActivity?.id || "", values.sectionId)}
                       disabled={isPending}
                     >
                       <Icon name="delete-outline" size={24} color={"#c93030"} />
