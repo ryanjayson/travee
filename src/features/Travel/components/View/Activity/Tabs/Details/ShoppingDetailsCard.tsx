@@ -71,48 +71,42 @@ export const ShoppingDetailsCard: React.FC<ShoppingDetailsCardProps> = ({ data }
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4">
+      <View className="p-2">
         <View className="mb-4">
-          <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
+          <Text className="text-xs font-medium text-white/80 uppercase tracking-widest mb-2">
             Store / Venue Name
           </Text>
-          <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
+          <Text className="text-5xl font-semibold tracking-tight mb-2 text-white">
             {data.venueName || "N/A"}
           </Text>
           {data.address ? (
             <TouchableOpacity
               onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center gap-6 mt-1"
+              className="flex-row items-center mt-1"
               activeOpacity={0.7}
               accessibilityRole="button"
             >
-              <Icon name="location-on" size={24} color="#FFFFFF" />
+              <Icon name="location-on" size={24} color="#FFFFFF" className="mx-5"/>
               <Text className="text-base text-white underline flex-1" numberOfLines={1}>
                 {data.address}
               </Text>
+              <Icon name="open-in-new" size={16} color={"#FFFFFF"} />
             </TouchableOpacity>
           ) : null}
-        </View>
-
-        {/* Row of details: Store Type */}
-        <View className="flex-row items-center justify-between pt-4 border-t border-dashed border-pink-850">
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-              Store Type
-            </Text>
-            <Text className="text-xl font-semibold text-white/80 capitalize">
-              {data.subType || "N/A"}
-            </Text>
-          </View>
         </View>
       </View>
 
       {/* Stub Area */}
-      <View className="p-5 pt-3">
-        <View className="flex-col gap-1">
+      <View className="px-md">
+        <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#016630]/10">
+          <Field
+            label="Store Type"
+            value={data.subType || "N/A"}
+            icon="store"
+          />
           <Field
             label="Website"
-            value={data.websiteAddress}
+            value={data.websiteAddress || "N/A"}
             icon="language"
             isLink
             onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress!) : undefined}

@@ -224,11 +224,16 @@ const TripTypeLookupModal = ({
               {...(!keyboardVisible && dragPanResponder.panHandlers)}
               className="flex-row justify-between items-center px-6 pb-5 border-b border-gray-200"
             >
-              <View className="flex-row items-center gap-2">
+              <View className="flex-1 ">
                 <Text
                   className="text-2xl font-bold"
                 >
                   Trip Type
+                </Text>
+                <Text
+                  className="text-md  text-[#999]"
+                >
+                 What kind of trip is this?
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel} accessibilityRole="button" accessibilityLabel="Close selection modal">
@@ -278,8 +283,8 @@ const TripTypeLookupModal = ({
                     accessibilityRole="button"
                     accessibilityLabel={`Select trip type ${displayName}`}
                   >
-                    <TripIcon type={typeValue} size={24} />
-                    <Text className="text-base text-gray-800 flex-1 capitalize">
+                    <TripIcon type={typeValue} size={28} showIconOnly />
+                    <Text className="text-lg text-gray-800 font-medium flex-1 capitalize">
                       {displayName}
                     </Text>
                     {selectedType === typeValue && (

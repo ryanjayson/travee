@@ -11,6 +11,7 @@ import { TravelPlanDetail } from "../../../../types/context/travel";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
 import { TravelMenuAction } from "../../../../types/enums";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
+import CreateTripModal from "../CreateOrEdit/Modal";
 import { useArchiveTravel, useCancelTravel, useDeleteTravel, useTravelPlan, useUnarchiveTravel } from "../../hooks/useTravel";
 
 interface ViewTripModalProps {
@@ -34,13 +35,15 @@ const ViewTripModal = ({
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const [scrollYVal, setScrollYVal] = useState<number>(0);
   const [isFabOpen, setIsFabOpen] = useState<boolean>(false);
+  const [showEditTripModal, setShowEditTripModal] = useState<boolean>(false);
 
   const expandAnim = useRef(new Animated.Value(0)).current;
+  const collapseTriggerRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     Animated.timing(expandAnim, {
       toValue: expanded ? 1 : 0,
-      duration: 250,
+      duration: 1,
       useNativeDriver: true,
     }).start();
   }, [expanded]);
@@ -104,7 +107,7 @@ const ViewTripModal = ({
   }, [travelPlan?.travel, selectedTravelPlan]);
 
   useEffect(() => {
-    console.log("SELECTED", travelPlan);
+    // console.log("SELECTED", travelPlan);
   }, [travelId]);
 
   const { mutate: deleteTravel } = useDeleteTravel();
@@ -118,13 +121,19 @@ const ViewTripModal = ({
     setShowModal(false);
   };
 
+  const handleBackOrCollapse = () => {
+    if (expanded) {
+      collapseTriggerRef.current?.();
+    } else {
+      handleCancel();
+    }
+  };
+
   const handleSelectNavigationMenu = async (menuAction: TravelMenuAction) => {
     const id = travelPlan?.travel?.id;
 
     if (menuAction === TravelMenuAction.EditTravel) {
-      if (id != null && navigation) {
-        navigation.navigate("EditTravelPlan", { travelId: id });
-      }
+      setShowEditTripModal(true);
     } else if (menuAction === TravelMenuAction.Cancel) {
       const isConfirmed = await confirm({
         title: "Cancel Trip",
@@ -208,27 +217,27 @@ const ViewTripModal = ({
           }}
         >
 
-      <TouchableOpacity
+          <TouchableOpacity
             className="pr-3.5 p-0.5 left-2"
-            onPress={handleCancel}
+            onPress={handleBackOrCollapse}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityRole="button"
-            accessibilityLabel="Close travel plan details"
-            disabled={expanded}
+            accessibilityLabel={expanded ? "Collapse trip details sheet" : "Close travel plan details"}
           >
             <Animated.View 
               style={{ 
-                // transform: [{ rotate: iconRotation }], 
                 width: 32, 
                 height: 32, 
                 justifyContent: 'center', 
                 alignItems: 'center',
-                opacity: closeOpacity,
               }}
             >
-              <Animated.View style={{ position: 'absolute' }}>
+              <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
                 <Icon name="close" size={32} color={iconColor} />
+              </Animated.View>
+              <Animated.View style={{ position: 'absolute', opacity: downOpacity }}>
+                <Icon name="keyboard-arrow-down" size={32} color="#263F69" />
               </Animated.View>
             </Animated.View>
           </TouchableOpacity>
@@ -238,6 +247,7 @@ const ViewTripModal = ({
               {travelPlan && `${travelPlan.travel.title}`}
             </Text>
           </View>
+          
           <TouchableOpacity
             className="pr-3.5 p-0.5 absolute right-0 pt-10"
             onPress={() => setShowTravelNavigationModal(true)}  
@@ -290,6 +300,9 @@ const ViewTripModal = ({
               onRefresh={refetch}
               fabOpen={isFabOpen}
               setFabOpen={setIsFabOpen}
+              onRegisterCollapse={(fn) => {
+                collapseTriggerRef.current = fn;
+              }}
             />
           )}
         </View>
@@ -300,6 +313,13 @@ const ViewTripModal = ({
         setShowModal={setShowTravelNavigationModal}
         onSelect={handleSelectNavigationMenu}
         travel={travelPlan?.travel}
+      />
+
+      <CreateTripModal
+        showModal={showEditTripModal}
+        setShowModal={setShowEditTripModal}
+        tripData={travelPlan?.travel}
+        mode="edit"
       />
     </Modal>
   );

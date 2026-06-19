@@ -52,24 +52,14 @@ const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
         return <ShoppingDetails data={itineraryActivity.shoppingDetails} />;
       case ActivityType.entertainmentAndRecreation:
         return <EntertainmentDetails data={itineraryActivity.entertainmentDetails} />;
-      case ActivityType.transportation:
-        return <TransportationDetails data={itineraryActivity.transportationDetails} />;
       case ActivityType.walk:
         return <WalkDetails data={itineraryActivity.walkDetails} />;
       case ActivityType.sightseeing:
         return <SightseeingDetails data={itineraryActivity.sightseeingDetails} />;
       case ActivityType.preparation:
         return <PreparationDetails data={itineraryActivity.preparationDetails} />;
-      case ActivityType.rest:
-        return <RestDetails data={itineraryActivity.restDetails} />;
       case ActivityType.hikeOrCamp:
         return <HikeOrCampDetails data={itineraryActivity.hikeOrCampDetails} />;
-      case ActivityType.motorcycleRide:
-        return <MotorcycleRideDetails data={itineraryActivity.motorcycleRideDetails} />;
-      case ActivityType.meetup:
-        return <MeetupDetails data={itineraryActivity.meetupDetails} />;
-      case ActivityType.rideRental:
-        return <RideRentalDetails data={itineraryActivity.rideRentalDetails} />;
       default:
         return <Text className="text-white p-4 text-center">No type-specific details available.</Text>;
     }

@@ -21,15 +21,13 @@ import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ACTIVITY_TYPE_SUBTEXT: Record<string, string> = {
-  accomodation: "Checkin and checkout",
+  flight: "Departures, arrivals, transit, layover",
+  accomodation: "Place to stay, checkin and checkout",
   cafeRestaurant: "Food, eat, drink, snack, coffee, bar, lounge, pub",
   nature: "Beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano",
-  shopppingAndService: "Spa, events, festivals, parties, show, tour guide, clothes store, supermarket, convenience store, atm, bank, pharmacy, gas station",
+  shopppingAndService: "Spa, events,  supermarket, convenience store, atm, bank, etc.",
   entertainmentAndRecreation: "Park, museum, gym, cinema, stadium, zoo, concert",
-  transportation: "Ride, bike, boat, bus, taxi, train, ferry",
   hikeOrCamp: "Mountain, forest, jungle, cave, desert, canyon, volcano, campground",
-  motorcycleRide: "Motorbike",
-  rideRental: "RV, yacht, motorbike, motorcycle, car, bike",
 };
 
 
@@ -301,9 +299,14 @@ const ActivityTypeLookupModal = ({
                     accessibilityLabel={`Select activity type ${noneItem.displayName}`}
                   >
                     <ActivityIcon type={noneItem.typeValue} size={24} />
-                    <Text className="text-base text-gray-800 flex-1 capitalize">
-                      {noneItem.displayName}
-                    </Text>
+                    <View>
+                      <Text className="text-lg text-black font-medium">
+                        {noneItem.displayName}
+                      </Text>
+                      <Text style={{ fontSize: 14, color: "#999", marginTop: 0 }}>
+                        Not sure, or undecided? update later
+                      </Text>
+                    </View>
                     {(selectedType === noneItem.typeValue || selectedType === undefined) && (
                       <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
                     )}
@@ -344,11 +347,11 @@ const ActivityTypeLookupModal = ({
                       >
                         <ActivityIcon type={typeValue} size={24} />
                         <View className="flex-1">
-                          <Text className="text-base text-gray-800 capitalize">
+                          <Text className="text-lg text-black capitalize font-medium">
                             {displayName}
                           </Text>
                           {ACTIVITY_TYPE_SUBTEXT[key] ? (
-                            <Text style={{ fontSize: 12, color: "#667085", marginTop: 0 }}>
+                            <Text style={{ fontSize: 14, color: "#999", marginTop: 0 }}>
                               {ACTIVITY_TYPE_SUBTEXT[key]}
                             </Text>
                           ) : null}
@@ -395,11 +398,11 @@ const ActivityTypeLookupModal = ({
                       >
                         <ActivityIcon type={typeValue} size={24} />
                         <View className="flex-1">
-                          <Text className="text-base text-gray-800 capitalize">
+                          <Text className="text-lg text-black capitalize font-medium">
                             {displayName}
                           </Text>
                           {ACTIVITY_TYPE_SUBTEXT[key] ? (
-                            <Text style={{ fontSize: 12, color: "#667085", marginTop: 0 }}>
+                            <Text style={{ fontSize: 14, color: "#999", marginTop: 0 }}>
                               {ACTIVITY_TYPE_SUBTEXT[key]}
                             </Text>
                           ) : null}

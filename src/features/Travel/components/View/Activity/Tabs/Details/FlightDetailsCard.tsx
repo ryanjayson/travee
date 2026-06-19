@@ -101,7 +101,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
   ];
 
   return (
-    <View className="rounded-3xl border-gray-150 mb-6 shadow-md overflow-hidden bg-white mt-4">
+    <View className="rounded-3xl border-gray-150 mb-6 shadow-md overflow-hidden bg-white mt-2">
       {/* Header Banner */}
       <View
         className="flex-row items-center justify-between rounded-t-3xl px-5 py-4 border-2 border-b-0 border-gray-500  bg-white"
@@ -272,7 +272,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
             <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
               Terminal
             </Text>
-            <Text className="text-lg font-bold text-gray-400">
+            <Text className="text-xl font-bold text-gray-400">
               {data.terminal || "N/A"}
             </Text>
           </View>
@@ -280,7 +280,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
             <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
               Gate
             </Text>
-            <Text className="text-lg font-bold text-gray-400">
+            <Text className="text-xl font-bold text-gray-400">
               {data.gate || "N/A"}
             </Text>
           </View>
@@ -288,7 +288,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
             <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
               Seat
             </Text>
-            <Text className="text-lg font-bold text-gray-400">
+            <Text className="text-xl font-bold text-gray-400">
               {data.seatNumber || "N/A"}
             </Text>
           </View>
@@ -307,7 +307,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
                 activeOpacity={0.7}
                 accessibilityRole="button"
               >
-                <Text className="text-lg font-bold text-gray-400">
+                <Text className="text-xl font-bold text-gray-400">
                   {data.bookingReference}
                 </Text>
                 <Icon name="content-copy" size={12} color={"263F69"} />

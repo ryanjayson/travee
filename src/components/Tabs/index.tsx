@@ -96,10 +96,10 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
         : (tab.disabled ? "text-gray-300 font-medium text-base opacity-50" : "text-gray-500 font-medium text-base");
     } else { // "default"
       buttonClass = isActive
-        ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center" : "bg-brand-50 border border-brand-100 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center")
+        ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center" : "bg-brand-50 border border-brand-100 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center")
         : (tab.disabled 
-            ? "bg-gray-50 border border-gray-300 rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center opacity-30"
-            : "bg-white border border-[#E0E0E0] rounded-xl py-1.5 px-4 mr-3 my-2 items-center justify-center");
+            ? "bg-gray-50 border border-gray-300 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center opacity-30"
+            : "bg-white border border-[#E0E0E0] rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center");
       textClass = isActive
         ? (isOngoingWithActiveTrip ? "text-success-500 font-semibold text-sm" : "text-primary font-semibold text-sm")
         : (tab.disabled ? "text-gray-800 font-medium text-sm" : "text-gray-600 font-medium text-sm");
@@ -128,7 +128,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
             typeof tab.icon === "string" ? (
               <Icon 
                 name={tab.icon as any} 
-                size={20} 
+                size={24} 
                 color={
                   type === "primary"
                     ? (isActive ? "white" : (tab.disabled ? "#D0D5DD" : "#667085"))

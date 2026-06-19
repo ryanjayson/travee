@@ -23,6 +23,7 @@ interface AddTripModalProps {
   showModal?: boolean;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   tripData?: Travel;
+  mode?: "create" | "edit";
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -31,6 +32,7 @@ const CreateTripModal = ({
   showModal = false,
   setShowModal,
   tripData,
+  mode = "create",
 }: AddTripModalProps) => {
 
   const [isSaving, setIsSaving] = useState(false);
@@ -183,9 +185,9 @@ const CreateTripModal = ({
             {...sheetPanResponder.panHandlers}
             className="rounded-t-[30px] bg-white"
             style={[
-              { height: keyboardVisible ? "100%" : modalHeight},
+              { height: (mode === "edit" || keyboardVisible) ? "100%" : modalHeight},
               {
-                paddingTop: keyboardVisible ? insets.top + 10 : 0,
+                paddingTop: (mode === "edit" || keyboardVisible) ? insets.top + 10 : 0,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: -8 },
                 shadowOpacity: 0.12,
@@ -196,36 +198,43 @@ const CreateTripModal = ({
             ]}
           >
             {/* Drag Handle Area */}
-            {!keyboardVisible && (
+            {!(mode === "edit" || keyboardVisible) && (
               <View 
                 {...dragPanResponder.panHandlers}
-                className="w-full items-center py-4 bg-white rounded-t-[30px]"
+                className="w-full items-center py-4 bg-white rounded-t-4xl"
               >
                 <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
               </View>
             )}
             <View 
-              {...(!keyboardVisible && dragPanResponder.panHandlers)}
-            className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
+              {...(!(mode === "edit" || keyboardVisible) && dragPanResponder.panHandlers)}
+              className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" 
+              style={{ paddingTop: (mode === "edit" || keyboardVisible) ? 0 : 4 }}
+            >
                 <View className="flex-row items-center gap-2">
                     <Text className="text-2xl text-gray-700 font-medium">
-                    Create next trip
+                      {mode === "edit" ? "Edit Trip" : "Create next trip"}
                     </Text>
                     <StatusBadge status={tripStatus} />
                 </View>
-                <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
+                <TouchableOpacity 
+                  onPress={handleCancel} 
+                  disabled={isSaving}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close edit trip modal"
+                >
                     <Icon name="clear" size={24} color={"#999"} />
                 </TouchableOpacity>
             </View>
-            <View className="flex-1"
-            >
-              
+            <View className="flex-1">
               <Create 
                 onClose={handleCancel} 
                 onStatusChange={setTripStatus} 
                 tripData={tripData} 
+                mode={mode}
                 onScroll={(e) => {
-                 handleCancel();
+                  const y = e.nativeEvent.contentOffset.y;
+                  isAtTop.current = y <= 0;
                 }}
               />
             </View>

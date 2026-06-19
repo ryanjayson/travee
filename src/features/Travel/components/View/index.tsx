@@ -49,6 +49,7 @@ interface ViewTravelProps {
   onRefresh?: () => Promise<any>;
   fabOpen?: boolean;
   setFabOpen?: (open: boolean) => void;
+  onRegisterCollapse?: (fn: () => void) => void;
 }
 
 const ViewTravel = ({ 
@@ -64,6 +65,7 @@ const ViewTravel = ({
   onRefresh,
   fabOpen,
   setFabOpen,
+  onRegisterCollapse,
 }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
   const [showSectionModal, setShowSectionModal] = useState<boolean>(false);
@@ -147,6 +149,12 @@ const ViewTravel = ({
     }
   }, [expanded]);
 
+  useEffect(() => {
+    onRegisterCollapse?.(() => {
+      snapTo(SNAP_MID);
+    });
+  }, [onRegisterCollapse]);
+
   // Smoothly interpolate padding top as the sheet is dragged/scrolled up to full height
   const headerPaddingTop = translateY.interpolate({
     inputRange: [SNAP_MAX, SNAP_MID],
@@ -171,27 +179,44 @@ const ViewTravel = ({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => {
+        const { locationX, locationY } = evt.nativeEvent;
+        // Check if the touch falls inside the collapse button's hit area
+        const isTouchOnCollapseButton = locationX < 60 && locationY > insets.top - 15 && locationY < insets.top + 50;
+        if (isTouchOnCollapseButton) {
+          return false;
+        }
+
         const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
         // Handle curved borders/shadows by allowing Y to be slightly above the sheet top (-30px)
         const shouldSet = touchStartRelativeY > -30 && touchStartRelativeY < 120;
-        // console.log(`[PanResponder] onStartShouldSetPanResponder: pageY=${evt.nativeEvent.pageY}, snappedY=${snappedY.current}, relativeY=${touchStartRelativeY}, shouldSet=${shouldSet}`);
         return shouldSet;
       },
       // Capture phase: intercept vertical gestures BEFORE child ScrollViews/TouchableOpacities consume them
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        const { locationX, locationY } = evt.nativeEvent;
+        const isTouchOnCollapseButton = locationX < 60 && locationY > insets.top - 15 && locationY < insets.top + 50;
+        if (isTouchOnCollapseButton) {
+          return false;
+        }
+
         const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 8;
         if (!isVertical) return false;
 
         // Snapping/dragging ONLY allowed from Drag Handle & Trip Title areas (top 120px)
         const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
         if (touchStartRelativeY > -30 && touchStartRelativeY < 120) {
-          // console.log(`[PanResponder] onMoveShouldSetPanResponderCapture: Capturing because in header/title area. relativeY=${touchStartRelativeY}`);
           return true;
         }
 
         return false;
       },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
+        const { locationX, locationY } = evt.nativeEvent;
+        const isTouchOnCollapseButton = locationX < 60 && locationY > insets.top - 15 && locationY < insets.top + 50;
+        if (isTouchOnCollapseButton) {
+          return false;
+        }
+
         const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 5;
         if (!isVertical) return false;
 
@@ -587,40 +612,8 @@ const ViewTravel = ({
         </Animated.View>
 
 
-        <Animated.View
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: insets.top,
-              // bottom: 0,
-              justifyContent: 'center',
-              opacity: downIconOpacity,
-            }}
-            pointerEvents={currentSnap === SNAP_MAX ? "auto" : "none"}
-          >
-            <TouchableOpacity
-              className="pr-3.5 p-0.5"
-              onPress={() => snapTo(SNAP_MID)}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              accessibilityRole="button"
-              accessibilityLabel="Collapse trip details sheet"
-            >
-              <View 
-                style={{ 
-                  width: 32, 
-                  height: 32, 
-                  justifyContent: 'center', 
-                  alignItems: 'center' 
-                }}
-              >
-                <Icon name="keyboard-arrow-down" size={32} color="#263F69" />
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-          
-          
 
+          
         {/* Trip Title & Summary */}
         <View className="px-6 pb-4 bg-white flex-row justify-between items-start relative">
 

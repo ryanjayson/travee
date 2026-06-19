@@ -53,17 +53,19 @@ const Field = ({
   icon,
   onPress,
   isLink,
+  showBorder = true,
 }: {
   label: string;
   value?: string | number | null;
   icon?: string;
   onPress?: () => void;
   isLink?: boolean;
+  showBorder?: boolean;
 }) => {
   if (value === undefined || value === null || String(value).trim() === "") return null;
 
   return (
-    <View className="flex-row items-start mb-3 gap-6">
+    <View className="flex-row items-start pr-xl gap-6 ">
       {icon ? (
         <View
           style={{
@@ -79,17 +81,15 @@ const Field = ({
           <Icon name={icon as any} size={24} color={"#fffefe"} />
         </View>
       ) : null}
-      <View className="flex-1">
+      <View className={`flex-1 ${showBorder ? "border-b border-[#016630]/10" : ""} pb-3`} >
         <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
         {onPress ? (
           <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
             <Text
-              className="text-lg font-medium"
+              className="text-lg font-medium text-white/60"
               style={{
                 // color: isLink ? hikeColor : "#182230",
-                color: "#ffffff",
                 textDecorationLine: isLink ? "underline" : "none",
-                opacity: 0.6,
               }}
             >
               {value}
@@ -97,7 +97,7 @@ const Field = ({
             {isLink && <Icon name="open-in-new" size={16} color={"#016630"} />}
           </TouchableOpacity>
         ) : (
-          <Text className="text-lg font-semibold text-white opacity-60">{value}</Text>
+          <Text className="text-lg font-semibold text-white/60">{value}</Text>
         )}
       </View>
     </View>
@@ -109,22 +109,8 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
 
   return (
     <View className="rounded-3xl mb-6  overflow-hidden">
-      {/* Header Banner */}
-      {/* <View
-        className="flex-row items-center justify-between rounded-t-3xl px-5 py-4 mt-2 "
-        style={{ backgroundColor: `${hikeColor}1A` }}
-      >
-        <View className="flex-row items-center gap-2">
-          <Icon name="hiking" size={20} color="#FFFFFF" />
-          <Text className="text-gray-100 font-bold text-sm tracking-wider uppercase">
-            HIKE & CAMP
-          </Text>
-        </View>
-  
-      </View> */}
-
       {/* Main Details Body */}
-      <View className="p-4">
+      <View className="px-2">
         <View className="mb-4">
         <View className="flex-row justify-between items-center">
           <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
@@ -145,34 +131,35 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
         ) : null}
         </View>
           
-          <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
+          <Text className="text-5xl font-semibold tracking-tight mb-1 text-white ">
             {data.trailOrSiteName || "N/A"}
           </Text>
           {data.address ? (
             <TouchableOpacity
               onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center gap-6 mt-1"
+              className="flex-row items-center  mt-1"
               activeOpacity={0.7}
               accessibilityRole="button"
             >
-              <Icon name="location-on" size={24} color="#FFFFFF" />
+              <Icon name="location-on" size={24} color="#FFFFFF" className="mr-6"/>
               <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                {data.address}
+                {data.address} 
               </Text>
+              <Icon name="open-in-new" size={16} color={"#016630"} />
             </TouchableOpacity>
           ) : null}
         </View>
 
         {/* Start & End Dates Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t border-dashed border-green-800">
+        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#016630]">
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Start / Check-in
             </Text>
-            <Text className="text-xl font-semibold text-white/80">
+            <Text className="text-2xl font-semibold text-white/60">
               {safeFormatTime(data.checkinDateTime)}
             </Text>
-            <Text className="text-xxs font-medium text-white/80 mt-0.5">
+            <Text className="text-md font-medium text-white/60 mt-0.5">
               {safeFormatDate(data.checkinDateTime)}
             </Text>
           </View>
@@ -185,17 +172,17 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               End / Check-out
             </Text>
-            <Text className="text-xl font-semibold text-white/80 text-right">
+            <Text className="text-2xl font-semibold text-white/60 text-right">
               {data.checkoutDateTime ? safeFormatTime(data.checkoutDateTime) : "--:--"}
             </Text>
-            <Text className="text-xxs font-medium text-white/80 mt-0.5 text-right">
+            <Text className="text-md font-medium text-white/60 mt-0.5 text-right">
               {data.checkoutDateTime ? safeFormatDate(data.checkoutDateTime) : "N/A"}
             </Text>
           </View>
         </View>
 
         {/* Additional details */}
-        <View className="flex-row justify-between mt-4 pt-4 border-dashed-t border-gray-100">
+        <View className="flex-row justify-between mt-5 border-dashed-t border-gray-100">
            {/* {data.campsiteName ? (
           <View className="mt-3 pt-3">
             <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest mb-0.5">
@@ -212,7 +199,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
               <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">
                 Activity Type
               </Text>
-              <Text className="text-lg font-semibold text-white/80 capitalize">
+              <Text className="text-lg font-semibold text-white/60 capitalize">
                 {data.subType}
               </Text>
             </View>
@@ -223,7 +210,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
               <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">
                 Distance
               </Text>
-              <Text className="text-lg font-semibold text-white/80">
+              <Text className="text-lg font-semibold text-white/60">
                 {data.estimatedDistanceKm} Km
               </Text>
             </View>
@@ -234,8 +221,8 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
       </View>
 
       {/* Stub Area */}
-      <View className="p-5 pt-3">
-        <View className="flex-col gap-1">
+      <View className="px-md mt-4">
+        <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#016630]/10">
           {/* <Field label="Contact Person / number" value={`${data.contactPerson} / ${data.contactNumber}`} icon="person" /> */}
           <Field
             label="Contact Person / number"
@@ -255,6 +242,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
             value={data.websiteAddress}
             icon="language"
             isLink
+            showBorder={false}
             onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress!) : undefined}
           />
         </View>

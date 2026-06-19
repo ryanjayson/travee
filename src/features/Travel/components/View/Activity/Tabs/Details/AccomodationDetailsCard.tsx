@@ -113,10 +113,10 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4">
+      <View className="p-2">
         <View className="mb-4">
-          <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
-            Accommodation / Hotel
+          <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest mb-2">
+            Accommodation / Place to stay
           </Text>
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.accomodationName || "N/A"}
@@ -137,15 +137,15 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
         </View>
 
         {/* Check-in & Check-out Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t border-dashed" style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}>
+        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#772086]">
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Check-in
             </Text>
-            <Text className="text-xl font-semibold text-white/80">
+            <Text className="text-2xl font-semibold text-white/80">
               {safeFormatTime(data.checkinDateTime)}
             </Text>
-            <Text className="text-xxs font-medium text-white/80 mt-0.5">
+            <Text className="text-base font-medium text-white/80 mt-0.5">
               {safeFormatDate(data.checkinDateTime)}
             </Text>
           </View>
@@ -158,10 +158,10 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Check-out
             </Text>
-            <Text className="text-xl font-semibold text-white/80 text-right">
+            <Text className="text-2xl font-semibold text-white/80 text-right">
               {data.checkoutDateTime ? safeFormatTime(data.checkoutDateTime) : "--:--"}
             </Text>
-            <Text className="text-xxs font-medium text-white/80 mt-0.5 text-right">
+            <Text className="text-base font-medium text-white/80 mt-0.5 text-right">
               {data.checkoutDateTime ? safeFormatDate(data.checkoutDateTime) : "N/A"}
             </Text>
           </View>
@@ -169,7 +169,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
       </View>
 
       {/* Stay Voucher Stub */}
-      <View className="p-5 pt-3">
+      <View className="p-2 pt-3">
         {/* Row 1: Booking Reference & Website address */}
         <View className="flex-row justify-between mb-4 gap-4">
           <View className="flex-1">
@@ -213,8 +213,10 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
           ) : null}
         </View>
 
-        {/* Row 2: Contact Info */}
-        <View className="flex-col gap-1 pt-4 border-t" style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}>
+      </View>
+
+       <View className="px-md ">
+              <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#016630]/10">
           <Field label="Contact Person" value={data.contactName} icon="person" />
           <Field
             label="Contact Number"
@@ -229,7 +231,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
             onPress={data.emailAddress ? () => handleEmail(data.emailAddress!) : undefined}
           />
         </View>
-      </View>
+        </View>
     </View>
   );
 };

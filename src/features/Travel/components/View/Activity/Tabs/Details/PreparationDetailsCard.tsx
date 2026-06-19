@@ -46,11 +46,11 @@ export const PreparationDetailsCard: React.FC<PreparationDetailsCardProps> = ({ 
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4">
+      <View className="px-2">
         <View className="mb-4">
           <View className="flex-row justify-between items-center mb-1">
             <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
-              Task
+              Task / Preparation
             </Text>
             {data.priority ? (
               <View
@@ -73,12 +73,12 @@ export const PreparationDetailsCard: React.FC<PreparationDetailsCardProps> = ({ 
         </View>
 
         {/* Deadline Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t border-dashed border-slate-700">
+        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#4b6a7a]">
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Deadline / Due
             </Text>
-            <Text className="text-xl font-semibold text-white/80">
+            <Text className="text-2xl font-semibold text-white/80">
               {formatDate(data.deadlineDateTime)}
             </Text>
           </View>
@@ -86,11 +86,11 @@ export const PreparationDetailsCard: React.FC<PreparationDetailsCardProps> = ({ 
 
         {/* Notes block */}
         {data.notes ? (
-          <View className="mt-3 pt-3 border-t border-gray-100/10">
+          <View className="mt-3 pt-3">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Notes / Instructions
             </Text>
-            <Text className="text-lg text-white/70 leading-relaxed">
+            <Text className="text-lg text-white/60 leading-relaxed">
               {data.notes}
             </Text>
           </View>

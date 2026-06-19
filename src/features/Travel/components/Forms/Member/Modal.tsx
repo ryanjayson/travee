@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useSaveTripMemberMutation } from "../../../hooks/useTripMembers";
 import { TripMember } from "../../../types/TravelDto";
 import { useToast } from "../../../../../context/ToastContext";
@@ -43,8 +44,9 @@ const MemberModal = ({
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
 
-  const [modalHeight] = useState(screenHeight * 0.70);
+  const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
   const { keyboardVisible } = useKeyboardVisible();
+  const insets = useSafeAreaInsets();
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
@@ -218,7 +220,6 @@ const MemberModal = ({
       animationType="none"
       onRequestClose={handleCancel}
     >
-      <StatusBar style="dark" />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -232,17 +233,38 @@ const MemberModal = ({
         >
           <Animated.View
             {...sheetPanResponder.panHandlers}
-            className="rounded-t-[30px] bg-white overflow-hidden"
+            className="rounded-t-[30px] bg-white"
             style={[
               { height: keyboardVisible ? "100%" : modalHeight },
               {
-                paddingTop: keyboardVisible ? 40 : 4,
+                paddingTop: keyboardVisible ? insets.top + 10 : 0,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: -8 },
+                shadowOpacity: 0.12,
+                shadowRadius: 16,
+                elevation: 24,
                 transform: [{ translateY }],
               }
             ]}
           >
+            <StatusBar style="dark" />
+
+            {/* Drag Handle Area */}
+            {!keyboardVisible && (
+              <View 
+                {...dragPanResponder.panHandlers}
+                className="w-full items-center py-4 bg-white rounded-t-[30px]"
+              >
+                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              </View>
+            )}
+
             {/* Modal Header */}
-            <View className="flex-row justify-between items-center p-5 border-b border-gray-200">
+            <View
+              {...(!keyboardVisible && dragPanResponder.panHandlers)}
+              className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200"
+              style={{ paddingTop: keyboardVisible ? 0 : 4 }}
+            >
               <View className="flex-row items-center gap-2">
                 <Text className="text-2xl text-gray-700 font-medium">
                   {editingMember?.id ? "Edit Member" : "Add Member"}

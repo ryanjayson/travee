@@ -70,13 +70,13 @@ const activityIcons: ActivityIcon[] = [
     iconName: "local-play",
     color: "#7B1FA2", // purple hsl(289)
   },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.transportation,
-    name: ActivityType.transportation,
-    iconName: "directions-bus",
-    color: "#02899a", // cyan hsl(187)
-  },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.transportation,
+  //   name: ActivityType.transportation,
+  //   iconName: "directions-bus",
+  //   color: "#02899a", // cyan hsl(187)
+  // },
   {
     iconSet: IconSetProvider.ionic,
     activityType: ActivityType.walk,
@@ -98,13 +98,13 @@ const activityIcons: ActivityIcon[] = [
     iconName: "build",
     color: "#607D8B", // blue-grey hsl(200)
   },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.rest,
-    name: ActivityType.rest,
-    iconName: "hotel",
-    color: "#9E9E9E", // grey
-  },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.rest,
+  //   name: ActivityType.rest,
+  //   iconName: "hotel",
+  //   color: "#9E9E9E", // grey
+  // },
   {
     iconSet: IconSetProvider.material,
     activityType: ActivityType.hikeOrCamp,
@@ -112,27 +112,27 @@ const activityIcons: ActivityIcon[] = [
     iconName: "hiking",
     color: "#429862", // dark-green hsl(86)
   },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.motorcycleRide,
-    name: ActivityType.motorcycleRide,
-    iconName: "motorcycle",
-    color: "#156994", // dark-amber hsl(41)
-  },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.meetup,
-    name: ActivityType.meetup,
-    iconName: "people",
-    color: "#26A69A", // teal hsl(175)
-  },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.rideRental,
-    name: ActivityType.rideRental,
-    iconName: "directions-car",
-    color: "#384690", // indigo hsl(231)
-  },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.motorcycleRide,
+  //   name: ActivityType.motorcycleRide,
+  //   iconName: "motorcycle",
+  //   color: "#156994", // dark-amber hsl(41)
+  // },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.meetup,
+  //   name: ActivityType.meetup,
+  //   iconName: "people",
+  //   color: "#26A69A", // teal hsl(175)
+  // },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.rideRental,
+  //   name: ActivityType.rideRental,
+  //   iconName: "directions-car",
+  //   color: "#384690", // indigo hsl(231)
+  // },
 ];
 
 export { activityIcons };

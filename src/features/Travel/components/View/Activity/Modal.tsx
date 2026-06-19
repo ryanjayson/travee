@@ -35,13 +35,9 @@ const is60PercentSnap = (type?: ActivityType) => {
     ActivityType.preparation,
     ActivityType.shopppingAndService,
     ActivityType.nature,
-    ActivityType.transportation,
     ActivityType.sightseeing,
-    ActivityType.rest,
     ActivityType.walk,
-    ActivityType.meetup,
     ActivityType.entertainmentAndRecreation,
-    ActivityType.motorcycleRide,
     ActivityType.cafeRestaurant,
   ].includes(type);
 };
@@ -61,24 +57,14 @@ const hasActivityDetails = (activity?: ItineraryActivity | null) => {
       return !!activity.shoppingDetails;
     case ActivityType.entertainmentAndRecreation:
       return !!activity.entertainmentDetails;
-    case ActivityType.transportation:
-      return !!activity.transportationDetails;
     case ActivityType.walk:
       return !!activity.walkDetails;
     case ActivityType.sightseeing:
       return !!activity.sightseeingDetails;
     case ActivityType.preparation:
       return !!activity.preparationDetails;
-    case ActivityType.rest:
-      return !!activity.restDetails;
     case ActivityType.hikeOrCamp:
       return !!activity.hikeOrCampDetails;
-    case ActivityType.motorcycleRide:
-      return !!activity.motorcycleRideDetails;
-    case ActivityType.meetup:
-      return !!activity.meetupDetails;
-    case ActivityType.rideRental:
-      return !!activity.rideRentalDetails;
     default:
       return false;
   }

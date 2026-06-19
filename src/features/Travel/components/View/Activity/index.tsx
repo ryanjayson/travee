@@ -40,13 +40,9 @@ const is60PercentSnap = (type?: ActivityType) => {
     ActivityType.preparation,
     ActivityType.shopppingAndService,
     ActivityType.nature,
-    ActivityType.transportation,
     ActivityType.sightseeing,
-    ActivityType.rest,
     ActivityType.walk,
-    ActivityType.meetup,
     ActivityType.entertainmentAndRecreation,
-    ActivityType.motorcycleRide,
     ActivityType.cafeRestaurant,
   ].includes(type);
 };
@@ -66,24 +62,14 @@ const hasActivityDetails = (activity?: ItineraryActivity | null) => {
       return !!activity.shoppingDetails;
     case ActivityType.entertainmentAndRecreation:
       return !!activity.entertainmentDetails;
-    case ActivityType.transportation:
-      return !!activity.transportationDetails;
     case ActivityType.walk:
       return !!activity.walkDetails;
     case ActivityType.sightseeing:
       return !!activity.sightseeingDetails;
     case ActivityType.preparation:
       return !!activity.preparationDetails;
-    case ActivityType.rest:
-      return !!activity.restDetails;
     case ActivityType.hikeOrCamp:
       return !!activity.hikeOrCampDetails;
-    case ActivityType.motorcycleRide:
-      return !!activity.motorcycleRideDetails;
-    case ActivityType.meetup:
-      return !!activity.meetupDetails;
-    case ActivityType.rideRental:
-      return !!activity.rideRentalDetails;
     default:
       return false;
   }
@@ -407,12 +393,12 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
           ]}
         >
           {/* Drag Handle */}
-          <View className="w-full items-center pt-3 pb-1 bg-white rounded-t-3xl">
+          <View className="w-full items-center pt-3 pb-1 bg-transparent rounded-t-[32px]">
             <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
           </View>
 
           {/* Activity header with edit button */}
-          <View className="px-5 pt-2 pb-2 bg-white">
+          <View className="px-5 pb-2 bg-white mt-3">
             <View className="flex-row items-start justify-between">
               <View className="flex-1">
                 {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.none && (
@@ -423,7 +409,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
                       >
                         <Text 
                           style={{ color: getActivityTypeDetails(itineraryActivity.type).color }} 
-                          className="text-[10px] tracking-wider uppercase font-extrabold"
+                          className="text-[8px] tracking-wider uppercase font-extrabold"
                         >
                           {getActivityTypeDetails(itineraryActivity.type).text}
                         </Text>

@@ -249,8 +249,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         className="flex-1 p-[15px]" 
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60 }}
-        // onScroll={onScroll}
-        // scrollEventThrottle={16}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
 {/* 
         {error && (

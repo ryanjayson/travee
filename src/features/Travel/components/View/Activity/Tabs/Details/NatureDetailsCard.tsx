@@ -20,15 +20,14 @@ const handleOpenLink = (url: string) => {
 };
 
 export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({ data }) => {
-  const { colors } = useTheme();
 
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4">
+      <View className="p-2">
         <View className="mb-4">
           <View className="flex-row justify-between items-center">
-            <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
+            <Text className="text-xs font-medium text-white/80 uppercase tracking-widest mb-2">
               Spot Name
             </Text>
           </View>
@@ -39,14 +38,16 @@ export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({ data }) =>
           {data.address ? (
             <TouchableOpacity
               onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center gap-6 mt-1"
+              className="flex-row items-center mt-1"
               activeOpacity={0.7}
               accessibilityRole="button"
             >
-              <Icon name="location-on" size={24} color="#FFFFFF" />
+              <Icon name="location-on" size={24} color="#FFFFFF" className="mr-6"/>
               <Text className="text-base text-white underline flex-1" numberOfLines={1}>
                 {data.address}
               </Text>
+              <Icon name="open-in-new" size={16} color={"#FFFFFF"} />
+              
             </TouchableOpacity>
           ) : null}
         </View>
@@ -57,7 +58,7 @@ export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({ data }) =>
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Spot Type
             </Text>
-            <Text className="text-xl font-semibold text-white/80 capitalize">
+            <Text className="text-2xl font-semibold text-white/60 capitalize">
               {data.subType || "N/A"}
             </Text>
           </View>
@@ -66,7 +67,7 @@ export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({ data }) =>
               <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
                 Entry Fee
               </Text>
-              <Text className="text-xl font-semibold text-white/80 text-right">
+              <Text className="text-2xl font-semibold text-white/60 text-right">
                 {data.entryFee}
               </Text>
             </View>
