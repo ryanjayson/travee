@@ -272,7 +272,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
       <Tabs
         tabs={tabData}
         type="default"
-        initialActiveTabId="expenses"
+        initialActiveTabId="checklist"
         expanded={true}
         onTabChange={() => {
           if (snappedY.current !== SNAP_90) {
@@ -288,6 +288,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
     // { id: "details", title: "Details",  content: <View><Text>Detail</Text></View> },
     {
       id: "expenses",
+      isVisible: false,
       title: "Expenses",
       icon: "receipt",
       content: <ExpensesTab activityId={id} onEditExpense={handleEditExpense} />
@@ -297,6 +298,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
 
     {
       id: "notes",
+      isVisible: false,
       title: "Notes",
       icon: "note",
       content: <NotesTab activityId={id} onEditNote={handleEditNote} />,
@@ -398,7 +400,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
           </View>
 
           {/* Activity header with edit button */}
-          <View className="px-5 pb-2 bg-white mt-3">
+          <View className="px-5 pb-2 bg-white mt-2">
             <View className="flex-row items-start justify-between">
               <View className="flex-1">
                 {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.none && (
@@ -416,11 +418,11 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
                       </View>
                     </View>
                 )}
-                <Text className="text-xl font-semibold mt-2">{itineraryActivity?.title}</Text>
+                <Text className="text-xl font-semibold">{itineraryActivity?.title}</Text>
                   {itineraryActivity?.description && (
                       <View className="">
                         <Text 
-                          className="text-base text-tertiary leading-6 mt-2"
+                          className="text-base text-[#999] leading-6"
                           numberOfLines={isDescriptionExpanded ? undefined : 2}
                           onTextLayout={(e) => {
                             if (!showMoreButton && e.nativeEvent.lines.length >= 2) {
@@ -453,7 +455,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
                 snapTo(SNAP_90);
               }
             }}
-            className="flex-1 bg-gray-100"
+            className="flex-1 bg-gray-50"
           >
             {renderContent()}
           </Pressable>

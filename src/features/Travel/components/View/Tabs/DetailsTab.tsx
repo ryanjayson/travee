@@ -1,7 +1,7 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import React, { useMemo } from "react";
-import { ScrollView, View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import React, { useMemo, useState } from "react";
+import { ScrollView, TouchableOpacity, View, Text } from "react-native";
+import { useTheme } from "react-native-paper";
 import Svg, { Circle, G } from "react-native-svg";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import { ActivityType, ExpenseCategory, TripType, getActivityTypeLabel } from "../../../../../types/enums";
@@ -113,9 +113,13 @@ const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: stri
 const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTabProps) => {
   const { colors } = useTheme();
   const travelId = travelPlan.travel.id || "";
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
+  const [showMoreButton, setShowMoreButton] = useState<boolean>(false);
+  const [isNoteDescriptionExpanded, setIsNoteDescriptionExpanded] = useState<boolean>(false);
+  const [showNoteMoreButton, setShowNoteMoreButton] = useState<boolean>(false);
 
   const { data: expenses = [] } = useItineraryExpenses(travelId);
-  const { data: notes = [] } = useItineraryNotes(travelId);
+  // const { data: notes = [] } = useItineraryNotes(travelId);
   const { data: checklistGroups = [] } = useChecklistGroups(travelId);
   const { data: checklistItems = [] } = useChecklistItems(travelId);
 
@@ -200,7 +204,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
 
         {/* ─── Top Summary Cards ─────────────────────────────────────────── */}
         <SectionHeader icon="dashboard" title="Overview" />
-        <View className="flex-row flex-wrap gap-3 mb-3">
+        <View className="flex-row flex-wrap gap-3 mb-4">
           <StatCard
             icon="event-note"
             label="Activities"
@@ -217,21 +221,103 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
           />
         </View>
 
-        {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
-          <View className="bg-white rounded-2xl border border-[#e0e0e0] p-4 mb-3 flex-row items-center gap-4">
-            <TripIcon type={travelPlan.travel.type} size={24} />
-            <View className="flex-1">
-              <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Trip Type</Text>
-              <Text className="text-base font-bold text-[#1A1A1A] capitalize">
-                {String(TripType[travelPlan.travel.type]).replace(/([A-Z])/g, " $1").trim()}
-              </Text>
+        {/* <View className="flex-row items-center flex-wrap rounded-lg p-2 mb-4">
+          <View className="flex-row items-center my-1 pr-3 border-r border-[#DDD]">
+            <View className="flex-row items-center">
+                <Icon name="calendar-month" size={28} color={"#858585"} />
+                <View className="flex-col px-1">
+                    <Text className="text-xs text-tertiary leading-3 pb-2">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
+                        ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
+                        : ""}</Text>
+                    <Text className="text-lg font-bold text-secondary -mt-2">
+                      {travelPlan.travel?.startOrDepartureDate
+                        ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day:"2-digit"})
+                        : ""}
+    
+                        - {travelPlan.travel?.endOrReturnDate
+                        ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day:"2-digit" })
+                        : ""}
+                    </Text>
+                </View>             
             </View>
           </View>
-        )}
+          <View className="flex-row items-center my-1 pl-3">
+            <Icon name="location-pin" size={24} color={"#B42318"} />
+            <View className="flex-row items-center ">
+            {travelPlan.travel.destination ? (
+              <Text className="text-[#183B7A] font-medium mx-1 " numberOfLines={1} ellipsizeMode="tail">
+              {travelPlan.travel.destination}
+              </Text>
+            ) : (
+              <Text className="text-tertiary italic text-base  mx-1 " numberOfLines={1} ellipsizeMode="tail">
+                    Not set
+                  </Text>
+                  )}
+          </View>
+            
+            </View>
+          </View>  */}
 
+        <View className="bg-white rounded-2xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
+            <View className="flex-1 gap-2">
+              <Text className="text-xs font-bold uppercase tracking-wide">About this trip</Text>
+
+               {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
+              <View className="flex-row items-center gap-2">
+                <TripIcon type={travelPlan.travel.type} size={34} showIconOnly/>
+                  <Text className="text-base font-bold text-[#1A1A1A] capitalize">
+                    {String(TripType[travelPlan.travel.type]).replace(/([A-Z])/g, " $1").trim()}
+                  </Text>
+              </View>
+               )}
+
+            <View>
+            <Text 
+               className="text-base leading-6"
+               numberOfLines={isDescriptionExpanded ? undefined : 3}
+               onTextLayout={(e) => {
+                 if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
+                   setShowMoreButton(true);
+                 }
+              }}
+            >
+              {travelPlan.travel.description || null}
+            </Text>
+            
+            {showMoreButton && (
+              <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+                <Text className="text-sm font-black text-[#555] mt-1">
+                  {isDescriptionExpanded ? "Show less" : "Show more"}
+                </Text>
+              </TouchableOpacity>
+            )}
+            </View>
+          </View>
+        </View>
+
+        <View className="px-4">
+            <Text 
+               className="text-md text-tertiary leading-6"
+               numberOfLines={isNoteDescriptionExpanded ? undefined : 2}
+               onTextLayout={(e) => {
+                 if (!showNoteMoreButton && e.nativeEvent.lines.length >= 2) {
+                   setShowNoteMoreButton(true);
+                 }
+              }}
+            >
+              {travelPlan.travel.notes || null}
+            </Text>
+            
+            {showMoreButton && (
+              <TouchableOpacity onPress={() => setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)}>
+                <Text className="text-sm font-medium text-[#555] mt-1">
+                  {isNoteDescriptionExpanded ? "Show less" : "Show more"}
+                </Text>
+              </TouchableOpacity>
+            )}
+        </View>
 
         {/* <View className="flex-row flex-wrap gap-3">
-        
           <StatCard
             icon="account-balance-wallet"
             label="Expenses"
@@ -242,7 +328,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
         </View> */}
 
         {/* ─── Expenses Breakdown ────────────────────────────────────────── */}
-        {expenses.length > 0 && totalExpenses > 0 && (
+        {false && expenses.length > 0 && totalExpenses > 0 && (
           <>
             <SectionHeader icon="pie-chart" title="Expense Distribution" />
             <View className="bg-white rounded-2xl border border-[#e0e0e0] p-4 flex-row items-center gap-6">
@@ -276,7 +362,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
         )}
 
         {/* ─── Expenses Breakdown ────────────────────────────────────────── */}
-        {expenses.length > 0 && (
+        {false && expenses.length > 0 && (
           <>
             <SectionHeader icon="account-balance-wallet" title="Expenses by Currency" />
             <View className="bg-white rounded-2xl border border-[#e0e0e0] overflow-hidden">

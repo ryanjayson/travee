@@ -172,11 +172,12 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
       <View className="p-2 pt-3">
         {/* Row 1: Booking Reference & Website address */}
         <View className="flex-row justify-between mb-4 gap-4">
+            {data.bookingReference && (
+
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Booking Ref
             </Text>
-            {data.bookingReference ? (
               <TouchableOpacity
                 onPress={() => handleCopy(data.bookingReference || "", "Booking reference")}
                 className="flex-row items-center gap-1"
@@ -188,10 +189,8 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
                 </Text>
                 <Icon name="content-copy" size={18} color="#FFFFFF" style={{ opacity: 0.6 }} />
               </TouchableOpacity>
-            ) : (
-              <Text className="text-base font-bold text-white/80">N/A</Text>
-            )}
           </View>
+            )}
 
           {data.websiteAddress ? (
             <View className="flex-1">

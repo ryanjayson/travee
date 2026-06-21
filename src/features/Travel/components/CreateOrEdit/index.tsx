@@ -301,7 +301,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               {(formik.values.title || "").length}/40
             </Text>
           </View>
-          {suggestion && !suggestionApplied ? (
+          {!tripData?.id && suggestion && !suggestionApplied ? (
             <TouchableOpacity 
               onPress={() => {
                 formik.setFieldValue("title", suggestion);
@@ -317,6 +317,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               </Text>
             </TouchableOpacity>
           ) : null}
+
           {formik.touched.title && formik.errors.title && (
  <View className="flex flex-row items-center mt-1">
                       <Icon name="info-outline" size={14} color="#fb2c36" />
@@ -460,12 +461,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           }}
         />
 
-        {mode === "edit" && (
+        {/* {mode === "edit" && (
           <View className="mb-5 z-10">
             <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
           </View>
-        )}
-
+        )} */}
 
         <View className="">
           <Text className="text-xs font-semibold tracking-wider uppercase">Travel dates</Text>
@@ -619,7 +619,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                 value={formik.values.budget}
                 onChangeText={formik.handleChange("budget")}
                 onBlur={formik.handleBlur("budget")}
-                left={<TextInput.Icon icon="currency-php" className="opacity-50"/>}
+                // left={<TextInput.Icon icon="currency-php" className="opacity-50"/>}
                 keyboardType="numeric"
                 disabled={isSaving}
                 outlineColor="#E0E0E0"
@@ -643,9 +643,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               />
             </View>
 
-            <View className="mb-5 z-10">
-              <CheckboxGroup initialOptions={activityOptions} title="Activities" />
-            </View>
+           
           </>
         )}
 

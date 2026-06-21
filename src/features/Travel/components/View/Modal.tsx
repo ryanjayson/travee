@@ -196,7 +196,7 @@ const ViewTripModal = ({
     <Modal
       visible={showModal}
       transparent={true}
-      animationType="none"
+      animationType="slide"
       statusBarTranslucent={true}
       onRequestClose={() => {
         if (isFabOpen) {

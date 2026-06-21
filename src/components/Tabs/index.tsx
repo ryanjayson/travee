@@ -13,6 +13,7 @@ interface TabItem {
   id: string;
   title: string;
   content: ReactNode;
+  isVisible?: boolean;
   disabled?: boolean;
   icon?: string | ReactNode;
 }
@@ -67,6 +68,8 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
   }, []);
 
   const renderTabButton = (tab: TabItem) => {
+
+    if (tab.isVisible === false) return null;
     const isActive = tab.id === activeTabId && !tab.disabled;
     const isOngoingWithActiveTrip = tab.id === "ongoing" && hasActionTripStatus;
 

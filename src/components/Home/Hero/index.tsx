@@ -299,31 +299,33 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       </View>
 
       {ongoingTrip && (
-      <View className="p-5 flex-1">
-        <Text className="text-sm font-medium">Quick Actions</Text>
-        <View className="flex-row items-center justify-between py-3 z-40 px-1">
+      <View className="m-xl flex-1 bg-white rounded-xl">
+
+        <Text className="text-sm font-medium px-lg pt-lg">Quick Actions</Text>
+        <View className="flex-row items-center justify-between py-3 z-40 px-4xl">
+
         <View className="items-center">
-          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full border-2 border-gray-300' onPress={() => setShowTravelViewModal(true)}>
-            <Ionicons name="briefcase-outline" size={24} color="#263F69" />
+          <TouchableOpacity className='items-center justify-center w-7xl h-7xl rounded-3xl border bg-gray-100 border-gray-200' onPress={() => setShowTravelViewModal(true)}>
+            <Ionicons name="briefcase" size={24} color="#263F69" />
           </TouchableOpacity>
-          <Text className="text-primary text-xs mt-2">View Trip</Text>
+          <Text className="text-sm font-medium text-primary mt-1">View Trip</Text>
         </View>
 
         <View className="items-center">
           <TouchableOpacity 
-            className='items-center justify-center w-6xl h-6xl rounded-full border-2 border-gray-300' 
+            className='items-center justify-center w-7xl h-7xl rounded-3xl border border-gray-200 bg-gray-100' 
             onPress={() => {
               openActivityModal(null, undefined);
             }}
             accessibilityRole="button"
             accessibilityLabel="Add Activity"
           >
-            <Ionicons name="walk-outline" size={24} color="#263F69" />
+            <Ionicons name="walk" size={28} color="#263F69" />
           </TouchableOpacity>
-          <Text className="text-primary text-xs mt-2">Add Activity</Text>
+          <Text className="text-sm font-medium text-primary mt-1">Add Activity</Text>
         </View>
        
-        <View className="items-center">
+        {/* <View className="items-center">
           <TouchableOpacity 
             className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' 
             onPress={() => {
@@ -340,6 +342,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
           </TouchableOpacity>
           <Text className="text-primary text-xs mt-2">Add Expense</Text>
         </View>
+
         <View className="items-center">
           <TouchableOpacity 
             className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' 
@@ -355,13 +358,13 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
             <Ionicons name="document-text-outline" size={24} color="#263F69" />
           </TouchableOpacity>
           <Text className="text-primary text-xs mt-2">Add Note</Text>
-        </View>
+        </View> */}
+        
         <View className="items-center">
-
-          <TouchableOpacity className='items-center justify-center w-6xl h-6xl rounded-full  border-2 border-gray-300' onPress={() => setShowItineraryTab(true)}>
+          <TouchableOpacity className='items-center justify-center w-7xl h-7xl rounded-3xl border border-gray-200 bg-gray-100' onPress={() => setShowItineraryTab(true)}>
           <Ionicons name="list" size={24} color="#263F69" />
         </TouchableOpacity>
-          <Text className="text-primary text-xs mt-2">Itinerary</Text>
+          <Text className="text-sm font-medium text-primary mt-1">Itinerary</Text>
 
         </View>
 

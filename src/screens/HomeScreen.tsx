@@ -240,7 +240,7 @@ const HomeScreen = () => {
           </View>
           </View>
 
-          <View className="pb-2">
+          {/* <View className="pb-2">
             <Text className="text-xl font-bold text-gray-800 px-5 mb-[15px]">Your top activities</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 15 }}>
               {topActivityTypes.length === 0 ? (
@@ -257,7 +257,7 @@ const HomeScreen = () => {
                 ))
               )}
             </ScrollView>
-          </View>
+          </View> */}
 
         </View>
       </ScrollView>
