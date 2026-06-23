@@ -480,6 +480,7 @@ const ViewTravel = ({
       content: (
         <DetailsTab 
           travelPlan={travelPlan} 
+          onTabChange={setActiveTabId}
         />
       ),
     },
@@ -669,6 +670,7 @@ const ViewTravel = ({
           <Tabs 
             tabs={tabData} 
             initialActiveTabId="details" 
+            activeTabId={activeTabId}
             type="secondary" 
             onTabChange={setActiveTabId} 
             expanded={true}

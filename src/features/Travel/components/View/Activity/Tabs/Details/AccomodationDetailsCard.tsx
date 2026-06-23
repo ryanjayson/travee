@@ -54,12 +54,14 @@ const Field = ({
   icon,
   onPress,
   isLink,
+  showBorder
 }: {
   label: string;
   value?: string | number | null;
   icon?: string;
   onPress?: () => void;
   isLink?: boolean;
+  showBorder?: boolean;
 }) => {
   if (value === undefined || value === null || String(value).trim() === "") return null;
 
@@ -75,7 +77,7 @@ const Field = ({
           <Icon name={icon as any} size={24} color={"#fffefe"} />
         </View>
       ) : null}
-      <View className="flex-1">
+      <View className={`flex-1 ${showBorder ? "border-b border-[#9234ea]" : ""} pb-3`} >
         <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
         {onPress ? (
           <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
@@ -137,7 +139,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
         </View>
 
         {/* Check-in & Check-out Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#772086]">
+        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#9c46ec]">
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Check-in
@@ -215,13 +217,14 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
       </View>
 
        <View className="px-md ">
-              <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#016630]/10">
-          <Field label="Contact Person" value={data.contactName} icon="person" />
+              <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#9c46ec]">
+          <Field label="Contact Person" value={data.contactName} icon="person" showBorder={true} />
           <Field
             label="Contact Number"
             value={data.contactNumber}
             icon="phone"
             onPress={data.contactNumber ? () => handleCall(data.contactNumber!) : undefined}
+            showBorder={true}
           />
           <Field
             label="Email Address"

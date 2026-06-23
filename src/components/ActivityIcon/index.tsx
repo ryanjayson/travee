@@ -25,9 +25,10 @@ const activityIcons: ActivityIcon[] = [
     iconSet: IconSetProvider.ionic,
     activityType: ActivityType.none,
     name: ActivityType.none,
-    iconName: "ellipse",
+    iconName: "pin",
     color: "#c10003", // grey
   },
+
   {
     iconSet: IconSetProvider.ionic,
     activityType: ActivityType.flight,
@@ -40,14 +41,14 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.accomodation,
     name: ActivityType.accomodation,
     iconName: "hotel",
-    color: "#9C27B0", // purple hsl(291)
+    color: "#a659ee", // purple hsl(291)
   },
   {
     iconSet: IconSetProvider.material,
     activityType: ActivityType.cafeRestaurant,
     name: ActivityType.cafeRestaurant,
     iconName: "restaurant",
-    color: "#FF5722", // deep-orange hsl(14)
+    color: "#e03e3e", // deep-orange hsl(14)
   },
   {
     iconSet: IconSetProvider.material,
@@ -61,14 +62,14 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.shopppingAndService,
     name: ActivityType.shopppingAndService,
     iconName: "shopping-bag",
-    color: "#a20564", // pink hsl(340)
+    color: "#db2777", // pink hsl(340)
   },
   {
     iconSet: IconSetProvider.material,
     activityType: ActivityType.entertainmentAndRecreation,
     name: ActivityType.entertainmentAndRecreation,
     iconName: "local-play",
-    color: "#7B1FA2", // purple hsl(289)
+    color: "#0891b2", // purple hsl(289)
   },
   // {
   //   iconSet: IconSetProvider.material,
@@ -89,7 +90,7 @@ const activityIcons: ActivityIcon[] = [
     activityType: ActivityType.sightseeing,
     name: ActivityType.sightseeing,
     iconName: "photo-camera",
-    color: "#d28008", // orange hsl(36)
+    color: "#f0a505", // orange hsl(36)
   },
   {
     iconSet: IconSetProvider.material,

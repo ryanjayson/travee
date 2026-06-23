@@ -25,12 +25,14 @@ const Field = ({
   icon,
   onPress,
   isLink,
+  showBorder,
 }: {
   label: string;
   value?: string | number | null;
   icon?: string;
   onPress?: () => void;
   isLink?: boolean;
+  showBorder?: boolean;
 }) => {
   if (value === undefined || value === null || String(value).trim() === "") return null;
 
@@ -41,7 +43,7 @@ const Field = ({
           <Icon name={icon as any} size={24} color={"#fffefe"} />
         </View>
       ) : null}
-      <View className="flex-1">
+      <View className={`flex-1 ${showBorder ? "border-b border-[#c02168]" : ""} pb-3`} >
         <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
         {onPress ? (
           <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
@@ -55,7 +57,7 @@ const Field = ({
             >
               {value}
             </Text>
-            {isLink && <Icon name="open-in-new" size={16} color={"#850031"} />}
+            {isLink && <Icon name="open-in-new" size={16} color={"#fff"} />}
           </TouchableOpacity>
         ) : (
           <Text className="text-lg font-semibold text-white opacity-60">{value}</Text>
@@ -72,7 +74,7 @@ export const ShoppingDetailsCard: React.FC<ShoppingDetailsCardProps> = ({ data }
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
       <View className="p-2">
-        <View className="mb-4">
+        <View className="mb-4 border-b-2 border-dashed border-[#c02168] pb-4">
           <Text className="text-xs font-medium text-white/80 uppercase tracking-widest mb-2">
             Store / Venue Name
           </Text>
@@ -98,11 +100,12 @@ export const ShoppingDetailsCard: React.FC<ShoppingDetailsCardProps> = ({ data }
 
       {/* Stub Area */}
       <View className="px-md">
-        <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#016630]/10">
+        <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#d12372]">
           <Field
             label="Store Type"
             value={data.subType || "N/A"}
             icon="store"
+            showBorder
           />
           <Field
             label="Website"

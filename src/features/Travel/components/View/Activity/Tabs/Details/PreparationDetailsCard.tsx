@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text } from "react-native";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { PreparationDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
@@ -11,6 +10,7 @@ interface PreparationDetailsCardProps {
 }
 
 const prepColor = activityIcons.find((icon) => icon.name === ActivityType.preparation)?.color || "#607D8B";
+
 
 const formatDate = (dateValue: Date | string | null | undefined) => {
   if (!dateValue) return "N/A";
@@ -44,7 +44,7 @@ export const PreparationDetailsCard: React.FC<PreparationDetailsCardProps> = ({ 
   };
 
   return (
-    <View className="rounded-3xl mb-6 overflow-hidden">
+    <View className="rounded-3xl mb-6">
       {/* Main Details Body */}
       <View className="px-2">
         <View className="mb-4">
@@ -73,8 +73,8 @@ export const PreparationDetailsCard: React.FC<PreparationDetailsCardProps> = ({ 
         </View>
 
         {/* Deadline Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#4b6a7a]">
-          <View className="flex-1">
+        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#546c78]">
+          <View className="flex-1 bg-[#5c7784] p-4 rounded-2xl">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Deadline / Due
             </Text>

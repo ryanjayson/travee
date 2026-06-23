@@ -73,15 +73,14 @@ const Field = ({
 };
 
 export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps> = ({ data }) => {
-  const { colors } = useTheme();
 
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4">
+      <View className="p-2">
         <View className="mb-4">
           <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
-            Venue / Restaurant
+            Cafe / Restaurant / Venue 
           </Text>
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.restaurantName || "N/A"}
@@ -102,7 +101,7 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
         </View>
 
         {/* Row of details: Cuisine & Price Range */}
-        <View className="flex-row items-center justify-between pt-4 border-t border-dashed" style={{ borderColor: "rgba(255, 255, 255, 0.2)" }}>
+        <View className="flex-row items-center justify-between  pt-4 border-t-2 border-dashed border-[#d32222]">
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Cuisine
@@ -123,9 +122,10 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
       </View>
 
       {/* Stub Area */}
-      <View className="p-5 pt-3">
+           <View className="px-md mt-4">
         {/* Contact Info and reservation */}
-        <View className="flex-col gap-1">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dd2c2c]">
+
           <Field
             label="Contact Number"
             value={data.contactNumber}

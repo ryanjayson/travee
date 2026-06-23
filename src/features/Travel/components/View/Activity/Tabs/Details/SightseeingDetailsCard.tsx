@@ -71,8 +71,8 @@ export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ 
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4">
-        <View className="mb-4">
+      <View className="p-2">
+        <View className="pb-4 border-b-2 border-dashed border-[#c88a04]">
           <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
             Attraction Name
           </Text>
@@ -94,25 +94,18 @@ export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ 
           ) : null}
         </View>
 
-        {/* Entry Fee Row */}
-        {data.entryFee ? (
-          <View className="flex-row items-center justify-between pt-4 border-t border-dashed border-orange-900">
-            <View className="flex-1">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-                Entry Fee
-              </Text>
-              <Text className="text-xl font-semibold text-white/80">
-                {data.entryFee}
-              </Text>
-            </View>
-          </View>
-        ) : null}
       </View>
 
       {/* Stub Area */}
-      <View className="p-5 pt-3">
-        <View className="flex-col gap-1">
+      <View className="px-md mt-4">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dc9804]">
           <Field
+            label="Entry Fee"
+            value={data.entryFee}
+            icon="money"
+            isLink
+          />
+           <Field
             label="Website"
             value={data.websiteAddress}
             icon="language"

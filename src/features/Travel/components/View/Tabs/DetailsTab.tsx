@@ -16,6 +16,7 @@ interface DetailsTabProps {
   travelPlan: TravelPlan;
   scrollEnabled?: boolean;
   onScrollY?: (y: number) => void;
+  onTabChange?: (tabId: string) => void;
 }
 
 const StatCard = ({
@@ -24,15 +25,23 @@ const StatCard = ({
   value,
   sub,
   accent = "#263F69",
+  onPress,
 }: {
   icon: string | any;
   label: string;
   value: string | number;
   sub?: string;
   accent?: string;
+  onPress?: () => void;
 }) => (
-  <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 flex-1 min-w-[44%]"
-   style={{ backgroundColor: accent + "" }}>
+  <TouchableOpacity
+    onPress={onPress}
+    disabled={!onPress}
+    className="bg-white rounded-3xl border border-[#e0e0e0] p-4 flex-1 min-w-[44%]"
+    style={{ backgroundColor: accent + "" }}
+    accessibilityRole="button"
+    activeOpacity={onPress ? 0.7 : 1}
+  >
     <View
       className="w-9 h-9 rounded-full justify-center mb-3"
       // style={{ backgroundColor: accent + "20" }}
@@ -42,7 +51,7 @@ const StatCard = ({
     <Text className="text-3xl font-bold text-white">{value}</Text>
     <Text className="text-xs font-semibold text-gray-100 uppercase tracking-wider mt-2">{label}</Text>
     {sub ? <Text className="text-[11px] text-gray-300">{sub}</Text> : null}
-  </View>
+  </TouchableOpacity>
 );
 
 const SectionHeader = ({ icon, title }: { icon: string | any; title: string }) => (
@@ -111,7 +120,7 @@ const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: stri
   );
 };
 
-const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTabProps) => {
+const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange }: DetailsTabProps) => {
   const { colors } = useTheme();
   const travelId = travelPlan.travel.id || "";
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
@@ -212,6 +221,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
             value={totalActivities}
             sub={doneActivities > 0 ? `${doneActivities} completed` : "None done yet"}
             accent="#263F69"
+            onPress={() => onTabChange?.("itinerary")}
           />
           <StatCard
             icon="playlist-add-check"
@@ -219,6 +229,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
             value={`${doneChecklist}/${totalChecklist}`}
             sub={totalChecklist > 0 ? `${Math.round((doneChecklist / totalChecklist) * 100)}% complete` : "No items yet"}
             accent="#059669"
+            onPress={() => onTabChange?.("checklist")}
           />
         </View>
 

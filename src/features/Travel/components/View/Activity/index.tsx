@@ -97,12 +97,10 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
 
   // Snap points represent the translateY value (offset from top of parent container)
   // 90% sheet height: translateY = parentHeight * 0.1
-  // Min sheet height: based on activity type (60% for preparation -> 0.4 offset; 35% default -> 0.65 offset)
+  // Min sheet height: 25% sheet height -> 0.75 offset
+  const SNAP_EXTENDED = itineraryActivity?.description?.length > 0 ? 0.75 : 0.82;
   const SNAP_90 = parentHeight * 0.1;
-  const hasDetails = hasActivityDetails(itineraryActivity);
-  const SNAP_MIN = hasDetails
-    ? (is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65)
-    : SNAP_90;
+  const SNAP_MIN = parentHeight * SNAP_EXTENDED;
 
   const snappedY = useRef(SNAP_MIN);
   const dragStartY = useRef(0);
@@ -115,17 +113,14 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
   // Dynamically update snap configurations once itineraryActivity loads
   React.useEffect(() => {
     if (itineraryActivity) {
-      const minSnap = hasActivityDetails(itineraryActivity)
-        ? (is60PercentSnap(itineraryActivity.type) ? parentHeight * 0.4 : parentHeight * 0.65)
-        : SNAP_90;
-      snappedY.current = minSnap;
-      setCurrentSnap(minSnap);
-      translateY.setValue(minSnap);
+      snappedY.current = SNAP_MIN;
+      setCurrentSnap(SNAP_MIN);
+      translateY.setValue(SNAP_MIN);
     }
-  }, [itineraryActivity, parentHeight, SNAP_90]);
+  }, [itineraryActivity, parentHeight, SNAP_MIN]);
 
   // Slowly changing black overlay opacity as sheet is panned/scrolled towards SNAP_90
-  const rangeEnd = SNAP_MIN === SNAP_90 ? SNAP_90 + 1 : SNAP_MIN;
+  const rangeEnd = SNAP_MIN;
   const overlayOpacity = translateY.interpolate({
     inputRange: [SNAP_90, rangeEnd],
     outputRange: [0.55, 0],
@@ -141,7 +136,21 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
       friction: 12,
       useNativeDriver: false,
     }).start();
+
+    if (toValue === SNAP_MIN) {
+      setIsDescriptionExpanded(false);
+    }
   };
+
+  const snap90Ref = useRef(SNAP_90);
+  const snapMinRef = useRef(SNAP_MIN);
+  const parentHeightRef = useRef(parentHeight);
+  const snapToRef = useRef(snapTo);
+
+  snap90Ref.current = SNAP_90;
+  snapMinRef.current = SNAP_MIN;
+  parentHeightRef.current = parentHeight;
+  snapToRef.current = snapTo;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -171,7 +180,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
       },
       onPanResponderMove: (_, gestureState) => {
         const nextY = dragStartY.current + gestureState.dy;
-        const clampedY = Math.max(SNAP_90, Math.min(parentHeight, nextY));
+        const clampedY = Math.max(snap90Ref.current, Math.min(snapMinRef.current, nextY));
         translateY.setValue(clampedY - dragStartY.current);
       },
       onPanResponderRelease: (_, gestureState) => {
@@ -179,21 +188,21 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
         const nextY = dragStartY.current + gestureState.dy;
         const velocityY = gestureState.vy;
 
-        let target = SNAP_MIN;
+        let target = snapMinRef.current;
         if (velocityY < -0.3) {
-          target = SNAP_90;
+          target = snap90Ref.current;
         } else if (velocityY > 0.3) {
-          target = SNAP_MIN;
+          target = snapMinRef.current;
         } else {
-          const dist90 = Math.abs(nextY - SNAP_90);
-          const distMin = Math.abs(nextY - SNAP_MIN);
-          target = dist90 < distMin ? SNAP_90 : SNAP_MIN;
+          const dist90 = Math.abs(nextY - snap90Ref.current);
+          const distMin = Math.abs(nextY - snapMinRef.current);
+          target = dist90 < distMin ? snap90Ref.current : snapMinRef.current;
         }
-        snapTo(target);
+        snapToRef.current(target);
       },
       onPanResponderTerminate: () => {
         translateY.flattenOffset();
-        snapTo(snappedY.current);
+        snapToRef.current(snappedY.current);
       },
     })
   ).current;
@@ -345,12 +354,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
         )} */}
 
         {/* Background Details Tab */}
-        <Pressable
-          onPress={() => {
-            if (snappedY.current !== SNAP_MIN) {
-              snapTo(SNAP_MIN);
-            }
-          }}
+        <View
           style={{ height: parentHeight, width: "100%" }}
         >
           <DetailsTab itineraryActivity={itineraryActivity} />
@@ -367,7 +371,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
               opacity: overlayOpacity,
             }}
           />
-        </Pressable>
+        </View>
 
         {/* Snappable Bottom Form Sheet */}
         <Animated.View
@@ -434,10 +438,15 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
                         </Text>
                         {showMoreButton && (
                           <TouchableOpacity 
-                            onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                            onPress={() => {
+                              if (snappedY.current !== SNAP_90) {
+                                snapTo(SNAP_90);
+                              }
+                              setIsDescriptionExpanded(!isDescriptionExpanded)
+                            }}
                             accessibilityRole="button"
                           >
-                            <Text className="text-secondary font-medium mt-1">
+                            <Text className="text-sm text-secondary font-medium mt-1 underline">
                               {isDescriptionExpanded ? "Show less" : "Show more"}
                             </Text>
                           </TouchableOpacity>
@@ -455,7 +464,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
                 snapTo(SNAP_90);
               }
             }}
-            className="flex-1 bg-gray-50"
+            className="flex-1 bg-gray-50 mt-2"
           >
             {renderContent()}
           </Pressable>
@@ -465,7 +474,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp }: View
         <Portal>
           <FAB.Group
             open={fabOpen}
-            visible={true}
+            visible={false}
             icon={fabOpen ? "close" : "plus"}
             actions={[
               {

@@ -81,7 +81,7 @@ const Field = ({
           <Icon name={icon as any} size={24} color={"#fffefe"} />
         </View>
       ) : null}
-      <View className={`flex-1 ${showBorder ? "border-b border-[#016630]/10" : ""} pb-3`} >
+      <View className={`flex-1 ${showBorder ? "border-b border-[#388052]" : ""} pb-3`} >
         <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
         {onPress ? (
           <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
@@ -106,7 +106,7 @@ const Field = ({
 
 export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ data }) => {
   const { colors } = useTheme();
-
+ 
   return (
     <View className="rounded-3xl mb-6  overflow-hidden">
       {/* Main Details Body */}
@@ -151,7 +151,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
         </View>
 
         {/* Start & End Dates Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#016630]">
+        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#388052]">
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Start / Check-in
@@ -222,7 +222,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
 
       {/* Stub Area */}
       <View className="px-md mt-4">
-        <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#016630]/10">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#3E8E5B]">
           {/* <Field label="Contact Person / number" value={`${data.contactPerson} / ${data.contactNumber}`} icon="person" /> */}
           <Field
             label="Contact Person / number"

@@ -90,30 +90,22 @@ const ViewActivityModal = ({
   const yOffset = insets.top + 60; // Estimated parent modal header offset
   const parentHeight = screenHeight - yOffset;
 
+  const SNAP_EXTENDED = itineraryActivity?.description?.length !== undefined ? 0.74 : 0.82;
   const SNAP_90 = parentHeight * 0.1;
-  const hasDetails = hasActivityDetails(itineraryActivity);
-  const SNAP_MIN = hasDetails
-    ? (is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65)
-    : SNAP_90;
+  const SNAP_MIN = parentHeight * SNAP_EXTENDED;
 
   const translateY = useRef(new Animated.Value(SNAP_MIN)).current;
 
   useEffect(() => {
     if (itineraryActivity) {
-      const minSnap = hasActivityDetails(itineraryActivity)
-        ? (is60PercentSnap(itineraryActivity.type) ? parentHeight * 0.4 : parentHeight * 0.65)
-        : SNAP_90;
-      translateY.setValue(minSnap);
+      translateY.setValue(SNAP_MIN);
     }
-  }, [itineraryActivity, parentHeight, translateY, SNAP_90]);
+  }, [itineraryActivity, parentHeight, translateY, SNAP_MIN]);
 
   const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity?.type)?.color || "#9E9E9E";
 
   const { animatedBgColor, overlayOpacity } = useMemo(() => {
-    const minSnap = hasActivityDetails(itineraryActivity)
-      ? (is60PercentSnap(itineraryActivity?.type) ? parentHeight * 0.4 : parentHeight * 0.65)
-      : SNAP_90;
-    const rangeEnd = minSnap === SNAP_90 ? SNAP_90 + 1 : minSnap;
+    const rangeEnd = SNAP_MIN;
 
     return {
       animatedBgColor: translateY.interpolate({
@@ -127,7 +119,7 @@ const ViewActivityModal = ({
         extrapolate: "clamp",
       }),
     };
-  }, [translateY, itineraryActivity, parentHeight, SNAP_90]);
+  }, [translateY, parentHeight, SNAP_90, SNAP_MIN]);
 
 
   return (

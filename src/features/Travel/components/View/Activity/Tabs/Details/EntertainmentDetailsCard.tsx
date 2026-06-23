@@ -81,7 +81,7 @@ export const EntertainmentDetailsCard: React.FC<EntertainmentDetailsCardProps> =
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4">
+      <View className="p-2">
         <View className="mb-4">
           <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
             Venue Name
@@ -105,7 +105,7 @@ export const EntertainmentDetailsCard: React.FC<EntertainmentDetailsCardProps> =
         </View>
 
         {/* Row of details: SubType & Ticket Price */}
-        <View className="flex-row items-center justify-between pt-4 border-t border-dashed border-purple-900">
+        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#066e88]">
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Type
@@ -128,8 +128,8 @@ export const EntertainmentDetailsCard: React.FC<EntertainmentDetailsCardProps> =
       </View>
 
       {/* Stub Area */}
-      <View className="p-5 pt-3">
-        <View className="flex-col gap-1">
+      <View className="px-md mt-4">
+          <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#077f9d]">
           <Field
             label="Booking Ref"
             value={data.bookingReference}
