@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useTravelContext } from "../../../../../context/TravelContext";
 import { useItineraryActivity } from "../../../hooks/useActivity";
+import { useTravelPlan } from "../../../hooks/useTravel";
 import ActivityModal from "../../Edit/Itinerary/Activity/Modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
@@ -27,7 +28,7 @@ interface ViewActivityModalProps {
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const { height: screenHeight } = Dimensions.get("window");
+const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
 const is60PercentSnap = (type?: ActivityType) => {
   if (type == null) return false;
@@ -79,9 +80,54 @@ const ViewActivityModal = ({
   const modalHeight = useMemo(() => screenHeight, []);
   const { selectedTravelPlan } = useTravelContext();
   const { keyboardVisible, isFloating } = useKeyboardVisible();
+
+  // Track the currently displayed activity ID (may change via swipe)
+  const [currentActivityId, setCurrentActivityId] = useState(id);
+
+  // Reset currentActivityId when the modal opens with a new id
+  useEffect(() => {
+    if (showModal) {
+      setCurrentActivityId(id);
+    }
+  }, [id, showModal]);
   
-  // Fetch activity data here to pass to Edit Modal
-  const { data: itineraryActivity } = useItineraryActivity(id);
+  // Fetch current activity data for Edit Modal and color
+  const { data: itineraryActivity } = useItineraryActivity(currentActivityId);
+
+  // Fetch the full travel plan to get the ordered list of all activities
+  const travelId = itineraryActivity?.travelId || selectedTravelPlan?.id || "";
+  const { data: travelPlan } = useTravelPlan(travelId);
+
+  // Build flat ordered list of all activity IDs from itinerary sections
+  const allActivityIds = useMemo(() => {
+    if (!travelPlan?.itinerarySection) return [];
+    return travelPlan.itinerarySection.flatMap(
+      (section) => (section.itineraryActivity || []).map((a) => a.id).filter(Boolean) as string[]
+    );
+  }, [travelPlan]);
+
+  // Current index in the ordered list
+  const currentIndex = useMemo(() => {
+    const idx = allActivityIds.indexOf(currentActivityId);
+    return idx >= 0 ? idx : 0;
+  }, [allActivityIds, currentActivityId]);
+
+  const totalActivities = allActivityIds.length;
+  const hasNext = currentIndex < totalActivities - 1;
+  const hasPrev = currentIndex > 0;
+
+  // Swipe navigation callbacks
+  const handleSwipeLeft = useCallback(() => {
+    if (hasNext) {
+      setCurrentActivityId(allActivityIds[currentIndex + 1]);
+    }
+  }, [hasNext, allActivityIds, currentIndex]);
+
+  const handleSwipeRight = useCallback(() => {
+    if (hasPrev) {
+      setCurrentActivityId(allActivityIds[currentIndex - 1]);
+    }
+  }, [hasPrev, allActivityIds, currentIndex]);
   
   const [showEditActivityModal, setShowEditActivityModal] = useState(false);
 
@@ -169,17 +215,31 @@ const ViewActivityModal = ({
               }}
             />
 
-            <TouchableOpacity
-              onPress={handleCancel}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              accessibilityRole="button"
-              style={{ padding: 4, zIndex: 1 }}
-            >
-              <View className="p-2 rounded-full bg-white/10">
-                <Icon name="chevron-left" size={24} color="#FFFFFF" />
-              </View>
-            </TouchableOpacity>
+            <View style={{ flexDirection: "row", alignItems: "center", zIndex: 1 }}>
+              <TouchableOpacity
+                onPress={handleCancel}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
+                style={{ padding: 4 }}
+              >
+                <View className="p-2 rounded-full bg-white/10">
+                  <Icon name="chevron-left" size={24} color="#FFFFFF" />
+                </View>
+              </TouchableOpacity>
+
+              {/* Activity counter indicator */}
+              {totalActivities > 1 && (
+                <Text style={{
+                  color: "rgba(255,255,255,0.8)",
+                  fontSize: 13,
+                  fontWeight: "600",
+                  marginLeft: 4,
+                }}>
+                  {currentIndex + 1} of {totalActivities}
+                </Text>
+              )}
+            </View>
 
             <TouchableOpacity
               onPress={() => setShowEditActivityModal(true)}
@@ -192,7 +252,15 @@ const ViewActivityModal = ({
             </TouchableOpacity>
           </View>
 
-          <Activity id={id} onClose={handleCancel} translateY={translateY} />
+          <Activity
+            id={currentActivityId}
+            onClose={handleCancel}
+            translateY={translateY}
+            onSwipeLeft={handleSwipeLeft}
+            onSwipeRight={handleSwipeRight}
+            hasNext={hasNext}
+            hasPrev={hasPrev}
+          />
         </Animated.View>
       </View>
 

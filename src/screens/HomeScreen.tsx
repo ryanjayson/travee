@@ -87,15 +87,15 @@ const HomeScreen = () => {
       [ActivityType.nature]: 'leaf',
       [ActivityType.shopppingAndService]: 'cart',
       [ActivityType.entertainmentAndRecreation]: 'film',
-      [ActivityType.transportation]: 'bus',
+      // [ActivityType.transportation]: 'bus',
       [ActivityType.walk]: 'walk',
       [ActivityType.sightseeing]: 'camera',
       [ActivityType.preparation]: 'construct',
-      [ActivityType.rest]: 'bed',
+      // [ActivityType.rest]: 'bed',
       [ActivityType.hikeOrCamp]: 'compass',
-      [ActivityType.motorcycleRide]: 'bicycle',
-      [ActivityType.meetup]: 'people',
-      [ActivityType.rideRental]: 'car',
+      // [ActivityType.motorcycleRide]: 'bicycle',
+      // [ActivityType.meetup]: 'people',
+      // [ActivityType.rideRental]: 'car',
     };
     return (map[type ?? 0] ?? 'location') as any;
   };

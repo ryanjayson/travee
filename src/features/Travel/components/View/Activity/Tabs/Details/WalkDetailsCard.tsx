@@ -92,8 +92,5 @@ export const WalkDetailsCard: React.FC<WalkDetailsCardProps> = ({ data }) => {
         </View>
       </View>
     </View>
-
-
-
   );
 };
