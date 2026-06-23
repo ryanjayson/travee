@@ -300,6 +300,7 @@ const ViewTripModal = ({
               onRefresh={refetch}
               fabOpen={isFabOpen}
               setFabOpen={setIsFabOpen}
+              onEditTrip={() => setShowEditTripModal(true)}
               onRegisterCollapse={(fn) => {
                 collapseTriggerRef.current = fn;
               }}

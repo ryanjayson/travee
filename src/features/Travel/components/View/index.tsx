@@ -50,6 +50,7 @@ interface ViewTravelProps {
   fabOpen?: boolean;
   setFabOpen?: (open: boolean) => void;
   onRegisterCollapse?: (fn: () => void) => void;
+  onEditTrip?: () => void;
 }
 
 const ViewTravel = ({ 
@@ -66,6 +67,7 @@ const ViewTravel = ({
   fabOpen,
   setFabOpen,
   onRegisterCollapse,
+  onEditTrip,
 }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
   const [showSectionModal, setShowSectionModal] = useState<boolean>(false);
@@ -679,6 +681,7 @@ const ViewTravel = ({
         setOpen={setFabOpen}
         travelId={travelId}
         isIncreasePosition={currentSnap === SNAP_MIN}
+        onEditTrip={onEditTrip}
         onAddNote={() => {
           openNoteModal(
             null,

@@ -15,6 +15,7 @@ interface TravelActionFABProps {
   setOpen?: (open: boolean) => void;
   travelId?: string;
   isIncreasePosition?: boolean;
+  onEditTrip?: () => void;
 }
 
 const TravelActionFAB = ({ 
@@ -27,7 +28,8 @@ const TravelActionFAB = ({
   open: controlledOpen,
   setOpen: controlledSetOpen,
   travelId,
-  isIncreasePosition
+  isIncreasePosition,
+  onEditTrip,
 }: TravelActionFABProps) => {
   const [localOpen, setLocalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : localOpen;
@@ -83,22 +85,22 @@ const TravelActionFAB = ({
         color: 'white',
         onPress: onAddSection,
       },
-      {
-        id: 'note',
-        icon: 'note-text',
-        label: 'Add Note',
-        labelTextColor: 'white',
-        style: {
-            elevation: 0,
-            borderRadius: 50,
-            padding: 6,
-            backgroundColor: '#263F69',
-            marginRight: -6,
-            marginBottom: 10
-        },
-        color: 'white',
-        onPress: onAddNote,
-      },
+      // {
+      //   id: 'note',
+      //   icon: 'note-text',
+      //   label: 'Add Note',
+      //   labelTextColor: 'white',
+      //   style: {
+      //       elevation: 0,
+      //       borderRadius: 50,
+      //       padding: 6,
+      //       backgroundColor: '#263F69',
+      //       marginRight: -6,
+      //       marginBottom: 10
+      //   },
+      //   color: 'white',
+      //   onPress: onAddNote,
+      // },
       {
         id: 'checklist',
         icon: 'playlist-check',
@@ -115,22 +117,22 @@ const TravelActionFAB = ({
         color: 'white',
         onPress: onAddChecklist,
       },
-      {
-        id: 'expense',
-        icon: 'currency-usd',
-        label: 'Add Expense',
-        labelTextColor: 'white',
-        style: {
-            elevation: 0,
-            borderRadius: 50,
-            padding: 6,
-            backgroundColor: '#263F69',
-            marginRight: -6,
-            marginBottom: 10
-        },
-        color: 'white',
-        onPress: onAddExpense,
-      },
+      // {
+      //   id: 'expense',
+      //   icon: 'currency-usd',
+      //   label: 'Add Expense',
+      //   labelTextColor: 'white',
+      //   style: {
+      //       elevation: 0,
+      //       borderRadius: 50,
+      //       padding: 6,
+      //       backgroundColor: '#263F69',
+      //       marginRight: -6,
+      //       marginBottom: 10,
+      //   },
+      //   color: 'white',
+      //   onPress: onAddExpense,
+      // },
        {
         id: 'activity',
         icon: 'calendar-plus',
@@ -213,7 +215,9 @@ const TravelActionFAB = ({
             style={[styles.editTripButton, { borderColor: colors.primary || '#263F69', borderWidth: 1 }]}
             onPress={() => {
               setOpen(false);
-              if (travelId) {
+              if (onEditTrip) {
+                onEditTrip();
+              } else if (travelId) {
                 navigation.navigate("EditTravelPlan", { travelId });
               }
             }}

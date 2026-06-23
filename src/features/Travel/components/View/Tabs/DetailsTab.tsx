@@ -31,16 +31,17 @@ const StatCard = ({
   sub?: string;
   accent?: string;
 }) => (
-  <View className="bg-white rounded-2xl border border-[#e0e0e0] p-4 flex-1 min-w-[44%]">
+  <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 flex-1 min-w-[44%]"
+   style={{ backgroundColor: accent + "" }}>
     <View
-      className="w-9 h-9 rounded-full items-center justify-center mb-3"
-      style={{ backgroundColor: accent + "18" }}
+      className="w-9 h-9 rounded-full justify-center mb-3"
+      // style={{ backgroundColor: accent + "20" }}
     >
-      <Icon name={icon} size={20} color={accent} />
+      <Icon name={icon} size={30} color={'white'} />
     </View>
-    <Text className="text-2xl font-bold text-[#1A1A1A]">{value}</Text>
-    <Text className="text-xs font-semibold text-gray-500 mt-0.5 uppercase tracking-wider">{label}</Text>
-    {sub ? <Text className="text-[11px] text-gray-400 mt-1">{sub}</Text> : null}
+    <Text className="text-3xl font-bold text-white">{value}</Text>
+    <Text className="text-xs font-semibold text-gray-100 uppercase tracking-wider mt-2">{label}</Text>
+    {sub ? <Text className="text-[11px] text-gray-300">{sub}</Text> : null}
   </View>
 );
 
@@ -200,7 +201,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
-      <View className="px-4 py-3">
+      <View className="px-4">
 
         {/* ─── Top Summary Cards ─────────────────────────────────────────── */}
         <SectionHeader icon="dashboard" title="Overview" />
@@ -258,7 +259,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
             </View>
           </View>  */}
 
-        <View className="bg-white rounded-2xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
+        <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
             <View className="flex-1 gap-2">
               <Text className="text-xs font-bold uppercase tracking-wide">About this trip</Text>
 
@@ -284,9 +285,9 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
               {travelPlan.travel.description || null}
             </Text>
             
-            {showMoreButton && (
+            {travelPlan.travel.description && showMoreButton && (
               <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
-                <Text className="text-sm font-black text-[#555] mt-1">
+                <Text className="text-sm font-black text-[#555] mt-1 underline">
                   {isDescriptionExpanded ? "Show less" : "Show more"}
                 </Text>
               </TouchableOpacity>
@@ -308,9 +309,9 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
               {travelPlan.travel.notes || null}
             </Text>
             
-            {showMoreButton && (
+            {travelPlan.travel.notes && showMoreButton && (
               <TouchableOpacity onPress={() => setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)}>
-                <Text className="text-sm font-medium text-[#555] mt-1">
+                <Text className="text-sm font-medium text-[#555] mt-1 underline">
                   {isNoteDescriptionExpanded ? "Show less" : "Show more"}
                 </Text>
               </TouchableOpacity>
@@ -393,7 +394,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY }: DetailsTab
 
 
         {/* ─── Checklist Progress ────────────────────────────────────────── */}
-        {totalChecklist > 0 && (
+        {false && totalChecklist > 0 && (
           <>
             <SectionHeader icon="folder-open" title="Checklist by Group" />
             <View className="bg-white rounded-2xl border border-[#e0e0e0] overflow-hidden">
