@@ -136,17 +136,11 @@ const ViewActivityModal = ({
   const yOffset = insets.top + 60; // Estimated parent modal header offset
   const parentHeight = screenHeight - yOffset;
 
-  const SNAP_EXTENDED = itineraryActivity?.description?.length !== undefined ? 0.74 : 0.82;
+  const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 0.75 : 0.82;
   const SNAP_90 = parentHeight * 0.1;
   const SNAP_MIN = parentHeight * SNAP_EXTENDED;
 
   const translateY = useRef(new Animated.Value(SNAP_MIN)).current;
-
-  useEffect(() => {
-    if (itineraryActivity) {
-      translateY.setValue(SNAP_MIN);
-    }
-  }, [itineraryActivity, parentHeight, translateY, SNAP_MIN]);
 
   const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity?.type)?.color || "#9E9E9E";
 

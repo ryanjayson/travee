@@ -462,12 +462,12 @@ const ActivityItemCard = ({
           <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
           {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
                 <View 
-                  style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '20' }} 
+                  style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }} 
                   className="items-end rounded-xs px-2 py-0.5"
                 >
                   <Text 
                     style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }} 
-                    className="text-[10px] tracking-wider uppercase font-extrabold"
+                    className="text-[8px] tracking-wider uppercase font-extrabold"
                   >
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
                   </Text>
@@ -505,14 +505,14 @@ const ActivityItemCard = ({
 
               <View className="flex-2">
                 <View className="flex-row justify-between items-start mb-1 gap-x-2">
-                  <Text className={`text-lg font-semibold text-[#333] leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
+                  <Text className={`text-lg font-medium mt-1 leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
                       {itineraryEventActivity.title}
                   </Text>
                 </View>
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
                   <TouchableOpacity 
-                    className="flex-row items-center text-ellipsis opacity-80 bg-gray-100 rounded-sm p-1 pr-4"
-                    onPress={() => setShowMapModal(true)}
+                    className="flex-row items-center text-ellipsis opacity-60 rounded-sm w-[80%]"
+                    onPress={() => setShowMapModal(false)}
                   >
                     <Icon name="location-pin" size={12} color={"#B42318"} />
                     <Text className="text-xs"
@@ -524,7 +524,7 @@ const ActivityItemCard = ({
                 )} 
 
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (
-                  <Text className="text-md text-[#555] leading-5 mb-1.5 mt-1" 
+                  <Text className="text-md text-[#999] leading-5 my-2" 
                     numberOfLines={2}
                     ellipsizeMode="tail">
                     {itineraryEventActivity.description} 
@@ -534,8 +534,8 @@ const ActivityItemCard = ({
           </View>
           
           {!isNarrow && (
-            <View className="flex-row justify-between items-center border-t border-gray-200 pt-1.5">
-              <View className="flex-row items-center mt-1 flex-wrap gap-5">
+            <View className="flex-row justify-between items-center  border-gray-200 pt-1.5 ">
+              <View className="flex-row items-center mt-1 flex-wrap gap-5 hidden">
                 <TouchableOpacity
                   onPress={() => {
                     openExpenseModal(
@@ -610,9 +610,8 @@ const ActivityItemCard = ({
               </View>
             </View>
           )}
-        </TouchableOpacity>
-        
-        <View className={`absolute right-4 ${isNarrow ? "top-[34%]" : "bottom-7"}`}>
+
+           <View className={`absolute right-2  ${isNarrow ? "top-[50%]" : "bottom-2"}`}>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={handleToggleDone}
@@ -626,9 +625,12 @@ const ActivityItemCard = ({
               
                 {itineraryEventActivity.isDone ? 
                     (<Icon name="check" size={24} color="#0c6134" />)
-                    : (<Icon name="check-box-outline-blank" size={24} color="#888" />)}
+                    : (<Icon name="check-box-outline-blank" size={24} color="#999" />)}
             </TouchableOpacity>
         </View>
+       
+        </TouchableOpacity>
+        
        
       </View>
 

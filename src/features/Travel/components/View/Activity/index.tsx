@@ -216,7 +216,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   // Snap points represent the translateY value (offset from top of parent container)
   // 90% sheet height: translateY = parentHeight * 0.1
   // Min sheet height: 25% sheet height -> 0.75 offset
-  const SNAP_EXTENDED = itineraryActivity?.description?.length > 0 ? 0.75 : 0.82;
+  const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 0.75 : 0.82;
   const SNAP_90 = parentHeight * 0.1;
   const SNAP_MIN = parentHeight * SNAP_EXTENDED;
 
@@ -231,11 +231,24 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   // Dynamically update snap configurations once itineraryActivity loads
   React.useEffect(() => {
     if (itineraryActivity) {
-      snappedY.current = SNAP_MIN;
-      setCurrentSnap(SNAP_MIN);
-      translateY.setValue(SNAP_MIN);
+      const isAt90 = Math.abs(snappedY.current - SNAP_90) < 1;
+      const targetSnap = isAt90 ? SNAP_90 : SNAP_MIN;
+
+      snappedY.current = targetSnap;
+      setCurrentSnap(targetSnap);
+
+      Animated.spring(translateY, {
+        toValue: targetSnap,
+        tension: 80,
+        friction: 12,
+        useNativeDriver: false,
+      }).start();
+
+      if (targetSnap === SNAP_MIN) {
+        setIsDescriptionExpanded(false);
+      }
     }
-  }, [itineraryActivity, parentHeight, SNAP_MIN]);
+  }, [itineraryActivity, parentHeight, SNAP_MIN, SNAP_90]);
 
   // Slowly changing black overlay opacity as sheet is panned/scrolled towards SNAP_90
   const rangeEnd = SNAP_MIN;
@@ -443,11 +456,13 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
           style={{
             flex: 1,
             transform: [{ translateX }, { scale: swipeScale }],
-            opacity: Animated.multiply(swipeOpacity, fadeAnim),
+         
+            // opacity: Animated.multiply(swipeOpacity, fadeAnim),
           }}
         >
           {/* Background Details Tab */}
-          <View style={{ height: parentHeight, width: "100%" }}>
+          <View style={{ height: parentHeight, width: "100%" ,
+            }}>
             <DetailsTab itineraryActivity={itineraryActivity} />
             {/* Animated Black Overlay */}
             <Animated.View

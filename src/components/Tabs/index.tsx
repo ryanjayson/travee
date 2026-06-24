@@ -152,7 +152,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
     );
   };
 
-  let wrapperStyle = "bg-white border-b border-gray-100";
+  let wrapperStyle = "bg-white border-gray-100";
 
   if (type === "secondary") {
     wrapperStyle = "bg-white border-b border-gray-100";
