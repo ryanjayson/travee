@@ -510,9 +510,8 @@ const ActivityItemCard = ({
                   </Text>
                 </View>
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
-                  <TouchableOpacity 
+                  <View 
                     className="flex-row items-center text-ellipsis opacity-60 rounded-sm w-[80%]"
-                    onPress={() => setShowMapModal(false)}
                   >
                     <Icon name="location-pin" size={12} color={"#B42318"} />
                     <Text className="text-xs"
@@ -520,7 +519,7 @@ const ActivityItemCard = ({
                     numberOfLines={1}>
                       {itineraryEventActivity.destination}
                     </Text>
-                  </TouchableOpacity>
+                  </View>
                 )} 
 
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (

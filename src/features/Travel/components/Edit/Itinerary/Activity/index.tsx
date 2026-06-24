@@ -493,7 +493,15 @@ const EditActivity = ({
   const pickDocument = async (setFn: (field: string, value: any) => void, currentAttachments: Attachment[]) => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: "*/*",
+        type: [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "application/vnd.ms-powerpoint",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        ],
         multiple: true,
       });
 
@@ -1641,13 +1649,16 @@ const EditActivity = ({
                 <Text className="text-xs font-semibold tracking-wider uppercase mb-2">File Attachments</Text>
                 <TouchableOpacity
                   onPress={() => pickDocument(setFieldValue, values.attachments || [])}
-                  className="border-2 border-dashed border-[#ddd] h-[140px] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-center gap-3 mb-4"
+                  className="border-2 border-dashed border-[#ddd] h-[140px] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-center gap-3 mb-2"
                   accessibilityRole="button"
                   accessibilityLabel="Upload files"
                 >
                   <Icon name="attach-file" size={28} color="#263F69" />
                   <Text className="text-base text-[#263F69] font-medium">Attach Files</Text>
                 </TouchableOpacity>
+                <Text className="text-xs text-gray-500 mb-4">
+                  Supported formats: PDF, Word, Excel, PowerPoint
+                </Text>
 
                 {(values.attachments || []).length > 0 && (
                   <View className="gap-2">

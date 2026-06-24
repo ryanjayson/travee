@@ -20,6 +20,7 @@ import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
 import NotesTab from "./Tabs/NotesTab";
 import ChecklistTab from "./Tabs/ChecklistTab";
+import FilesTab from "./Tabs/FilesTab";
 import { FAB, Icon, Portal, Provider } from "react-native-paper";
 import { useTravelContext } from "../../../../../context/TravelContext";
 import { activityIcons } from "../../../../../components/ActivityIcon";
@@ -93,6 +94,9 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
   const [showMoreButton, setShowMoreButton] = useState<boolean>(false);
   const { openExpenseModal, openNoteModal } = useTravelContext();
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const isImageViewerOpenRef = useRef(false);
+  isImageViewerOpenRef.current = isImageViewerOpen;
 
   // ─── Horizontal swipe for activity navigation ───────────────────────────────
   const { width: screenWidth } = Dimensions.get("window");
@@ -137,11 +141,13 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gs) => {
+        if (isImageViewerOpenRef.current) return false;
         // Only claim horizontal gestures, ignore vertical
         const isHorizontal = Math.abs(gs.dx) > Math.abs(gs.dy) && Math.abs(gs.dx) > 3;
         return isHorizontal && !isSwipeAnimating.current;
       },
       onMoveShouldSetPanResponderCapture: (_, gs) => {
+        if (isImageViewerOpenRef.current) return false;
         const isHorizontal = Math.abs(gs.dx) > Math.abs(gs.dy) && Math.abs(gs.dx) > 5;
         return isHorizontal && !isSwipeAnimating.current;
       },
@@ -443,7 +449,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
       icon: "note",
       content: <NotesTab activityId={id} onEditNote={handleEditNote} />,
     },
-    { id: "files", title: "Files", icon: "description", content: <></> },
+    { id: "files", title: "Files", icon: "description", content: <FilesTab itineraryActivity={itineraryActivity} onImageViewerToggle={setIsImageViewerOpen} /> },
   ];
 
   return (
