@@ -31,6 +31,7 @@ interface AccordionProps extends PropsWithChildren {
   iconColor?: string;
   iconSize?: number;
   disabled?: boolean;
+  onPressMore?: () => void;
 }
 
 const Accordion: FC<AccordionProps> = ({
@@ -45,6 +46,7 @@ const Accordion: FC<AccordionProps> = ({
   iconColor = "#89939E",
   iconSize = 24,
   disabled = false,
+  onPressMore,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
@@ -91,6 +93,20 @@ const Accordion: FC<AccordionProps> = ({
       ]}
       className="bg-white my-1.5 rounded-[20px] border border-[#e0e0e0]"
     >
+
+       {onPressMore && (
+        <TouchableOpacity
+          onPress={onPressMore}
+          className="absolute right-[85px] top-5 z-10"
+          accessibilityRole="button"
+        >
+          <Animated.View>
+            <Icon name="more-horiz" size={iconSize} color={iconColor} />
+          </Animated.View>
+        </TouchableOpacity>
+      )}
+
+
       {!disabled && (
         <TouchableOpacity
           onPress={toggleFullscreenAccordion}
@@ -120,10 +136,14 @@ const Accordion: FC<AccordionProps> = ({
         activeOpacity={disabled ? 1 : 0.8}
         accessibilityRole="button"
       >
-        <Text style={titleStyle} 
-          className="text-lg font-semibold text-[#333] "
-          numberOfLines={expanded ? 10 : 1}
-        >{title}</Text>
+        {typeof title === "string" ? (
+          <Text style={titleStyle} 
+            className="text-lg font-semibold text-[#333] "
+            numberOfLines={expanded ? 10 : 1}
+          >{title}</Text>
+        ) : (
+          title
+        )}
 
         {!disabled && (
           <Animated.View style={{ transform: [{ rotate: arrowAngle }] }} className={`absolute right-3 top-5 `} >
@@ -153,7 +173,11 @@ const Accordion: FC<AccordionProps> = ({
         onRequestClose={() => setFullscreen(false)} 
       >
         <View style={[headerStyle, {paddingTop: insets.top}]} className="flex-row justify-between items-center py-0 px-3 bg-[#f9f9f9]">
-          <Text style={titleStyle} className="text-xl font-semibold text-[#333]">{title}</Text>
+          {typeof title === "string" ? (
+            <Text style={titleStyle} className="text-xl font-semibold text-[#333]">{title}</Text>
+          ) : (
+            title
+          )}
 
           <TouchableOpacity
             onPress={() => setFullscreen(false)}

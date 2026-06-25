@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import Accordion from "../../../../components/Accordion";
 import ActivityItemCard from "./Activity/Card";
 import DraggableSectionContainer from "../Edit/Itinerary/DraggableSectionContainer";
+import SectionModal from "../Edit/Itinerary/Section/Modal";
 import { ItineraryActivity, ItinerarySection, TravelPlan } from "../../../Travel/types/TravelDto";
 import { ActivityType } from "../../../../types/enums";
 import { useLexicographicSort } from "../../../../hooks/useLexicographicSort";
@@ -13,6 +14,7 @@ import { useToast } from "../../../../context/ToastContext";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { useTheme } from "react-native-paper";
 import { useTripSetting, useUpdateTripSetting } from "../../hooks/useTripSetting";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 
 interface SectionAccordionProps {
   travelPlan: TravelPlan;
@@ -75,6 +77,14 @@ const toItineraryView = (viewMode: "plain" | "narrow" | "expanded"): "plain" | "
   }
 };
 
+const isValidStartDate = (dateVal: any): boolean => {
+  if (dateVal === null || dateVal === undefined || dateVal === "") return false;
+  if (typeof dateVal === "number" && dateVal <= 0) return false;
+  const d = new Date(dateVal);
+  return !isNaN(d.getTime());
+};
+
+
 const slowSpringAnimation = {
   duration: 1000,
   create: {
@@ -118,6 +128,7 @@ interface DraggableSectionItemProps {
   sectionRefs: React.MutableRefObject<Record<string, any>>;
   viewMode?: "plain" | "narrow" | "expanded";
   allowItemReordering?: boolean;
+  onPressMore: (section: ItinerarySection) => void;
 }
 
 const DraggableSectionItem = ({
@@ -137,6 +148,7 @@ const DraggableSectionItem = ({
   sectionRefs,
   viewMode,
   allowItemReordering = true,
+  onPressMore,
 }: DraggableSectionItemProps) => {
   const shiftAnim = useRef(new Animated.Value(0)).current;
   const lastTargetShift = useRef(0);
@@ -239,8 +251,9 @@ const DraggableSectionItem = ({
             )}
 
             <Accordion
+              onPressMore={() => onPressMore(section)}
               title={
-                <View>
+                <View className="flex-row align-middle items-center">
                   {allowItemReordering && (
                     <View
                       className="absolute  top-0 z-50 flex-row items-center justify-center w-[30px]"
@@ -249,13 +262,13 @@ const DraggableSectionItem = ({
                       <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
                     </View>
                   )}
-                  <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className=" text-lg font-semibold text-[#333] underline">
-                    {section.startDate && (
+                  <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className="text-lg font-semibold text-[#333]">
+                    {isValidStartDate(section.startDate) ? (
                       <Text className="text-[#999]">
                         {`${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
                       </Text>
-                    )}
-                    {section.title}
+                    ) : null}
+                    {section?.title}
                   </Text>
                 </View>
               }
@@ -277,8 +290,8 @@ const DraggableSectionItem = ({
             >
               
               {section.description && section.description.trim() !== "" && (
-                <View className="bg-white flex-1 p-2 z-100">
-                  <Text className="text-sm text-[#555] leading-5 p-2 pt-0">
+                <View className="bg-white flex-1 px-3 z-100">
+                  <Text className="text-sm text-tertiary leading-5 p-2 pt-0">
                   {section.description}
                 </Text>
                 </View>
@@ -296,10 +309,29 @@ const DraggableSectionItem = ({
                 {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                   renderActivityCards(section, section.itineraryActivity)
                 ) : (
-                    <Text className="text-sm text-[#555] leading-5 p-2 text-center">
-                      No activities found
+                  <View className=" flex-1 items-center justify-center py-4">
+                    <Text className="text-md text-[#999] text-sm text-center">
+                      No activities yet. Drag and drop here or tap 
                     </Text>
-                  )}
+
+                     <TouchableOpacity
+                              // onPress={() => {
+                              //   setModalVisible(true);
+                              //   const defaultSection = sections.find(
+                              //     (section) => section.isDefaultSection == true,
+                              //   );
+                              //   setCurrentSectionId(defaultSection?.id || null);
+                              // }}
+                             
+                              className="flex-row"
+                            >
+                                <Icon name="add" size={16} color={"#263F69"} />
+                                <Text className="font-medium text-base text-primary underline">
+                                Add activity
+                              </Text>
+                            </TouchableOpacity>
+                  </View>
+                )}
               </View>
             </Accordion>
           </View>
@@ -339,6 +371,11 @@ const SectionAccordion = ({
 
   const [viewMode, setViewMode] = useState<"plain" | "narrow" | "expanded">("expanded");
   const [allowItemReordering, setAllowItemReordering] = useState(true);
+  const [editingSection, setEditingSection] = useState<ItinerarySection | null>(null);
+
+  const handleEditSection = (section: ItinerarySection) => {
+    setEditingSection(section);
+  };
 
   // Reactively synchronize local states when database settings update
   useEffect(() => {
@@ -953,7 +990,30 @@ const SectionAccordion = ({
                     sectionRefs={sectionRefs}
                     viewMode={viewMode}
                     allowItemReordering={allowItemReordering}
+                    onPressMore={handleEditSection}
                   />
+
+
+                  {/* //TODO: Hide this feat for now */}
+                  {false && index === sections.length - 1 && (
+                    <TouchableOpacity
+                    // onPress={() => {
+                    //   setModalVisible(true);
+                    //   const defaultSection = sections.find(
+                    //     (section) => section.isDefaultSection == true,
+                    //   );
+                    //   setCurrentSectionId(defaultSection?.id || null);
+                    // }}
+                    
+                    className="flex-row"
+                  >
+                      <Icon name="add" size={16} color={"#263F69"} />
+                      <Text className="font-medium text-base text-primary underline">
+                      Add section
+                    </Text>
+                  </TouchableOpacity>
+                  )}
+                     
                   </View>
                 );
               }
@@ -1060,6 +1120,13 @@ const SectionAccordion = ({
           </View>
         </Pressable>
       )}
+
+      {/* Edit Section Modal */}
+      <SectionModal
+        visible={editingSection !== null}
+        onClose={() => setEditingSection(null)}
+        itinerarySection={editingSection}
+      />
     </View>
   );
 };

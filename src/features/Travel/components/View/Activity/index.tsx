@@ -582,7 +582,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             </Pressable>
           </Animated.View>
 
-          {/* FAB Speed-dial */}
+          {/* TODO: show when expense implemented */}
           <Portal>
             <FAB.Group
               open={fabOpen}

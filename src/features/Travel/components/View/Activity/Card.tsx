@@ -424,7 +424,7 @@ const ActivityItemCard = ({
         {(!isDragActive && !parentIsDragging) && viewMode === 'expanded' && (
         <TouchableHighlight 
           underlayColor={"none"}
-          className={`absolute h-6xl w-6xl -bottom-[30px] left-lg z-9999 `}
+          className={`absolute h-6xl w-6xl -bottom-[30px] left-lg z-9999 hidden`} //TODO: Hide this feat for now
           onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
           onShowUnderlay={() => setIsAddPressed(true)}
           onHideUnderlay={() => setIsAddPressed(false)}

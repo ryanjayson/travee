@@ -70,7 +70,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [animValue, swipeValue]);
 
   const showToast = useCallback(
-    ({ type, message, duration = 3000 }: ToastOptions) => {
+    ({ type, message, duration = 5000 }: ToastOptions) => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
