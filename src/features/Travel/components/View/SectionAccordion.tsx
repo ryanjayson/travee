@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, ScrollView, Animated, LayoutAnimation, Dimensions, Easing, Switch, TouchableOpacity, Pressable } from "react-native";
+import { View, Text, ScrollView, Animated, LayoutAnimation, Dimensions, Easing, Switch, TouchableOpacity, Pressable, Modal, PanResponder } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import Accordion from "../../../../components/Accordion";
@@ -256,23 +256,25 @@ const DraggableSectionItem = ({
             <Accordion
               onPressMore={() => onPressMore(section)}
               title={
-                <View className="flex-row align-middle items-center bg-primary z-999999 px-1">
+                <View className="flex-row align-middle items-center ">
                   {allowItemReordering && (
                     <View
-                      className="absolute  top-0 z-50 flex-row items-center justify-center w-[30px]"
+                      className="absolute top-0 z-50 flex-row items-center justify-center w-[30px]"
                       {...panHandlers}
                     >
                       <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
                     </View>
                   )}
-                  <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className="text-lg font-semibold text-white">
-                    {isValidStartDate(section.startDate) ? (
-                      <Text className="text-[#999]">
-                        {`${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
-                      </Text>
-                    ) : null}
-                    {section?.title}
-                  </Text>
+                  <View className="flex-row">
+                    <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-primary/90 rounded-xs px-2">
+                      {section?.title}
+                      {isValidStartDate(section.startDate) ? (
+                        <Text className="text-white/70 font-semibold text-sm">
+                          {` ${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
+                        </Text>
+                      ) : null}
+                    </Text>
+                  </View>
                 </View>
               }
               headerStyle={{ backgroundColor: "#FFF", paddingStart: 14 }}
@@ -294,7 +296,7 @@ const DraggableSectionItem = ({
              
               {section.description && section.description.trim() !== "" && (
                 <View className="bg-white flex-1 px-3 z-100">
-                  <Text className="text-sm text-secondary leading-5 p-2 pt-0 ml-4xl">
+                  <Text className="text-base text-tertiary leading-5 px-2 ml-3xl">
                   {section.description}
                 </Text>
                 </View>
@@ -312,12 +314,16 @@ const DraggableSectionItem = ({
                 {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                   renderActivityCards(section, section.itineraryActivity)
                 ) : (
-                  <View className=" flex-1 items-center justify-center py-6">
-                    <Text className="text-md text-tertiary text-sm text-center">
-                      No activities yet. Drag and drop here or tap 
+                  <View className=" flex-1 items-center justify-center py-8">
+                    <Text className="text-lg text-tertiary/50 text-center">
+                      No activities yet.
                     </Text>
-
-                      <TouchableOpacity
+                    <View className="text-center tracking-wide flex-row align-center gap-1">
+                   
+                    <Text className="text-md text-tertiary/50 text-sm ">
+                      Drag and drop here or tap 
+                    </Text>
+                       <TouchableOpacity
                         onPress={() => openActivityModal(null, section.id || undefined)}
                         accessibilityRole="button"
                         activeOpacity={0.7}
@@ -331,6 +337,9 @@ const DraggableSectionItem = ({
                           Add activity
                         </Text>
                       </TouchableOpacity>
+                    </View>
+
+                   
                   </View>
                 )}
               </View>
@@ -362,13 +371,58 @@ const SectionAccordion = ({
   const [isAtTop, setIsAtTop] = useState(true);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
+  const { height: screenHeight } = Dimensions.get("window");
+  const settingsTranslateY = useRef(new Animated.Value(screenHeight)).current;
+
+  // Slide up transition on opening settings sheet
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: isAtTop ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }, [isAtTop]);
+    if (isSettingsExpanded) {
+      settingsTranslateY.setValue(screenHeight);
+      Animated.spring(settingsTranslateY, {
+        toValue: 0,
+        tension: 65,
+        friction: 11,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isSettingsExpanded, screenHeight]);
+
+  // Handle bar pan responder for Settings Form Sheet dragging
+  const settingsDragPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          settingsTranslateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 120 || gestureState.vy > 0.5) {
+          Animated.timing(settingsTranslateY, {
+            toValue: screenHeight,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setIsSettingsExpanded(false);
+          });
+        } else {
+          Animated.spring(settingsTranslateY, {
+            toValue: 0,
+            tension: 80,
+            friction: 12,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  const settingsBackdropOpacity = settingsTranslateY.interpolate({
+    inputRange: [0, screenHeight],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
 
   const [viewMode, setViewMode] = useState<"plain" | "narrow" | "expanded">("expanded");
   const [allowItemReordering, setAllowItemReordering] = useState(true);
@@ -387,14 +441,22 @@ const SectionAccordion = ({
   }, [currentSetting]);
 
   const toggleSettings = () => {
-    LayoutAnimation.configureNext(springConfig);
-    setIsSettingsExpanded((prev) => !prev);
+    if (isSettingsExpanded) {
+      collapseSettings();
+    } else {
+      setIsSettingsExpanded(true);
+    }
   };
 
   const collapseSettings = () => {
     if (isSettingsExpanded) {
-      LayoutAnimation.configureNext(springConfig);
-      setIsSettingsExpanded(false);
+      Animated.timing(settingsTranslateY, {
+        toValue: screenHeight,
+        duration: 220,
+        useNativeDriver: true,
+      }).start(() => {
+        setIsSettingsExpanded(false);
+      });
     }
   };
 
@@ -411,6 +473,7 @@ const SectionAccordion = ({
       itineraryView,
       allowItemReordering,
     });
+    setTimeout(collapseSettings, 300);
   };
 
   const handleReorderToggle = (value: boolean) => {
@@ -425,6 +488,7 @@ const SectionAccordion = ({
       itineraryView,
       allowItemReordering: value,
     });
+    setTimeout(collapseSettings, 300);
   };
 
   // --- Local mutable sections state ---
@@ -914,9 +978,9 @@ const SectionAccordion = ({
         }}
         scrollEventThrottle={16}
         className="flex-1"
-        scrollEnabled={!sectionDragState?.isDragging && !masterDragState.isDragging}
+        scrollEnabled={!sectionDragState?.isDragging && !masterDragState.isDragging && !isSettingsExpanded}
       >
-        <View className="flex-1 p-3 pt-6xl">
+        <View className="flex-1 p-3 ">
             {sections.map((section, index) => {
               const isDefaultSection = section.isDefaultSection;
               if (isDefaultSection) {
@@ -1029,98 +1093,154 @@ const SectionAccordion = ({
 
       {/* Settings Accordion Header */}
       <Animated.View
-        pointerEvents={isAtTop ? "auto" : "none"}
+        pointerEvents="auto"
         style={{
-          opacity: fadeAnim,
-          zIndex: isAtTop ? 10 : 0,
+          zIndex: 999999,
           position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
+          top: -46,
+          right: 10,
         }}
       >
         <TouchableOpacity
           onPress={toggleSettings}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel="Toggle Display Settings"
-          className={`flex-row items-center justify-between px-5 py-3 ${isSettingsExpanded ? " bg-white" : ""}`}
+          accessibilityLabel="Open Display Settings"
+          style={{
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
-          <View className="flex-row items-center gap-3" />
-          <View className="flex-row items-center gap-2">
-            <MaterialIcons name="settings" size={20} color={colors.primary} />
-            <MaterialIcons
-              name={isSettingsExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-              size={22}
-              color="#667085"
-            />
-          </View>
+          <MaterialIcons name="settings" size={24} color={colors.primary} />
         </TouchableOpacity>
       </Animated.View>
 
       {/* Settings Accordion Body */}
-      {isSettingsExpanded && (
-        <Pressable
-          onStartShouldSetResponder={() => true}
-          className="bg-white border-b border-gray-200 px-5 py-4 gap-4 absolute z-50 top-5xl right-0 w-full"
+      {/* Settings Bottom Form Sheet */}
+      <Modal
+        visible={isSettingsExpanded}
+        transparent={true}
+        animationType="none"
+        onRequestClose={collapseSettings}
+      >
+        {/* Animated Backdrop cover */}
+        <Animated.View 
+          className="flex-1 justify-end"
+          style={{ 
+            backgroundColor: "rgba(0,0,0,0.5)",
+            opacity: settingsBackdropOpacity 
+          }}
         >
-          {/* View Mode Selection Row */}
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-sm font-semibold text-gray-900">View Style</Text>
-              <Text className="text-xs text-gray-500 mt-0.5">Choose layout style for activities</Text>
-            </View>
-            <View className="flex-row bg-gray-100 rounded-full p-1 border border-gray-200">
-              {(["plain", "narrow", "expanded"] as const).map((mode) => {
-                const isActive = viewMode === mode;
-                const config = viewModeConfig[mode];
-                return (
-                  <TouchableOpacity
-                    key={mode}
-                    accessibilityRole="button"
-                    accessibilityLabel={config.label}
-                    accessibilityState={{ selected: isActive }}
-                    onPress={() => handleModeChange(mode)}
-                    style={{
-                      backgroundColor: isActive ? colors.primary || "#263F69" : "transparent",
-                      width: 30,
-                      height: 30,
-                      borderRadius: 16,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginHorizontal: 3
-                    }}
-                  >
-                    <MaterialIcons
-                      name={config.icon}
-                      size={20}
-                      color={isActive ? "#FFF" : "#666"}
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
+          {/* Backdrop Dismiss Overlay */}
+          <Pressable
+            style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+            onPress={collapseSettings}
+          />
 
-          {/* Divider */}
-          <View className="h-[1px] bg-gray-100" />
-
-          {/* Reordering Permission Row */}
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-sm font-semibold text-gray-900">Allow drag & drop reordering</Text>
-              <Text className="text-xs text-gray-500 mt-0.5">Toggle section and activity sorting</Text>
+          {/* Bottom Sheet Container */}
+          <Animated.View 
+            className="w-full px-6 pb-8"
+            style={{
+              backgroundColor: colors.surface,
+              borderTopLeftRadius: 28,
+              borderTopRightRadius: 28,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: -4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 10,
+              elevation: 16,
+              transform: [{ translateY: settingsTranslateY }]
+            }}
+          >
+            {/* Drag Handle Area */}
+            <View 
+              {...settingsDragPanResponder.panHandlers}
+              className="w-full items-center py-4 rounded-t-[28px]"
+              style={{ backgroundColor: colors.surface }}
+            >
+              <View 
+                style={{ 
+                  width: 42, 
+                  height: 5, 
+                  borderRadius: 2.5, 
+                  backgroundColor: colors.outline 
+                }} 
+              />
             </View>
-            <Switch
-              value={allowItemReordering}
-              onValueChange={handleReorderToggle}
-              trackColor={{ false: "#D0D5DD", true: `${colors.primary}80` }}
-              thumbColor={allowItemReordering ? colors.primary : "#F2F4F7"}
-              ios_backgroundColor="#D0D5DD"
-            />
-          </View>
-        </Pressable>
-      )}
+
+            <Text 
+              className="text-xl font-bold mb-5"
+              style={{ color: colors.onSurface }}
+            >
+              Itinerary settings
+            </Text>
+
+            {/* View Mode Selection Row */}
+            <View className="flex-row items-center justify-between mb-6">
+              <View>
+                <Text className="text-base font-semibold" style={{ color: colors.onSurface }}>View style</Text>
+                <Text className="text-sm" style={{ color: colors.onSurfaceVariant }}>Choose layout style for activities</Text>
+              </View>
+              <View 
+                className="flex-row rounded-full p-1 border"
+                style={{
+                  backgroundColor: colors.outlineVariant,
+                  borderColor: colors.outline,
+                }}
+              >
+                {(["plain", "narrow", "expanded"] as const).map((mode) => {
+                  const isActive = viewMode === mode;
+                  const config = viewModeConfig[mode];
+                  return (
+                    <TouchableOpacity
+                      key={mode}
+                      accessibilityRole="button"
+                      accessibilityLabel={config.label}
+                      accessibilityState={{ selected: isActive }}
+                      onPress={() => handleModeChange(mode)}
+                      style={{
+                        backgroundColor: isActive ? colors.primary : "transparent",
+                        width: 30,
+                        height: 30,
+                        borderRadius: 16,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginHorizontal: 3
+                      }}
+                    >
+                      <MaterialIcons
+                        name={config.icon}
+                        size={20}
+                        color={isActive ? colors.onPrimary : colors.onSurfaceVariant}
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* Divider */}
+            <View className="h-1px mb-4" style={{ backgroundColor: colors.outlineVariant }} />
+
+            {/* Reordering Permission Row */}
+            <View className="flex-row items-center justify-between mb-6">
+              <View>
+                <Text className="text-base font-semibold" style={{ color: colors.onSurface }}>Allow drag & drop reordering</Text>
+                <Text className="text-sm" style={{ color: colors.onSurfaceVariant }}>Toggle section and activity sorting</Text>
+              </View>
+              <Switch
+                value={allowItemReordering}
+                onValueChange={handleReorderToggle}
+                trackColor={{ false: colors.outline, true: `${colors.primary}80` }}
+                thumbColor={allowItemReordering ? colors.primary : colors.outlineVariant}
+                ios_backgroundColor={colors.outline}
+              />
+            </View>
+          </Animated.View>
+        </Animated.View>
+      </Modal>
 
       {/* Edit Section Modal */}
       <SectionModal

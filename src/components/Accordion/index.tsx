@@ -93,7 +93,6 @@ const Accordion: FC<AccordionProps> = ({
       ]}
       className="bg-white my-1.5 rounded-[20px] border border-[#e0e0e0]"
     >
-      <View className={`absolute h-full w-2px z-1 border-l border-dashed border-[#ccc] left-4xl`}></View>
 
        {onPressMore && (
         <TouchableOpacity
@@ -107,7 +106,6 @@ const Accordion: FC<AccordionProps> = ({
         </TouchableOpacity>
       )}
 
-
       {!disabled && (
         <TouchableOpacity
           onPress={toggleFullscreenAccordion}
@@ -119,6 +117,8 @@ const Accordion: FC<AccordionProps> = ({
           </Animated.View>
         </TouchableOpacity>
       )}
+
+      <View className={`absolute h-full w-2px z-1 border-l border-dashed border-[#ccc] left-4xl`}></View>
  
       <TouchableOpacity
         onPress={disabled ? undefined : toggleAccordion}
@@ -133,7 +133,7 @@ const Accordion: FC<AccordionProps> = ({
               }
             : {},
         ]}
-        className={`flex-row justify-between items-center py-[18px] px-3 bg-[#f9f9f9] pr-[74px] ${expanded ? "pb-1" : ""}`}
+        className={`flex-row justify-between items-center z-2 my-18px px-3 bg-[#f9f9f9] pr-[74px] ${expanded ? "pb-1" : ""}`}
         activeOpacity={disabled ? 1 : 0.8}
         accessibilityRole="button"
       >
@@ -147,11 +147,12 @@ const Accordion: FC<AccordionProps> = ({
         )}
 
         {!disabled && (
-          <Animated.View style={{ transform: [{ rotate: arrowAngle }] }} className={`absolute right-3 top-5 `} >
+          <Animated.View style={{ transform: [{ rotate: arrowAngle }] }} className={`absolute right-3 `} >
             <Icon name="keyboard-arrow-down" size={iconSize} color={iconColor} />
           </Animated.View>
         )}
       </TouchableOpacity>
+
 
       {expanded && (
         <View
@@ -166,6 +167,7 @@ const Accordion: FC<AccordionProps> = ({
           {children}
         </View>
       )}
+      {/* <View className={`absolute h-full w-2px z-1 border-l border-dashed border-[#ccc] left-4xl`}></View> */}
 
       <Modal
         animationType="slide" 
@@ -173,6 +175,8 @@ const Accordion: FC<AccordionProps> = ({
         transparent={false}
         onRequestClose={() => setFullscreen(false)} 
       >
+
+
         <View style={[headerStyle, {paddingTop: insets.top}]} className="flex-row justify-between items-center py-0 px-3 bg-[#f9f9f9]">
           {typeof title === "string" ? (
             <Text style={titleStyle} className="text-xl font-semibold text-[#333]">{title}</Text>

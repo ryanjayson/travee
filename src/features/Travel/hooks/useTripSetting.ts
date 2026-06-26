@@ -45,11 +45,6 @@ export const useUpdateTripSetting = () => {
           },
         });
       }
-
-      showToast({
-        type: "success",
-        message: "Trip display settings saved!",
-      });
     },
     onError: (error) => {
       console.error("Trip Setting Mutation Error:", error);

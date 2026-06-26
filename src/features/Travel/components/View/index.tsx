@@ -649,7 +649,7 @@ const ViewTravel = ({
               </Text>
             </View>
             <View className="flex-row items-center mt-1 flex-wrap">
-              <Icon name="location-pin" size={20} color="#B42318" />
+              <Icon name="location-pin" size={20} color="#B42318"/>
               <Text className="text-md text-tertiary ml-0.5 mr-3" numberOfLines={1}>
                 {travelPlan.travel.destination || "Destination not set"}
               </Text>

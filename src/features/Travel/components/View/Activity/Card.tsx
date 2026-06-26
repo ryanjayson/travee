@@ -526,7 +526,7 @@ const ActivityItemCard = ({
                 )} 
 
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (
-                  <Text className="text-md text-[#999] leading-5 my-2" 
+                  <Text className="text-base text-tertiary leading-5 my-2" 
                     numberOfLines={2}
                     ellipsizeMode="tail">
                     {itineraryEventActivity.description} 
