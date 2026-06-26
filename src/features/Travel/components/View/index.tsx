@@ -126,6 +126,11 @@ const ViewTravel = ({
   const dragStartY = useRef(0);
 
   const translateY = useRef(new Animated.Value(SNAP_MID)).current;
+  const mapPaddingBottom = translateY.interpolate({
+    inputRange: [SNAP_MAX, SNAP_MIN],
+    outputRange: [screenHeight * 0.8, 0],
+    extrapolate: "clamp",
+  });
   const [currentSnap, setCurrentSnap] = useState(SNAP_MID);
 
   const snapTo = (toValue: number) => {
@@ -552,14 +557,14 @@ const ViewTravel = ({
   return (
     <Portal.Host>
       {/* Full-screen background interactive map */}
-      <View style={StyleSheet.absoluteFillObject} className="absolute inset-0">
+      <Animated.View style={[StyleSheet.absoluteFillObject, { paddingBottom: mapPaddingBottom }]} className="absolute inset-0">
         <MapViewer
           inline={true}
           visible={true}
           onClose={onClose}
           markers={getAllMarkers()}
           title={travelPlan.travel.title || "Trip Map"}
-          zoom={showDestinationOnlyMap ? 6 : null}
+          zoom={showDestinationOnlyMap ? 1 : null}
           destination={travelPlan.travel.destination}
           countryName={countryName}
           dateRange={
@@ -573,7 +578,7 @@ const ViewTravel = ({
           }
           doneActivities={doneActivities}
         />
-      </View>
+      </Animated.View>
 
       {/* Floating Bottom Form Sheet */}
       <Animated.View
@@ -644,12 +649,12 @@ const ViewTravel = ({
               </Text>
             </View>
             <View className="flex-row items-center mt-1 flex-wrap">
-              <Icon name="location-pin" size={14} color="#B42318" />
-              <Text className="text-xs text-gray-500 font-medium ml-0.5 mr-3" numberOfLines={1}>
+              <Icon name="location-pin" size={20} color="#B42318" />
+              <Text className="text-md text-tertiary ml-0.5 mr-3" numberOfLines={1}>
                 {travelPlan.travel.destination || "Destination not set"}
               </Text>
-              <Icon name="calendar-month" size={14} color="#858585" />
-              <Text className="text-xs text-gray-500 font-medium ml-0.5">
+              <Icon name="calendar-month" size={20} color="#858585" />
+              <Text className="text-md text-tertiary ml-0.5">
                 {travelPlan.travel.startOrDepartureDate
                   ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
                   : ""}

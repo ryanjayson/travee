@@ -149,6 +149,11 @@ const MapViewer = ({
   const webViewRef = useRef<WebView>(null);
   const captureResolveRef = useRef<((uri: string) => void) | null>(null);
   const panelAnim = useRef(new Animated.Value(0)).current;
+  const mapOpacity = useRef(new Animated.Value(0)).current;
+  const loaderOpacity = mapOpacity.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0],
+  });
 
   // ─── Image background state (must be before handlers that use it) ───────
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -668,6 +673,18 @@ const MapViewer = ({
   }, []);
 
   useEffect(() => {
+    if (mapReady) {
+      Animated.timing(mapOpacity, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      mapOpacity.setValue(0);
+    }
+  }, [mapReady, mapOpacity]);
+
+  useEffect(() => {
     Animated.timing(panelAnim, {
       toValue: settingsExpanded ? 1 : 0,
       duration: 250,
@@ -771,6 +788,7 @@ const MapViewer = ({
     if (visibleIds.size === 0 && markers?.some((m) => m.id)) return;
     imgCounter = 0;
     setWebViewLoaded(false);
+    setMapReady(false);
 
     const filtered = markers?.filter((m) => !m.id || visibleIds.has(m.id));
     buildHtml(filtered, { pinMode, pinSize, mapType, showLabels, displayMode, countryName, darkOverlay }, coordinates, zoom)
@@ -882,23 +900,36 @@ const MapViewer = ({
                 />
               )}
               {htmlUri && (
-              <WebView
-                key={renderKey}
-                ref={webViewRef}
-                source={{ uri: htmlUri }}
-                javaScriptEnabled
-                domStorageEnabled
-                allowFileAccess
-                allowFileAccessFromFileURLs
-                allowUniversalAccessFromFileURLs
-                mixedContentMode="always"
-                originWhitelist={["*"]}
-                scrollEnabled={false}
-                style={{ flex: 1 }}
-                onLoad={() => setWebViewLoaded(true)}
-                onMessage={handleMessage}
-              />
-            )}
+                <View className="flex-1 relative bg-primary">
+                  {/* Black Page + Spinner Loader */}
+                  <Animated.View 
+                    style={{ opacity: loaderOpacity }}
+                    className="absolute inset-0 items-center justify-center bg-primary"
+                    pointerEvents="none"
+                  >
+                    <ActivityIndicator size="large" color="#ffffff" />
+                  </Animated.View>
+
+                  <Animated.View style={{ flex: 1, opacity: mapOpacity }}>
+                    <WebView
+                      key={renderKey}
+                      ref={webViewRef}
+                      source={{ uri: htmlUri }}
+                      javaScriptEnabled
+                      domStorageEnabled
+                      allowFileAccess
+                      allowFileAccessFromFileURLs
+                      allowUniversalAccessFromFileURLs
+                      mixedContentMode="always"
+                      originWhitelist={["*"]}
+                      scrollEnabled={false}
+                      style={{ flex: 1, backgroundColor: "transparent" }}
+                      onLoad={() => setWebViewLoaded(true)}
+                      onMessage={handleMessage}
+                    />
+                  </Animated.View>
+                </View>
+              )}
 
               {/* Dim + freeze overlay when move-pin mode is active — claims touch responder to block WebView */}
               {movePinMode && (
