@@ -93,6 +93,7 @@ const Accordion: FC<AccordionProps> = ({
       ]}
       className="bg-white my-1.5 rounded-[20px] border border-[#e0e0e0]"
     >
+      <View className={`absolute h-full w-2px z-1 border-l border-dashed border-[#ccc] left-4xl`}></View>
 
        {onPressMore && (
         <TouchableOpacity

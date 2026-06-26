@@ -34,15 +34,11 @@ type TabsType = "primary" | "secondary" | "default";
 
 // --- Component ---
 const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlledActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus, onScroll, scrollViewRef }) => {
-  const [activeTabId, setActiveTabId] = useState(
+  const [localActiveTabId, setLocalActiveTabId] = useState(
     initialActiveTabId || tabs[0]?.id
   );
 
-  useEffect(() => {
-    if (controlledActiveTabId !== undefined) {
-      setActiveTabId(controlledActiveTabId);
-    }
-  }, [controlledActiveTabId]);
+  const activeTabId = controlledActiveTabId !== undefined ? controlledActiveTabId : localActiveTabId;
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
 
@@ -114,7 +110,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
         className={buttonClass}
         onPress={() => {
           if (tab.disabled) return;
-          setActiveTabId(tab.id);
+          setLocalActiveTabId(tab.id);
           if (onTabChange) onTabChange(tab.id);
         }}
         activeOpacity={tab.disabled ? 1 : 0.5}

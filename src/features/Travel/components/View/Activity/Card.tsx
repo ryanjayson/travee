@@ -339,7 +339,6 @@ const ActivityItemCard = ({
   };
 
   const handleViewModeActivity = (id: string) => {
-    console.log("ID", id);
     setShowActivityViewModal(true);
   };
 
@@ -421,10 +420,10 @@ const ActivityItemCard = ({
           </>
         )}
 
-        {(!isDragActive && !parentIsDragging) && viewMode === 'expanded' && (
+        {(!isDragActive && !parentIsDragging && isLastItem) && viewMode === 'expanded' && (
         <TouchableHighlight 
           underlayColor={"none"}
-          className={`absolute h-6xl w-6xl -bottom-[30px] left-lg z-9999 hidden`} //TODO: Hide this feat for now
+          className={`absolute h-6xl w-6xl -bottom-[30px] left-lg z-9999 `} //TODO: apply to last item for now
           onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
           onShowUnderlay={() => setIsAddPressed(true)}
           onHideUnderlay={() => setIsAddPressed(false)}
@@ -473,15 +472,19 @@ const ActivityItemCard = ({
                   </Text>
                 </View>
               )}
-            <View className="flex-row gap-1">
+              {itineraryEventActivity.startDate && (
+                <View className="flex-row gap-1">
+               {/* <Text className="text-xs font-bold text-[#000] ">
+                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { weekday: 'long' })}
+              </Text> */}
               <Text className="text-xs font-bold text-[#000] ">
-                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: '2-digit', month: '2-digit' })}
+                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })} |
               </Text>
               <Text className="text-xs font-semibold text-[#606060] ">
                   {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute:   '2-digit' })}
               </Text>
             </View>
-
+              )}
             
           </View>
 

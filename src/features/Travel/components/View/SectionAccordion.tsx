@@ -11,6 +11,7 @@ import { ActivityType } from "../../../../types/enums";
 import { useLexicographicSort } from "../../../../hooks/useLexicographicSort";
 import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../services/local/travelService";
 import { useToast } from "../../../../context/ToastContext";
+import { useTravelContext } from "../../../../context/TravelContext";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { useTheme } from "react-native-paper";
 import { useTripSetting, useUpdateTripSetting } from "../../hooks/useTripSetting";
@@ -152,6 +153,8 @@ const DraggableSectionItem = ({
 }: DraggableSectionItemProps) => {
   const shiftAnim = useRef(new Animated.Value(0)).current;
   const lastTargetShift = useRef(0);
+  const { openActivityModal } = useTravelContext();
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (!masterDragState.isDragging || masterDragState.dragIndex === null) {
@@ -253,7 +256,7 @@ const DraggableSectionItem = ({
             <Accordion
               onPressMore={() => onPressMore(section)}
               title={
-                <View className="flex-row align-middle items-center">
+                <View className="flex-row align-middle items-center bg-primary z-999999 px-1">
                   {allowItemReordering && (
                     <View
                       className="absolute  top-0 z-50 flex-row items-center justify-center w-[30px]"
@@ -262,7 +265,7 @@ const DraggableSectionItem = ({
                       <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
                     </View>
                   )}
-                  <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className="text-lg font-semibold text-[#333]">
+                  <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className="text-lg font-semibold text-white">
                     {isValidStartDate(section.startDate) ? (
                       <Text className="text-[#999]">
                         {`${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
@@ -288,10 +291,10 @@ const DraggableSectionItem = ({
                   : undefined
               }
             >
-              
+             
               {section.description && section.description.trim() !== "" && (
                 <View className="bg-white flex-1 px-3 z-100">
-                  <Text className="text-sm text-tertiary leading-5 p-2 pt-0">
+                  <Text className="text-sm text-secondary leading-5 p-2 pt-0 ml-4xl">
                   {section.description}
                 </Text>
                 </View>
@@ -305,31 +308,29 @@ const DraggableSectionItem = ({
                 }}
               >
             
-              <View className={`absolute h-full w-1px  border-l border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[28px]" : "left-4xl"}`}></View>
+              <View className={`absolute h-full w-1px  ${viewMode === "narrow" ? "left-[28px]" : "left-4xl"}`}></View>
                 {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                   renderActivityCards(section, section.itineraryActivity)
                 ) : (
-                  <View className=" flex-1 items-center justify-center py-4">
-                    <Text className="text-md text-[#999] text-sm text-center">
+                  <View className=" flex-1 items-center justify-center py-6">
+                    <Text className="text-md text-tertiary text-sm text-center">
                       No activities yet. Drag and drop here or tap 
                     </Text>
 
-                     <TouchableOpacity
-                              // onPress={() => {
-                              //   setModalVisible(true);
-                              //   const defaultSection = sections.find(
-                              //     (section) => section.isDefaultSection == true,
-                              //   );
-                              //   setCurrentSectionId(defaultSection?.id || null);
-                              // }}
-                             
-                              className="flex-row"
-                            >
-                                <Icon name="add" size={16} color={"#263F69"} />
-                                <Text className="font-medium text-base text-primary underline">
-                                Add activity
-                              </Text>
-                            </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => openActivityModal(null, section.id || undefined)}
+                        accessibilityRole="button"
+                        activeOpacity={0.7}
+                        className="flex-row items-center"
+                      >
+                        <Icon name="add" size={16} color={colors.primary} />
+                        <Text 
+                          style={{ color: colors.primary }}
+                          className="font-medium text-base underline"
+                        >
+                          Add activity
+                        </Text>
+                      </TouchableOpacity>
                   </View>
                 )}
               </View>
