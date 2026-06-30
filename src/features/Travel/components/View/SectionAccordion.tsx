@@ -1149,7 +1149,6 @@ const SectionAccordion = ({
               </View>
       )}
 
-
       
       </ScrollView>
 
@@ -1159,7 +1158,7 @@ const SectionAccordion = ({
         style={{
           zIndex: 999999,
           position: "absolute",
-          top: -54,
+          top: -64,
           right: 10,
         }}
       >
@@ -1175,7 +1174,7 @@ const SectionAccordion = ({
             justifyContent: "center",
           }}
         >
-          <MaterialIcons name="settings" size={24} color={colors.primary} />
+          <MaterialIcons name="settings" size={28} color={colors.primary} />
         </TouchableOpacity>
       </Animated.View>
 

@@ -101,8 +101,8 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
             ? "bg-gray-50 border border-gray-300 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center opacity-30"
             : "bg-white border border-[#E0E0E0] rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center");
       textClass = isActive
-        ? (isOngoingWithActiveTrip ? "text-success-500 font-semibold text-sm" : "text-primary font-semibold text-sm")
-        : (tab.disabled ? "text-gray-800 font-medium text-sm" : "text-gray-600 font-medium text-sm");
+        ? (isOngoingWithActiveTrip ? "text-success-500 font-semibold text-base" : "text-primary font-semibold text-base")
+        : (tab.disabled ? "text-gray-800 font-medium text-base" : "text-gray-600 font-medium text-base");
     }
 
     return (

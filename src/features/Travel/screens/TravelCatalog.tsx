@@ -18,7 +18,7 @@ import { TravelStatus, TripType } from "../../../types/enums";
 import ViewTravelModal from "../components/View/Modal";
 import { useTravels } from "../hooks/useTravel";
 import { Travel } from "../types/TravelDto";
-import TripIcon from "../../../components/TripIcon";
+import TripIcon, { tripIcons } from "../../../components/TripIcon";
 // import TravelDetailPage from "./TravelDetail";
 
 const TravelCatalog = () => {
@@ -93,35 +93,34 @@ const TravelCatalog = () => {
       ? `${formatDate(travel.startOrDepartureDate)} - ${formatDate(travel.endOrReturnDate)}`
       : travel.startOrDepartureDate ? formatDate(travel.startOrDepartureDate) : "Dates not set";
 
+    const tripIconConfig = travel.type != null ? tripIcons.find((i) => i.tripType === travel.type) : null;
+    const assignedColor = tripIconConfig ? tripIconConfig.color : "#9E9E9E";
+
     return (
-      <View key={travel.id} className="bg-white rounded-3xl mb-2 shadow-sm shadow-black/10 elevation-1 mx-4 overflow-hidden">
+      <View key={travel.id} className="bg-white rounded-xl mb-2 shadow-sm  mx-4 overflow-hidden">
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
-          <View className="p-4 border border-[#E0E0E0] rounded-3xl">
+          <View className="p-4 border border-[#E0E0E0] rounded-xl">
             <View className="flex-row justify-between items-start mb-3">
               <View className="flex-row items-center gap-3 flex-1 mr-2">
-             
+                 {travel.type != null && travel.type !== TripType.none && (
+                  <View 
+                    style={{ backgroundColor: assignedColor + '20' }}
+                    className="w-16 h-16 rounded-full justify-center items-center"
+                  >
+                    <TripIcon type={travel.type} size={24} showIconOnly={true} />
+                  </View>
+                )}
                 <View className="flex-1">
-                  <Text className="text-lg font-medium ">{travel.title}</Text>
-                  <Text className="text-base  text-[#999]">{travel.destination}</Text>
+                  <Text className="text-base font-medium ">{travel.title}</Text>
+                  <Text className="text-base  text-[#999]">{travel.destination || "--"}</Text>
+                   <Text className="text-sm mt-2 text-[#999]">
+                    {dateRange}  {duration ? `| ${duration}` : ""}
+              </Text>
                 </View>
               </View>
               <View className="flex-row items-center justify-between mt-2">
                 <StatusBadge status={effectiveStatus} />
               </View>
-            </View>
-            <View className="flex-row items-center mt-1">
-               
-              <Text className="text-base font-medium text-[#999]">
-                {dateRange} | {duration ? `${duration}` : ""}
-              </Text>
-
-              {travel.type != null && travel.type !== TripType.none && (
-                <TripIcon type={travel.type} size={20} showIconOnly={true} />
-                )}
-
-                  <Text className="text-base font-medium text-[#999]">
-                {travel.type}
-                </Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -145,13 +144,15 @@ const TravelCatalog = () => {
         }
       >
         {data && data.length === 1 && data[0].status === TravelStatus.Ongoing ?(
-          <View key={data[0].id} className="rounded-xl mb-2 bg-success-50 shadow-sm shadow-black/10 elevation-1 mx-4 overflow-hidden">
+          <View key={data[0].id} className="rounded-3xl mb-2 bg-white shadow-sm shadow-black/10 elevation-xl mx-4 overflow-hidden">
             <TouchableOpacity onPress={() => handleViewModeTravel(data[0])}>
-              <View className="p-4 border border-success-500 rounded-xl">
+              <View className="p-6 border border-success-500/50 rounded-3xl">
                 <View className="flex-row justify-between items-start mb-3">
                   <View className="flex-1">
-                    <Text className="text-lg font-medium text-primary">{data[0].title}</Text>
-                    <Text className="text-sm  text-[#666]">{data[0].destination}</Text>
+                    <Text className="text-3xl font-medium">{data[0].title}</Text>
+                    <Text className="text-base  text-tertiary">Travelling to {data[0].destination}</Text>
+                    <Text className="text-base  text-tertiary">Until {data[0].endOrReturnDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                    <Text className="text-base  mt-4 text-tertiary">{data[0].description}</Text>
                   </View>
                 </View>
               </View>

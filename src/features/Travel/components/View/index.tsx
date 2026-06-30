@@ -648,16 +648,16 @@ const ViewTravel = ({
             <View className="flex-row items-center mt-1 flex-wrap">
               <Icon name="location-pin" size={20} color="#B42318"/>
               <Text className="text-md text-tertiary ml-0.5 mr-3" numberOfLines={1}>
-                {travelPlan.travel.destination || "Destination not set"}
+                {travelPlan.travel.destination || "- -"}
               </Text>
               <Icon name="calendar-month" size={20} color="#858585" />
               <Text className="text-md text-tertiary ml-0.5">
                 {travelPlan.travel.startOrDepartureDate
                   ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                  : ""}
-                - {travelPlan.travel.endOrReturnDate
-                  ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                  : ""}
+                  : "- "}
+                 {travelPlan.travel.endOrReturnDate
+                  ? " - " + new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+                  : "-"}
               </Text>
             </View>
           </Animated.View>
@@ -676,7 +676,7 @@ const ViewTravel = ({
             type="default" 
             onTabChange={setActiveTabId} 
             expanded={true}
-            wrapperStyle="bg-white border-b border-gray-200 pb-2"
+            wrapperStyle="bg-white border-b border-gray-200 pb-4"
           />
         </Animated.View>
       </Animated.View>

@@ -225,7 +225,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
             transparent={false} 
             animationType="none"
             onRequestClose={() => setShowItineraryTab(false)}>
-              <View className="flex-row justify-between items-center p-5 border-b border-gray-200 pt-12">
+              <View className="flex-row justify-between items-center px-5 py-2 border-b border-gray-200 pt-14">
                   <View className="flex-col flex-1 ">
                       <Text className="text-sm text-gray-400 font-medium">
                         {travelPlan.travel.title}
@@ -234,9 +234,9 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
                         Itinerary
                       </Text>
                   </View>
-                    <TouchableOpacity onPress={() => setPlainMode(p => !p)} >
+                    {/* <TouchableOpacity onPress={() => setPlainMode(p => !p)} >
                       <Icon name={plainMode ? "format-list-bulleted" : "list"} size={32} color={plainMode ? "#263F69" : "#333"} />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                   <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
                       <Icon name="clear" size={36} color={"#333"} />
                   </TouchableOpacity>
