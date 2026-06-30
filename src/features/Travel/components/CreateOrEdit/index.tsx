@@ -422,52 +422,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           />
         </View>
 
-        <View className="mb-5">
-          <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Trip Type</Text>
-            <Text className={`text-base text-gray-500`}>
-              Trip type helps organize activities and recommendations.
-          </Text>
-          <TouchableOpacity 
-            onPress={() => setShowTripTypeModal(true)}
-            className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
-            accessibilityRole="button"
-            activeOpacity={0.7}
-          >
-            {formik.values.type != null && formik.values.type !== TripType.none ? (
-              <TripIcon type={formik.values.type} size={24} showIconOnly={true} />
-            ) : (
-              <Icon name="style" size={24} color={"#B3B3B3"} />
-            )}
-              {formik.values.type != null && formik.values.type !== TripType.none
-                ? (
-                   <Text className="text-md text-[#000000] capitalize"> 
-                    {String(TripType[formik.values.type]).replace(/([A-Z])/g, ' $1').trim()}
-                  </Text>
-                )
-               : (
-                <Text className="text-md text-[#98A2B3]"> 
-                    Select travel purpose
-                </Text>
-               )}
-          </TouchableOpacity>
-        </View>
 
-        <TripTypeLookupModal
-          visible={showTripTypeModal}
-          onClose={() => setShowTripTypeModal(false)}
-          selectedType={formik.values.type}
-          onSelect={(type) => {
-            formik.setFieldValue("type", type);
-          }}
-        />
-
-        {/* {mode === "edit" && (
-          <View className="mb-5 z-10">
-            <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
-          </View>
-        )} */}
-
-        <View className="">
+        <View className="mb-3">
           <Text className="text-xs font-semibold tracking-wider uppercase">Travel dates</Text>
           <View className="flex-row mb-2 gap-1 -mt-3px items-center">
             <View className="flex-1">
@@ -571,6 +527,52 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             </View>
           </View>
         </View>
+
+
+        <View className="mb-5">
+          <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Trip Type</Text>
+            <Text className={`text-base text-gray-500`}>
+              Trip type helps organize activities and recommendations.
+          </Text>
+          <TouchableOpacity 
+            onPress={() => setShowTripTypeModal(true)}
+            className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
+            accessibilityRole="button"
+            activeOpacity={0.7}
+          >
+            {formik.values.type != null && formik.values.type !== TripType.none ? (
+              <TripIcon type={formik.values.type} size={24} showIconOnly={true} />
+            ) : (
+              <Icon name="style" size={24} color={"#B3B3B3"} />
+            )}
+              {formik.values.type != null && formik.values.type !== TripType.none
+                ? (
+                   <Text className="text-md text-[#000000] capitalize"> 
+                    {String(TripType[formik.values.type]).replace(/([A-Z])/g, ' $1').trim()}
+                  </Text>
+                )
+               : (
+                <Text className="text-md text-[#98A2B3]"> 
+                    Select travel purpose
+                </Text>
+               )}
+          </TouchableOpacity>
+        </View>
+
+        <TripTypeLookupModal
+          visible={showTripTypeModal}
+          onClose={() => setShowTripTypeModal(false)}
+          selectedType={formik.values.type}
+          onSelect={(type) => {
+            formik.setFieldValue("type", type);
+          }}
+        />
+
+        {/* {mode === "edit" && (
+          <View className="mb-5 z-10">
+            <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
+          </View>
+        )} */}
 
         {!tripData && (
           <View className="flex-row items-start mb-6 mr-5">

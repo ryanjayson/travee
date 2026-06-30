@@ -32,6 +32,7 @@ interface AccordionProps extends PropsWithChildren {
   iconSize?: number;
   disabled?: boolean;
   onPressMore?: () => void;
+  viewMode?: "plain" | "narrow" | "expanded";
 }
 
 const Accordion: FC<AccordionProps> = ({
@@ -47,6 +48,7 @@ const Accordion: FC<AccordionProps> = ({
   iconSize = 24,
   disabled = false,
   onPressMore,
+  viewMode,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
@@ -118,7 +120,6 @@ const Accordion: FC<AccordionProps> = ({
         </TouchableOpacity>
       )}
 
-      <View className={`absolute h-full w-2px z-1 border-l border-dashed border-[#ccc] left-4xl`}></View>
  
       <TouchableOpacity
         onPress={disabled ? undefined : toggleAccordion}
@@ -153,6 +154,7 @@ const Accordion: FC<AccordionProps> = ({
         )}
       </TouchableOpacity>
 
+      <View className={`absolute h-full w-2px z-1 border-l-2 border-dashed border-[#ccc] ${viewMode === 'narrow' ? 'left-[28px]' : 'left-4xl'}`}></View>
 
       {expanded && (
         <View

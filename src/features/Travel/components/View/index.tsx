@@ -669,14 +669,14 @@ const ViewTravel = ({
 
         {/* Tabbed Content */}
         <Animated.View 
-          className="flex-1 bg-gray-100"
+          className="flex-1 bg-gray-100 mb-4 "
           style={{ paddingBottom: translateY }}
         >
           <Tabs 
             tabs={tabData} 
             initialActiveTabId="details" 
             activeTabId={activeTabId}
-            type="secondary" 
+            type="default" 
             onTabChange={setActiveTabId} 
             expanded={true}
           />

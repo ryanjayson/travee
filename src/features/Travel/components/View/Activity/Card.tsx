@@ -370,7 +370,7 @@ const ActivityItemCard = ({
       }}
     >
 
-      <View className={`px-2 flex-row justify-between items-center relative `}>
+      <View className={`px-2 flex-row justify-between items-center relative  `}>
         {!isDragActive && (
           <>
             {/* {isLastItem ? (
@@ -409,7 +409,7 @@ const ActivityItemCard = ({
               }}
               accessibilityRole="button"
               accessibilityLabel="Drag activity"
-              className="z-10 items-center justify-center bg-gray-100 border-3 border-gray-100 rounded-full "
+              className="z-999 items-center justify-center bg-gray-200 border-3 border-gray-100 rounded-full "
             >
               <ActivityIcon
                 type={itineraryEventActivity.type!}
@@ -627,7 +627,7 @@ const ActivityItemCard = ({
               
                 {itineraryEventActivity.isDone ? 
                     (<Icon name="check" size={24} color="#0c6134" />)
-                    : (<Icon name="check-box-outline-blank" size={24} color="#999" />)}
+                    : (<Icon name="check-box-outline-blank" size={24} color="#D0D5DD" />)}
             </TouchableOpacity>
         </View>
        

@@ -254,6 +254,7 @@ const DraggableSectionItem = ({
             )}
 
             <Accordion
+              viewMode={viewMode}
               onPressMore={() => onPressMore(section)}
               title={
                 <View className="flex-row align-middle items-center ">
@@ -270,7 +271,7 @@ const DraggableSectionItem = ({
                       {section?.title}
                       {isValidStartDate(section.startDate) ? (
                         <Text className="text-white/70 font-semibold text-sm">
-                          {` ${new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })} `}
+                          {` ${new Date(section.startDate).toLocaleDateString('en-US', { weekday: 'short', day: '2-digit' })} `}
                         </Text>
                       ) : null}
                     </Text>
@@ -296,14 +297,16 @@ const DraggableSectionItem = ({
              
               {section.description && section.description.trim() !== "" && (
                 <View className="bg-white flex-1 px-3 z-100">
-                  <Text className="text-base text-tertiary leading-5 px-2 ml-3xl">
+                  <Text className="text-base text-tertiary leading-5 px-2 ml-6xl pb-2">
                   {section.description}
                 </Text>
                 </View>
               )}
 
+
               <View
-                style={{ backgroundColor: "#FFF", paddingBottom: 20, paddingEnd: 5}}
+                style={{ backgroundColor: "#FFF", paddingBottom: 20, paddingEnd: 5, }}
+                // className={` ${viewMode === "narrow" ? "px-4" : ""}`}
                 collapsable={false}
                 ref={(ref) => {
                   if (ref && section.id) sectionRefs.current[section.id] = ref;
@@ -314,14 +317,14 @@ const DraggableSectionItem = ({
                 {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                   renderActivityCards(section, section.itineraryActivity)
                 ) : (
-                  <View className=" flex-1 items-center justify-center py-8">
+                  <View className=" flex-1 items-center justify-center py-8 ml-6xl">
                     <Text className="text-lg text-tertiary/50 text-center">
                       No activities yet.
                     </Text>
                     <View className="text-center tracking-wide flex-row align-center gap-1">
                    
-                    <Text className="text-md text-tertiary/50 text-sm ">
-                      Drag and drop here or tap 
+                    <Text className="text-md text-tertiary/50 text-base">
+                      {allowItemReordering ? "Drag and drop here or tap " : "Add now by tapping"}
                     </Text>
                        <TouchableOpacity
                         onPress={() => openActivityModal(null, section.id || undefined)}
@@ -994,7 +997,7 @@ const SectionAccordion = ({
                   >
                     {section.itineraryActivity &&
                       renderActivityCards(section, section.itineraryActivity)}
-                    <View className={`absolute  h-full w-1px ${viewMode === 'narrow' ? 'left-[29px] top-5xl' : 'left-4xl top-8xl'} z-0 border-l border-dashed border-[#ccc]`}></View>
+                    <View className={`absolute  h-full w-1px ${viewMode === 'narrow' ? 'left-[29px] top-5xl' : 'left-4xl top-8xl'} z-0 border-l-2 border-dashed border-[#ccc]`}></View>
            
                   </View>
                 );
@@ -1035,7 +1038,7 @@ const SectionAccordion = ({
                 const subSectionsLength = subSections.length;
                 return (
                   <View key={section.id}>
-                    <View className={`absolute top-5xl h-full w-1px  z-0 border-l border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[29px]" : "left-[33px]"}`}></View>
+                    <View className={`absolute top-5xl h-full w-1px  z-0 border-l-2 border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[29px]" : "left-[33px]"}`}></View>
 
                   <DraggableSectionItem
                     key={section.id}
