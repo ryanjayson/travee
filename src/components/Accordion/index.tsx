@@ -154,7 +154,7 @@ const Accordion: FC<AccordionProps> = ({
         )}
       </TouchableOpacity>
 
-      <View className={`absolute h-full w-2px z-1 border-l-2 border-dashed border-[#ccc] ${viewMode === 'narrow' ? 'left-[28px]' : 'left-4xl'}`}></View>
+      <View className={`absolute h-full w-2px z-1 border-l-2 border-dashed border-[#ccc] ${viewMode === 'narrow' ? 'left-[52px]' : 'left-[57px]'}`}></View>
 
       {expanded && (
         <View

@@ -369,8 +369,14 @@ const ActivityItemCard = ({
         }
       }}
     >
+  
 
-      <View className={`px-2 flex-row justify-between items-center relative  `}>
+    <Text className="text-xs font-bold text-tertiary absolute px-2">
+        {itineraryEventActivity.startDate ? new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' }) : 
+       null}
+    </Text>
+
+      <View className={`px-2 flex-row justify-between items-center relative pl-4xl  `}>
         {!isDragActive && (
           <>
             {/* {isLastItem ? (
@@ -472,20 +478,23 @@ const ActivityItemCard = ({
                   </Text>
                 </View>
               )}
-              {itineraryEventActivity.startDate && (
+              {itineraryEventActivity.startDate ? (
                 <View className="flex-row gap-1">
-               {/* <Text className="text-xs font-bold text-[#000] ">
-                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { weekday: 'long' })}
-              </Text> */}
-              <Text className="text-xs font-bold text-[#000] ">
-                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })} |
-              </Text>
-              <Text className="text-xs font-semibold text-[#606060] ">
-                  {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute:   '2-digit' })}
-              </Text>
-            </View>
+                  {/* <Text className="text-xs font-bold text-[#000] ">
+                      {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { weekday: 'long' })}
+                  </Text> 
+                  <Text className="text-xs font-bold text-[#000] ">
+                      {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })} |
+                  </Text>*/}
+                  <Text className="text-xs font-semibold text-[#606060] ">
+                      {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute:   '2-digit' })}
+                  </Text>
+                </View>
+              ) : (
+                <Text className="text-xs font-semibold text-tertiary/50 ">
+                  Date not set
+                </Text>
               )}
-            
           </View>
 
 
