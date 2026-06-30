@@ -27,6 +27,7 @@ interface ItineraryActivityProps {
   isLastItem?: boolean;
   plainMode?: boolean;
   viewMode?: "plain" | "narrow" | "expanded";
+  showDateText?: boolean;
   // Drag-to-reorder props
   index?: number;
   listLength?: number;
@@ -47,6 +48,7 @@ const ActivityItemCard = ({
   isLastItem,
   plainMode,
   viewMode,
+  showDateText = true,
   index = 0,
   listLength = 0,
   onDragStart,
@@ -371,10 +373,11 @@ const ActivityItemCard = ({
     >
   
 
-    <Text className="text-xs font-bold text-tertiary absolute px-2">
-        {itineraryEventActivity.startDate ? new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' }) : 
-       null}
-    </Text>
+    {showDateText && itineraryEventActivity.startDate ? (
+      <Text className="text-sm font-bold text-tertiary absolute px-2">
+        {new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })}
+      </Text>
+    ) : null}
 
       <View className={`px-2 flex-row justify-between items-center relative pl-4xl  `}>
         {!isDragActive && (
@@ -437,7 +440,7 @@ const ActivityItemCard = ({
             accessibilityLabel="Add activity"
           >
             <View
-                className={`${isAddPressed ? 'border-[#183B7A] bg-[#183B7A] rounded-full' : 'border-gray-300 rounded-md '} left-1px absolute m-2 mt-2xl border px-1px z-9999`}
+                className={`${isAddPressed ? 'border-[#183B7A] bg-[#183B7A] rounded-full' : 'border-gray-300 rounded-md '} left-[28px] absolute m-2 mt-2xl border px-1px z-9999`}
             >
             <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`}/>
             </View>

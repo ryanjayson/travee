@@ -28,12 +28,13 @@ interface TabsProps {
   hasActionTripStatus?: boolean;
   onScroll?: (event: any) => void;
   scrollViewRef?: React.RefObject<ScrollView>;
+  wrapperStyle?: string;
 }
 
 type TabsType = "primary" | "secondary" | "default";
 
 // --- Component ---
-const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlledActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus, onScroll, scrollViewRef }) => {
+const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlledActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus, onScroll, scrollViewRef, wrapperStyle }) => {
   const [localActiveTabId, setLocalActiveTabId] = useState(
     initialActiveTabId || tabs[0]?.id
   );
@@ -148,20 +149,24 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
     );
   };
 
-  let wrapperStyle = "bg-white border-gray-100";
+  let finalWrapperStyle = "bg-white border-gray-100";
 
   if (type === "secondary") {
-    wrapperStyle = "bg-white border-b border-gray-100";
+    finalWrapperStyle = "bg-white border-b border-gray-100";
   } else if (type === "default") {
-    // wrapperStyle = "";
+    finalWrapperStyle = "";
   } else { // "primary"
-    wrapperStyle = "bg-white border-b border-gray-100";
+    finalWrapperStyle = "bg-white border-b border-gray-100";
+  }
+
+  if (wrapperStyle) {
+    finalWrapperStyle = wrapperStyle;
   }
 
   return (
     <View className={expanded ? "flex-1" : ""}>
       {/* Tab Header */}
-      <View className={wrapperStyle}>
+      <View className={finalWrapperStyle}>
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}

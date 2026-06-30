@@ -872,6 +872,16 @@ const SectionAccordion = ({
       const isFirstEvent = index === 0;
       const isLastEvent = array.length - 1 === index;
 
+      // Only show the date text for the first activity of that day in this section
+      let showDateText = false;
+      if (eventActivity.startDate) {
+        const currentDateString = new Date(eventActivity.startDate).toDateString();
+        const hasDateAppearedBefore = array.slice(0, index).some((act) => 
+          act.startDate && new Date(act.startDate).toDateString() === currentDateString
+        );
+        showDateText = !hasDateAppearedBefore;
+      }
+
       return (
         <View
           key={eventActivity.id || index}
@@ -907,6 +917,7 @@ const SectionAccordion = ({
             isLastItem={isLastEvent}
             plainMode={viewMode === "plain"}
             viewMode={viewMode}
+            showDateText={showDateText}
             index={index}
             listLength={array.length}
             onDragStart={allowItemReordering ? (idx: number, h: number) =>
@@ -1132,7 +1143,7 @@ const SectionAccordion = ({
                     }
                   })}
 
-                <View className={`flex-1 p-2 mt-2xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-lg" : " ml-xl"}`}>
+                <View className={`flex-1 p-2 mt-2xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-[35px]" : " ml-42px"}`}>
                     <Ionicons name="flag" size={20} color="#F97066" />
                 </View>
               </View>
@@ -1148,7 +1159,7 @@ const SectionAccordion = ({
         style={{
           zIndex: 999999,
           position: "absolute",
-          top: -46,
+          top: -54,
           right: 10,
         }}
       >

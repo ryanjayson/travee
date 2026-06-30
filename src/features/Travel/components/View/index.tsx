@@ -622,9 +622,6 @@ const ViewTravel = ({
           />
         </Animated.View>
 
-
-
-          
         {/* Trip Title & Summary */}
         <View className="px-6 pb-4 bg-white flex-row justify-between items-start relative">
 
@@ -679,6 +676,7 @@ const ViewTravel = ({
             type="default" 
             onTabChange={setActiveTabId} 
             expanded={true}
+            wrapperStyle="bg-white border-b border-gray-200 pb-2"
           />
         </Animated.View>
       </Animated.View>
