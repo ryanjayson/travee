@@ -9,19 +9,19 @@ import { TravelStatus } from "../../types/enums";
 export const getStatusConfig = (status: TravelStatus) => {
   switch (status) {
     case TravelStatus.Draft:
-      return { label: "Draft", bg: "bg-[#E0E0E0]", text: "text-[#666]" };
+      return { label: "Draft", bg: "bg-[#E0E0E0]", text: "text-[#666]", border: "border-[#666]/50" };
     case TravelStatus.Upcoming:
-      return { label: "Upcoming", bg: "bg-[#B9E6FE]/40", text: "text-[#263F69]" };
+      return { label: "Upcoming", bg: "bg-[#B9E6FE]/40", text: "text-[#263F69]", border: "border-[#263F69]/20" };
     case TravelStatus.Ongoing:
-      return { label: "Ongoing", bg: "bg-success-100", text: "text-success-600" };
+      return { label: "Ongoing", bg: "bg-success-100", text: "text-success-600", border: "border-success-600" };
     case TravelStatus.Past:
-      return { label: "Past", bg: "bg-[#fab00f]", text: "text-[#FFFFFF]" };
+      return { label: "Past", bg: "bg-[#fab00f]/80", text: "text-[#FFFFFF]", border: "border-[#f0a505]" };
     case TravelStatus.Archieved:
-      return { label: "Archived", bg: "bg-[#FFEBEE]", text: "text-[#D32F2F]" };
+      return { label: "Archived", bg: "bg-[#FFEBEE]", text: "text-[#D32F2F]", border: "border-[#D32F2F]/30" };
     case TravelStatus.Cancelled:
-      return { label: "Cancelled", bg: "bg-[#FFEBEE]", text: "text-[#D32F2F]" };
+      return { label: "Cancelled", bg: "bg-[#FFEBEE]", text: "text-[#D32F2F]", border: "border-[#D32F2F]/30" };
     default:
-      return { label: "Unknown", bg: "bg-[#E0E0E0]", text: "text-[#666]" };
+      return { label: "Unknown", bg: "bg-[#E0E0E0]", text: "text-[#666]", border: "border-[#666]" };
   }
 };
 
@@ -37,7 +37,7 @@ type StatusTagProps = {
  * Displays a styled tag based on the provided TravelStatus.
  */
 const StatusBadge = ({ status, containerClassName = "", textClassName = "" }: StatusTagProps) => {
-  const { label, bg, text } = getStatusConfig(status);
+  const { label, bg, text, border } = getStatusConfig(status);
   
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -63,7 +63,7 @@ const StatusBadge = ({ status, containerClassName = "", textClassName = "" }: St
   }, [status]);
 
   return (
-    <View className={`px-3 py-2 rounded-full ${bg} ${containerClassName} flex-row items-center gap-1.5`}>
+    <View className={`px-3 py-1 min-w-20 rounded-full ${bg} ${containerClassName} flex-row items-center justify-center gap-1.5 border ${border} `}>
       {status === TravelStatus.Ongoing && (
         <Animated.View 
           style={{ opacity: pulseAnim }}

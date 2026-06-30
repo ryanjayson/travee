@@ -14,10 +14,11 @@ import StatusBadge from "../../../components/StatusBadge";
 import Tabs from "../../../components/Tabs/index";
 import { useTravelContext } from "../../../context/TravelContext";
 import { TravelPlanDetail } from "../../../types/context/travel";
-import { TravelStatus } from "../../../types/enums";
+import { TravelStatus, TripType } from "../../../types/enums";
 import ViewTravelModal from "../components/View/Modal";
 import { useTravels } from "../hooks/useTravel";
 import { Travel } from "../types/TravelDto";
+import TripIcon from "../../../components/TripIcon";
 // import TravelDetailPage from "./TravelDetail";
 
 const TravelCatalog = () => {
@@ -93,17 +94,15 @@ const TravelCatalog = () => {
       : travel.startOrDepartureDate ? formatDate(travel.startOrDepartureDate) : "Dates not set";
 
     return (
-      <View key={travel.id} className="bg-white rounded-xl mb-2 shadow-sm shadow-black/10 elevation-1 mx-4 overflow-hidden">
+      <View key={travel.id} className="bg-white rounded-3xl mb-2 shadow-sm shadow-black/10 elevation-1 mx-4 overflow-hidden">
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
-          <View className="p-4 border border-[#E0E0E0] rounded-xl">
+          <View className="p-4 border border-[#E0E0E0] rounded-3xl">
             <View className="flex-row justify-between items-start mb-3">
               <View className="flex-row items-center gap-3 flex-1 mr-2">
-                {/* {travel.type != null && travel.type !== TripType.none && (
-                  <TripIcon type={travel.type} size={20} showIconOnly={true} />
-                )} */}
+             
                 <View className="flex-1">
                   <Text className="text-lg font-medium ">{travel.title}</Text>
-                  <Text className="text-sm  text-[#666]">{travel.destination}</Text>
+                  <Text className="text-base  text-[#999]">{travel.destination}</Text>
                 </View>
               </View>
               <View className="flex-row items-center justify-between mt-2">
@@ -111,9 +110,18 @@ const TravelCatalog = () => {
               </View>
             </View>
             <View className="flex-row items-center mt-1">
-              <Text className="text-xs font-medium text-[#999]">
-                {duration ? `${duration} | ` : ""}{dateRange}
+               
+              <Text className="text-base font-medium text-[#999]">
+                {dateRange} | {duration ? `${duration}` : ""}
               </Text>
+
+              {travel.type != null && travel.type !== TripType.none && (
+                <TripIcon type={travel.type} size={20} showIconOnly={true} />
+                )}
+
+                  <Text className="text-base font-medium text-[#999]">
+                {travel.type}
+                </Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -126,7 +134,7 @@ const TravelCatalog = () => {
     return (
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100, paddingTop: 10, flexGrow: 1 }}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: 10, flexGrow: 1}}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -158,7 +166,7 @@ const TravelCatalog = () => {
             <Text className="text-2xl text-tertiary mb-1">
               {emptyTitle}
             </Text>
-            <Text className="text-base text-tertiary text-center px-10">
+            <Text className="text-base text-tertiary text-center px-10 tracking-wide">
               {emptySubtitle}
             </Text>
 
@@ -329,7 +337,7 @@ const TravelCatalog = () => {
     {
       id: "ongoing",
       title: `Ongoing (${getTravelsByStatus(TravelStatus.Ongoing).length})`,
-      content: renderContentForStatus(TravelStatus.Ongoing, "🌍", "No Ongoing Trip", "Your active travels will appear here!"),
+      content: renderContentForStatus(TravelStatus.Ongoing, "🌍", "No Ongoing Trip", "Your active trips will appear here!"),
     },
     {
       id: "upcoming",
@@ -349,17 +357,17 @@ const TravelCatalog = () => {
     {
       id: "archived",
       title: `Archived (${getTravelsByStatus(TravelStatus.Archieved).length})`,
-      content: renderContentForStatus(TravelStatus.Archieved, "𓄲ꗃ", "No Archived Trips", "Your archived travels will appear here"),
+      content: renderContentForStatus(TravelStatus.Archieved, "𓄲ꗃ", "No Archived Trips", "Your archived trips will appear here"),
     },
     {
       id: "cancelled",
       title: `Cancelled (${getTravelsByStatus(TravelStatus.Cancelled).length})`,
-      content: renderContentForStatus(TravelStatus.Cancelled, "✖", "No Cancelled Trips", "Your cancelled travels will appear here"),
+      content: renderContentForStatus(TravelStatus.Cancelled, "✖", "No Cancelled Trips", "Your cancelled trips will appear here"),
     },
   ];
 
   const renderListView = () => (
-    <View className="py-2 flex-1">
+    <View className="py-2 flex-1 bg-gray-100">
       <Tabs tabs={listTabsData} type="default" expanded={true} hasActionTripStatus={getTravelsByStatus(TravelStatus.Ongoing).length > 0}/>
     </View>
   );
@@ -413,7 +421,7 @@ const TravelCatalog = () => {
             </TouchableOpacity>
           </View>
         ) : (
-          <Tabs tabs={viewTabsData} expanded={true} />
+            <Tabs tabs={viewTabsData} expanded={true} wrapperStyle="pb-2"/>
         )}
       </View>
 
