@@ -301,7 +301,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       {ongoingTrip && (
       <View className="m-xl flex-1 bg-white rounded-xl">
 
-        <Text className="text-sm font-medium px-lg pt-lg">Quick Actions</Text>
+        <Text className="text-lg font-semibold px-lg pt-lg">Quick Actions</Text>
         <View className="flex-row items-center justify-between py-3 z-40 px-4xl">
 
         <View className="items-center">

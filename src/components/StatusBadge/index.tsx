@@ -11,11 +11,11 @@ export const getStatusConfig = (status: TravelStatus) => {
     case TravelStatus.Draft:
       return { label: "Draft", bg: "bg-[#E0E0E0]", text: "text-[#666]" };
     case TravelStatus.Upcoming:
-      return { label: "Upcoming", bg: "bg-[#B9E6FE]", text: "text-[#263F69]" };
+      return { label: "Upcoming", bg: "bg-[#B9E6FE]/40", text: "text-[#263F69]" };
     case TravelStatus.Ongoing:
       return { label: "Ongoing", bg: "bg-success-100", text: "text-success-600" };
     case TravelStatus.Past:
-      return { label: "Past", bg: "bg-[#E8F5E8]", text: "text-[#2E7D32]" };
+      return { label: "Past", bg: "bg-[#fab00f]", text: "text-[#FFFFFF]" };
     case TravelStatus.Archieved:
       return { label: "Archived", bg: "bg-[#FFEBEE]", text: "text-[#D32F2F]" };
     case TravelStatus.Cancelled:
