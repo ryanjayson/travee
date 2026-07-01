@@ -291,11 +291,11 @@ const ActivityItemCard = ({
     onDragStart?.(index, cardHeight);
   };
 
-  const dragAnimatedStyle = {
+  const animatedCardStyle = {
     transform: [
       { translateY: shiftAnim },
-      ...pan.getTranslateTransform(),
-      { scale: scaleAnim },
+      ...(dragEnabled ? pan.getTranslateTransform() : []),
+      ...(dragEnabled ? [{ scale: scaleAnim }] : []),
     ] as any,
     zIndex: isDragActive ? 9999 : 1,
     elevation: isDragActive ? 10 : 1,
@@ -360,7 +360,7 @@ const ActivityItemCard = ({
   return (
     <Animated.View
       style={[
-        dragEnabled ? dragAnimatedStyle : undefined,
+        animatedCardStyle,
         viewMode === 'expanded' ? { paddingBottom: 16 } : undefined
       ]}
       {...(dragEnabled ? panResponder.panHandlers : {})}

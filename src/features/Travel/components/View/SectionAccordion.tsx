@@ -699,6 +699,9 @@ const SectionAccordion = ({
     let targetIndex = 0;
     const scrollDelta = scrollOffset.current - initialScrollY.current;
 
+    // Determine current card height dynamically based on viewMode
+    const currentCardHeight = viewMode === "narrow" ? 75 : (viewMode === "expanded" ? 165 : 110);
+
     let foundIntersection = false;
     for (const [idStr, bounds] of Object.entries(sectionBounds.current) as [string, { pageY: number; height: number }][]) {
       const id = idStr;
@@ -708,10 +711,38 @@ const SectionAccordion = ({
       if (moveY >= shiftedTop - 40 && moveY <= shiftedBottom + 40) {
         targetSectionId = id;
         const relY = moveY - shiftedTop;
-        const newTargetIndex = Math.max(0, Math.floor(relY / 110));
 
         const targetSection = sectionsRef.current?.find(s => s.id === id);
         const targetLen = targetSection?.itineraryActivity?.length || 0;
+
+        const dragIndex = sectionDragStateRef.current?.dragIndex ?? 0;
+        const isDraggingThisSection = sectionDragStateRef.current?.sectionId === id;
+
+        let newTargetIndex = 0;
+        if (isDraggingThisSection) {
+          // Dragging within the same section:
+          // Check midpoint of each card.
+          // Dragging DOWN relative to card i: swap to i when relY >= midpoint of i.
+          // Dragging UP relative to card i: swap to i when relY <= midpoint of i.
+          newTargetIndex = dragIndex;
+          for (let i = 0; i < targetLen; i++) {
+            const midpoint = i * currentCardHeight + currentCardHeight / 2;
+            if (i > dragIndex) {
+              if (relY >= midpoint) {
+                newTargetIndex = i;
+              }
+            } else if (i < dragIndex) {
+              if (relY <= midpoint) {
+                newTargetIndex = i;
+                break;
+              }
+            }
+          }
+        } else {
+          // Dragging across sections:
+          newTargetIndex = Math.max(0, Math.floor(relY / currentCardHeight));
+        }
+
         targetIndex = Math.max(0, Math.min(newTargetIndex, targetLen));
         foundIntersection = true;
         break;
@@ -942,12 +973,7 @@ const SectionAccordion = ({
               )
             }
             isDragging={!!sectionDragState?.isDragging}
-            dragIndex={
-              sectionDragState?.sectionId != undefined &&
-              sectionDragState?.sectionId === section.id
-                ? sectionDragState.dragIndex
-                : null
-            }
+            dragIndex={sectionDragState?.dragIndex}
             dragSectionId={sectionDragState?.sectionId}
             hoverSectionId={hoverState?.sectionId}
             hoverIndex={hoverState?.index}
