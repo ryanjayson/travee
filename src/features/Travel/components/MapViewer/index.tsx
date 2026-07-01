@@ -29,6 +29,8 @@ import Svg, { Line, Circle } from "react-native-svg";
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Divider } from "react-native-paper";
 
+const countriesGeoJSON = require("../../../../assets/geo/countries.json");
+
 interface MapMarker {
   id?: string;
   latitude: number;
@@ -88,8 +90,8 @@ const cacheImage = async (sourceUri: string): Promise<string | null> => {
 };
 
 const PIN_SIZE_MAP: Record<PinSize, { type: number; image: number; icon: number }> = {
-  small: { type: 24, image: 32, icon: 16 },
-  medium: { type: 32, image: 50, icon: 24 },
+  small: { type: 10, image: 32, icon: 14 },
+  medium: { type: 20, image: 50, icon: 12 },
   large: { type: 42, image: 100, icon: 32 },
 };
 
@@ -1677,6 +1679,42 @@ function generateMapHtml(
   const centerLng = (markers?.[0] || coordinates)?.longitude || 0;
   const hasCoords = !!coordinates;
 
+  // Extract country geometry configurations for country-tagged markers
+  const countryGeometries: any[] = [];
+  if (markers) {
+    markers.forEach((m) => {
+      const isCountryType = m.type === "country";
+      const matchTitle = m.title ? m.title.toLowerCase().trim() : "";
+      const matchOptCountry = opts.countryName ? opts.countryName.toLowerCase().trim() : "";
+      
+      const feature = countriesGeoJSON.features.find((f: any) => {
+        const p = f.properties;
+        return (
+          (matchTitle && (
+            (p.NAME_EN && p.NAME_EN.toLowerCase() === matchTitle) ||
+            (p.ADMIN  && p.ADMIN.toLowerCase()   === matchTitle) ||
+            (p.NAME   && p.NAME.toLowerCase()    === matchTitle)
+          )) ||
+          (isCountryType && matchOptCountry && (
+            (p.NAME_EN && p.NAME_EN.toLowerCase() === matchOptCountry) ||
+            (p.ADMIN  && p.ADMIN.toLowerCase()   === matchOptCountry) ||
+            (p.NAME   && p.NAME.toLowerCase()    === matchOptCountry)
+          ))
+        );
+      });
+      
+      if (feature) {
+        countryGeometries.push({
+          id: m.id || m.title || "country-marker",
+          feature,
+          title: m.title || opts.countryName || "Country",
+          iso2: feature.properties.ISO_A2 || ""
+        });
+      }
+    });
+  }
+  const countryGeometriesStr = JSON.stringify(countryGeometries);
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -1699,7 +1737,8 @@ function generateMapHtml(
       width: ${sizes.type}px; height: ${sizes.type}px; border-radius: 50%;
       background: #dc3545; display: flex;
       align-items: center; justify-content: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      border: 1px solid #FFFFFF;
     }
     .custom-marker ion-icon, .custom-marker .material-icons {
       font-size: ${sizes.icon}px; color: #FFF;
@@ -1707,19 +1746,34 @@ function generateMapHtml(
     .image-marker {
       width: ${sizes.image}px; height: ${sizes.image}px; border-radius: 50%;
       overflow: hidden;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.8);
       border: 2px solid #fff;
       background-size: cover; background-position: center;
       background-repeat: no-repeat;
     }
     .marker-label {
       background: rgba(255,255,255,0.95);
-      padding: 3px 10px; border-radius: 12px;
+      padding: 3px 10px; 
+      border-radius: 12px;
       font-size: 12px; font-weight: 600; color: #333;
       white-space: nowrap;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       margin-top: 4px;
       pointer-events: none;
+    }
+    .country-marker-label {
+      background: #FFFFFF;
+      color: #263F69;
+      padding: 2px 8px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      border: 1px solid #263F69;
+      pointer-events: none;
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -1759,6 +1813,41 @@ function generateMapHtml(
       }
     }
 
+    function getFlagEmoji(countryCode) {
+      if (!countryCode || countryCode.length !== 2) return '';
+      try {
+        var codePoints = countryCode
+          .toUpperCase()
+          .split('')
+          .map(function(char) { return 127397 + char.charCodeAt(0); });
+        return String.fromCodePoint.apply(null, codePoints);
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function extendBoundsWithGeometry(bounds, geometry) {
+      if (geometry.type === 'Point') {
+        bounds.extend(geometry.coordinates);
+      } else if (geometry.type === 'LineString' || geometry.type === 'MultiPoint') {
+        geometry.coordinates.forEach(function(pt) { bounds.extend(pt); });
+      } else if (geometry.type === 'Polygon') {
+        geometry.coordinates.forEach(function(ring) {
+          ring.forEach(function(pt) { bounds.extend(pt); });
+        });
+      } else if (geometry.type === 'MultiLineString' || geometry.type === 'MultiPolygon') {
+        geometry.coordinates.forEach(function(part) {
+          part.forEach(function(subPart) {
+            if (Array.isArray(subPart[0])) {
+              subPart.forEach(function(pt) { bounds.extend(pt); });
+            } else {
+              bounds.extend(subPart);
+            }
+          });
+        });
+      }
+    }
+
     mapboxgl.accessToken = '${MAPBOX_ACCESS_TOKEN}';
     const map = new mapboxgl.Map({
       container: 'map',
@@ -1776,32 +1865,103 @@ function generateMapHtml(
  
     const renderedMarkers = ${JSON.stringify(markers || [])};
     const showLabels = ${opts.showLabels};
+    const countryGeometries = ${countryGeometriesStr};
 
     map.on('load', function() {
+      // Add Country outline layers
+      countryGeometries.forEach(function(item) {
+        var sourceId = 'source-' + item.id;
+        if (!map.getSource(sourceId)) {
+          map.addSource(sourceId, {
+            type: 'geojson',
+            data: item.feature
+          });
+          map.addLayer({
+            id: 'layer-fill-' + item.id,
+            type: 'fill',
+            source: sourceId,
+            paint: {
+              'fill-color': '#263F69',
+              'fill-opacity': 0.25
+            }
+          });
+          map.addLayer({
+            id: 'layer-outline-' + item.id,
+            type: 'line',
+            source: sourceId,
+            paint: {
+              'line-color': '#263F69',
+              'line-width': 0
+            }
+          });
+        }
+      });
 
       if (renderedMarkers.length > 0) {
         const bounds = new mapboxgl.LngLatBounds();
+        var hasCountryMarker = false;
+
         renderedMarkers.forEach(m => {
           const wrapper = document.createElement('div');
           wrapper.className = 'marker-wrapper';
           wrapper.setAttribute('data-emoji', getEmojiForType(m.type));
 
-          const icon = document.createElement('div');
-          const useImage = ${opts.pinMode === 'image'} && m.images && m.images.length > 0 && m.images[0].url;
-          if (useImage) {
-            icon.className = 'image-marker';
-            icon.style.backgroundImage = 'url("' + m.images[0].url + '")';
-          } else {
-            icon.className = 'custom-marker';
-            icon.innerHTML = getIconHTML(m.type);
+          // Check if this marker is a country marker
+          var isCountry = false;
+          var titleNormal = m.title ? m.title.toLowerCase().trim() : "";
+          if (m.type === "country") {
+            isCountry = true;
+          } else if (titleNormal) {
+            for (var i = 0; i < countryGeometries.length; i++) {
+              var cTitle = countryGeometries[i].title ? countryGeometries[i].title.toLowerCase().trim() : "";
+              if (cTitle === titleNormal) {
+                isCountry = true;
+                break;
+              }
+            }
           }
-          wrapper.appendChild(icon);
 
-          if (showLabels && m.title) {
+          if (isCountry) {
+            hasCountryMarker = true;
+            
+            // Get the ISO2 code for flag emoji
+            var iso2 = "";
+            for (var i = 0; i < countryGeometries.length; i++) {
+              var cTitle = countryGeometries[i].title ? countryGeometries[i].title.toLowerCase().trim() : "";
+              if (cTitle === titleNormal) {
+                iso2 = countryGeometries[i].iso2 || "";
+                break;
+              }
+            }
+            if (!iso2 && m.type === "country" && countryGeometries.length > 0) {
+              iso2 = countryGeometries[0].iso2 || "";
+            }
+            
+            var flag = getFlagEmoji(iso2);
+
+            // Render country flag and label
             const label = document.createElement('div');
-            label.className = 'marker-label';
-            label.textContent = m.title;
+            label.className = 'country-marker-label';
+            label.innerHTML = (flag ? '<span style="font-size: 18px; margin-right: 6px; vertical-align: middle;">' + flag + '</span>' : '<span class="material-icons" style="font-size: 16px; margin-right: 5px; vertical-align: middle;">map</span>') + m.title;
             wrapper.appendChild(label);
+          } else {
+            const icon = document.createElement('div');
+            const useImage = ${opts.pinMode === 'image'} && m.images && m.images.length > 0 && m.images[0].url;
+            if (useImage) {
+              icon.className = 'image-marker';
+              icon.style.backgroundImage = 'url("' + m.images[0].url + '")';
+            } else {
+              icon.className = 'custom-marker';
+              icon.innerHTML = getIconHTML(m.type);
+            }
+            wrapper.appendChild(icon);
+
+            if (showLabels && m.title) {
+              const label = document.createElement('div');
+              label.className = 'marker-label';
+              label.textContent = m.title;
+              wrapper.appendChild(label);
+            }
           }
 
           new mapboxgl.Marker(wrapper)
@@ -1811,7 +1971,14 @@ function generateMapHtml(
           bounds.extend([m.longitude, m.latitude]);
         });
 
-        if (renderedMarkers.length > 1) {
+        // Extend bounds to cover country geometries
+        countryGeometries.forEach(function(item) {
+          if (item.feature && item.feature.geometry) {
+            extendBoundsWithGeometry(bounds, item.feature.geometry);
+          }
+        });
+
+        if (renderedMarkers.length > 1 || hasCountryMarker) {
           map.fitBounds(bounds, { padding: 50, linear: true });
         } else {
           map.setCenter([renderedMarkers[0].longitude, renderedMarkers[0].latitude]);
