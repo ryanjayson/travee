@@ -120,7 +120,6 @@ const Accordion: FC<AccordionProps> = ({
         </TouchableOpacity>
       )}
 
- 
       <TouchableOpacity
         onPress={disabled ? undefined : toggleAccordion}
         style={[

@@ -1766,7 +1766,7 @@ function generateMapHtml(
       color: #263F69;
       padding: 2px 8px;
       border-radius: 16px;
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 800;
       display: flex;
       align-items: center;
@@ -1942,7 +1942,7 @@ function generateMapHtml(
             // Render country flag and label
             const label = document.createElement('div');
             label.className = 'country-marker-label';
-            label.innerHTML = (flag ? '<span style="font-size: 18px; margin-right: 6px; vertical-align: middle;">' + flag + '</span>' : '<span class="material-icons" style="font-size: 16px; margin-right: 5px; vertical-align: middle;">map</span>') + m.title;
+            label.innerHTML = (flag ? '<span style="font-size: 14px; margin-right: 6px; vertical-align: middle;">' + flag + '</span>' : '<span class="material-icons" style="font-size: 16px; margin-right: 5px; vertical-align: middle;">map</span>') + m.title;
             wrapper.appendChild(label);
           } else {
             const icon = document.createElement('div');

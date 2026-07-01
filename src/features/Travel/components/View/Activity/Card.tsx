@@ -346,11 +346,11 @@ const ActivityItemCard = ({
 
   if (plainMode) {
     return (
-      <View className="flex-row items-center px-1 py-1">
+      <View className="flex-row items-center px-3 py-1">
         <View className="z-10 items-center justify-center mr-3">
-          <Ionicons name="location" size={20} color="#dc3545" />
+          <Ionicons name="pin" size={18} color="#dc3545" />
         </View>
-        <Text className="text-base text-[#333] flex-1" numberOfLines={1}>
+        <Text className="text-base text-secondary flex-1" numberOfLines={1}>
           {itineraryEventActivity.title}
         </Text>
       </View>
@@ -374,7 +374,7 @@ const ActivityItemCard = ({
   
 
     {showDateText && itineraryEventActivity.startDate ? (
-      <Text className="text-sm font-bold text-tertiary absolute px-2">
+      <Text className="text-sm font-bold  absolute px-2">
         {new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })}
       </Text>
     ) : null}
@@ -520,7 +520,7 @@ const ActivityItemCard = ({
 
               <View className="flex-2">
                 <View className="flex-row justify-between items-start mb-1 gap-x-2">
-                  <Text className={`text-lg font-medium mt-1 leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
+                  <Text className={`text-lg font-medium mt-1 text-secondary leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
                       {itineraryEventActivity.title}
                   </Text>
                 </View>

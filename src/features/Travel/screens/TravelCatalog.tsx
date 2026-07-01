@@ -155,6 +155,21 @@ const TravelCatalog = () => {
                     <Text className="text-base  mt-4 text-tertiary">{data[0].description}</Text>
                   </View>
                 </View>
+
+                <View className=" flex-row justify-between content-between items-center mb-3">
+                  <View className="flex-1 items-start mt-lg">
+                    <TouchableOpacity
+                      onPress={() =>handleViewModeTravel(data[0])}
+                      accessibilityRole="button"
+                      activeOpacity={0.7}
+                      className="flex-row items-center gap-1 py-3 px-4 rounded-full bg-gray-100/50"
+                    >
+                      <Icon name="map" size={20} color={"#344054"} />
+                      <Text className="font-medium text-xl  text-secondary">View trip</Text>
+                    </TouchableOpacity>
+                    </View>
+
+                </View>
               </View>
             </TouchableOpacity>
           </View>
