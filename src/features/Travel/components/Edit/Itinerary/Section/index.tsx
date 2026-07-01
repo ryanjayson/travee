@@ -239,7 +239,7 @@ const EditSection = ({ itinerarySection, onClose, onScroll }: EditSectionProps) 
               </Modal>
             </View>
 
-            <View className="mb-5">
+            {/* <View className="mb-5">
               <Text className="text-xs font-semibold tracking-wider uppercase">Location</Text>
               <TouchableOpacity
                 activeOpacity={0.7}
@@ -280,7 +280,7 @@ const EditSection = ({ itinerarySection, onClose, onScroll }: EditSectionProps) 
                   }}
                 />
               </View>
-            </Modal>
+            </Modal> */}
 
             {itinerarySection?.id && (
               <View className="py-6 ">

@@ -272,7 +272,7 @@ const TravelCatalog = () => {
             },
           }}
           renderArrow={(direction: string) => (
-            <View className="bg-gray-50 rounded-full w-10 h-10 items-center justify-center">
+            <View className="bg-gray-50 rounded-full w-14 h-14 items-center justify-center">
               <Icon
                 name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
                 size={28}

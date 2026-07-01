@@ -1764,7 +1764,7 @@ function generateMapHtml(
     .country-marker-label {
       background: #FFFFFF;
       color: #263F69;
-      padding: 2px 8px;
+      padding: 0px 8px;
       border-radius: 16px;
       font-size: 10px;
       font-weight: 800;

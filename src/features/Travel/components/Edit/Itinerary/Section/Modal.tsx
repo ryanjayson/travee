@@ -216,7 +216,7 @@ const SectionModal = ({
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-                <Icon name="clear" size={24} color={"#333"} />
+                <Icon name="clear" size={24} color={"#999"} />
               </TouchableOpacity>
             </View>
 

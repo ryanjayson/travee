@@ -409,7 +409,8 @@ const ActivityModal = ({
                       </Text>
                   </View>
                   <View className="flex-row items-center gap-4">
-                      {isOcrPending ? (
+                      {/* TODO: for future release, ability to scan booking receipt or ticket image and auto-populate fields */}
+                      {/* {isOcrPending ? ( 
                         <ActivityIndicator size="small" color={colors.primary} />
                       ) : (
                         <TouchableOpacity 
@@ -420,14 +421,14 @@ const ActivityModal = ({
                         >
                             <Icon name="camera-alt" size={24} color={colors.primary} />
                         </TouchableOpacity>
-                      )}
+                      )} */}
                       <TouchableOpacity 
                         onPress={handleCancel} 
                         disabled={isSaving}
                         accessibilityRole="button"
                         accessibilityLabel="Close modal"
                       >
-                          <Icon name="clear" size={24} color={colors.onSurfaceVariant || "#333"} />
+                          <Icon name="clear" size={24} color={"#999"} />
                       </TouchableOpacity>
                   </View>
               </View>

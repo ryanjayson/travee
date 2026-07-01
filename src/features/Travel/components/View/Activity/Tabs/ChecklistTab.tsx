@@ -39,10 +39,33 @@ const ChecklistTab = ({ activityId }: ChecklistTabProps) => {
 
   if (!checklistItems || checklistItems.length === 0) {
     return (
-      <View className="flex-1 justify-center items-center p-5">
-        <Ionicons name="checkbox-outline" size={48} color="#D1D5DB" />
-        <Text className="text-base text-gray-500 mt-2">No checklist items yet.</Text>
-      </View>
+       <View className="flex-1 items-center justify-center h-[300px] px-8 gap-1">
+         {/* <Icon name="playlist-add-check" size={46} color="#D1D5DB" /> */}
+        <Ionicons name="checkbox-outline" size={38} color="#D1D5DB" />
+
+          <Text className="text-2xl text-tertiary/50 text-center">
+            No added to-do's yet.
+          </Text>
+          <View className="text-center tracking-wide flex-row align-center gap-2 ">
+          <TouchableOpacity
+              // onPress={() => openChecklistModal(null, allActivities, travelId)}
+              accessibilityRole="button"
+              activeOpacity={0.7}
+              className="flex-row items-center"
+            >
+              {/* <Icon name="add" size={16} color={colors.primary} /> */}
+              <Text 
+                style={{ color: "colors.primary" }}
+                className="font-medium text-base underline"
+              >
+                Add item
+              </Text>
+            </TouchableOpacity> 
+             <Text className="text-base text-tertiary">
+                    now to this activity
+              </Text>
+          </View>
+        </View>
     );
   }
 

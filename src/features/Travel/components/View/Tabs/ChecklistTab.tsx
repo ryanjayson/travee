@@ -102,7 +102,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           </Text>
 
           <View className="text-center tracking-wide flex-row align-center gap-1 ">
-         <TouchableOpacity
+          <TouchableOpacity
               onPress={() => openChecklistModal(null, allActivities, travelId)}
               accessibilityRole="button"
               activeOpacity={0.7}
@@ -120,7 +120,6 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                    item now to your trip
               </Text>
           </View>
-          
         </View>
       </ScrollView>
     );
