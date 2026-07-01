@@ -496,6 +496,29 @@ const SectionAccordion = ({
 
   useEffect(() => {
     if (!iterarysections) return;
+
+    // Skip updating if background query refetch returns stale sort orders
+    let isStale = false;
+    for (const [id, targetSort] of Object.entries(pendingSortUpdates.current)) {
+      const foundActivity = iterarysections
+        .flatMap((s) => s.itineraryActivity || [])
+        .find((a) => a.id === id);
+      const foundSection = iterarysections.find((s) => s.id === id);
+
+      const currentSort = foundActivity?.sortOrder ?? foundSection?.sortOrder;
+      if (currentSort !== targetSort) {
+        isStale = true;
+        break;
+      } else {
+        // Successfully synced with DB, remove from pending
+        delete pendingSortUpdates.current[id];
+      }
+    }
+
+    if (isStale) {
+      return;
+    }
+
     setSections(
       [...iterarysections]
         .sort((a, b) => {
@@ -534,6 +557,7 @@ const SectionAccordion = ({
   const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
   const sectionRefs = useRef<Record<string, any>>({});
   const sectionBounds = useRef<Record<string, { pageY: number; height: number }>>({});
+  const pendingSortUpdates = useRef<Record<string, string>>({});
 
   const masterSectionRefs = useRef<Record<string, any>>({});
   const masterSectionBounds = useRef<Record<string, { pageY: number; height: number }>>({});
@@ -670,6 +694,7 @@ const SectionAccordion = ({
       setSections([...defaultSections, ...subSections]);
 
       if (moved.id) {
+        pendingSortUpdates.current[moved.id] = newSortOrder;
         updateSectionSortOrderLocally(moved.id, newSortOrder).then(() => {
           queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
           showToast({
@@ -811,11 +836,12 @@ const SectionAccordion = ({
     sourceSectionId: string,
     activity: ItineraryActivity,
     fromIndex: number,
-    _toIndex: number,
+    toIndexArg: number,
+    targetSectionIdArg?: string | null,
   ) => {
 
-    const targetSectionId = hoverState?.sectionId ?? sourceSectionId;
-    const toIndex = hoverState?.index ?? fromIndex;
+    const targetSectionId = targetSectionIdArg ?? hoverState?.sectionId ?? sourceSectionId;
+    const toIndex = toIndexArg ?? hoverState?.index ?? fromIndex;
 
     if (targetSectionId === sourceSectionId && toIndex === fromIndex) {
       // Position did not change! Just reset drag state and do not save or show toast
@@ -864,6 +890,7 @@ const SectionAccordion = ({
             updatedActivity.sortOrder = newSortOrder;
 
             if (updatedActivity.id) {
+              pendingSortUpdates.current[updatedActivity.id] = newSortOrder;
               updateActivitySortOrderLocally(
                 updatedActivity.id,
                 newSortOrder,
@@ -956,12 +983,13 @@ const SectionAccordion = ({
             onDragStart={allowItemReordering ? (idx: number, h: number) =>
               handleSectionActivityDragStart(section.id || "", idx, h) : undefined
             }
-            onDragEnd={allowItemReordering ? (fromIdx: number, _toIdx: number) =>
+            onDragEnd={allowItemReordering ? (fromIdx: number, toIdx: number, targetSecId?: string | null) =>
               handleSectionActivityDragEnd(
                 section.id || "",
                 eventActivity,
                 fromIdx,
-                0,
+                toIdx,
+                targetSecId
               ) : undefined
             }
             onDragMove={(currentIndex, dy, moveY) =>

@@ -32,7 +32,7 @@ interface ItineraryActivityProps {
   index?: number;
   listLength?: number;
   onDragStart?: (index: number, height: number) => void;
-  onDragEnd?: (fromIndex: number, toIndex: number) => void;
+  onDragEnd?: (fromIndex: number, toIndex: number, targetSectionId?: string | null) => void;
   onDragMove?: (index: number, dy: number, moveY?: number) => void;
   isDragging?: boolean;
   dragIndex?: number | null;
@@ -62,8 +62,14 @@ const ActivityItemCard = ({
   draggedHeight,
 }: ItineraryActivityProps) => {
   const isNarrow = viewMode === "narrow";
+  const [prevItineraryActivity, setPrevItineraryActivity] = useState<ItineraryActivity>(itineraryActivity);
   const [itineraryEventActivity, setItineraryEventActivity] =
     useState<ItineraryActivity>(itineraryActivity);
+
+  if (itineraryActivity !== prevItineraryActivity) {
+    setPrevItineraryActivity(itineraryActivity);
+    setItineraryEventActivity(itineraryActivity);
+  }
   const { confirm } = useConfirm();
   const { showToast } = useToast();
 
@@ -102,6 +108,17 @@ const ActivityItemCard = ({
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [cardHeight, setCardHeight] = useState(110);
 
+  if (isDragActive && !parentIsDragging) {
+    pan.setValue({ x: 0, y: 0 });
+    setIsDragActive(false);
+    isDragActiveRef.current = false;
+  }
+
+  if (!parentIsDragging && lastTargetShift.current !== 0) {
+    shiftAnim.setValue(0);
+    lastTargetShift.current = 0;
+  }
+
   useEffect(() => {
     Animated.timing(scaleAnim, {
       toValue: isDragActive ? 1.04 : 1,
@@ -110,6 +127,8 @@ const ActivityItemCard = ({
       useNativeDriver: false,
     }).start();
   }, [isDragActive]);
+
+
 
   useEffect(() => {
     if (!dragSectionId) {
@@ -218,6 +237,14 @@ const ActivityItemCard = ({
         // Lock coordinates explicitly at final gesture positions to prevent the React Native first-frame reset bug
         pan.setValue({ x: gestureState.dx, y: gestureState.dy });
 
+        // Smoothly scale down immediately on release
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 150,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: false,
+        }).start();
+
         if (isTargetDifferent) {
           const activeDraggedHeight = draggedHeight ?? cardHeight;
           let targetY = 0;
@@ -232,26 +259,26 @@ const ActivityItemCard = ({
           // Smoothly glide the active card first into its target index slot position before resetting drag state
           Animated.timing(pan, {
             toValue: { x: 0, y: targetY },
-            duration: 400,
-            easing: Easing.out(Easing.cubic),
+            duration: 150,
+            easing: Easing.out(Easing.quad),
             useNativeDriver: false,
           }).start(() => {
-            // Complete transition: reset coordinates and active status synchronously in the same batch as parent list update
-            pan.setValue({ x: 0, y: 0 });
-            setDragActiveState(false);
-            dragPropsRef.current.onDragEnd?.(currentIndex, latestHoverIndex !== null && latestHoverIndex !== undefined ? latestHoverIndex : currentIndex);
+            // Trigger the reorder, state update will clear parentIsDragging and trigger cleanup
+            dragPropsRef.current.onDragEnd?.(
+              currentIndex, 
+              latestHoverIndex !== null && latestHoverIndex !== undefined ? latestHoverIndex : currentIndex,
+              latestHoverSectionId
+            );
           });
         } else {
           // Cancelled / released at same spot! Smoothly glide back to original slot using ease-in-out timing
           Animated.timing(pan, {
             toValue: { x: 0, y: 0 },
-            duration: 400,
-            easing: Easing.out(Easing.cubic),
+            duration: 150,
+            easing: Easing.out(Easing.quad),
             useNativeDriver: false,
           }).start(() => {
-            pan.setValue({ x: 0, y: 0 });
-            setDragActiveState(false);
-            dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex);
+            dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex, latestDragSectionId);
           });
         }
       },
@@ -260,17 +287,22 @@ const ActivityItemCard = ({
           clearTimeout(dragTimer.current);
           dragTimer.current = null;
         }
-        const { index: currentIndex } = dragPropsRef.current;
+        const { index: currentIndex, dragSectionId: latestDragSectionId } = dragPropsRef.current;
+        // Smoothly scale down immediately on termination
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 150,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: false,
+        }).start();
         // Smoothly glide back to original slot on termination using ease-in-out timing
         Animated.timing(pan, {
           toValue: { x: 0, y: 0 },
-          duration: 400,
-          easing: Easing.out(Easing.cubic),
+          duration: 150,
+          easing: Easing.out(Easing.quad),
           useNativeDriver: false,
         }).start(() => {
-          pan.setValue({ x: 0, y: 0 });
-          setDragActiveState(false);
-          dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex);
+          dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex, latestDragSectionId);
         });
       },
     })
@@ -310,9 +342,7 @@ const ActivityItemCard = ({
     return { text, color };
   };
 
-  React.useEffect(() => {
-    setItineraryEventActivity(itineraryActivity);
-  }, [itineraryActivity]);
+
 
   const handleToggleDone = async () => {
     const nextStatus = !itineraryEventActivity.isDone;
