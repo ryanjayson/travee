@@ -270,7 +270,8 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
             </View>
           </View>  */}
 
-        <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
+{travelPlan.travel.description && (
+    <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
             <View className="flex-1 gap-2">
               <Text className="text-xs font-bold uppercase tracking-wide">About this trip</Text>
 
@@ -306,6 +307,8 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
             </View>
           </View>
         </View>
+) }
+      
 
         <View className="px-4">
             <Text 

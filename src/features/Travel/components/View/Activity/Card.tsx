@@ -240,8 +240,8 @@ const ActivityItemCard = ({
         // Smoothly scale down immediately on release
         Animated.timing(scaleAnim, {
           toValue: 1,
-          duration: 150,
-          easing: Easing.out(Easing.quad),
+          duration: 800,
+          easing: Easing.bezier(0.25, 1, 0.5, 1),
           useNativeDriver: false,
         }).start();
 
@@ -259,8 +259,8 @@ const ActivityItemCard = ({
           // Smoothly glide the active card first into its target index slot position before resetting drag state
           Animated.timing(pan, {
             toValue: { x: 0, y: targetY },
-            duration: 150,
-            easing: Easing.out(Easing.quad),
+            duration: 800,
+            easing: Easing.bezier(0.25, 1, 0.5, 1),
             useNativeDriver: false,
           }).start(() => {
             // Trigger the reorder, state update will clear parentIsDragging and trigger cleanup
@@ -274,8 +274,8 @@ const ActivityItemCard = ({
           // Cancelled / released at same spot! Smoothly glide back to original slot using ease-in-out timing
           Animated.timing(pan, {
             toValue: { x: 0, y: 0 },
-            duration: 150,
-            easing: Easing.out(Easing.quad),
+            duration: 800,
+            easing: Easing.bezier(0.25, 1, 0.5, 1),
             useNativeDriver: false,
           }).start(() => {
             dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex, latestDragSectionId);
@@ -291,15 +291,15 @@ const ActivityItemCard = ({
         // Smoothly scale down immediately on termination
         Animated.timing(scaleAnim, {
           toValue: 1,
-          duration: 150,
-          easing: Easing.out(Easing.quad),
+          duration: 800,
+          easing: Easing.bezier(0.25, 1, 0.5, 1),
           useNativeDriver: false,
         }).start();
         // Smoothly glide back to original slot on termination using ease-in-out timing
         Animated.timing(pan, {
           toValue: { x: 0, y: 0 },
-          duration: 150,
-          easing: Easing.out(Easing.quad),
+          duration: 800,
+          easing: Easing.bezier(0.25, 1, 0.5, 1),
           useNativeDriver: false,
         }).start(() => {
           dragPropsRef.current.onDragEnd?.(currentIndex, currentIndex, latestDragSectionId);
@@ -331,7 +331,6 @@ const ActivityItemCard = ({
     ] as any,
     zIndex: isDragActive ? 9999 : 1,
     elevation: isDragActive ? 10 : 1,
-    // shadowOpacity: isDragActive ? 0.25 : 0,
   };
 
   const getActivityTypeDetails = (type: any) => {
@@ -401,15 +400,14 @@ const ActivityItemCard = ({
         }
       }}
     >
-  
 
     {showDateText && itineraryEventActivity.startDate ? (
-      <Text className="text-sm font-bold  absolute px-2">
+      <Text className="text-base font-bold -top-[xs] absolute px-2 ">
         {new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })}
       </Text>
     ) : null}
 
-      <View className={`px-2 flex-row justify-between items-center relative pl-4xl  `}>
+      <View className={`px-2 flex-row justify-between items-center relative  pl-6xl   `}>
         {!isDragActive && (
           <>
             {/* {isLastItem ? (
@@ -435,6 +433,21 @@ const ActivityItemCard = ({
 
                   {/* <View className={`absolute h-1/2 w-1px top-1/2 ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-gray-300`}></View> */}
 
+            <Text className="text-xs font-medium text-gray-400 absolute left-xl text-right">
+              {(() => {
+                if (!itineraryEventActivity.startDate) return null;
+                const d = new Date(itineraryEventActivity.startDate);
+                let hours = d.getHours();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // Map '0' to '12'
+                const hoursStr = hours < 10 ? '0' + hours : hours.toString();
+                const minutes = d.getMinutes();
+                const minutesStr = minutes < 10 ? '0' + minutes : minutes.toString();
+                return `${hoursStr}:${minutesStr}\n${ampm}`;
+              })()}
+            </Text>
+
             <TouchableOpacity
               // activeOpacity={0.7}
               onLongPress={handleLongPress}
@@ -452,7 +465,8 @@ const ActivityItemCard = ({
             >
               <ActivityIcon
                 type={itineraryEventActivity.type!}
-                size={viewMode === 'narrow' ? 15 : 24}
+                size={viewMode === 'narrow' ? 16 : 20}
+                isViewModeNarrow={viewMode === 'narrow'}
               />
             </TouchableOpacity>
          
@@ -462,7 +476,7 @@ const ActivityItemCard = ({
         {(!isDragActive && !parentIsDragging && isLastItem) && viewMode === 'expanded' && (
         <TouchableHighlight 
           underlayColor={"none"}
-          className={`absolute h-6xl w-6xl -bottom-[30px] left-lg z-9999 `} //TODO: apply to last item for now
+          className={`absolute h-6xl w-6xl bottom-[-30px] left-lg z-9999 `} //TODO: apply to last item for now
           onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
           onShowUnderlay={() => setIsAddPressed(true)}
           onHideUnderlay={() => setIsAddPressed(false)}
@@ -470,7 +484,7 @@ const ActivityItemCard = ({
             accessibilityLabel="Add activity"
           >
             <View
-                className={`${isAddPressed ? 'border-[#183B7A] bg-[#183B7A] rounded-full' : 'border-gray-300 rounded-md bg-white '} left-[28px] absolute m-2 mt-2xl border px-1px z-9999`}
+                className={`${isAddPressed ? 'border-[#183B7A] bg-[#183B7A] rounded-full' : 'border-gray-300 rounded-md bg-white '} left-[37px] absolute m-2 mt-2xl border px-1px z-9999`}
             >
             <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`}/>
             </View>
@@ -511,14 +525,14 @@ const ActivityItemCard = ({
                   </Text>
                 </View>
               )}
-              {itineraryEventActivity.startDate ? (
+              {/* {itineraryEventActivity.startDate ? (
                 <View className="flex-row gap-1">
-                  {/* <Text className="text-xs font-bold text-[#000] ">
+                  <Text className="text-xs font-bold text-[#000] ">
                       {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { weekday: 'long' })}
                   </Text> 
                   <Text className="text-xs font-bold text-[#000] ">
                       {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })} |
-                  </Text>*/}
+                  </Text>
                   <Text className="text-xs font-semibold text-[#606060] ">
                       {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute:   '2-digit' })}
                   </Text>
@@ -527,7 +541,7 @@ const ActivityItemCard = ({
                 <Text className="text-xs font-semibold text-tertiary/50 ">
                   Date not set
                 </Text>
-              )}
+              )} */}
           </View>
 
 
@@ -556,10 +570,10 @@ const ActivityItemCard = ({
                 </View>
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
                   <View 
-                    className="flex-row items-center text-ellipsis opacity-60 rounded-sm w-[80%]"
+                    className="flex-row items-center text-ellipsis rounded-sm w-[80%] -mt-xxs"
                   >
-                    <Icon name="location-pin" size={12} color={"#B42318"} />
-                    <Text className="text-xs"
+                    <Icon name="location-pin" size={14} color={"#B42318"} />
+                    <Text className="text-base text-tertiary "
                     ellipsizeMode="tail"
                     numberOfLines={1}>
                       {itineraryEventActivity.destination}
@@ -568,7 +582,8 @@ const ActivityItemCard = ({
                 )} 
 
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (
-                  <Text className="text-base text-tertiary leading-5 my-2" 
+                  <Text className="text-sm text-tertiary  mt-2 
+                  mb-4" 
                     numberOfLines={2}
                     ellipsizeMode="tail">
                     {itineraryEventActivity.description} 

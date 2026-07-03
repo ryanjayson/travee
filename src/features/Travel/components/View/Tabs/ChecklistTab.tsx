@@ -1,5 +1,5 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View, ScrollView } from "react-native";
 import { useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../../components/ActivityIcon";
@@ -36,6 +36,47 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
     activities ??
     (travelPlan.itinerarySection?.flatMap((s) => s.itineraryActivity || []) || []);
 
+  const ungroupedItems = items.filter((i) => !i.checklistGroupId && !i.activityId);
+
+  const hasInitializedCollapsed = useRef(false);
+
+  useEffect(() => {
+    if (!groupsLoading && !itemsLoading && !hasInitializedCollapsed.current && items.length > 0) {
+      hasInitializedCollapsed.current = true;
+      const initial: Record<string, boolean> = {};
+
+      // 1. General / ungrouped items
+      if (ungroupedItems.length > 0 && ungroupedItems.every((i) => i.isDone)) {
+        initial["general"] = true;
+      }
+
+      // 2. Custom groups
+      groups.forEach((group) => {
+        if (group.id) {
+          const groupItems = items.filter((i) => i.checklistGroupId === group.id);
+          if (groupItems.length > 0 && groupItems.every((i) => i.isDone)) {
+            initial[group.id] = true;
+          }
+        }
+      });
+
+      // 3. Activity groups
+      allActivities.forEach((activity) => {
+        if (activity.id) {
+          const activityItems = items.filter((i) => i.activityId === activity.id);
+          if (activityItems.length > 0 && activityItems.every((i) => i.isDone)) {
+            initial[`activity-${activity.id}`] = true;
+          }
+        }
+      });
+
+      setCollapsedSections((prev) => ({
+        ...prev,
+        ...initial,
+      }));
+    }
+  }, [groupsLoading, itemsLoading, groups, items, allActivities]);
+
   const handleToggle = async (item: any) => {
     if (!item.id) return;
     await toggleMutation.mutateAsync({
@@ -57,9 +98,8 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
   const totalDone = items.filter((i) => i.isDone).length;
 
   const renderItem = (item: any) => (
-    <View className="flex-row items-start gap-3 py-3 px-4 border-b border-gray-100 ">
+    <View key={item.id} className="flex-row items-start gap-3 py-3 px-4 border-b border-gray-100 ">
     <TouchableOpacity
-      key={item.id}
       accessibilityRole="checkbox"
       onPress={() => handleToggle(item)}
       className="flex-row items-start gap-3 "
@@ -87,8 +127,6 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
     </View>
 
   );
-
-  const ungroupedItems = items.filter((i) => !i.checklistGroupId && !i.activityId);
 
   if (items.length === 0 && groups.length === 0) {
     return (

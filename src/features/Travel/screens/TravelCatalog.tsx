@@ -111,7 +111,7 @@ const TravelCatalog = () => {
                   </View>
                 )}
                 <View className="flex-1">
-                  <Text className="text-base font-medium ">{travel.title}</Text>
+                  <Text className="text-xl leading-5 font-medium ">{travel.title}</Text>
                   <Text className="text-base  text-[#999]">{travel.destination || "--"}</Text>
                    <Text className="text-sm mt-2 text-[#999]">
                     {dateRange}  {duration ? `| ${duration}` : ""}
@@ -144,14 +144,14 @@ const TravelCatalog = () => {
         }
       >
         {data && data.length === 1 && data[0].status === TravelStatus.Ongoing ?(
-          <View key={data[0].id} className="rounded-3xl mb-2 bg-white shadow-sm shadow-black/10 elevation-xl mx-4 overflow-hidden">
+          <View key={data[0].id} className="rounded-[44px] mb-2 bg-white shadow-sm shadow-black/10 elevation-xl mx-4 overflow-hidden">
             <TouchableOpacity onPress={() => handleViewModeTravel(data[0])}>
-              <View className="p-6 border border-success-500/50 rounded-3xl">
+              <View className="p-10 border border-success-500/50 rounded-[44px]">
                 <View className="flex-row justify-between items-start mb-3">
                   <View className="flex-1">
                     <Text className="text-3xl font-medium">{data[0].title}</Text>
-                    <Text className="text-base  text-tertiary">Travelling to {data[0].destination}</Text>
-                    <Text className="text-base  text-tertiary">Until {data[0].endOrReturnDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                    <Text className="text-lg  text-secondary">Travelling to {data[0].destination}</Text>
+                    <Text className="text-lg  text-secondary">Until {data[0].endOrReturnDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
                     <Text className="text-base  mt-4 text-tertiary">{data[0].description}</Text>
                   </View>
                 </View>

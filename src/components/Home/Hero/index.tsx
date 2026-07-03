@@ -299,13 +299,17 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
       </View>
 
       {ongoingTrip && (
-      <View className="m-xl flex-1 bg-white rounded-xl">
+      <View className="m-xl py-xl flex-1 bg-white rounded-3xl border border-gray-200">
 
-        <Text className="text-lg font-semibold px-lg pt-lg">Quick Actions</Text>
+        <Text className="text-base font-semibold px-xl ">Quick Actions</Text>
         <View className="flex-row items-center justify-between py-3 z-40 px-4xl">
 
         <View className="items-center">
-          <TouchableOpacity className='items-center justify-center w-7xl h-7xl rounded-3xl border bg-gray-100 border-gray-200' onPress={() => setShowTravelViewModal(true)}>
+          <TouchableOpacity 
+            style={{ borderCurve: 'continuous' }}
+            className='items-center justify-center w-7xl h-7xl rounded-[20px] border bg-gray-100 border-gray-200' 
+            onPress={() => setShowTravelViewModal(true)}
+          >
             <Ionicons name="briefcase" size={24} color="#263F69" />
           </TouchableOpacity>
           <Text className="text-sm font-medium text-primary mt-1">View Trip</Text>
@@ -313,7 +317,8 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
 
         <View className="items-center">
           <TouchableOpacity 
-            className='items-center justify-center w-7xl h-7xl rounded-3xl border border-gray-200 bg-gray-100' 
+            style={{ borderCurve: 'continuous' }}
+            className='items-center justify-center w-7xl h-7xl rounded-[20px] border border-gray-200 bg-gray-100' 
             onPress={() => {
               openActivityModal(null, undefined);
             }}
@@ -361,9 +366,13 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         </View> */}
         
         <View className="items-center">
-          <TouchableOpacity className='items-center justify-center w-7xl h-7xl rounded-3xl border border-gray-200 bg-gray-100' onPress={() => setShowItineraryTab(true)}>
-          <Ionicons name="list" size={24} color="#263F69" />
-        </TouchableOpacity>
+          <TouchableOpacity 
+            style={{ borderCurve: 'continuous' }}
+            className='items-center justify-center w-7xl h-7xl rounded-[20px] border border-gray-200 bg-gray-100' 
+            onPress={() => setShowItineraryTab(true)}
+          >
+            <Ionicons name="list" size={24} color="#263F69" />
+          </TouchableOpacity>
           <Text className="text-sm font-medium text-primary mt-1">Itinerary</Text>
 
         </View>

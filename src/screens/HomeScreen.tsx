@@ -10,14 +10,25 @@ import Hero from '../components/Home/Hero/index';
 import UpcomingTrips from '../components/Home/UpcomingTrips';
 import { useTravelContext } from "../context/TravelContext";
 import { TravelPlanDetail } from '../types/context/travel';
+import ViewTravelModal from '../features/Travel/components/View/Modal';
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
   const { data: allActivities } = useAllActivities();
-  const { selectTravelPlan } = useTravelContext();
+  const { selectTravelPlan, selectedTravelPlan } = useTravelContext();
   const [currentOngoingTrip, setCurrentOngoingTrip] = useState<Travel | null>(null);
+  const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
+  const [selectedTravelForModal, setSelectedTravelForModal] = useState<Travel | null>(null);
+
+  const handlePressTrip = (trip: Travel) => {
+    if (trip && trip.id) {
+      selectTravelPlan(trip as TravelPlanDetail);
+      setSelectedTravelForModal(trip);
+      setShowTravelViewModal(true);
+    }
+  };
 
   const currentYear = new Date().getFullYear();
   const startDate = new Date(currentYear, 0, 1);
@@ -146,10 +157,11 @@ const HomeScreen = () => {
           className="bg-gray-100 "
           style={{ marginTop: currentOngoingTrip ? 0 :-50, borderTopLeftRadius: currentOngoingTrip ? 0 : 30, borderTopRightRadius: currentOngoingTrip ? 0 : 30 }}
         >
-          <UpcomingTrips upcomingTrips={upcomingTrips} isLoading={isLoading} />
+          <UpcomingTrips upcomingTrips={upcomingTrips} isLoading={isLoading} onPressTrip={handlePressTrip} />
 
           <View className="justify-between mb-3">
-              <Text className=" px-6 text-xl font-bold text-gray-800">Travel Insights</Text>
+              <Text className="px-6 text-xl font-semibold text-secondary mb-md">Travel Insights</Text>
+              
           <View className="flex-row px-5 mb-6 gap-[15px]">
           <View className="flex-1 bg-[#E8F5E8] rounded-2xl p-4 shadow-sm elevation-2 border border-gray-300">
               <View className="flex-row items-center">
@@ -261,6 +273,12 @@ const HomeScreen = () => {
 
         </View>
       </ScrollView>
+
+      <ViewTravelModal
+        travelId={selectedTravelForModal?.id || selectedTravelPlan?.id || ""}
+        showModal={showTravelViewModal}
+        setShowModal={setShowTravelViewModal}
+      />
     </View>
   );
 };

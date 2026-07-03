@@ -205,13 +205,16 @@ const DraggableSectionItem = ({
     ? (masterSectionBounds.current[draggedSection.id || ""]?.height ?? 180)
     : 180;
 
+  const isThisItemDragging = sectionDragState?.sectionId === section.id;
+
   return (
     <Animated.View
       style={{
         transform: [{ translateY: shiftAnim }],
         flex: 1,
-        zIndex: isThisSectionDragging ? 9999 : 1,
-        // elevation: isThisSectionDragging ? 10 : 1,
+        zIndex: isThisSectionDragging || isThisItemDragging ? 99999 : 1,
+        elevation: isThisSectionDragging || isThisItemDragging ? 10 : 1,
+        overflow: "visible",
       }}
     >
       <DraggableSectionContainer
@@ -294,7 +297,7 @@ const DraggableSectionItem = ({
              
               {section.description && section.description.trim() !== "" && (
                 <View className="bg-white flex-1 px-3 z-100">
-                  <Text className="text-base text-tertiary leading-5 px-2 ml-6xl pb-2">
+                  <Text className="text-base text-tertiary leading-5 px-2 ml-7xl pb-2">
                   {section.description}
                 </Text>
                 </View>
@@ -310,7 +313,7 @@ const DraggableSectionItem = ({
                 }}
               >
             
-              <View className={`absolute h-full w-1px  ${viewMode === "narrow" ? "left-[28px]" : "left-4xl"}`}></View>
+              <View className={`absolute h-full w-1px  ${viewMode === "narrow" ? "left-4xl" : "left-4xl"}`}></View>
                 {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                   renderActivityCards(section, section.itineraryActivity)
                 ) : (
@@ -1105,11 +1108,16 @@ const SectionAccordion = ({
                       ref={(ref) => {
                         if (ref && section.id) sectionRefs.current[section.id] = ref;
                       }}
+                      style={{
+                        zIndex: sectionDragState?.sectionId === section.id ? 99999 : 1,
+                        elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
+                        overflow: "visible",
+                      }}
                     >
                       {section.itineraryActivity &&
                         renderActivityCards(section, section.itineraryActivity)}
                         {viewMode !== 'plain' && (
-                          <View className={`absolute  h-full w-1px ${viewMode === 'narrow' ? 'left-[53px] top-5xl' : 'left-[58px] top-8xl'} z-0 border-l-2 border-dashed border-[#ccc]`}></View>
+                          <View className={`absolute  h-full w-1px ${viewMode === 'narrow' ? 'left-[62px] top-5xl' : 'left-[68px] top-8xl'} z-0 border-l-2 border-dashed border-[#ccc]`}></View>
                         )
                         }
                     </View>
@@ -1147,7 +1155,7 @@ const SectionAccordion = ({
                   const subSectionsLength = subSections.length;
                   return (
                     <View key={section.id}>
-                      <View className={`absolute top-5xl h-full w-1px  z-0 border-l-2 border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[53px]" : "left-[58px]"}`}></View>
+                      <View className={`absolute top-5xl h-full w-1px  z-0 border-l-2 border-dashed border-[#ccc] ${viewMode === "narrow" ? "left-[62px]" : "left-[68px]"}`}></View>
 
                     <DraggableSectionItem
                       key={section.id}
@@ -1197,7 +1205,7 @@ const SectionAccordion = ({
               })}
 
             {viewMode !== 'plain' && (
-              <View className={`flex-1 p-2 mt-2xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-[35px]" : " ml-42px"}`}>
+              <View className={`flex-1 p-2 mt-2xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-[46px]" : " ml-[52px]"}`}>
                 <Ionicons name="flag" size={20} color="#F97066" />
               </View>
             )}

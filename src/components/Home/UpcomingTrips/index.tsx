@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Dimensions, FlatList, Text, View} from 'react-native';
+import { Dimensions, FlatList, Text, View, TouchableOpacity } from 'react-native';
 import { Travel } from '../../../features/Travel/types/TravelDto';
+import { tripIcons } from '../../TripIcon';
+import { TripType } from '../../../types/enums';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // let CARD_WIDTH = SCREEN_WIDTH * 0.8;
@@ -9,25 +11,57 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 interface UpcomingTripsProps {
   upcomingTrips: Travel[];
   isLoading: boolean;
+  onPressTrip?: (trip: Travel) => void;
 }
 
-const UpcomingTrips = ({ upcomingTrips, isLoading }: UpcomingTripsProps) => {
+const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip }: UpcomingTripsProps) => {
   const [cardWidth, setCardWidth] = useState(upcomingTrips.length && upcomingTrips.length === 1 ? SCREEN_WIDTH - 40 : SCREEN_WIDTH * 0.8);
   
   const formatDate = (v?: Date | string) =>
     v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
 
-  const getDuration = (s?: Date | string, e?: Date | string) => {
-    if (!s || !e) return '';
-    const diff = new Date(e).getTime() - new Date(s).getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
-    return `${days} Day${days > 1 ? 's' : ''}`;
+  const getDaysUntil = (s?: Date | string) => {
+    if (!s) return '';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const startDate = new Date(s);
+    startDate.setHours(0, 0, 0, 0);
+    const diffTime = startDate.getTime() - today.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return 'Today';
+    } else if (diffDays === 1) {
+      return 'Tomorrow';
+    } else if (diffDays > 1) {
+      return `In ${diffDays} days`;
+    } else {
+      return `${Math.abs(diffDays)} days ago`;
+    }
+  };
+
+  const getBgColor = (type?: TripType) => {
+    if (type == null || type === TripType.none) {
+      return '#f9fafb';
+    }
+    const found = tripIcons.find((i) => i.tripType === type);
+    const baseColor = found ? found.color : '#9E9E9E';
+    return baseColor + '50'; // 8.2% opacity tint for a very light background color
+  };
+
+   const getTextColor = (type?: TripType) => {
+    if (type == null || type === TripType.none) {
+      return '#f9fafb';
+    }
+    const found = tripIcons.find((i) => i.tripType === type);
+    const baseColor = found ? found.color : '#9E9E9E';
+    return baseColor;
   };
 
   return (
-    <View className="mb-6 pt-[28px]">
+    <View className="mb-6 pt-sm">
       <View className="flex-row items-center justify-between px-6 mb-3 ">
-        <Text className="text-2xl font-bold text-gray-800">Upcoming Trips</Text>
+        <Text className="text-xl font-semibold text-secondary">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
           <Text className="text-sm text-[#263F69] font-semibold">
             {upcomingTrips.length} trip{upcomingTrips.length > 1 ? 's' : ''}
@@ -47,9 +81,13 @@ const UpcomingTrips = ({ upcomingTrips, isLoading }: UpcomingTripsProps) => {
           decelerationRate="fast"
           contentContainerStyle={{ paddingHorizontal: 20, gap: 16 }}
           renderItem={({ item, index }) => (
-            <View
-              style={{ width: cardWidth }}
-              className="bg-white rounded-2xl p-4 shadow-sm elevation-3 border border-gray-100"
+            <TouchableOpacity
+              activeOpacity={0.6}
+              onPress={() => onPressTrip?.(item)}
+              className="rounded-3xl p-5 shadow-sm elevation-3 border bg-white"
+              style={{ borderColor: getBgColor(item.type) }}
+              accessibilityRole="button"
+              accessibilityLabel={`View trip ${item.title}`}
             >
               {/* Index badge */}
               {/* <View className="absolute top-3.5 right-4">
@@ -58,36 +96,40 @@ const UpcomingTrips = ({ upcomingTrips, isLoading }: UpcomingTripsProps) => {
 
               {/* Title + destination */}
               <View className="mb-3 pr-8">
-                <Text className="text-lg font-bold text-[#263F69] mb-1" numberOfLines={1}>
+                <Text className="text-xl font-semibold mb-1 text-primary" 
+                  // style={{ color: getTextColor(item.type) }}
+                  numberOfLines={1}>
                   {item.title}
                 </Text>
                 <View className="flex-row items-center gap-1">
-                  <Ionicons name="location-outline" size={13} color="#9ca3af" />
-                  <Text className="text-sm text-gray-400 font-medium" numberOfLines={1}>
-                    {item.destination || 'Destination TBD'}
+                  <Ionicons name="location-outline" size={18} color="#9ca3af" />
+                  <Text className="text-base text-tertiary font-medium" numberOfLines={1}>
+                    {item.destination || 'Destination TBD'} 
                   </Text>
                 </View>
               </View>
 
-              <View className="border-t border-gray-100 mb-3" />
+              <View className="mb-3"
+              // style={{ borderColor: getTextColor(item.type) }}
+               />
 
               {/* Date + duration */}
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-1.5">
-                  <Ionicons name="calendar-outline" size={14} color="#9ca3af" />
+                  <Ionicons name="calendar-outline" size={18} color="#9ca3af" />
                   <Text className="text-[13px] font-semibold text-gray-500">
                     {item.startOrDepartureDate ? formatDate(item.startOrDepartureDate) : 'Date TBD'}
                   </Text>
                 </View>
-                {getDuration(item.startOrDepartureDate, item.endOrReturnDate) ? (
+                {getDaysUntil(item.startOrDepartureDate) ? (
                   <View className="bg-blue-50 px-2.5 py-0.5 rounded-full">
                     <Text className="text-[12px] text-[#263F69] font-semibold">
-                      {getDuration(item.startOrDepartureDate, item.endOrReturnDate)}
+                      {getDaysUntil(item.startOrDepartureDate)}
                     </Text>
                   </View>
                 ) : null}
               </View>
-            </View>
+            </TouchableOpacity>
           )}
         />
       ) : (
