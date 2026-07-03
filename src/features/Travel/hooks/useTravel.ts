@@ -9,7 +9,6 @@ import { postRequestOptions } from "../../../utils/apiUtils";
 import { CreateTravelData, Travel, TravelPlan } from "../types/TravelDto";
 import { TravelStatus } from "../../../types/enums";
 import { fetchWithTimeout } from "../../../utils/fetchWithTimeout";
-import { useTravelContext } from "../../../context/TravelContext";
 
 const TRAVEL_ENDPOINT = `${API_BASE_URL}/travel`;
 const TRAVEL_QUERY_KEY = ["travel"];
@@ -27,7 +26,6 @@ type MutationError = Error;
 export const useUpdateTravel = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   const updateTravelMutation = useMutation<
     MutationData,
@@ -71,31 +69,13 @@ export const useUpdateTravel = () => {
         queryKey: ["selectedTravelPlan"],
       });
 
-      const updatedId = variables.id || res?.data?.id || (res as any)?.id || selectedTravelPlan?.id;
+      const updatedId = variables.id || res?.data?.id || (res as any)?.id;
       if (updatedId) {
         queryClient.invalidateQueries({
           queryKey: [TRAVEL_QUERY_KEY, updatedId],
         });
         queryClient.invalidateQueries({
           queryKey: ["selectedTravelPlan", updatedId],
-        });
-
-        getTravelPlanLocally(updatedId).then((localPlan) => {
-          if (localPlan?.travel) {
-            selectTravelPlan({
-              ...selectedTravelPlan,
-              ...localPlan.travel,
-              id: updatedId,
-            });
-          }
-        }).catch(() => {
-          const updatedPlan = res?.data || res;
-          selectTravelPlan({
-            ...selectedTravelPlan,
-            ...updatedPlan,
-            id: updatedId,
-            title: variables.data.title || selectedTravelPlan?.title || updatedPlan?.title,
-          });
         });
       }
 
@@ -192,7 +172,6 @@ export const useTravels = () => {
 export const useDeleteTravel = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { selectedTravelPlan, clearTravelPlan } = useTravelContext();
 
   return useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
@@ -209,10 +188,6 @@ export const useDeleteTravel = () => {
       queryClient.removeQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
       // 3. Invalidate to refetch fresh data
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
-
-      if (selectedTravelPlan && String(selectedTravelPlan.id) === String(id)) {
-        clearTravelPlan();
-      }
 
       showToast({
         type: "success",
@@ -232,7 +207,6 @@ export const useDeleteTravel = () => {
 export const useCancelTravel = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   return useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
@@ -258,13 +232,6 @@ export const useCancelTravel = () => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", id] });
       queryClient.invalidateQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
 
-      if (selectedTravelPlan && String(selectedTravelPlan.id) === String(id)) {
-        selectTravelPlan({
-          ...selectedTravelPlan,
-          status: TravelStatus.Cancelled,
-        });
-      }
-
       showToast({
         type: "success",
         message: "Trip cancelled successfully!",
@@ -283,7 +250,6 @@ export const useCancelTravel = () => {
 export const useArchiveTravel = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   return useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
@@ -309,14 +275,6 @@ export const useArchiveTravel = () => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", id] });
       queryClient.invalidateQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
 
-      if (selectedTravelPlan && String(selectedTravelPlan.id) === String(id)) {
-        selectTravelPlan({
-          ...selectedTravelPlan,
-          isArchived: true,
-          status: TravelStatus.Archieved,
-        });
-      }
-
       showToast({
         type: "success",
         message: "Trip archived successfully!",
@@ -335,7 +293,6 @@ export const useArchiveTravel = () => {
 export const useUnarchiveTravel = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   return useMutation<void, Error, string>({
     mutationFn: async (id: string) => {
@@ -360,15 +317,6 @@ export const useUnarchiveTravel = () => {
       queryClient.invalidateQueries({ queryKey: TRAVELS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", id] });
       queryClient.invalidateQueries({ queryKey: [TRAVEL_QUERY_KEY, id] });
-
-      if (selectedTravelPlan && String(selectedTravelPlan.id) === String(id)) {
-        const nextStatus = selectedTravelPlan.status === TravelStatus.Archieved ? TravelStatus.Draft : selectedTravelPlan.status;
-        selectTravelPlan({
-          ...selectedTravelPlan,
-          isArchived: false,
-          status: nextStatus,
-        });
-      }
 
       showToast({
         type: "success",

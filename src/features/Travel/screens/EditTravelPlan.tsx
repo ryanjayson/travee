@@ -9,10 +9,6 @@ import {
 import Icon from "react-native-vector-icons/MaterialIcons";
 import TouchButton from "../../../components/atoms/TouchButton";
 import Tabs from "../../../components/Tabs";
-import {
-  useTravelContext
-} from "../../../context/TravelContext";
-import { TravelPlanDetail } from "../../../types/context/travel";
 import { Friend } from "../../../data/sampleFriends";
 import {
   ItineraryActivity,
@@ -45,8 +41,6 @@ const EditTravelPlan = () => {
   }>({ sections: [], activities: [] });
   const [loading, setLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
-  const { selectedTravelPlan, selectTravelPlan, clearTravelPlan } =
-    useTravelContext();
 
   const itineraryRef = useRef<EditTravelItineraryRef>(null);
   const formRef = useRef<CreateOrEditRef>(null);
@@ -63,26 +57,7 @@ const EditTravelPlan = () => {
     isRefetching, // Good for showing a silent background loader
   } = useTravelPlan(travelId); // Pass the required ID
 
-  useEffect(() => {
-    if (travelPlan?.travel?.id) {
-      const current = travelPlan.travel;
-      if (
-        selectedTravelPlan?.id !== current.id ||
-        selectedTravelPlan?.title !== current.title ||
-        selectedTravelPlan?.destination !== current.destination ||
-        selectedTravelPlan?.startOrDepartureDate !== current.startOrDepartureDate ||
-        selectedTravelPlan?.endOrReturnDate !== current.endOrReturnDate ||
-        selectedTravelPlan?.status !== current.status ||
-        selectedTravelPlan?.budget !== current.budget ||
-        selectedTravelPlan?.notes !== current.notes ||
-        selectedTravelPlan?.isOffline !== current.isOffline ||
-        selectedTravelPlan?.isArchived !== current.isArchived ||
-        selectedTravelPlan?.type !== current.type
-      ) {
-        selectTravelPlan(current as TravelPlanDetail);
-      }
-    }
-  }, [travelPlan?.travel, selectedTravelPlan]);
+
 
 
   const refreshItinerary = async () => {
@@ -186,6 +161,7 @@ const EditTravelPlan = () => {
         <EditTravelItinerary
           ref={itineraryRef}
           travelSections={travelPlan?.itinerarySection ?? null}
+          travelId={travelId}
           onSave={() => {}}
           onBack={() => {}}
           onRefresh={refreshItinerary}
@@ -198,6 +174,7 @@ const EditTravelPlan = () => {
       content: (
         <TripChecklist
           activities={travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
+          travelId={travelId}
         />
       ),
     },

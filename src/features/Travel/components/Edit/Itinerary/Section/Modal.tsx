@@ -22,6 +22,7 @@ interface SectionModalProps {
   visible: boolean;
   onClose: () => void;
   itinerarySection: ItinerarySection | null;
+  travelId?: string;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -31,6 +32,7 @@ const SectionModal = ({
   visible,
   onClose,
   itinerarySection,
+  travelId,
 }: SectionModalProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.6);
@@ -223,6 +225,7 @@ const SectionModal = ({
             <View className="flex-1">
               <EditSection
                 itinerarySection={itinerarySection}
+                travelId={travelId}
                 onClose={onClose}
                 onScroll={(e) => {
                   const y = e.nativeEvent.contentOffset.y;

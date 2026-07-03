@@ -29,12 +29,14 @@ export interface ExpenseModalState {
   itineraryExpense: ItineraryExpense | null;
   activityId?: string;
   activities?: ItineraryActivity[];
+  travelId?: string;
 }
 
 export interface NoteModalState {
   visible: boolean;
   itineraryNote: ItineraryNote | null;
   activities?: ItineraryActivity[];
+  travelId?: string;
 }
 
 export interface ChecklistModalState {
@@ -53,6 +55,7 @@ export interface ActivityModalState {
   visible: boolean;
   itineraryActivity: ItineraryActivity | null;
   itinerarySectionId?: string;
+  travelId?: string;
 }
 
 export interface MemberModalState {
@@ -87,21 +90,20 @@ export interface FlightModalState {
 }
 
 export interface TravelContextType {
-  selectedTravelPlan: TravelPlanDetail | null;
-  selectTravelPlan: (travelData: TravelPlanDetail) => void;
-  clearTravelPlan: () => void;
   expenseModal: ExpenseModalState;
   openExpenseModal: (
     itineraryExpense?: ItineraryExpense | null,
     activityId?: string,
-    activities?: ItineraryActivity[]
+    activities?: ItineraryActivity[],
+    travelId?: string
   ) => void;
   closeExpenseModal: () => void;
 
   noteModal: NoteModalState;
   openNoteModal: (
     itineraryNote?: ItineraryNote | null,
-    activities?: ItineraryActivity[]
+    activities?: ItineraryActivity[],
+    travelId?: string
   ) => void;
   closeNoteModal: () => void;
 
@@ -120,7 +122,8 @@ export interface TravelContextType {
   activityModal: ActivityModalState;
   openActivityModal: (
     itineraryActivity?: ItineraryActivity | null,
-    itinerarySectionId?: string
+    itinerarySectionId?: string,
+    travelId?: string
   ) => void;
   closeActivityModal: () => void;
 

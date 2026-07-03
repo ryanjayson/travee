@@ -12,8 +12,6 @@ import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import StatusBadge from "../../../components/StatusBadge";
 import Tabs from "../../../components/Tabs/index";
-import { useTravelContext } from "../../../context/TravelContext";
-import { TravelPlanDetail } from "../../../types/context/travel";
 import { TravelStatus, TripType } from "../../../types/enums";
 import ViewTravelModal from "../components/View/Modal";
 import { useTravels } from "../hooks/useTravel";
@@ -27,8 +25,6 @@ const TravelCatalog = () => {
   const [selectedTravel, setSelectedTravel] = useState<Travel | null>(null);
   const [showTravelDetail, setShowTravelDetail] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  
-  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -58,7 +54,6 @@ const TravelCatalog = () => {
 
   const handleViewModeTravel = (travel: Travel) => {
     if (travel && travel.id) {
-      selectTravelPlan(travel as TravelPlanDetail);
       setSelectedTravel(travel);
       setShowTravelViewModal(true);
     }
@@ -449,7 +444,7 @@ const TravelCatalog = () => {
       </View>
 
       <ViewTravelModal
-        travelId={selectedTravelPlan?.id || ""}
+        travelId={selectedTravel?.id || ""}
         showModal={showTravelViewModal}
         setShowModal={setShowTravelViewModal}
       />

@@ -72,6 +72,7 @@ interface EditActivityProps {
   onOpenSectionModal: (sections: any[], currentId: string | undefined, onSelect: (id?: string) => void) => void;
   onOpenPrimaryTypeModal: (currentType: ActivityType, onSelect: (type: ActivityType) => void) => void;
   itinerarySectionId?: string;
+  travelId?: string;
   onScroll?: (event: any) => void;
   onChildModalToggle?: (isOpen: boolean) => void;
   onSaveSuccess?: (activity: ItineraryActivity) => void;
@@ -333,6 +334,7 @@ const matchEntertainmentSubtype = (poi: any): string | null => {
 const EditActivity = ({
   itinerarySectionId,
   itineraryActivity,
+  travelId: propTravelId,
   onClose,
   onScroll,
   onChildModalToggle,
@@ -471,14 +473,16 @@ const EditActivity = ({
 
 
   const updateMutation = useUpdateActivityMutation();
-  const { selectedTravelPlan, openFlightModal } = useTravelContext();
+  const { openFlightModal } = useTravelContext();
   const { userToken } = useAuth();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
   const { generateSortOrder } = useLexicographicSort();
+  
+  const travelId = itineraryActivity?.travelId || propTravelId || "";
   const {
     data: travelPlan,
-  } = useTravelPlan(selectedTravelPlan?.id || "");
+  } = useTravelPlan(travelId);
   const currentSection = travelPlan?.itinerarySection?.find(s => s.id === itinerarySectionId);
   const { confirm } = useConfirm();
   // Move useTheme to component top level (Rules of Hooks: must not be called inside callbacks)
@@ -522,7 +526,6 @@ const EditActivity = ({
   const saveChecklistItem = useSaveChecklistItemMutation();
   const deleteChecklistItem = useDeleteChecklistItemMutation();
   const toggleChecklistItem = useToggleChecklistItemMutation();
-  const travelId = selectedTravelPlan?.id || "";
   const activityId = itineraryActivity?.id;
   const { data: checklistItems = [], refetch: refetchChecklist } = useChecklistItems(travelId);
   const activityChecklistItems = checklistItems.filter(
@@ -593,8 +596,7 @@ const EditActivity = ({
     values: ActivityFormValues,
   ) => {
     if (
-      selectedTravelPlan &&
-      selectedTravelPlan?.id
+      travelId
     ) {
 
       // Build proper Date objects from strings
@@ -909,7 +911,7 @@ const EditActivity = ({
         deleteActivityMutation({
           sectionId: targetSectionId,
           activityId: activityId,
-          travelId: selectedTravelPlan?.id,
+          travelId: travelId,
         });
         onClose();
       }
@@ -917,7 +919,7 @@ const EditActivity = ({
   };
 
   const initialValues: ActivityFormValues = {
-    travelId: selectedTravelPlan?.id,
+    travelId: travelId,
     sectionId: itinerarySectionId || (travelPlan?.itinerarySection?.[0]?.id || ""),
     id: itineraryActivity?.id,
     title: itineraryActivity?.title || "",
@@ -1093,7 +1095,7 @@ const EditActivity = ({
     itineraryActivity?.id,
     itineraryActivity?.updatedAt,
     itinerarySectionId,
-    selectedTravelPlan?.id,
+    travelId,
     travelPlan?.itinerarySection?.[0]?.id,
     currentSection?.startDate,
   ]);

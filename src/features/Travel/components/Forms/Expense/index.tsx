@@ -14,7 +14,6 @@ import { Checkbox, Divider, TextInput } from "react-native-paper";
 import * as Yup from "yup";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import TouchButton from "../../../../../components/atoms/TouchButton";
-import { useTravelContext } from "../../../../../context/TravelContext";
 import { ExpenseCategory } from "../../../../../types/enums";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
 import { useSaveExpenseMutation } from "../../../hooks/useExpense";
@@ -28,6 +27,7 @@ interface EditExpenseProps {
   itineraryExpense: ItineraryExpense | null;
   activityId?: string;
   activities?: ItineraryActivity[];
+  travelId?: string;
   onClose: () => void;
   onScroll?: (event: any) => void;
 }
@@ -58,10 +58,10 @@ const EditExpense = ({
   itineraryExpense,
   activityId,
   activities,
+  travelId: propTravelId,
   onClose,
   onScroll,
 }: EditExpenseProps) => {
-  const { selectedTravelPlan } = useTravelContext();
   const { userToken } = useAuth();
   const { mutate: updateExpense, isPending: isSaving } = useSaveExpenseMutation();
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -69,12 +69,13 @@ const EditExpense = ({
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [showMemberModal, setShowMemberModal] = useState(false);
 
-  const { data: members = [] } = useTripMembers(selectedTravelPlan?.id || "");
+  const travelId = itineraryExpense?.travelId || propTravelId || "";
+  const { data: members = [] } = useTripMembers(travelId);
 
   const formik = useFormik({
     initialValues: {
       id: itineraryExpense?.id,
-        travelId: itineraryExpense?.travelId || selectedTravelPlan?.id || "",
+        travelId: travelId,
         activityId: itineraryExpense?.activityId || activityId,
         memberId: itineraryExpense?.memberId || "",
         title: itineraryExpense?.title || "",

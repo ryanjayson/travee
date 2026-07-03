@@ -36,6 +36,7 @@ export interface EditTravelItineraryRef {
 
 export interface EditTravelItineraryProps {
   travelSections: ItinerarySection[] | null;
+  travelId?: string;
   onSave: (itineraryData: any) => void;
   onBack: () => void;
   onRefresh?: () => void;
@@ -61,6 +62,7 @@ const slowSpringAnimation = {
 
 const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItineraryProps>(({
   travelSections,
+  travelId,
   onSave,
   onBack,
   onRefresh,
@@ -999,6 +1001,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
         }}
         itinerarySectionId={currentSectionId || undefined}
         itineraryActivity={null}
+        travelId={travelId}
       />
 
       <ActivityModal //EDIT
@@ -1011,12 +1014,14 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
         }}
         itinerarySectionId={currentSectionId || undefined}
         itineraryActivity={editingActivity}
+        travelId={travelId}
       />
 
       <SectionModal //ADD
         visible={sectionModalVisible}
         onClose={() => setSectionModalVisible(false)}
         itinerarySection={null}
+        travelId={travelId}
       />
 
       <SectionModal //EDIT
@@ -1027,6 +1032,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
         }}
         // onSave={handleEditSection}
         itinerarySection={selectedSection || null}
+        travelId={travelId}
       />
 
       {/* Main Menu Modal */}

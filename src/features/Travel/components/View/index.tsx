@@ -18,11 +18,12 @@ import {
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import StatusBadge from "../../../../components/StatusBadge";
-import { TripType } from "../../../../types/enums";
-import TripIcon from "../../../../components/TripIcon";
 import Tabs from "../../../../components/Tabs";
+import TripIcon from "../../../../components/TripIcon";
 import { useTravelContext } from "../../../../context/TravelContext";
+import { TripType } from "../../../../types/enums";
 import { TravelPlan } from "../../../Travel/types/TravelDto";
+import SectionModal from "../Edit/Itinerary/Section/Modal";
 import MapViewer from "../MapViewer";
 import ShareTripModal from "../ShareOverlay/ShareTripModal";
 import ChecklistTab from "./Tabs/ChecklistTab";
@@ -32,7 +33,6 @@ import ItineraryTab from "./Tabs/ItineraryTab";
 import MembersTab from "./Tabs/MembersTab";
 import NotesTab from "./Tabs/NotesTab";
 import TravelActionFAB from "./TravelActionFAB";
-import SectionModal from "../Edit/Itinerary/Section/Modal";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -73,7 +73,6 @@ const ViewTravel = ({
   const [showSectionModal, setShowSectionModal] = useState<boolean>(false);
   const [localShowMap, localSetShowMap] = useState<boolean>(false);
   const [localShowShare, localSetShowShare] = useState<boolean>(false);
-  const { colors } = useTheme();
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const queryClient = useQueryClient();
   const travelId = travelPlan.travel.id;
@@ -509,7 +508,8 @@ const ViewTravel = ({
             openExpenseModal(
               expense,
               undefined,
-              travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+              travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
+              travelId
             );
           }}
         />
@@ -535,7 +535,8 @@ const ViewTravel = ({
           onEditNote={(note) => {
             openNoteModal(
               note,
-              travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+              travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
+              travelId
             );
           }}
         />
@@ -699,7 +700,8 @@ const ViewTravel = ({
         onAddNote={() => {
           openNoteModal(
             null,
-            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
+            travelId
           );
         }}
         onAddChecklist={() => {
@@ -713,10 +715,11 @@ const ViewTravel = ({
           openExpenseModal(
             null,
             undefined,
-            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
+            travelId
           );
         }}
-        onAddActivity={() => openActivityModal(null, undefined)}
+        onAddActivity={() => openActivityModal(null, undefined, travelId)}
         onAddSection={() => setShowSectionModal(true)}
       />
 

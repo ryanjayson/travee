@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchTripSetting, saveTripSetting } from "../../../services/travel/tripSettingService";
 import { TripSetting } from "../types/TravelDto";
 import { useToast } from "../../../context/ToastContext";
-import { useTravelContext } from "../../../context/TravelContext";
 
 export const TRIP_SETTING_QUERY_KEY = ["tripSetting"];
 
@@ -20,7 +19,6 @@ export const useTripSetting = (travelId: string) => {
 export const useUpdateTripSetting = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   return useMutation<any, Error, TripSetting>({
     mutationFn: async (settingData) => {
@@ -34,17 +32,6 @@ export const useUpdateTripSetting = () => {
       queryClient.invalidateQueries({
         queryKey: ["selectedTravelPlan", variables.travelId],
       });
-
-      // Synchronize travelContext if selected plan matches
-      if (selectedTravelPlan && selectedTravelPlan.id === variables.travelId) {
-        selectTravelPlan({
-          ...selectedTravelPlan,
-          tripSetting: {
-            ...variables,
-            id: res?.id || variables.id,
-          },
-        });
-      }
     },
     onError: (error) => {
       console.error("Trip Setting Mutation Error:", error);

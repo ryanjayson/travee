@@ -31,9 +31,6 @@ import {
 } from "../features/Travel/types/TravelDto";
 
 const initialContextValue: TravelContextType = {
-  selectedTravelPlan: null,
-  selectTravelPlan: (travelData: TravelPlanDetail) => {},
-  clearTravelPlan: () => {}, // placeholder function
   expenseModal: {
     visible: false,
     itineraryExpense: null,
@@ -112,10 +109,6 @@ interface TravelProviderProps {
 
 // Create the Provider component using the FC (Function Component) type
 export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
-  // Ensure useState is typed correctly
-  const [selectedTravelPlan, setSelectedTravelPlan] =
-    useState<TravelPlanDetail | null>(null);
-
   const [expenseModal, setExpenseModal] = useState<ExpenseModalState>({
     visible: false,
     itineraryExpense: null,
@@ -164,26 +157,19 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     visible: false,
   });
 
-  // Use useCallback and apply types to the function arguments
-  const selectTravelPlan = useCallback((travelData: TravelPlanDetail) => {
-    setSelectedTravelPlan(travelData);
-  }, []);
-
-  const clearTravelPlan = useCallback(() => {
-    setSelectedTravelPlan(null);
-  }, []);
-
   const openExpenseModal = useCallback(
     (
       itineraryExpense: ItineraryExpense | null = null,
       activityId?: string,
-      activities?: ItineraryActivity[]
+      activities?: ItineraryActivity[],
+      travelId?: string
     ) => {
       setExpenseModal({
         visible: true,
         itineraryExpense,
         activityId,
         activities,
+        travelId,
       });
     },
     []
@@ -199,12 +185,14 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
   const openNoteModal = useCallback(
     (
       itineraryNote: ItineraryNote | null = null,
-      activities?: ItineraryActivity[]
+      activities?: ItineraryActivity[],
+      travelId?: string
     ) => {
       setNoteModal({
         visible: true,
         itineraryNote,
         activities,
+        travelId,
       });
     },
     []
@@ -257,12 +245,14 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
   const openActivityModal = useCallback(
     (
       itineraryActivity: ItineraryActivity | null = null,
-      itinerarySectionId?: string
+      itinerarySectionId?: string,
+      travelId?: string
     ) => {
       setActivityModal({
         visible: true,
         itineraryActivity,
         itinerarySectionId,
+        travelId,
       });
     },
     []
@@ -371,9 +361,6 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
   // Use useMemo and apply the context type to the value
   const contextValue = useMemo<TravelContextType>(
     () => ({
-      selectedTravelPlan,
-      selectTravelPlan,
-      clearTravelPlan,
       expenseModal,
       openExpenseModal,
       closeExpenseModal,
@@ -403,9 +390,6 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       closeFlightModal,
     }),
     [
-      selectedTravelPlan,
-      selectTravelPlan,
-      clearTravelPlan,
       expenseModal,
       openExpenseModal,
       closeExpenseModal,

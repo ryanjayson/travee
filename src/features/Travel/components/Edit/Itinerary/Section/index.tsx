@@ -17,9 +17,8 @@ import TouchButton from "../../../../../../components/atoms/TouchButton";
 import { ItinerarySection } from "../../../../types/TravelDto";
 import { useUpdateSectionMutation, useDeleteSectionMutation } from "../../../../hooks/useSection";
 import { useTravel } from "../../../../hooks/useTravel";
-import { useTravelContext } from "../../../../../../context/TravelContext";
-import { Calendar } from "react-native-calendars";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
+import { Calendar } from "react-native-calendars";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 
 interface Place {
@@ -31,6 +30,7 @@ interface Place {
 
 interface EditSectionProps {
   itinerarySection: ItinerarySection | null;
+  travelId?: string;
   onClose: () => void;
   onScroll?: (event: any) => void;
 }
@@ -39,14 +39,15 @@ const TravelSchema = Yup.object().shape({
   title: Yup.string().required("Title is required").min(2),
 });
 
-const EditSection = ({ itinerarySection, onClose, onScroll }: EditSectionProps) => {
+const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScroll }: EditSectionProps) => {
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const { mutate: updateMutation, isPending: isUpdating } = useUpdateSectionMutation();
   const { mutate: deleteSectionMutation, isPending: isDeleting } = useDeleteSectionMutation();
-  const { selectedTravelPlan } = useTravelContext();
-  const { data: travel } = useTravel(selectedTravelPlan?.id || "");
+  
+  const travelId = itinerarySection?.travelId || propTravelId || "";
+  const { data: travel } = useTravel(travelId);
   const { generateSortOrder } = useLexicographicSort();
   const { confirm } = useConfirm();
 
@@ -74,7 +75,7 @@ const EditSection = ({ itinerarySection, onClose, onScroll }: EditSectionProps) 
   const formik = useFormik({
     initialValues: {
       id: itinerarySection?.id,
-      travelId: selectedTravelPlan?.id,
+      travelId: travelId,
       title: itinerarySection?.title || "",
       description: itinerarySection?.description || "",
       sortOrder: itinerarySection?.sortOrder || "",

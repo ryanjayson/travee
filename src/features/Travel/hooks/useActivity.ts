@@ -12,8 +12,6 @@ import { ApiResponse } from "../../../types/api";
 import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity, getAllActivitiesWithDestinationLocally, deleteActivityLocally, getAllActivitiesLocally, getTravelPlanLocally } from "../../../services/local/travelService";
 import { UpdateSortVariables } from "../types/ActivityDto";
 import { fetchWithTimeout } from "../../../utils/fetchWithTimeout";
-import { useTravelContext } from "../../../context/TravelContext";
-import { TravelPlanDetail } from "../../../types/context/travel";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
 const ITINERARY_QUERY_KEY = ["itineraryActivity"];
@@ -32,7 +30,6 @@ type DeleteVariables = {
 export const useUpdateActivityMutation = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   const updateActivityMutation = useMutation<
     MutationData,
@@ -94,7 +91,7 @@ export const useUpdateActivityMutation = () => {
         queryKey: ["selectedTravelPlan"],
       });
 
-      const targetTravelId = variables.travelId || selectedTravelPlan?.id;
+      const targetTravelId = variables.travelId;
       if (targetTravelId) {
         queryClient.invalidateQueries({
           queryKey: ["travel", targetTravelId],
@@ -103,16 +100,6 @@ export const useUpdateActivityMutation = () => {
         queryClient.invalidateQueries({
           queryKey: ["selectedTravelPlan", targetTravelId],
         });
-
-        getTravelPlanLocally(targetTravelId).then((localPlan) => {
-          if (localPlan?.travel && selectedTravelPlan && String(selectedTravelPlan.id) === String(targetTravelId)) {
-            selectTravelPlan({
-              ...selectedTravelPlan,
-              ...localPlan.travel,
-              id: targetTravelId,
-            });
-          }
-        }).catch((err) => console.warn("Failed to update travelContext on activity save:", err));
       }
 
       if (variables.id) {
@@ -206,7 +193,6 @@ export const useUpdateActivityMutation = () => {
 export const useDeleteActivityMutation = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
-  const { selectedTravelPlan, selectTravelPlan } = useTravelContext();
 
   return useMutation({
     mutationFn: async (variables: DeleteVariables): Promise<void> => {
@@ -260,7 +246,7 @@ export const useDeleteActivityMutation = () => {
     onSuccess: (data: void, variables: DeleteVariables) => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
 
-      const targetTravelId = variables.travelId || selectedTravelPlan?.id;
+      const targetTravelId = variables.travelId;
       if (targetTravelId) {
         queryClient.invalidateQueries({
           queryKey: ["travel", targetTravelId],
@@ -281,16 +267,6 @@ export const useDeleteActivityMutation = () => {
         queryClient.invalidateQueries({
           queryKey: ["itineraryNotes", targetTravelId],
         });
-
-        getTravelPlanLocally(targetTravelId).then((localPlan) => {
-          if (localPlan?.travel && selectedTravelPlan && String(selectedTravelPlan.id) === String(targetTravelId)) {
-            selectTravelPlan({
-              ...selectedTravelPlan,
-              ...localPlan.travel,
-              id: targetTravelId,
-            });
-          }
-        }).catch((err) => console.warn("Failed to update travelContext on activity delete:", err));
 
         // Optimistically/synchronously update query cache for instant UI rendering across all sections
         queryClient.setQueryData<TravelPlan | undefined>(

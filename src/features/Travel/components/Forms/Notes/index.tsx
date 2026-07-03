@@ -21,7 +21,6 @@ import { Image } from "react-native";
 import { DestinationDto, ItineraryActivity } from "../../../types/TravelDto";
 import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
 import { useUpdateActivityMutation, useDeleteActivityMutation } from "../../../hooks/useActivity";
-import { useTravelContext } from "../../../../../context/TravelContext";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import MapboxDestinationSelectorModal from "../../MapboxDestinationSelector/Modal";
 import { MapboxPlace } from "../../MapboxDestinationSelector";
@@ -37,6 +36,7 @@ interface Place {
 interface EditActivityProps {
   itinerarySectionId?: string;
   itineraryActivity: ItineraryActivity | null;
+  travelId?: string;
   onClose: () => void;
 }
 
@@ -63,6 +63,7 @@ export interface ActivityFormValues {
 const EditActivity = ({
   itinerarySectionId,
   itineraryActivity,
+  travelId: propTravelId,
   onClose,
 }: EditActivityProps) => {
   const [showDestinationModal, setShowDestinationModal] =
@@ -73,19 +74,18 @@ const EditActivity = ({
   const [showCalendarFor, setShowCalendarFor] = useState<"startDate" | "endDate" | null>(null);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const updateMutation = useUpdateActivityMutation();
-  const { selectedTravelPlan } = useTravelContext();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
   const { confirm } = useConfirm();
+
+  const travelId = itineraryActivity?.travelId || propTravelId || "";
 
   const handleSaveActivity = async (
     values: ActivityFormValues,
   ) => {
     if (
-      selectedTravelPlan &&
-      selectedTravelPlan?.id
+      travelId
     ) {
-debugger;
       // Build proper Date objects from strings
       let finalStartDate: Date | undefined = undefined;
       if (values.startDate) {
@@ -132,7 +132,7 @@ debugger;
         deleteActivityMutation({
           sectionId: targetSectionId,
           activityId: activityId,
-          travelId: selectedTravelPlan?.id,
+          travelId: travelId,
         });
         if (!isPending) {
           onClose();
@@ -144,7 +144,7 @@ debugger;
   return (
     <Formik<ActivityFormValues>
       initialValues={{
-        travelId: selectedTravelPlan?.id,
+        travelId: travelId,
         sectionId: itinerarySectionId,
         id: itineraryActivity?.id,
         title: itineraryActivity?.title || "",

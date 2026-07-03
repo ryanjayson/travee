@@ -8,8 +8,6 @@ import { Travel } from '../features/Travel/types/TravelDto';
 import { ActivityType, TravelStatus, getActivityTypeLabel } from '../types/enums';
 import Hero from '../components/Home/Hero/index';
 import UpcomingTrips from '../components/Home/UpcomingTrips';
-import { useTravelContext } from "../context/TravelContext";
-import { TravelPlanDetail } from '../types/context/travel';
 import ViewTravelModal from '../features/Travel/components/View/Modal';
 
 const HomeScreen = () => {
@@ -17,14 +15,12 @@ const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
   const { data: allActivities } = useAllActivities();
-  const { selectTravelPlan, selectedTravelPlan } = useTravelContext();
   const [currentOngoingTrip, setCurrentOngoingTrip] = useState<Travel | null>(null);
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [selectedTravelForModal, setSelectedTravelForModal] = useState<Travel | null>(null);
 
   const handlePressTrip = (trip: Travel) => {
     if (trip && trip.id) {
-      selectTravelPlan(trip as TravelPlanDetail);
       setSelectedTravelForModal(trip);
       setShowTravelViewModal(true);
     }
@@ -47,10 +43,6 @@ const HomeScreen = () => {
     if (!travels) return;
     const trip = travels?.find(t => t.status === TravelStatus.Ongoing) ?? null;
     setCurrentOngoingTrip(trip);
-
-    if (trip && trip.id) {
-      selectTravelPlan(trip as TravelPlanDetail);
-    }
   }, [travels]);
 
   const getTripStats = () => {
@@ -275,7 +267,7 @@ const HomeScreen = () => {
       </ScrollView>
 
       <ViewTravelModal
-        travelId={selectedTravelForModal?.id || selectedTravelPlan?.id || ""}
+        travelId={selectedTravelForModal?.id || ""}
         showModal={showTravelViewModal}
         setShowModal={setShowTravelViewModal}
       />

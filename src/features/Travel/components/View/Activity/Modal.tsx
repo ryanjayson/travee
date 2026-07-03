@@ -10,7 +10,6 @@ import {
 import Activity from ".";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { useTravelContext } from "../../../../../context/TravelContext";
 import { useItineraryActivity } from "../../../hooks/useActivity";
 import { useTravelPlan } from "../../../hooks/useTravel";
 import ActivityModal from "../../Edit/Itinerary/Activity/Modal";
@@ -24,6 +23,7 @@ import { ItineraryActivity } from "../../../types/TravelDto";
 
 interface ViewActivityModalProps {
   id: string;
+  travelId?: string;
   showModal?: boolean;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -73,12 +73,12 @@ const hasActivityDetails = (activity?: ItineraryActivity | null) => {
 
 const ViewActivityModal = ({
   id,
+  travelId: propTravelId,
   showModal = false,
   setShowModal,
 }: ViewActivityModalProps) => {
   const insets = useSafeAreaInsets();
   const modalHeight = useMemo(() => screenHeight, []);
-  const { selectedTravelPlan } = useTravelContext();
   const { keyboardVisible, isFloating } = useKeyboardVisible();
 
   // Track the currently displayed activity ID (may change via swipe)
@@ -95,7 +95,7 @@ const ViewActivityModal = ({
   const { data: itineraryActivity } = useItineraryActivity(currentActivityId);
 
   // Fetch the full travel plan to get the ordered list of all activities
-  const travelId = itineraryActivity?.travelId || selectedTravelPlan?.id || "";
+  const travelId = itineraryActivity?.travelId || propTravelId || "";
   const { data: travelPlan } = useTravelPlan(travelId);
 
   // Build flat ordered list of all activity IDs from itinerary sections

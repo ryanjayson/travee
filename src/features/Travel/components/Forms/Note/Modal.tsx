@@ -24,6 +24,7 @@ interface NoteModalProps {
   onClose: () => void;
   itineraryNote: ItineraryNote | null;
   activities?: ItineraryActivity[];
+  travelId?: string;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -32,7 +33,8 @@ const NoteModal = ({
   visible, 
   onClose, 
   itineraryNote, 
-  activities 
+  activities,
+  travelId,
 }: NoteModalProps) => {
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
   const { keyboardVisible } = useKeyboardVisible();
@@ -265,9 +267,10 @@ const NoteModal = ({
               </View>
 
               <View className="flex-1">
-                <EditNote
+                 <EditNote
                   itineraryNote={itineraryNote}
                   activities={activities}
+                  travelId={travelId}
                   onClose={onClose}
                   onOpenActivityModal={handleOpenActivityModal}
                   onScroll={(e) => {

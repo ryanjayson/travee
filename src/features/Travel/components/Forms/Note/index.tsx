@@ -16,7 +16,6 @@ import { TextInput } from "react-native-paper";
 import * as Yup from "yup";
 import DescriptionInput from "../../../../../components/molecules/DescriptionInput";
 import TouchButton from "../../../../../components/atoms/TouchButton";
-import { useTravelContext } from "../../../../../context/TravelContext";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
 import { useDeleteNoteMutation, useSaveNoteMutation } from "../../../hooks/useNote";
 import { ItineraryActivity, ItineraryNote } from "../../../types/TravelDto";
@@ -27,6 +26,7 @@ interface EditNoteProps {
   onClose: () => void;
   onOpenActivityModal: (currentId: string | undefined, onSelect: (id?: string) => void) => void;
   activities?: ItineraryActivity[];
+  travelId?: string;
   onScroll?: (event: any) => void;
 }
 
@@ -44,8 +44,7 @@ export interface NoteFormValues {
   userId: string;
 }
 
-const EditNote = ({ itineraryNote, activities, onClose, onScroll, onOpenActivityModal }: EditNoteProps) => {
-  const { selectedTravelPlan } = useTravelContext();
+const EditNote = ({ itineraryNote, activities, travelId: propTravelId, onClose, onScroll, onOpenActivityModal }: EditNoteProps) => {
   const { userToken } = useAuth();
   const saveMutation = useSaveNoteMutation();
   const deleteMutation = useDeleteNoteMutation();
@@ -100,11 +99,13 @@ const EditNote = ({ itineraryNote, activities, onClose, onScroll, onOpenActivity
     }
   };
 
+  const travelId = itineraryNote?.travelId || propTravelId || "";
+
   return (
     <Formik<NoteFormValues>
       initialValues={{
         id: itineraryNote?.id,
-        travelId: itineraryNote?.travelId || selectedTravelPlan?.id || "",
+        travelId: travelId,
         activityId: itineraryNote?.activityId,
         title: itineraryNote?.title || "",
         content: itineraryNote?.content || "",

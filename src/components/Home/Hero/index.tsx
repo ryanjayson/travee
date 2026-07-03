@@ -17,7 +17,7 @@ interface HeroProps {
 
 const Hero = ({ ongoingTrip }: HeroProps) => {
   const navigation = useNavigation<any>();
-  const { selectedTravelPlan, openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
+  const { openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
   const [showMapSelector, setShowMapSelector] = useState<boolean>(false);
@@ -215,7 +215,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         {travelPlan && (
           <>
             <ViewTravelModal
-              travelId={selectedTravelPlan?.id || ""}
+              travelId={ongoingTrip?.id || ""}
               showModal={showTravelViewModal}
               setShowModal={setShowTravelViewModal}
             />
@@ -320,7 +320,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
             style={{ borderCurve: 'continuous' }}
             className='items-center justify-center w-7xl h-7xl rounded-[20px] border border-gray-200 bg-gray-100' 
             onPress={() => {
-              openActivityModal(null, undefined);
+              openActivityModal(null, undefined, ongoingTrip?.id);
             }}
             accessibilityRole="button"
             accessibilityLabel="Add Activity"
@@ -337,7 +337,8 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
               openExpenseModal(
                 null,
                 undefined,
-                travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+                travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
+                ongoingTrip?.id
               );
             }}
             accessibilityRole="button"
@@ -354,7 +355,8 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
             onPress={() => {
               openNoteModal(
                 null,
-                travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []
+                travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
+                ongoingTrip?.id
               );
             }}
             accessibilityRole="button"

@@ -187,12 +187,14 @@ function RootTabsComponent() {
         itineraryExpense={expenseModal.itineraryExpense}
         activityId={expenseModal.activityId}
         activities={expenseModal.activities}
+        travelId={expenseModal.travelId}
         onClose={closeExpenseModal}
       />
       <NoteModal
         visible={noteModal.visible}
         itineraryNote={noteModal.itineraryNote}
         activities={noteModal.activities}
+        travelId={noteModal.travelId}
         onClose={closeNoteModal}
       />
       <ChecklistModal
@@ -212,6 +214,7 @@ function RootTabsComponent() {
         visible={activityModal.visible}
         itineraryActivity={activityModal.itineraryActivity}
         itinerarySectionId={activityModal.itinerarySectionId}
+        travelId={activityModal.travelId}
         onClose={closeActivityModal}
       />
       <MemberModal

@@ -327,7 +327,7 @@ const DraggableSectionItem = ({
                       {allowItemReordering ? "Drag and drop here or tap " : "Add now by tapping"}
                     </Text>
                        <TouchableOpacity
-                        onPress={() => openActivityModal(null, section.id || undefined)}
+                        onPress={() => openActivityModal(null, section.id || undefined, section.travelId)}
                         accessibilityRole="button"
                         activeOpacity={0.7}
                         className="flex-row items-center"
@@ -1060,7 +1060,7 @@ const SectionAccordion = ({
             </Text>
             <View className="text-center tracking-wide flex-row align-center gap-1 ">
               <TouchableOpacity
-                onPress={() => openActivityModal(null, undefined)}
+                onPress={() => openActivityModal(null, undefined, travelId)}
                 accessibilityRole="button"
                 activeOpacity={0.7}
                 className="flex-row items-center"

@@ -702,6 +702,7 @@ const ActivityItemCard = ({
       
       <ViewActivityModal
         id={itineraryEventActivity.id!}
+        travelId={itineraryEventActivity.travelId}
         showModal={showActivityViewModal}
         setShowModal={setShowActivityViewModal}
       />

@@ -11,7 +11,6 @@ import {
 import { useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { useConfirm } from "../../../../context/ConfirmContext";
-import { useTravelContext } from "../../../../context/TravelContext";
 import { ActivityType } from "../../../../types/enums";
 import { useAuth } from "../../../Auth/hooks/AuthContext";
 import {
@@ -38,14 +37,14 @@ interface ContextOption {
 
 interface TripChecklistProps {
   activities?: ItineraryActivity[];
+  travelId?: string;
 }
 
 
-const TripChecklist = ({ activities = [] }: TripChecklistProps) => {
-  const { colors } = useTheme();
-  const { selectedTravelPlan } = useTravelContext();
+const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklistProps) => {
+  const colors = useTheme().colors;
   const { userToken } = useAuth();
-  const travelId = selectedTravelPlan?.id || "";
+  const travelId = propTravelId || "";
 
   // Queries & Mutations
   const { data: groups = [], isLoading: groupsLoading } = useChecklistGroups(travelId);

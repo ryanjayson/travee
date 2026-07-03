@@ -30,6 +30,7 @@ interface ActivityModalProps {
   // onSave: (title: string, description: string) => void;
   itineraryActivity: ItineraryActivity | null;
   itinerarySectionId?: string;
+  travelId?: string;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -39,6 +40,7 @@ const ActivityModal = ({
   onClose,
   itineraryActivity,
   itinerarySectionId,
+  travelId,
 }: ActivityModalProps) => {
   const [currentActivity, setCurrentActivity] = useState<ItineraryActivity | null>(itineraryActivity);
 
@@ -437,6 +439,7 @@ const ActivityModal = ({
                 <EditActivity
                   itinerarySectionId={itinerarySectionId}
                   itineraryActivity={extractedData ? { ...currentActivity, ...extractedData } as any : currentActivity}
+                  travelId={travelId}
                   onClose={onClose}
                   onSaveSuccess={(saved) => {
                     setCurrentActivity(saved);

@@ -24,6 +24,7 @@ interface ExpenseModalProps {
   itineraryExpense: ItineraryExpense | null;
   activityId?: string;
   activities?: ItineraryActivity[];
+  travelId?: string;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -34,6 +35,7 @@ const ExpenseModal = ({
   itineraryExpense,
   activityId,
   activities,
+  travelId,
 }: ExpenseModalProps) => {
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
   const { keyboardVisible } = useKeyboardVisible();
@@ -226,6 +228,7 @@ const ExpenseModal = ({
                 itineraryExpense={itineraryExpense}
                 activityId={activityId}
                 activities={activities}
+                travelId={travelId}
                 onClose={onClose}
                 onScroll={(e) => {
                   const y = e.nativeEvent.contentOffset.y;
