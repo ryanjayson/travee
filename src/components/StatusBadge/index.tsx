@@ -63,14 +63,14 @@ const StatusBadge = ({ status, containerClassName = "", textClassName = "" }: St
   }, [status]);
 
   return (
-    <View className={`px-3 py-1 min-w-20 rounded-full ${bg} ${containerClassName} flex-row items-center justify-center gap-1.5 border ${border} `}>
+    <View className={`px-3  py-1 min-w-20 rounded-sm ${bg} ${containerClassName} flex-row items-center justify-center gap-1.5 border ${border} `}>
       {status === TravelStatus.Ongoing && (
         <Animated.View 
           style={{ opacity: pulseAnim }}
           className="w-2 h-2 rounded-full bg-success-500"
         />
       )}
-      <Text className={`text-xs font-bold ${text} ${textClassName}`}>
+      <Text className={`text-xs font-semibold ${text} ${textClassName}`}>
         {label}
       </Text>
     </View>

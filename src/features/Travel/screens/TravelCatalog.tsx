@@ -97,10 +97,13 @@ const TravelCatalog = () => {
     const assignedColor = tripIconConfig ? tripIconConfig.color : "#9E9E9E";
 
     return (
-      <View key={travel.id} className="bg-white rounded-xl mb-2 shadow-sm  mx-4 overflow-hidden">
+      <View 
+        key={travel.id} 
+        className="bg-white rounded-xl mb-2 shadow-sm mx-4 overflow-hidden "
+      >
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
           <View className="p-4 border border-[#E0E0E0] rounded-xl">
-            <View className="flex-row justify-between items-start mb-3">
+            <View className="flex-row justify-between items-start ">
               <View className="flex-row items-center gap-3 flex-1 mr-2">
                  {travel.type != null && travel.type !== TripType.none && (
                   <View 
@@ -112,15 +115,19 @@ const TravelCatalog = () => {
                 )}
                 <View className="flex-1">
                   <Text className="text-xl leading-5 font-medium ">{travel.title}</Text>
-                  <Text className="text-base  text-[#999]">{travel.destination || "--"}</Text>
+                  <Text className="text-base  text-[#999]">{travel.destination || ""}</Text>
+              
+             
                    <Text className="text-sm mt-2 text-[#999]">
                     {dateRange}  {duration ? `| ${duration}` : ""}
-              </Text>
+                  </Text>
                 </View>
               </View>
-              <View className="flex-row items-center justify-between mt-2">
-                <StatusBadge status={effectiveStatus} />
-              </View>
+             { travel && travel.isArchived &&(
+                  <View className="flex-row items-start justify-start">
+                    <StatusBadge status={effectiveStatus} />
+                  </View>
+             )}
             </View>
           </View>
         </TouchableOpacity>
