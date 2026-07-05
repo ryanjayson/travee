@@ -90,6 +90,9 @@ export const useUpdateActivityMutation = () => {
       queryClient.invalidateQueries({
         queryKey: ["selectedTravelPlan"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["travels"],
+      });
 
       const targetTravelId = variables.travelId;
       if (targetTravelId) {
@@ -245,6 +248,7 @@ export const useDeleteActivityMutation = () => {
     },
     onSuccess: (data: void, variables: DeleteVariables) => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      queryClient.invalidateQueries({ queryKey: ["travels"] });
 
       const targetTravelId = variables.travelId;
       if (targetTravelId) {
@@ -347,7 +351,7 @@ export const useItineraryActivity = (activityId: string) => {
 };
 
 export const useUpdateActivitySortOrderMutation = () => {
-  
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (variables: UpdateSortVariables): Promise<void> => {
       const options = postRequestOptions("");
@@ -376,24 +380,9 @@ export const useUpdateActivitySortOrderMutation = () => {
       data: void, // data is void/undefined since we expect 204
       variables: UpdateSortVariables,
     ) => {
-      // queryClient.setQueryData<TravelPlan | undefined>(
-      //   SELECTED_TRAVEL_PLAN_QUERY_KEY,
-      //   (oldData) => {
-      //     if (!oldData) return oldData;
-
-      //     // Filter out the deleted section by ID
-      //     const newSections = oldData.itinerarySection?.filter(
-      //       (s) => s.id !== variables.sectionId,
-      //     );
-
-      //     // Return the new TravelPlan object
-      //     return {
-      //       ...oldData,
-      //       itinerarySection: newSections,
-      //     };
-      //   },
-      // );
-
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      queryClient.invalidateQueries({ queryKey: ["travel"] });
+      queryClient.invalidateQueries({ queryKey: ["travels"] });
       console.log(`Successfully updated order: ${variables.id}`);
     },
     onSettled: (data, error, variables) => {},

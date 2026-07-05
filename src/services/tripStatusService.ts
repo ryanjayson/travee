@@ -107,7 +107,18 @@ export async function runTripStatusCheck(queryClient: QueryClient): Promise<void
       )
       .fetch();
 
-    if (upcomingTrips.length === 0) return;
+    // Fetch all Ongoing trips from WatermelonDB
+    const ongoingTrips = await database
+      .get<Travel>("travels")
+      .query(
+        Q.and(
+          Q.where("status", TravelStatus.Ongoing),
+          Q.where("is_archived", Q.notEq(true))
+        )
+      )
+      .fetch();
+
+    if (upcomingTrips.length === 0 && ongoingTrips.length === 0) return;
 
     let didMutate = false;
 
@@ -144,6 +155,19 @@ export async function runTripStatusCheck(queryClient: QueryClient): Promise<void
       // ── Departure day → set Ongoing ───────────────────────────────────────
       else if (daysUntil === 0) {
         await updateTravelStatusLocally(trip.id, TravelStatus.Ongoing);
+        didMutate = true;
+      }
+    }
+
+    // ── Check if ongoing trips have ended → set Past ────────────────────────
+    for (const trip of ongoingTrips) {
+      if (!trip.endOrReturnDate) continue;
+
+      const returnDate = new Date(trip.endOrReturnDate);
+      const daysUntilEnd = daysBetween(today, returnDate);
+
+      if (daysUntilEnd < 0) {
+        await updateTravelStatusLocally(trip.id, TravelStatus.Past);
         didMutate = true;
       }
     }

@@ -84,6 +84,8 @@ export const useSaveChecklistItemMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      queryClient.invalidateQueries({ queryKey: ["travel"] });
+      queryClient.invalidateQueries({ queryKey: ["travels"] });
       if (variables.activityId) {
         queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
       }
@@ -110,6 +112,8 @@ export const useDeleteChecklistItemMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      queryClient.invalidateQueries({ queryKey: ["travel"] });
+      queryClient.invalidateQueries({ queryKey: ["travels"] });
       if (variables.activityId) {
         queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
       }
@@ -137,6 +141,8 @@ export const useToggleChecklistItemMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      queryClient.invalidateQueries({ queryKey: ["travel"] });
+      queryClient.invalidateQueries({ queryKey: ["travels"] });
       if (variables.activityId) {
         queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
       }

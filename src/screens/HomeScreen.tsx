@@ -147,7 +147,12 @@ const HomeScreen = () => {
 
         <View
           className="bg-gray-100 "
-          style={{ marginTop: currentOngoingTrip ? 0 :-50, borderTopLeftRadius: currentOngoingTrip ? 0 : 30, borderTopRightRadius: currentOngoingTrip ? 0 : 30 }}
+          style={{ 
+            marginTop: currentOngoingTrip ? 0 : -50 , 
+            borderTopLeftRadius: currentOngoingTrip ? 0 : 30, 
+            borderTopRightRadius: currentOngoingTrip ? 0 : 30,
+            paddingTop: currentOngoingTrip ? 0 : 30,
+          }}
         >
           <UpcomingTrips upcomingTrips={upcomingTrips} isLoading={isLoading} onPressTrip={handlePressTrip} />
 

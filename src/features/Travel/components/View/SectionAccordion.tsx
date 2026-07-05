@@ -1369,6 +1369,7 @@ const SectionAccordion = ({
         visible={isAddSectionVisible}
         onClose={() => setIsAddSectionVisible(false)}
         itinerarySection={null}
+        travelId={travelId}
       />
 
       {/* Edit Section Modal */}
@@ -1376,6 +1377,7 @@ const SectionAccordion = ({
         visible={editingSection !== null}
         onClose={() => setEditingSection(null)}
         itinerarySection={editingSection}
+        travelId={travelId}
       />
     </View>
   );

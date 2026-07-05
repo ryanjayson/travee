@@ -727,6 +727,7 @@ const ViewTravel = ({
         visible={showSectionModal}
         onClose={() => setShowSectionModal(false)}
         itinerarySection={null}
+        travelId={travelId}
       />
 
       <ShareTripModal

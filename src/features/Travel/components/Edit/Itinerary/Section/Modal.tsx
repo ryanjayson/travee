@@ -211,7 +211,9 @@ const SectionModal = ({
 
             <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
               <View className="flex-row items-center gap-2">
-                <Text className="text-2xl text-gray-700 font-medium">
+                <Text className="text-2xl text-gray-700 font-medium"
+                // style={{ marginTop: keyboardVisible ? insets.top: 0 }}
+                >
                   {itinerarySection?.id && itinerarySection?.id !== ""
                     ? "Edit Section"
                     : "Add Section"}

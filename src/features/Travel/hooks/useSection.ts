@@ -101,6 +101,9 @@ export const useUpdateSectionMutation = () => {
       queryClient.invalidateQueries({
         queryKey: ["selectedTravelPlan"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["travels"],
+      });
 
       // Example: Manual update for a specific section within a trip // Optional: Manual update for better UI speed (if you have the full itinerary key)
       //commented for now but will add on online mode
@@ -248,6 +251,8 @@ export const useDeleteSectionMutation = () => {
       // Use the sectionId from 'variables' to remove the item from the cache
 
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      queryClient.invalidateQueries({ queryKey: ["travel"] });
+      queryClient.invalidateQueries({ queryKey: ["travels"] });
 
       console.log(`Successfully deleted section ID: ${variables.sectionId}`);
 
@@ -276,6 +281,7 @@ export const useDeleteSectionMutation = () => {
 };
 
 export const useUpdateSectionSortOrderMutation = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (variables: UpdateSectionSortVariables): Promise<void> => {
       const options = postRequestOptions("");
@@ -291,7 +297,7 @@ export const useUpdateSectionSortOrderMutation = () => {
         if (response.status !== 204) {
           const errorBody = await response.json();
           throw new Error(
-            errorBody.message || "Failed to update section sort order.",
+            errorBody.message || "Failed to update itinerary section.",
           );
         }
       }
@@ -305,8 +311,9 @@ export const useUpdateSectionSortOrderMutation = () => {
       data: void,
       variables: UpdateSectionSortVariables,
     ) => {
-      // Invalidate or update query cache if needed. Since LexoRank is evaluated implicitly on array order on the UI instantly, we can rely securely on the local `setSections` mapping for visual smoothness, and optionally invalidate the primary query.
-      // queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      queryClient.invalidateQueries({ queryKey: ["travel"] });
+      queryClient.invalidateQueries({ queryKey: ["travels"] });
     },
   });
 };

@@ -16,7 +16,7 @@ import * as Yup from "yup";
 import TouchButton from "../../../../../../components/atoms/TouchButton";
 import { ItinerarySection } from "../../../../types/TravelDto";
 import { useUpdateSectionMutation, useDeleteSectionMutation } from "../../../../hooks/useSection";
-import { useTravel } from "../../../../hooks/useTravel";
+import { useTravelPlan } from "../../../../hooks/useTravel";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import { Calendar } from "react-native-calendars";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
@@ -36,7 +36,7 @@ interface EditSectionProps {
 }
 
 const TravelSchema = Yup.object().shape({
-  title: Yup.string().required("Title is required").min(2),
+  title: Yup.string().required("Title is required"),
 });
 
 const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScroll }: EditSectionProps) => {
@@ -47,7 +47,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
   const { mutate: deleteSectionMutation, isPending: isDeleting } = useDeleteSectionMutation();
   
   const travelId = itinerarySection?.travelId || propTravelId || "";
-  const { data: travel } = useTravel(travelId);
+  const { data: travelPlan } = useTravelPlan(travelId);
   const { generateSortOrder } = useLexicographicSort();
   const { confirm } = useConfirm();
 
@@ -90,7 +90,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
 
         if (!itinerarySection?.id) {
           // New section: append to the end
-          const existingSections = [...(travel?.itinerarySection || [])].sort((a, b) => 
+          const existingSections = [...(travelPlan?.itinerarySection || [])].sort((a, b) => 
             (a.sortOrder || "").localeCompare(b.sortOrder || "")
           );
           const lastSection = existingSections.length > 0 ? existingSections[existingSections.length - 1] : null;
@@ -305,7 +305,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
               <TouchButton
               buttonText={itinerarySection?.id ? "Update Section" : "Add Section"}
               onPress={() => formik.handleSubmit()}
-              disabled={!formik.isValid || !formik.dirty || isUpdating}
+              disabled={!formik.values.title.trim() || isUpdating}
               className="h-7xl p-6"
             />
           </View>
