@@ -11,11 +11,11 @@ export const getStatusConfig = (status: TravelStatus) => {
     case TravelStatus.Draft:
       return { label: "Draft", bg: "bg-[#E0E0E0]", text: "text-[#666]", border: "border-[#666]/50" };
     case TravelStatus.Upcoming:
-      return { label: "Upcoming", bg: "bg-[#B9E6FE]/40", text: "text-[#263F69]", border: "border-[#263F69]/20" };
+      return { label: "Upcoming", bg: "bg-[#B9E6FE]/40", text: "text-[#263F69]", border: "border-[#263F69]/40" };
     case TravelStatus.Ongoing:
-      return { label: "Ongoing", bg: "bg-success-100", text: "text-success-600", border: "border-success-600" };
+      return { label: "Ongoing", bg: "bg-success-100", text: "text-success-600", border: "border-success-200" };
     case TravelStatus.Past:
-      return { label: "Past", bg: "bg-[#fab00f]/80", text: "text-[#FFFFFF]", border: "border-[#f0a505]" };
+      return { label: "Past", bg: "bg-[#fab00f]/90", text: "text-[#FFFFFF]", border: "border-[#f0a505]/50" };
     case TravelStatus.Archieved:
       return { label: "Archived", bg: "bg-[#FFEBEE]", text: "text-[#D32F2F]", border: "border-[#D32F2F]/30" };
     case TravelStatus.Cancelled:
@@ -63,14 +63,14 @@ const StatusBadge = ({ status, containerClassName = "", textClassName = "" }: St
   }, [status]);
 
   return (
-    <View className={`px-3  py-1 min-w-20 rounded-sm ${bg} ${containerClassName} flex-row items-center justify-center gap-1.5 border ${border} `}>
+    <View className={`px-1 rounded-xxs ${bg} ${containerClassName} flex-row items-center justify-center gap-1.5 border ${border} `}>
       {status === TravelStatus.Ongoing && (
         <Animated.View 
           style={{ opacity: pulseAnim }}
           className="w-2 h-2 rounded-full bg-success-500"
         />
       )}
-      <Text className={`text-xs font-semibold ${text} ${textClassName}`}>
+      <Text className={`text-[8px] font-semibold uppercase tracking-wider ${text} ${textClassName}`}>
         {label}
       </Text>
     </View>

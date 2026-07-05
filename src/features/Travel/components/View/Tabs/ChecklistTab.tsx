@@ -36,6 +36,10 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
     activities ??
     (travelPlan.itinerarySection?.flatMap((s) => s.itineraryActivity || []) || []);
 
+  const hasActivityItems = allActivities.some((activity) =>
+    items.some((i) => i.activityId === activity.id)
+  );
+
   const ungroupedItems = items.filter((i) => !i.checklistGroupId && !i.activityId);
 
   const hasInitializedCollapsed = useRef(false);
@@ -261,10 +265,12 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           );
         })}
 
-
-        <View className="flex-row items-center justify-between">
-          <Text className="text-xs font-semibold tracking-wide uppercase mb-2 text-tertiary">Activity checklist</Text>
-        </View>
+        {hasActivityItems && (
+            <View className="flex-row items-center justify-between">
+              <Text className="text-xs font-semibold tracking-wide uppercase mb-2 text-tertiary">Activity checklist</Text>
+            </View>
+        )}
+  
         {/* Activity-linked items */}
         {allActivities.map((activity) => {
           const activityItems = items.filter((i) => i.activityId === activity.id);

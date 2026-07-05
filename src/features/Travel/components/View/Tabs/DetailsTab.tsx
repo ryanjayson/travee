@@ -55,8 +55,8 @@ const StatCard = ({
 );
 
 const SectionHeader = ({ icon, title }: { icon: string | any; title: string }) => (
-  <View className="flex-1 justify-start gap-0 mt-5">
-    <Text className="text-sm font-semibold tracking-wider uppercase mb-1">
+  <View className="flex-1 justify-start gap-0 mt-3">
+    <Text className="text-sm font-semibold tracking-wider uppercase mb-3">
       {title}
     </Text>
     {/* <Text className="text-xs font-normal text-gray-400 mb-3">
@@ -210,9 +210,8 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
-      <View className="px-4">
+      <View className="px-6">
 
-        {/* ─── Top Summary Cards ─────────────────────────────────────────── */}
         <SectionHeader icon="dashboard" title="Overview" />
         <View className="flex-row flex-wrap gap-3 mb-4">
           <StatCard
@@ -270,8 +269,8 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
             </View>
           </View>  */}
 
-{travelPlan.travel.description && (
-    <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
+        {travelPlan.travel.description && (
+          <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
             <View className="flex-1 gap-2">
               <Text className="text-xs font-bold uppercase tracking-wide">About this trip</Text>
 
@@ -286,7 +285,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
 
             <View>
             <Text 
-               className="text-base leading-6"
+               className="text-base leading-6 text-tertiary"
                numberOfLines={isDescriptionExpanded ? undefined : 3}
                onTextLayout={(e) => {
                  if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
@@ -315,7 +314,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
                className="text-md text-tertiary leading-6"
                numberOfLines={isNoteDescriptionExpanded ? undefined : 2}
                onTextLayout={(e) => {
-                 if (!showNoteMoreButton && e.nativeEvent.lines.length >= 2) {
+                 if (!showNoteMoreButton && e.nativeEvent.lines.length >= 3) {
                    setShowNoteMoreButton(true);
                  }
               }}
@@ -323,7 +322,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
               {travelPlan.travel.notes || null}
             </Text>
             
-            {travelPlan.travel.notes && showMoreButton && (
+            {travelPlan.travel.notes && showNoteMoreButton && (
               <TouchableOpacity onPress={() => setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)}>
                 <Text className="text-sm font-medium text-[#555] mt-1 underline">
                   {isNoteDescriptionExpanded ? "Show less" : "Show more"}

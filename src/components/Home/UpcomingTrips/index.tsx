@@ -85,7 +85,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip }: UpcomingTripsP
               activeOpacity={0.6}
               onPress={() => onPressTrip?.(item)}
               className="rounded-3xl p-5 shadow-sm elevation-3 border bg-white"
-              style={{ borderColor: getBgColor(item.type) }}
+              style={{ borderColor: getBgColor(item.type), width: cardWidth }}
               accessibilityRole="button"
               accessibilityLabel={`View trip ${item.title}`}
             >

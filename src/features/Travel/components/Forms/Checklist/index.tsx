@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { TextInput, useTheme } from "react-native-paper";
+import { TextInput, useTheme, Checkbox } from "react-native-paper";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../types/enums";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
@@ -47,6 +47,8 @@ const EditChecklistItem = ({
   // Form State
   const [title, setTitle] = useState(checklistItem?.title || "");
   const [description, setDescription] = useState(checklistItem?.description || "");
+  const [keepAdding, setKeepAdding] = useState(true);
+  const titleInputRef = useRef<any>(null);
 
   const handleSaveItem = async () => {
     if (!title.trim()) return;
@@ -65,7 +67,15 @@ const EditChecklistItem = ({
     };
 
     await saveItemMutation.mutateAsync(payload);
-    onClose();
+    if (!checklistItem?.id && keepAdding) {
+      setTitle("");
+      setDescription("");
+      setTimeout(() => {
+        titleInputRef.current?.focus();
+      }, 50);
+    } else {
+      onClose();
+    }
   };
 
   return (
@@ -85,6 +95,7 @@ const EditChecklistItem = ({
         {/* Title */}
         <View className="mb-4">
           <TextInput
+            ref={titleInputRef}
             mode="outlined"
             label="Item Title"
             placeholder="e.g. Pack passport, Buy travel insurance..."
@@ -104,14 +115,14 @@ const EditChecklistItem = ({
           <TextInput
             mode="outlined"
             label="Description (Optional)"
-            placeholder="e.g. Located in red drawer, Needed before day 3..."
+            placeholder="e.g. First Aid Kit"
             value={description}
             onChangeText={setDescription}
             outlineColor="#E0E0E0"
             activeOutlineColor={colors.primary}
             theme={{ colors: { onSurfaceVariant: "#888" } }}
             outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-            style={{ minHeight: 80 }}
+            style={{ minHeight: 100 }}
             multiline
             numberOfLines={2}
           />
@@ -120,15 +131,15 @@ const EditChecklistItem = ({
         {/* Group / Activity Selector Header */}
         <View className="flex-row items-center justify-between mb-2">
           <Text className="text-xs font-semibold tracking-wider uppercase text-gray-500">
-            Categorise Task
+            Item assignment
           </Text>
           <TouchableOpacity
             accessibilityRole="button"
             onPress={onOpenNewGroupModal}
-            className="flex-row items-center gap-1 bg-[#263F69]/10 px-3 py-1.5 rounded-full"
+            className="flex-row items-center gap-1 bg-[#263F69]/10 px-3 py-1.5 rounded-lg"
           >
-            <Icon name="create-new-folder" size={14} color="#263F69" />
-            <Text className="text-xs text-[#263F69] font-bold">New GroupTask</Text>
+            <Icon name="create-new-folder" size={24} color="#263F69" />
+            <Text className="text-base text-[#263F69] font-medium">Create Category</Text>
           </TouchableOpacity>
         </View>
 
@@ -167,6 +178,26 @@ const EditChecklistItem = ({
             <Icon name="keyboard-arrow-down" size={22} color="#666" />
           </TouchableOpacity>
         </View>
+
+        {/* Checkbox: Add another item */}
+        {!checklistItem?.id && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            accessibilityRole="checkbox"
+            accessibilityLabel="Keep adding checklist items"
+            onPress={() => setKeepAdding(!keepAdding)}
+            className="flex-row items-center gap-2 mb-6"
+          >
+            <Checkbox.Android
+              status={keepAdding ? "checked" : "unchecked"}
+              onPress={() => setKeepAdding(!keepAdding)}
+              color={colors.primary}
+            />
+            <Text className="text-sm font-medium text-gray-700">
+              Add another item after saving
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {/* Save/Submit Button */}
         <TouchableOpacity

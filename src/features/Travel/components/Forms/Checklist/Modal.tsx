@@ -42,7 +42,7 @@ const ChecklistModal = ({
   travelId,
   onOpenNewGroupModal,
 }: ChecklistModalProps) => {
-  const [modalHeight] = useState(screenHeight * 0.75);
+  const [modalHeight] = useState(screenHeight * 0.60);
   const { keyboardVisible } = useKeyboardVisible();
   const insets = useSafeAreaInsets();
   const [isChildModalOpen, setIsChildModalOpen] = useState(false);
@@ -331,7 +331,7 @@ const ChecklistModal = ({
               >
                 <View className="flex-row items-center gap-2">
                   <Text className="text-2xl text-gray-700 font-medium">
-                    {checklistItem?.id ? "Edit Item" : "Add Item"}
+                    {checklistItem?.id ? "Edit To-Do item" : "Add To-Do item"}
                   </Text>
                 </View>
                 <TouchableOpacity onPress={handleCancel}>

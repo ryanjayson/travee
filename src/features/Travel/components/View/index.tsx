@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import {
   Portal,
-  useTheme,
 } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import StatusBadge from "../../../../components/StatusBadge";
@@ -96,8 +95,6 @@ const ViewTravel = ({
     }
   };
 
-
-
   const isMapVisible = setShowMap ? showMap : localShowMap;
   const setMapVisible = setShowMap ? setShowMap : localSetShowMap;
 
@@ -164,7 +161,7 @@ const ViewTravel = ({
   // Smoothly interpolate padding top as the sheet is dragged/scrolled up to full height
   const headerPaddingTop = translateY.interpolate({
     inputRange: [SNAP_MAX, SNAP_MID],
-    outputRange: [insets.top + 24, 12],
+    outputRange: [insets.top + 38, 12],
     extrapolate: "clamp",
   });
 
@@ -492,9 +489,9 @@ const ViewTravel = ({
       id: "itinerary", 
       title: "Itinerary", 
       content: (
-        <ItineraryTab 
-          travelPlan={travelPlan} 
-        />
+          <ItineraryTab 
+            travelPlan={travelPlan} 
+          />
       ) 
     },
     {
@@ -619,13 +616,12 @@ const ViewTravel = ({
         >
           <Animated.View 
             className="w-12 h-1.5 bg-gray-300 rounded-full" 
-            style={{ opacity: handleOpacity }}
+            style={{ opacity: handleOpacity}}
           />
         </Animated.View>
 
         {/* Trip Title & Summary */}
-        <View className="px-6 pb-4 bg-white flex-row justify-between items-start relative">
-
+        <View className="px-6 pb-3 bg-white flex-row justify-between items-start relative">
           <Animated.View
             className="flex-1 mr-4"
             style={{
@@ -638,19 +634,23 @@ const ViewTravel = ({
               // })
             }}
           >
+            
             <View className="flex-row items-center gap-3">
               {/* {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
                 <TripIcon type={travelPlan.travel.type} size={24} showIconOnly={true} /> 
               )} */}
-              <Text className="text-3xl font-bold text-gray-800 flex-1" numberOfLines={currentSnap === SNAP_MIN ? 1 : undefined}>
+              <View className="absolute -top-md opacity-75">
+                  <StatusBadge type={1} status={travelPlan.travel.status!} />
+              </View>
+              <Text className="text-4xl leading-relaxed font-semibold text-secondary flex-1" numberOfLines={currentSnap === SNAP_MIN ? 1 : undefined}>
                 {travelPlan.travel.title}
               </Text>
             </View>
-            <View className="flex-row items-center mt-1 flex-wrap">
+            <View className="flex-row items-center mt-2 flex-wrap">
               {travelPlan.travel.destination && (
                 <>
                   <Icon name="location-pin" size={20} color="#858585"/>
-                  <Text className="text-md font-medium text-secondary ml-0.5 mr-3" numberOfLines={1}>
+                  <Text className="text-md font-medium text-tertiary ml-0.5 mr-3" numberOfLines={1}>
                     {travelPlan.travel.destination}
                   </Text>
                 </>
@@ -659,7 +659,7 @@ const ViewTravel = ({
               {(travelPlan.travel.startOrDepartureDate || travelPlan.travel.endOrReturnDate) && (
                 <>
                   <Icon name="calendar-month" size={20} color="#858585" />
-                  <Text className="text-md font-medium text-secondary ml-0.5">
+                  <Text className="text-md font-medium text-tertiary ml-0.5">
                     {travelPlan.travel.startOrDepartureDate
                       ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
                       : "- "}
@@ -670,13 +670,13 @@ const ViewTravel = ({
                 </>
               )}
             </View>
+            
           </Animated.View>
-          <StatusBadge type={1} status={travelPlan.travel.status!} />
         </View>
 
         {/* Tabbed Content */}
         <Animated.View 
-          className="flex-1 bg-gray-100 mb-4 "
+          className="flex-1 mb-4 "
           style={{ paddingBottom: translateY }}
         >
           <Tabs 
@@ -686,7 +686,7 @@ const ViewTravel = ({
             type="default" 
             onTabChange={setActiveTabId} 
             expanded={true}
-            wrapperStyle="bg-white border-b border-[#e0e0e0] pb-4"
+            wrapperStyle={`bg-white pb-4 ${activeTabId === 'itinerary' ? 'border-b border-[#e0e0e0]' : ''}`}
           />
         </Animated.View>
       </Animated.View>
