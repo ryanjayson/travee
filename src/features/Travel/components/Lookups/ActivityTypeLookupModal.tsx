@@ -13,8 +13,9 @@ import {
   TouchableOpacity,
   View,
   Text,
+  TextInput,
 } from "react-native";
-import { TextInput, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 import { ActivityType, getActivityTypeLabel } from "../../../../types/enums";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
@@ -243,13 +244,17 @@ const ActivityTypeLookupModal = ({
               className="flex-row justify-between items-center px-6 pb-5 border-b border-gray-200"
               style={{ paddingTop: keyboardVisible ? 0 : 4 }}
             >
-              <View className="flex-row items-center gap-2">
-                <Text 
-                  className="text-2xl"
-                  style={{ color: colors.primary || "#263F69" }}
-                >
-                  Select activity type
-                </Text>
+              <View className="flex-col items-start gap-1">
+                 <Text
+                      className="text-2xl font-bold mt-xl"
+                    >
+                      Activity type
+                    </Text>
+                    <Text
+                      className="text-base  text-tertiary"
+                    >
+                      Select type of activity
+                    </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
                 <Icon name="clear" size={24} color={"#999"} />
@@ -258,26 +263,31 @@ const ActivityTypeLookupModal = ({
 
             {/* Search Input */}
             <View className="px-6 py-4 border-b border-gray-200">
-              <TextInput
-                mode="outlined"
-                placeholder="Search activity type"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                right={
-                  searchQuery ? (
-                    <TextInput.Icon
-                      icon="close"
-                      onPress={() => setSearchQuery("")}
-                      color={colors.onSurfaceVariant}
-                    />
-                  ) : null
-                }
-                theme={{ colors: { onSurfaceVariant: '#888' } }}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ backgroundColor: colors.surface, borderRadius: 20 }}
-              />
+              <View className="flex-row items-center bg-[#F5F6FA] rounded-2xl px-3 h-12">
+                <Icon name="search" size={22} color="#999" style={{ marginRight: 8 }} />
+                <TextInput
+                  className="flex-1 text-base text-[#101828] py-0"
+                  placeholder="Search activity type"
+                  placeholderTextColor="#999"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSearchQuery("");
+                    }}
+                    style={{ padding: 4 }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear search text"
+                  >
+                    <Icon name="close" size={20} color="#999" />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
             {/* Scrollable list */}

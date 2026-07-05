@@ -13,8 +13,9 @@ import {
   TouchableOpacity,
   View,
   Text,
+  TextInput,
 } from "react-native";
-import { TextInput, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 import { TripType } from "../../../../types/enums";
 import TripIcon from "../../../../components/TripIcon";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
@@ -224,16 +225,16 @@ const TripTypeLookupModal = ({
               {...(!keyboardVisible && dragPanResponder.panHandlers)}
               className="flex-row justify-between items-center px-6 pb-5 border-b border-gray-200"
             >
-              <View className="flex-1 ">
+              <View className="flex-1 gap-1">
                 <Text
-                  className="text-2xl font-bold"
+                  className="text-2xl font-bold mt-2xl"
                 >
-                  Trip Type
+                  Trip type
                 </Text>
                 <Text
-                  className="text-md  text-[#999]"
+                  className="text-base  text-tertiary"
                 >
-                 What kind of trip is this?
+                 What best describes your trip
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel} accessibilityRole="button" accessibilityLabel="Close selection modal">
@@ -243,27 +244,34 @@ const TripTypeLookupModal = ({
 
             {/* Search Input */}
             <View className="px-6 py-4 border-b border-gray-200">
-              <TextInput
-                mode="outlined"
-                placeholder="Search trip type"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                right={
-                  searchQuery ? (
-                    <TextInput.Icon
-                      icon="close"
-                      onPress={() => setSearchQuery("")}
-                      color={colors.onSurfaceVariant}
-                    />
-                  ) : null
-                }
-                theme={{ colors: { onSurfaceVariant: '#888' } }}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ backgroundColor: colors.surface, borderRadius: 20 }}
-              />
+              <View className="flex-row items-center bg-[#F5F6FA] rounded-2xl px-3 h-12">
+                <Icon name="search" size={22} color="#999" style={{ marginRight: 8 }} />
+                <TextInput
+                  className="flex-1 text-base text-[#101828] py-0"
+                  placeholder="Search trip type"
+                  placeholderTextColor="#999"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSearchQuery("");
+                    }}
+                    style={{ padding: 4 }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear search text"
+                  >
+                    <Icon name="close" size={20} color="#999" />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
+
+
 
             {/* Scrollable list */}
             <View className="flex-1">
@@ -302,3 +310,4 @@ const TripTypeLookupModal = ({
 };
 
 export default TripTypeLookupModal;
+

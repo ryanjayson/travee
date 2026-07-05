@@ -1,16 +1,34 @@
 import React from "react";
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "react-native-paper";
+import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useChecklistItemsByActivity, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
-import { ChecklistItem } from "../../../../types/TravelDto";
+import { ChecklistItem, ItineraryActivity } from "../../../../types/TravelDto";
 
 interface ChecklistTabProps {
   activityId: string;
+  itineraryActivity?: ItineraryActivity | null;
 }
 
-const ChecklistTab = ({ activityId }: ChecklistTabProps) => {
+const ChecklistTab = ({ activityId, itineraryActivity }: ChecklistTabProps) => {
+  const { colors } = useTheme();
+  const { openChecklistModal } = useTravelContext();
   const { data: checklistItems, isLoading, isError } = useChecklistItemsByActivity(activityId);
   const toggleMutation = useToggleChecklistItemMutation();
+
+  const handleAddItem = () => {
+    if (!itineraryActivity) return;
+    openChecklistModal(
+      {
+        activityId: itineraryActivity.id,
+        travelId: itineraryActivity.travelId,
+        isDone: false,
+      } as ChecklistItem,
+      [itineraryActivity],
+      itineraryActivity.travelId
+    );
+  };
 
   const handleToggle = (item: ChecklistItem) => {
     toggleMutation.mutate({
@@ -48,15 +66,14 @@ const ChecklistTab = ({ activityId }: ChecklistTabProps) => {
           </Text>
           <View className="text-center tracking-wide flex-row align-center gap-2 ">
           <TouchableOpacity
-              // onPress={() => openChecklistModal(null, allActivities, travelId)}
+              onPress={handleAddItem}
               accessibilityRole="button"
               activeOpacity={0.7}
               className="flex-row items-center"
             >
               {/* <Icon name="add" size={16} color={colors.primary} /> */}
               <Text 
-                style={{ color: "colors.primary" }}
-                className="font-medium text-base underline"
+                className="font-medium text-base underline text-primary"
               >
                 Add item
               </Text>

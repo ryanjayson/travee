@@ -440,7 +440,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
       content: <ExpensesTab activityId={id} onEditExpense={handleEditExpense} />
 ,
     },
-    { id: "checklist", title: "Checklist", icon: "checklist", content: <ChecklistTab activityId={id} /> },
+    { id: "checklist", title: "Checklist", icon: "checklist", content: <ChecklistTab activityId={id} itineraryActivity={itineraryActivity} /> },
 
     {
       id: "notes",

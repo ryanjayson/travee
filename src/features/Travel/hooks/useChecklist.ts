@@ -84,6 +84,9 @@ export const useSaveChecklistItemMutation = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      if (variables.activityId) {
+        queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
+      }
       showToast({
         type: "success",
         message: variables.id ? "Task updated successfully!" : "Task saved successfully!",
@@ -103,10 +106,13 @@ export const useDeleteChecklistItemMutation = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   return useMutation({
-    mutationFn: ({ id, travelId }: { id: string; travelId: string }) => deleteChecklistItem(id),
+    mutationFn: ({ id, travelId, activityId }: { id: string; travelId: string; activityId?: string }) => deleteChecklistItem(id),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      if (variables.activityId) {
+        queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
+      }
       showToast({
         type: "success",
         message: "Task deleted successfully.",
@@ -126,11 +132,14 @@ export const useToggleChecklistItemMutation = () => {
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   return useMutation({
-    mutationFn: ({ id, isDone, userId, travelId }: { id: string; isDone: boolean; userId: string; travelId: string }) =>
+    mutationFn: ({ id, isDone, userId, travelId, activityId }: { id: string; isDone: boolean; userId: string; travelId: string; activityId?: string }) =>
       toggleChecklistItem(id, isDone, userId),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
+      if (variables.activityId) {
+        queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
+      }
       showToast({
         type: "success",
         message: variables.isDone ? "Task marked as completed!" : "Task marked as uncompleted.",

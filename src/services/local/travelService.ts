@@ -800,6 +800,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
       const itineraryActivity = activities.map((a) => ({
         id: a.id,
         sectionId: s.id,
+        travelId: travelId,
         title: a.title,
         description: a.description,
         destination: a.destination,
@@ -1540,6 +1541,14 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
 export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
   try {
     const a = await database.get<Activity>("itinerary_activities").find(id);
+    let travelId: string | undefined = undefined;
+    try {
+      const sectionRecord = await database.get<any>("itinerary_sections").find(a.section.id);
+      travelId = sectionRecord.travel.id || undefined;
+    } catch (err) {
+      console.warn("Failed to find parent section for activity to fetch travelId:", err);
+    }
+
     // Run all counts and detail fetches in parallel — no N+1 for a single activity
     const [
       notesCount,
@@ -1584,6 +1593,7 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
     return {
       id: a.id,
       sectionId: a.section.id,
+      travelId,
       title: a.title,
       description: a.description,
       destination: a.destination,

@@ -80,7 +80,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
 
     if (type === "primary") {
       buttonClass = isActive 
-        ? "bg-primary rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center shadow-sm h-14 min-w-24"
+        ? "bg-primary rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center shadow-sm h-14 "
         : (tab.disabled
             ? "bg-gray-50 rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center h-14 min-w-24 opacity-50"
             : "bg-gray-100 rounded-xl px-5 py-2 mr-3 my-2 items-center justify-center h-14 min-w-24");
@@ -89,8 +89,8 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
         : (tab.disabled ? "text-gray-300 font-medium text-base" : "text-gray-500 font-medium text-base");
     } else if (type === "secondary") {
       buttonClass = isActive
-        ? "px-4 py-3 border-b-2 border-[#263F69] items-center justify-center"
-        : "px-4 py-3 border-b-2 border-transparent items-center justify-center";
+        ? "px-4 py-3 border-b-2 border-[#263F69] items-center justify-center "
+        : "px-4 py-3 border-b-2 border-transparent items-center justify-center ";
       textClass = isActive
         ? "text-[#263F69] font-bold text-base"
         : (tab.disabled ? "text-gray-300 font-medium text-base opacity-50" : "text-gray-500 font-medium text-base");
@@ -117,7 +117,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
         activeOpacity={tab.disabled ? 1 : 0.5}
         disabled={tab.disabled}
       >
-        <View className="flex-row items-center gap-1.5 ">
+        <View className="flex-row items-center gap-1.5">
           {isOngoingWithActiveTrip && (
             <Animated.View 
               style={{ opacity: pulseAnim }}

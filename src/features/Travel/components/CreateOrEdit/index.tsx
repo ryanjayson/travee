@@ -531,7 +531,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
         <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Trip Type</Text>
-            <Text className={`text-base text-gray-500`}>
+            <Text className={`text-sm text-gray-500`}>
               Trip type helps organize activities and recommendations.
           </Text>
           <TouchableOpacity 
@@ -547,12 +547,12 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             )}
               {formik.values.type != null && formik.values.type !== TripType.none
                 ? (
-                   <Text className="text-md text-[#000000] capitalize"> 
+                   <Text className="text-lg text-[#000000] capitalize"> 
                     {String(TripType[formik.values.type]).replace(/([A-Z])/g, ' $1').trim()}
                   </Text>
                 )
                : (
-                <Text className="text-md text-[#98A2B3]"> 
+                <Text className="text-lg text-[#98A2B3]"> 
                     Select travel purpose
                 </Text>
                )}

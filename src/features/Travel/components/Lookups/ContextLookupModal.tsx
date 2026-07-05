@@ -14,8 +14,9 @@ import {
   View,
   Text,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
-import { TextInput, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../types/enums";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
@@ -238,11 +239,10 @@ const ContextLookupModal = ({
               style={{ paddingTop: keyboardVisible ? 0 : 4 }}
             >
               <View className="flex-row items-center gap-2">
-                <Text 
-                  className="text-2xl font-bold"
-                  style={{ color: colors.primary || "#263F69" }}
+                <Text
+                  className="text-2xl font-semibold"
                 >
-                  Categorise Task
+                    Categorise Task
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
@@ -252,26 +252,31 @@ const ContextLookupModal = ({
 
             {/* Search Input */}
             <View className="px-6 py-4 border-b border-gray-200">
-              <TextInput
-                mode="outlined"
-                placeholder="Search groups or activities..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                right={
-                  searchQuery ? (
-                    <TextInput.Icon
-                      icon="close"
-                      onPress={() => setSearchQuery("")}
-                      color={colors.onSurfaceVariant}
-                    />
-                  ) : null
-                }
-                theme={{ colors: { onSurfaceVariant: '#888' } }}
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ backgroundColor: colors.surface, borderRadius: 20 }}
-              />
+              <View className="flex-row items-center bg-[#F5F6FA] rounded-2xl px-3 h-12">
+                <Icon name="search" size={22} color="#999" style={{ marginRight: 8 }} />
+                <TextInput
+                  className="flex-1 text-base text-[#101828] py-0"
+                  placeholder="Search groups or activities..."
+                  placeholderTextColor="#999"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSearchQuery("");
+                    }}
+                    style={{ padding: 4 }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear search text"
+                  >
+                    <Icon name="close" size={20} color="#999" />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
 
             {/* Scrollable list */}
@@ -302,19 +307,20 @@ const ContextLookupModal = ({
                       accessibilityLabel={`Select ${option.type} ${option.label}`}
                     >
                       {option.type === "group" ? (
-                        <Icon name="folder" size={24} color="#263F69" />
+                        <Icon name="folder" size={28} color="#263F69" />
                       ) : (
                         <ActivityIcon
                           type={(option.activityType ?? ActivityType.none) as ActivityType}
-                          size={24}
-                          color="#666"
+                          size={28}
+                          color="#263F69"
+                          showIconOnly
                         />
                       )}
                       <View className="flex-1">
-                        <Text className="text-base text-gray-800 font-medium">
+                        <Text className="text-lg text-secondary font-medium">
                           {option.label}
                         </Text>
-                        <Text className="text-xs text-gray-400 capitalize">
+                        <Text className="text-base text-tertiary capitalize">
                           {option.type}
                         </Text>
                       </View>

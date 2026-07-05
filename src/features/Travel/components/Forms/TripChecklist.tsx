@@ -284,7 +284,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
                 <Icon name="search" size={18} color="#999" />
                 <RNTextInput
                   className="flex-1 py-3 px-2 text-base text-gray-800"
-                  placeholder="Search groups or activities..."
+                  placeholder="Search group or activity"
                   value={groupSearch}
                   onChangeText={setGroupSearch}
                   autoFocus

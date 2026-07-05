@@ -439,7 +439,7 @@ const TravelCatalog = () => {
             </TouchableOpacity>
           </View>
         ) : (
-            <Tabs tabs={viewTabsData} expanded={true} wrapperStyle="pb-2"/>
+            <Tabs tabs={viewTabsData} expanded={true} wrapperStyle="pb-2 w-full"/>
         )}
       </View>
 

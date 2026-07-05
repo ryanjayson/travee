@@ -122,17 +122,23 @@ const ChecklistModal = ({
           }
         }
       }
-    } else {
-      if (selectedContext !== null) {
-        setSelectedContext(null);
-      }
     }
   }, [checklistItem, groups, activities]);
 
-  // Support auto-selecting a newly created group
+  // Reset selectedContext and prevGroupsLength when modal becomes visible
   const prevGroupsLength = useRef(groups.length);
   useEffect(() => {
-    if (groups.length > prevGroupsLength.current) {
+    if (visible) {
+      prevGroupsLength.current = groups.length;
+      if (!checklistItem) {
+        setSelectedContext(null);
+      }
+    }
+  }, [visible, checklistItem]);
+
+  // Support auto-selecting a newly created group
+  useEffect(() => {
+    if (visible && groups.length > prevGroupsLength.current) {
       const latestGroup = groups[groups.length - 1];
       if (latestGroup && latestGroup.id) {
         setSelectedContext({

@@ -18,6 +18,7 @@ import { TextInput, useTheme } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
 import * as Yup from "yup";
 import { useSaveChecklistGroupMutation } from "../../../hooks/useChecklist";
+import TouchButton from "../../../../../components/atoms/TouchButton";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -238,7 +239,7 @@ const ChecklistGroupModal = ({
             >
               <View className="flex-row items-center gap-2">
                 <Text className="text-2xl text-gray-700 font-medium">
-                  New Checklist Group
+                  Create Checklist Group
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
@@ -253,86 +254,71 @@ const ChecklistGroupModal = ({
               onSubmit={handleFormSubmit}
             >
               {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
-                <ScrollView
-                  className="flex-1 p-5"
-                  contentContainerStyle={{ paddingBottom: 40 }}
-                  showsVerticalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
-                  onScroll={(e) => {
-                    const y = e.nativeEvent.contentOffset.y;
-                    isAtTop.current = y <= 0;
-                  }}
-                  scrollEventThrottle={16}
-                >
-                  <Text className="text-xs font-semibold tracking-wider uppercase mb-4 text-gray-500">
-                    Group Details
-                  </Text>
-
-                  <View className="mb-4">
-                    <TextInput
-                      mode="outlined"
-                      label="Group Title"
-                      placeholder="e.g. Documents, Clothing, Electronics..."
-                      value={values.title}
-                      onChangeText={handleChange("title")}
-                      onBlur={handleBlur("title")}
-                      error={touched.title && Boolean(errors.title)}
-                      outlineColor="#E0E0E0"
-                      activeOutlineColor={colors.primary}
-                      theme={{ colors: { onSurfaceVariant: "#888" } }}
-                      outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-                      style={{ height: 60 }}
-                      left={<TextInput.Icon icon="folder-outline" />}
-                    />
-                    {touched.title && errors.title && (
-                      <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
-                    )}
-                  </View>
-
-                  <View className="mb-6">
-                    <TextInput
-                      mode="outlined"
-                      label="Description (Optional)"
-                      placeholder="e.g. Items needed before departure"
-                      value={values.description}
-                      onChangeText={handleChange("description")}
-                      onBlur={handleBlur("description")}
-                      multiline
-                      numberOfLines={3}
-                      outlineColor="#E0E0E0"
-                      activeOutlineColor={colors.primary}
-                      theme={{ colors: { onSurfaceVariant: "#888" } }}
-                      outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-                      style={{ minHeight: 90 }}
-                      textAlignVertical="top"
-                    />
-                  </View>
-
-                  <TouchableOpacity
-                    onPress={() => handleSubmit()}
-                    disabled={!values.title.trim() || isSaving}
-                    style={{
-                      backgroundColor: colors.primary,
-                      opacity: values.title.trim() && !isSaving ? 1 : 0.6,
+                <View className="flex-1">
+                  <ScrollView
+                    className="flex-1 p-[15px] bg-gray-50"
+                    contentContainerStyle={{ paddingBottom: 100 }}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    onScroll={(e) => {
+                      const y = e.nativeEvent.contentOffset.y;
+                      isAtTop.current = y <= 0;
                     }}
-                    className="flex-row items-center justify-center p-4 rounded-[16px] shadow-sm mb-6"
-                    activeOpacity={0.8}
-                    accessibilityRole="button"
+                    scrollEventThrottle={16}
                   >
-                    <View className="flex-row items-center gap-2">
-                      {isSaving ? (
-                        <Animated.View style={{ transform: [{ rotate: "0deg" }] }}>
-                          <Icon name="sync" size={20} color={colors.onPrimary} />
-                        </Animated.View>
-                      ) : (
-                        <Icon name="check" size={20} color={colors.onPrimary} />
+                    <View className="mb-5">
+                      <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
+                      <TextInput
+                        mode="outlined"
+                        className="!h-[64px]"
+                        placeholder="e.g. Documents, Clothing, Electronics..."
+                        value={values.title}
+                        onChangeText={handleChange("title")}
+                        onBlur={handleBlur("title")}
+                        error={touched.title && Boolean(errors.title)}
+                        outlineColor="#E0E0E0"
+                        activeOutlineColor="#263F69"
+                        theme={{ colors: { onSurfaceVariant: "#888" } }}
+                        outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                        style={{ marginTop: 6 }}
+                        contentStyle={{ backgroundColor: "transparent" }}
+                      />
+                      {touched.title && errors.title && (
+                        <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
                       )}
-                      <Text className="text-white text-base font-semibold" style={{ color: colors.onPrimary }}>
-                        {isSaving ? "Saving..." : "Create Group"}
-                      </Text>
                     </View>
-                  </TouchableOpacity>
-                </ScrollView>
+
+                    <View className="mb-5">
+                      <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
+                      <TextInput
+                        mode="outlined"
+                        placeholder="e.g. Items needed before departure"
+                        value={values.description}
+                        onChangeText={handleChange("description")}
+                        onBlur={handleBlur("description")}
+                        multiline
+                        numberOfLines={4}
+                        outlineColor="#E0E0E0"
+                        activeOutlineColor="#263F69"
+                        theme={{ colors: { onSurfaceVariant: "#888" } }}
+                        outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                        style={{ marginTop: 6, height: 120 }}
+                        textAlignVertical="top"
+                        contentStyle={{ backgroundColor: "transparent" }}
+                      />
+                    </View>
+                  </ScrollView>
+
+                  {/* Save Button (Fixed Bottom) */}
+                  <View className="px-5 py-4 border-t border-gray-200 bg-white">
+                    <TouchButton
+                      buttonText={isSaving ? "Saving..." : "Create Group"}
+                      onPress={() => handleSubmit()}
+                      disabled={!values.title.trim() || isSaving}
+                      className="h-[64px] p-6"
+                    />
+                  </View>
+                </View>
               )}
             </Formik>
           </Animated.View>

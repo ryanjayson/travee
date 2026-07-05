@@ -115,7 +115,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
           <Ionicons name="person-outline" size={24} color="#fff" />
         </TouchableOpacity>
 
-        <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 70 : 80 }}>
+        <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 110 : 80 }}>
             <Text className="tracking-wider text-white text-sm mb-1">Good morning, Travieler</Text>
           {ongoingTrip ? (
             <View className="py-2 px-1">
@@ -141,44 +141,45 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
               </Text>
 
               <View className="flex-row items-center gap-1.5 mb-3">
-                <Ionicons name="location-outline" size={16} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white text-md font-medium" numberOfLines={1}>
+                <Ionicons name="location-outline" size={20} color="rgba(255,255,255,0.65)" />
+                <Text className="text-white text-xl " numberOfLines={1}>
                   {ongoingTrip.destination}
                 </Text>
               </View>
 
               <View className="flex-row items-center gap-1.5 mb-1">
                 <View className="flex-row items-center gap-1.5">
-                  <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.65)" />
-                  <Text className="text-white text-sm">
+                  <Ionicons name="calendar-outline" size={20} color="rgba(255,255,255,0.65)" />
+                  <Text className="text-white text-base">
                     {formatDate(ongoingTrip.startOrDepartureDate)}
-                    <Ionicons name="arrow-forward-outline" size={10} color="rgba(255,255,255,0.4)" style={{paddingRight: 10, paddingLeft: 10}} />
+                    <Ionicons name="chevron-forward-outline" size={14} color="rgba(255,255,255,0.4)" style={{paddingRight: 10, paddingLeft: 10}} />
                     {ongoingTrip.endOrReturnDate ? `${formatDate(ongoingTrip.endOrReturnDate)}` : ''}
                   </Text>
                     {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate) ? (
-                  <View className="bg-white/15 px-3 py-1 rounded-full">
-                    <Text className="text-white text-xs">
+                  <View className="bg-white/15 px-3 py-0 rounded-full">
+                    <Text className="text-white text-base">
                       {getDuration(ongoingTrip.startOrDepartureDate, ongoingTrip.endOrReturnDate)}
                     </Text>
                   </View>
                 ) : null}
                 </View>
-              
               </View>
 
-              <View className="flex-row items-center gap-1.5 mb-1">
-                <Ionicons name="walk-outline" size={14} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white text-sm">
-                12 Planned activities 
-                </Text>
-              </View>
-
-              <View className="flex-row items-center gap-1.5 mb-4">
-                <Ionicons name="list-outline" size={16} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white text-sm " >
-                Show Checklist stats
-                </Text>
-              </View>
+              <View className="flex-row items-center gap-4 mb-1">
+                <View className="flex-row items-center gap-1.5 mb-1">
+                    <Ionicons name="walk-outline" size={20} color="rgba(255,255,255,0.65)" />
+                    <Text className="text-white text-base">
+                    12 activities 
+                    </Text>
+                  </View>
+                  <Text className="text-white/50 text-base">/</Text>
+                  <View className="flex-row items-center gap-1.5 mb-1">
+                    <Ionicons name="list-outline" size={20} color="rgba(255,255,255,0.65)" />
+                    <Text className="text-white text-base " >
+                    10/10 to-do
+                    </Text>
+                  </View>
+              </View>           
             </View>
           ) : (
             <View>

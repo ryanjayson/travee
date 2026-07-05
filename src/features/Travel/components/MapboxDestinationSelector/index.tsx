@@ -42,7 +42,7 @@ const FILTER_OPTIONS = [
   { id: "country", label: "Country", icon: "flag" },
   { id: "region", label: "Region", icon: "map" },
   { id: "place", label: "City", icon: "location-city" },
-  { id: "poi", label: "POI", icon: "place" },
+  { id: "poi", label: "Places", icon: "place" },
 ] as const;
 
 type FilterType = typeof FILTER_OPTIONS[number]["id"];
@@ -121,7 +121,7 @@ const MapboxDestinationSelector = ({
 }: MapboxDestinationSelectorProps) => {
   const { colors } = useTheme();
   const [query, setQuery] = useState(initialValue);
-  const [activeFilter, setActiveFilter] = useState<FilterType | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType | null>("country");
   const [results, setResults] = useState<MapboxPlace[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);

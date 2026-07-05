@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import { TextInput, useTheme, Checkbox } from "react-native-paper";
+import TouchButton from "../../../../../components/atoms/TouchButton";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../types/enums";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
@@ -79,85 +80,85 @@ const EditChecklistItem = ({
   };
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white rounded-t-[20px] overflow-hidden">
       <ScrollView
-        className="flex-1 p-5"
-        contentContainerStyle={{ paddingBottom: 40 }}
+        className="flex-1 p-[15px] bg-gray-50"
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-        <Text className="text-xs font-semibold tracking-wider uppercase mb-4 text-gray-500">
-          Item Details
-        </Text>
-
         {/* Title */}
-        <View className="mb-4">
+        <View className="mb-5">
+          <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
           <TextInput
             ref={titleInputRef}
             mode="outlined"
-            label="Item Title"
+            className="!h-[64px]"
             placeholder="e.g. Pack passport, Buy travel insurance..."
             value={title}
             onChangeText={setTitle}
             outlineColor="#E0E0E0"
-            activeOutlineColor={colors.primary}
+            activeOutlineColor="#263F69"
             theme={{ colors: { onSurfaceVariant: "#888" } }}
-            outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-            style={{ height: 60 }}
-            left={<TextInput.Icon icon="playlist-check" />}
+            outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+            style={{ marginTop: 6 }}
+            contentStyle={{ backgroundColor: "transparent" }}
           />
         </View>
 
         {/* Optional Description */}
-        <View className="mb-4">
+        <View className="mb-5">
+          <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
           <TextInput
             mode="outlined"
-            label="Description (Optional)"
             placeholder="e.g. First Aid Kit"
+            multiline
+            numberOfLines={4}
             value={description}
             onChangeText={setDescription}
             outlineColor="#E0E0E0"
-            activeOutlineColor={colors.primary}
+            activeOutlineColor="#263F69"
             theme={{ colors: { onSurfaceVariant: "#888" } }}
-            outlineStyle={{ borderWidth: 1, borderRadius: 16 }}
-            style={{ minHeight: 100 }}
-            multiline
-            numberOfLines={2}
+            outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+            style={{ marginTop: 6, height: 120 }}
+            textAlignVertical="top"
+            contentStyle={{ backgroundColor: "transparent" }}
           />
         </View>
 
         {/* Group / Activity Selector Header */}
-        <View className="flex-row items-center justify-between mb-2">
-          <Text className="text-xs font-semibold tracking-wider uppercase text-gray-500">
-            Item assignment
-          </Text>
-          <TouchableOpacity
-            accessibilityRole="button"
-            onPress={onOpenNewGroupModal}
-            className="flex-row items-center gap-1 bg-[#263F69]/10 px-3 py-1.5 rounded-lg"
-          >
-            <Icon name="create-new-folder" size={24} color="#263F69" />
-            <Text className="text-base text-[#263F69] font-medium">Create Category</Text>
-          </TouchableOpacity>
-        </View>
+        <View className="mb-5">
+          <View className="flex-row items-center justify-between">
+            <Text className="text-xs font-semibold tracking-wider uppercase text-gray-500">
+              Item assignment
+            </Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={onOpenNewGroupModal}
+              className="flex-row items-center gap-1 bg-[#263F69]/10 px-3 py-1.5 rounded-lg"
+            >
+              <Icon name="create-new-folder" size={24} color="#263F69" />
+              <Text className="text-base text-[#263F69] font-medium">Create Category</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* Selector Input */}
-        <View className="mb-6 relative z-50">
+          {/* Selector Input */}
           <TouchableOpacity
             accessibilityRole="button"
             onPress={onOpenContextModal}
-            className="flex-row items-center border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 gap-3"
-            style={{ height: 60 }}
+            className="flex-row items-center border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 gap-3 mt-2"
+            style={{ height: 64 }}
           >
             {selectedContext?.type === "group" ? (
               <Icon name="folder" size={20} color="#263F69" />
             ) : selectedContext?.type === "activity" ? (
               <ActivityIcon
                 type={(selectedContext.activityType ?? ActivityType.none) as ActivityType}
-                size={20}
+                size={24}
                 color="#263F69"
+                showIconOnly
               />
             ) : (
               <Icon name="layers" size={20} color="#BDBDBD" />
@@ -186,47 +187,33 @@ const EditChecklistItem = ({
             accessibilityRole="checkbox"
             accessibilityLabel="Keep adding checklist items"
             onPress={() => setKeepAdding(!keepAdding)}
-            className="flex-row items-center gap-2 mb-6"
+            className="flex-row items-center gap-2 mb-5"
           >
             <Checkbox.Android
               status={keepAdding ? "checked" : "unchecked"}
               onPress={() => setKeepAdding(!keepAdding)}
-              color={colors.primary}
+              color="#263F69"
             />
             <Text className="text-sm font-medium text-gray-700">
               Add another item after saving
             </Text>
           </TouchableOpacity>
         )}
+      </ScrollView>
 
-        {/* Save/Submit Button */}
-        <TouchableOpacity
+      {/* Save/Submit Button (Fixed Bottom) */}
+      <View className="px-5 py-4 border-t border-gray-200 bg-white">
+        <TouchButton
+          buttonText={saveItemMutation.isPending
+            ? "Saving..."
+            : checklistItem?.id
+            ? "Save Changes"
+            : "Add Checklist Item"}
           onPress={handleSaveItem}
           disabled={!title.trim() || saveItemMutation.isPending}
-          style={{
-            backgroundColor: colors.primary,
-            opacity: title.trim() && !saveItemMutation.isPending ? 1 : 0.6,
-          }}
-          className="flex-row items-center justify-center p-4 rounded-[16px] shadow-sm mb-6"
-          activeOpacity={0.8}
-          accessibilityRole="button"
-        >
-          <View className="flex-row items-center gap-2">
-            {saveItemMutation.isPending ? (
-              <ActivityIndicator size="small" color={colors.onPrimary} />
-            ) : (
-              <Icon name="check" size={20} color={colors.onPrimary} />
-            )}
-            <Text className="text-white text-base font-semibold" style={{ color: colors.onPrimary }}>
-              {saveItemMutation.isPending
-                ? "Saving..."
-                : checklistItem?.id
-                ? "Save Changes"
-                : "Add Checklist Item"}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </ScrollView>
+          className="h-[64px] p-6"
+        />
+      </View>
     </View>
   );
 };
