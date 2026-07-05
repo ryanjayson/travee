@@ -46,10 +46,46 @@ const TravelCatalog = () => {
   };
 
   const getTravelsByStatus = (status: TravelStatus) => {
+    let filtered: Travel[] = [];
     if (status === TravelStatus.Archieved) {
-      return travels?.filter(t => t.isArchived || t.status === TravelStatus.Archieved) || [];
+      filtered = travels?.filter(t => t.isArchived || t.status === TravelStatus.Archieved) || [];
+    } else {
+      filtered = travels?.filter(t => !t.isArchived && t.status !== TravelStatus.Archieved && t.status === status) || [];
     }
-    return travels?.filter(t => !t.isArchived && t.status !== TravelStatus.Archieved && t.status === status) || [];
+    return [...filtered].sort((a, b) => {
+      const getNormalizedDate = (dateVal: any) => {
+        if (!dateVal) return 0;
+        let d: Date;
+        if (dateVal instanceof Date) {
+          d = dateVal;
+        } else {
+          const str = String(dateVal);
+          const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (match) {
+            const year = parseInt(match[1], 10);
+            const month = parseInt(match[2], 10) - 1;
+            const day = parseInt(match[3], 10);
+            return new Date(year, month, day).getTime();
+          }
+          d = new Date(dateVal);
+        }
+        if (!d || isNaN(d.getTime())) return 0;
+        return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      };
+      const timeA = getNormalizedDate(a.startOrDepartureDate);
+      const timeB = getNormalizedDate(b.startOrDepartureDate);
+
+      // Keep items without dates at the bottom
+      if (timeA === 0 && timeB === 0) return 0;
+      if (timeA === 0) return 1;
+      if (timeB === 0) return -1;
+
+      // Sort Upcoming ascending (closest trip first), all others descending
+      if (status === TravelStatus.Upcoming) {
+        return timeA - timeB;
+      }
+      return timeB - timeA;
+    });
   };
 
   const handleViewModeTravel = (travel: Travel) => {

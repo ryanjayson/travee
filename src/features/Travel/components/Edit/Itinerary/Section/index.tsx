@@ -8,7 +8,7 @@ import {
   StatusBar,
   Alert,
 } from "react-native";
-import { TextInput } from "react-native-paper";
+import { TextInput, useTheme } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import DestinationSelector from "../../../DestinationSelector";
 import { useFormik } from "formik";
@@ -18,7 +18,7 @@ import { ItinerarySection } from "../../../../types/TravelDto";
 import { useUpdateSectionMutation, useDeleteSectionMutation } from "../../../../hooks/useSection";
 import { useTravelPlan } from "../../../../hooks/useTravel";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
-import { Calendar } from "react-native-calendars";
+import { CalendarList } from "react-native-calendars";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 
 interface Place {
@@ -40,6 +40,7 @@ const TravelSchema = Yup.object().shape({
 });
 
 const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScroll }: EditSectionProps) => {
+  const paperTheme = useTheme();
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
@@ -205,38 +206,59 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
                   activeOpacity={0.6}
                 />
               </View>
-              <Modal visible={showStartDatePicker} transparent={true} animationType="fade">
-                <TouchableOpacity
-                  className="flex-1 bg-black/50 justify-center items-center px-5"
-                  activeOpacity={1}
-                  onPress={() => setShowStartDatePicker(false)}
-                >
-                  <View className="w-full bg-white p-5 rounded-[40px] overflow-hidden" onStartShouldSetResponder={() => true}>
-                    <Calendar
+              <Modal
+                visible={showStartDatePicker}
+                transparent={false}
+                animationType="slide"
+                onRequestClose={() => setShowStartDatePicker(false)}
+              >
+                <View className="flex-1 bg-white pt-12">
+                  <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
+                    <TouchableOpacity
+                      onPress={() => setShowStartDatePicker(false)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Close date selector"
+                    >
+                      <Icon name="close" size={28} color={paperTheme.colors.onSurface} />
+                    </TouchableOpacity>
+                    <Text className="text-xl font-bold">Select Date</Text>
+                    <View className="w-10" />
+                  </View>
+
+                  <View className="flex-1">
+                    <CalendarList
+                      current={formik.values.startDate ? formik.values.startDate.toISOString().split('T')[0] : undefined}
+                      pastScrollRange={12}
+                      futureScrollRange={24}
+                      scrollEnabled={true}
+                      horizontal={false}
+                      showsVerticalScrollIndicator={true}
+                      hideArrows={true}
                       onDayPress={(day: any) => {
-                        formik.setFieldValue("startDate", new Date(day.timestamp));
+                        const parts = day.dateString.split('-');
+                        const localDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                        formik.setFieldValue("startDate", localDate);
                         setShowStartDatePicker(false);
                       }}
-                      renderArrow={(direction: string) => (
-                        <Icon
-                          name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
-                          size={32}
-                          color="#263F69"
-                        />
-                      )}
-                      enableSwipeMonths={true}
                       markedDates={{
                         ...(formik.values.startDate ? {
                           [formik.values.startDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#263F69', selectedTextColor: '#ffffff' }
                         } : {})
                       }}
                       theme={{
-                        todayTextColor: '#263F69',
-                        arrowColor: '#263F69',
+                        todayTextColor: "#263F69",
+                        todayBackgroundColor: "#E3F2FD",
+                        textDayFontWeight: "bold",
+                        selectedDayBackgroundColor: "#263F69",
+                        selectedDayTextColor: "#ffffff",
                       }}
+                      removeClippedSubviews={true}
+                      maxToRenderPerBatch={5}
+                      windowSize={5}
+                      initialNumToRender={4}
                     />
                   </View>
-                </TouchableOpacity>
+                </View>
               </Modal>
             </View>
 
