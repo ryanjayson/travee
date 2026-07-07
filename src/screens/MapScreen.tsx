@@ -1,11 +1,11 @@
 import * as React from "react";
-import { View, TouchableOpacity } from "react-native";
-import { Text } from "react-native-paper";
+import { View, TouchableOpacity, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTravels } from "../features/Travel/hooks/useTravel";
 import { useAllActivitiesWithDestination } from "../features/Travel/hooks/useActivity";
 import { TravelStatus } from "../types/enums";
-import ExploreMap from "../components/ExploreMap";
+import ExploreCountryMap from "../components/ExploreMap/ExploreCountryMap";
+import ExploreCityMap from "../components/ExploreMap/ExploreCityMap";
 
 export function ExploreScreen() {
   const insets = useSafeAreaInsets();
@@ -60,21 +60,38 @@ export function ExploreScreen() {
       <View className="flex-1">
         {isLoading ? (
           <View className="flex-1 justify-center items-center">
-            <Text variant="bodyLarge">Loading map data...</Text>
+            <Text className="text-lg text-gray-500 font-medium">Loading map data...</Text>
           </View>
+        ) : viewBy === "country" ? (
+          <ExploreCountryMap markers={markers} />
         ) : (
-          <ExploreMap markers={markers} viewBy={viewBy} />
+          <ExploreCityMap markers={markers} />
         )}
       </View>
 
       {/* Overlay UI Controls */}
       <View 
         className="absolute w-full px-4" 
-        style={{ top: 10}}
+        style={{ top: insets.top + 10 }}
       >
-        <View className="gap-y-3 bg-white p-3 rounded-lg">
-          {/* Filter Toggle */}
+        <View className="gap-y-3 bg-white p-3 rounded-3xl">
+          {/* View By Toggle */}
           <View className="flex-row bg-white/90 rounded-2xl p-1 border border-gray-100">
+            {["country", "city"].map((v) => (
+              <TouchableOpacity 
+                key={v}
+                className={`flex-1 py-3 items-center rounded-xl ${viewBy === v ? "bg-primary" : ""}`}
+                onPress={() => setViewBy(v as any)}
+              >
+                <Text className={`text-lg ${viewBy === v ? "text-white" : "text-primary"}`}>
+                  {v === "country" ? "International" : "Country"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Filter Toggle */}
+          <View className="flex-row bg-white/90 rounded-2xl mt-1 p-1 border border-gray-100">
             {["all", "visited", "tovisit"].map((f) => (
               <TouchableOpacity 
                 key={f}
@@ -83,21 +100,6 @@ export function ExploreScreen() {
               >
                 <Text className={`font-bold capitalize ${filter === f ? "text-primary" : "text-gray-500"}`}>
                   {f === "tovisit" ? "To Visit" : f}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* View By Toggle */}
-          <View className="flex-row bg-white/90 rounded-2xl mt-1 p-1  border border-gray-100">
-            {["country", "city"].map((v) => (
-              <TouchableOpacity 
-                key={v}
-                className={`flex-1 py-2.5 items-center rounded-xl ${viewBy === v ? "bg-gray-100" : ""}`}
-                onPress={() => setViewBy(v as any)}
-              >
-                <Text className={`font-bold capitalize ${viewBy === v ? "text-primary" : "text-gray-500"}`}>
-                  By {v}
                 </Text>
               </TouchableOpacity>
             ))}

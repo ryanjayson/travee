@@ -161,7 +161,7 @@ const HomeScreen = () => {
           <UpcomingTrips upcomingTrips={upcomingTrips} isLoading={isLoading} onPressTrip={handlePressTrip} />
 
           <View className="justify-between mb-3">
-            <Text className="px-6 text-xl font-semibold text-secondary mb-md">Travel Insights</Text>
+            <Text className="px-6 text-xl font-semibold text-secondary mb-md">Trip Insights</Text>
               
             <View className="flex-row px-5 mb-[15px] gap-[15px]">
               <View className="flex-1 h-[112px]">
@@ -174,7 +174,7 @@ const HomeScreen = () => {
                 >
                   <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Past</Text>
                   <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
-                  <Text className="text-sm text-tertiary">Completed Trips</Text>
+                  <Text className="text-sm text-tertiary">Completed trips</Text>
                 </TouchableOpacity>
               </View>
 
@@ -187,7 +187,7 @@ const HomeScreen = () => {
                 >
                   <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Home Country</Text>
                   <Text className="text-3xl font-bold py-sm">0</Text>
-                  <Text className="text-sm text-tertiary">Country Count</Text>
+                  <Text className="text-sm text-tertiary">Cities visited</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -202,7 +202,7 @@ const HomeScreen = () => {
                 >
                   <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">International</Text>
                   <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
-                  <Text className="text-sm text-tertiary">Completed Trips</Text>
+                  <Text className="text-sm text-tertiary">Countries visited</Text>
                 </TouchableOpacity>
               </View>
 
