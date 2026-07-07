@@ -228,7 +228,7 @@ const ActivityModal = ({
     // 1. PRIVACY CONFIRMATION (Explicitly verifying that ML Kit runs 100% on-device offline)
     const isConfirmed = await confirm({
       title: "Secure Local Scan",
-      message: "Travee values your privacy. Text extraction from documents, screenshots, and receipts is performed 100% locally and offline on your device using Google ML Kit. We do not upload your personal documents to any external server.\n\nWould you like to select a booking screenshot or receipt to extract details?",
+      message: "Travelled values your privacy. Text extraction from documents, screenshots, and receipts is performed 100% locally and offline on your device using Google ML Kit. We do not upload your personal documents to any external server.\n\nWould you like to select a booking screenshot or receipt to extract details?",
       confirmText: "Select Image",
       cancelText: "Cancel",
       type: "default",

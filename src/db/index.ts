@@ -36,7 +36,7 @@ const adapter = new SQLiteAdapter({
   schema,
   migrations,
   // (Optional) Database name
-  dbName: "travie_db",
+  dbName: "travelled_db",
   // (Recommended) Setting this to false might improve performance
   jsi: false,
   onSetUpError: (error) => {

@@ -61,7 +61,7 @@ const ExploreCityMap = ({ markers }: ExploreCityMapProps) => {
               // Using Nominatim (OpenStreetMap) to get the exact geometric boundary polygon
               // zoom=8 generally returns the county/city/region boundary
               const url = 'https://nominatim.openstreetmap.org/reverse?format=geojson&lat=' + m.latitude + '&lon=' + m.longitude + '&zoom=8&polygon_geojson=1';
-              const res = await fetch(url, { headers: { 'User-Agent': 'TraveeApp/1.0' } });
+              const res = await fetch(url, { headers: { 'User-Agent': 'TravelledApp/1.0' } });
               const data = await res.json();
               
               if (data.features && data.features.length > 0) {

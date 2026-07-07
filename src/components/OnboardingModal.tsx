@@ -430,7 +430,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                 Demo Travel Plan
               </Text>
               <Text style={styles.subtitle}>
-                Would you like to import simulated travel data to explore Travee's features?
+                Would you like to import simulated travel data to explore Travelled's features?
               </Text>
 
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
@@ -477,7 +477,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                 You're all set!
               </Text>
               <Text style={styles.successSubtitle}>
-                Welcome to Travee! Prepare to start planning your perfect trips.
+                Welcome to Travelled! Prepare to start planning your perfect trips.
               </Text>
 
               <Text style={styles.countdownText}>

@@ -116,7 +116,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         </TouchableOpacity>
 
         <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 110 : 80 }}>
-            <Text className="tracking-wider text-white text-sm mb-1">Good morning, Travieler</Text>
+            <Text className="tracking-wider text-white text-sm mb-1">Good morning, Traveller</Text>
           {ongoingTrip ? (
             <View className="py-2 px-1">
               <View className="flex-row items-center gap-2">
@@ -191,7 +191,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
               <Text
                 className="text-gray-100 text-m font-medium mb-5"
               >
-                Plan your next adventure with Travie.
+                Plan your next adventure with Travelled.
               </Text>
 
               <TouchableOpacity 

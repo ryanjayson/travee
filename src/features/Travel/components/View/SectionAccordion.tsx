@@ -1372,7 +1372,7 @@ const SectionAccordion = ({
         travelId={travelId}
       />
 
-      {/* Edit Section Modal */}
+      {/* `Edit Sect`ion Modal */}
       <SectionModal
         visible={editingSection !== null}
         onClose={() => setEditingSection(null)}

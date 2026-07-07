@@ -2,7 +2,7 @@ import { ItineraryActivity } from "../types/TravelDto";
 import { ActivityType } from "../../../types/enums";
 
 /**
- * Heuristic OCR parser for Travee booking documents, screenshots, and receipts.
+ * Heuristic OCR parser for Travelled booking documents, screenshots, and receipts.
  * 
  * --- SECURITY & PRIVACY MITIGATION ---
  * 1. PII Confidentality: All OCR scanning is executed 100% offline and locally on-device.

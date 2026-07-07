@@ -221,7 +221,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
                 className="flex-1 text-base text-[#111827] py-2.5"
                 value={form.username}
                 onChangeText={(v) => setForm(f => ({ ...f, username: v }))}
-                placeholder="e.g. travieler_123"
+                placeholder="e.g. traveller_123"
                 placeholderTextColor="#9CA3AF"
                 autoCapitalize="none"
               />

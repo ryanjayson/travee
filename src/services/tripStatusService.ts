@@ -30,7 +30,7 @@ import { logger, ErrorCategory, ErrorSeverity } from "./errorLogger";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const NOTIF_KEY_PREFIX = "travee:notif_sent:";
+const NOTIF_KEY_PREFIX = "travelled:notif_sent:";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

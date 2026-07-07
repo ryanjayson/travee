@@ -412,7 +412,7 @@ const ShareTripModal: React.FC<ShareTripModalProps> = ({
           >
             <View className="flex-row items-center mb-2.5">
               <Ionicons name="airplane" size={14} color="rgba(255,255,255,0.65)" />
-              <Text className="text-white/65 text-[11px] font-bold ml-1.5 tracking-[2px]">TRAVIE</Text>
+              <Text className="text-white/65 text-[11px] font-bold ml-1.5 tracking-[2px]">TRAVELLED</Text>
             </View>
             <Text className="text-white text-[28px] font-extrabold leading-[34px] mb-1.5" numberOfLines={2}>{tripTitle}</Text>
             <Text className="text-white/65 text-[15px] font-medium mb-1">{destination}</Text>

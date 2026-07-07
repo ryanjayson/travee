@@ -1284,7 +1284,7 @@ const MapViewer = ({
               <View style={{ alignItems: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
               <View className="flex-row items-center mb-2.5" style={{ justifyContent: textAlign === "left" ? "flex-start" : textAlign === "center" ? "center" : "flex-end" }}>
                 <Ionicons name="airplane" size={14} color="rgba(255,255,255,0.65)" />
-                <Text className="text-white text-[18px] font-bold ml-1.5 tracking-[2px]" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>TRAVIE</Text>
+                 <Text className="text-white text-[18px] font-bold ml-1.5 tracking-[2px]" style={{ textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 }}>TRAVELLED</Text>
               </View>
                <Text className="text-white font-extrabold mb-1.5" style={{ fontSize: titleFontSize, lineHeight: titleLineHeight, textAlign, textShadowColor: 'rgba(0,0,0,0.7)', textShadowOffset: { width: 1, height: 2 }, textShadowRadius: 6 }}>{editableTitle}</Text>
               {showDestination && destination ? <Text className="text-white text-[16px] font-medium mb-1" style={{ textAlign, textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }}>{destination}</Text> : null}
@@ -2023,7 +2023,7 @@ function generateMapHtml(
         var w = window.innerWidth;
         var inner = '<div style="padding:120px 24px 112px 24px;text-align:' + textAlign + ';font-family:-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;">';
         inner += '<div style="display:flex;flex-direction:row;align-items:center;margin-bottom:10px;justify-content:' + (textAlign === 'left' ? 'flex-start' : textAlign === 'center' ? 'center' : 'flex-end') + ';">';
-        inner += '<span style="color:rgba(255,255,255,0.65);font-size:11px;font-weight:700;letter-spacing:2px;text-shadow:0 1px 3px rgba(0,0,0,0.6);">\u2708 TRAVIE</span></div>';
+        inner += '<span style="color:rgba(255,255,255,0.65);font-size:11px;font-weight:700;letter-spacing:2px;text-shadow:0 1px 3px rgba(0,0,0,0.6);">\u2708 TRAVELLED</span></div>';
         if (title) {
           inner += '<div style="color:#fff;font-size:' + titleFontSize + 'px;font-weight:800;line-height:' + titleLineHeight + 'px;margin-bottom:6px;text-shadow:1px 2px 6px rgba(0,0,0,0.7);max-width:' + (w - 48) + 'px;word-wrap:break-word;overflow-wrap:break-word;">' + escapeHtml(title) + '</div>';
         }
