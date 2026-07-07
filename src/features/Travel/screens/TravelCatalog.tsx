@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import StatusBadge from "../../../components/StatusBadge";
@@ -25,6 +26,19 @@ const TravelCatalog = () => {
   const [selectedTravel, setSelectedTravel] = useState<Travel | null>(null);
   const [showTravelDetail, setShowTravelDetail] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const route = useRoute<any>();
+  const navigation = useNavigation<any>();
+  const [activeViewTab, setActiveViewTab] = useState<string>("list");
+  const [activeListTab, setActiveListTab] = useState<string>("ongoing");
+
+  useEffect(() => {
+    if (route.params?.initialTab) {
+      setActiveViewTab("list");
+      setActiveListTab(route.params.initialTab);
+      navigation.setParams({ initialTab: undefined });
+    }
+  }, [route.params?.initialTab]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -422,7 +436,14 @@ const TravelCatalog = () => {
 
   const renderListView = () => (
     <View className="py-2 flex-1 bg-gray-100">
-      <Tabs tabs={listTabsData} type="default" expanded={true} hasActionTripStatus={getTravelsByStatus(TravelStatus.Ongoing).length > 0}/>
+      <Tabs 
+        tabs={listTabsData} 
+        activeTabId={activeListTab} 
+        onTabChange={setActiveListTab} 
+        type="default" 
+        expanded={true} 
+        hasActionTripStatus={getTravelsByStatus(TravelStatus.Ongoing).length > 0}
+      />
     </View>
   );
 
@@ -475,7 +496,13 @@ const TravelCatalog = () => {
             </TouchableOpacity>
           </View>
         ) : (
-            <Tabs tabs={viewTabsData} expanded={true} wrapperStyle="pb-2 w-full"/>
+            <Tabs 
+              tabs={viewTabsData} 
+              activeTabId={activeViewTab} 
+              onTabChange={setActiveViewTab} 
+              expanded={true} 
+              wrapperStyle="pb-2 w-full"
+            />
         )}
       </View>
 

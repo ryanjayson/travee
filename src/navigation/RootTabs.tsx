@@ -58,9 +58,7 @@ const HomeTabScreen = () => {
   return <HomeScreen />;
 };
 
-const TravelTab = () => {
-  return <TravelCatalog />;
-};
+// Tab screens can be used directly or wrapped if needed. We mount TravelCatalog directly.
 
 function RootTabsComponent() { 
   const [visibleCreateTravelModal, setVisibleCreateTravelModal] = React.useState(false);
@@ -138,7 +136,7 @@ function RootTabsComponent() {
         <Tab.Screen name="Home" component={HomeTabScreen} options={{ headerShown: false }} />  
         <Tab.Screen 
           name="Trips" 
-          component={TravelTab} 
+          component={TravelCatalog} 
           options={{
             headerRight: () => (
               <TouchableOpacity 

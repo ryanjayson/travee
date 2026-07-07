@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useAllActivities } from '../features/Travel/hooks/useActivity';
 import { useTravels } from '../features/Travel/hooks/useTravel';
 import { Travel } from '../features/Travel/types/TravelDto';
@@ -9,15 +10,18 @@ import { ActivityType, TravelStatus, getActivityTypeLabel } from '../types/enums
 import Hero from '../components/Home/Hero/index';
 import UpcomingTrips from '../components/Home/UpcomingTrips';
 import ViewTravelModal from '../features/Travel/components/View/Modal';
+import CreateTripModal from '../features/Travel/components/CreateOrEdit/Modal';
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<any>();
   const [refreshing, setRefreshing] = useState(false);
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
   const { data: allActivities } = useAllActivities();
   const [currentOngoingTrip, setCurrentOngoingTrip] = useState<Travel | null>(null);
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [selectedTravelForModal, setSelectedTravelForModal] = useState<Travel | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
 
   const handlePressTrip = (trip: Travel) => {
     if (trip && trip.id) {
@@ -157,96 +161,64 @@ const HomeScreen = () => {
           <UpcomingTrips upcomingTrips={upcomingTrips} isLoading={isLoading} onPressTrip={handlePressTrip} />
 
           <View className="justify-between mb-3">
-              <Text className="px-6 text-xl font-semibold text-secondary mb-md">Travel Insights</Text>
+            <Text className="px-6 text-xl font-semibold text-secondary mb-md">Travel Insights</Text>
               
-          <View className="flex-row px-5 mb-6 gap-[15px]">
-          <View className="flex-1 bg-[#E8F5E8] rounded-2xl p-4 shadow-sm elevation-2 border border-gray-300">
-              <View className="flex-row items-center">
-                <View className="p-2 rounded-lg mr-2.5">
-                  <Ionicons name="airplane" size={34} color="#2E7D32" />
-                </View>
+            <View className="flex-row px-5 mb-[15px] gap-[15px]">
+              <View className="flex-1 h-[112px]">
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("Trips", { initialTab: "past" })}
+                  disabled={false}
+                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
+                  accessibilityRole="button"
+                  activeOpacity={0.5}
+                >
+                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Past</Text>
+                  <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
+                  <Text className="text-sm text-tertiary">Completed Trips</Text>
+                </TouchableOpacity>
               </View>
-              <View className="flex-row items-baseline gap-1.5">
-                <Text className="text-2xl font-extrabold text-gray-900">{tripStats.completed}</Text>
-                <Text className="text-[12px] text-gray-500 font-medium">Done</Text>
-              </View>
-              <View className="flex-row items-baseline gap-1.5">
-                <Text className="text-2xl font-extrabold text-gray-900">{tripStats.upcoming}</Text>
-                <Text className="text-[12px] text-gray-500 font-medium">Upcoming</Text>
-              </View>
-              <View className="flex-row items-baseline mb-2">
-                    <Text className="text-sm text-gray-500 font-medium">Trips Stat</Text>
+
+              <View className="flex-1 h-[112px]">
+                <TouchableOpacity
+                  disabled={true}
+                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
+                  accessibilityRole="button"
+                  activeOpacity={0.5}
+                >
+                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Home Country</Text>
+                  <Text className="text-3xl font-bold py-sm">0</Text>
+                  <Text className="text-sm text-tertiary">Country Count</Text>
+                </TouchableOpacity>
               </View>
             </View>
 
-       
-            {/* Activity Heatmap (2/3) */}
-            <View className="flex-2 bg-white rounded-2xl p-4 shadow-sm elevation-0 border border-gray-100">
-              <View className="absolute top-[15px] left-2 ">
-                  <Text className="text-xs font-bold text-gray-600 mr-2">{currentYear}</Text>
+            <View className="flex-row px-5 mb-6 gap-[15px] ">
+              <View className="flex-1 h-[112px]">
+                <TouchableOpacity
+                  disabled={true}
+                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
+                  accessibilityRole="button"
+                  activeOpacity={0.5}
+                >
+                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">International</Text>
+                  <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
+                  <Text className="text-sm text-tertiary">Completed Trips</Text>
+                </TouchableOpacity>
               </View>
-              <View className="justify-between mr-2 absolute left-lg top-[30px] gap-y-1">
-                  <Text className="text-xs text-gray-400">M</Text>
-                  <Text className="text-xs text-gray-400">T</Text>
-                  <Text className="text-xs text-gray-400">W</Text>
-                  <Text className="text-xs text-gray-400">T</Text>
-                  <Text className="text-xs text-gray-400">F</Text>
-                  <Text className="text-xs text-gray-400">S</Text>
-                  <Text className="text-xs text-gray-400">S</Text>
-                </View>
 
-              <View className="pl-4">
-        
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View>
-                  <View className="flex-row mb-1 ml-2 items-center ">
-                    <View className="flex-row justify-between" style={{ width: 424 }}>
-                      {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month, i) => (
-                        <Text key={i} className="text-[10px] text-gray-400">{month}</Text>
-                      ))}
-                    </View>
-                  </View>
-                  
-                  <View className="flex-row">
-                    <View className="flex-row gap-0.5">
-                      {Array.from({ length: 52 }).map((_, colIndex) => (
-                        <View key={colIndex} className="gap-0.5">
-                          {Array.from({ length: 7 }).map((_, rowIndex) => {
-                            const cellDate = new Date(startDate);
-                            cellDate.setDate(cellDate.getDate() + (colIndex * 7 + rowIndex));
-                            const dateStr = cellDate.toISOString().split('T')[0];
-                            const count = activityCountsByDay[dateStr] || 0;
-                            
-                            let level = 0;
-                            if (count > 0) level = 1;
-                            if (count > 2) level = 2;
-                            if (count > 4) level = 3;
-                            if (count > 6) level = 4;
-
-                            const colors = [
-                              'bg-gray-100',      // 0
-                              'bg-brand-100',     // 1
-                              'bg-brand-300',     // 2
-                              'bg-brand-500',     // 3
-                              'bg-brand-primary'  // 4
-                            ];
-                            return (
-                              <View 
-                                key={rowIndex} 
-                                className={`w-[15px] h-[15px] rounded-sm ${colors[level]}`}
-                              />
-                            );
-                          })}
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                </View>
-              </ScrollView>
+              <View className="flex-1 h-[112px]">
+                <TouchableOpacity
+                  onPress={() => setShowCreateModal(true)}
+                  disabled={false}
+                  className="bg-gray-200 rounded-3xl border-2 border-[#e0e0e0] border-dashed p-4 h-full justify-center items-center"
+                  accessibilityRole="button"
+                  activeOpacity={0.5}
+                >
+                  <Ionicons name="add-circle-outline" size={32} color="#98A2B3" />
+                  <Text className="text-sm font-semibold text-[#98A2B3] mt-2">Add trip</Text>
+                </TouchableOpacity>
               </View>
-      
             </View>
-          </View>
           </View>
 
           {/* <View className="pb-2">
@@ -275,6 +247,11 @@ const HomeScreen = () => {
         travelId={selectedTravelForModal?.id || ""}
         showModal={showTravelViewModal}
         setShowModal={setShowTravelViewModal}
+      />
+
+      <CreateTripModal
+        showModal={showCreateModal}
+        setShowModal={setShowCreateModal}
       />
     </View>
   );
