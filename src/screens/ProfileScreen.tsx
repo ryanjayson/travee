@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
 import { UserProfileDto, AccountType } from "../types/UserProfileDto";
+import OnboardingModal from "../components/OnboardingModal";
 
 // Common currencies with flag emoji
 const CURRENCIES = [
@@ -112,6 +113,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -296,6 +298,19 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           </TouchableOpacity>
         </View>
 
+        {/* Temporary Onboarding Button */}
+        <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6]">
+          <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Developer Actions</Text>
+          <TouchableOpacity
+            onPress={() => setShowOnboarding(true)}
+            className="bg-[#263F69] py-3.5 rounded-xl items-center"
+            accessibilityRole="button"
+            activeOpacity={0.7}
+          >
+            <Text className="text-white font-bold text-base">Launch Onboarding Flow</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={{ height: 40 }} />
       </ScrollView>
 
@@ -315,6 +330,11 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
         selected={form.defaultCountry ?? "Philippines"}
         onSelect={(v) => setForm(f => ({ ...f, defaultCountry: v }))}
         onClose={() => setShowCountryPicker(false)}
+      />
+
+      <OnboardingModal
+        visible={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
       />
     </View>
   );
