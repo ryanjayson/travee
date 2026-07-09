@@ -126,7 +126,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
         </TouchableOpacity>
 
         <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 110 : 80 }}>
-            <Text className="tracking-wider text-white text-sm mb-1">Good morning, {profile?.nickname || "Travieler"}</Text>
+            <Text className=" text-white text-base mb-1">Good morning, {profile?.nickname || "traveller"}</Text>
           {ongoingTrip ? (
             <View className="py-2 px-1">
               <View className="flex-row items-center gap-2">
@@ -199,21 +199,21 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
                 Where to go next?
               </Text>
               <Text
-                className="text-gray-100 text-m font-medium mb-5"
+                className="text-gray-200 text-m font-medium mb-5"
               >
                 Plan your next adventure with Travelled.
               </Text>
 
               <TouchableOpacity 
                 onPress={() => setShowMapSelector(true)}
-                className="flex-row items-center bg-white rounded-3xl px-4 py-3 shadow-lg elevation-5"
+                className="flex-row items-center bg-white rounded-2xl px-4 py-4 shadow-lg elevation-5"
                 activeOpacity={0.8}
               >
                 <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 10 }} />
                 <Text className="text-base text-gray-400">Search a </Text>
                 <Animated.Text 
-                  style={{ opacity: fadeAnim }} 
-                  className="flex-1 text-base text-gray-400"
+                  style={{ opacity: fadeAnim, color: "#98A2B3", fontWeight: "500" }} 
+                  className="flex-1 text-base "
                 >
                   {currentWord}...
                 </Animated.Text>

@@ -11,6 +11,8 @@ import Hero from '../components/Home/Hero/index';
 import UpcomingTrips from '../components/Home/UpcomingTrips';
 import ViewTravelModal from '../features/Travel/components/View/Modal';
 import CreateTripModal from '../features/Travel/components/CreateOrEdit/Modal';
+import OnboardingModal from '../components/OnboardingModal';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
@@ -18,10 +20,12 @@ const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
   const { data: allActivities } = useAllActivities();
+  const { data: profile, isLoading: isProfileLoading } = useUserProfile();
   const [currentOngoingTrip, setCurrentOngoingTrip] = useState<Travel | null>(null);
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [selectedTravelForModal, setSelectedTravelForModal] = useState<Travel | null>(null);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const handlePressTrip = (trip: Travel) => {
     if (trip && trip.id) {
@@ -48,6 +52,12 @@ const HomeScreen = () => {
     const trip = travels?.find(t => t.status === TravelStatus.Ongoing) ?? null;
     setCurrentOngoingTrip(trip);
   }, [travels]);
+
+  useEffect(() => {
+    if (!isProfileLoading && !profile) {
+      setShowOnboarding(true);
+    }
+  }, [profile, isProfileLoading]);
 
   const getTripStats = () => {
     if (!travels) return { total: 0, completed: 0, upcoming: 0 };
@@ -253,6 +263,13 @@ const HomeScreen = () => {
         showModal={showCreateModal}
         setShowModal={setShowCreateModal}
       />
+
+      {showOnboarding && (
+        <OnboardingModal
+          visible={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+        />
+      )}
     </View>
   );
 };
