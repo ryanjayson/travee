@@ -5,7 +5,8 @@ export default class UserProfile extends Model {
   static table = "user_profiles";
 
   @text("username") username!: string | null;
-  @text("display_name") displayName!: string | null;
+  @text("nickname") nickname!: string | null;
+  @text("travel_style") travelStyle!: string | null;
   @text("email") email!: string | null;
   @text("avatar_url") avatarUrl!: string | null;
   @text("default_currency") defaultCurrency!: string | null;

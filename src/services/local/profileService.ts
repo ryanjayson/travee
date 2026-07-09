@@ -5,7 +5,8 @@ import { UserProfileDto, AccountType } from "../../types/UserProfileDto";
 const toDto = (p: UserProfile): UserProfileDto => ({
   id: p.id,
   username: p.username ?? undefined,
-  displayName: p.displayName ?? undefined,
+  nickname: p.nickname ?? undefined,
+  travelStyle: p.travelStyle ?? undefined,
   email: p.email ?? undefined,
   avatarUrl: p.avatarUrl ?? undefined,
   defaultCurrency: p.defaultCurrency ?? undefined,
@@ -31,18 +32,28 @@ export const saveProfileLocally = async (data: UserProfileDto): Promise<UserProf
       const existing = profiles[0];
       await existing.update((p) => {
         if (data.username !== undefined) p.username = data.username ?? null;
-        if (data.displayName !== undefined) p.displayName = data.displayName ?? null;
+        if (data.nickname !== undefined) p.nickname = data.nickname ?? null;
+        if (data.travelStyle !== undefined) p.travelStyle = data.travelStyle ?? null;
         if (data.email !== undefined) p.email = data.email ?? null;
         if (data.avatarUrl !== undefined) p.avatarUrl = data.avatarUrl ?? null;
         if (data.defaultCurrency !== undefined) p.defaultCurrency = data.defaultCurrency ?? null;
         if (data.defaultCountry !== undefined) p.defaultCountry = data.defaultCountry ?? null;
         if (data.accountType !== undefined) p.accountType = data.accountType!;
       });
+
+      // Safeguard: Delete any duplicate profiles if they somehow exist
+      if (profiles.length > 1) {
+        for (let i = 1; i < profiles.length; i++) {
+          await profiles[i].destroyPermanently();
+        }
+      }
+
       return toDto(existing);
     } else {
       const created = await database.get<UserProfile>("user_profiles").create((p) => {
         p.username = data.username ?? null;
-        p.displayName = data.displayName ?? null;
+        p.nickname = data.nickname ?? null;
+        p.travelStyle = data.travelStyle ?? null;
         p.email = data.email ?? null;
         p.avatarUrl = data.avatarUrl ?? null;
         p.defaultCurrency = data.defaultCurrency ?? "PHP";

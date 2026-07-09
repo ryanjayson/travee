@@ -59,7 +59,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip }: UpcomingTripsP
   };
 
   return (
-    <View className="mb-6 pt-sm">
+    <View className="mb-6 ">
       <View className="flex-row items-center justify-between px-6 mb-3 ">
         <Text className="text-2xl font-semibold text-secondary">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (

@@ -4,16 +4,19 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   Modal,
   StatusBar,
   ActivityIndicator,
+  Alert,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { TextInput, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
 import { UserProfileDto, AccountType } from "../types/UserProfileDto";
-import OnboardingModal from "../components/OnboardingModal";
+import OnboardingModal, { TRAVELER_TYPES } from "../components/OnboardingModal";
 
 // Common currencies with flag emoji
 const CURRENCIES = [
@@ -97,14 +100,17 @@ const PickerModal = ({
 );
 
 export function ProfileScreen({ onClose }: { onClose?: () => void }) {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { data: profile, isLoading } = useUserProfile();
   const { mutate: saveProfile, isPending: isSaving } = useSaveProfile();
 
   const [form, setForm] = useState<UserProfileDto>({
     username: "",
-    displayName: "",
+    nickname: "",
+    travelStyle: "",
     email: "",
+    avatarUrl: "",
     defaultCurrency: "PHP",
     defaultCountry: "Philippines",
     accountType: AccountType.Free,
@@ -119,8 +125,10 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
     if (profile) {
       setForm({
         username: profile.username ?? "",
-        displayName: profile.displayName ?? "",
+        nickname: profile.nickname ?? "",
+        travelStyle: profile.travelStyle ?? "",
         email: profile.email ?? "",
+        avatarUrl: profile.avatarUrl ?? "",
         defaultCurrency: profile.defaultCurrency ?? "PHP",
         defaultCountry: profile.defaultCountry ?? "Philippines",
         accountType: profile.accountType ?? AccountType.Free,
@@ -135,6 +143,26 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
         setTimeout(() => setSaved(false), 2000);
       },
     });
+  };
+
+  const handlePickAvatar = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Denied",
+        "Camera roll permission is required to upload an avatar picture."
+      );
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setForm(f => ({ ...f, avatarUrl: result.assets[0].uri }));
+    }
   };
 
   const selectedCurrencyLabel = CURRENCIES.find(c => c.code === form.defaultCurrency)?.label ?? form.defaultCurrency;
@@ -152,7 +180,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
       <StatusBar barStyle="dark-content" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-3.5 bg-white border-b border-[#E5E7EB]">
+      <View className="flex-row items-center justify-between px-5 py-3.5">
         {onClose && (
           <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="Close profile">
             <Ionicons name="close" size={28} color="#374151" />
@@ -169,7 +197,10 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           {isSaving ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text className="text-white text-xs font-semibold">{saved ? "Saved ✓" : "Save"}</Text>
+            <View className="flex-row items-center gap-1">
+              <Ionicons name="checkmark" size={20} color="#fff" />
+              <Text className="text-white text-xs font-semibold">{saved ? "Saved" : "Save"}</Text>
+            </View>
           )}
         </TouchableOpacity>
       </View>
@@ -178,14 +209,33 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
 
         {/* Avatar & Badge */}
         <View className="items-center py-5 gap-2.5">
-          <View className="w-24 h-24 rounded-full bg-[#263F69] justify-center items-center shadow-lg elevation-6">
-            <Ionicons name="person" size={48} color="#fff" />
-          </View>
+          <TouchableOpacity
+            onPress={handlePickAvatar}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Change avatar"
+            className="relative"
+          >
+            <View className="w-34 h-34 rounded-full bg-[#263F69] justify-center items-center overflow-hidden border border-white shadow">
+              {form.avatarUrl ? (
+                <Image
+                  source={{ uri: form.avatarUrl }}
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Ionicons name="person" size={48} color="#fff" />
+              )}
+            </View>
+            <View className="absolute bottom-0 right-0 bg-[#263F69] p-1.5 rounded-full border border-white shadow">
+              <Ionicons name="camera" size={14} color="#fff" />
+            </View>
+          </TouchableOpacity>
           <AccountTypeBadge type={form.accountType ?? AccountType.Free} />
         </View>
 
         {/* Account Type Card */}
-        <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6]">
+        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
           <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Account Type</Text>
           <View className="flex-row gap-2.5">
             <TouchableOpacity
@@ -210,92 +260,108 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
         </View>
 
         {/* Profile Info */}
-        <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6]">
+        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
           <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Profile Info</Text>
 
-          <View className="gap-1.5">
-            <Text className="text-sm font-semibold text-[#374151]">Username</Text>
-            <View className="flex-row items-center bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] pr-3">
-              <Ionicons name="at" size={18} color="#6B7280" style={{ paddingHorizontal: 12, paddingVertical: 10 }} />
+          <View className="mb-4">
+            <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Nickname</Text>
+            <View className="relative justify-center">
               <TextInput
-                className="flex-1 text-base text-[#111827] py-2.5"
-                value={form.username}
-                onChangeText={(v) => setForm(f => ({ ...f, username: v }))}
-                placeholder="e.g. traveller_123"
-                placeholderTextColor="#9CA3AF"
-                autoCapitalize="none"
+                mode="outlined"
+                placeholder="Nickname"
+                value={form.nickname}
+                onChangeText={(v) => setForm(f => ({ ...f, nickname: v }))}
+                outlineColor="#E0E0E0"
+                activeOutlineColor={colors.primary}
+                theme={{
+                  colors: {
+                    onSurfaceVariant: '#9CA3AF', 
+                  },
+                }}
+                outlineStyle={{
+                  borderWidth: 1,
+                  backgroundColor: "#FFFFFF",
+                  borderRadius: 16,
+                }}
+                style={{
+                  marginTop: 6,
+                  height: 56,
+                }}
+                left={<TextInput.Icon icon="account" color="#6B7280" />}
               />
             </View>
           </View>
 
-          <View className="gap-1.5">
-            <Text className="text-sm font-semibold text-[#374151]">Display Name</Text>
-            <View className="flex-row items-center bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] pr-3">
-              <Ionicons name="person-outline" size={18} color="#6B7280" style={{ paddingHorizontal: 12, paddingVertical: 10 }} />
-              <TextInput
-                className="flex-1 text-base text-[#111827] py-2.5"
-                value={form.displayName}
-                onChangeText={(v) => setForm(f => ({ ...f, displayName: v }))}
-                placeholder="Your full name"
-                placeholderTextColor="#9CA3AF"
-              />
-            </View>
-          </View>
-
-          <View className="gap-1.5">
-            <Text className="text-sm font-semibold text-[#374151]">Email</Text>
-            <View className="flex-row items-center bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] pr-3">
-              <Ionicons name="mail-outline" size={18} color="#6B7280" style={{ paddingHorizontal: 12, paddingVertical: 10 }} />
-              <TextInput
-                className="flex-1 text-base text-[#111827] py-2.5"
-                value={form.email}
-                onChangeText={(v) => setForm(f => ({ ...f, email: v }))}
-                placeholder="you@example.com"
-                placeholderTextColor="#9CA3AF"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
+          <View className="gap-1.5 mt-2">
+            <Text className="text-sm font-semibold text-[#374151]">Travel Style</Text>
+            <View className="flex-row flex-wrap gap-2 pt-1">
+              {TRAVELER_TYPES.map((type) => {
+                const selectedStyles = (form.travelStyle || "").split(",").filter(Boolean);
+                const isSelected = selectedStyles.includes(type.id);
+                return (
+                  <TouchableOpacity
+                    key={type.id}
+                    onPress={() => {
+                      const newStyles = isSelected
+                        ? selectedStyles.filter(id => id !== type.id)
+                        : [...selectedStyles, type.id];
+                      setForm(f => ({ ...f, travelStyle: newStyles.join(",") }));
+                    }}
+                    className={`flex-row items-center px-3.5 py-1.5 rounded-full border ${isSelected ? 'border-[#263F69] bg-[#EFF6FF]' : 'border-[#E5E7EB] bg-white'}`}
+                    accessibilityRole="button"
+                    activeOpacity={0.7}
+                  >
+                    <Text className="text-sm mr-1">{type.emoji}</Text>
+                    <Text className={`text-xs font-semibold ${isSelected ? 'text-[#263F69]' : 'text-[#475467]'}`}>
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         </View>
 
         {/* Preferences */}
-        <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6]">
+        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
           <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Preferences</Text>
 
-          <TouchableOpacity
-            className="flex-row items-center justify-between py-1"
-            onPress={() => setShowCurrencyPicker(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Select default currency"
-          >
-            <View className="flex-row items-center gap-1">
-              <Ionicons name="cash-outline" size={18} color="#6B7280" style={{ paddingHorizontal: 12, paddingVertical: 10 }} />
-              <View>
-                <Text className="text-sm font-semibold text-[#374151]">Default Currency</Text>
-                <Text className="text-sm text-[#263F69] font-medium mt-0.5">{selectedCurrencyLabel}</Text>
+          <View className="mb-2">
+            <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Default Country</Text>
+            <TouchableOpacity
+              onPress={() => setShowCountryPicker(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Select default country"
+              activeOpacity={0.7}
+            >
+              <View pointerEvents="none">
+                <TextInput
+                  mode="outlined"
+                  placeholder="Select country"
+                  value={form.defaultCountry || "Not set"}
+                  editable={false}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor={colors.primary}
+                  theme={{
+                    colors: {
+                      onSurfaceVariant: '#9CA3AF', 
+                    },
+                  }}
+                  outlineStyle={{
+                    borderWidth: 1,
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 16,
+                  }}
+                  style={{
+                    marginTop: 6,
+                    height: 56,
+                  }}
+                  left={<TextInput.Icon icon="earth" color="#6B7280" />}
+                  right={<TextInput.Icon icon="chevron-down" color="#9CA3AF" />}
+                />
               </View>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
-          </TouchableOpacity>
-
-          <View className="h-[1px] bg-[#F3F4F6]" />
-
-          <TouchableOpacity
-            className="flex-row items-center justify-between py-1"
-            onPress={() => setShowCountryPicker(true)}
-            accessibilityRole="button"
-            accessibilityLabel="Select default country"
-          >
-            <View className="flex-row items-center gap-1">
-              <Ionicons name="earth-outline" size={18} color="#6B7280" style={{ paddingHorizontal: 12, paddingVertical: 10 }} />
-              <View>
-                <Text className="text-sm font-semibold text-[#374151]">Default Country</Text>
-                <Text className="text-sm text-[#263F69] font-medium mt-0.5">{form.defaultCountry || "Not set"}</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Temporary Onboarding Button */}
@@ -332,10 +398,12 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
         onClose={() => setShowCountryPicker(false)}
       />
 
-      <OnboardingModal
-        visible={showOnboarding}
-        onClose={() => setShowOnboarding(false)}
-      />
+      {showOnboarding && (
+        <OnboardingModal
+          visible={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+        />
+      )}
     </View>
   );
 }

@@ -525,5 +525,17 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 24,
+      steps: [
+        addColumns({
+          table: "user_profiles",
+          columns: [
+            { name: "nickname", type: "string", isOptional: true },
+            { name: "travel_style", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

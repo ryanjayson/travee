@@ -10,6 +10,7 @@ import ItineraryTab from "../../../features/Travel/components/View/Tabs/Itinerar
 import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
 import { Travel } from '../../../features/Travel/types/TravelDto';
 import { ProfileScreen } from '../../../screens/ProfileScreen';
+import { useUserProfile } from '../../../hooks/useUserProfile';
 
 interface HeroProps {
   ongoingTrip: Travel | null;
@@ -18,6 +19,7 @@ interface HeroProps {
 const Hero = ({ ongoingTrip }: HeroProps) => {
   const navigation = useNavigation<any>();
   const { openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
+  const { data: profile } = useUserProfile();
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
   const [showMapSelector, setShowMapSelector] = useState<boolean>(false);
@@ -106,17 +108,25 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
 
         {/* Profile icon — always visible top-right */}
         <TouchableOpacity
-          className="absolute top-[52px] right-5 w-14 h-14 rounded-full bg-white/20 items-center justify-center"
+          className="absolute top-[52px] right-5 w-14 h-14 rounded-full bg-white/20 items-center justify-center overflow-hidden"
           onPress={() => setShowProfileModal(true)}
           activeOpacity={0.8}
           accessibilityRole="button"
           accessibilityLabel="Open profile"
         >
-          <Ionicons name="person-outline" size={24} color="#fff" />
+          {profile?.avatarUrl ? (
+            <Image
+              source={{ uri: profile.avatarUrl }}
+              style={{ width: "100%", height: "100%" }}
+              resizeMode="cover"
+            />
+          ) : (
+            <Ionicons name="person-outline" size={24} color="#fff" />
+          )}
         </TouchableOpacity>
 
         <View className="absolute left-5 right-5" style={{ top: ongoingTrip ? 110 : 80 }}>
-            <Text className="tracking-wider text-white text-sm mb-1">Good morning, Traveller</Text>
+            <Text className="tracking-wider text-white text-sm mb-1">Good morning, {profile?.nickname || "Travieler"}</Text>
           {ongoingTrip ? (
             <View className="py-2 px-1">
               <View className="flex-row items-center gap-2">

@@ -6,7 +6,8 @@ export enum AccountType {
 export interface UserProfileDto {
   id?: string;
   username?: string;
-  displayName?: string;
+  nickname?: string;
+  travelStyle?: string;
   email?: string;
   avatarUrl?: string;
   defaultCurrency?: string;

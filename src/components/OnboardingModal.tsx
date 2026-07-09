@@ -14,9 +14,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
 
 // Traveler type options with emojis
-const TRAVELER_TYPES = [
+export const TRAVELER_TYPES = [
   { id: "solo", label: "Solo Traveler", emoji: "🚶" },
   { id: "backpacker", label: "Backpacker", emoji: "🎒" },
   { id: "business", label: "Business Traveler", emoji: "💼" },
@@ -42,10 +43,23 @@ interface OnboardingModalProps {
 const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { data: profile } = useUserProfile();
+  const { mutate: saveProfile } = useSaveProfile();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
 
   // Form State
-  const [username, setUsername] = useState("");
+  const [nickname, setNickname] = useState("");
+
+  const nicknameError = (() => {
+    if (!nickname) return null;
+    if (nickname.includes(" ")) {
+      return "Spaces are not allowed";
+    }
+    if (nickname.length > 20) {
+      return "Nickname cannot exceed 20 characters";
+    }
+    return null;
+  })();
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("Philippines");
@@ -160,12 +174,21 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   };
 
   const handleFinish = () => {
+    // Save profile details to database
+    saveProfile({
+      ...(profile ?? {}),
+      nickname: nickname || undefined,
+      username: nickname || undefined,
+      defaultCountry: selectedCountry,
+      travelStyle: selectedTypes.join(","),
+    });
+
     // Reset state and close modal
     onClose();
     // Wait a brief moment before resetting step back to 1
     setTimeout(() => {
       setStep(1);
-      setUsername("");
+      setNickname("");
       setSelectedTypes([]);
       setSearchQuery("");
       setSelectedCountry("Philippines");
@@ -272,24 +295,35 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
           {step === 2 && (
             <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
               <Text style={[styles.title, { color: colors.primary }]}>
-                Choose your username
+                Choose your nickname
               </Text>
               <Text style={styles.subtitle}>
-                What should we call you? Pick a unique handle to get started.
+                What should we call you? Pick a unique nickname to get started.
               </Text>
 
-              <View style={styles.inputContainer}>
+              <View style={[
+                styles.inputContainer,
+                nicknameError ? { borderColor: colors.error } : null
+              ]}>
                 <Text style={styles.atSymbol}>@</Text>
                 <TextInput
                   style={styles.input}
-                  value={username}
-                  onChangeText={setUsername}
-                  placeholder="username"
+                  value={nickname}
+                  onChangeText={setNickname}
+                  placeholder="nickname"
                   placeholderTextColor="#9CA3AF"
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
+                <Text style={[styles.charCount, nickname.length > 20 && { color: colors.error }]}>
+                  {nickname.length}/20
+                </Text>
               </View>
+              {nicknameError ? (
+                <Text style={[styles.errorText, { color: colors.error }]}>
+                  {nicknameError}
+                </Text>
+              ) : null}
             </Animated.View>
           )}
 
@@ -493,12 +527,12 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
             <TouchableOpacity
               onPress={handleNext}
               disabled={
-                (step === 2 && !username.trim())
+                (step === 2 && (!nickname.trim() || !!nicknameError))
               }
               style={[
                 styles.primaryButton,
                 { backgroundColor: step === 1 ? "#FFFFFF" : colors.primary },
-                (step === 2 && !username.trim()) && { opacity: 0.5 },
+                (step === 2 && (!nickname.trim() || !!nicknameError)) && { opacity: 0.5 },
               ]}
               accessibilityRole="button"
             >
@@ -766,6 +800,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: "#374151",
+  },
+  errorText: {
+    fontSize: 13,
+    marginTop: 8,
+    marginLeft: 4,
+    fontWeight: "500",
+  },
+  charCount: {
+    fontSize: 12,
+    color: "#98A2B3",
+    marginLeft: 8,
   },
 });
 
