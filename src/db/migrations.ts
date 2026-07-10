@@ -537,5 +537,18 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 25,
+      steps: [
+        addColumns({
+          table: "user_profiles",
+          columns: [
+            { name: "notifications_enabled", type: "boolean", isOptional: true },
+            { name: "notify_days_before_trip", type: "number", isOptional: true },
+            { name: "notify_hours_before_activity", type: "number", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

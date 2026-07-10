@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Switch,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -114,6 +115,9 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
     defaultCurrency: "PHP",
     defaultCountry: "Philippines",
     accountType: AccountType.Free,
+    notificationsEnabled: true,
+    notifyDaysBeforeTrip: 3,
+    notifyHoursBeforeActivity: 2,
   });
 
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
@@ -132,6 +136,9 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
         defaultCurrency: profile.defaultCurrency ?? "PHP",
         defaultCountry: profile.defaultCountry ?? "Philippines",
         accountType: profile.accountType ?? AccountType.Free,
+        notificationsEnabled: profile.notificationsEnabled ?? true,
+        notifyDaysBeforeTrip: profile.notifyDaysBeforeTrip ?? 3,
+        notifyHoursBeforeActivity: profile.notifyHoursBeforeActivity ?? 2,
       });
     }
   }, [profile]);
@@ -362,6 +369,83 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
               </View>
             </TouchableOpacity>
           </View>
+        </View>
+
+        {/* Notification Settings */}
+        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
+          <View className="flex-row justify-between items-center mb-1">
+            <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest">Notification Settings</Text>
+            <Switch
+              value={form.notificationsEnabled}
+              onValueChange={(v) => setForm(f => ({ ...f, notificationsEnabled: v }))}
+              trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
+              thumbColor={form.notificationsEnabled ? colors.primary : "#F3F4F6"}
+            />
+          </View>
+
+          {form.notificationsEnabled && (
+            <View className="gap-4 mt-2">
+              {/* Trip starts setting */}
+              <View className="flex-row justify-between items-center">
+                <View className="flex-1 mr-4">
+                  <Text className="text-sm font-semibold text-[#374151]">Notify before trip starts</Text>
+                  <Text className="text-xs text-[#6B7280]">Days in advance to notify you</Text>
+                </View>
+                <View className="flex-row items-center border border-[#E5E7EB] rounded-full p-1 bg-white">
+                  <TouchableOpacity
+                    onPress={() => setForm(f => ({ ...f, notifyDaysBeforeTrip: Math.max(1, (f.notifyDaysBeforeTrip ?? 3) - 1) }))}
+                    className="w-8 h-8 rounded-full items-center justify-center bg-[#F3F4F6]"
+                    accessibilityRole="button"
+                    accessibilityLabel="Decrease days"
+                  >
+                    <Ionicons name="remove" size={16} color={colors.primary} />
+                  </TouchableOpacity>
+                  <Text className="text-sm font-semibold text-[#111827] px-3 min-w-[60px] text-center">
+                    {form.notifyDaysBeforeTrip ?? 3} {(form.notifyDaysBeforeTrip ?? 3) === 1 ? "day" : "days"}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setForm(f => ({ ...f, notifyDaysBeforeTrip: Math.min(30, (f.notifyDaysBeforeTrip ?? 3) + 1) }))}
+                    className="w-8 h-8 rounded-full items-center justify-center bg-[#F3F4F6]"
+                    accessibilityRole="button"
+                    accessibilityLabel="Increase days"
+                  >
+                    <Ionicons name="add" size={16} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View className="h-[1px] bg-[#E5E7EB]" />
+
+              {/* Activity starts setting */}
+              <View className="flex-row justify-between items-center">
+                <View className="flex-1 mr-4">
+                  <Text className="text-sm font-semibold text-[#374151]">Notify before activity starts</Text>
+                  <Text className="text-xs text-[#6B7280]">Hours in advance to notify you</Text>
+                </View>
+                <View className="flex-row items-center border border-[#E5E7EB] rounded-full p-1 bg-white">
+                  <TouchableOpacity
+                    onPress={() => setForm(f => ({ ...f, notifyHoursBeforeActivity: Math.max(1, (f.notifyHoursBeforeActivity ?? 2) - 1) }))}
+                    className="w-8 h-8 rounded-full items-center justify-center bg-[#F3F4F6]"
+                    accessibilityRole="button"
+                    accessibilityLabel="Decrease hours"
+                  >
+                    <Ionicons name="remove" size={16} color={colors.primary} />
+                  </TouchableOpacity>
+                  <Text className="text-sm font-semibold text-[#111827] px-3 min-w-[60px] text-center">
+                    {form.notifyHoursBeforeActivity ?? 2} {(form.notifyHoursBeforeActivity ?? 2) === 1 ? "hour" : "hours"}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setForm(f => ({ ...f, notifyHoursBeforeActivity: Math.min(24, (f.notifyHoursBeforeActivity ?? 2) + 1) }))}
+                    className="w-8 h-8 rounded-full items-center justify-center bg-[#F3F4F6]"
+                    accessibilityRole="button"
+                    accessibilityLabel="Increase hours"
+                  >
+                    <Ionicons name="add" size={16} color={colors.primary} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Temporary Onboarding Button */}

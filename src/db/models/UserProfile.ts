@@ -12,6 +12,9 @@ export default class UserProfile extends Model {
   @text("default_currency") defaultCurrency!: string | null;
   @text("default_country") defaultCountry!: string | null;
   @field("account_type") accountType!: number; // 0 = Free, 1 = Premium
+  @field("notifications_enabled") notificationsEnabled!: boolean;
+  @field("notify_days_before_trip") notifyDaysBeforeTrip!: number;
+  @field("notify_hours_before_activity") notifyHoursBeforeActivity!: number;
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
 }

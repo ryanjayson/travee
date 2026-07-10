@@ -13,6 +13,9 @@ export interface UserProfileDto {
   defaultCurrency?: string;
   defaultCountry?: string;
   accountType?: AccountType;
+  notificationsEnabled?: boolean;
+  notifyDaysBeforeTrip?: number;
+  notifyHoursBeforeActivity?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

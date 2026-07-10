@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   Image,
   Animated,
+  Switch,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
@@ -45,7 +46,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   const insets = useSafeAreaInsets();
   const { data: profile } = useUserProfile();
   const { mutate: saveProfile } = useSaveProfile();
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
 
   // Form State
   const [nickname, setNickname] = useState("");
@@ -63,6 +64,12 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("Philippines");
+  
+  // Notification State
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notifyDaysBeforeTrip, setNotifyDaysBeforeTrip] = useState(3);
+  const [notifyHoursBeforeActivity, setNotifyHoursBeforeActivity] = useState(2);
+
   const [createDemoData, setCreateDemoData] = useState(true);
   const [countdown, setCountdown] = useState(5);
 
@@ -134,9 +141,9 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     }
   }, [visible, step]);
 
-  // Auto-close Step 6 with countdown
+  // Auto-close Step 7 with countdown
   useEffect(() => {
-    if (visible && step === 6) {
+    if (visible && step === 7) {
       setCountdown(3);
       const interval = setInterval(() => {
         setCountdown((prev) => {
@@ -162,7 +169,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   };
 
   const handleNext = () => {
-    if (step < 6) {
+    if (step < 7) {
       setStep((prev) => (prev + 1) as any);
     }
   };
@@ -181,6 +188,9 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
       username: nickname || undefined,
       defaultCountry: selectedCountry,
       travelStyle: selectedTypes.join(","),
+      notificationsEnabled,
+      notifyDaysBeforeTrip,
+      notifyHoursBeforeActivity,
     });
 
     // Reset state and close modal
@@ -192,6 +202,9 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
       setSelectedTypes([]);
       setSearchQuery("");
       setSelectedCountry("Philippines");
+      setNotificationsEnabled(true);
+      setNotifyDaysBeforeTrip(3);
+      setNotifyHoursBeforeActivity(2);
       setCreateDemoData(true);
     }, 500);
   };
@@ -208,7 +221,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
         <View style={[styles.header, 
           {marginTop: insets.top + 0 }
         ]}>
-          {step > 1 && step <= 5 ? (
+          {step > 1 && step <= 6 ? (
             <>
               <TouchableOpacity
                 onPress={handleBack}
@@ -219,7 +232,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                 <Ionicons name="arrow-back" size={24} color="#374151" />
               </TouchableOpacity>
               <View style={styles.progressContainer}>
-                {[2, 3, 4, 5].map((s) => (
+                {[2, 3, 4, 5, 6].map((s) => (
                   <View
                     key={s}
                     style={[
@@ -236,14 +249,15 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                   />
                 ))}
               </View>
-              <TouchableOpacity
+              <View style={{ width: 24 }} />
+              {/* <TouchableOpacity
                 onPress={onClose}
                 style={styles.closeButton}
                 accessibilityRole="button"
                 accessibilityLabel="Close onboarding"
               >
                 <Ionicons name="close" size={24} color="#374151" />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </>
           ) : (
             <>
@@ -412,7 +426,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                 Where are you from?
               </Text>
               <Text style={styles.subtitle}>
-                Select your primary home country destination.
+                Select your primary home country.
               </Text>
 
               {/* Country Selection UI */}
@@ -461,6 +475,104 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
           {step === 5 && (
             <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
               <Text style={[styles.title, { color: colors.primary }]}>
+                Turn on notifications
+              </Text>
+              <Text style={styles.subtitle}>
+                Never miss an update. Customize when you want to get notified about your upcoming trips and activities.
+              </Text>
+
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+                {/* Enable notifications switch container */}
+                <View style={styles.notificationToggleContainer}>
+                  <View style={{ flex: 1, marginRight: 16 }}>
+                    <Text style={styles.notificationToggleTitle}>Enable Push Notifications</Text>
+                    <Text style={styles.notificationToggleSubtitle}>
+                      Get reminders on your device for trip planning.
+                    </Text>
+                  </View>
+                  <Switch
+                    value={notificationsEnabled}
+                    onValueChange={setNotificationsEnabled}
+                    trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
+                    thumbColor={notificationsEnabled ? colors.primary : "#F3F4F6"}
+                  />
+                </View>
+
+                {/* Sub-settings */}
+                <View style={[styles.settingsContainer, !notificationsEnabled && { opacity: 0.5 }]} pointerEvents={notificationsEnabled ? "auto" : "none"}>
+                  <Text style={styles.sectionHeader}>Notification Settings</Text>
+
+                  {/* Trip start notification configuration */}
+                  <View style={styles.settingRow}>
+                    <View style={{ flex: 1, marginRight: 16 }}>
+                      <Text style={styles.settingLabel}>Before trip starts</Text>
+                      <Text style={styles.settingSubtext}>How many days in advance should we notify you?</Text>
+                    </View>
+                    <View style={styles.stepperContainer}>
+                      <TouchableOpacity
+                        onPress={() => setNotifyDaysBeforeTrip(prev => Math.max(1, prev - 1))}
+                        style={styles.stepperButton}
+                        disabled={!notificationsEnabled || notifyDaysBeforeTrip <= 1}
+                        accessibilityRole="button"
+                        accessibilityLabel="Decrease days"
+                      >
+                        <Ionicons name="remove" size={18} color={!notificationsEnabled || notifyDaysBeforeTrip <= 1 ? "#9CA3AF" : colors.primary} />
+                      </TouchableOpacity>
+                      <Text style={styles.stepperValue}>
+                        {notifyDaysBeforeTrip} {notifyDaysBeforeTrip === 1 ? "day" : "days"}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => setNotifyDaysBeforeTrip(prev => Math.min(30, prev + 1))}
+                        style={styles.stepperButton}
+                        disabled={!notificationsEnabled || notifyDaysBeforeTrip >= 30}
+                        accessibilityRole="button"
+                        accessibilityLabel="Increase days"
+                      >
+                        <Ionicons name="add" size={18} color={!notificationsEnabled || notifyDaysBeforeTrip >= 30 ? "#9CA3AF" : colors.primary} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <View style={styles.divider} />
+
+                  {/* Activity start notification configuration */}
+                  <View style={styles.settingRow}>
+                    <View style={{ flex: 1, marginRight: 16 }}>
+                      <Text style={styles.settingLabel}>Before activity starts</Text>
+                      <Text style={styles.settingSubtext}>How many hours in advance should we notify you?</Text>
+                    </View>
+                    <View style={styles.stepperContainer}>
+                      <TouchableOpacity
+                        onPress={() => setNotifyHoursBeforeActivity(prev => Math.max(1, prev - 1))}
+                        style={styles.stepperButton}
+                        disabled={!notificationsEnabled || notifyHoursBeforeActivity <= 1}
+                        accessibilityRole="button"
+                        accessibilityLabel="Decrease hours"
+                      >
+                        <Ionicons name="remove" size={18} color={!notificationsEnabled || notifyHoursBeforeActivity <= 1 ? "#9CA3AF" : colors.primary} />
+                      </TouchableOpacity>
+                      <Text style={styles.stepperValue}>
+                        {notifyHoursBeforeActivity} {notifyHoursBeforeActivity === 1 ? "hour" : "hours"}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => setNotifyHoursBeforeActivity(prev => Math.min(24, prev + 1))}
+                        style={styles.stepperButton}
+                        disabled={!notificationsEnabled || notifyHoursBeforeActivity >= 24}
+                        accessibilityRole="button"
+                        accessibilityLabel="Increase hours"
+                      >
+                        <Ionicons name="add" size={18} color={!notificationsEnabled || notifyHoursBeforeActivity >= 24 ? "#9CA3AF" : colors.primary} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </ScrollView>
+            </Animated.View>
+          )}
+
+          {step === 6 && (
+            <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
+              <Text style={[styles.title, { color: colors.primary }]}>
                 Demo Travel Plan
               </Text>
               <Text style={styles.subtitle}>
@@ -493,7 +605,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
             </Animated.View>
           )}
 
-          {step === 6 && (
+          {step === 7 && (
             <Animated.View
               style={[
                 styles.stepContent,
@@ -521,9 +633,9 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
           )}
         </View>
 
-        {/* Sticky Action Footer - safe inset padding */}
+         {/* Sticky Action Footer - safe inset padding */}
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-          {step <= 5 ? (
+          {step <= 6 ? (
             <TouchableOpacity
               onPress={handleNext}
               disabled={
@@ -540,7 +652,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                 styles.primaryButtonText,
                 { color: step === 1 ? "#111827" : colors.onPrimary }
               ]}>
-                {step === 1 ? "Get Started" : step === 5 ? "Start the Adventure!" : "Next"}
+                {step === 1 ? "Get Started" : step === 6 ? "Start the Adventure!" : "Next"}
               </Text>
             </TouchableOpacity>
           ) : null}
@@ -811,6 +923,88 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#98A2B3",
     marginLeft: 8,
+  },
+  notificationToggleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 24,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: "#EAECF0",
+    borderRadius: 16,
+    backgroundColor: "#F9FAFB",
+  },
+  notificationToggleTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  notificationToggleSubtitle: {
+    fontSize: 13,
+    color: "#6B7280",
+  },
+  settingsContainer: {
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1.5,
+    borderColor: "#EAECF0",
+    borderRadius: 16,
+    padding: 16,
+  },
+  sectionHeader: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#9CA3AF",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 16,
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  settingLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#374151",
+    marginBottom: 4,
+  },
+  settingSubtext: {
+    fontSize: 12,
+    color: "#6B7280",
+    lineHeight: 16,
+  },
+  stepperContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 20,
+    padding: 4,
+  },
+  stepperButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F3F4F6",
+  },
+  stepperValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111827",
+    paddingHorizontal: 12,
+    minWidth: 70,
+    textAlign: "center",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E5E7EB",
+    marginVertical: 16,
   },
 });
 

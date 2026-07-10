@@ -12,6 +12,9 @@ const toDto = (p: UserProfile): UserProfileDto => ({
   defaultCurrency: p.defaultCurrency ?? undefined,
   defaultCountry: p.defaultCountry ?? undefined,
   accountType: (p.accountType as AccountType) ?? AccountType.Free,
+  notificationsEnabled: p.notificationsEnabled ?? true,
+  notifyDaysBeforeTrip: p.notifyDaysBeforeTrip ?? 3,
+  notifyHoursBeforeActivity: p.notifyHoursBeforeActivity ?? 2,
   createdAt: p.createdAt,
   updatedAt: p.updatedAt,
 });
@@ -39,6 +42,9 @@ export const saveProfileLocally = async (data: UserProfileDto): Promise<UserProf
         if (data.defaultCurrency !== undefined) p.defaultCurrency = data.defaultCurrency ?? null;
         if (data.defaultCountry !== undefined) p.defaultCountry = data.defaultCountry ?? null;
         if (data.accountType !== undefined) p.accountType = data.accountType!;
+        if (data.notificationsEnabled !== undefined) p.notificationsEnabled = data.notificationsEnabled;
+        if (data.notifyDaysBeforeTrip !== undefined) p.notifyDaysBeforeTrip = data.notifyDaysBeforeTrip;
+        if (data.notifyHoursBeforeActivity !== undefined) p.notifyHoursBeforeActivity = data.notifyHoursBeforeActivity;
       });
 
       // Safeguard: Delete any duplicate profiles if they somehow exist
@@ -59,6 +65,9 @@ export const saveProfileLocally = async (data: UserProfileDto): Promise<UserProf
         p.defaultCurrency = data.defaultCurrency ?? "PHP";
         p.defaultCountry = data.defaultCountry ?? "Philippines";
         p.accountType = data.accountType ?? AccountType.Free;
+        p.notificationsEnabled = data.notificationsEnabled ?? true;
+        p.notifyDaysBeforeTrip = data.notifyDaysBeforeTrip ?? 3;
+        p.notifyHoursBeforeActivity = data.notifyHoursBeforeActivity ?? 2;
       });
       return toDto(created);
     }

@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 24,
+  version: 25,
   tables: [
     tableSchema({
       name: "travels",
@@ -142,6 +142,9 @@ export const schema = appSchema({
         { name: "default_currency", type: "string", isOptional: true },
         { name: "default_country", type: "string", isOptional: true },
         { name: "account_type", type: "number" },
+        { name: "notifications_enabled", type: "boolean", isOptional: true },
+        { name: "notify_days_before_trip", type: "number", isOptional: true },
+        { name: "notify_hours_before_activity", type: "number", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],
