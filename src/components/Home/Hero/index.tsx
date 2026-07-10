@@ -3,8 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { useTravelContext } from "../../../context/TravelContext";
-import CreateTripModal from '../../../features/Travel/components/CreateOrEdit/Modal';
-import MapboxDestinationSelector, { MapboxPlace } from '../../../features/Travel/components/MapboxDestinationSelector';
+
 import ViewTravelModal from "../../../features/Travel/components/View/Modal";
 import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
 import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
@@ -14,17 +13,16 @@ import { useUserProfile } from '../../../hooks/useUserProfile';
 
 interface HeroProps {
   ongoingTrip: Travel | null;
+  onOpenCreateTripModal?: (tripData: any) => void;
 }
 
-const Hero = ({ ongoingTrip }: HeroProps) => {
+const Hero = ({ ongoingTrip, onOpenCreateTripModal }: HeroProps) => {
   const navigation = useNavigation<any>();
   const { openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
   const { data: profile } = useUserProfile();
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
-  const [showMapSelector, setShowMapSelector] = useState<boolean>(false);
-  const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-  const [prefilledTripData, setPrefilledTripData] = useState<any>(null);
+
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
   const [plainMode, setPlainMode] = useState<boolean>(false);
   
@@ -205,9 +203,11 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
               </Text>
 
               <TouchableOpacity 
-                onPress={() => setShowMapSelector(true)}
+                onPress={() => onOpenCreateTripModal && onOpenCreateTripModal(null)}
                 className="flex-row items-center bg-white rounded-2xl px-4 py-4 shadow-lg elevation-5"
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Create a new trip"
               >
                 <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 10 }} />
                 <Text className="text-base text-gray-400">Search a </Text>
@@ -266,38 +266,7 @@ const Hero = ({ ongoingTrip }: HeroProps) => {
           </>
         )}
 
-        <Modal
-          visible={showMapSelector}
-          animationType="slide"
-          transparent
-          onRequestClose={() => setShowMapSelector(false)}
-        >
-          <View className="bg-white flex-1">
-            <MapboxDestinationSelector
-              onClose={() => setShowMapSelector(false)}
-              onSelect={(place: MapboxPlace) => {
-                setPrefilledTripData({
-                  destination: place.fullName,
-                  destinationData: {
-                    id: place.id,
-                    coordinates: {
-                      longitude: place.coordinates.longitude,
-                      latitude: place.coordinates.latitude,
-                    },
-                  },
-                });
-                setShowMapSelector(false);
-                setShowCreateModal(true);
-              }}
-            />
-          </View>
-        </Modal>
 
-        <CreateTripModal
-          showModal={showCreateModal}
-          setShowModal={setShowCreateModal}
-          tripData={prefilledTripData}
-        />
 
         <Modal
           visible={showProfileModal}

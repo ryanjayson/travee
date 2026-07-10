@@ -25,6 +25,7 @@ const HomeScreen = () => {
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [selectedTravelForModal, setSelectedTravelForModal] = useState<Travel | null>(null);
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+  const [prefilledTripData, setPrefilledTripData] = useState<any>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const handlePressTrip = (trip: Travel) => {
@@ -157,7 +158,13 @@ const HomeScreen = () => {
           />
         }>
 
-        <Hero ongoingTrip={currentOngoingTrip} />
+        <Hero
+          ongoingTrip={currentOngoingTrip}
+          onOpenCreateTripModal={(tripData) => {
+            setPrefilledTripData(tripData);
+            setShowCreateModal(true);
+          }}
+        />
 
         <View
           className="bg-gray-100 "
@@ -218,7 +225,10 @@ const HomeScreen = () => {
 
               <View className="flex-1 h-[112px]">
                 <TouchableOpacity
-                  onPress={() => setShowCreateModal(true)}
+                  onPress={() => {
+                    setPrefilledTripData(null);
+                    setShowCreateModal(true);
+                  }}
                   disabled={false}
                   className="bg-gray-200 rounded-3xl border-2 border-[#e0e0e0] border-dashed p-4 h-full justify-center items-center"
                   accessibilityRole="button"
@@ -262,6 +272,7 @@ const HomeScreen = () => {
       <CreateTripModal
         showModal={showCreateModal}
         setShowModal={setShowCreateModal}
+        tripData={prefilledTripData}
       />
 
       {showOnboarding && (
