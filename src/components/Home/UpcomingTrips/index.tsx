@@ -12,10 +12,11 @@ interface UpcomingTripsProps {
   upcomingTrips: Travel[];
   isLoading: boolean;
   onPressTrip?: (trip: Travel) => void;
+  onAddTripPress?: () => void;
 }
 
-const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip }: UpcomingTripsProps) => {
-  const [cardWidth, setCardWidth] = useState(upcomingTrips.length && upcomingTrips.length === 1 ? SCREEN_WIDTH - 40 : SCREEN_WIDTH * 0.8);
+const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }: UpcomingTripsProps) => {
+  const cardWidth = upcomingTrips.length === 1 ? SCREEN_WIDTH - 40 : SCREEN_WIDTH * 0.8;
   
   const formatDate = (v?: Date | string) =>
     v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -133,13 +134,25 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip }: UpcomingTripsP
           )}
         />
       ) : (
-        <View className="mx-5 h-[130px] align-middle justify-center rounded-2xl p-6 items-center border-2 border-dashed border-gray-300">
+        <TouchableOpacity
+          onPress={onAddTripPress}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Add a new trip"
+          className="mx-5 h-[130px] align-middle justify-center rounded-2xl p-6 items-center border-2 border-dashed border-gray-300"
+        >
           <Ionicons name="briefcase-outline" size={32} color="#d1d5db" />
-          <Text className="text-base text-gray-800 font-medium mt-2">No upcoming trips</Text>
-          <Text className="text-sm text-gray-400 text-center">
-            Start planning your next adventure!
+          <Text className="text-lg text-gray-800 font-medium mt-2">No upcoming trips</Text>
+          <View className='flex-row gap-1'>
+
+            <Text className="text-base text-gray-400 text-center underline font-semibold">
+           Add trip
           </Text>
-        </View>
+           <Text className="text-base text-gray-400 text-center ">
+            and start planning your next adventure!
+          </Text>
+          </View>
+        </TouchableOpacity>
       )}
     </View>
   );

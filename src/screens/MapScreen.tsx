@@ -1,6 +1,7 @@
 import * as React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRoute } from "@react-navigation/native";
 import { useTravels } from "../features/Travel/hooks/useTravel";
 import { useAllActivitiesWithDestination } from "../features/Travel/hooks/useActivity";
 import { TravelStatus } from "../types/enums";
@@ -9,11 +10,18 @@ import ExploreCityMap from "../components/ExploreMap/ExploreCityMap";
 
 export function ExploreScreen() {
   const insets = useSafeAreaInsets();
+  const route = useRoute<any>();
   const { data: travels, isLoading: isTravelsLoading } = useTravels();
   const { data: activities, isLoading: isActivitiesLoading } = useAllActivitiesWithDestination();
   
   const [viewBy, setViewBy] = React.useState<"country" | "city">("country");
   const [filter, setFilter] = React.useState<"all" | "visited" | "tovisit">("all");
+
+  React.useEffect(() => {
+    if (route.params?.viewBy) {
+      setViewBy(route.params.viewBy);
+    }
+  }, [route.params?.viewBy]);
 
   const markers = React.useMemo(() => {
     if (viewBy === "country") {

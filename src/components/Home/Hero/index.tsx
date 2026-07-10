@@ -107,10 +107,12 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal }: HeroProps) => {
         {/* Profile icon — always visible top-right */}
         <TouchableOpacity
           className="absolute top-[52px] right-5 w-14 h-14 rounded-full bg-white/20 items-center justify-center overflow-hidden"
+          style={{ zIndex: 10 }}
           onPress={() => setShowProfileModal(true)}
           activeOpacity={0.8}
           accessibilityRole="button"
           accessibilityLabel="Open profile"
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           {profile?.avatarUrl ? (
             <Image

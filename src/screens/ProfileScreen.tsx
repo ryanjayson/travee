@@ -10,6 +10,10 @@ import {
   Alert,
   Image,
   Switch,
+  TextInput as RNTextInput,
+  PanResponder,
+  Animated,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -18,6 +22,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
 import { UserProfileDto, AccountType } from "../types/UserProfileDto";
 import OnboardingModal, { TRAVELER_TYPES } from "../components/OnboardingModal";
+import { database } from "../db";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Common currencies with flag emoji
 const CURRENCIES = [
@@ -56,6 +63,8 @@ const AccountTypeBadge = ({ type }: { type: AccountType }) => {
   );
 };
 
+const { height: screenHeight } = Dimensions.get("window");
+
 const PickerModal = ({
   visible,
   title,
@@ -70,41 +79,306 @@ const PickerModal = ({
   selected: string;
   onSelect: (v: string) => void;
   onClose: () => void;
-}) => (
-  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-    <View className="flex-1 bg-black/50 justify-end">
-      <View className="bg-white rounded-t-3xl max-h-[70%] pb-7">
-        <View className="flex-row justify-between items-center p-5 border-b border-[#F3F4F6]">
-          <Text className="text-base font-bold text-[#111827]">{title}</Text>
-          <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="Close picker">
-            <Ionicons name="close" size={24} color="#374151" />
-          </TouchableOpacity>
-        </View>
-        <ScrollView>
-          {options.map((opt) => (
-            <TouchableOpacity
-              key={opt}
-              className={`flex-row justify-between items-center px-5 py-3.5 ${selected === opt ? 'bg-[#EFF6FF]' : ''}`}
-              onPress={() => { onSelect(opt); onClose(); }}
-              accessibilityRole="button"
+}) => {
+  const translateY = React.useRef(new Animated.Value(screenHeight)).current;
+
+  React.useEffect(() => {
+    if (visible) {
+      translateY.setValue(screenHeight);
+      Animated.spring(translateY, {
+        toValue: 0,
+        tension: 65,
+        friction: 11,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  const handleDismiss = () => {
+    Animated.timing(translateY, {
+      toValue: screenHeight,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  };
+
+  const dragPanResponder = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          translateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 100 || gestureState.vy > 0.5) {
+          Animated.timing(translateY, {
+            toValue: screenHeight,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            onClose();
+          });
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            tension: 80,
+            friction: 12,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  const backdropOpacity = translateY.interpolate({
+    inputRange: [0, screenHeight],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleDismiss}>
+      <Animated.View
+        className="flex-1 justify-end"
+        style={{
+          backgroundColor: "rgba(0,0,0,0.5)",
+          opacity: backdropOpacity,
+        }}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={handleDismiss}
+          style={{ flex: 1, width: "100%", justifyContent: "flex-end" }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {}}
+            style={{ width: "100%" }}
+          >
+            <Animated.View
+              className="bg-white rounded-t-[30px] max-h-[70%] pb-7 shadow-lg"
+              style={{ transform: [{ translateY }] }}
             >
-              <Text className={`text-base ${selected === opt ? 'text-[#263F69] font-semibold' : 'text-[#374151]'}`}>
-                {opt}
-              </Text>
-              {selected === opt && <Ionicons name="checkmark" size={18} color="#263F69" />}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-    </View>
-  </Modal>
-);
+              {/* Drag Handle Area */}
+              <View
+                {...dragPanResponder.panHandlers}
+                className="w-full items-center py-4 bg-white rounded-t-[30px]"
+              >
+                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              </View>
+
+              <View className="flex-row justify-between items-center px-5 pb-4 border-b border-[#F3F4F6]">
+                <Text className="text-xl font-bold text-[#111827]">{title}</Text>
+                <TouchableOpacity onPress={handleDismiss} accessibilityRole="button" accessibilityLabel="Close picker">
+                  <Ionicons name="close" size={24} color="#374151" />
+                </TouchableOpacity>
+              </View>
+              
+              <ScrollView>
+                {options.map((opt) => (
+                  <TouchableOpacity
+                    key={opt}
+                    className={`flex-row justify-between items-center px-5 py-3.5 ${selected === opt ? 'bg-[#EFF6FF]' : ''}`}
+                    onPress={() => { onSelect(opt); handleDismiss(); }}
+                    accessibilityRole="button"
+                  >
+                    <Text className={`text-base ${selected === opt ? 'text-[#263F69] font-semibold' : 'text-[#374151]'}`}>
+                      {opt}
+                    </Text>
+                    {selected === opt && <Ionicons name="checkmark" size={18} color="#263F69" />}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </Animated.View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Animated.View>
+    </Modal>
+  );
+};
+
+const CountryPickerModal = ({
+  visible,
+  title,
+  options,
+  selected,
+  onSelect,
+  onClose,
+}: {
+  visible: boolean;
+  title: string;
+  options: string[];
+  selected: string;
+  onSelect: (v: string) => void;
+  onClose: () => void;
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const translateY = React.useRef(new Animated.Value(screenHeight)).current;
+
+  useEffect(() => {
+    if (!visible) {
+      setSearchQuery("");
+    } else {
+      translateY.setValue(screenHeight);
+      Animated.spring(translateY, {
+        toValue: 0,
+        tension: 65,
+        friction: 11,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  const handleDismiss = () => {
+    Animated.timing(translateY, {
+      toValue: screenHeight,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  };
+
+  const dragPanResponder = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          translateY.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 100 || gestureState.vy > 0.5) {
+          Animated.timing(translateY, {
+            toValue: screenHeight,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            onClose();
+          });
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            tension: 80,
+            friction: 12,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  const filteredOptions = options.filter((opt) =>
+    opt.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const backdropOpacity = translateY.interpolate({
+    inputRange: [0, screenHeight],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={handleDismiss}>
+      <Animated.View
+        className="flex-1 bg-black/50 justify-end"
+        style={{
+          backgroundColor: "rgba(0,0,0,0.5)",
+          opacity: backdropOpacity,
+        }}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={handleDismiss}
+          style={{ flex: 1, width: "100%", justifyContent: "flex-end" }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {}}
+            style={{ width: "100%", height: "75%" }}
+          >
+            <Animated.View
+              className="bg-white rounded-t-[30px] h-full pb-7 shadow-lg"
+              style={{ transform: [{ translateY }] }}
+            >
+              {/* Drag Handle Area */}
+              <View
+                {...dragPanResponder.panHandlers}
+                className="w-full items-center py-4 bg-white rounded-t-[30px]"
+              >
+                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              </View>
+
+              <View className="flex-row justify-between items-center px-5 pb-4 border-b border-[#F3F4F6] mb-4">
+                <Text className="text-xl font-semibold text-[#111827]">{title}</Text>
+              
+              </View>
+              
+              <View className="px-5 mb-4">
+                <View className="flex-row items-center bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl px-4 h-12">
+                  <Ionicons name="search" size={20} color="#9CA3AF" style={{ marginRight: 8 }} />
+                  <RNTextInput
+                    style={{ flex: 1, fontSize: 14, color: "#111827", padding: 0 }}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholder="Search countries..."
+                    placeholderTextColor="#9CA3AF"
+                    autoCorrect={false}
+                  />
+                  {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery("")} accessibilityRole="button" accessibilityLabel="Clear search">
+                      <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+
+              <ScrollView className="flex-1">
+                {filteredOptions.length > 0 ? (
+                  filteredOptions.map((opt) => {
+                    const isSelected = selected === opt;
+                    return (
+                      <TouchableOpacity
+                        key={opt}
+                        className={`flex-row justify-between items-center px-5 py-3.5 ${isSelected ? 'bg-[#EFF6FF]' : ''}`}
+                        onPress={() => {
+                          onSelect(opt);
+                          handleDismiss();
+                        }}
+                        accessibilityRole="button"
+                      >
+                        <Text className={`text-base ${isSelected ? 'text-[#263F69] font-semibold' : 'text-[#374151]'}`}>
+                          {opt}
+                        </Text>
+                        {isSelected && <Ionicons name="checkmark" size={18} color="#263F69" />}
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : (
+                  <View className="items-center justify-center py-8">
+                    <Text className="text-gray-400 text-sm">No countries match your search</Text>
+                  </View>
+                )}
+              </ScrollView>
+            </Animated.View>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Animated.View>
+    </Modal>
+  );
+};
 
 export function ProfileScreen({ onClose }: { onClose?: () => void }) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { data: profile, isLoading } = useUserProfile();
   const { mutate: saveProfile, isPending: isSaving } = useSaveProfile();
+  const queryClient = useQueryClient();
 
   const [form, setForm] = useState<UserProfileDto>({
     username: "",
@@ -150,6 +424,41 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
         setTimeout(() => setSaved(false), 2000);
       },
     });
+  };
+
+  const handleDeleteAllData = () => {
+    Alert.alert(
+      "Delete All Data",
+      "Are you sure you want to delete all database entries, user profiles, and reset the application?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete Everything",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // Reset WatermelonDB
+              await database.write(async () => {
+                await database.unsafeResetDatabase();
+              });
+              // Clear AsyncStorage
+              await AsyncStorage.clear();
+              // Clear React Query cache
+              queryClient.clear();
+              
+              Alert.alert("Success", "All application data has been successfully deleted.");
+              
+              if (onClose) {
+                onClose();
+              }
+            } catch (error) {
+              console.error("Failed to delete all data:", error);
+              Alert.alert("Error", "Failed to delete all application data.");
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handlePickAvatar = async () => {
@@ -268,7 +577,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
 
         {/* Profile Info */}
         <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
-          <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Profile Info</Text>
+            <Text className="text-xl font-semibold text-secondary/80">Profile Info</Text>
 
           <View className="mb-4">
             <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Nickname</Text>
@@ -300,7 +609,8 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           </View>
 
           <View className="gap-1.5 mt-2">
-            <Text className="text-sm font-semibold text-[#374151]">Travel Style</Text>
+            <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Travel Style</Text>
+
             <View className="flex-row flex-wrap gap-2 pt-1">
               {TRAVELER_TYPES.map((type) => {
                 const selectedStyles = (form.travelStyle || "").split(",").filter(Boolean);
@@ -331,7 +641,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
 
         {/* Preferences */}
         <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
-          <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Preferences</Text>
+            <Text className="text-xl font-semibold text-secondary/80">Preferences</Text>
 
           <View className="mb-2">
             <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Default Country</Text>
@@ -374,7 +684,8 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
         {/* Notification Settings */}
         <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
           <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest">Notification Settings</Text>
+            <Text className="text-xl font-semibold text-secondary/80">Notification Settings</Text>
+
             <Switch
               value={form.notificationsEnabled}
               onValueChange={(v) => setForm(f => ({ ...f, notificationsEnabled: v }))}
@@ -459,6 +770,14 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           >
             <Text className="text-white font-bold text-base">Launch Onboarding Flow</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleDeleteAllData}
+            className="bg-[#D92D20] py-3.5 rounded-xl items-center mt-2"
+            accessibilityRole="button"
+            activeOpacity={0.7}
+          >
+            <Text className="text-white font-bold text-base">Delete All Data</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={{ height: 40 }} />
@@ -473,7 +792,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
         onClose={() => setShowCurrencyPicker(false)}
       />
 
-      <PickerModal
+      <CountryPickerModal
         visible={showCountryPicker}
         title="Select Country"
         options={COUNTRIES}

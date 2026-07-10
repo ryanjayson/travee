@@ -24,6 +24,7 @@ interface AddTripModalProps {
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   tripData?: Travel;
   mode?: "create" | "edit";
+  onCreated?: (createdId: string) => void;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -33,6 +34,7 @@ const CreateTripModal = ({
   setShowModal,
   tripData,
   mode = "create",
+  onCreated,
 }: AddTripModalProps) => {
 
   const [isSaving, setIsSaving] = useState(false);
@@ -232,6 +234,7 @@ const CreateTripModal = ({
                 onStatusChange={setTripStatus} 
                 tripData={tripData} 
                 mode={mode}
+                onCreated={onCreated}
                 onScroll={(e) => {
                   const y = e.nativeEvent.contentOffset.y;
                   isAtTop.current = y <= 0;

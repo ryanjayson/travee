@@ -11,6 +11,7 @@ import HomeScreen from "../screens/HomeScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import CreateTravelModal from "../features/Travel/components/CreateOrEdit/Modal";
+import ViewTravelModal from "../features/Travel/components/View/Modal";
 import ExpenseModal from "../features/Travel/components/Forms/Expense/Modal";
 import NoteModal from "../features/Travel/components/Forms/Note/Modal";
 import ChecklistModal from "../features/Travel/components/Forms/Checklist/Modal";
@@ -62,6 +63,8 @@ const HomeTabScreen = () => {
 
 function RootTabsComponent() { 
   const [visibleCreateTravelModal, setVisibleCreateTravelModal] = React.useState(false);
+  const [showTravelViewModal, setShowTravelViewModal] = React.useState(false);
+  const [selectedTravelId, setSelectedTravelId] = React.useState("");
   const {
     expenseModal,
     closeExpenseModal,
@@ -179,6 +182,15 @@ function RootTabsComponent() {
       <CreateTravelModal
         showModal={visibleCreateTravelModal}
         setShowModal={setVisibleCreateTravelModal}
+        onCreated={(createdId) => {
+          setSelectedTravelId(createdId);
+          setShowTravelViewModal(true);
+        }}
+      />
+      <ViewTravelModal
+        travelId={selectedTravelId}
+        showModal={showTravelViewModal}
+        setShowModal={setShowTravelViewModal}
       />
       <ExpenseModal
         visible={expenseModal.visible}

@@ -13,6 +13,30 @@ import ViewTravelModal from '../features/Travel/components/View/Modal';
 import CreateTripModal from '../features/Travel/components/CreateOrEdit/Modal';
 import OnboardingModal from '../components/OnboardingModal';
 import { useUserProfile } from '../hooks/useUserProfile';
+import CountryOutline from '../features/Travel/components/ShareOverlay/CountryOutline';
+
+const COUNTRY_CODES: Record<string, string> = {
+  "Philippines": "PH",
+  "United States": "US",
+  "United Kingdom": "GB",
+  "Australia": "AU",
+  "Canada": "CA",
+  "Japan": "JP",
+  "South Korea": "KR",
+  "Singapore": "SG",
+  "Germany": "DE",
+  "France": "FR",
+  "Italy": "IT",
+  "Spain": "ES",
+  "Thailand": "TH",
+  "Malaysia": "MY",
+  "Indonesia": "ID",
+  "Vietnam": "VN",
+  "China": "CN",
+  "India": "IN",
+  "Brazil": "BR",
+  "Mexico": "MX",
+};
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
@@ -21,6 +45,7 @@ const HomeScreen = () => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
   const { data: allActivities } = useAllActivities();
   const { data: profile, isLoading: isProfileLoading } = useUserProfile();
+  const countryCode = profile?.defaultCountry ? (COUNTRY_CODES[profile.defaultCountry] || "") : "";
   const [currentOngoingTrip, setCurrentOngoingTrip] = useState<Travel | null>(null);
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [selectedTravelForModal, setSelectedTravelForModal] = useState<Travel | null>(null);
@@ -175,7 +200,15 @@ const HomeScreen = () => {
             paddingTop: currentOngoingTrip ? 0 : 30,
           }}
         >
-          <UpcomingTrips upcomingTrips={upcomingTrips} isLoading={isLoading} onPressTrip={handlePressTrip} />
+          <UpcomingTrips
+            upcomingTrips={upcomingTrips}
+            isLoading={isLoading}
+            onPressTrip={handlePressTrip}
+            onAddTripPress={() => {
+              setPrefilledTripData(null);
+              setShowCreateModal(true);
+            }}
+          />
 
           <View className="justify-between mb-3">
             <Text className="px-6 text-xl font-semibold text-secondary mb-md">Trip Insights</Text>
@@ -192,19 +225,39 @@ const HomeScreen = () => {
                   <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Past</Text>
                   <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
                   <Text className="text-sm text-tertiary">Completed trips</Text>
+
+                  <View className="w-[60px] h-[60px] justify-center items-center absolute top-2 right-2">
+                    <Text className="text-6xl  text-[#fab00f]/40">⏱</Text>
+                  </View>
                 </TouchableOpacity>
               </View>
 
               <View className="flex-1 h-[112px]">
                 <TouchableOpacity
-                  disabled={true}
-                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
+                  onPress={() => navigation.navigate("Maps", { viewBy: "city" })}
+                  disabled={false}
+                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full flex-row items-center justify-between"
                   accessibilityRole="button"
-                  activeOpacity={0.5}
+                  activeOpacity={0.7}
                 >
-                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Home Country</Text>
-                  <Text className="text-3xl font-bold py-sm">0</Text>
-                  <Text className="text-sm text-tertiary">Cities visited</Text>
+                  <View className="flex-1 justify-center mr-2">
+                    <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">My Country {countryCode ? `[${countryCode}]` : ""}</Text>
+                    <Text className="text-3xl font-bold py-sm">0</Text>
+                    <Text className="text-sm text-tertiary">Cities visited</Text>
+                  </View>
+                  {profile?.defaultCountry ? (
+                    <View className="w-[60px] h-[60px] justify-center items-center absolute right-2">
+                      <CountryOutline
+                        countryName={profile.defaultCountry}
+                        width={120}
+                        height={120}
+                        strokeColor="#263F69"
+                        strokeWidth={1}
+                        fillColor="rgba(38, 63, 105, 0.1)"
+                        hideShadows={true}
+                      />
+                    </View>
+                  ) : null}
                 </TouchableOpacity>
               </View>
             </View>
@@ -212,14 +265,19 @@ const HomeScreen = () => {
             <View className="flex-row px-5 mb-6 gap-[15px] ">
               <View className="flex-1 h-[112px]">
                 <TouchableOpacity
-                  disabled={true}
+                  onPress={() => navigation.navigate("Maps", { viewBy: "country" })}
+                  disabled={false}
                   className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
                   accessibilityRole="button"
-                  activeOpacity={0.5}
+                  activeOpacity={0.7}
                 >
                   <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">International</Text>
                   <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
                   <Text className="text-sm text-tertiary">Countries visited</Text>
+
+                  <View className="w-[60px] h-[60px] justify-center items-center absolute top-2 right-2">
+                    <Ionicons name="earth" size={40} color="#e0e0e0" />
+                  </View>
                 </TouchableOpacity>
               </View>
 
@@ -273,6 +331,10 @@ const HomeScreen = () => {
         showModal={showCreateModal}
         setShowModal={setShowCreateModal}
         tripData={prefilledTripData}
+        onCreated={(createdId) => {
+          setSelectedTravelForModal({ id: createdId } as any);
+          setShowTravelViewModal(true);
+        }}
       />
 
       {showOnboarding && (

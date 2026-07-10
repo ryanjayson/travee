@@ -35,6 +35,7 @@ export interface CreateOrEditProps {
   mode?: "create" | "edit";
   hideSubmitButton?: boolean;
   onScroll?: (event: any) => void;
+  onCreated?: (createdId: string) => void;
 }
 
 export interface CreateOrEditRef {
@@ -43,7 +44,7 @@ export interface CreateOrEditRef {
   isValid: boolean;
 }
 
-const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, onStatusChange, tripData, mode = "create", hideSubmitButton, onScroll }, ref) => {
+const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, onStatusChange, tripData, mode = "create", hideSubmitButton, onScroll, onCreated }, ref) => {
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
@@ -132,7 +133,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             onClose();
             const createdId = result?.data?.id || result?.id;
             if (createdId) {
-              navigation.navigate("EditTravelPlan", { travelId: String(createdId) });
+              if (onCreated) {
+                onCreated(String(createdId));
+              } else {
+                navigation.navigate("EditTravelPlan", { travelId: String(createdId) });
+              }
             }
           },
           onError: (err: any) => {
