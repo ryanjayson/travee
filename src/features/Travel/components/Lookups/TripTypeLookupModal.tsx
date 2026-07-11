@@ -227,7 +227,7 @@ const TripTypeLookupModal = ({
             >
               <View className="flex-1 gap-1">
                 <Text
-                  className="text-2xl font-bold mt-2xl"
+                  className="text-2xl font-semibold  text-primary"
                 >
                   Trip type
                 </Text>
@@ -286,7 +286,7 @@ const TripTypeLookupModal = ({
                 {filteredTypes.map(({ key, typeValue, displayName }) => (
                   <TouchableOpacity
                     key={key}
-                    className="p-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
+                    className="p-6 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
                     onPress={() => handleSelect(typeValue)}
                     accessibilityRole="button"
                     accessibilityLabel={`Select trip type ${displayName}`}

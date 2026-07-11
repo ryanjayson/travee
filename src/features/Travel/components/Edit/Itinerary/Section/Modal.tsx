@@ -23,6 +23,7 @@ interface SectionModalProps {
   onClose: () => void;
   itinerarySection: ItinerarySection | null;
   travelId?: string;
+  onSaveSuccess?: (section: ItinerarySection) => void;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -33,6 +34,7 @@ const SectionModal = ({
   onClose,
   itinerarySection,
   travelId,
+  onSaveSuccess,
 }: SectionModalProps) => {
   const [isSaving, setIsSaving] = useState(false);
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.6);
@@ -229,6 +231,7 @@ const SectionModal = ({
                 itinerarySection={itinerarySection}
                 travelId={travelId}
                 onClose={onClose}
+                onSaveSuccess={onSaveSuccess}
                 onScroll={(e) => {
                   const y = e.nativeEvent.contentOffset.y;
                   isAtTop.current = y <= 0;

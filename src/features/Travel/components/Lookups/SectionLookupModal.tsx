@@ -207,11 +207,8 @@ const SectionLookupModal = ({
             style={{ paddingTop: 4 }}
           >
             <View className="flex-row items-center gap-2">
-              <Text 
-                className="text-2xl font-bold"
-                style={{ color: colors.primary || "#263F69" }}
-              >
-                Trip Sections
+              <Text className="text-2xl font-semibold  text-primary">
+                Trip sections
               </Text>
             </View>
             <TouchableOpacity onPress={handleCancel}>
@@ -230,14 +227,14 @@ const SectionLookupModal = ({
               {sections.map((section) => (
                 <TouchableOpacity
                   key={section.id}
-                  className="p-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
+                  className="p-6 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
                   onPress={() => handleSelect(section.id!)}
                   accessibilityRole="button"
                   accessibilityLabel={`Select section ${section.title}`}
                 >
                   <Icon name="folder" size={24} color="#263F69" />
                   <Text className="text-base text-gray-800 flex-1">
-                    {section?.isDefaultSection ? "(Ungrouped)" : section.title}
+                    {section?.isDefaultSection ? "[Ungroup]" : section.title}
                   </Text>
                   {selectedSectionId === section.id && (
                     <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />

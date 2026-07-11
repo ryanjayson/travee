@@ -5,6 +5,7 @@ import {
   ChecklistItem,
   TripMember,
   TripSetting,
+  ItinerarySection,
 } from "../../features/Travel/types/TravelDto";
 import { MapboxPlace } from "../../features/Travel/components/MapboxDestinationSelector";
 
@@ -49,6 +50,13 @@ export interface ChecklistModalState {
 export interface ChecklistGroupModalState {
   visible: boolean;
   travelId: string;
+}
+
+export interface SectionModalState {
+  visible: boolean;
+  itinerarySection: ItinerarySection | null;
+  travelId?: string;
+  onSaveSuccess?: (section: ItinerarySection) => void;
 }
 
 export interface ActivityModalState {
@@ -163,6 +171,14 @@ export interface TravelContextType {
     }) => void
   ) => void;
   closeFlightModal: () => void;
+
+  sectionModal: SectionModalState;
+  openSectionModal: (
+    itinerarySection: ItinerarySection | null,
+    travelId?: string,
+    onSaveSuccess?: (section: ItinerarySection) => void
+  ) => void;
+  closeSectionModal: () => void;
 }
 
 

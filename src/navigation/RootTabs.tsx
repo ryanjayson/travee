@@ -18,6 +18,7 @@ import ChecklistModal from "../features/Travel/components/Forms/Checklist/Modal"
 import ChecklistGroupModal from "../features/Travel/components/Forms/Checklist/ChecklistGroupModal";
 import ActivityModal from "../features/Travel/components/Edit/Itinerary/Activity/Modal";
 import MemberModal from "../features/Travel/components/Forms/Member/Modal";
+import SectionModal from "../features/Travel/components/Edit/Itinerary/Section/Modal";
 import DescriptionModal from "../components/molecules/DescriptionInput/Modal";
 import MapboxDestinationSelectorModal from "../features/Travel/components/MapboxDestinationSelector/Modal";
 import FlightModal from "../features/Travel/components/Forms/Flight/FlightModal";
@@ -85,6 +86,8 @@ function RootTabsComponent() {
     closeDestinationModal,
     flightModal,
     closeFlightModal,
+    sectionModal,
+    closeSectionModal,
   } = useTravelContext();
   const insets = useSafeAreaInsets();
 
@@ -263,6 +266,13 @@ function RootTabsComponent() {
           closeFlightModal();
         }}
         onClose={closeFlightModal}
+      />
+      <SectionModal
+        visible={sectionModal.visible}
+        itinerarySection={sectionModal.itinerarySection}
+        travelId={sectionModal.travelId}
+        onClose={closeSectionModal}
+        onSaveSuccess={sectionModal.onSaveSuccess}
       />
     </View>      
  

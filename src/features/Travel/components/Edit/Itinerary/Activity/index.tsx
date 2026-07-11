@@ -48,6 +48,7 @@ import { useAuth } from "../../../../../Auth/hooks/AuthContext";
 import { useDeleteActivityMutation, useUpdateActivityMutation } from "../../../../hooks/useActivity";
 import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItemMutation, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
 import { useTravelPlan } from "../../../../hooks/useTravel";
+import { useUpdateSectionMutation } from "../../../../hooks/useSection";
 import { fetchLocalItineraryActivity } from "../../../../../../services/local/travelService";
 import { DestinationDto, Images, ItineraryActivity, Attachment } from "../../../../types/TravelDto";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
@@ -475,7 +476,8 @@ const EditActivity = ({
 
 
   const updateMutation = useUpdateActivityMutation();
-  const { openFlightModal } = useTravelContext();
+  const createSectionMutation = useUpdateSectionMutation();
+  const { openFlightModal, openDescriptionModal, openSectionModal, closeSectionModal } = useTravelContext();
   const { userToken } = useAuth();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
@@ -494,6 +496,7 @@ const EditActivity = ({
   const [newCheckTitle, setNewCheckTitle] = useState("");
   const [newCheckDescription, setNewCheckDescription] = useState("");
   const [showCheckDescription, setShowCheckDescription] = useState(false);
+  const [createdSections, setCreatedSections] = useState<Record<string, string>>({});
   const { showToast } = useToast();
 
   const pickDocument = async (setFn: (field: string, value: any) => void, currentAttachments: Attachment[]) => {
@@ -1127,7 +1130,22 @@ const EditActivity = ({
         const sections = travelPlan?.itinerarySection || [];
         const hasSections = sections.length > 0;
         const selectedSection = sections.find((s) => s.id === values.sectionId);
-        const selectedSectionName = selectedSection?.isDefaultSection ? "(Ungrouped)" :  selectedSection?.title || "";
+        const selectedSectionName = selectedSection
+          ? (selectedSection.isDefaultSection ? "[Ungroup]" : selectedSection.title || "")
+          : (values.sectionId ? createdSections[values.sectionId] || "" : "");
+
+        const handleAddNewSection = () => {
+          openSectionModal(null, travelId, (newSection) => {
+            if (newSection?.id) {
+              setCreatedSections(prev => ({
+                ...prev,
+                [newSection.id!]: newSection.title || ""
+              }));
+              setFieldValue("sectionId", newSection.id);
+            }
+            closeSectionModal();
+          });
+        };
 
         const tabData = [];
 
@@ -1547,29 +1565,37 @@ const EditActivity = ({
 
                   {/* Itinerary Section */}
                   <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-5">
-                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Section</Text>
-                         <Text className={`text-sm text-gray-500`}>
-                      Select the itinerary section where you want to add this activity.
+                    <Text className="text-md font-semibold tracking-wider uppercase mb-1">Section</Text>
+                    <Text className={`text-md text-gray-500`}>
+                      Select section where you want to add this activity.
                     </Text>
-                    <TouchableOpacity 
-                      onPress={() => {
-                        if (hasSections) {
+                    <View className="flex-row items-center gap-2 mt-1">
+                      <TouchableOpacity 
+                        onPress={() => {
                           onOpenSectionModal(sections, values.sectionId, (id) => {
                             setFieldValue("sectionId", id);
                           });
-                        }
-                      }}
-                      disabled={!hasSections}
-                      className={`border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3 ${!hasSections ? 'opacity-50 bg-gray-100' : ''}`}
-                      accessibilityRole="button"
-                      accessibilityLabel="Select itinerary section"
-                    >
-                      <Icon name="folder" size={24} color={hasSections ? "#263F69" : "#B3B3B3"} />
-                      <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
-                        {selectedSectionName || (hasSections ? "Select Section..." : "No Sections Available")}
-                      </Text>
-                      {hasSections && <Icon name="keyboard-arrow-down" size={24} color="#666" />}
-                    </TouchableOpacity>
+                        }}
+                        className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 flex-1 flex-row items-center gap-3"
+                        accessibilityRole="button"
+                        accessibilityLabel="Select itinerary section"
+                      >
+                        <Icon name="folder" size={24} color="#263F69" />
+                        <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
+                          {selectedSectionName || "Select Section"}
+                        </Text>
+                        <Icon name="keyboard-arrow-down" size={24} color="#666" />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={handleAddNewSection}
+                        className="w-6xl h-7xl rounded-full items-center justify-center animate-fade-in"
+                        accessibilityRole="button"
+                        accessibilityLabel="Add new section"
+                      >
+                        <Icon name="add" size={28} color="#263F69" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
            
                   {/* Description */}

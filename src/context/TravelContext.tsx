@@ -20,6 +20,7 @@ import {
   DescriptionModalState,
   DestinationModalState,
   FlightModalState,
+  SectionModalState,
 } from "../types/context/travel";
 import { MapboxPlace } from "../features/Travel/components/MapboxDestinationSelector";
 import {
@@ -28,6 +29,7 @@ import {
   ItineraryNote,
   ChecklistItem,
   TripMember,
+  ItinerarySection,
 } from "../features/Travel/types/TravelDto";
 
 const initialContextValue: TravelContextType = {
@@ -96,6 +98,13 @@ const initialContextValue: TravelContextType = {
   },
   openFlightModal: () => {},
   closeFlightModal: () => {},
+
+  sectionModal: {
+    visible: false,
+    itinerarySection: null,
+  },
+  openSectionModal: () => {},
+  closeSectionModal: () => {},
 };
 
 // Create the typed Context
@@ -155,6 +164,11 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
 
   const [flightModal, setFlightModal] = useState<FlightModalState>({
     visible: false,
+  });
+
+  const [sectionModal, setSectionModal] = useState<SectionModalState>({
+    visible: false,
+    itinerarySection: null,
   });
 
   const openExpenseModal = useCallback(
@@ -358,6 +372,29 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     }));
   }, []);
 
+  const openSectionModal = useCallback(
+    (
+      itinerarySection: ItinerarySection | null,
+      travelId?: string,
+      onSaveSuccess?: (section: ItinerarySection) => void
+    ) => {
+      setSectionModal({
+        visible: true,
+        itinerarySection,
+        travelId,
+        onSaveSuccess,
+      });
+    },
+    []
+  );
+
+  const closeSectionModal = useCallback(() => {
+    setSectionModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
   // Use useMemo and apply the context type to the value
   const contextValue = useMemo<TravelContextType>(
     () => ({
@@ -388,6 +425,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       flightModal,
       openFlightModal,
       closeFlightModal,
+      sectionModal,
+      openSectionModal,
+      closeSectionModal,
     }),
     [
       expenseModal,
@@ -417,6 +457,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       flightModal,
       openFlightModal,
       closeFlightModal,
+      sectionModal,
+      openSectionModal,
+      closeSectionModal,
     ]
   );
 

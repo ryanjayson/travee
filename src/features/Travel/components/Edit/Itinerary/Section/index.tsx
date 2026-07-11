@@ -33,13 +33,14 @@ interface EditSectionProps {
   travelId?: string;
   onClose: () => void;
   onScroll?: (event: any) => void;
+  onSaveSuccess?: (section: ItinerarySection) => void;
 }
 
 const TravelSchema = Yup.object().shape({
   title: Yup.string().required("Title is required"),
 });
 
-const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScroll }: EditSectionProps) => {
+const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScroll, onSaveSuccess }: EditSectionProps) => {
   const paperTheme = useTheme();
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
@@ -105,7 +106,14 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
           startDate: values.startDate || undefined,
           isOffline: isNaN(Number(values.travelId)),
         };
-        await updateMutation(sectionData);
+        updateMutation(sectionData, {
+          onSuccess: (result) => {
+            const sectionId = result?.id || result?.data?.id || (result as any)?.id;
+            if (sectionId && onSaveSuccess) {
+              onSaveSuccess({ ...sectionData, id: sectionId });
+            }
+          }
+        });
         onClose();
       }
     },
@@ -306,7 +314,8 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
             </Modal> */}
 
             {itinerarySection?.id && (
-              <View className="py-6 ">
+                                   <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200 mb-7">
+                
                 <TouchableOpacity 
                   className="flex-row items-center gap-2.5 justify-center py-2"
                   onPress={handleDeleteSection}

@@ -138,6 +138,18 @@ const tripIcons: TripIconConfig[] = [
     iconName: "forest",
     color: "#4CAF50",
   },
+  {
+    iconSet: IconSetProvider.material,
+    tripType: TripType.staycation,
+    iconName: "hotel",
+    color: "#FF5722",
+  },
+  {
+    iconSet: IconSetProvider.material,
+    tripType: TripType.cruise,
+    iconName: "sailing",
+    color: "#0288D1",
+  },
 ];
 
 export { tripIcons };

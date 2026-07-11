@@ -24,7 +24,7 @@ import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
 import { useNavigation } from "@react-navigation/native";
 import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
 import { DestinationDto, Travel } from "../../types/TravelDto";
-import MapboxDestinationSelectorModal from "../MapboxDestinationSelector/Modal";
+import { useTravelContext } from "../../../../context/TravelContext";
 import { MapboxPlace } from "../MapboxDestinationSelector";
 import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 
@@ -57,9 +57,27 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     isSaving,
     isValid: formik.isValid,
   }));
+  const { openDestinationModal } = useTravelContext();
+  const handleOpenDestinationSelect = () => {
+    openDestinationModal(formik.values.destination, (place: MapboxPlace) => {
+      formik.setFieldValue("destination", place.fullName);
+      formik.setFieldValue("destinationData", {
+        id: place.id,
+        coordinates: {
+          longitude: place.coordinates.longitude,
+          latitude: place.coordinates.latitude,
+        },
+      } as DestinationDto);
+      if (mode === "create") {
+        setTimeout(() => {
+          setShowStartDatePicker(true);
+        }, 300);
+      }
+    });
+  };
+
   const [error, setError] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [showDestinationModal, setShowDestinationModal] = useState(false);
 
   const destinationTypeOptions = [
     { id: "1", label: "Local", selected: false },
@@ -218,7 +236,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
   React.useEffect(() => {
     if (mode === "create") {
-      setShowDestinationModal(true);
+      handleOpenDestinationSelect();
     }
   }, [mode]);
 
@@ -339,7 +357,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             <>
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => setShowDestinationModal(true)}
+                onPress={handleOpenDestinationSelect}
                 disabled={isSaving}
               >
                 <View pointerEvents="none">
@@ -383,7 +401,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             return (
               <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() => setShowDestinationModal(true)}
+                onPress={handleOpenDestinationSelect}
                 disabled={isSaving}
               >
                 <View className="mt-2 rounded-2xl overflow-hidden">
@@ -404,27 +422,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             );
           })()}
 
-          <MapboxDestinationSelectorModal
-            visible={showDestinationModal}
-            onClose={() => setShowDestinationModal(false)}
-            onSelect={(place: MapboxPlace) => {
-              formik.setFieldValue("destination", place.fullName);
-              formik.setFieldValue("destinationData", {
-                id: place.id,
-                coordinates: {
-                  longitude: place.coordinates.longitude,
-                  latitude: place.coordinates.latitude,
-                },
-              } as DestinationDto);
-              setShowDestinationModal(false);
-              if (mode === "create") {
-                setTimeout(() => {
-                  setShowStartDatePicker(true);
-                }, 300);
-              }
-            }}
-            initialValue={formik.values.destination}
-          />
+
         </View>
 
 
