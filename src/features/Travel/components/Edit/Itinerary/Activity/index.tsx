@@ -76,6 +76,7 @@ interface EditActivityProps {
   onScroll?: (event: any) => void;
   onChildModalToggle?: (isOpen: boolean) => void;
   onSaveSuccess?: (activity: ItineraryActivity) => void;
+  onSwitchToAddMode?: () => void;
 }
 
 const TravelSchema = Yup.object().shape({
@@ -257,7 +258,7 @@ const FormInitHandler = ({
       }, 350);
       return () => clearTimeout(timer);
     }
-  }, [itineraryActivity?.id]);
+  }, [itineraryActivity?.id, values.type]);
 
   return null;
 };
@@ -341,6 +342,7 @@ const EditActivity = ({
   onOpenSectionModal,
   onOpenPrimaryTypeModal,
   onSaveSuccess,
+  onSwitchToAddMode,
 }: EditActivityProps) => {
   const toLocalDateStr = (dInput: any) => {
     if (!dInput) return null;
@@ -765,16 +767,16 @@ const EditActivity = ({
               bookingReference: values.entertainmentDetails.bookingReference || null,
             }
           : null,
-        transportationDetails: values.type === ActivityType.transportation && values.transportationDetails
-          ? {
-              mode: values.transportationDetails.mode || null,
-              operatorProvider: values.transportationDetails.operatorProvider || null,
-              pickupLocation: values.transportationDetails.pickupLocation || null,
-              dropoffLocation: values.transportationDetails.dropoffLocation || null,
-              bookingReference: values.transportationDetails.bookingReference || null,
-              price: values.transportationDetails.price || null,
-            }
-          : null,
+        // transportationDetails: values.type === ActivityType.transportation && values.transportationDetails
+        //   ? {
+        //       mode: values.transportationDetails.mode || null,
+        //       operatorProvider: values.transportationDetails.operatorProvider || null,
+        //       pickupLocation: values.transportationDetails.pickupLocation || null,
+        //       dropoffLocation: values.transportationDetails.dropoffLocation || null,
+        //       bookingReference: values.transportationDetails.bookingReference || null,
+        //       price: values.transportationDetails.price || null,
+        //     }
+        //   : null,
         walkDetails: values.type === ActivityType.walk && values.walkDetails
           ? {
               routeName: values.walkDetails.routeName || null,
@@ -800,12 +802,12 @@ const EditActivity = ({
               notes: values.preparationDetails.notes || null,
             }
           : null,
-        restDetails: values.type === ActivityType.rest && values.restDetails
-          ? {
-              restLocationName: values.restDetails.restLocationName || null,
-              restLocationType: values.restDetails.restLocationType || null,
-            }
-          : null,
+        // restDetails: values.type === ActivityType.rest && values.restDetails
+        //   ? {
+        //       restLocationName: values.restDetails.restLocationName || null,
+        //       restLocationType: values.restDetails.restLocationType || null,
+        //     }
+        //   : null,
         hikeOrCampDetails: values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails
           ? {
               trailOrSiteName: values.hikeOrCampDetails.trailOrSiteName,
@@ -826,44 +828,44 @@ const EditActivity = ({
                 : null,
             }
           : null,
-        motorcycleRideDetails: values.type === ActivityType.motorcycleRide && values.motorcycleRideDetails
-          ? {
-              routeName: values.motorcycleRideDetails.routeName || null,
-              startingPoint: values.motorcycleRideDetails.startingPoint || null,
-              endingPoint: values.motorcycleRideDetails.endingPoint || null,
-              estimatedDistanceKm: values.motorcycleRideDetails.estimatedDistanceKm || null,
-              roadType: values.motorcycleRideDetails.roadType || null,
-              bikeModel: values.motorcycleRideDetails.bikeModel || null,
-              fuelStops: values.motorcycleRideDetails.fuelStops || null,
-            }
-          : null,
-        meetupDetails: values.type === ActivityType.meetup && values.meetupDetails
-          ? {
-              venueName: values.meetupDetails.venueName,
-              address: values.meetupDetails.address || null,
-              hostOrOrganizer: values.meetupDetails.hostOrOrganizer || null,
-              numberOfPeople: values.meetupDetails.numberOfPeople || null,
-              meetupType: values.meetupDetails.meetupType || null,
-              rsvpLink: values.meetupDetails.rsvpLink || null,
-            }
-          : null,
-        rideRentalDetails: values.type === ActivityType.rideRental && values.rideRentalDetails
-          ? {
-              providerName: values.rideRentalDetails.providerName,
-              address: values.rideRentalDetails.address || null,
-              vehicleType: values.rideRentalDetails.vehicleType || null,
-              pickupLocation: values.rideRentalDetails.pickupLocation || null,
-              dropoffLocation: values.rideRentalDetails.dropoffLocation || null,
-              rentalStartDateTime: values.rideRentalDetails.rentalStartDateTime
-                ? new Date(values.rideRentalDetails.rentalStartDateTime)
-                : null,
-              rentalEndDateTime: values.rideRentalDetails.rentalEndDateTime
-                ? new Date(values.rideRentalDetails.rentalEndDateTime)
-                : null,
-              bookingReference: values.rideRentalDetails.bookingReference || null,
-              price: values.rideRentalDetails.price || null,
-            }
-          : null,
+        // motorcycleRideDetails: values.type === ActivityType.motorcycleRide && values.motorcycleRideDetails
+        //   ? {
+        //       routeName: values.motorcycleRideDetails.routeName || null,
+        //       startingPoint: values.motorcycleRideDetails.startingPoint || null,
+        //       endingPoint: values.motorcycleRideDetails.endingPoint || null,
+        //       estimatedDistanceKm: values.motorcycleRideDetails.estimatedDistanceKm || null,
+        //       roadType: values.motorcycleRideDetails.roadType || null,
+        //       bikeModel: values.motorcycleRideDetails.bikeModel || null,
+        //       fuelStops: values.motorcycleRideDetails.fuelStops || null,
+        //     }
+        //   : null,
+        // meetupDetails: values.type === ActivityType.meetup && values.meetupDetails
+        //   ? {
+        //       venueName: values.meetupDetails.venueName,
+        //       address: values.meetupDetails.address || null,
+        //       hostOrOrganizer: values.meetupDetails.hostOrOrganizer || null,
+        //       numberOfPeople: values.meetupDetails.numberOfPeople || null,
+        //       meetupType: values.meetupDetails.meetupType || null,
+        //       rsvpLink: values.meetupDetails.rsvpLink || null,
+        //     }
+        //   : null,
+        // rideRentalDetails: values.type === ActivityType.rideRental && values.rideRentalDetails
+        //   ? {
+        //       providerName: values.rideRentalDetails.providerName,
+        //       address: values.rideRentalDetails.address || null,
+        //       vehicleType: values.rideRentalDetails.vehicleType || null,
+        //       pickupLocation: values.rideRentalDetails.pickupLocation || null,
+        //       dropoffLocation: values.rideRentalDetails.dropoffLocation || null,
+        //       rentalStartDateTime: values.rideRentalDetails.rentalStartDateTime
+        //         ? new Date(values.rideRentalDetails.rentalStartDateTime)
+        //         : null,
+        //       rentalEndDateTime: values.rideRentalDetails.rentalEndDateTime
+        //         ? new Date(values.rideRentalDetails.rentalEndDateTime)
+        //         : null,
+        //       bookingReference: values.rideRentalDetails.bookingReference || null,
+        //       price: values.rideRentalDetails.price || null,
+        //     }
+        //   : null,
       };
 
       const result = await updateMutation.mutateAsync(payload);
@@ -916,6 +918,10 @@ const EditActivity = ({
         onClose();
       }
     }
+  };
+
+  const handleAddActivity = (values: any) => {
+    onSwitchToAddMode?.();
   };
 
   const initialValues: ActivityFormValues = {
@@ -1116,6 +1122,7 @@ const EditActivity = ({
         touched,
         setValues,
         setFieldValue,
+        submitCount,
       }) => {
         const sections = travelPlan?.itinerarySection || [];
         const hasSections = sections.length > 0;
@@ -1140,7 +1147,7 @@ const EditActivity = ({
                       value={values.title}
                       onChangeText={handleChange("title")}
                       onBlur={handleBlur("title")}
-                      error={touched.title && Boolean(errors.title)}
+                      error={(touched.title || submitCount > 0) && Boolean(errors.title)}
                       outlineColor="#E0E0E0"
                       activeOutlineColor="#263F69"
                       theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
@@ -1156,7 +1163,7 @@ const EditActivity = ({
                       {(values.title || "").length}/40
                     </Text>
                   </View>
-                  {touched.title && errors.title && (
+                  {(touched.title || submitCount > 0) && errors.title && (
                     <View className="flex flex-row items-center mt-1">
                       <Icon name="info-outline" size={14} color="#fb2c36" />
                       <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
@@ -1286,7 +1293,7 @@ const EditActivity = ({
                 )}
 
                 {/* Transportation Details */}
-                {values.type === ActivityType.transportation && (
+                {/* {values.type === ActivityType.transportation && (
                   <TransportationTab
                     values={values}
                     handleChange={handleChange}
@@ -1299,7 +1306,7 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
                 {/* Walk Details */}
                 {values.type === ActivityType.walk && (
@@ -1353,7 +1360,7 @@ const EditActivity = ({
                 )}
 
                 {/* Rest Details */}
-                {values.type === ActivityType.rest && (
+                {/* {values.type === ActivityType.rest && (
                   <RestTab
                     values={values}
                     handleChange={handleChange}
@@ -1366,7 +1373,7 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
                 {/* Hike or Camp Details */}
                 {values.type === ActivityType.hikeOrCamp && (
@@ -1389,7 +1396,7 @@ const EditActivity = ({
                 )}
 
                 {/* Motorcycle Ride Details */}
-                {values.type === ActivityType.motorcycleRide && (
+                {/* {values.type === ActivityType.motorcycleRide && (
                   <MotorcycleRideTab
                     values={values}
                     handleChange={handleChange}
@@ -1402,10 +1409,10 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
                 {/* Meetup Details */}
-                {values.type === ActivityType.meetup && (
+                {/* {values.type === ActivityType.meetup && (
                   <MeetupTab
                     values={values}
                     handleChange={handleChange}
@@ -1423,10 +1430,10 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
                 {/* Ride Rental Details */}
-                {values.type === ActivityType.rideRental && (
+                {/* {values.type === ActivityType.rideRental && (
                   <RideRentalTab
                     values={values}
                     handleChange={handleChange}
@@ -1443,7 +1450,7 @@ const EditActivity = ({
                     noPadding={true}
                     fieldRefs={fieldRefs}
                   />
-                )}
+                )} */}
 
                 {/* Activity Details Accordion */}
                 <SimpleAccordion key="activity-details-accordion" title="Other Details" defaultExpanded={true}>
@@ -1581,7 +1588,8 @@ const EditActivity = ({
 
                 {/* Delete Activity */}
                 {itineraryActivity?.id && (
-                  <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200">
+                  <>
+                   <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200">
                     <TouchableOpacity 
                       className="flex-row items-center gap-2.5 justify-center py-2"
                       onPress={() => handleDeleteActivity(itineraryActivity?.id || "", values.sectionId)}
@@ -1594,6 +1602,22 @@ const EditActivity = ({
                       </Text>
                     </TouchableOpacity>
                   </View>
+
+                   <View className="mt-2 pt-4 ">
+                    <TouchableOpacity 
+                      className="flex-row items-center justify-center py-2"
+                      onPress={() => handleAddActivity(values)}
+                      disabled={isPending}
+                      accessibilityRole="button"
+                    >
+                      <Icon name="add" size={24} color={colors.primary} />
+                      <Text className="text-base underline capitalize font-bold text-primary">
+                        Create New Activity
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  </>
+                 
                 )}
               </View>
             ),
@@ -1862,7 +1886,7 @@ const EditActivity = ({
                  <TouchButton
                    buttonText={itineraryActivity?.id ? "Update Activity" : "Add Activity"}
                    onPress={() => handleSubmit()}
-                   disabled={isPending}
+                   disabled={isPending || updateMutation.isPending}
                    className="h-7xl p-6"
                  />
                </View>

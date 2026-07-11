@@ -82,8 +82,7 @@ const EditChecklistItem = ({
   return (
     <View className="flex-1 bg-white rounded-t-[20px] overflow-hidden">
       <ScrollView
-        className="flex-1 p-[15px] bg-gray-50"
-        contentContainerStyle={{ paddingBottom: 100 }}
+        className="flex-1 p-[15px] bg-gray-100"
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         onScroll={onScroll}
@@ -95,8 +94,8 @@ const EditChecklistItem = ({
           <TextInput
             ref={titleInputRef}
             mode="outlined"
-            className="!h-[64px]"
-            placeholder="e.g. Pack passport, Buy travel insurance..."
+            className="h-7xl!"
+            placeholder="e.g. Pack Passport..."
             value={title}
             onChangeText={setTitle}
             outlineColor="#E0E0E0"
@@ -113,7 +112,7 @@ const EditChecklistItem = ({
           <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
           <TextInput
             mode="outlined"
-            placeholder="e.g. First Aid Kit"
+            placeholder="Add a description..."
             multiline
             numberOfLines={4}
             value={description}
@@ -131,13 +130,13 @@ const EditChecklistItem = ({
         {/* Group / Activity Selector Header */}
         <View className="mb-5">
           <View className="flex-row items-center justify-between">
-            <Text className="text-xs font-semibold tracking-wider uppercase text-gray-500">
+            <Text className="text-base font-semibold tracking-wider uppercase text-secondary">
               Item assignment
             </Text>
             <TouchableOpacity
               accessibilityRole="button"
               onPress={onOpenNewGroupModal}
-              className="flex-row items-center gap-1 bg-[#263F69]/10 px-3 py-1.5 rounded-lg"
+              className="flex-row items-center gap-1 bg-[#263F69]/10 px-3 py-1.5 rounded-3xl"
             >
               <Icon name="create-new-folder" size={24} color="#263F69" />
               <Text className="text-base text-[#263F69] font-medium">Create Category</Text>
@@ -161,10 +160,10 @@ const EditChecklistItem = ({
                 showIconOnly
               />
             ) : (
-              <Icon name="layers" size={20} color="#BDBDBD" />
+              <Icon name="layers" size={24} color="#BDBDBD" />
             )}
-            <Text className={`flex-1 text-base ${selectedContext ? "text-gray-800 font-medium" : "text-gray-400"}`}>
-              {selectedContext ? selectedContext.label : "Assign to group or activity..."}
+            <Text className={`flex-1 text-base ${selectedContext ? "text-gray-800 font-medium" : "text-tertiary"}`}>
+              {selectedContext ? selectedContext.label : "Assign to group or activity"}
             </Text>
             {selectedContext && (
               <TouchableOpacity
@@ -187,14 +186,14 @@ const EditChecklistItem = ({
             accessibilityRole="checkbox"
             accessibilityLabel="Keep adding checklist items"
             onPress={() => setKeepAdding(!keepAdding)}
-            className="flex-row items-center gap-2 mb-5"
+            className="flex-row items-center gap-2 mb-0"
           >
             <Checkbox.Android
               status={keepAdding ? "checked" : "unchecked"}
               onPress={() => setKeepAdding(!keepAdding)}
               color="#263F69"
             />
-            <Text className="text-sm font-medium text-gray-700">
+            <Text className="text-base font-medium text-gray-700">
               Add another item after saving
             </Text>
           </TouchableOpacity>
@@ -202,7 +201,7 @@ const EditChecklistItem = ({
       </ScrollView>
 
       {/* Save/Submit Button (Fixed Bottom) */}
-      <View className="px-5 py-4 border-t border-gray-200 bg-white">
+      <View className="px-5 py-4 bg-gray-100">
         <TouchButton
           buttonText={saveItemMutation.isPending
             ? "Saving..."

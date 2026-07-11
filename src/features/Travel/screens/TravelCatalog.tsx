@@ -18,7 +18,7 @@ import ViewTravelModal from "../components/View/Modal";
 import { useTravels } from "../hooks/useTravel";
 import { Travel } from "../types/TravelDto";
 import TripIcon, { tripIcons } from "../../../components/TripIcon";
-// import TravelDetailPage from "./TravelDetail";
+import CountryOutline from "../components/ShareOverlay/CountryOutline";
 
 const TravelCatalog = () => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
@@ -118,6 +118,13 @@ const TravelCatalog = () => {
   const renderTravelCard = (travel: Travel) => {
     const effectiveStatus = getEffectiveStatus(travel);
 
+    const getCountryName = (dest?: string) => {
+      if (!dest) return "";
+      const parts = dest.split(",");
+      return parts[parts.length - 1].trim();
+    };
+    const destinationCountry = getCountryName(travel.destination);
+
     const formatDate = (dateValue: Date | string | undefined) => {
       if (!dateValue) return "";
       const date = new Date(dateValue);
@@ -147,25 +154,42 @@ const TravelCatalog = () => {
         className="bg-white rounded-xl mb-2 shadow-sm mx-4 overflow-hidden "
       >
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
-          <View className="p-4 border border-[#E0E0E0] rounded-xl">
+          <View className="p-4 border border-[#E0E0E0] rounded-xl relative overflow-hidden">
+          
             <View className="flex-row justify-between items-start ">
-              <View className="flex-row items-center gap-3 flex-1 mr-2">
-                 {travel.type != null && travel.type !== TripType.none && (
-                  <View 
-                    style={{ backgroundColor: assignedColor + '20' }}
-                    className="w-16 h-16 rounded-full justify-center items-center"
-                  >
-                    <TripIcon type={travel.type} size={24} showIconOnly={true} />
-                  </View>
-                )}
-                <View className="flex-1">
+              <View className="flex-row items-center gap-7 flex-1 mr-2">
+
+                  {destinationCountry ? (
+                    <View className="w-[60px] h-[60px] justify-center items-center pl-lg ">
+                      <CountryOutline
+                        countryName={destinationCountry}
+                        width={120}
+                        height={120}
+                        strokeColor="#263F69"
+                        strokeWidth={1}
+                        fillColor={assignedColor + '50'}
+                        hideShadows={true}
+                      />
+                    </View>
+                  ) : null}
+
+                <View className="flex-1 gap-y-1">
                   <Text className="text-xl leading-5 font-medium ">{travel.title}</Text>
                   <Text className="text-base  text-[#999]">{travel.destination || ""}</Text>
               
-             
-                   <Text className="text-sm mt-2 text-[#999]">
-                    {dateRange}  {duration ? `| ${duration}` : ""}
-                  </Text>
+            
+                  <View 
+                    style={{ backgroundColor: assignedColor + '20' }}
+                    className="flex-row gap-2 mt-sm p-1 px-2 rounded-full items-center"
+                  >
+                    {travel.type != null && travel.type !== TripType.none && (
+                    <TripIcon type={travel.type} size={20} showIconOnly={true} />
+                    )}
+                    <Text className="text-sm text-[#999]">
+                      {dateRange}  {duration ? `| ${duration}` : ""}
+                    </Text>
+                  </View>
+                 
                 </View>
               </View>
              { travel && travel.isArchived &&(
@@ -219,8 +243,27 @@ const TravelCatalog = () => {
                       <Icon name="map" size={20} color={"#344054"} />
                       <Text className="font-medium text-xl  text-secondary">View trip</Text>
                     </TouchableOpacity>
-                    </View>
+                  </View>
 
+                  {data[0].destination ? (() => {
+                    const tripIconConfig = data[0].type != null ? tripIcons.find((i) => i.tripType === data[0].type) : null;
+                    const assignedColor = tripIconConfig ? tripIconConfig.color : "#FFFFFF";
+                    const destCountryName = data[0].destination.split(",").pop()?.trim() || "";
+                    return (
+                      <View className="absolute right-0 opacity-50">
+                        <CountryOutline
+                          countryName={destCountryName}
+                          width={180}
+                          height={180}
+                          strokeColor="#FFFFFF"
+                          strokeWidth={1}
+                          fillColor={assignedColor + '50'}
+                          hideShadows={true}
+                          showCountryTitle={true}
+                        />
+                      </View>
+                    );
+                  })() : null}
                 </View>
               </View>
             </TouchableOpacity>

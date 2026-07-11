@@ -12,7 +12,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useItineraryActivity } from "../../../hooks/useActivity";
 import { useTravelPlan } from "../../../hooks/useTravel";
-import ActivityModal from "../../Edit/Itinerary/Activity/Modal";
+import { useTravelContext } from "../../../../../context/TravelContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 import { activityIcons } from "../../../../../components/ActivityIcon";
@@ -80,6 +80,7 @@ const ViewActivityModal = ({
   const insets = useSafeAreaInsets();
   const modalHeight = useMemo(() => screenHeight, []);
   const { keyboardVisible, isFloating } = useKeyboardVisible();
+  const { openActivityModal } = useTravelContext();
 
   // Track the currently displayed activity ID (may change via swipe)
   const [currentActivityId, setCurrentActivityId] = useState(id);
@@ -128,8 +129,6 @@ const ViewActivityModal = ({
       setCurrentActivityId(allActivityIds[currentIndex - 1]);
     }
   }, [hasPrev, allActivityIds, currentIndex]);
-  
-  const [showEditActivityModal, setShowEditActivityModal] = useState(false);
 
   const handleCancel = () => setShowModal(false);
 
@@ -236,7 +235,11 @@ const ViewActivityModal = ({
             </View>
 
             <TouchableOpacity
-              onPress={() => setShowEditActivityModal(true)}
+              onPress={() => {
+                if (itineraryActivity) {
+                  openActivityModal(itineraryActivity, itineraryActivity.sectionId || undefined, travelId);
+                }
+              }}
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel="Edit activity"
@@ -257,15 +260,6 @@ const ViewActivityModal = ({
           />
         </Animated.View>
       </View>
-
-      {/* Edit Activity Modal */}
-      {itineraryActivity && (
-        <ActivityModal
-          visible={showEditActivityModal}
-          itineraryActivity={itineraryActivity}
-          onClose={() => setShowEditActivityModal(false)}
-        />
-      )}
     </Modal>
   );
 };

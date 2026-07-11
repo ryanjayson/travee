@@ -444,6 +444,10 @@ const ActivityModal = ({
                   onSaveSuccess={(saved) => {
                     setCurrentActivity(saved);
                   }}
+                  onSwitchToAddMode={() => {
+                    setCurrentActivity(null);
+                    setExtractedData(null);
+                  }}
                   onOpenSectionModal={handleOpenSectionModal}
                   onOpenPrimaryTypeModal={handleOpenPrimaryTypeModal}
                   onScroll={(e) => {

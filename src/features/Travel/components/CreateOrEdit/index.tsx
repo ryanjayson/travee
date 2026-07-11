@@ -346,7 +346,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   <TextInput
                     mode="outlined"
                     className="h-7xl"
-                    placeholder="Search place to visit..."
+                    placeholder="Search place"
                     value={formik.values.destination}
                     editable={false}
                     error={formik.touched.destination && Boolean(formik.errors.destination)}

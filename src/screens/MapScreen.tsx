@@ -103,7 +103,7 @@ export function ExploreScreen() {
             {["all", "visited", "tovisit"].map((f) => (
               <TouchableOpacity 
                 key={f}
-                className={`flex-1 py-2.5 items-center rounded-xl ${filter === f ? "bg-gray-100" : ""}`}
+                className={`flex-1 py-1 items-center rounded-xl ${filter === f ? "bg-gray-100" : ""}`}
                 onPress={() => setFilter(f as any)}
               >
                 <Text className={`font-bold capitalize ${filter === f ? "text-primary" : "text-gray-500"}`}>
@@ -115,13 +115,13 @@ export function ExploreScreen() {
 
           {/* Legend */}
           <View className="flex-row gap-x-4 px-1">
-            <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
-              <View className="w-2.5 h-2.5 rounded-full bg-[#34699A]" />
-              <Text className="text-[10px] font-bold text-gray-700">Visited</Text>
+            <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5 ">
+              <View className="w-4 h-4 rounded-full bg-[#34699A]" />
+              <Text className="text-sm text-gray-700">Visited</Text>
             </View>
-            <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5 rounded-full shadow-sm">
-              <View className="w-2.5 h-2.5 rounded-full bg-[#78A2CC]" />
-              <Text className="text-[10px] font-bold text-gray-700">To Visit</Text>
+            <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5">
+              <View className="w-4 h-4 rounded-full bg-[#78A2CC]" />
+              <Text className="text-sm text-gray-700">To Visit</Text>
             </View>
           </View>
         </View>

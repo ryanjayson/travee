@@ -36,6 +36,7 @@ interface CountryOutlineProps {
   hiddenActivityIndices?: number[];
   fillColor?: string;
   hideShadows?: boolean;
+  showCountryTitle?: boolean;
 }
 
 /** Unicode symbol for each ActivityType — safe cross-platform in SVG Text */
@@ -85,6 +86,7 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
   hiddenActivityIndices = [],
   fillColor,
   hideShadows = false,
+  showCountryTitle = false,
 }) => {
   const { pathData, found, activityPoints, topTypes } = useMemo(() => {
     if (!countryName || width === 0 || height === 0) {
@@ -224,7 +226,21 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
         />
       </G>
 
-
+      {showCountryTitle && (
+        <SvgText
+                x={width/2}
+                y={height/2}
+                fontSize={width/16}
+                // fontWeight="bold"
+                textAnchor="middle"
+                // fill="#000000"
+                // stroke="rgba(255,255,255,0.8)"
+                // strokeWidth={0.8}
+              >
+              {countryName}
+              </SvgText>
+      )}
+            
       {/* ── Done-activity location pins on the map ── */}
       {activityPoints.map((pt, i) => (
         <G key={i}>
@@ -245,7 +261,7 @@ const CountryOutline: React.FC<CountryOutlineProps> = ({
                   stroke="rgba(0,0,0,0.4)"
                   strokeWidth={0.3}
                 >
-                  {pt.title}
+                  {pt.title} 
                 </SvgText>
               ) : null}
             </>

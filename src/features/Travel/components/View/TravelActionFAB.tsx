@@ -104,7 +104,7 @@ const TravelActionFAB = ({
       {
         id: 'checklist',
         icon: 'playlist-check',
-        label: 'Add Checklist',
+        label: 'Add To-do item',
         labelTextColor: 'white',
         style: {
             elevation: 0,

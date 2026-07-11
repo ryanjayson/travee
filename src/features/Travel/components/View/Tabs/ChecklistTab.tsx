@@ -155,11 +155,11 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                 style={{ color: colors.primary }}
                 className="font-medium text-base underline"
               >
-                Add checklist
+                Add to-do item
               </Text>
             </TouchableOpacity> 
              <Text className="text-base text-tertiary">
-                   item now to your trip
+                   now to your trip
               </Text>
           </View>
         </View>
