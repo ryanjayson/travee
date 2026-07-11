@@ -258,7 +258,7 @@ const DraggableSectionItem = ({
               onPressMore={() => onPressMore(section)}
               title={
                 <View className="flex-row align-middle items-center ">
-                  {allowItemReordering && (
+                  {allowItemReordering && isValidStartDate(section.startDate) && (
                     <View
                       className="absolute top-0 z-50 flex-row items-center justify-center w-[30px]"
                       {...panHandlers}

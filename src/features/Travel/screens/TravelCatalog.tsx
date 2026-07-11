@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import StatusBadge from "../../../components/StatusBadge";
@@ -39,6 +39,12 @@ const TravelCatalog = () => {
       navigation.setParams({ initialTab: undefined });
     }
   }, [route.params?.initialTab]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -158,7 +164,6 @@ const TravelCatalog = () => {
           
             <View className="flex-row justify-between items-start ">
               <View className="flex-row items-center gap-7 flex-1 mr-2">
-
                   {destinationCountry ? (
                     <View className="w-[60px] h-[60px] justify-center items-center pl-lg ">
                       <CountryOutline
@@ -176,14 +181,13 @@ const TravelCatalog = () => {
                 <View className="flex-1 gap-y-1">
                   <Text className="text-xl leading-5 font-medium ">{travel.title}</Text>
                   <Text className="text-base  text-[#999]">{travel.destination || ""}</Text>
-              
             
                   <View 
-                    style={{ backgroundColor: assignedColor + '20' }}
-                    className="flex-row gap-2 mt-sm p-1 px-2 rounded-full items-center"
+                    style={{ backgroundColor: assignedColor + '10' }}
+                    className="flex-row gap-2 mt-sm p-0 px-2 rounded-full items-center"
                   >
                     {travel.type != null && travel.type !== TripType.none && (
-                    <TripIcon type={travel.type} size={20} showIconOnly={true} />
+                    <TripIcon type={travel.type} size={18} showIconOnly={true} />
                     )}
                     <Text className="text-sm text-[#999]">
                       {dateRange}  {duration ? `| ${duration}` : ""}

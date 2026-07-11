@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
 import { Dimensions, RefreshControl, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAllActivities } from '../features/Travel/hooks/useActivity';
 import { useTravels } from '../features/Travel/hooks/useTravel';
 import { Travel } from '../features/Travel/types/TravelDto';
@@ -78,6 +78,12 @@ const HomeScreen = () => {
     const trip = travels?.find(t => t.status === TravelStatus.Ongoing) ?? null;
     setCurrentOngoingTrip(trip);
   }, [travels]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   useEffect(() => {
     if (!isProfileLoading && !profile) {
@@ -246,7 +252,7 @@ const HomeScreen = () => {
                     <Text className="text-sm text-tertiary">Cities visited</Text>
                   </View>
                   {profile?.defaultCountry ? (
-                    <View className="w-[60px] h-[60px] justify-center items-end absolute right-0">
+                    <View className="w-[60px] h-[60px] justify-center items-center absolute right-0">
                       <CountryOutline
                         countryName={profile.defaultCountry}
                         width={120}

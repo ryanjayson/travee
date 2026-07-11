@@ -66,6 +66,9 @@ export const useUpdateTravel = () => {
         queryKey: TRAVEL_QUERY_KEY,
       });
       queryClient.invalidateQueries({
+        queryKey: TRAVELS_QUERY_KEY,
+      });
+      queryClient.invalidateQueries({
         queryKey: ["selectedTravelPlan"],
       });
 
