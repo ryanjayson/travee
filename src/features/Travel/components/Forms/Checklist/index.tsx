@@ -95,7 +95,7 @@ const EditChecklistItem = ({
             ref={titleInputRef}
             mode="outlined"
             className="h-7xl!"
-            placeholder="e.g. Pack Passport..."
+            placeholder="e.g. Pack Passport"
             value={title}
             onChangeText={setTitle}
             outlineColor="#E0E0E0"
@@ -112,7 +112,7 @@ const EditChecklistItem = ({
           <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
           <TextInput
             mode="outlined"
-            placeholder="Add a description..."
+            placeholder="Add a description"
             multiline
             numberOfLines={4}
             value={description}

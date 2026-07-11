@@ -88,7 +88,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({
       default:
         return {
           icon: "help-outline",
-          color: "#183B7A", // secondary/primary blue
+          color: "#183B7A", // secondary/primary blue 263F69
           bgLight: "#E8EAF6",
         };
     }
@@ -109,7 +109,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({
           <View style={[styles.dialogCard, { backgroundColor: colors.surface }]}>
             {/* Header Icon Section */}
             <View style={[styles.iconContainer, { backgroundColor: config.bgLight }]}>
-              <Icon name={config.icon} size={36} color={config.color} />
+              <Icon name={config.icon as any} size={36} color={config.color} />
             </View>
 
             {/* Title & Message */}
@@ -129,7 +129,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({
                   styles.btnFlat,
                   {
                     borderColor: colors.outline,
-                    backgroundColor: colors.surface,
+                    backgroundColor: "#E8EAF6",
                   },
                 ]}
                 activeOpacity={0.7}

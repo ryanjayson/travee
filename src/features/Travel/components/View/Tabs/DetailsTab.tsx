@@ -210,7 +210,7 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
-      <View className="px-6">
+      <View className="px-5">
 
         <SectionHeader icon="dashboard" title="Overview" />
         <View className="flex-row flex-wrap gap-3 mb-4">

@@ -1,6 +1,6 @@
 import { MaterialIcons as Icon, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Animated, Dimensions, Easing, LayoutAnimation, Modal, PanResponder, Pressable, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "react-native-paper";
 import Accordion from "../../../../components/Accordion";
@@ -1027,6 +1027,13 @@ const SectionAccordion = ({
     });
   };
 
+  const hasAtleastOneActivityDate = useMemo(() => {
+    return sections.some((section) => 
+      section.itineraryActivity?.some((activity) => activity.startDate)
+    );
+  }, [sections]);
+
+
   return (
     <View className="flex-1 bg-gray-100">
       <ScrollView
@@ -1097,7 +1104,12 @@ const SectionAccordion = ({
 
           </View>
       ) : (
-          <View className="flex-1 p-3 ">
+          <View className={`flex-1 p-3 pt-3xl ${!hasAtleastOneActivityDate && sections.filter((section) => !section.isDefaultSection).length === 0  ? "-ml-4xl" : ""}`}>
+              {viewMode !== 'plain' && (
+                <View className={`flex-1 z-10 p-2 absolute rounded-full ${viewMode === "narrow" ? " ml-[58px]" : " ml-7xl"}`}>
+                  <Icon name="circle" size={18} color="#F97066" />
+                </View>
+              )}
               {sections.map((section, index) => {
                 const isDefaultSection = section.isDefaultSection;
                 if (isDefaultSection) {
@@ -1117,7 +1129,7 @@ const SectionAccordion = ({
                       {section.itineraryActivity &&
                         renderActivityCards(section, section.itineraryActivity)}
                         {viewMode !== 'plain' && (
-                          <View className={`absolute  h-full w-1px ${viewMode === 'narrow' ? 'left-[62px] top-5xl' : 'left-[68px] top-8xl'} z-0 border-l-2 border-dashed border-[#ccc]`}></View>
+                          <View className={`absolute h-[120%] w-1px ${viewMode === 'narrow' ? 'left-[62px]' : 'left-[68px] '} z-0 border-l-2 border-dashed border-[#ccc]`}></View>
                         )
                         }
                     </View>
@@ -1205,7 +1217,7 @@ const SectionAccordion = ({
               })}
 
             {viewMode !== 'plain' && (
-              <View className={`flex-1 p-2 mt-2xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-[46px]" : " ml-[52px]"}`}>
+              <View className={`flex-1 z-10 p-2 mt-xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-[46px]" : " ml-[52px]"}`}>
                 <Ionicons name="flag" size={20} color="#F97066" />
               </View>
             )}

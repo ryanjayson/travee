@@ -246,7 +246,7 @@ const HomeScreen = () => {
                     <Text className="text-sm text-tertiary">Cities visited</Text>
                   </View>
                   {profile?.defaultCountry ? (
-                    <View className="w-[60px] h-[60px] justify-center items-center absolute right-2">
+                    <View className="w-[60px] h-[60px] justify-center items-end absolute right-0">
                       <CountryOutline
                         countryName={profile.defaultCountry}
                         width={120}
