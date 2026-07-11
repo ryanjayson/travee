@@ -36,6 +36,7 @@ const ChecklistTab = ({ activityId, itineraryActivity }: ChecklistTabProps) => {
       isDone: !item.isDone,
       userId: "local-user", // Fallback or get actual user ID
       travelId: item.travelId!,
+      activityId: item.activityId,
     });
   };
 

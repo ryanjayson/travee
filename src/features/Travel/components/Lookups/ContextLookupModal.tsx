@@ -238,15 +238,20 @@ const ContextLookupModal = ({
               className="flex-row justify-between items-center px-6 pb-5 border-b border-gray-200"
               style={{ paddingTop: keyboardVisible ? 0 : 4 }}
             >
-              <View className="flex-row items-center gap-2">
-                <Text
-                  className="text-2xl font-semibold"
-                >
-                    Categorise Task
-                </Text>
-              </View>
+              <View className="flex-1 gap-1">
+                  <Text
+                    className="text-2xl font-semibold  text-primary"
+                  >
+                    To-do Category
+                  </Text>
+                  <Text
+                    className="text-base  text-tertiary"
+                  >
+                    Where does this to-do item belong?
+                  </Text>
+                </View>
               <TouchableOpacity onPress={handleCancel}>
-                <Icon name="clear" size={36} color={"#333"} />
+                  <Icon name="clear" size={24} color={"#999"} />
               </TouchableOpacity>
             </View>
 
@@ -295,7 +300,7 @@ const ContextLookupModal = ({
                   </View>
                 ) : filteredOptions.length === 0 ? (
                   <View className="p-10 items-center">
-                    <Text className="text-gray-400 text-sm">No matches found</Text>
+                    <Text className="text-tertiary text-base">No category or activity found.</Text>
                   </View>
                 ) : (
                   filteredOptions.map((option) => (

@@ -44,7 +44,7 @@ const ChecklistGroupModal = ({
   const { colors } = useTheme();
   const { keyboardVisible } = useKeyboardVisible();
   const insets = useSafeAreaInsets();
-  const [modalHeight] = useState(screenHeight * 0.55);
+  const [modalHeight] = useState(screenHeight * 0.50);
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
@@ -237,11 +237,18 @@ const ChecklistGroupModal = ({
               className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200"
               style={{ paddingTop: keyboardVisible ? 0 : 4 }}
             >
-              <View className="flex-row items-center gap-2">
-                <Text className="text-2xl text-gray-700 font-medium">
-                  Create Checklist Group
-                </Text>
-              </View>
+               <View className="flex-1 gap-1">
+                    <Text
+                      className="text-2xl font-semibold  text-primary"
+                    >
+                      New Checklist Group
+                    </Text>
+                    <Text
+                      className="text-base  text-tertiary"
+                    >
+                      Organize your checklist items
+                    </Text>
+                  </View>
               <TouchableOpacity onPress={handleCancel}>
                 <Icon name="clear" size={24} color={"#999"} />
               </TouchableOpacity>
@@ -256,7 +263,7 @@ const ChecklistGroupModal = ({
               {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
                 <View className="flex-1">
                   <ScrollView
-                    className="flex-1 p-[15px] bg-gray-50"
+                    className="flex-1 p-[15px] bg-gray-100"
                     contentContainerStyle={{ paddingBottom: 100 }}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
@@ -271,7 +278,7 @@ const ChecklistGroupModal = ({
                       <TextInput
                         mode="outlined"
                         className="!h-[64px]"
-                        placeholder="e.g. Documents, Clothing, Electronics..."
+                        placeholder="e.g. Documents"
                         value={values.title}
                         onChangeText={handleChange("title")}
                         onBlur={handleBlur("title")}
@@ -310,7 +317,7 @@ const ChecklistGroupModal = ({
                   </ScrollView>
 
                   {/* Save Button (Fixed Bottom) */}
-                  <View className="px-5 py-4 border-t border-gray-200 bg-white">
+                  <View className="px-5 py-4  bg-gray-100">
                     <TouchButton
                       buttonText={isSaving ? "Saving..." : "Create Group"}
                       onPress={() => handleSubmit()}

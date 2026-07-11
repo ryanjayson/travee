@@ -138,6 +138,53 @@ export const useToggleChecklistItemMutation = () => {
   return useMutation({
     mutationFn: ({ id, isDone, userId, travelId, activityId }: { id: string; isDone: boolean; userId: string; travelId: string; activityId?: string }) =>
       toggleChecklistItem(id, isDone, userId),
+    onMutate: async (variables) => {
+      // Cancel any outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ["checklistItems", variables.travelId] });
+      if (variables.activityId) {
+        await queryClient.cancelQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
+      }
+
+      // Snapshot the previous values
+      const previousItems = queryClient.getQueryData<ChecklistItem[]>(["checklistItems", variables.travelId]);
+      const previousActivityItems = variables.activityId
+        ? queryClient.getQueryData<ChecklistItem[]>(["checklistItemsByActivity", variables.activityId])
+        : null;
+
+      // Optimistically update the checklistItems list
+      queryClient.setQueryData<ChecklistItem[]>(["checklistItems", variables.travelId], (old) => {
+        if (!old) return old;
+        return old.map((item) =>
+          item.id === variables.id ? { ...item, isDone: variables.isDone } : item
+        );
+      });
+
+      // Optimistically update the checklistItemsByActivity list
+      if (variables.activityId) {
+        queryClient.setQueryData<ChecklistItem[]>(["checklistItemsByActivity", variables.activityId], (old) => {
+          if (!old) return old;
+          return old.map((item) =>
+            item.id === variables.id ? { ...item, isDone: variables.isDone } : item
+          );
+        });
+      }
+
+      return { previousItems, previousActivityItems };
+    },
+    onError: (error: Error, variables, context) => {
+      console.error("Toggle Checklist Item Error:", error);
+      // Rollback to previous values
+      if (context?.previousItems) {
+        queryClient.setQueryData(["checklistItems", variables.travelId], context.previousItems);
+      }
+      if (context?.previousActivityItems && variables.activityId) {
+        queryClient.setQueryData(["checklistItemsByActivity", variables.activityId], context.previousActivityItems);
+      }
+      showToast({
+        type: "error",
+        message: error.message || "Failed to update task status.",
+      });
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["checklistItems", variables.travelId] });
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
@@ -149,13 +196,6 @@ export const useToggleChecklistItemMutation = () => {
       showToast({
         type: "success",
         message: variables.isDone ? "Task marked as completed!" : "Task marked as uncompleted.",
-      });
-    },
-    onError: (error: Error) => {
-      console.error("Toggle Checklist Item Error:", error);
-      showToast({
-        type: "error",
-        message: error.message || "Failed to update task status.",
       });
     },
   });

@@ -1,4 +1,5 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { useQueryClient } from "@tanstack/react-query";
 import { NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
@@ -77,10 +78,18 @@ const ViewTripModal = ({
   // useContext never throws — returns null if outside NavigationContainer
   const navContext = useContext(NavigationContext);
   const navigation = navContext as NativeStackNavigationProp<RootStackParamList> | null;
+  const queryClient = useQueryClient();
   const {
     data: travelPlan,
     refetch,
   } = useTravelPlan(travelId);
+
+  useEffect(() => {
+    if (showModal && travelId) {
+      queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", travelId] });
+      queryClient.invalidateQueries({ queryKey: ["checklistItems", travelId] });
+    }
+  }, [showModal, travelId, queryClient]);
 
   useEffect(() => {
     // console.log("SELECTED", travelPlan);

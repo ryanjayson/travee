@@ -194,10 +194,12 @@ const EditChecklistItem = ({
               color="#263F69"
             />
             <Text className="text-base font-medium text-gray-700">
-              Add another item after saving
+              Add another item after saved
             </Text>
           </TouchableOpacity>
         )}
+
+         <View className="mb-5"></View>
       </ScrollView>
 
       {/* Save/Submit Button (Fixed Bottom) */}
@@ -212,7 +214,7 @@ const EditChecklistItem = ({
           disabled={!title.trim() || saveItemMutation.isPending}
           className="h-[64px] p-6"
         />
-      </View>
+      </View> 
     </View>
   );
 };

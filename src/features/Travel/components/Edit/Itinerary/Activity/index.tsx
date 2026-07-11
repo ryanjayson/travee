@@ -19,7 +19,7 @@ import {
   View
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { TextInput, useTheme } from "react-native-paper";
+import { TextInput, useTheme, Button } from "react-native-paper";
 import { CalendarList } from "react-native-calendars";
 import * as Yup from "yup";
 import ActivityIcon, { activityIcons } from "../../../../../../components/ActivityIcon";
@@ -41,6 +41,7 @@ import HikeOrCampTab from "./Tabs/HikeOrCampTab";
 import MotorcycleRideTab from "./Tabs/MotorcycleRideTab";
 import MeetupTab from "./Tabs/MeetupTab";
 import RideRentalTab from "./Tabs/RideRentalTab";
+import DateTime from "./DateTime";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import { ActivityType, getActivityTypeLabel } from "../../../../../../types/enums";
@@ -477,7 +478,7 @@ const EditActivity = ({
 
   const updateMutation = useUpdateActivityMutation();
   const createSectionMutation = useUpdateSectionMutation();
-  const { openFlightModal, openDescriptionModal, openSectionModal, closeSectionModal } = useTravelContext();
+  const { openFlightModal, openDescriptionModal, openSectionModal, closeSectionModal, openChecklistModal } = useTravelContext();
   const { userToken } = useAuth();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
@@ -1189,6 +1190,17 @@ const EditActivity = ({
                   )}
                 </View>
 
+                {values.type === ActivityType.none && (
+                  <DateTime
+                    startDate={values.startDate}
+                    startTime={values.startTime}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => setFieldValue("startDate", null)}
+                    onClearTime={() => setFieldValue("startTime", "")}
+                  />
+                )}
+
 
                 {/* Accomodation Details Accordion */}
                 {values.type === ActivityType.accomodation && (
@@ -1754,95 +1766,41 @@ const EditActivity = ({
             disabled: !itineraryActivity?.id,
             content: (
               <View className="flex-1 pb-6 pt-2 px-5">
-                <View className="flex-row items-center gap-2 mb-3">
-                  <Text className="text-xs font-semibold tracking-wider uppercase flex-1">Checklist Items</Text>
-                  {activityId && (
-                    <Text className="text-xs text-gray-500 font-medium">
-                      {activityChecklistItems.filter(i => i.isDone).length}/{activityChecklistItems.length} Done
-                    </Text>
-                  )}
-                </View>
-
-                {activityId ? (
-                  <View className="bg-white border border-[#ddd] rounded-2xl p-4 mb-4">
-                    <TextInput
-                      mode="outlined"
-                      placeholder="e.g. Bring passport..."
-                      onChangeText={setNewCheckTitle}
-                      onSubmitEditing={handleAddChecklistItem}
-                      value={newCheckTitle}
-                      returnKeyType="done"
-                      outlineColor="#E0E0E0"
-                      activeOutlineColor="#263F69"
-                      theme={{ colors: { onSurfaceVariant: '#888' } }}
-                      outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                      style={{ height: 64 }}
-                      contentStyle={{ backgroundColor: "transparent" }}
-                      onFocus={() => setIsChecklistFocused(true)}
-                      onBlur={() => setIsChecklistFocused(false)}
-                    />
-
-                    {showCheckDescription ? (
-                      <TextInput
-                        mode="outlined"
-                        multiline
-                        numberOfLines={3}
-                        value={newCheckDescription}
-                        placeholder="Optional description..."
-                        onChangeText={setNewCheckDescription}
-                        onSubmitEditing={handleAddChecklistItem}
-                        returnKeyType="done"
-                        outlineColor="#E0E0E0"
-                        activeOutlineColor="#263F69"
-                        theme={{ colors: { onSurfaceVariant: '#888' } }}
-                        outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                        style={{ marginTop: 6, marginBottom: 12, height: 105 }}
-                        textAlignVertical="top"
-                        contentStyle={{ backgroundColor: "transparent" }}
-                        onFocus={() => setIsChecklistFocused(true)}
-                        onBlur={() => setIsChecklistFocused(false)}
-                      />
-                    ) : (
-                      <TouchableOpacity
-                        accessibilityRole="button"
-                        onPress={() => setShowCheckDescription(true)}
-                        className="mb-4 mt-3"
-                      >
-                        <Text className="text-xs text-[#263F69] font-medium">+ Add description</Text>
-                      </TouchableOpacity>
-                    )}
-                    <TouchableOpacity
-                      accessibilityRole="button"
-                      onPress={handleAddChecklistItem}
-                      disabled={!newCheckTitle.trim() || saveChecklistItem.isPending}
-                      style={{ backgroundColor: "#FFF", opacity: newCheckTitle.trim() ? 1 : 0.6 }}
-                      className="flex-row items-center border border-primary justify-center gap-2 py-3 rounded-[16px]"
-                    >
-                      {saveChecklistItem.isPending ? (
-                        <ActivityIndicator size="small" color="#263F69" />
-                      ) : (
-                        <>
-                          <Icon name="add" size={18} color="#263F69" />
-                          <Text className="text-sm font-semibold text-primary">Add Item</Text>
-                        </>
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <View className="bg-gray-50 border border-dashed border-gray-200 rounded-[16px] p-5 items-center mb-4">
-                    <Text className="text-xs text-gray-400 text-center">
-                      Save the activity first to enable checklist items.
-                    </Text>
-                  </View>
-                )}
-
+              
+              <TouchableOpacity
+                          accessibilityRole="button"
+                          accessibilityLabel="Add To-Do item"
+                          onPress={() => {
+                            if (itineraryActivity) {
+                              openChecklistModal(null, [itineraryActivity], travelId);
+                            }
+                          }}
+                          className="flex-row items-center gap-1 mb-2 p-2 "
+                        >
+                          <Icon name="add" size={24} color="#263F69" />
+                          <Text className="text-lg font-medium text-primary underline">Add To-Do item</Text>
+                        </TouchableOpacity>
+{/* 
+                             <Button
+                              mode="text"
+                              icon="plus"
+                              onPress={handleAddAttachmentPress}
+                              disabled={updateMutation.isPending}
+                              textColor="#263F69"
+                              style={[styles.addAttachmentButtonEmpty, { }]}
+                              labelStyle={styles.addAttachmentButtonLabel}
+                              accessibilityRole="button"
+                              accessibilityLabel="Add attachment"
+                            >
+            {updateMutation.isPending ? "Adding..." : "Add Attachment"}
+          </Button> */}
                 {/* Existing items */}
                 {activityChecklistItems.length > 0 && (
                   <View className="bg-white rounded-[16px] border border-gray-100 overflow-hidden">
                     {activityChecklistItems.map((item) => (
                       <View
                         key={item.id}
-                        className="flex-row items-center gap-3 px-4 py-3 border-b border-gray-50"
+                        className="flex-row items-center gap-3 px-4 py-4 border-b border-gray-50"
                       >
                         <TouchableOpacity
                           accessibilityRole="checkbox"
@@ -1854,20 +1812,36 @@ const EditActivity = ({
                           {item.isDone && <Icon name="check" size={14} color="#FFF" />}
                         </TouchableOpacity>
                         <View className="flex-1">
-                          <Text className={`text-base ${item.isDone ? "line-through text-gray-400" : "text-gray-800 font-medium"}`}>
+                          <Text className={`text-lg ${item.isDone ? "line-through text-gray-400" : "text-gray-800 font-medium"}`}>
                             {item.title}
                           </Text>
                           {item.description ? (
-                            <Text className="text-xs text-gray-400 mt-0.5">{item.description}</Text>
+                            <Text className="text-base text-gray-400 mt-0.5">{item.description}</Text>
                           ) : null}
                         </View>
                         <TouchableOpacity
                           accessibilityRole="button"
+                          accessibilityLabel="Edit checklist item"
+                          onPress={() => {
+                            if (itineraryActivity) {
+                              openChecklistModal(
+                                item,
+                                [itineraryActivity],
+                                travelId
+                              );
+                            }
+                          }}
+                          className="p-1 mr-1"
+                        >
+                          <Icon name="edit" size={20} color="#263F69" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          accessibilityRole="button"
                           accessibilityLabel="Remove checklist item"
                           onPress={() => handleDeleteChecklistItem(item)}
-                          className="p-1 opacity-40"
+                          className="p-1"
                         >
-                          <Icon name="delete-outline" size={18} color="#c93030" />
+                          <Icon name="delete-outline" size={20} color="#c93030" />
                         </TouchableOpacity>
                       </View>
                     ))}

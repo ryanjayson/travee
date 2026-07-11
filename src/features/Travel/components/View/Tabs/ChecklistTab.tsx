@@ -88,6 +88,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       isDone: !item.isDone,
       userId: userToken || "user",
       travelId,
+      activityId: item.activityId,
     });
   };
 

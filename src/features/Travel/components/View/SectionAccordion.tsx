@@ -1,7 +1,7 @@
 import { MaterialIcons as Icon, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, Easing, LayoutAnimation, Modal, PanResponder, Pressable, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Dimensions, Easing, LayoutAnimation, Modal, PanResponder, Pressable, ScrollView, Switch, Text, TouchableOpacity, View, RefreshControl } from "react-native";
 import { useTheme } from "react-native-paper";
 import Accordion from "../../../../components/Accordion";
 import { useToast } from "../../../../context/ToastContext";
@@ -10,6 +10,7 @@ import { useLexicographicSort } from "../../../../hooks/useLexicographicSort";
 import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../services/local/travelService";
 import { ItineraryActivity, ItinerarySection, TravelPlan } from "../../../Travel/types/TravelDto";
 import { useTripSetting, useUpdateTripSetting } from "../../hooks/useTripSetting";
+import { useTravelPlan } from "../../hooks/useTravel";
 import DraggableSectionContainer from "../Edit/Itinerary/DraggableSectionContainer";
 import SectionModal from "../Edit/Itinerary/Section/Modal";
 import ActivityItemCard from "./Activity/Card";
@@ -361,11 +362,19 @@ const SectionAccordion = ({
   const { colors } = useTheme();
   const { openActivityModal } = useTravelContext();
   const [isAddSectionVisible, setIsAddSectionVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const iterarysections = travelPlan.itinerarySection;
   const travelId = travelPlan.travel.id || "";
   const { data: dbSetting } = useTripSetting(travelId);
   const updateSettingMutation = useUpdateTripSetting();
+  const { refetch } = useTravelPlan(travelId);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   // Combine fetched settings, travel payload settings, and defaults
   const currentSetting = dbSetting || travelPlan.travel.tripSetting || travelPlan.tripSetting;
@@ -1055,10 +1064,17 @@ const SectionAccordion = ({
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         scrollEnabled={!sectionDragState?.isDragging && !masterDragState.isDragging && !isSettingsExpanded}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#263F69"]}
+            tintColor="#263F69"
+          />
+        }
       >
 
-
-      {sections.length === 0 ? (
+      {sections.length === 0 || (sections.length === 1 && sections[0].isDefaultSection && sections[0].itineraryActivity.length === 0) ? (
           <View className="flex-1 items-center justify-center py-8 gap-1">
                 <Icon name="add" size={46} color={"#D1D5DB"} />
 

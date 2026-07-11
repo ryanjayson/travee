@@ -107,6 +107,18 @@ const ViewActivityModal = ({
     );
   }, [travelPlan]);
 
+  const activityExists = useMemo(() => {
+    if (!currentActivityId) return false;
+    if (!travelPlan) return true;
+    return allActivityIds.includes(currentActivityId);
+  }, [allActivityIds, currentActivityId, travelPlan]);
+
+  useEffect(() => {
+    if (showModal && travelPlan && !activityExists) {
+      setShowModal(false);
+    }
+  }, [showModal, travelPlan, activityExists, setShowModal]);
+
   // Current index in the ordered list
   const currentIndex = useMemo(() => {
     const idx = allActivityIds.indexOf(currentActivityId);

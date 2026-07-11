@@ -131,10 +131,20 @@ const ChecklistModal = ({
     if (visible) {
       prevGroupsLength.current = groups.length;
       if (!checklistItem) {
-        setSelectedContext(null);
+        if (activities && activities.length === 1) {
+          const currentAct = activities[0];
+          setSelectedContext({
+            id: currentAct.id!,
+            label: currentAct.title || "Activity",
+            type: "activity",
+            activityType: (currentAct.type ?? ActivityType.none) as ActivityType,
+          });
+        } else {
+          setSelectedContext(null);
+        }
       }
     }
-  }, [visible, checklistItem]);
+  }, [visible, checklistItem, activities]);
 
   // Support auto-selecting a newly created group
   useEffect(() => {

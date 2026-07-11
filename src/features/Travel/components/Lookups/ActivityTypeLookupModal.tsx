@@ -246,7 +246,7 @@ const ActivityTypeLookupModal = ({
             >
               <View className="flex-col items-start gap-1">
                  <Text
-                      className="text-2xl font-bold mt-xl"
+                    className="text-2xl font-semibold  text-primary"
                     >
                       Activity type
                     </Text>

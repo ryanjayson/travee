@@ -206,11 +206,18 @@ const SectionLookupModal = ({
             className="flex-row justify-between items-center px-6 pb-5 border-b border-gray-200"
             style={{ paddingTop: 4 }}
           >
-            <View className="flex-row items-center gap-2">
-              <Text className="text-2xl font-semibold  text-primary">
-                Trip sections
-              </Text>
-            </View>
+            <View className="flex-1 gap-1">
+                <Text
+                  className="text-2xl font-semibold  text-primary"
+                >
+                  Trip sections
+                </Text>
+                <Text
+                  className="text-base  text-tertiary"
+                >
+                  Available section in this trip
+                </Text>
+              </View>
             <TouchableOpacity onPress={handleCancel}>
               <Icon name="clear" size={36} color={"#333"} />
             </TouchableOpacity>
