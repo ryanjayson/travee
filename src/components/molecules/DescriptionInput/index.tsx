@@ -35,7 +35,7 @@ const DescriptionInput = ({
   value,
   onChange,
   label = "Description",
-  placeholder = "Describe your next trip...",
+  placeholder = "Describe your next trip",
   confirmLabel = "Add",
   maxLength,
   disabled = false,
@@ -76,7 +76,7 @@ const DescriptionInput = ({
               backgroundColor: "#FFFFFF",
               borderRadius: 16,
             }}
-            style={{ marginTop: 6, height: 100, fontSize: 14 }}
+            style={{ marginTop: 6, height: 100, fontSize: 16 }}
             textAlignVertical="top"
             contentStyle={{ backgroundColor: "transparent" }}
             right={

@@ -271,7 +271,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         ref={scrollViewRef}
         className="flex-1 p-[15px]" 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 60 }}
+        contentContainerStyle={{ paddingBottom: 10 }}
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
@@ -608,7 +608,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             value={formik.values.description}
             onChange={(text) => formik.setFieldValue("description", text)}
             label="Description"
-            placeholder="Describe this trip..."
+            placeholder="Describe this trip"
             confirmLabel="Add"
             disabled={isSaving}
           />

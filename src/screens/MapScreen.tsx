@@ -2,20 +2,25 @@ import * as React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute } from "@react-navigation/native";
+import { Checkbox, useTheme } from "react-native-paper";
 import { useTravels } from "../features/Travel/hooks/useTravel";
 import { useAllActivitiesWithDestination } from "../features/Travel/hooks/useActivity";
 import { TravelStatus } from "../types/enums";
 import ExploreCountryMap from "../components/ExploreMap/ExploreCountryMap";
 import ExploreCityMap from "../components/ExploreMap/ExploreCityMap";
+import { useUserProfile } from "../hooks/useUserProfile";
 
 export function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const { data: travels, isLoading: isTravelsLoading } = useTravels();
   const { data: activities, isLoading: isActivitiesLoading } = useAllActivitiesWithDestination();
+  const { data: profile } = useUserProfile();
   
+  const { colors } = useTheme();
   const [viewBy, setViewBy] = React.useState<"country" | "city">("country");
   const [filter, setFilter] = React.useState<"all" | "visited" | "tovisit">("all");
+  const [showMarkers, setShowMarkers] = React.useState(true);
 
   React.useEffect(() => {
     if (route.params?.viewBy) {
@@ -50,6 +55,7 @@ export function ExploreScreen() {
           title: a.destination || a.title,
           status: a.isDone ? TravelStatus.Past : TravelStatus.Upcoming,
           isCity: true,
+          type: a.type,
         }))
         .filter((m) => {
           if (filter === "all") return true;
@@ -71,9 +77,9 @@ export function ExploreScreen() {
             <Text className="text-lg text-gray-500 font-medium">Loading map data...</Text>
           </View>
         ) : viewBy === "country" ? (
-          <ExploreCountryMap markers={markers} />
+          <ExploreCountryMap markers={markers} showMarkers={showMarkers} defaultCountry={profile?.defaultCountry || undefined} />
         ) : (
-          <ExploreCityMap markers={markers} />
+          <ExploreCityMap markers={markers} showMarkers={showMarkers} defaultCountry={profile?.defaultCountry || undefined} />
         )}
       </View>
 
@@ -105,6 +111,7 @@ export function ExploreScreen() {
                 key={f}
                 className={`flex-1 py-1 items-center rounded-xl ${filter === f ? "bg-gray-100" : ""}`}
                 onPress={() => setFilter(f as any)}
+                accessibilityRole="button"
               >
                 <Text className={`font-bold capitalize ${filter === f ? "text-primary" : "text-gray-500"}`}>
                   {f === "tovisit" ? "To Visit" : f}
@@ -113,16 +120,36 @@ export function ExploreScreen() {
             ))}
           </View>
 
-          {/* Legend */}
-          <View className="flex-row gap-x-4 px-1">
-            <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5 ">
-              <View className="w-4 h-4 rounded-full bg-[#34699A]" />
-              <Text className="text-sm text-gray-700">Visited</Text>
+          {/* Legend & Marker Checkbox */}
+          <View className="flex-row items-center justify-between px-1">
+            <View className="flex-row gap-x-4">
+              <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5">
+                <View className="w-4 h-4 rounded-full bg-[#34699A]" />
+                <Text className="text-sm text-gray-700">Visited</Text>
+              </View>
+              <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5">
+                <View className="w-4 h-4 rounded-full bg-[#78A2CC]" />
+                <Text className="text-sm text-gray-700">To Visit</Text>
+              </View>
             </View>
-            <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5">
-              <View className="w-4 h-4 rounded-full bg-[#78A2CC]" />
-              <Text className="text-sm text-gray-700">To Visit</Text>
-            </View>
+
+            {/* Checkbox for show Marker */}
+            <TouchableOpacity 
+              className="flex-row items-center pr-1 py-1"
+              onPress={() => setShowMarkers(!showMarkers)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Toggle show markers"
+            >
+              <Checkbox.Android
+                status={showMarkers ? 'checked' : 'unchecked'}
+                onPress={() => setShowMarkers(!showMarkers)}
+                color={colors.primary}
+              />
+              <Text className="text-gray-600 font-semibold text-sm ml-0.5">
+                Show Marker
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>

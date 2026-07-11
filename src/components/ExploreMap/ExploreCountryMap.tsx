@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { View, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
 // @ts-ignore
@@ -15,11 +15,37 @@ interface Marker {
   isCity?: boolean;
 }
 
+const DEFAULT_COUNTRY_COORDS: Record<string, { latitude: number; longitude: number }> = {
+  "Philippines": { latitude: 12.8797, longitude: 121.7740 },
+  "United States": { latitude: 37.0902, longitude: -95.7129 },
+  "United Kingdom": { latitude: 55.3781, longitude: -3.4360 },
+  "Australia": { latitude: -25.2744, longitude: 133.7751 },
+  "Canada": { latitude: 56.1304, longitude: -106.3468 },
+  "Japan": { latitude: 36.2048, longitude: 138.2529 },
+  "South Korea": { latitude: 35.9078, longitude: 127.7669 },
+  "Singapore": { latitude: 1.3521, longitude: 103.8198 },
+  "Germany": { latitude: 51.1657, longitude: 10.4515 },
+  "France": { latitude: 46.2276, longitude: 2.2137 },
+  "Italy": { latitude: 41.8719, longitude: 12.5674 },
+  "Spain": { latitude: 40.4637, longitude: -3.7492 },
+  "Thailand": { latitude: 15.8700, longitude: 100.9925 },
+  "Malaysia": { latitude: 4.2105, longitude: 101.9758 },
+  "Indonesia": { latitude: -0.7893, longitude: 113.9213 },
+  "Vietnam": { latitude: 14.0583, longitude: 108.2772 },
+  "China": { latitude: 35.8617, longitude: 104.1954 },
+  "India": { latitude: 20.5937, longitude: 78.9629 },
+  "Brazil": { latitude: -14.2350, longitude: -51.9253 },
+  "Mexico": { latitude: 23.6345, longitude: -102.5528 },
+};
+
 interface ExploreCountryMapProps {
   markers: Marker[];
+  defaultCountry?: string;
+  showMarkers?: boolean;
 }
 
-const ExploreCountryMap = ({ markers }: ExploreCountryMapProps) => {
+const ExploreCountryMap = ({ markers, defaultCountry = "Philippines", showMarkers = true }: ExploreCountryMapProps) => {
+  const coords = DEFAULT_COUNTRY_COORDS[defaultCountry] || { latitude: 12.8797, longitude: 121.7740 };
   // Deduplicate markers to ensure each country only appears once
   const uniqueMarkersMap = new Map<string, Marker>();
   
@@ -30,10 +56,13 @@ const ExploreCountryMap = ({ markers }: ExploreCountryMapProps) => {
 
       const feature = countriesGeoJSON.features.find((f: any) => {
         const p = f.properties;
+        const nameEn = p.NAME_EN ? p.NAME_EN.toLowerCase() : "";
+        const admin = p.ADMIN ? p.ADMIN.toLowerCase() : "";
+        const name = p.NAME ? p.NAME.toLowerCase() : "";
         return (
-          (p.NAME_EN && p.NAME_EN.toLowerCase() === matchTitle) ||
-          (p.ADMIN  && p.ADMIN.toLowerCase()   === matchTitle) ||
-          (p.NAME   && p.NAME.toLowerCase()    === matchTitle)
+          (nameEn && matchTitle.includes(nameEn)) ||
+          (admin && matchTitle.includes(admin)) ||
+          (name && matchTitle.includes(name))
         );
       });
 
@@ -66,11 +95,14 @@ const ExploreCountryMap = ({ markers }: ExploreCountryMapProps) => {
     
     const feature = countriesGeoJSON.features.find((f: any) => {
       const p = f.properties;
+      const nameEn = p.NAME_EN ? p.NAME_EN.toLowerCase() : "";
+      const admin = p.ADMIN ? p.ADMIN.toLowerCase() : "";
+      const name = p.NAME ? p.NAME.toLowerCase() : "";
       return (
         matchTitle && (
-          (p.NAME_EN && p.NAME_EN.toLowerCase() === matchTitle) ||
-          (p.ADMIN  && p.ADMIN.toLowerCase()   === matchTitle) ||
-          (p.NAME   && p.NAME.toLowerCase()    === matchTitle)
+          (nameEn && matchTitle.includes(nameEn)) ||
+          (admin && matchTitle.includes(admin)) ||
+          (name && matchTitle.includes(name))
         )
       );
     });
@@ -140,8 +172,8 @@ const ExploreCountryMap = ({ markers }: ExploreCountryMapProps) => {
         mapboxgl.accessToken = '${MAPBOX_ACCESS_TOKEN}';
         const map = new mapboxgl.Map({
           container: 'map',
-          style: 'mapbox://styles/mapbox/basic-v9', 
-          center: [122, 13],
+          style: 'mapbox://styles/mapbox/light-v11', 
+          center: [${coords.longitude}, ${coords.latitude}], 
           zoom: 0.7,
           maxBounds: [[-180, -85], [180, 85]],
           attributionControl: false,
@@ -153,6 +185,16 @@ const ExploreCountryMap = ({ markers }: ExploreCountryMapProps) => {
         const renderedMarkers = ${JSON.stringify(deduplicatedMarkers)};
 
         map.on('load', () => {
+          // Hide Mapbox default label layers
+          const layers = map.getStyle().layers;
+          if (layers) {
+            layers.forEach(function(layer) {
+              if (layer.type === 'symbol') {
+                map.setLayoutProperty(layer.id, 'visibility', 'none');
+              }
+            });
+          }
+
           // Add Country outline layers dynamically
           countryGeometries.forEach(function(item) {
             var sourceId = 'source-' + item.id;
@@ -169,7 +211,7 @@ const ExploreCountryMap = ({ markers }: ExploreCountryMapProps) => {
                   'fill-color': item.status === 3 ? '#34699A' : '#78A2CC', // Visited vs To Visit colors
                   'fill-opacity': 0.4
                 }
-              }, 'water');
+              });
               map.addLayer({
                 id: 'layer-outline-' + item.id,
                 type: 'line',
@@ -178,37 +220,39 @@ const ExploreCountryMap = ({ markers }: ExploreCountryMapProps) => {
                   'line-color': '#FFFFFF', // Clean white border
                   'line-width': 1.5
                 }
-              }, 'water');
+              });
             }
           });
 
           // Render pins (flag emoji label pills)
-          renderedMarkers.forEach(m => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'marker-wrapper';
+          if (${showMarkers}) {
+            renderedMarkers.forEach(m => {
+              const wrapper = document.createElement('div');
+              wrapper.className = 'marker-wrapper';
 
-            var iso2 = "";
-            var titleNormal = m.title ? m.title.toLowerCase().trim() : "";
-            for (var i = 0; i < countryGeometries.length; i++) {
-              var cTitle = countryGeometries[i].title ? countryGeometries[i].title.toLowerCase().trim() : "";
-              if (cTitle === titleNormal) {
-                iso2 = countryGeometries[i].iso2 || "";
-                break;
+              var iso2 = "";
+              var titleNormal = m.title ? m.title.toLowerCase().trim() : "";
+              for (var i = 0; i < countryGeometries.length; i++) {
+                var cTitle = countryGeometries[i].title ? countryGeometries[i].title.toLowerCase().trim() : "";
+                if (cTitle === titleNormal) {
+                  iso2 = countryGeometries[i].iso2 || "";
+                  break;
+                }
               }
-            }
 
-            var flag = getFlagEmoji(iso2);
+              var flag = getFlagEmoji(iso2);
 
-            const label = document.createElement('div');
-            label.className = 'country-marker-label';
-            label.innerHTML = (flag ? '<span style="font-size: 15px; margin-right: 6px; vertical-align: middle;">' + flag + '</span>' : '<span class="material-icons" style="font-size: 16px; margin-right: 5px; vertical-align: middle;">map</span>') + m.title;
-            wrapper.appendChild(label);
+              const label = document.createElement('div');
+              label.className = 'country-marker-label';
+              label.innerHTML = (flag ? '<span style="font-size: 15px; margin-right: 6px; vertical-align: middle;">' + flag + '</span>' : '<span class="material-icons" style="font-size: 16px; margin-right: 5px; vertical-align: middle;">map</span>') + m.title;
+              wrapper.appendChild(label);
 
-            new mapboxgl.Marker(wrapper)
-              .setLngLat([m.longitude, m.latitude])
-              .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML('<h3>' + m.title + '</h3>'))
-              .addTo(map);
-          });
+              new mapboxgl.Marker(wrapper)
+                .setLngLat([m.longitude, m.latitude])
+                .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML('<h3>' + m.title + '</h3>'))
+                .addTo(map);
+            });
+          }
         });
       </script>
     </body>
