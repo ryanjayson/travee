@@ -10,7 +10,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  Platform
 } from "react-native";
 import {
   Portal,
@@ -111,10 +112,12 @@ const ViewTravel = ({
 
   // --- Draggable Bottom Sheet Snap Values ---
   const insets = useSafeAreaInsets();
-  const { height: screenHeight } = Dimensions.get("window");
+  const screenHeight = Platform.OS === "android" 
+    ? Dimensions.get("screen").height 
+    : Dimensions.get("window").height;
   const SNAP_MAX = 0;
   const SNAP_MID = screenHeight * 0.45;
-  const SNAP_MIN = screenHeight - 108;
+  const SNAP_MIN = screenHeight - 116;
 
   // Track the last-snapped position manually because Animated.Value.addListener
   // does NOT fire reliably on Android when useNativeDriver: true.
@@ -158,10 +161,9 @@ const ViewTravel = ({
     });
   }, [onRegisterCollapse]);
 
-  // Smoothly interpolate padding top as the sheet is dragged/scrolled up to full height
   const headerPaddingTop = translateY.interpolate({
     inputRange: [SNAP_MAX, SNAP_MID],
-    outputRange: [insets.top + 38, 12],
+    outputRange: [insets.top + 44, 12],
     extrapolate: "clamp",
   });
 
@@ -555,7 +557,7 @@ const ViewTravel = ({
   return (
     <Portal.Host>
       {/* Full-screen background interactive map */}
-      <Animated.View style={[StyleSheet.absoluteFillObject, { paddingBottom: mapPaddingBottom }]} className="absolute inset-0">
+      <Animated.View style={[StyleSheet.absoluteFill, { paddingBottom: mapPaddingBottom }]} className="absolute inset-0">
         <MapViewer
           inline={true}
           visible={true}
@@ -686,7 +688,7 @@ const ViewTravel = ({
             type="default" 
             onTabChange={setActiveTabId} 
             expanded={true}
-            wrapperStyle={`bg-white pb-4 ${activeTabId === 'itinerary' ? 'border-b border-[#e0e0e0]' : ''}`}
+            wrapperStyle={`bg-white px-1 pb-2 ${activeTabId === 'itinerary' ? 'border-b border-[#e0e0e0]' : ''}`}
           />
         </Animated.View>
       </Animated.View>

@@ -92,6 +92,17 @@ const ChecklistTab = ({ activityId, itineraryActivity }: ChecklistTabProps) => {
       data={checklistItems}
       keyExtractor={(item) => item.id!}
       contentContainerStyle={{ padding: 16 }}
+      ListHeaderComponent={
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Add To-Do item"
+          onPress={handleAddItem}
+          className="flex-row items-center gap-1 p-0 self-end"
+        >
+          <Ionicons name="add" size={20} color="#263F69" />
+          <Text className="text-lg font-semibold text-primary underline">Add</Text>
+        </TouchableOpacity>
+      }
       renderItem={({ item }) => (
         <TouchableOpacity
           className="flex-row items-center py-3 border-b border-gray-100"
@@ -105,11 +116,11 @@ const ChecklistTab = ({ activityId, itineraryActivity }: ChecklistTabProps) => {
             color={item.isDone ? "#263F69" : "#9CA3AF"}
           />
           <View className="ml-3 flex-1">
-            <Text className={`text-base ${item.isDone ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
+            <Text className={`text-lg font-semibold ${item.isDone ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
               {item.title}
             </Text>
             {item.description && (
-              <Text className={`text-xs ${item.isDone ? 'text-gray-300' : 'text-gray-500'}`}>
+              <Text className={`text-base ${item.isDone ? 'text-gray-300' : 'text-gray-500'}`}>
                 {item.description}
               </Text>
             )}

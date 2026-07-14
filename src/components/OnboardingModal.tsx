@@ -11,11 +11,21 @@ import {
   Image,
   Animated,
   Switch,
+  Vibration,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
+import {
+  isBiometricsSupported,
+  authenticateWithBiometrics,
+  setPin,
+  setPinEnabled as savePinEnabled,
+  setBiometricsEnabled as saveBiometricsEnabled,
+  clearPin,
+} from "../services/local/securityService";
 
 // Traveler type options with emojis
 export const TRAVELER_TYPES = [
@@ -46,7 +56,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   const insets = useSafeAreaInsets();
   const { data: profile } = useUserProfile();
   const { mutate: saveProfile } = useSaveProfile();
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
 
   // Form State
   const [nickname, setNickname] = useState("");
@@ -69,6 +79,16 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [notifyDaysBeforeTrip, setNotifyDaysBeforeTrip] = useState(3);
   const [notifyHoursBeforeActivity, setNotifyHoursBeforeActivity] = useState(2);
+
+  // Security State
+  const [pinEnabled, setPinEnabledState] = useState(false);
+  const [biometricsEnabled, setBiometricsEnabledState] = useState(false);
+  const [hasBiometricsSupport, setHasBiometricsSupport] = useState(false);
+  const [pinCode, setPinCode] = useState("");
+  const [tempConfirmPin, setTempConfirmPin] = useState("");
+  const [pinStage, setPinStage] = useState<"enter" | "confirm" | "done">("enter");
+  const [pinError, setPinError] = useState("");
+  const pinInputRef = useRef<TextInput>(null);
 
   const [createDemoData, setCreateDemoData] = useState(true);
   const [countdown, setCountdown] = useState(5);
@@ -141,9 +161,65 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     }
   }, [visible, step]);
 
-  // Auto-close Step 7 with countdown
+  // Check biometric support on visibility
   useEffect(() => {
-    if (visible && step === 7) {
+    if (visible) {
+      const checkBiometrics = async () => {
+        const { hasHardware, isEnrolled } = await isBiometricsSupported();
+        setHasBiometricsSupport(hasHardware && isEnrolled);
+      };
+      checkBiometrics();
+    }
+  }, [visible]);
+
+  // PIN validation handler
+  const handlePinTextChange = (text: string) => {
+    const numericText = text.replace(/[^0-9]/g, "");
+    setPinCode(numericText);
+
+    if (numericText.length === 4) {
+      if (pinStage === "enter") {
+        setTempConfirmPin(numericText);
+        setPinCode("");
+        setPinStage("confirm");
+        setTimeout(() => {
+          pinInputRef.current?.focus();
+        }, 100);
+      } else if (pinStage === "confirm") {
+        if (numericText === tempConfirmPin) {
+          setPinStage("done");
+          setPinError("");
+        } else {
+          Vibration.vibrate(200);
+          setPinCode("");
+          setTempConfirmPin("");
+          setPinStage("enter");
+          setPinError("PINs do not match. Please try again.");
+          setTimeout(() => {
+            pinInputRef.current?.focus();
+          }, 100);
+        }
+      }
+    }
+  };
+
+  const handleBiometricsToggle = async (val: boolean) => {
+    if (val) {
+      const success = await authenticateWithBiometrics("Verify your biometrics configuration");
+      if (success) {
+        setBiometricsEnabledState(true);
+      } else {
+        setBiometricsEnabledState(false);
+        Alert.alert("Authentication Failed", "Could not enroll biometrics.");
+      }
+    } else {
+      setBiometricsEnabledState(false);
+    }
+  };
+
+  // Auto-close Step 8 with countdown
+  useEffect(() => {
+    if (visible && step === 8) {
       setCountdown(3);
       const interval = setInterval(() => {
         setCountdown((prev) => {
@@ -169,7 +245,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   };
 
   const handleNext = () => {
-    if (step < 7) {
+    if (step < 8) {
       setStep((prev) => (prev + 1) as any);
     }
   };
@@ -180,7 +256,16 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
+    // Save security configurations
+    if (pinEnabled && pinStage === "done" && tempConfirmPin) {
+      await setPin(tempConfirmPin);
+      await savePinEnabled(true);
+      await saveBiometricsEnabled(biometricsEnabled);
+    } else {
+      await clearPin();
+    }
+
     // Save profile details to database
     saveProfile({
       ...(profile ?? {}),
@@ -205,6 +290,12 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
       setNotificationsEnabled(true);
       setNotifyDaysBeforeTrip(3);
       setNotifyHoursBeforeActivity(2);
+      setPinEnabledState(false);
+      setBiometricsEnabledState(false);
+      setPinCode("");
+      setTempConfirmPin("");
+      setPinStage("enter");
+      setPinError("");
       setCreateDemoData(true);
     }, 500);
   };
@@ -221,7 +312,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
         <View style={[styles.header, 
           {marginTop: insets.top + 0 }
         ]}>
-          {step > 1 && step <= 6 ? (
+          {step > 1 && step <= 7 ? (
             <>
               <TouchableOpacity
                 onPress={handleBack}
@@ -232,7 +323,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                 <Ionicons name="arrow-back" size={24} color="#374151" />
               </TouchableOpacity>
               <View style={styles.progressContainer}>
-                {[2, 3, 4, 5, 6].map((s) => (
+                {[2, 3, 4, 5, 6, 7].map((s) => (
                   <View
                     key={s}
                     style={[
@@ -561,7 +652,6 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                         accessibilityRole="button"
                         accessibilityLabel="Increase hours"
                       >
-                        <Ionicons name="add" size={18} color={!notificationsEnabled || notifyHoursBeforeActivity >= 24 ? "#9CA3AF" : colors.primary} />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -571,6 +661,147 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
           )}
 
           {step === 6 && (
+            <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
+              <Text style={[styles.title, { color: colors.primary }]}>
+                Secure your travel plan
+              </Text>
+              <Text style={styles.subtitle}>
+                Enable app locking to keep your travel itineraries and personal details private.
+              </Text>
+
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+                {/* PIN Code Switch */}
+                <View style={styles.notificationToggleContainer}>
+                  <View style={{ flex: 1, marginRight: 16 }}>
+                    <Text style={styles.notificationToggleTitle}>Enable PIN Lock</Text>
+                    <Text style={styles.notificationToggleSubtitle}>
+                      Require a 4-digit code to open the app.
+                    </Text>
+                  </View>
+                  <Switch
+                    value={pinEnabled}
+                    onValueChange={(val) => {
+                      setPinEnabledState(val);
+                      if (!val) {
+                        setPinCode("");
+                        setPinStage("enter");
+                        setTempConfirmPin("");
+                        setPinError("");
+                      }
+                    }}
+                    trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
+                    thumbColor={pinEnabled ? colors.primary : "#F3F4F6"}
+                  />
+                </View>
+
+                {/* Inline PIN Input (if enabled) */}
+                {pinEnabled && (
+                  <View style={[styles.settingsContainer, { marginBottom: 20 }]}>
+                    <Text style={styles.sectionHeader}>
+                      {pinStage === "enter"
+                        ? "Create PIN code"
+                        : pinStage === "confirm"
+                        ? "Confirm PIN code"
+                        : "PIN Code Saved"}
+                    </Text>
+
+                    <Text style={{ fontSize: 14, color: "#4B5563", marginBottom: 12 }}>
+                      {pinStage === "enter"
+                        ? "Type a 4-digit passcode:"
+                        : pinStage === "confirm"
+                        ? "Type the passcode again to confirm:"
+                        : "Passcode successfully verified and setup."}
+                    </Text>
+
+                    {pinStage !== "done" && (
+                      <TouchableOpacity
+                        activeOpacity={0.9}
+                        onPress={() => pinInputRef.current?.focus()}
+                        style={{ alignItems: "center", marginVertical: 12 }}
+                        accessibilityRole="button"
+                        accessibilityLabel="Enter PIN Code"
+                      >
+                        <View style={{ flexDirection: "row", gap: 16 }}>
+                          {[0, 1, 2, 3].map((idx) => {
+                            const isFilled = pinCode.length > idx;
+                            return (
+                              <View
+                                key={idx}
+                                style={{
+                                  width: 48,
+                                  height: 48,
+                                  borderRadius: 12,
+                                  borderWidth: 2,
+                                  borderColor: isFilled ? colors.primary : "#D1D5DB",
+                                  backgroundColor: isFilled ? `${colors.primary}10` : "#FFFFFF",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                {isFilled && (
+                                  <View
+                                    style={{
+                                      width: 12,
+                                      height: 12,
+                                      borderRadius: 6,
+                                      backgroundColor: colors.primary,
+                                    }}
+                                  />
+                                )}
+                              </View>
+                            );
+                          })}
+                        </View>
+                        <TextInput
+                          ref={pinInputRef}
+                          value={pinCode}
+                          onChangeText={handlePinTextChange}
+                          keyboardType="number-pad"
+                          maxLength={4}
+                          style={{ position: "absolute", width: 0, height: 0, opacity: 0 }}
+                          caretHidden
+                        />
+                      </TouchableOpacity>
+                    )}
+
+                    {pinStage === "done" && (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 8 }}>
+                        <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+                        <Text style={{ color: "#10B981", fontWeight: "600" }}>PIN setup complete</Text>
+                      </View>
+                    )}
+
+                    {pinError ? (
+                      <Text style={{ color: colors.error, fontSize: 13, textAlign: "center", marginTop: 8, fontWeight: "500" }}>
+                        {pinError}
+                      </Text>
+                    ) : null}
+                  </View>
+                )}
+
+                {/* Finger Scanner Switch (only shown if PIN enabled and hardware supported) */}
+                {pinEnabled && hasBiometricsSupport && (
+                  <View style={styles.notificationToggleContainer}>
+                    <View style={{ flex: 1, marginRight: 16 }}>
+                      <Text style={styles.notificationToggleTitle}>Use Finger Scanner</Text>
+                      <Text style={styles.notificationToggleSubtitle}>
+                        Unlock using fingerprint authentication.
+                      </Text>
+                    </View>
+                    <Switch
+                      value={biometricsEnabled}
+                      onValueChange={handleBiometricsToggle}
+                      disabled={pinStage !== "done"}
+                      trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
+                      thumbColor={biometricsEnabled ? colors.primary : "#F3F4F6"}
+                    />
+                  </View>
+                )}
+              </ScrollView>
+            </Animated.View>
+          )}
+
+          {step === 7 && (
             <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
               <Text style={[styles.title, { color: colors.primary }]}>
                 Demo Travel Plan
@@ -599,13 +830,11 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                   </View>
                   <Text style={styles.checkboxLabel}>Yes, create demo travel data</Text>
                 </TouchableOpacity>
-
-             
               </ScrollView>
             </Animated.View>
           )}
 
-          {step === 7 && (
+          {step === 8 && (
             <Animated.View
               style={[
                 styles.stepContent,
@@ -635,16 +864,17 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
 
          {/* Sticky Action Footer - safe inset padding */}
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-          {step <= 6 ? (
+          {step <= 7 ? (
             <TouchableOpacity
               onPress={handleNext}
               disabled={
-                (step === 2 && (!nickname.trim() || !!nicknameError))
+                (step === 2 && (!nickname.trim() || !!nicknameError)) ||
+                (step === 6 && pinEnabled && pinStage !== "done")
               }
               style={[
                 styles.primaryButton,
                 { backgroundColor: step === 1 ? "#FFFFFF" : colors.primary },
-                (step === 2 && (!nickname.trim() || !!nicknameError)) && { opacity: 0.5 },
+                ((step === 2 && (!nickname.trim() || !!nicknameError)) || (step === 6 && pinEnabled && pinStage !== "done")) && { opacity: 0.5 },
               ]}
               accessibilityRole="button"
             >
@@ -652,7 +882,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
                 styles.primaryButtonText,
                 { color: step === 1 ? "#111827" : colors.onPrimary }
               ]}>
-                {step === 1 ? "Get Started" : step === 6 ? "Start the Adventure!" : "Next"}
+                {step === 1 ? "Get Started" : step === 7 ? "Start the Adventure!" : "Next"}
               </Text>
             </TouchableOpacity>
           ) : null}

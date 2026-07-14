@@ -105,10 +105,15 @@ function RootTabsComponent() {
         
         tabBarActiveTintColor: '#263F69',
         tabBarInactiveTintColor: '#98A2B3',
+        tabBarIconStyle: {
+          top: -2,
+          padding: 0,
+          margin: 0,
+        },
         tabBarIcon: ({ color, focused }) => {
           const iconName = iconForRoute(route.name, focused);
           return (
-            <View className="flex-1 justify-center items-center">
+            <View className="flex-1 justify-center items-center top-0">
             <Ionicons
               name={iconName}
               size={24}

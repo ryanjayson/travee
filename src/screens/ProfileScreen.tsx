@@ -14,6 +14,8 @@ import {
   PanResponder,
   Animated,
   Dimensions,
+  Vibration,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
@@ -25,6 +27,17 @@ import OnboardingModal, { TRAVELER_TYPES } from "../components/OnboardingModal";
 import { database } from "../db";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  isPinEnabled,
+  isBiometricsEnabled,
+  setPinEnabled as savePinEnabled,
+  setBiometricsEnabled as saveBiometricsEnabled,
+  getPin,
+  setPin,
+  clearPin,
+  isBiometricsSupported,
+  authenticateWithBiometrics,
+} from "../services/local/securityService";
 
 // Common currencies with flag emoji
 const CURRENCIES = [
@@ -399,6 +412,115 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
   const [saved, setSaved] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
+  // Security settings state
+  const [pinEnabled, setPinEnabled] = useState(false);
+  const [biometricsEnabled, setBiometricsEnabled] = useState(false);
+  const [biometricsSupported, setBiometricsSupported] = useState(false);
+  const [showSetupModal, setShowSetupModal] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [pinCode, setPinCode] = useState("");
+  const [tempConfirmPin, setTempConfirmPin] = useState("");
+  const [pinStage, setPinStage] = useState<"enter" | "confirm">("enter");
+  const [pinError, setPinError] = useState("");
+  const [correctPin, setCorrectPin] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadSecurity = async () => {
+      const pinActive = await isPinEnabled();
+      setPinEnabled(pinActive);
+      const bioActive = await isBiometricsEnabled();
+      setBiometricsEnabled(bioActive);
+      const { hasHardware, isEnrolled } = await isBiometricsSupported();
+      setBiometricsSupported(hasHardware && isEnrolled);
+      const storedPin = await getPin();
+      setCorrectPin(storedPin);
+    };
+    loadSecurity();
+  }, []);
+
+  const handlePinToggle = async (value: boolean) => {
+    if (value) {
+      setPinStage("enter");
+      setPinCode("");
+      setTempConfirmPin("");
+      setPinError("");
+      setShowSetupModal(true);
+    } else {
+      setPinCode("");
+      setPinError("");
+      const stored = await getPin();
+      setCorrectPin(stored);
+      setShowVerifyModal(true);
+    }
+  };
+
+  const handleBiometricsToggle = async (value: boolean) => {
+    if (value) {
+      const success = await authenticateWithBiometrics("Confirm fingerprint to enable biometric lock");
+      if (success) {
+        await saveBiometricsEnabled(true);
+        setBiometricsEnabled(true);
+      } else {
+        await saveBiometricsEnabled(false);
+        setBiometricsEnabled(false);
+        Alert.alert("Authentication Failed", "Biometric verification failed.");
+      }
+    } else {
+      await saveBiometricsEnabled(false);
+      setBiometricsEnabled(false);
+    }
+  };
+
+  const handleSetupPinPress = async (num: string) => {
+    if (pinCode.length >= 4) return;
+    const newVal = pinCode + num;
+    setPinCode(newVal);
+    setPinError("");
+
+    if (newVal.length === 4) {
+      if (pinStage === "enter") {
+        setTempConfirmPin(newVal);
+        setPinCode("");
+        setPinStage("confirm");
+      } else if (pinStage === "confirm") {
+        if (newVal === tempConfirmPin) {
+          await setPin(newVal);
+          await savePinEnabled(true);
+          setCorrectPin(newVal);
+          setPinEnabled(true);
+          setShowSetupModal(false);
+          setPinCode("");
+        } else {
+          Vibration.vibrate(200);
+          setPinCode("");
+          setPinStage("enter");
+          setPinError("PINs do not match. Try again.");
+        }
+      }
+    }
+  };
+
+  const handleVerifyPinPress = async (num: string) => {
+    if (pinCode.length >= 4) return;
+    const newVal = pinCode + num;
+    setPinCode(newVal);
+    setPinError("");
+
+    if (newVal.length === 4) {
+      if (newVal === correctPin) {
+        await clearPin();
+        setPinEnabled(false);
+        setBiometricsEnabled(false);
+        setShowVerifyModal(false);
+        setPinCode("");
+      } else {
+        Vibration.vibrate(200);
+        setPinCode("");
+        setPinError("Incorrect PIN code");
+      }
+    }
+  };
+
   useEffect(() => {
     if (profile) {
       setForm({
@@ -759,6 +881,66 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           )}
         </View>
 
+        {/* Security Settings */}
+        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
+          <Text className="text-xl font-semibold text-secondary/80">Security Settings</Text>
+
+          {/* PIN Lock Toggle */}
+          <View className="flex-row justify-between items-center py-2">
+            <View className="flex-1 mr-4">
+              <Text className="text-sm font-semibold text-[#374151]">PIN Code Lock</Text>
+              <Text className="text-xs text-[#6B7280]">Require passcode to unlock app</Text>
+            </View>
+            <Switch
+              value={pinEnabled}
+              onValueChange={handlePinToggle}
+              trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
+              thumbColor={pinEnabled ? colors.primary : "#F3F4F6"}
+            />
+          </View>
+
+          {/* Change PIN Button (if enabled) */}
+          {pinEnabled && (
+            <>
+              <View className="h-[1px] bg-[#E5E7EB]" />
+              <TouchableOpacity
+                onPress={() => {
+                  setPinStage("enter");
+                  setPinCode("");
+                  setTempConfirmPin("");
+                  setPinError("");
+                  setShowSetupModal(true);
+                }}
+                className="flex-row justify-between items-center py-2"
+                accessibilityRole="button"
+                accessibilityLabel="Change PIN"
+              >
+                <Text className="text-sm font-semibold text-[#374151]">Change PIN Code</Text>
+                <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* Biometrics Toggle (if supported and PIN enabled) */}
+          {pinEnabled && biometricsSupported && (
+            <>
+              <View className="h-[1px] bg-[#E5E7EB]" />
+              <View className="flex-row justify-between items-center py-2">
+                <View className="flex-1 mr-4">
+                  <Text className="text-sm font-semibold text-[#374151]">Biometric Lock</Text>
+                  <Text className="text-xs text-[#6B7280]">Unlock using fingerprint or Face ID</Text>
+                </View>
+                <Switch
+                  value={biometricsEnabled}
+                  onValueChange={handleBiometricsToggle}
+                  trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
+                  thumbColor={biometricsEnabled ? colors.primary : "#F3F4F6"}
+                />
+              </View>
+            </>
+          )}
+        </View>
+
         {/* Temporary Onboarding Button */}
         <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6]">
           <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Developer Actions</Text>
@@ -807,6 +989,193 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           onClose={() => setShowOnboarding(false)}
         />
       )}
+
+      {/* PIN Setup Modal */}
+      <Modal visible={showSetupModal} transparent animationType="slide">
+        <SafeAreaView style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.8)", justifyContent: "center", alignItems: "center", paddingHorizontal: 24 }}>
+          <View style={{ backgroundColor: "#FFFFFF", borderRadius: 24, width: "100%", maxWidth: 360, padding: 24, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 10 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: 24 }}>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: "#111827" }}>
+                {pinStage === "enter" ? "Create PIN Code" : "Confirm PIN Code"}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowSetupModal(false);
+                  setPinCode("");
+                  setTempConfirmPin("");
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel setup"
+              >
+                <Ionicons name="close" size={24} color="#374151" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={{ fontSize: 14, color: "#6B7280", textAlign: "center", marginBottom: 24 }}>
+              {pinStage === "enter"
+                ? "Enter a 4-digit security PIN"
+                : "Re-enter your 4-digit PIN to confirm"}
+            </Text>
+
+            {/* PIN Indicators */}
+            <View style={{ flexDirection: "row", gap: 16, marginBottom: 24 }}>
+              {[0, 1, 2, 3].map((index) => {
+                const isFilled = pinCode.length > index;
+                return (
+                  <View
+                    key={index}
+                    style={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: 8,
+                      borderWidth: 2,
+                      borderColor: colors.primary,
+                      backgroundColor: isFilled ? colors.primary : "transparent",
+                    }}
+                  />
+                );
+              })}
+            </View>
+
+            {pinError ? (
+              <Text style={{ color: "#EF4444", fontSize: 13, fontWeight: "600", marginBottom: 16, textAlign: "center" }}>{pinError}</Text>
+            ) : null}
+
+            {/* Keypad */}
+            <View style={{ width: "100%", gap: 12 }}>
+              {[
+                ["1", "2", "3"],
+                ["4", "5", "6"],
+                ["7", "8", "9"],
+              ].map((row, idx) => (
+                <View key={idx} style={{ flexDirection: "row", justifyContent: "center", gap: 16 }}>
+                  {row.map((num) => (
+                    <TouchableOpacity
+                      key={num}
+                      onPress={() => handleSetupPinPress(num)}
+                      style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center" }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Digit ${num}`}
+                    >
+                      <Text style={{ fontSize: 22, fontWeight: "bold", color: "#1F2937" }}>{num}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ))}
+              <View style={{ flexDirection: "row", justifyContent: "center", gap: 16 }}>
+                <View style={{ width: 64, height: 64 }} />
+                <TouchableOpacity
+                  onPress={() => handleSetupPinPress("0")}
+                  style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center" }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Digit 0"
+                >
+                  <Text style={{ fontSize: 22, fontWeight: "bold", color: "#1F2937" }}>0</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setPinCode(p => p.slice(0, -1))}
+                  style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center" }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Backspace"
+                >
+                  <Ionicons name="backspace-outline" size={24} color="#374151" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      {/* PIN Verification Modal */}
+      <Modal visible={showVerifyModal} transparent animationType="slide">
+        <SafeAreaView style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.8)", justifyContent: "center", alignItems: "center", paddingHorizontal: 24 }}>
+          <View style={{ backgroundColor: "#FFFFFF", borderRadius: 24, width: "100%", maxWidth: 360, padding: 24, alignItems: "center", shadowColor: "#000", shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 10 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: 24 }}>
+              <Text style={{ fontSize: 18, fontWeight: "bold", color: "#111827" }}>Verify PIN Code</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowVerifyModal(false);
+                  setPinCode("");
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel verification"
+              >
+                <Ionicons name="close" size={24} color="#374151" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={{ fontSize: 14, color: "#6B7280", textAlign: "center", marginBottom: 24 }}>
+              Enter your current 4-digit PIN to disable security lock
+            </Text>
+
+            {/* PIN Indicators */}
+            <View style={{ flexDirection: "row", gap: 16, marginBottom: 24 }}>
+              {[0, 1, 2, 3].map((index) => {
+                const isFilled = pinCode.length > index;
+                return (
+                  <View
+                    key={index}
+                    style={{
+                      width: 16,
+                      height: 16,
+                      borderRadius: 8,
+                      borderWidth: 2,
+                      borderColor: colors.primary,
+                      backgroundColor: isFilled ? colors.primary : "transparent",
+                    }}
+                  />
+                );
+              })}
+            </View>
+
+            {pinError ? (
+              <Text style={{ color: "#EF4444", fontSize: 13, fontWeight: "600", marginBottom: 16, textAlign: "center" }}>{pinError}</Text>
+            ) : null}
+
+            {/* Keypad */}
+            <View style={{ width: "100%", gap: 12 }}>
+              {[
+                ["1", "2", "3"],
+                ["4", "5", "6"],
+                ["7", "8", "9"],
+              ].map((row, idx) => (
+                <View key={idx} style={{ flexDirection: "row", justifyContent: "center", gap: 16 }}>
+                  {row.map((num) => (
+                    <TouchableOpacity
+                      key={num}
+                      onPress={() => handleVerifyPinPress(num)}
+                      style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center" }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Digit ${num}`}
+                    >
+                      <Text style={{ fontSize: 22, fontWeight: "bold", color: "#1F2937" }}>{num}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              ))}
+              <View style={{ flexDirection: "row", justifyContent: "center", gap: 16 }}>
+                <View style={{ width: 64, height: 64 }} />
+                <TouchableOpacity
+                  onPress={() => handleVerifyPinPress("0")}
+                  style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center" }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Digit 0"
+                >
+                  <Text style={{ fontSize: 22, fontWeight: "bold", color: "#1F2937" }}>0</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setPinCode(p => p.slice(0, -1))}
+                  style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center" }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Backspace"
+                >
+                  <Ionicons name="backspace-outline" size={24} color="#374151" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
     </View>
   );
 }

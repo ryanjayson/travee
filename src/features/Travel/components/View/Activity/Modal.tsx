@@ -6,6 +6,7 @@ import {
   Modal,
   Animated,
   Dimensions,
+  Platform,
 } from "react-native";
 import Activity from ".";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
@@ -28,7 +29,10 @@ interface ViewActivityModalProps {
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
+const { width: screenWidth } = Dimensions.get("window");
+const screenHeight = Platform.OS === "android" 
+  ? Dimensions.get("screen").height 
+  : Dimensions.get("window").height;
 
 const is60PercentSnap = (type?: ActivityType) => {
   if (type == null) return false;

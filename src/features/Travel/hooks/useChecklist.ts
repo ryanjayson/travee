@@ -86,9 +86,7 @@ export const useSaveChecklistItemMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
       queryClient.invalidateQueries({ queryKey: ["travel"] });
       queryClient.invalidateQueries({ queryKey: ["travels"] });
-      if (variables.activityId) {
-        queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity"] });
       showToast({
         type: "success",
         message: variables.id ? "Task updated successfully!" : "Task saved successfully!",
@@ -114,9 +112,7 @@ export const useDeleteChecklistItemMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
       queryClient.invalidateQueries({ queryKey: ["travel"] });
       queryClient.invalidateQueries({ queryKey: ["travels"] });
-      if (variables.activityId) {
-        queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity"] });
       showToast({
         type: "success",
         message: "Task deleted successfully.",
@@ -190,9 +186,7 @@ export const useToggleChecklistItemMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
       queryClient.invalidateQueries({ queryKey: ["travel"] });
       queryClient.invalidateQueries({ queryKey: ["travels"] });
-      if (variables.activityId) {
-        queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity", variables.activityId] });
-      }
+      queryClient.invalidateQueries({ queryKey: ["checklistItemsByActivity"] });
       showToast({
         type: "success",
         message: variables.isDone ? "Task marked as completed!" : "Task marked as uncompleted.",

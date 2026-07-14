@@ -171,7 +171,7 @@ const TravelCatalog = () => {
                         width={120}
                         height={120}
                         strokeColor="#263F69"
-                        strokeWidth={1}
+                        strokeWidth={0.5}
                         fillColor={assignedColor + '50'}
                         hideShadows={true}
                       />

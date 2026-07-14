@@ -10,6 +10,7 @@ import { AuthProvider } from "./src/features/Auth/hooks/AuthContext";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useTripStatusCheck } from "./src/hooks/useTripStatusCheck";
+import { SecurityGate } from "./src/components/SecurityGate";
 import ErrorBoundary from "./src/components/ErrorBoundary";
 import { logError, ErrorCategory, ErrorSeverity } from "./src/services/errorLogger";
 import { ToastProvider } from "./src/context/ToastContext";
@@ -68,7 +69,9 @@ export default function App() {
                   <StatusBar style="auto" />
                   <TripStatusGuard />
                   <ErrorBoundary screen="AppRoot">
-                    <AppNavigator />
+                    <SecurityGate>
+                      <AppNavigator />
+                    </SecurityGate>
                   </ErrorBoundary>
                 </ConfirmProvider>
               </ToastProvider>

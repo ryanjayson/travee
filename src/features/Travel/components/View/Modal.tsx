@@ -4,7 +4,8 @@ import { NavigationContext } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import React, { useContext, useEffect, useState, useRef } from "react";
-import { Modal, Text, TouchableOpacity, View, Animated } from "react-native";
+import { Modal, Text, TouchableOpacity, View, Animated, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ViewTravel from ".";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
@@ -26,6 +27,7 @@ const ViewTripModal = ({
   showModal = false,
   setShowModal,
 }: ViewTripModalProps) => {
+  const insets = useSafeAreaInsets();
   const { confirm } = useConfirm();
   const [showTravelNavigationModal, setShowTravelNavigationModal] =
     useState<boolean>(false);
@@ -191,85 +193,9 @@ const ViewTripModal = ({
       }}
     >
       <StatusBar style="dark" />
-      <View className="flex-1 bg-white justify-end">
-        <View 
-          className="p-1.5 flex-row items-center z-10 pt-10"
-          style={{
-            backgroundColor: headerBg,
-            borderBottomWidth: 1,
-            borderBottomColor: headerBorder,
-          }}
-        >
-
-          <TouchableOpacity
-            className="pr-3.5 p-0.5 left-2"
-            onPress={handleBackOrCollapse}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityRole="button"
-            accessibilityLabel={expanded ? "Collapse trip details sheet" : "Close travel plan details"}
-          >
-            <Animated.View 
-              style={{ 
-                width: 32, 
-                height: 32, 
-                justifyContent: 'center', 
-                alignItems: 'center',
-              }}
-            >
-              <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
-                <Icon name="close" size={32} color={iconColor} />
-              </Animated.View>
-              <Animated.View style={{ position: 'absolute', opacity: downOpacity }}>
-                <Icon name="keyboard-arrow-down" size={32} color="#263F69" />
-              </Animated.View>
-            </Animated.View>
-          </TouchableOpacity>
-    
-          <View style={{ opacity: titleOpacity }}>
-            <Text className="text-xl font-medium  min-w-[68%] w-[68%]" ellipsizeMode="tail" numberOfLines={1}>
-              {travelPlan && `${travelPlan.travel.title}`}
-            </Text>
-          </View>
-          
-          <TouchableOpacity
-            className="pr-3.5 p-0.5 absolute right-0 pt-10"
-            onPress={() => setShowTravelNavigationModal(true)}  
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityRole="button"
-            accessibilityLabel="More options"
-          >
-            <Animated.View style={{ width: 28, height: 28, justifyContent: 'center', alignItems: 'center' }}>
-              <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
-                <Icon name="more-horiz" size={28} color={iconColor} />
-              </Animated.View>
-              <Animated.View style={{ position: 'absolute', opacity: downOpacity }}>
-                <Icon name="more-horiz" size={28} color="#000000" />
-              </Animated.View>
-            </Animated.View>
-          </TouchableOpacity>
-          {/* Hide the Share/Map modal button completely when at full height */}
-          {!expanded && (
-            <TouchableOpacity
-              className="pr-3.5 p-0.5 absolute right-[50px] pt-10"
-              onPress={() => setShowMapModal(true)}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Icon name="share" size={24} color={iconColor} />
-            </TouchableOpacity>
-          )}
-          {/* <TouchableOpacity
-            className="pr-3.5 p-0.5 absolute right-[135px] pt-10"
-            onPress={() => setShowMapModal(true)}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Icon name="map" size={28} color={iconColor} />
-          </TouchableOpacity> */}
-        </View>
-        <View className="bg-white flex-1 mt-[-82px] ">
+      <View style={{ flex: 1 }}>
+        {/* Content Container filling the entire screen */}
+        <View style={StyleSheet.absoluteFill}>
           {travelPlan && (
             <ViewTravel 
               travelPlan={travelPlan} 
@@ -290,6 +216,86 @@ const ViewTripModal = ({
               }}
             />
           )}
+        </View>
+
+        {/* Sticky/Overlay Header floating on top */}
+        <View 
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            paddingTop: insets.top + 6,
+            paddingBottom: 6,
+            paddingHorizontal: 6,
+            flexDirection: "row",
+            alignItems: "center",
+            zIndex: 10,
+            backgroundColor: headerBg,
+            borderBottomWidth: 1,
+            borderBottomColor: headerBorder,
+          }}
+        >
+          <TouchableOpacity
+            style={{
+              padding: 6,
+              marginLeft: 8,
+            }}
+            onPress={handleBackOrCollapse}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={expanded ? "Collapse trip details sheet" : "Close travel plan details"}
+          >
+            <Animated.View style={{ width: 32, height: 32, justifyContent: 'center', alignItems: 'center' }}>
+              <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
+                <Icon name="close" size={32} color={iconColor} />
+              </Animated.View>
+              <Animated.View style={{ position: 'absolute', opacity: downOpacity }}>
+                <Icon name="keyboard-arrow-down" size={32} color="#263F69" />
+              </Animated.View>
+            </Animated.View>
+          </TouchableOpacity>
+    
+          <View style={{ opacity: titleOpacity, marginLeft: 8, flex: 1 }}>
+            <Text className="text-xl font-medium" style={{ color: "#111827" }} ellipsizeMode="tail" numberOfLines={1}>
+              {travelPlan && `${travelPlan.travel.title}`}
+            </Text>
+          </View>
+          
+          <View style={{ flexDirection: "row", alignItems: "center", marginRight: 8 }}>
+            {/* Share/Map modal button when not at full height */}
+            {!expanded && (
+              <TouchableOpacity
+                style={{ padding: 6, marginRight: 12 }}
+                onPress={() => setShowMapModal(true)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
+                accessibilityLabel="Share trip"
+              >
+                <Icon name="share" size={24} color={iconColor} />
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={{ padding: 6 }}
+              onPress={() => setShowTravelNavigationModal(true)}  
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="More options"
+            >
+              <Animated.View style={{ width: 28, height: 28, justifyContent: 'center', alignItems: 'center' }}>
+                <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
+                  <Icon name="more-horiz" size={28} color={iconColor} />
+                </Animated.View>
+                <Animated.View style={{ position: 'absolute', opacity: downOpacity }}>
+                  <Icon name="more-horiz" size={28} color="#000000" />
+                </Animated.View>
+              </Animated.View>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 

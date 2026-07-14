@@ -222,7 +222,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   // Snap points represent the translateY value (offset from top of parent container)
   // 90% sheet height: translateY = parentHeight * 0.1
   // Min sheet height: 25% sheet height -> 0.75 offset
-  const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 0.75 : 0.82;
+  const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 0.78 : 0.81;
   const SNAP_90 = parentHeight * 0.1;
   const SNAP_MIN = parentHeight * SNAP_EXTENDED;
 

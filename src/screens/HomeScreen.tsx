@@ -220,23 +220,6 @@ const HomeScreen = () => {
             <Text className="px-6 text-xl font-semibold text-secondary mb-md">Trip Insights</Text>
               
             <View className="flex-row px-5 mb-[15px] gap-[15px]">
-              <View className="flex-1 h-[112px]">
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Trips", { initialTab: "past" })}
-                  disabled={false}
-                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
-                  accessibilityRole="button"
-                  activeOpacity={0.5}
-                >
-                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Past</Text>
-                  <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
-                  <Text className="text-sm text-tertiary">Completed trips</Text>
-
-                  <View className="w-[60px] h-[60px] justify-center items-center absolute top-2 right-2">
-                    <Text className="text-6xl  text-[#fab00f]/40">⏱</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
 
               <View className="flex-1 h-[112px]">
                 <TouchableOpacity
@@ -252,18 +235,36 @@ const HomeScreen = () => {
                     <Text className="text-sm text-tertiary">Cities visited</Text>
                   </View>
                   {profile?.defaultCountry ? (
-                    <View className="justify-center items-center absolute right-0">
+                    <View className="justify-center items-center absolute right-0 ">
                       <CountryOutline
                         countryName={profile.defaultCountry}
-                        width={120}
+                        width={80}
                         height={120}
                         strokeColor="#263F69"
-                        strokeWidth={1}
+                        strokeWidth={0.5}
                         fillColor="rgba(38, 63, 105, 0.1)"
                         hideShadows={true}
                       />
                     </View>
                   ) : null}
+                </TouchableOpacity>
+              </View>
+
+              <View className="flex-1 h-[112px]">
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("Trips", { initialTab: "past" })}
+                  disabled={false}
+                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
+                  accessibilityRole="button"
+                  activeOpacity={0.5}
+                >
+                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Past</Text>
+                  <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
+                  <Text className="text-sm text-tertiary">Completed trips</Text>
+
+                  <View className="w-[60px] h-[60px] justify-center items-center absolute top-2 right-2">
+                    <Text className="text-6xl  text-[#fab00f]/40">⏱</Text>
+                  </View>
                 </TouchableOpacity>
               </View>
             </View>

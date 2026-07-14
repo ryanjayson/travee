@@ -56,10 +56,10 @@ const StatCard = ({
 
 const SectionHeader = ({ icon, title }: { icon: string | any; title: string }) => (
   <View className="flex-1 justify-start gap-0 mt-3">
-    <Text className="text-sm font-semibold tracking-wider uppercase mb-3">
+    <Text className="text-sm font-semibold tracking-wider uppercase mb-3 px-1">
       {title}
     </Text>
-    {/* <Text className="text-xs font-normal text-gray-400 mb-3">
+    {/* <Text className="text-base font-normal text-gray-400 mb-3">
       Click row to see details
     </Text> */}
   </View>
