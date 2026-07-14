@@ -345,9 +345,20 @@ export default function FlightModal({ visible, onClose, onConfirm }: FlightModal
                   scrollEventThrottle={16}
                 >
                   {isLoading ? (
-                    <View className="p-10 items-center justify-center">
-                      <ActivityIndicator size="large" color={colors.primary} />
-                      <Text className="text-gray-500 mt-2">Searching airports...</Text>
+                    <View>
+                      {[1, 2, 3, 4, 5].map((key) => (
+                        <View
+                          key={key}
+                          className="p-5 border-b border-gray-100 flex-row items-center gap-4 bg-white"
+                        >
+                          <View className="w-10 h-10 rounded-full bg-gray-200" />
+                          <View className="flex-1 gap-2">
+                            <View className="h-5 w-[70%] bg-gray-200 rounded" />
+                            <View className="h-4 w-[50%] bg-gray-100 rounded" />
+                          </View>
+                          <Icon name="chevron-right" size={20} color="#E5E7EB" />
+                        </View>
+                      ))}
                     </View>
                   ) : results.length > 0 ? (
                     results.map((airport) => (

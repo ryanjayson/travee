@@ -13,6 +13,7 @@ interface FlightTabProps {
   setShowFlightDatePickerFor: any;
   formatFlightDateTime: any;
   handleFlightSelect: (flightData: any, setFieldValue: any) => void;
+  showArrivalPrefillNotice?: boolean;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
 }
@@ -26,13 +27,14 @@ export default function FlightTab({
   setShowFlightDatePickerFor,
   formatFlightDateTime,
   handleFlightSelect,
+  showArrivalPrefillNotice = false,
   noPadding = false,
   fieldRefs,
 }: FlightTabProps) {
   const { colors } = useTheme();
 
   return (
-    <View className={`flex-1 pb-6 pt-2 ${noPadding ? "" : "px-5"}`}>
+    <View className={`pb-6 pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-5">
         <Icon name="local-airport" size={20} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">
@@ -53,10 +55,10 @@ export default function FlightTab({
       >
         <Icon name="local-airport" size={26} color={colors.primary} />
         <View className="flex-1">
-          <Text className="text-base font-semibold text-gray-800">
+          <Text className="text-lg font-semibold text-gray-800">
             Search for Airport
           </Text>
-          <Text className="text-xs text-gray-500 mt-0.5">
+          <Text className="text-base text-gray-500 mt-0.5">
             Lookup airports worldwide to populate dates and destination.
           </Text>
         </View>
@@ -64,7 +66,7 @@ export default function FlightTab({
       </TouchableOpacity>
 
       {/* Departure Airport */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureAirport"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureAirport"] = el; }} className="mb-5 flex-row">
         <FloatingLabelInput
           label="Departure Airport"
           value={values.flightDetails?.departureAirport || ""}
@@ -94,12 +96,12 @@ export default function FlightTab({
         />
       </View>
 
-      <View className="flex-1 items-center justify-center mb-5 ">
+      <View className="items-center justify-center mb-5">
         <Icon name="arrow-downward" size={24} color={colors.primary}/>
       </View>
 
       {/* Arrival Airport */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalAirport"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalAirport"] = el; }} className="mb-5 flex-row">
         <FloatingLabelInput
           label="Arrival Airport"
           value={values.flightDetails?.arrivalAirport || ""}
@@ -109,24 +111,32 @@ export default function FlightTab({
       </View>
 
       {/* Arrival Date & Time */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalDate"] = el; }} className="flex-row gap-4 mb-10">
-        <FloatingLabelInput
-          label="Arrival Date & Time"
-          value={values.flightDetails?.arrivalDate ? formatFlightDateTime(values.flightDetails.arrivalDate) : ""}
-          editable={false}
-          right={
-            values.flightDetails?.arrivalDate ? (
-              <TextInput.Icon
-                icon="close"
-                color="#999"
-                onPress={() => setFieldValue("flightDetails.arrivalDate", null)}
-              />
-            ) : (
-              <TextInput.Icon icon="calendar" color="#999" />
-            )
-          }
-          onPress={() => setShowFlightDatePickerFor("arrivalDate")}
-        />
+      <View 
+        ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalDate"] = el; }} 
+        className="flex-col mb-10"
+      >
+        <View className="flex-row gap-4">
+          <FloatingLabelInput
+            label="Arrival Date & Time"
+            value={values.flightDetails?.arrivalDate ? formatFlightDateTime(values.flightDetails.arrivalDate) : ""}
+            editable={false}
+            right={
+              values.flightDetails?.arrivalDate ? (
+                <TextInput.Icon
+                  icon="close"
+                  color="#999"
+                  onPress={() => setFieldValue("flightDetails.arrivalDate", null)}
+                />
+              ) : (
+                <TextInput.Icon icon="calendar" color="#999" />
+              )
+            }
+            onPress={() => setShowFlightDatePickerFor("arrivalDate")}
+          />
+        </View>
+          <Text className={`text-xs text-[#DC6803] mt-1 ml-2 font-medium ${showArrivalPrefillNotice ? "" : "hidden"}`}>
+            Please check the actual date of your flight arrival and update accordingly.
+          </Text>
       </View>
 
       {/* Flight Number & Airline */}

@@ -21,8 +21,8 @@ export default function DateTime({
 }: DateTimeProps) {
   return (
     <View className="mb-5">
-      <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
-      <Text className={`text-sm text-gray-500`}>
+      <Text className="text-base font-semibold tracking-wider uppercase">Date & Time</Text>
+      <Text className={`text-base text-gray-500`}>
        Activities with a set date and time are sorted based on their scheduled date and time and cannot be reordered.
       </Text>
       <View className="flex-row items-center gap-4 mt-2">

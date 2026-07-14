@@ -430,6 +430,43 @@ const EditActivity = ({
     setFieldValue("flightDetails.departureAirport", `${depName} (${departureAirport.code})`);
     setFieldValue("flightDetails.arrivalAirport", `${arrName} (${arrivalAirport.code})`);
     setFieldValue("flightDetails.departureDate", departureDate);
+
+    // 8. Prefill Arrival Date & Time if coordinates are available to calculate flight duration
+    if (departureAirport?.coordinates && arrivalAirport?.coordinates) {
+      const lat1 = departureAirport.coordinates.lat;
+      const lon1 = departureAirport.coordinates.lon;
+      const lat2 = arrivalAirport.coordinates.lat;
+      const lon2 = arrivalAirport.coordinates.lon;
+
+      if (lat1 !== undefined && lon1 !== undefined && lat2 !== undefined && lon2 !== undefined) {
+        const R = 6371; // km
+        const dLat = ((lat2 - lat1) * Math.PI) / 180;
+        const dLon = ((lon2 - lon1) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((lat1 * Math.PI) / 180) *
+            Math.cos((lat2 * Math.PI) / 180) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+
+        // Average commercial jet speed is ~800 km/h
+        // Add 30 minutes (0.5 hours) for taxi, takeoff, and landing
+        const durationHours = distance / 800 + 0.5;
+        const arrivalDate = new Date(new Date(departureDate).getTime() + durationHours * 60 * 60 * 1000);
+        setFieldValue("flightDetails.arrivalDate", arrivalDate);
+
+        // Prefill warning notice trigger
+        setShowArrivalPrefillNotice(true);
+        if (prefillNoticeTimerRef.current) {
+          clearTimeout(prefillNoticeTimerRef.current);
+        }
+        prefillNoticeTimerRef.current = setTimeout(() => {
+          setShowArrivalPrefillNotice(false);
+        }, 6000); // 6 seconds
+      }
+    }
   };
 
   const [showDestinationModal, setShowDestinationModal] =
@@ -452,6 +489,16 @@ const EditActivity = ({
   const scrollViewRef = useRef<ScrollView>(null);
   const fieldRefs = useRef<{ [key: string]: any }>({});
   const [activeTabId, setActiveTabId] = useState<string>("details");
+  const [showArrivalPrefillNotice, setShowArrivalPrefillNotice] = useState<boolean>(false);
+  const prefillNoticeTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (prefillNoticeTimerRef.current) {
+        clearTimeout(prefillNoticeTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -1112,7 +1159,8 @@ const EditActivity = ({
 
   return (
     <Formik<ActivityFormValues>
-      enableReinitialize={true}
+      key={itineraryActivity?.id || "new-activity"}
+      enableReinitialize={false}
       initialValues={memoizedInitialValues}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}
@@ -1233,6 +1281,7 @@ const EditActivity = ({
                     setShowFlightDatePickerFor={setShowFlightDatePickerFor}
                     formatFlightDateTime={formatFlightDateTime}
                     handleFlightSelect={handleFlightSelect}
+                    showArrivalPrefillNotice={showArrivalPrefillNotice}
                     noPadding={true}
                     fieldRefs={fieldRefs}
                   />
@@ -1993,6 +2042,7 @@ const EditActivity = ({
               endDate={values.endDate}
               onClose={handleCloseCalendar}
               setFieldValue={setFieldValue}
+              tripStartDate={travelPlan?.travel?.startOrDepartureDate}
             />
 
 
@@ -2211,6 +2261,7 @@ interface ActivityCalendarModalProps {
   startDate: string | null;
   endDate: string | null;
   setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
+  tripStartDate?: Date | string | null;
 }
 
 const ACTIVITY_CALENDAR_THEME = {
@@ -2221,6 +2272,16 @@ const ACTIVITY_CALENDAR_THEME = {
   selectedDayTextColor: "#ffffff",
 };
 
+const formatDateToYYYYMMDD = (dateVal: any) => {
+  if (!dateVal) return null;
+  const d = new Date(dateVal);
+  if (isNaN(d.getTime())) return null;
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 const ActivityCalendarModal: React.FC<ActivityCalendarModalProps> = React.memo(({
   visible,
   onClose,
@@ -2228,19 +2289,28 @@ const ActivityCalendarModal: React.FC<ActivityCalendarModalProps> = React.memo((
   startDate,
   endDate,
   setFieldValue,
+  tripStartDate,
 }) => {
   const { colors } = useTheme();
 
+  const initialDate = useMemo(() => {
+    const selectedDate = (showCalendarFor === "startDate" ? startDate : endDate);
+    if (selectedDate) return selectedDate;
+
+    const formattedTripStart = formatDateToYYYYMMDD(tripStartDate);
+    if (formattedTripStart) return formattedTripStart;
+
+    return formatDateToYYYYMMDD(new Date())!;
+  }, [showCalendarFor, startDate, endDate, tripStartDate]);
+
   const markedDates = useMemo(() => {
-    const selectedDate = (showCalendarFor === "startDate" ? startDate : endDate) || "";
-    if (!selectedDate) return {};
     return {
-      [selectedDate]: {
+      [initialDate]: {
         selected: true,
         selectedColor: "#263F69",
       },
     };
-  }, [showCalendarFor, startDate, endDate]);
+  }, [initialDate]);
 
   const handleDayPress = useCallback(
     (day: any) => {
@@ -2274,7 +2344,7 @@ const ActivityCalendarModal: React.FC<ActivityCalendarModalProps> = React.memo((
 
         <View className="flex-1">
           <CalendarList
-            current={(showCalendarFor === "startDate" ? startDate : endDate) || undefined}
+            current={initialDate}
             pastScrollRange={12}
             futureScrollRange={24}
             scrollEnabled={true}

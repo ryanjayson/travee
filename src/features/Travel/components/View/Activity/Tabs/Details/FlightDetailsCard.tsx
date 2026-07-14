@@ -162,7 +162,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
           {/* Plane Icon Divider */}
           <View className="flex-1 items-center justify-center px-2">
             <View className="w-full flex-row items-center justify-center">
-              <View className="flex-1 h-[1px] border-t border-dashed border-gray-300" />
+              <View className="flex-1 h-1px border-t border-dashed border-gray-300" />
               <Icon
                 name="flight"
                 size={62}
@@ -172,8 +172,27 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
                   transform: [{ rotate: "90deg" }],
                 }}
               />
-              <View className="flex-1 h-[1px] border-t border-dashed border-gray-300" />
+              <View className="flex-1 h-1px border-t border-dashed border-gray-300" />
             </View>
+            {data.departureDate && data.arrivalDate && (
+              <Text className="text-xs font-semibold text-gray-500 mt-1">
+                {(() => {
+                  const dep = new Date(data.departureDate);
+                  const arr = new Date(data.arrivalDate);
+                  const diffMs = arr.getTime() - dep.getTime();
+                  if (diffMs > 0) {
+                    const diffMins = Math.floor(diffMs / (1000 * 60));
+                    const hours = Math.floor(diffMins / 60);
+                    const mins = diffMins % 60;
+                    return hours > 0
+                      ? `${hours}h${mins > 0 ? ` ${mins}m` : ""}`
+                      : `${mins}m`;
+                  }
+                  return "";
+                })()}
+              </Text>
+            )}
+
           </View>
 
           {/* Arrival Airport */}

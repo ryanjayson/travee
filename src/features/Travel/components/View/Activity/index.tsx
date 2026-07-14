@@ -10,6 +10,7 @@ import {
   PanResponder,
   Animated,
   Pressable,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import TouchButton from "../../../../../components/atoms/TouchButton";
@@ -471,18 +472,23 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             }}>
             <DetailsTab itineraryActivity={itineraryActivity} />
             {/* Animated Black Overlay */}
-            <Animated.View
-              pointerEvents="none"
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "#000000",
-                opacity: overlayOpacity,
-              }}
-            />
+            <TouchableWithoutFeedback
+              onPress={() => snapTo(SNAP_MIN)}
+              disabled={currentSnap === SNAP_MIN}
+            >
+              <Animated.View
+                pointerEvents={currentSnap === SNAP_MIN ? "none" : "auto"}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundColor: "#000000",
+                  opacity: overlayOpacity,
+                }}
+              />
+            </TouchableWithoutFeedback>
           </View>
 
           {/* Snappable Bottom Form Sheet */}
@@ -539,9 +545,9 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
                         <View className="">
                           <Text 
                             className="text-base text-[#999] leading-6"
-                            numberOfLines={isDescriptionExpanded ? undefined : 2}
+                            numberOfLines={isDescriptionExpanded ? undefined : 1}
                             onTextLayout={(e) => {
-                              if (!showMoreButton && e.nativeEvent.lines.length >= 2) {
+                              if (!showMoreButton && e.nativeEvent.lines.length >= 1) {
                                 setShowMoreButton(true);
                               }
                             }}
@@ -558,7 +564,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
                               }}
                               accessibilityRole="button"
                             >
-                              <Text className="text-sm text-secondary font-medium mt-1 underline">
+                              <Text className="text-sm text-secondary font-medium -mb-1 underline">
                                 {isDescriptionExpanded ? "Show less" : "Show more"}
                               </Text>
                             </TouchableOpacity>
