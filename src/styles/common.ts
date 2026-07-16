@@ -22,7 +22,7 @@ export const Typography = StyleSheet.create({
 
 export const Color = StyleSheet.create({
   primary: {
-    color: "#263F69",
+    color: "#0EA5E9",
   },
   secondary: {},
 });

@@ -175,7 +175,7 @@ const HomeScreen = () => {
   };
 
   return (
-    <View className="flex-1 bg-gray-100">
+    <View className="flex-1 bg-red-100">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       <ScrollView showsVerticalScrollIndicator={false} 
         contentContainerStyle={{ paddingBottom: 100 }} 
@@ -184,8 +184,8 @@ const HomeScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#263F69"]}
-            tintColor="#263F69"
+            colors={["#0EA5E9"]}
+            tintColor="#0EA5E9"
           />
         }>
 
@@ -216,8 +216,8 @@ const HomeScreen = () => {
             }}
           />
 
-          <View className="justify-between mb-3">
-            <Text className="px-6 text-xl font-semibold text-secondary mb-md">Trip Insights</Text>
+          <View className="justify-between mb-3 px-1">
+            <Text className="px-6 text-xl font-semibold text-secondary mb-5">Trip Insights</Text>
               
             <View className="flex-row px-5 mb-[15px] gap-[15px]">
 
@@ -240,9 +240,9 @@ const HomeScreen = () => {
                         countryName={profile.defaultCountry}
                         width={80}
                         height={120}
-                        strokeColor="#263F69"
+                        strokeColor="#0EA5E9"
                         strokeWidth={0.5}
-                        fillColor="rgba(38, 63, 105, 0.1)"
+                        fillColor="rgba(59, 130, 246, 0.1)"
                         hideShadows={true}
                       />
                     </View>
@@ -262,8 +262,8 @@ const HomeScreen = () => {
                   <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
                   <Text className="text-sm text-tertiary">Completed trips</Text>
 
-                  <View className="w-[60px] h-[60px] justify-center items-center absolute top-2 right-2">
-                    <Text className="text-6xl  text-[#fab00f]/40">⏱</Text>
+                  <View className="w-[60px] h-[60px] justify-center items-center absolute right-0">
+                    <Text className="text-5xl text-[#e0e0e0]">⏱</Text>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -282,8 +282,8 @@ const HomeScreen = () => {
                   <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
                   <Text className="text-sm text-tertiary">Countries visited</Text>
 
-                  <View className="w-[60px] h-[60px] justify-center items-center absolute top-2 right-2">
-                    <Ionicons name="earth" size={40} color="#e0e0e0" />
+                  <View className="w-[60px] h-[60px] justify-center items-center absolute right-0">
+                    <Ionicons name="earth" size={28} color="#e0e0e0" />
                   </View>
                 </TouchableOpacity>
               </View>
@@ -315,7 +315,7 @@ const HomeScreen = () => {
                 topActivityTypes.map((stat, i) => (
                   <View key={stat.type || i} className="w-[130px] bg-white rounded-2xl p-[15px] shadow-sm elevation-2 border border-gray-100 items-center">
                     <View className="bg-gray-100 w-11 h-11 rounded-full justify-center items-center mb-3">
-                      <Ionicons name={getIconForActivityType(stat.type)} size={22} color="#263F69" />
+                      <Ionicons name={getIconForActivityType(stat.type)} size={22} color="#0EA5E9" />
                     </View>
                     <Text className="text-xl font-extrabold text-gray-900 mb-0.5">{stat.count}</Text>
                     <Text className="text-[12px] text-gray-500 font-medium text-center" numberOfLines={1}>{stat.typeName}s</Text>

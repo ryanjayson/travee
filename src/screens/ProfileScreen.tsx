@@ -199,10 +199,10 @@ const PickerModal = ({
                     onPress={() => { onSelect(opt); handleDismiss(); }}
                     accessibilityRole="button"
                   >
-                    <Text className={`text-base ${selected === opt ? 'text-[#263F69] font-semibold' : 'text-[#374151]'}`}>
+                    <Text className={`text-base ${selected === opt ? 'text-primary font-semibold' : 'text-[#374151]'}`}>
                       {opt}
                     </Text>
-                    {selected === opt && <Ionicons name="checkmark" size={18} color="#263F69" />}
+                    {selected === opt && <Ionicons name="checkmark" size={18} color="#0EA5E9" />}
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -365,10 +365,10 @@ const CountryPickerModal = ({
                         }}
                         accessibilityRole="button"
                       >
-                        <Text className={`text-base ${isSelected ? 'text-[#263F69] font-semibold' : 'text-[#374151]'}`}>
+                        <Text className={`text-base ${isSelected ? 'text-primary font-semibold' : 'text-[#374151]'}`}>
                           {opt}
                         </Text>
-                        {isSelected && <Ionicons name="checkmark" size={18} color="#263F69" />}
+                        {isSelected && <Ionicons name="checkmark" size={18} color="#0EA5E9" />}
                       </TouchableOpacity>
                     );
                   })
@@ -608,7 +608,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-[#F3F4F6]" style={{ paddingTop: insets.top }}>
-        <ActivityIndicator size="large" color="#263F69" />
+        <ActivityIndicator size="large" color="#0EA5E9" />
       </View>
     );
   }
@@ -630,7 +630,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           disabled={isSaving}
           accessibilityRole="button"
           accessibilityLabel="Save profile"
-          className="bg-[#263F69] px-4 py-1.5 rounded-full min-w-[60px] items-center"
+          className="bg-primary px-4 py-1.5 rounded-full min-w-[60px] items-center"
         >
           {isSaving ? (
             <ActivityIndicator size="small" color="#fff" />
@@ -654,7 +654,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
             accessibilityLabel="Change avatar"
             className="relative"
           >
-            <View className="w-34 h-34 rounded-full bg-[#263F69] justify-center items-center overflow-hidden border border-white shadow">
+            <View className="w-34 h-34 rounded-full bg-primary justify-center items-center overflow-hidden border border-white shadow">
               {form.avatarUrl ? (
                 <Image
                   source={{ uri: form.avatarUrl }}
@@ -665,7 +665,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
                 <Ionicons name="person" size={48} color="#fff" />
               )}
             </View>
-            <View className="absolute bottom-0 right-0 bg-[#263F69] p-1.5 rounded-full border border-white shadow">
+            <View className="absolute bottom-0 right-0 bg-primary p-1.5 rounded-full border border-white shadow">
               <Ionicons name="camera" size={14} color="#fff" />
             </View>
           </TouchableOpacity>
@@ -678,11 +678,11 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           <View className="flex-row gap-2.5">
             <TouchableOpacity
               onPress={() => setForm(f => ({ ...f, accountType: AccountType.Free }))}
-              className={`flex-1 items-center p-3.5 rounded-xl border-2 bg-[#F9FAFB] gap-1 ${form.accountType === AccountType.Free ? 'border-[#263F69] bg-[#EFF6FF]' : 'border-[#E5E7EB]'}`}
+              className={`flex-1 items-center p-3.5 rounded-xl border-2 bg-[#F9FAFB] gap-1 ${form.accountType === AccountType.Free ? 'border-primary bg-[#EFF6FF]' : 'border-[#E5E7EB]'}`}
               accessibilityRole="button"
             >
-              <Ionicons name="person" size={20} color={form.accountType === AccountType.Free ? "#263F69" : "#9CA3AF"} />
-              <Text className={`text-sm font-bold ${form.accountType === AccountType.Free ? 'text-[#263F69]' : 'text-[#9CA3AF]'}`}>Free</Text>
+              <Ionicons name="person" size={20} color={form.accountType === AccountType.Free ? "#0EA5E9" : "#9CA3AF"} />
+              <Text className={`text-sm font-bold ${form.accountType === AccountType.Free ? 'text-primary' : 'text-[#9CA3AF]'}`}>Free</Text>
               <Text className="text-[11px] text-[#9CA3AF]">Basic features</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -746,12 +746,12 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
                         : [...selectedStyles, type.id];
                       setForm(f => ({ ...f, travelStyle: newStyles.join(",") }));
                     }}
-                    className={`flex-row items-center px-3.5 py-1.5 rounded-full border ${isSelected ? 'border-[#263F69] bg-[#EFF6FF]' : 'border-[#E5E7EB] bg-white'}`}
+                    className={`flex-row items-center px-3.5 py-1.5 rounded-full border ${isSelected ? 'border-primary bg-[#EFF6FF]' : 'border-[#E5E7EB] bg-white'}`}
                     accessibilityRole="button"
                     activeOpacity={0.7}
                   >
                     <Text className="text-sm mr-1">{type.emoji}</Text>
-                    <Text className={`text-xs font-semibold ${isSelected ? 'text-[#263F69]' : 'text-[#475467]'}`}>
+                    <Text className={`text-xs font-semibold ${isSelected ? 'text-primary' : 'text-[#475467]'}`}>
                       {type.label}
                     </Text>
                   </TouchableOpacity>
@@ -946,7 +946,7 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Developer Actions</Text>
           <TouchableOpacity
             onPress={() => setShowOnboarding(true)}
-            className="bg-[#263F69] py-3.5 rounded-xl items-center"
+            className="bg-primary py-3.5 rounded-xl items-center"
             accessibilityRole="button"
             activeOpacity={0.7}
           >

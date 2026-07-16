@@ -134,7 +134,7 @@ const TravelCatalog = () => {
     const formatDate = (dateValue: Date | string | undefined) => {
       if (!dateValue) return "";
       const date = new Date(dateValue);
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
     const getDuration = (start: Date | string | undefined, end: Date | string | undefined) => {
@@ -143,9 +143,48 @@ const TravelCatalog = () => {
       const e = new Date(end);
       const diffTime = Math.abs(e.getTime() - s.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-      return `${diffDays} Day${diffDays > 1 ? 's' : ''}`;
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} trip`;
     };
 
+    const getStartDateParts = (dateInput?: string | Date) => {
+      if (!dateInput) return { day: null, month: null };
+      try {
+        const d = new Date(dateInput);
+        if (isNaN(d.getTime())) return { day: null, month: null };
+        const day = d.toLocaleDateString('en-US', { day: '2-digit' }).toUpperCase();
+        const month = d.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+        return { day, month };
+      } catch (e) {
+        return { day: null, month: null };
+      }
+    };
+
+    const getCountdownLabel = (dateInput?: string | Date) => {
+      if (!dateInput) return "";
+      try {
+        const tripDate = new Date(dateInput);
+        tripDate.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const diffTime = tripDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) {
+          return "Today";
+        } else if (diffDays === 1) {
+          return "Tomorrow";
+        } else if (diffDays > 1) {
+          return `In ${diffDays} days`;
+        } else {
+          return `${Math.abs(diffDays)}d ago`;
+        }
+      } catch (e) {
+        return "";
+      }
+    };
+
+    const { day, month } = getStartDateParts(travel.startOrDepartureDate);
+    const countdownLabel = getCountdownLabel(travel.startOrDepartureDate);
     const duration = getDuration(travel.startOrDepartureDate, travel.endOrReturnDate);
     const dateRange = travel.startOrDepartureDate && travel.endOrReturnDate 
       ? `${formatDate(travel.startOrDepartureDate)} - ${formatDate(travel.endOrReturnDate)}`
@@ -160,38 +199,53 @@ const TravelCatalog = () => {
         className="bg-white rounded-xl mb-2 shadow-sm mx-4 overflow-hidden "
       >
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
-          <View className="p-4 border border-[#E0E0E0] rounded-xl relative overflow-hidden">
+          <View className="px-4 border border-[#E0E0E0] rounded-xl relative overflow-hidden">
           
             <View className="flex-row justify-between items-start ">
-              <View className="flex-row items-center gap-7 flex-1 mr-2">
+              <View className="flex-row items-center gap-4 flex-1 mr-2">
+              {day && month && (
+                <View className="flex-col justify-center items-center border-r border-[#E0E0E0] pr-4">
+                  <Text className="text-2xl font-semibold text-primary">{day}</Text>
+                  <Text className="text-base font-medium text-tertiary">{month}</Text>
+                  {countdownLabel ? (
+                    <Text className="text-[10px] font-medium text-tertiary/50 mt-2">{countdownLabel}</Text>
+                  ) : null}
+                </View>
+              )}
                   {destinationCountry ? (
-                    <View className="w-[60px] h-[60px] justify-center items-center pl-lg ">
+                    <View className={`w-[50px] h-[60px] justify-center items-center ${countdownLabel ? "" : "pl-2xl"}`}>
                       <CountryOutline
                         countryName={destinationCountry}
                         width={120}
                         height={120}
-                        strokeColor="#263F69"
-                        strokeWidth={0.5}
+                        strokeColor="#0EA5E9"
+                        strokeWidth={0.2}
                         fillColor={assignedColor + '50'}
                         hideShadows={true}
                       />
                     </View>
                   ) : null}
 
-                <View className="flex-1 gap-y-1">
+                <View className="flex-1 gap-y-1 py-4 pl-lg">
                   <Text className="text-xl leading-5 font-medium ">{travel.title}</Text>
-                  <Text className="text-base  text-[#999]">{travel.destination || ""}</Text>
-            
+                  <View className="flex-row items-center gap-2">
+                    <Text className="text-base  text-[#999]">{travel.destination || ""}</Text>
+                    {travel.type != null && travel.type !== TripType.none && (
+                    <TripIcon type={travel.type} size={16} showIconOnly={true} />
+                    )}
+                  </View>
                   <View 
                     style={{ backgroundColor: assignedColor + '10' }}
-                    className="flex-row gap-2 mt-sm p-0 px-2 rounded-full items-center"
+                    className="flex-row gap-2 mt-sm p-0 px-2 rounded-full items-center justify-center"
                   >
-                    {travel.type != null && travel.type !== TripType.none && (
-                    <TripIcon type={travel.type} size={18} showIconOnly={true} />
-                    )}
-                    <Text className="text-sm text-[#999]">
-                      {dateRange}  {duration ? `| ${duration}` : ""}
+                      <Icon name="calendar-month" size={18} color={"#999999"} />
+                   
+                    <View className="flex-1  ">
+                        <Text className="text-sm text-[#999]">
+                          {dateRange} {duration ? `• ${duration}` : ""}
                     </Text>
+                    </View>
+                  
                   </View>
                  
                 </View>
@@ -218,8 +272,8 @@ const TravelCatalog = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#263F69"]}
-            tintColor="#263F69"
+            colors={["#0EA5E9"]}
+            tintColor="#0EA5E9"
           />
         }
       >
@@ -314,7 +368,7 @@ const TravelCatalog = () => {
         case TravelStatus.Ongoing:
           return { bg: "#DCFAE6", text: "#079455", label: "Ongoing" };
         case TravelStatus.Upcoming:
-          return { bg: "rgba(185, 230, 254, 0.4)", text: "#263F69", label: "Upcoming" };
+          return { bg: "rgba(185, 230, 254, 0.4)", text: "#0EA5E9", label: "Upcoming" };
         case TravelStatus.Draft:
           return { bg: "#E0E0E0", text: "#666666", label: "Draft" };
         case TravelStatus.Past:
@@ -332,7 +386,7 @@ const TravelCatalog = () => {
             <Text className="text-xs text-[#666]">Ongoing</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
-            <View className="w-5 h-5 rounded-full bg-[#B9E6FE]/40 border border-[#263F69]/40" />
+            <View className="w-5 h-5 rounded-full bg-[#B9E6FE]/40 border border-[#0EA5E9]/40" />
             <Text className="text-xs text-[#666]">Upcoming</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
@@ -349,12 +403,12 @@ const TravelCatalog = () => {
           style={{}}
           enableSwipeMonths={true}
           theme={{
-            monthTextColor: '#263F69',
+            monthTextColor: '#0EA5E9',
             textMonthFontWeight: '600',
             textMonthFontSize: 16,
             textSectionTitleColor: '#666666',
-            todayTextColor: '#263F69',
-            arrowColor: '#263F69',
+            todayTextColor: '#0EA5E9',
+            arrowColor: '#0EA5E9',
             "stylesheet.calendar.main": {
               monthView: {
                 flex: 1,
@@ -375,7 +429,7 @@ const TravelCatalog = () => {
               <Icon
                 name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
                 size={28}
-                color="#263F69"
+                color="#0EA5E9"
               />
             </View>
           )}
@@ -397,7 +451,7 @@ const TravelCatalog = () => {
                     textAlign: 'center',
                     fontSize: 12,
                     fontWeight: state === 'today' ? 'bold' : 'normal',
-                    color: state === 'disabled' ? '#d9e1e8' : state === 'today' ? '#263F69' : '#2d4150',
+                    color: state === 'disabled' ? '#d9e1e8' : state === 'today' ? '#0EA5E9' : '#2d4150',
                     marginBottom: 2,
                   }}
                 >
@@ -526,7 +580,7 @@ const TravelCatalog = () => {
       <View className="flex-1 bg-white">
         {isLoading ? (
           <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color={'#263F69'} />
+            <ActivityIndicator size="large" color={'#0EA5E9'} />
             <Text className="mt-2.5 text-tertiary text-lg">Loading your travel plans...</Text>
           </View>
         ) : isError ? (

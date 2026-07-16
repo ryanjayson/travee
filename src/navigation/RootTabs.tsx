@@ -103,7 +103,7 @@ function RootTabsComponent() {
         headerShadowVisible: false,
         tabBarShowLabel: true,
         
-        tabBarActiveTintColor: '#263F69',
+        tabBarActiveTintColor: '#0EA5E9',
         tabBarInactiveTintColor: '#98A2B3',
         tabBarIconStyle: {
           top: -2,
@@ -116,8 +116,8 @@ function RootTabsComponent() {
             <View className="flex-1 justify-center items-center top-0">
             <Ionicons
               name={iconName}
-              size={24}
-              color={focused ? "#263F69" : color}
+              size={28}
+              color={focused ? "#0EA5E9" : color}
             />
             <Text className={`text-xs font-bold  ${focused ? 'text-primary' : 'text-gray-400'}`}>{route.name}</Text>
             </View>
@@ -126,9 +126,9 @@ function RootTabsComponent() {
 
       tabBarStyle: {
         position: 'absolute',
-        marginLeft: WIDTH - 220 - 140,
+        marginLeft: WIDTH - 250 - 140,
         bottom: insets.bottom + 5,
-        width: 220,
+        width: 250,
         height: 70,
         borderRadius: 35,
         backgroundColor: '#fff',
@@ -154,7 +154,7 @@ function RootTabsComponent() {
                 onPress={() => setVisibleCreateTravelModal(true)}
                 style={{ marginRight: 16 }}
               >
-                <Ionicons name="add" size={32} color="#263F69" />
+                <Ionicons name="add" size={32} color="#0EA5E9" />
               </TouchableOpacity>
             ),
           }}
@@ -165,15 +165,15 @@ function RootTabsComponent() {
       {/* Floating Add Button on the right side */}
       <TouchableOpacity 
         onPress={() => setVisibleCreateTravelModal(true)}
-        className="bg-button-primary"
+        className="bg-[#0EA5E9]"
         style={{
           position: 'absolute',
           bottom: insets.bottom + 5,
-          left: WIDTH - 130,
+          left: WIDTH - 120,
           width: 70,
           height: 70,
           borderRadius: 35,
-          backgroundColor: '#263F69',
+          backgroundColor: '#0EA5E9',
           justifyContent: 'center',
           alignItems: 'center',
           elevation: 10,
@@ -185,6 +185,7 @@ function RootTabsComponent() {
         activeOpacity={0.8}
       >
         <Ionicons name="add" size={40} color="#ffffff" />
+        {/* <Text className="text-xs font-bold text-white">Add a trip</Text> */}
       </TouchableOpacity>
 
       <CreateTravelModal

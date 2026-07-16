@@ -59,7 +59,7 @@ const ViewTravel = ({
   expanded, 
   onExpandedChange,
   onScrollY,
-  showMap = false,
+  showMap = true,
   setShowMap,
   showShare = false,
   setShowShare,

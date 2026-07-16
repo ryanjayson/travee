@@ -3,7 +3,7 @@
 
 @theme {
   /* =========================================================
-   * Brand palette (primary app identity)
+   * Brand palette (primary app identity) 
    * ========================================================= */
   --color-brand-25: #E2E9F1;
   --color-brand-50: #C6D4E2;
@@ -12,13 +12,13 @@
   --color-brand-300: #7097B8;
   --color-brand-400: #5184AB;
   --color-brand-500: #2A719D;
-  --color-brand-600: #263F69;
+  --color-brand-600: #0EA5E9;
   --color-brand-700: #00466E;
   --color-brand-800: #003258;
   --color-brand-900: #001F42;
   --color-brand-950: #00092E;
-  --color-brand: #263F69;
-  --color-brand-primary: #263F69;
+  --color-brand: #0EA5E9;
+  --color-brand-primary: #0EA5E9;
   --color-brand-secondary: #2591E4;
 
   /* =========================================================
@@ -234,7 +234,7 @@
    * Semantic / app-level colors
    * (merged from textColor, backgroundColor, borderColor, ringColor)
    * ========================================================= */
-  --color-primary: #263F69;
+  --color-primary: #0EA5E9;
   --color-primary-light: #E2E9F1;
   --color-primary-hover: #F9FAFB;
   --color-primary-solid: #0C111D;
@@ -274,7 +274,7 @@
   /* =========================================================
    * Button colors
    * ========================================================= */
-  --color-button-primary: #263F69;
+  --color-button-primary: #0EA5E9;
   --color-button-primary-hover: #00466E;
   --color-button-primary-error: #D92D20;
   --color-button-primary-error-hover: #B42318;
