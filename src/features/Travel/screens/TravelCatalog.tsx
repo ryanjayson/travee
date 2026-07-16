@@ -339,11 +339,11 @@ const TravelCatalog = () => {
               {emptySubtitle}
             </Text>
 
-            <View className="absolute -bottom-5 right-18">
-              <Text className="text-lg text-red-600 font-medium ">
+            <View className="absolute -bottom-6 right-10">
+              <Text className="text-lg text-red-600 font-bold ">
               Add a trip now
               </Text>
-              <Text className="text-7xl mb-4 ml-5xl text-red-600 -mt-6">⤵︎</Text>
+              <Text className="text-7xl mb-4 ml-4xl text-red-600 -mt-1 rotate-90">⤳</Text>
             </View>
           </View>
         )}
@@ -511,7 +511,7 @@ const TravelCatalog = () => {
     {
       id: "upcoming",
       title: `Upcoming (${getTravelsByStatus(TravelStatus.Upcoming).length})`,
-      content: renderContentForStatus(TravelStatus.Upcoming, "🗺️⁀જ✈︎", "No Upcoming Trips", "Start planning your next adventure!"),
+      content: renderContentForStatus(TravelStatus.Upcoming, "🗺️જ✈︎", "No Upcoming Trips", "Start planning your next adventure!"),
     },
     {
       id: "draft",

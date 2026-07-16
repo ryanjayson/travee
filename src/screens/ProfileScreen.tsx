@@ -38,6 +38,7 @@ import {
   isBiometricsSupported,
   authenticateWithBiometrics,
 } from "../services/local/securityService";
+import { saveNotificationLocally, seedTestNotifications } from "../services/local/notificationService";
 
 // Common currencies with flag emoji
 const CURRENCIES = [
@@ -76,7 +77,7 @@ const AccountTypeBadge = ({ type }: { type: AccountType }) => {
   );
 };
 
-const { height: screenHeight } = Dimensions.get("window");
+const { height: screenHeight, width: screenWidth } = Dimensions.get("window");
 
 const PickerModal = ({
   visible,
@@ -386,9 +387,44 @@ const CountryPickerModal = ({
   );
 };
 
-export function ProfileScreen({ onClose }: { onClose?: () => void }) {
+interface ProfileScreenProps {
+  visible: boolean;
+  onClose: () => void;
+}
+
+export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+
+  const slideAnim = React.useRef(new Animated.Value(-screenWidth)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        tension: 55,
+        friction: 10,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: -screenWidth,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [visible]);
+
+  const handleClose = () => {
+    Animated.timing(slideAnim, {
+      toValue: -screenWidth,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  };
+
   const { data: profile, isLoading } = useUserProfile();
   const { mutate: saveProfile, isPending: isSaving } = useSaveProfile();
   const queryClient = useQueryClient();
@@ -411,6 +447,9 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
   const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
+  const [aboutModalTitle, setAboutModalTitle] = useState<string>("");
+  const [aboutModalContent, setAboutModalContent] = useState<string>("");
 
   // Security settings state
   const [pinEnabled, setPinEnabled] = useState(false);
@@ -583,6 +622,43 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
     );
   };
 
+  const handleSeedNotifications = async () => {
+    try {
+      await seedTestNotifications();
+      Alert.alert("Success", "Sample notifications seeded successfully! Check the notifications panel on Home.");
+    } catch (error) {
+      console.error("Failed to seed notifications:", error);
+      Alert.alert("Error", "Failed to seed sample notifications.");
+    }
+  };
+
+  const handleRateAndFeedback = () => {
+    Alert.alert(
+      "Rate & Feedback",
+      "Thank you for using Travee! Would you like to rate the app on the store or send us your feedback?",
+      [
+        {
+          text: "Send Feedback",
+          onPress: () => {
+            setAboutModalTitle("Send Feedback");
+            setAboutModalContent("Please send your suggestions, bug reports, and ideas to support@travee.example.com. We appreciate your input!");
+            setShowAboutModal(true);
+          }
+        },
+        {
+          text: "Rate App",
+          onPress: () => {
+            Alert.alert("Success", "Thank you for your rating!");
+          }
+        },
+        {
+          text: "Cancel",
+          style: "cancel"
+        }
+      ]
+    );
+  };
+
   const handlePickAvatar = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -605,43 +681,59 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
 
   const selectedCurrencyLabel = CURRENCIES.find(c => c.code === form.defaultCurrency)?.label ?? form.defaultCurrency;
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-[#F3F4F6]" style={{ paddingTop: insets.top }}>
-        <ActivityIndicator size="large" color="#0EA5E9" />
-      </View>
-    );
-  }
-
   return (
-    <View className="flex-1 bg-[#F3F4F6]" style={{ paddingTop: insets.top }}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={handleClose}
+    >
       <StatusBar barStyle="dark-content" />
-
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-5 py-3.5">
-        {onClose && (
-          <TouchableOpacity onPress={onClose} accessibilityRole="button" accessibilityLabel="Close profile">
-            <Ionicons name="close" size={28} color="#374151" />
-          </TouchableOpacity>
-        )}
-        <Text className="text-lg font-bold text-[#111827] flex-1 text-center">Profile</Text>
-        <TouchableOpacity
-          onPress={handleSave}
-          disabled={isSaving}
-          accessibilityRole="button"
-          accessibilityLabel="Save profile"
-          className="bg-primary px-4 py-1.5 rounded-full min-w-[60px] items-center"
+      <View style={{ flex: 1, flexDirection: "row" }}>
+        {/* Animated Container - Full Height, slides from left to right */}
+        <Animated.View
+          style={{
+            width: screenWidth,
+            height: "100%",
+            backgroundColor: "#F3F4F6",
+            transform: [{ translateX: slideAnim }],
+            shadowColor: "#000",
+            shadowOffset: { width: 2, height: 0 },
+            shadowOpacity: 0.15,
+            shadowRadius: 5,
+            elevation: 5,
+            paddingTop: insets.top,
+          }}
         >
-          {isSaving ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <View className="flex-row items-center gap-1">
-              <Ionicons name="checkmark" size={20} color="#fff" />
-              <Text className="text-white text-xs font-semibold">{saved ? "Saved" : "Save"}</Text>
+          {isLoading ? (
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+              <ActivityIndicator size="large" color="#0EA5E9" />
             </View>
-          )}
-        </TouchableOpacity>
-      </View>
+          ) : (
+            <View style={{ flex: 1 }}>
+              {/* Header */}
+              <View className="flex-row items-center justify-between px-5 py-3.5 ">
+                <TouchableOpacity onPress={handleClose} accessibilityRole="button" accessibilityLabel="Close profile">
+                  <Ionicons name="close" size={28} color="#374151" />
+                </TouchableOpacity>
+                <Text className="text-lg font-bold text-[#111827] flex-1 text-center">Profile</Text>
+                <TouchableOpacity
+                  onPress={handleSave}
+                  disabled={isSaving}
+                  accessibilityRole="button"
+                  accessibilityLabel="Save profile"
+                  className="bg-primary px-4 py-1.5 rounded-full min-w-[60px] items-center"
+                >
+                  {isSaving ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <View className="flex-row items-center gap-1">
+                      <Ionicons name="checkmark" size={20} color="#fff" />
+                      <Text className="text-white text-xs font-semibold">{saved ? "Saved" : "Save"}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }} showsVerticalScrollIndicator={false}>
 
@@ -682,8 +774,8 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
               accessibilityRole="button"
             >
               <Ionicons name="person" size={20} color={form.accountType === AccountType.Free ? "#0EA5E9" : "#9CA3AF"} />
-              <Text className={`text-sm font-bold ${form.accountType === AccountType.Free ? 'text-primary' : 'text-[#9CA3AF]'}`}>Free</Text>
-              <Text className="text-[11px] text-[#9CA3AF]">Basic features</Text>
+              <Text className={`text-base font-bold ${form.accountType === AccountType.Free ? 'text-primary' : 'text-[#9CA3AF]'}`}>Free</Text>
+              <Text className="text-sm text-[#9CA3AF]">Basic features</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setForm(f => ({ ...f, accountType: AccountType.Premium }))}
@@ -691,8 +783,8 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
               accessibilityRole="button"
             >
               <Ionicons name="star" size={20} color={form.accountType === AccountType.Premium ? "#F59E0B" : "#9CA3AF"} />
-              <Text className={`text-sm font-bold ${form.accountType === AccountType.Premium ? 'text-[#D97706]' : 'text-[#9CA3AF]'}`}>Premium</Text>
-              <Text className="text-[11px] text-[#9CA3AF]">All features</Text>
+              <Text className={`text-base font-bold ${form.accountType === AccountType.Premium ? 'text-[#D97706]' : 'text-[#9CA3AF]'}`}>Premium</Text>
+              <Text className="text-sm text-[#9CA3AF]">All features</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -730,43 +822,9 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
             </View>
           </View>
 
-          <View className="gap-1.5 mt-2">
-            <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Travel Style</Text>
-
-            <View className="flex-row flex-wrap gap-2 pt-1">
-              {TRAVELER_TYPES.map((type) => {
-                const selectedStyles = (form.travelStyle || "").split(",").filter(Boolean);
-                const isSelected = selectedStyles.includes(type.id);
-                return (
-                  <TouchableOpacity
-                    key={type.id}
-                    onPress={() => {
-                      const newStyles = isSelected
-                        ? selectedStyles.filter(id => id !== type.id)
-                        : [...selectedStyles, type.id];
-                      setForm(f => ({ ...f, travelStyle: newStyles.join(",") }));
-                    }}
-                    className={`flex-row items-center px-3.5 py-1.5 rounded-full border ${isSelected ? 'border-primary bg-[#EFF6FF]' : 'border-[#E5E7EB] bg-white'}`}
-                    accessibilityRole="button"
-                    activeOpacity={0.7}
-                  >
-                    <Text className="text-sm mr-1">{type.emoji}</Text>
-                    <Text className={`text-xs font-semibold ${isSelected ? 'text-primary' : 'text-[#475467]'}`}>
-                      {type.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-        </View>
-
-        {/* Preferences */}
-        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
-            <Text className="text-xl font-semibold text-secondary/80">Preferences</Text>
 
           <View className="mb-2">
-            <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Default Country</Text>
+            <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Country</Text>
             <TouchableOpacity
               onPress={() => setShowCountryPicker(true)}
               accessibilityRole="button"
@@ -801,6 +859,36 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
               </View>
             </TouchableOpacity>
           </View>
+
+          <View className="gap-1.5 mt-2">
+            <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Travel Style</Text>
+
+            <View className="flex-row flex-wrap gap-2 pt-1">
+              {TRAVELER_TYPES.map((type) => {
+                const selectedStyles = (form.travelStyle || "").split(",").filter(Boolean);
+                const isSelected = selectedStyles.includes(type.id);
+                return (
+                  <TouchableOpacity
+                    key={type.id}
+                    onPress={() => {
+                      const newStyles = isSelected
+                        ? selectedStyles.filter(id => id !== type.id)
+                        : [...selectedStyles, type.id];
+                      setForm(f => ({ ...f, travelStyle: newStyles.join(",") }));
+                    }}
+                    className={`flex-row items-center px-3.5 py-1.5 rounded-full border ${isSelected ? 'border-accent bg-[#EFF6FF]' : 'border-[#E5E7EB] bg-white opacity-60'}`}
+                    accessibilityRole="button"
+                    activeOpacity={0.7}
+                  >
+                    <Text className="text-sm mr-1">{type.emoji}</Text>
+                    <Text className={`text-xs font-semibold ${isSelected ? 'text-accent' : 'text-[#475467]'}`}>
+                      {type.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
         </View>
 
         {/* Notification Settings */}
@@ -821,8 +909,8 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
               {/* Trip starts setting */}
               <View className="flex-row justify-between items-center">
                 <View className="flex-1 mr-4">
-                  <Text className="text-sm font-semibold text-[#374151]">Notify before trip starts</Text>
-                  <Text className="text-xs text-[#6B7280]">Days in advance to notify you</Text>
+                  <Text className="text-lg font-semibold text-tertiary">Notify before trip starts</Text>
+                  <Text className="text-sm text-tertiary/75">Days in advance to notify you</Text>
                 </View>
                 <View className="flex-row items-center border border-[#E5E7EB] rounded-full p-1 bg-white">
                   <TouchableOpacity
@@ -852,8 +940,8 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
               {/* Activity starts setting */}
               <View className="flex-row justify-between items-center">
                 <View className="flex-1 mr-4">
-                  <Text className="text-sm font-semibold text-[#374151]">Notify before activity starts</Text>
-                  <Text className="text-xs text-[#6B7280]">Hours in advance to notify you</Text>
+                  <Text className="text-base font-semibold text-tertiary">Notify before activity starts</Text>
+                  <Text className="text-sm text-tertiary/75">Hours in advance to notify you</Text>
                 </View>
                 <View className="flex-row items-center border border-[#E5E7EB] rounded-full p-1 bg-white">
                   <TouchableOpacity
@@ -888,8 +976,8 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           {/* PIN Lock Toggle */}
           <View className="flex-row justify-between items-center py-2">
             <View className="flex-1 mr-4">
-              <Text className="text-sm font-semibold text-[#374151]">PIN Code Lock</Text>
-              <Text className="text-xs text-[#6B7280]">Require passcode to unlock app</Text>
+              <Text className="text-base font-semibold text-tertiary">PIN Code Lock</Text>
+              <Text className="text-sm text-tertiary/75">Require passcode to unlock app</Text>
             </View>
             <Switch
               value={pinEnabled}
@@ -927,8 +1015,8 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
               <View className="h-[1px] bg-[#E5E7EB]" />
               <View className="flex-row justify-between items-center py-2">
                 <View className="flex-1 mr-4">
-                  <Text className="text-sm font-semibold text-[#374151]">Biometric Lock</Text>
-                  <Text className="text-xs text-[#6B7280]">Unlock using fingerprint or Face ID</Text>
+                  <Text className="text-base font-semibold text-tertiary">Biometric Lock</Text>
+                  <Text className="text-sm text-[#6B7280]">Unlock using fingerprint or Face ID</Text>
                 </View>
                 <Switch
                   value={biometricsEnabled}
@@ -941,6 +1029,57 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           )}
         </View>
 
+        {/* About Section */}
+        <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6] will-change-variable">
+          <Text className="text-xl font-semibold text-secondary">About</Text>
+          
+          <View className="flex-row justify-between items-center py-2">
+            <Text className="text-base font-semibold text-tertiary">App Version</Text>
+            <Text className="text-sm text-gray-500 font-medium">1.0.0 (Build 1)</Text>
+          </View>
+          
+          <View className="h-[1px] bg-[#E5E7EB]" />
+          <TouchableOpacity
+            onPress={() => {
+              setAboutModalTitle("Privacy Policy");
+              setAboutModalContent(PRIVACY_POLICY_TEXT);
+              setShowAboutModal(true);
+            }}
+            className="flex-row justify-between items-center py-2"
+            accessibilityRole="button"
+            accessibilityLabel="Privacy Policy"
+          >
+            <Text className="text-base font-semibold text-tertiary">Privacy Policy</Text>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+          
+          <View className="h-[1px] bg-[#E5E7EB]" />
+          <TouchableOpacity
+            onPress={() => {
+              setAboutModalTitle("Terms and Conditions");
+              setAboutModalContent(TERMS_AND_CONDITIONS_TEXT);
+              setShowAboutModal(true);
+            }}
+            className="flex-row justify-between items-center py-2"
+            accessibilityRole="button"
+            accessibilityLabel="Terms and Conditions"
+          >
+            <Text className="text-base font-semibold text-tertiary">Terms and Conditions</Text>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+          
+          <View className="h-[1px] bg-[#E5E7EB]" />
+          <TouchableOpacity
+            onPress={handleRateAndFeedback}
+            className="flex-row justify-between items-center py-2"
+            accessibilityRole="button"
+            accessibilityLabel="Rate and Feedback"
+          >
+            <Text className="text-base font-semibold text-tertiary">Rate and Feedback</Text>
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+        </View>
+
         {/* Temporary Onboarding Button */}
         <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6]">
           <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Developer Actions</Text>
@@ -951,6 +1090,14 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
             activeOpacity={0.7}
           >
             <Text className="text-white font-bold text-base">Launch Onboarding Flow</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleSeedNotifications}
+            className="bg-accent py-3.5 rounded-xl items-center mt-2"
+            accessibilityRole="button"
+            activeOpacity={0.7}
+          >
+            <Text className="text-white font-bold text-base">Seed Sample Notifications</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleDeleteAllData}
@@ -1176,6 +1323,92 @@ export function ProfileScreen({ onClose }: { onClose?: () => void }) {
           </View>
         </SafeAreaView>
       </Modal>
-    </View>
+
+      {/* About Section Info Modal */}
+      <Modal
+        visible={showAboutModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAboutModal(false)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
+          <View className="bg-white rounded-t-[32px] w-full max-h-[85%] border-t border-gray-100 shadow-xl overflow-hidden">
+            {/* Header */}
+            <View className="flex-row items-center justify-between px-6 py-5 border-b border-gray-100">
+              <Text className="text-xl font-bold text-[#111827]">{aboutModalTitle}</Text>
+              <TouchableOpacity
+                onPress={() => setShowAboutModal(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Close modal"
+                className="p-1 rounded-full bg-gray-100"
+              >
+                <Ionicons name="close" size={24} color="#374151" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Scrollable Content */}
+            <ScrollView 
+              className="p-6" 
+              contentContainerStyle={{ paddingBottom: 60 }}
+              showsVerticalScrollIndicator={true}
+            >
+              <Text className="text-base leading-6 text-tertiary font-normal whitespace-pre-wrap">
+                {aboutModalContent}
+              </Text>
+            </ScrollView>
+          </View>
+        </SafeAreaView>
+      </Modal>
+            </View>
+          )}
+        </Animated.View>
+
+        {/* Semi-transparent backdrop click to close */}
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={handleClose}
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }}
+        />
+      </View>
+    </Modal>
   );
 }
+
+const PRIVACY_POLICY_TEXT = `Privacy Policy
+
+Last Updated: July 2026
+
+Your privacy is important to us. This Privacy Policy describes how we collect, use, process, and disclose your information when you use Travee.
+
+1. Information We Collect
+We collect information you provide directly to us, such as your nickname, travel preferences, and travel plans. We store all database information locally on your device.
+
+2. How We Use Information
+We use your information to personalize your onboarding flow, manage your travel itinerary, forecast weather, and facilitate offline access to your travel plans.
+
+3. Data Storage and Security
+All your personal data, trips, and settings are stored locally on your device. We do not transmit your database to external servers unless explicitly backed up or shared by you.
+
+4. Contact Us
+If you have any questions or feedback about this Privacy Policy, please contact us at support@travee.example.com.`;
+
+const TERMS_AND_CONDITIONS_TEXT = `Terms and Conditions
+
+Last Updated: July 2026
+
+Welcome to Travee! By accessing or using our mobile application, you agree to comply with and be bound by these Terms and Conditions.
+
+1. Account Registration
+To use certain features of the application, you may create a profile. You are responsible for maintaining the confidentiality of your credentials and data.
+
+2. Use of Services
+You agree to use Travee for personal, non-commercial travel planning purposes only. You must not use the application for any illegal or unauthorized activities.
+
+3. Intellectual Property
+All content, features, designs, and functionality of Travee are the exclusive property of the application developers and protected by copyright, trademark, and other laws.
+
+4. Limitation of Liability
+Travee is provided "as is" without warranties of any kind. We are not liable for any direct, indirect, incidental, or consequential damages resulting from your use of the application.
+
+5. Changes to Terms
+We reserve the right to modify these Terms and Conditions at any time. Your continued use of the application following updates constitutes your acceptance of the new terms.`;

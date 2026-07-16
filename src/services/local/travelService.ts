@@ -1874,3 +1874,277 @@ export const updateSectionSortOrderLocally = async (id: string, newSortOrder: st
     });
   });
 };
+
+export const seedDemoTravelData = async (): Promise<void> => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+
+  const endTrip = new Date(tomorrow);
+  endTrip.setDate(tomorrow.getDate() + 3);
+
+  await database.write(async () => {
+    // 1. Create the travel plan
+    const newTravel = await database.get<Travel>("travels").create((t) => {
+      Object.assign(t, {
+        title: "🌴 Boracay Island Getaway",
+        description: "A fun-filled weekend trip with friends exploring the beaches of Boracay",
+        destination: "Boracay, Philippines",
+        destinationData: JSON.stringify({ latitude: 11.9774, longitude: 121.9248 }),
+        startOrDepartureDate: tomorrow,
+        endOrReturnDate: endTrip,
+        status: TravelStatus.Upcoming,
+        budget: "15000",
+        notes: "Remember to bring sunscreen, swimsuits, and dry bags for island hopping.",
+        isOffline: true,
+        isArchived: false,
+        type: 1,
+      });
+    });
+
+    // 2. Create the sections (Days 1 to 4)
+    const sections: Section[] = [];
+    for (let i = 0; i < 4; i++) {
+      const currentDate = new Date(tomorrow);
+      currentDate.setDate(tomorrow.getDate() + i);
+
+      const section = await database.get<Section>("itinerary_sections").create((s) => {
+        s.travel.id = newTravel.id;
+        s.title = `Day ${i + 1}`;
+        s.description = currentDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        s.startDate = currentDate;
+        s.endDate = currentDate;
+        s.sortOrder = String(i + 1);
+        s.isOffline = true;
+      });
+      sections.push(section);
+    }
+
+    // 3. Create activities for Day 1 (Arrival)
+    const day1Date = new Date(tomorrow);
+    
+    // Flight activity
+    const flightStart = new Date(day1Date);
+    flightStart.setHours(8, 0, 0, 0);
+    const flightEnd = new Date(day1Date);
+    flightEnd.setHours(9, 15, 0, 0);
+    
+    await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[0].id;
+      Object.assign(a, {
+        title: "✈️ Flight to Caticlan (MPH)",
+        description: "PR 2039 - Terminal 3, check in 2 hours prior",
+        destination: "Manila to Caticlan",
+        destinationData: JSON.stringify({}),
+        startDate: flightStart,
+        endDate: flightEnd,
+        budget: "4500",
+        notes: "Keep boarding passes handy. QR codes saved in files.",
+        isOffline: true,
+        sortOrder: "1",
+        type: ActivityType.flight,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+      });
+    });
+
+    // Accommodation activity
+    const checkinStart = new Date(day1Date);
+    checkinStart.setHours(14, 0, 0, 0);
+    const checkinEnd = new Date(day1Date);
+    checkinEnd.setHours(14, 30, 0, 0);
+
+    await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[0].id;
+      Object.assign(a, {
+        title: "🏨 Check-in at Henann Prime Beach Resort",
+        description: "Station 1 beachfront, Deluxe Room, Booking Ref: HNN-90210",
+        destination: "Henann Prime Beach Resort, Station 1, Boracay",
+        destinationData: JSON.stringify({ latitude: 11.9723, longitude: 121.9189 }),
+        startDate: checkinStart,
+        endDate: checkinEnd,
+        budget: "12000",
+        notes: "Show booking confirmation at the front desk.",
+        isOffline: true,
+        sortOrder: "2",
+        type: ActivityType.accomodation,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+      });
+    });
+
+    // Dining activity
+    const dinnerStart = new Date(day1Date);
+    dinnerStart.setHours(18, 0, 0, 0);
+    const dinnerEnd = new Date(day1Date);
+    dinnerEnd.setHours(20, 0, 0, 0);
+
+    await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[0].id;
+      Object.assign(a, {
+        title: "🌅 Sunset Dinner at Sunny Side Cafe",
+        description: "Famous beachside cafe with great views and Filipino-fusion breakfast/dinner",
+        destination: "The Sunny Side Cafe, Station 1, Boracay",
+        destinationData: JSON.stringify({ latitude: 11.9712, longitude: 121.9192 }),
+        startDate: dinnerStart,
+        endDate: dinnerEnd,
+        budget: "1500",
+        notes: "Try their famous Bacon Mango grilled cheese and pancakes.",
+        isOffline: true,
+        sortOrder: "3",
+        type: ActivityType.cafeRestaurant,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+      });
+    });
+
+    // Day 2 activities (Island Hopping & Beach)
+    const day2Date = new Date(tomorrow);
+    day2Date.setDate(tomorrow.getDate() + 1);
+
+    const tourStart = new Date(day2Date);
+    tourStart.setHours(9, 0, 0, 0);
+    const tourEnd = new Date(day2Date);
+    tourEnd.setHours(13, 0, 0, 0);
+
+    await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[1].id;
+      Object.assign(a, {
+        title: "⛵ Island Hopping Tour & Snorkeling",
+        description: "Shared boat tour including Crystal Cove, Magic Island, Puka Shell Beach, and lunch",
+        destination: "Station 3 Boat Station, Boracay",
+        destinationData: JSON.stringify({ latitude: 11.9545, longitude: 121.9298 }),
+        startDate: tourStart,
+        endDate: tourEnd,
+        budget: "1000",
+        notes: "Bring snorkeling gear, waterproof bags, and cash for crystal cove entrance.",
+        isOffline: true,
+        sortOrder: "1",
+        type: ActivityType.nature,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+      });
+    });
+
+    const juiceStart = new Date(day2Date);
+    juiceStart.setHours(15, 30, 0, 0);
+    const juiceEnd = new Date(day2Date);
+    juiceEnd.setHours(16, 30, 0, 0);
+
+    await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[1].id;
+      Object.assign(a, {
+        title: "🥭 Mango Shakes at Jonah's Fruit Shake",
+        description: "Iconic mango shake spot on White Beach Station 1",
+        destination: "Jonah's Fruit Shake, Station 1, Boracay",
+        destinationData: JSON.stringify({ latitude: 11.9688, longitude: 121.9214 }),
+        startDate: juiceStart,
+        endDate: juiceEnd,
+        budget: "250",
+        notes: "Best mango shakes in Boracay! Try the Mango Milk shake.",
+        isOffline: true,
+        sortOrder: "2",
+        type: ActivityType.cafeRestaurant,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+      });
+    });
+
+    // Day 3 activities (Shopping & Activities)
+    const day3Date = new Date(tomorrow);
+    day3Date.setDate(tomorrow.getDate() + 2);
+
+    const shoppingStart = new Date(day3Date);
+    shoppingStart.setHours(10, 0, 0, 0);
+    const shoppingEnd = new Date(day3Date);
+    shoppingEnd.setHours(12, 0, 0, 0);
+
+    await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[2].id;
+      Object.assign(a, {
+        title: "🛍️ D'Mall Walking & Souvenir Shopping",
+        description: "Explore the local shops, boutiques, and buy souvenirs (keychains, shirts, local sweets)",
+        destination: "D'Mall, Station 2, Boracay",
+        destinationData: JSON.stringify({ latitude: 11.9628, longitude: 121.9242 }),
+        startDate: shoppingStart,
+        endDate: shoppingEnd,
+        budget: "2000",
+        notes: "Be prepared to haggle for souvenirs. Many shops only accept cash.",
+        isOffline: true,
+        sortOrder: "1",
+        type: ActivityType.shopppingAndService,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+      });
+    });
+
+    const paddleStart = new Date(day3Date);
+    paddleStart.setHours(16, 30, 0, 0);
+    const paddleEnd = new Date(day3Date);
+    paddleEnd.setHours(18, 0, 0, 0);
+
+    await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[2].id;
+      Object.assign(a, {
+        title: "🏄 Sunset Paddleboarding",
+        description: "Rent standup paddleboards on Station 1 and paddle during the golden hour sunset",
+        destination: "Station 1 White Beach, Boracay",
+        destinationData: JSON.stringify({ latitude: 11.9705, longitude: 121.9198 }),
+        startDate: paddleStart,
+        endDate: paddleEnd,
+        budget: "600",
+        notes: "Rent directly from local guides on the beach. Average rate is 500-600 PHP/hour.",
+        isOffline: true,
+        sortOrder: "2",
+        type: ActivityType.nature,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+      });
+    });
+
+    // Day 4 activities (Checkout & Return)
+    const day4Date = new Date(tomorrow);
+    day4Date.setDate(tomorrow.getDate() + 3);
+
+    const checkoutStart = new Date(day4Date);
+    checkoutStart.setHours(11, 0, 0, 0);
+    const checkoutEnd = new Date(day4Date);
+    checkoutEnd.setHours(12, 0, 0, 0);
+
+    await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[3].id;
+      Object.assign(a, {
+        title: "🔑 Hotel Check-out",
+        description: "Settle any incidental expenses and pack luggage",
+        destination: "Henann Prime Beach Resort, Boracay",
+        destinationData: JSON.stringify({ latitude: 11.9723, longitude: 121.9189 }),
+        startDate: checkoutStart,
+        endDate: checkoutEnd,
+        budget: "0",
+        notes: "Double check all drawers and closets for belongings before leaving.",
+        isOffline: true,
+        sortOrder: "1",
+        type: ActivityType.accomodation,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+      });
+    });
+  });
+};
+

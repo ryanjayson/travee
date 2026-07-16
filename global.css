@@ -235,6 +235,7 @@
    * (merged from textColor, backgroundColor, borderColor, ringColor)
    * ========================================================= */
   --color-primary: #0EA5E9;
+  --color-accent: #263F69;
   --color-primary-light: #E2E9F1;
   --color-primary-hover: #F9FAFB;
   --color-primary-solid: #0C111D;

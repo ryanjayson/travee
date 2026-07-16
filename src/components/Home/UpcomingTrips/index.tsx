@@ -218,7 +218,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
           <Text className="text-lg text-tertiary font-medium mt-2">No upcoming trips</Text>
           <View className='flex-row gap-1'>
 
-            <Text className="text-base text-tertiary/80  text-center underline font-semibold">
+            <Text className="text-base text-accent/80  text-center underline font-semibold">
            Add trip
           </Text>
            <Text className="text-base text-tertiary/80 text-center ">

@@ -18,6 +18,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
+import { seedTestNotifications } from "../services/local/notificationService";
+import { seedDemoTravelData } from "../services/local/travelService";
 import {
   isBiometricsSupported,
   authenticateWithBiometrics,
@@ -277,6 +279,16 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
       notifyDaysBeforeTrip,
       notifyHoursBeforeActivity,
     });
+
+    // Seed demo travel and notification data if requested
+    if (createDemoData) {
+      try {
+        await seedDemoTravelData();
+        await seedTestNotifications();
+      } catch (err) {
+        console.error("Failed to seed demo travel or notification data:", err);
+      }
+    }
 
     // Reset state and close modal
     onClose();

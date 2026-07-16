@@ -550,5 +550,21 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 26,
+      steps: [
+        createTable({
+          name: "app_notifications",
+          columns: [
+            { name: "title", type: "string" },
+            { name: "body", type: "string" },
+            { name: "is_read", type: "boolean" },
+            { name: "travel_id", type: "string", isOptional: true, isIndexed: true },
+            { name: "created_at", type: "number" },
+            { name: "updated_at", type: "number" },
+          ],
+        }),
+      ],
+    },
   ],
 });

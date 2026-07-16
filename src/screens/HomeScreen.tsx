@@ -14,6 +14,13 @@ import CreateTripModal from '../features/Travel/components/CreateOrEdit/Modal';
 import OnboardingModal from '../components/OnboardingModal';
 import { useUserProfile } from '../hooks/useUserProfile';
 import CountryOutline from '../features/Travel/components/ShareOverlay/CountryOutline';
+import { NotificationsModal } from '../components/NotificationsModal';
+import { 
+  fetchLocalNotifications, 
+  fetchUnreadNotificationsCount, 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead 
+} from '../services/local/notificationService';
 
 const COUNTRY_CODES: Record<string, string> = {
   "Philippines": "PH",
@@ -52,6 +59,42 @@ const HomeScreen = () => {
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [prefilledTripData, setPrefilledTripData] = useState<any>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const [unreadNotifications, setUnreadNotifications] = useState<number>(0);
+  const [showNotificationsModal, setShowNotificationsModal] = useState<boolean>(false);
+  const [notificationsList, setNotificationsList] = useState<any[]>([]);
+
+  const loadNotificationsData = async () => {
+    try {
+      const count = await fetchUnreadNotificationsCount();
+      setUnreadNotifications(count);
+      if (showNotificationsModal) {
+        const list = await fetchLocalNotifications();
+        setNotificationsList(list);
+      }
+    } catch (err) {
+      console.warn("Failed to load notifications:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadNotificationsData();
+    const interval = setInterval(loadNotificationsData, 8000);
+    return () => clearInterval(interval);
+  }, [showNotificationsModal]);
+
+  const handleNotificationPress = async (notif: any) => {
+    if (!notif.id) return;
+    if (!notif.isRead) {
+      await markNotificationAsRead(notif.id);
+      loadNotificationsData();
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    await markAllNotificationsAsRead();
+    loadNotificationsData();
+  };
 
   const handlePressTrip = (trip: Travel) => {
     if (trip && trip.id) {
@@ -195,6 +238,8 @@ const HomeScreen = () => {
             setPrefilledTripData(tripData);
             setShowCreateModal(true);
           }}
+          unreadNotifications={unreadNotifications}
+          onOpenNotifications={() => setShowNotificationsModal(true)}
         />
 
         <View
@@ -231,7 +276,7 @@ const HomeScreen = () => {
                 >
                   <View className="flex-1 justify-center mr-2">
                     <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">My Country {countryCode ? `[${countryCode}]` : ""}</Text>
-                    <Text className="text-3xl font-bold py-sm">0</Text>
+                    <Text className="text-3xl font-bold py-sm text-accent">0</Text>
                     <Text className="text-sm text-tertiary">Cities visited</Text>
                   </View>
                   {profile?.defaultCountry ? (
@@ -240,7 +285,7 @@ const HomeScreen = () => {
                         countryName={profile.defaultCountry}
                         width={80}
                         height={120}
-                        strokeColor="#0EA5E9"
+                        strokeColor="#263F69"
                         strokeWidth={0.5}
                         fillColor="rgba(59, 130, 246, 0.1)"
                         hideShadows={true}
@@ -259,7 +304,7 @@ const HomeScreen = () => {
                   activeOpacity={0.5}
                 >
                   <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Past</Text>
-                  <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
+                  <Text className="text-3xl font-bold py-sm text-accent">{tripStats.completed}</Text>
                   <Text className="text-sm text-tertiary">Completed trips</Text>
 
                   <View className="w-[60px] h-[60px] justify-center items-center absolute right-0">
@@ -279,7 +324,7 @@ const HomeScreen = () => {
                   activeOpacity={0.7}
                 >
                   <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">International</Text>
-                  <Text className="text-3xl font-bold py-sm">{tripStats.completed}</Text>
+                  <Text className="text-3xl font-bold py-sm text-accent">{tripStats.completed}</Text>
                   <Text className="text-sm text-tertiary">Countries visited</Text>
 
                   <View className="w-[60px] h-[60px] justify-center items-center absolute right-0">
@@ -295,12 +340,12 @@ const HomeScreen = () => {
                     setShowCreateModal(true);
                   }}
                   disabled={false}
-                  className="bg-gray-200 rounded-3xl border-2 border-[#e0e0e0] border-dashed p-4 h-full justify-center items-center"
+                  className="bg-gray-200 opacity-80 rounded-3xl border-2 border-[#e0e0e0] border-dashed p-4 h-full justify-center items-center"
                   accessibilityRole="button"
                   activeOpacity={0.5}
                 >
-                  <Ionicons name="add-circle-outline" size={32} color="#98A2B3" />
-                  <Text className="text-sm font-semibold text-[#98A2B3] mt-2">Add trip</Text>
+                  <Ionicons name="add-circle-outline" size={32} color="#263F69" />
+                  <Text className="text-sm font-semibold text-accent mt-2">Add trip</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -350,6 +395,15 @@ const HomeScreen = () => {
           onClose={() => setShowOnboarding(false)}
         />
       )}
+
+      <NotificationsModal
+        visible={showNotificationsModal}
+        onClose={() => setShowNotificationsModal(false)}
+        unreadNotifications={unreadNotifications}
+        notificationsList={notificationsList}
+        onMarkAllAsRead={handleMarkAllAsRead}
+        onNotificationPress={handleNotificationPress}
+      />
     </View>
   );
 };

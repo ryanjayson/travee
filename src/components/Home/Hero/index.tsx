@@ -1,7 +1,7 @@
 import { MaterialIcons as Icon, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Image, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Image, Modal, Text, TouchableOpacity, View, SafeAreaView, ScrollView } from 'react-native';
 import { useTravelContext } from "../../../context/TravelContext";
 
 import ViewTravelModal from "../../../features/Travel/components/View/Modal";
@@ -57,9 +57,11 @@ export const fetchWeatherInfo = async (destination?: string, coords?: { latitude
 interface HeroProps {
   ongoingTrip: Travel | null;
   onOpenCreateTripModal?: (tripData: any) => void;
+  unreadNotifications?: number;
+  onOpenNotifications?: () => void;
 }
 
-const Hero = ({ ongoingTrip, onOpenCreateTripModal }: HeroProps) => {
+const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onOpenNotifications }: HeroProps) => {
   const navigation = useNavigation<any>();
   const { openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
   const { data: profile } = useUserProfile();
@@ -240,7 +242,21 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal }: HeroProps) => {
           </Text>
          </View>
          </View>
-              <Ionicons name="notifications" size={28} color="#FFFFFF" />
+          <TouchableOpacity
+            onPress={onOpenNotifications}
+            accessibilityRole="button"
+            accessibilityLabel="Notifications"
+            className="relative p-1"
+          >
+            <Ionicons name="notifications" size={28} color="#263F69" />
+            {unreadNotifications > 0 && (
+              <View className="absolute -top-2 -right-1 bg-[#D92D20] min-w-2xl h-2xl rounded-full items-center justify-center px-1 ">
+                <Text className="text-white text-[10px] font-bold">
+                  {unreadNotifications > 99 ? "99+" : unreadNotifications}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
 
         <View className="absolute left-5 right-5" style={{ top: 100 }}>
@@ -476,14 +492,10 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal }: HeroProps) => {
         )}
 
 
-        <Modal
+        <ProfileScreen
           visible={showProfileModal}
-          animationType="slide"
-          transparent={false}
-          onRequestClose={() => setShowProfileModal(false)}
-        >
-          <ProfileScreen onClose={() => setShowProfileModal(false)} />
-        </Modal>
+          onClose={() => setShowProfileModal(false)}
+        />
       </View>
 
       {ongoingTrip && (
@@ -498,7 +510,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal }: HeroProps) => {
             className='items-center justify-center w-7xl h-7xl rounded-full border bg-gray-modern-50 border-gray-100' 
             onPress={() => setShowTravelViewModal(true)}
           >
-            <Ionicons name="briefcase" size={24} color="#0EA5E9" />
+            <Ionicons name="briefcase" size={24} color="#263F69" />
           </TouchableOpacity>
           <Text className="text-sm font-medium text-secondary mt-1">View Trip</Text>
         </View>
@@ -512,7 +524,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal }: HeroProps) => {
             accessibilityRole="button"
             accessibilityLabel="Add Activity"
           >
-            <Ionicons name="walk" size={28} color="#0EA5E9" />
+            <Ionicons name="walk" size={28} color="#263F69" />
           </TouchableOpacity>
           <Text className="text-sm font-medium text-secondary mt-1">Add Activity</Text>
         </View>
@@ -559,7 +571,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal }: HeroProps) => {
             className='items-center justify-center w-7xl h-7xl rounded-full border  bg-gray-modern-50 border-gray-100' 
             onPress={() => setShowItineraryTab(true)}
           >
-            <Ionicons name="list" size={24} color="#0EA5E9" />
+            <Ionicons name="list" size={24} color="#263F69" />
           </TouchableOpacity>
           <Text className="text-sm font-medium text-secondary mt-1">Itinerary</Text>
 
@@ -574,7 +586,9 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal }: HeroProps) => {
       </View>
       )}
 
+
+
     </View>
-)};
+  )};
 
 export default Hero;

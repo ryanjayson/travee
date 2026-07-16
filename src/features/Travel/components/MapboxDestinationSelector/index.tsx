@@ -342,7 +342,7 @@ const MapboxDestinationSelector = ({
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Icon name="arrow-back" size={24} color={colors.primary} />
+            <Icon name="arrow-back" size={24} color={"#263F69"} />
           </TouchableOpacity>
 
           <View style={styles.searchInputContainer}>
