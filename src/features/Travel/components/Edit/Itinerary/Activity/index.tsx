@@ -1191,6 +1191,12 @@ const EditActivity = ({
                 [newSection.id!]: newSection.title || ""
               }));
               setFieldValue("sectionId", newSection.id);
+              if (newSection.startDate) {
+                setFieldValue("startDate", toLocalDateStr(newSection.startDate));
+                if (!values.startTime) {
+                  setFieldValue("startTime", `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`);
+                }
+              }
             }
             closeSectionModal();
           });
@@ -1628,13 +1634,20 @@ const EditActivity = ({
                   <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-5">
                     <Text className="text-md font-semibold tracking-wider uppercase mb-1">Section</Text>
                     <Text className={`text-md text-gray-500`}>
-                      Select section where you want to add this activity.
+                      Select the Section to add this activity.
                     </Text>
                     <View className="flex-row items-center gap-2 mt-1">
                       <TouchableOpacity 
                         onPress={() => {
                           onOpenSectionModal(sections, values.sectionId, (id) => {
                             setFieldValue("sectionId", id);
+                            const section = sections.find(s => s.id === id);
+                            if (section && section.startDate) {
+                              setFieldValue("startDate", toLocalDateStr(section.startDate));
+                              if (!values.startTime) {
+                                setFieldValue("startTime", `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`);
+                              }
+                            }
                           });
                         }}
                         className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 flex-1 flex-row items-center gap-3"

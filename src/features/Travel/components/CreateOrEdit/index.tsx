@@ -292,8 +292,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             <Text className="text-[#D32F2F] text-sm">{error}</Text>
           </View>
         )} */}
-
-
  
         <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>

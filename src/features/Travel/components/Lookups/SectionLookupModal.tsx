@@ -219,7 +219,7 @@ const SectionLookupModal = ({
                 </Text>
               </View>
             <TouchableOpacity onPress={handleCancel}>
-              <Icon name="clear" size={36} color={"#333"} />
+              <Icon name="clear" size={24} color={"#999"} />
             </TouchableOpacity>
           </View>
 
@@ -240,9 +240,16 @@ const SectionLookupModal = ({
                   accessibilityLabel={`Select section ${section.title}`}
                 >
                   <Icon name="folder" size={24} color="#263F69" />
-                  <Text className="text-base text-gray-800 flex-1">
-                    {section?.isDefaultSection ? "[Ungroup]" : section.title}
-                  </Text>
+                  <View className="flex-1">
+                    <Text className="text-base text-gray-800 font-semibold">
+                      {section?.isDefaultSection ? "[Ungroup]" : section.title}
+                    </Text>
+                    {section.startDate && !isNaN(new Date(section.startDate).getTime()) && (
+                      <Text className="text-sm text-gray-500 mt-0.5">
+                        {new Date(section.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit' })}
+                      </Text>
+                    )}
+                  </View>
                   {selectedSectionId === section.id && (
                     <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
                   )}

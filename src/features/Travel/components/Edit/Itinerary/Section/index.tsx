@@ -91,14 +91,58 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
       if (isValidId) {
         let finalSortOrder = values.sortOrder;
 
-        if (!itinerarySection?.id) {
-          // New section: append to the end
-          const existingSections = [...(travelPlan?.itinerarySection || [])].sort((a, b) => 
-            (a.sortOrder || "").localeCompare(b.sortOrder || "")
-          );
-          const lastSection = existingSections.length > 0 ? existingSections[existingSections.length - 1] : null;
-          
-          finalSortOrder = generateSortOrder(lastSection?.sortOrder, null);
+        const oldStartDate = itinerarySection?.startDate ? new Date(itinerarySection.startDate).getTime() : null;
+        const newStartDate = values.startDate ? new Date(values.startDate).getTime() : null;
+        const dateChanged = oldStartDate !== newStartDate;
+
+        if (!itinerarySection?.id || dateChanged) {
+          const existingSections = [...(travelPlan?.itinerarySection || [])].filter(s => s.id !== itinerarySection?.id);
+
+          if (values.startDate) {
+            const sortedSections = [...existingSections].sort((a, b) => {
+              if (a.isDefaultSection && !b.isDefaultSection) return -1;
+              if (!a.isDefaultSection && b.isDefaultSection) return 1;
+              if (a.startDate && b.startDate) {
+                const timeA = new Date(a.startDate).getTime();
+                const timeB = new Date(b.startDate).getTime();
+                if (timeA === timeB) {
+                  return (a.sortOrder || "").localeCompare(b.sortOrder || "");
+                }
+                return timeA - timeB;
+              }
+              if (a.startDate) return -1;
+              if (b.startDate) return 1;
+              return (a.sortOrder || "").localeCompare(b.sortOrder || "");
+            });
+
+            const targetTime = new Date(values.startDate).getTime();
+            const nextNeighborIndex = sortedSections.findIndex(s => {
+              if (s.isDefaultSection) return false;
+              if (!s.startDate) return true;
+              return new Date(s.startDate).getTime() > targetTime;
+            });
+
+            let prevNeighbor = null;
+            let nextNeighbor = null;
+
+            if (nextNeighborIndex !== -1) {
+              nextNeighbor = sortedSections[nextNeighborIndex];
+              prevNeighbor = nextNeighborIndex > 0 ? sortedSections[nextNeighborIndex - 1] : null;
+            } else {
+              prevNeighbor = sortedSections.length > 0 ? sortedSections[sortedSections.length - 1] : null;
+            }
+
+            finalSortOrder = generateSortOrder(prevNeighbor?.sortOrder, nextNeighbor?.sortOrder);
+          } else {
+            // No date set: append to the end of existing sections
+            const sortedSections = [...existingSections].sort((a, b) => {
+              if (a.isDefaultSection && !b.isDefaultSection) return -1;
+              if (!a.isDefaultSection && b.isDefaultSection) return 1;
+              return (a.sortOrder || "").localeCompare(b.sortOrder || "");
+            });
+            const lastSection = sortedSections.length > 0 ? sortedSections[sortedSections.length - 1] : null;
+            finalSortOrder = generateSortOrder(lastSection?.sortOrder, null);
+          }
         }
 
         const sectionData: ItinerarySection = {
@@ -109,7 +153,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
         };
         updateMutation(sectionData, {
           onSuccess: (result) => {
-            const sectionId = result?.id || result?.data?.id || (result as any)?.id;
+            const sectionId = (result as any)?.id || (result as any)?.data?.id;
             if (sectionId && onSaveSuccess) {
               onSaveSuccess({ ...sectionData, id: sectionId });
             }

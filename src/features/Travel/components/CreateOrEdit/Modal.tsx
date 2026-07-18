@@ -227,7 +227,7 @@ const CreateTripModal = ({
                         accessibilityRole="button"
                         accessibilityLabel="Show status explanation"
                       >
-                          <Icon name="info" size={16} color={"#999"} />
+                        <Icon name="info" size={16} color={"#999"} />
                       </TouchableOpacity>
 
                 </View>

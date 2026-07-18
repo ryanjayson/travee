@@ -259,16 +259,16 @@ const DraggableSectionItem = ({
               onPressMore={() => onPressMore(section)}
               title={
                 <View className="flex-row align-middle items-center ">
-                  {allowItemReordering && isValidStartDate(section.startDate) && (
+                  {allowItemReordering && !isValidStartDate(section.startDate) && (
                     <View
-                      className="absolute top-0 z-50 flex-row items-center justify-center w-[30px]"
+                      className="absolute top-0 z-50 -ml-md flex-row items-center justify-center w-2xl"
                       {...panHandlers}
                     >
-                      <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
+                      <MaterialIcons name="drag-indicator" size={24} color={isSectionActive ? "#183B7A" : "#999"} />
                     </View>
                   )}
                   <View className="flex-row ">
-                    <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-accent/90 rounded-xs px-2 ">
+                    <Text style={{ marginLeft: allowItemReordering && !isValidStartDate(section.startDate) ? 16 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-accent/90 rounded-xs px-2 ">
                       {section?.title}
                       {isValidStartDate(section.startDate) ? (
                         <Text className="text-white/70 font-semibold text-sm">
@@ -1317,18 +1317,26 @@ const SectionAccordion = ({
               />
             </View>
 
+            <View className="flex-row items-center justify-between mb-6">
             <Text 
-              className="text-xl font-bold mb-5"
-              style={{ color: colors.onSurface }}
+              className="text-2xl font-bold text-accent"
             >
               Itinerary settings
             </Text>
+            <TouchableOpacity 
+              onPress={() => alert(true)} 
+              accessibilityRole="button"
+              accessibilityLabel="Show status explanation"
+            >
+              <Icon name="info" size={20} color={"#999"} />
+            </TouchableOpacity>
+            </View>
 
             {/* View Mode Selection Row */}
             <View className="flex-row items-center justify-between mb-6">
               <View>
                 <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>View style</Text>
-                <Text className="text-base" style={{ color: colors.onSurfaceVariant }}>Choose layout style for activities</Text>
+                <Text className="text-base text-tertiary">Choose layout style for activities</Text>
               </View>
               <View 
                 className="flex-row rounded-full p-1 border"
@@ -1373,9 +1381,9 @@ const SectionAccordion = ({
 
             {/* Reordering Permission Row */}
             <View className="flex-row items-center justify-between mb-6">
-              <View>
-                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>Allow drag & drop reordering</Text>
-                <Text className="text-base" style={{ color: colors.onSurfaceVariant }}>Toggle section and activity sorting</Text>
+              <View className="pr-8 flex-1">
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>Allow Drag & Drop reordering</Text>
+                <Text className="text-base text-tertiary">Allow reordering of Sections and Activities that don't have dates</Text>
               </View>
               <Switch
                 value={allowItemReordering}
