@@ -267,8 +267,8 @@ const DraggableSectionItem = ({
                       <Ionicons name="menu" size={22} color={isSectionActive ? "#183B7A" : "#999"} />
                     </View>
                   )}
-                  <View className="flex-row">
-                    <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-primary/90 rounded-xs px-2">
+                  <View className="flex-row ">
+                    <Text style={{ marginLeft: allowItemReordering ? 30 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-accent/90 rounded-xs px-2 ">
                       {section?.title}
                       {isValidStartDate(section.startDate) ? (
                         <Text className="text-white/70 font-semibold text-sm">
@@ -333,10 +333,9 @@ const DraggableSectionItem = ({
                         activeOpacity={0.7}
                         className="flex-row items-center"
                       >
-                        <Icon name="add" size={16} color={colors.primary} />
+                        <Icon name="add" size={16} color={"#263F69"} />
                         <Text 
-                          style={{ color: colors.primary }}
-                          className="font-medium text-base underline"
+                          className="font-medium text-base underline text-accent"
                         >
                           Add activity
                         </Text>
@@ -1088,10 +1087,9 @@ const SectionAccordion = ({
                 activeOpacity={0.7}
                 className="flex-row items-center"
               >
-                {/* <Icon name="add" size={16} color={colors.primary} /> */}
+                <Icon name="add" size={16} color={"#263F69"} />
                 <Text 
-                  style={{ color: colors.primary }}
-                  className="font-medium text-base underline"
+                  className="font-medium text-base underline text-accent"
                 >
                   Add activity
                 </Text>
@@ -1107,8 +1105,7 @@ const SectionAccordion = ({
               >
                 {/* <Icon name="add" size={16} color={colors.primary} /> */}
                 <Text 
-                  style={{ color: colors.primary }}
-                  className="font-medium text-base underline"
+                  className="font-medium text-base underline  text-accent"
                 >
                   Create section
                 </Text>
@@ -1247,7 +1244,7 @@ const SectionAccordion = ({
         style={{
           zIndex: 999999,
           position: "absolute",
-          top: -64,
+          top: -60,
           right: 10,
         }}
       >
@@ -1263,7 +1260,7 @@ const SectionAccordion = ({
             justifyContent: "center",
           }}
         >
-          <MaterialIcons name="settings" size={28} color={colors.primary} />
+          <MaterialIcons name="settings" size={28} color={"#263F69"} />
         </TouchableOpacity>
       </Animated.View>
 
@@ -1330,8 +1327,8 @@ const SectionAccordion = ({
             {/* View Mode Selection Row */}
             <View className="flex-row items-center justify-between mb-6">
               <View>
-                <Text className="text-base font-semibold" style={{ color: colors.onSurface }}>View style</Text>
-                <Text className="text-sm" style={{ color: colors.onSurfaceVariant }}>Choose layout style for activities</Text>
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>View style</Text>
+                <Text className="text-base" style={{ color: colors.onSurfaceVariant }}>Choose layout style for activities</Text>
               </View>
               <View 
                 className="flex-row rounded-full p-1 border"
@@ -1377,8 +1374,8 @@ const SectionAccordion = ({
             {/* Reordering Permission Row */}
             <View className="flex-row items-center justify-between mb-6">
               <View>
-                <Text className="text-base font-semibold" style={{ color: colors.onSurface }}>Allow drag & drop reordering</Text>
-                <Text className="text-sm" style={{ color: colors.onSurfaceVariant }}>Toggle section and activity sorting</Text>
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>Allow drag & drop reordering</Text>
+                <Text className="text-base" style={{ color: colors.onSurfaceVariant }}>Toggle section and activity sorting</Text>
               </View>
               <Switch
                 value={allowItemReordering}

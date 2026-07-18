@@ -863,7 +863,7 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
           <View className="gap-1.5 mt-2">
             <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Travel Style</Text>
 
-            <View className="flex-row flex-wrap gap-2 pt-1">
+            <View className="flex-row flex-wrap gap-3 pt-1">
               {TRAVELER_TYPES.map((type) => {
                 const selectedStyles = (form.travelStyle || "").split(",").filter(Boolean);
                 const isSelected = selectedStyles.includes(type.id);
@@ -876,11 +876,11 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
                         : [...selectedStyles, type.id];
                       setForm(f => ({ ...f, travelStyle: newStyles.join(",") }));
                     }}
-                    className={`flex-row items-center px-3.5 py-1.5 rounded-full border ${isSelected ? 'border-accent bg-[#EFF6FF]' : 'border-[#E5E7EB] bg-white opacity-60'}`}
+                    className={`flex-row items-center px-3.5 py-2 rounded-full border ${isSelected ? 'border-accent bg-[#EFF6FF]' : 'border-[#E5E7EB] bg-white opacity-60'}`}
                     accessibilityRole="button"
                     activeOpacity={0.7}
                   >
-                    <Text className="text-sm mr-1">{type.emoji}</Text>
+                    <Text className="text-md mr-1">{type.emoji}</Text>
                     <Text className={`text-xs font-semibold ${isSelected ? 'text-accent' : 'text-[#475467]'}`}>
                       {type.label}
                     </Text>

@@ -173,7 +173,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       className="flex-1"
       contentContainerStyle={{ paddingBottom: 40 }}
     >
-      <View className="px-4 py-5">
+      <View className="px-6 py-5">
         {/* Summary header */}
         <View className="flex-row items-center justify-between mb-2">
            <Text className="text-md font-semibold tracking-wider uppercase mb-1">

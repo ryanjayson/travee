@@ -9,7 +9,7 @@ interface ItineraryTabProps {
 
 const ItineraryTab = ({ travelPlan }: ItineraryTabProps) => {
   return (
-    <View className="flex-1 bg-gray-100">
+    <View className="flex-1 bg-gray-100 px-3">
       <SectionAccordion travelPlan={travelPlan} />
     </View>
   );

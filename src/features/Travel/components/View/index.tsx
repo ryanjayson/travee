@@ -644,7 +644,7 @@ const ViewTravel = ({
               <View className="absolute -top-md opacity-75">
                   <StatusBadge type={1} status={travelPlan.travel.status!} />
               </View>
-              <Text className="text-4xl leading-relaxed font-semibold text-secondary flex-1" numberOfLines={currentSnap === SNAP_MIN ? 1 : undefined}>
+              <Text className="text-4xl mt-sm leading-relaxed font-semibold text-secondary flex-1" numberOfLines={currentSnap === SNAP_MIN ? 1 : undefined}>
                 {travelPlan.travel.title}
               </Text>
             </View>

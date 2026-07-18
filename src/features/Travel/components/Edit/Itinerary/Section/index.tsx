@@ -75,6 +75,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
   };
 
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: {
       id: itinerarySection?.id,
       travelId: travelId,
@@ -120,6 +121,30 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
   });
 
   const formattedStartDate = formik.values.startDate ? formik.values.startDate.toLocaleDateString() : "";
+
+  const initialCalendarDate = React.useMemo(() => {
+    if (formik.values.startDate) {
+      const d = formik.values.startDate;
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    if (travelPlan?.travel?.startOrDepartureDate) {
+      const d = new Date(travelPlan.travel.startOrDepartureDate);
+      if (!isNaN(d.getTime())) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+      }
+    }
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }, [formik.values.startDate, travelPlan?.travel?.startOrDepartureDate]);
 
   return (
     <View className="flex-1 justify-end bg-gray-100 rounded-t-[20px]">
@@ -235,7 +260,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
 
                   <View className="flex-1">
                     <CalendarList
-                      current={formik.values.startDate ? formik.values.startDate.toISOString().split('T')[0] : undefined}
+                      current={initialCalendarDate}
                       pastScrollRange={12}
                       futureScrollRange={24}
                       scrollEnabled={true}
@@ -249,9 +274,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
                         setShowStartDatePicker(false);
                       }}
                       markedDates={{
-                        ...(formik.values.startDate ? {
-                          [formik.values.startDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#263F69', selectedTextColor: '#ffffff' }
-                        } : {})
+                        [initialCalendarDate]: { selected: true, selectedColor: '#263F69', selectedTextColor: '#ffffff' }
                       }}
                       theme={{
                         todayTextColor: "#263F69",
@@ -314,8 +337,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
             </Modal> */}
 
             {itinerarySection?.id && (
-                                   <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200 mb-7">
-                
+                <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200 mb-7">
                 <TouchableOpacity 
                   className="flex-row items-center gap-2.5 justify-center py-2"
                   onPress={handleDeleteSection}

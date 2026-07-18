@@ -40,6 +40,16 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
   const [tempDepartureDate, setTempDepartureDate] = useState<Date | null>(null);
   const [tempReturnDate, setTempReturnDate] = useState<Date | null>(null);
 
+  const dateLabel = useMemo(() => {
+    if (!tempDepartureDate) {
+           return "Select date or date range";
+    }
+    if (!tempReturnDate || tempDepartureDate.getTime() === tempReturnDate.getTime()) {
+      return "Day tour or overnight trip only";
+    }
+    return "Multiple days trip";
+  }, [tempDepartureDate, tempReturnDate]);
+
   // Sync initial dates when modal is opened
   useEffect(() => {
     if (visible) {
@@ -192,15 +202,32 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
       <View className="flex-1 bg-white pt-12">
         {/* Header */}
         <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
-          <TouchableOpacity
+          <View className="flex-1">
+            <Text className="text-2xl font-bold">Travel Dates</Text>
+            {dateLabel && (
+              <Text className="text-base text-tertiary">{dateLabel}</Text>
+            )}
+          </View>
+          {tempDepartureDate !== null && (
+            <TouchableOpacity
+              onPress={() => {
+                setTempDepartureDate(null);
+                setTempReturnDate(null);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Clear selected dates"
+              className="flex-row items-center mr-xl"
+            >
+              <Text className="text-base text-tertiary underline font-bold">Clear</Text>
+            </TouchableOpacity>
+          )}
+           <TouchableOpacity
             onPress={onClose}
             accessibilityRole="button"
             accessibilityLabel="Close date selector"
           >
             <Icon name="close" size={28} color={colors.onSurface} />
           </TouchableOpacity>
-          <Text className="text-xl font-bold">Travel Dates</Text>
-          <View className="w-10" />
         </View>
 
         {/* Calendar List */}

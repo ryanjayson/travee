@@ -238,8 +238,9 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   // Dynamically update snap configurations once itineraryActivity loads
   React.useEffect(() => {
     if (itineraryActivity) {
+      const isNoType = itineraryActivity.type === ActivityType.none;
       const isAt90 = Math.abs(snappedY.current - SNAP_90) < 1;
-      const targetSnap = isAt90 ? SNAP_90 : SNAP_MIN;
+      const targetSnap = (isNoType || isAt90) ? SNAP_90 : SNAP_MIN;
 
       snappedY.current = targetSnap;
       setCurrentSnap(targetSnap);
@@ -474,10 +475,10 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             {/* Animated Black Overlay */}
             <TouchableWithoutFeedback
               onPress={() => snapTo(SNAP_MIN)}
-              disabled={currentSnap === SNAP_MIN}
+              disabled={currentSnap === SNAP_MIN || itineraryActivity?.type === ActivityType.none}
             >
               <Animated.View
-                pointerEvents={currentSnap === SNAP_MIN ? "none" : "auto"}
+                pointerEvents={(currentSnap === SNAP_MIN || itineraryActivity?.type === ActivityType.none) ? "none" : "auto"}
                 style={{
                   position: "absolute",
                   top: 0,
@@ -493,7 +494,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
 
           {/* Snappable Bottom Form Sheet */}
           <Animated.View
-            {...panResponder.panHandlers}
+            {...(itineraryActivity?.type !== ActivityType.none ? panResponder.panHandlers : {})}
             style={[
               {
                 transform: [{ translateY }],

@@ -1,7 +1,7 @@
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useFormik } from "formik";
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from "react";
 import {
   Animated,
   Image,
@@ -207,22 +207,33 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
   const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
   const { data: travels } = useTravels();
 
+  const isDayTour = useMemo(() => {
+    const start = formik.values.startOrDepartureDate;
+    const end = formik.values.endOrReturnDate;
+    if (!start) return false;
+    if (!end) return true;
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    return startDate.toDateString() === endDate.toDateString();
+  }, [formik.values.startOrDepartureDate, formik.values.endOrReturnDate]);
+
   const getEffectiveStatus = (): TravelStatus => {
     if (tripData && (tripData.status === TravelStatus.Past || 
         tripData.status === TravelStatus.Archieved || 
         tripData.status === TravelStatus.Cancelled)) {
       return tripData.status;
     }
-    if (!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate) return TravelStatus.Draft;
+    if (!formik.values.startOrDepartureDate) return TravelStatus.Draft;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const endOrReturnDate = new Date(formik.values.endOrReturnDate);
-    endOrReturnDate.setHours(0, 0, 0, 0);
-    if (endOrReturnDate < today) return TravelStatus.Past;
-
     const startOrDepartureDate = new Date(formik.values.startOrDepartureDate);
     startOrDepartureDate.setHours(0, 0, 0, 0);
+    
+    const endOrReturnDate = formik.values.endOrReturnDate ? new Date(formik.values.endOrReturnDate) : startOrDepartureDate;
+    endOrReturnDate.setHours(0, 0, 0, 0);
+    
+    if (endOrReturnDate < today) return TravelStatus.Past;
     return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
   };
 
@@ -427,7 +438,14 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
 
         <View className="mb-3">
-          <Text className="text-xs font-semibold tracking-wider uppercase">Travel dates</Text>
+          <View className="flex-row items-center justify-between mb-1">
+            <Text className="text-xs font-semibold tracking-wider uppercase">Travel dates</Text>
+            {isDayTour && (
+              <View className="bg-blue-50 border border-accent/80 rounded-full px-2 mr-2 opacity-50">
+                <Text className="text-accent text-[10px] font-bold uppercase tracking-wider">Day Trip</Text>
+              </View>
+            )}
+          </View>
           <View className="flex-row mb-2 gap-1 -mt-3px items-center">
             <View className="flex-1">
               <View className="relative mt-sm">
@@ -437,7 +455,10 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   value={formattedStartDate}
                   editable={false}
                   left={<TextInput.Icon icon="calendar" color="#999"/>}
-                  right={formik.values.startOrDepartureDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("startOrDepartureDate", null)} /> : null}
+                  right={formik.values.startOrDepartureDate ? <TextInput.Icon icon="close" onPress={() => {
+                    formik.setFieldValue("startOrDepartureDate", null);
+                    formik.setFieldValue("endOrReturnDate", null);
+                  }} /> : null}
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#263F69"
                   theme={{
@@ -487,47 +508,51 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                 }}
               />
             </View>
-            <Icon name="arrow-forward" size={24} color="#999" className="mt-sm" />
-            <View className="flex-1">
-              <View className="relative mt-sm">
-                <TextInput
-                  mode="outlined"
-                  label={`${!formik.values.endOrReturnDate ? "Return" : ""}`}
-                  value={formattedEndDate}
-                  editable={false}
-                  left={<TextInput.Icon icon="calendar" color="#999"/>}
-                  right={formik.values.endOrReturnDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("endOrReturnDate", null)} /> : null}
-                  outlineColor="#E0E0E0"
-                  activeOutlineColor="#263F69"
-                  theme={{
-                      colors: {
-                        onSurfaceVariant: '#98A2B3', 
-                      },
-                    }}
-                    outlineStyle={{
-                      borderWidth: 1,
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: 16,
-                    }}
-                    style={{
-                      height: 64,
-                      marginTop: formik.values.endOrReturnDate ? 0 : -6,
-                    }}
-                    contentStyle={{
-                      backgroundColor: "transparent",
-                    }}
-                />
-                <TouchableOpacity 
-                  style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
-                  onPress={() => {
-                    setShowStartDatePicker(true);
-                  }}
-                  activeOpacity={0.6}
-                  accessibilityRole="button"
-                  accessibilityLabel="Open calendar range selector"
-                />
-              </View>
-            </View>
+            {!isDayTour && (
+              <>
+                <Icon name="arrow-forward" size={24} color="#999" className="mt-sm" />
+                <View className="flex-1">
+                  <View className="relative mt-sm">
+                    <TextInput
+                      mode="outlined"
+                      label={`${!formik.values.endOrReturnDate ? "Return" : ""}`}
+                      value={formattedEndDate}
+                      editable={false}
+                      left={<TextInput.Icon icon="calendar" color="#999"/>}
+                      right={formik.values.endOrReturnDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("endOrReturnDate", null)} /> : null}
+                      outlineColor="#E0E0E0"
+                      activeOutlineColor="#263F69"
+                      theme={{
+                          colors: {
+                            onSurfaceVariant: '#98A2B3', 
+                          },
+                        }}
+                        outlineStyle={{
+                          borderWidth: 1,
+                          backgroundColor: "#FFFFFF",
+                          borderRadius: 16,
+                        }}
+                        style={{
+                          height: 64,
+                          marginTop: formik.values.endOrReturnDate ? 0 : -6,
+                        }}
+                        contentStyle={{
+                          backgroundColor: "transparent",
+                        }}
+                    />
+                    <TouchableOpacity 
+                      style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
+                      onPress={() => {
+                        setShowStartDatePicker(true);
+                      }}
+                      activeOpacity={0.6}
+                      accessibilityRole="button"
+                      accessibilityLabel="Open calendar range selector"
+                    />
+                  </View>
+                </View>
+              </>
+            )}
           </View>
         </View>
 

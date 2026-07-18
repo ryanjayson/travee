@@ -18,6 +18,7 @@ import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { TravelStatus } from "../../../../types/enums";
 import { Travel } from "../../types/TravelDto";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTheme } from "react-native-paper";
 
 interface AddTripModalProps {
   showModal?: boolean;
@@ -42,6 +43,8 @@ const CreateTripModal = ({
   const { keyboardVisible, isFloating } = useKeyboardVisible();
   const [tripStatus, setTripStatus] = useState(TravelStatus.Draft);
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const [showStatusExplainModal, setShowStatusExplainModal] = useState(false);
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
   const dragStartDy = useRef(0);
@@ -218,6 +221,15 @@ const CreateTripModal = ({
                       {mode === "edit" ? "Edit Trip" : "Create next trip"}
                     </Text>
                     <StatusBadge status={tripStatus} />
+                     <TouchableOpacity 
+                        onPress={() => setShowStatusExplainModal(true)} 
+                        disabled={isSaving}
+                        accessibilityRole="button"
+                        accessibilityLabel="Show status explanation"
+                      >
+                          <Icon name="info" size={16} color={"#999"} />
+                      </TouchableOpacity>
+
                 </View>
                 <TouchableOpacity 
                   onPress={handleCancel} 
@@ -244,6 +256,129 @@ const CreateTripModal = ({
           </Animated.View>
         </Animated.View>
       </KeyboardAvoidingView>
+
+      {/* Status Explanation Modal */}
+      <Modal
+        visible={showStatusExplainModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowStatusExplainModal(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowStatusExplainModal(false)}
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+            padding: 24,
+          }}
+        >
+          {/* Modal Box */}
+          <TouchableOpacity
+            activeOpacity={1}
+            style={{
+              width: "100%",
+              maxWidth: 340,
+              backgroundColor: "#FFFFFF",
+              borderRadius: 24,
+              padding: 24,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.25,
+              shadowRadius: 10,
+              elevation: 10,
+            }}
+          >
+            {/* Header */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <Icon name="info" size={24} color={colors.primary} />
+              <Text style={{ fontSize: 20, fontWeight: "bold", color: "#111827" }}>
+                Trip Status Guide
+              </Text>
+            </View>
+
+            <Text style={{ fontSize: 14, color: "#6B7280", marginBottom: 16, lineHeight: 20 }}>
+              The status of a trip is automatically determined based on your departure and arrival dates.
+            </Text>
+
+            {/* Warning / Notice Box */}
+            <View style={{ 
+              flexDirection: "row", 
+              backgroundColor: "#FFFBEB", 
+              borderRadius: 12, 
+              padding: 12, 
+              borderWidth: 1, 
+              borderColor: "#FDE68A",
+              gap: 8,
+              marginBottom: 20,
+              alignItems: "flex-start"
+            }}>
+              <Icon name="warning" size={18} color="#D97706" style={{ marginTop: 2 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: "bold", color: "#B45309", marginBottom: 2 }}>
+                  Scheduling Policy
+                </Text>
+                <Text style={{ fontSize: 12, color: "#78350F", lineHeight: 16 }}>
+                  Overlapping travel dates between different trips are not supported. Each trip must have unique dates.
+                </Text>
+              </View>
+            </View>
+
+            {/* Status Rows */}
+            <View style={{ gap: 16, marginBottom: 24 }}>
+              {/* Upcoming */}
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                <View style={{ width: 80, height: 28, borderRadius: 6, backgroundColor: "#E0F2FE", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#7DD3FC" }}>
+                  <Text style={{ fontSize: 12, fontWeight: "bold", color: "#0369A1" }}>Upcoming</Text>
+                </View>
+                <Text style={{ flex: 1, fontSize: 13, color: "#374151", lineHeight: 18 }}>
+                  Start and end date is future date.
+                </Text>
+              </View>
+
+              {/* Ongoing */}
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                <View style={{ width: 80, height: 28, borderRadius: 6, backgroundColor: "#ECFDF5", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#A7F3D0" }}>
+                  <Text style={{ fontSize: 12, fontWeight: "bold", color: "#047857" }}>On going</Text>
+                </View>
+                <Text style={{ flex: 1, fontSize: 13, color: "#374151", lineHeight: 18 }}>
+                  Current date is between departure/start and arrival/end date.
+                </Text>
+              </View>
+
+              {/* Past */}
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                <View style={{ width: 80, height: 28, borderRadius: 6, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#E5E7EB" }}>
+                  <Text style={{ fontSize: 12, fontWeight: "bold", color: "#4B5563" }}>Past</Text>
+                </View>
+                <Text style={{ flex: 1, fontSize: 13, color: "#374151", lineHeight: 18 }}>
+                  Travel date already past date.
+                </Text>
+              </View>
+            </View>
+
+            {/* Close Button */}
+            <TouchableOpacity
+              onPress={() => setShowStatusExplainModal(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Close guide"
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 12,
+                paddingVertical: 12,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ color: "#FFFFFF", fontWeight: "600", fontSize: 15 }}>
+                Got it
+              </Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </Modal>
   );
 };

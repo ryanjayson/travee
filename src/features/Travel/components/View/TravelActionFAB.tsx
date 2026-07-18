@@ -78,7 +78,7 @@ const TravelActionFAB = ({
             elevation: 0,
             borderRadius: 50,
             padding: 6,
-            backgroundColor: '#263F69',
+            backgroundColor: '#0EA5E9',
             marginRight: -6,
             marginBottom: 10
         },
@@ -110,7 +110,7 @@ const TravelActionFAB = ({
             elevation: 0,
             borderRadius: 50,
             padding: 6,
-            backgroundColor: '#263F69',
+            backgroundColor: '#0EA5E9',
             marginRight: -6,
             marginBottom: 10
         },
@@ -142,7 +142,7 @@ const TravelActionFAB = ({
             elevation: 0,
             borderRadius: 50,
             padding: 6,
-            backgroundColor: '#263F69',
+            backgroundColor: '#0EA5E9',
             marginRight: -6,
             marginBottom: 10
         },
@@ -200,7 +200,7 @@ const TravelActionFAB = ({
             }
           }}
           fabStyle={{
-              backgroundColor: open ? '#82181a' : '#263F69',
+              backgroundColor: open ? '#82181a' : '#0EA5E9',
               borderRadius: 50,
               padding: 6,
               height: 68,
@@ -212,7 +212,7 @@ const TravelActionFAB = ({
         {open && (
           <TouchableOpacity
           className='bg-brand-50'
-            style={[styles.editTripButton, { borderColor: colors.primary || '#263F69', borderWidth: 1 }]}
+            style={[styles.editTripButton, { borderColor: "#263F69", borderWidth:  1}]}
             onPress={() => {
               setOpen(false);
               if (onEditTrip) {
