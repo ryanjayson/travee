@@ -28,7 +28,8 @@ interface SecurityGateProps {
 
 export function SecurityGate({ children }: SecurityGateProps) {
   const { colors } = useTheme();
-  const [isLocked, setIsLocked] = useState(false);
+  const [isLocked, setIsLocked] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [pinValue, setPinValue] = useState("");
   const [correctPin, setCorrectPin] = useState<string | null>(null);
   const [hasBiometrics, setHasBiometrics] = useState(false);
@@ -65,6 +66,8 @@ export function SecurityGate({ children }: SecurityGateProps) {
       }
     } catch (err) {
       console.error("Failed to load security settings:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -74,18 +77,30 @@ export function SecurityGate({ children }: SecurityGateProps) {
     // App state listener to auto-lock when backgrounded
     const subscription = AppState.addEventListener("change", async (nextAppState) => {
       const pinActive = await isPinEnabled();
-      if (!pinActive) {
-        setIsLocked(false);
-        return;
-      }
 
-      if (
+      if (nextAppState.match(/inactive|background/)) {
+        // App has gone to the background
+        lastBackgroundTime.current = Date.now();
+        if (pinActive) {
+          setIsLocked(true);
+          setPinValue("");
+          setErrorMessage("");
+        }
+      } else if (
         appState.current.match(/inactive|background/) &&
         nextAppState === "active"
       ) {
         // App has come to the foreground
+        if (!pinActive) {
+          setIsLocked(false);
+          appState.current = nextAppState;
+          return;
+        }
+
         const timeInBackground = Date.now() - lastBackgroundTime.current;
-        if (timeInBackground > GRACE_PERIOD_MS) {
+        if (timeInBackground <= GRACE_PERIOD_MS) {
+          setIsLocked(false);
+        } else {
           // Re-load PIN just in case it was changed
           const stored = await getPin();
           setCorrectPin(stored);
@@ -102,9 +117,6 @@ export function SecurityGate({ children }: SecurityGateProps) {
           }
         }
         lastBackgroundTime.current = 0;
-      } else if (nextAppState.match(/inactive|background/)) {
-        // App has gone to the background
-        lastBackgroundTime.current = Date.now();
       }
       appState.current = nextAppState;
     });
@@ -187,6 +199,10 @@ export function SecurityGate({ children }: SecurityGateProps) {
       ]
     );
   };
+
+  if (isLoading) {
+    return <View style={{ flex: 1, backgroundColor: "#111827" }} />;
+  }
 
   if (!isLocked) {
     return <>{children}</>;

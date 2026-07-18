@@ -19,9 +19,10 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Svg, { Line } from "react-native-svg";
 
 interface AccordionProps extends PropsWithChildren {
-  title: React.ReactNode | string;
+  title: React.ReactNode | string | ((props: { expanded: boolean }) => React.ReactNode);
   defaultExpanded?: boolean;
   defaultFullscreen?: boolean;
   containerStyle?: ViewStyle;
@@ -142,6 +143,8 @@ const Accordion: FC<AccordionProps> = ({
             className="text-lg font-semibold text-[#333] "
             numberOfLines={expanded ? 10 : 1}
           >{title}</Text>
+        ) : typeof title === "function" ? (
+          title({ expanded })
         ) : (
           title
         )}
@@ -153,7 +156,7 @@ const Accordion: FC<AccordionProps> = ({
         )}
       </TouchableOpacity>
 
-      <View className={`absolute h-full w-2px z-1 border-l-2 border-dashed border-[#ccc] ${viewMode === 'narrow' ? 'left-[61px]' : 'left-[67px]'}`}></View>
+     
 
       {expanded && (
         <View

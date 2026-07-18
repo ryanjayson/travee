@@ -476,7 +476,7 @@ const ActivityItemCard = ({
         {(!isDragActive && !parentIsDragging && isLastItem) && viewMode === 'expanded' && (
         <TouchableHighlight 
           underlayColor={"none"}
-          className={`absolute h-6xl w-6xl bottom-[-30px] left-lg z-9999 `} //TODO: apply to last item for now
+          className={`absolute h-6xl w-6xl bottom-[-30px] left-[13px] z-9999 `} //TODO: apply to last item for now, later show this to cards between
           onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
           onShowUnderlay={() => setIsAddPressed(true)}
           onHideUnderlay={() => setIsAddPressed(false)}
