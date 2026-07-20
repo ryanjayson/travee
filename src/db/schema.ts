@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 26,
+  version: 27,
   tables: [
     tableSchema({
       name: "travels",
@@ -145,6 +145,11 @@ export const schema = appSchema({
         { name: "notifications_enabled", type: "boolean", isOptional: true },
         { name: "notify_days_before_trip", type: "number", isOptional: true },
         { name: "notify_hours_before_activity", type: "number", isOptional: true },
+        { name: "backup_frequency", type: "string", isOptional: true },
+        { name: "backup_location", type: "string", isOptional: true },
+        { name: "backup_auto_enabled", type: "boolean", isOptional: true },
+        { name: "last_backed_up_at", type: "number", isOptional: true },
+        { name: "google_drive_account", type: "string", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],

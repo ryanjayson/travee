@@ -269,14 +269,14 @@ const DraggableSectionItem = ({
                     </View>
                   )}
                   <View className="flex-row ">
-                    {expanded && (
+                    {expanded ? (
                       <>
-                        <View className={`absolute -top-xl  bg-[#ccc] w-[5px] h-[5px]  rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px] '}` } />
-                        <View className={`absolute -top-sm  bg-[#ccc] w-[5px] h-[5px]  rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px] '}` } />
+                        <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
+                        <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
                       </>
-                       )}
+                    ) : null}
                   
-                  <Text style={{ marginLeft: allowItemReordering && !isValidStartDate(section.startDate) ? 16 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-accent/90 rounded-xs px-2 ">
+                    <Text style={{ marginLeft: allowItemReordering && !isValidStartDate(section.startDate) ? 16 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-accent/90 rounded-xs px-2 ">
                       {section?.title}
                       {isValidStartDate(section.startDate) ? (
                         <Text className="text-white/70 font-semibold text-sm">
@@ -285,12 +285,12 @@ const DraggableSectionItem = ({
                       ) : null}
                     </Text>
 
-                    {expanded && (
+                    {expanded ? (
                       <>
-                        <View className={`absolute -bottom-sm bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px] '}` } />
-                        <View className={`absolute -bottom-xl bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px] '}` } />
+                        <View className={`absolute -bottom-sm bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
+                        <View className={`absolute -bottom-xl bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
                       </>
-                      )}
+                    ) : null}
                   </View>
                 </View>
               )}
@@ -383,6 +383,20 @@ const DraggableSectionItem = ({
           </View>
         )}
       </DraggableSectionContainer>
+            <View className={`absolute top-5xl h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
+                       <Svg height={"100%"}>
+                          <Line
+                              x1="2.5"
+                              y1="2.5"
+                              x2="2.5"
+                              y2="100%"
+                              stroke="#ccc"
+                              strokeWidth="5"
+                              strokeDasharray="0, 10"
+                              strokeLinecap="round"
+                            />
+                      </Svg>
+                      </View>
     </Animated.View>
   );
 };
@@ -1250,20 +1264,7 @@ const SectionAccordion = ({
                       onPressMore={handleEditSection}
                     />
                     
-                    <View className={`absolute top-5xl h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
-                       <Svg height={"100%"}>
-                          <Line
-                              x1="2.5"
-                              y1="2.5"
-                              x2="2.5"
-                              y2="100%"
-                              stroke="#ccc"
-                              strokeWidth="5"
-                              strokeDasharray="0, 10"
-                              strokeLinecap="round"
-                            />
-                      </Svg>
-                      </View>
+              
 
                     {/* //TODO: Hide this feat for now */}
                     {false && index === sections.length - 1 && (

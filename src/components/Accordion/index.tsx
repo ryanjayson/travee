@@ -184,6 +184,8 @@ const Accordion: FC<AccordionProps> = ({
         <View style={[headerStyle, {paddingTop: insets.top}]} className="flex-row justify-between items-center py-0 px-3 bg-[#f9f9f9]">
           {typeof title === "string" ? (
             <Text style={titleStyle} className="text-xl font-semibold text-[#333]">{title}</Text>
+          ) : typeof title === "function" ? (
+            title({ expanded })
           ) : (
             title
           )}

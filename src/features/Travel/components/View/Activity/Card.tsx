@@ -476,7 +476,7 @@ const ActivityItemCard = ({
         {(!isDragActive && !parentIsDragging && isLastItem) && viewMode === 'expanded' && (
         <TouchableHighlight 
           underlayColor={"none"}
-          className={`absolute h-6xl w-6xl bottom-[-30px] left-[13px] z-9999 `} //TODO: apply to last item for now, later show this to cards between
+          className={`absolute h-6xl w-6xl bottom-[-30px] left-[12px] z-9999 `} //TODO: apply to last item for now, later show this to cards between
           onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
           onShowUnderlay={() => setIsAddPressed(true)}
           onHideUnderlay={() => setIsAddPressed(false)}
@@ -484,7 +484,7 @@ const ActivityItemCard = ({
             accessibilityLabel="Add activity"
           >
             <View
-                className={`${isAddPressed ? 'border-[#183B7A] bg-[#183B7A] rounded-full' : 'border-gray-300 rounded-md bg-white '} left-[37px] absolute m-2 mt-2xl border px-1px z-9999`}
+                className={`${isAddPressed ? 'bg-[#183B7A] rounded-md' : ' rounded-md bg-white '} border-gray-300  left-[37px] absolute m-2 mt-2xl border px-1px z-9999`}
             >
             <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`}/>
             </View>
@@ -694,7 +694,7 @@ const ActivityItemCard = ({
       </View>
 
      {isAddPressed && (
-        <View className="w-[85%] rounded-full left-6xl absolute bottom-0">
+        <View className="w-[80%] rounded-full left-7xl absolute bottom-[2px]">
           <View className="flex-1 h-xxs bg-[#183B7A] rounded-full z-40" />
           <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50 absolute right-0 -bottom-1" />
         </View>

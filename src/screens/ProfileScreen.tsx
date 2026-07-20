@@ -19,10 +19,16 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { TextInput, useTheme } from "react-native-paper";
+import { TextInput, useTheme, Button } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
-import { UserProfileDto, AccountType } from "../types/UserProfileDto";
+import { UserProfileDto, AccountType, BackupFrequency, BackupLocation } from "../types/UserProfileDto";
+import {
+  exportBackupLocally,
+  uploadBackupToGoogleDrive,
+  restoreBackupFromFile,
+  checkAndRunScheduledBackup,
+} from "../services/local/backupService";
 import OnboardingModal, { TRAVELER_TYPES } from "../components/OnboardingModal";
 import { database } from "../db";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -441,6 +447,11 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
     notificationsEnabled: true,
     notifyDaysBeforeTrip: 3,
     notifyHoursBeforeActivity: 2,
+    backupFrequency: "monthly",
+    backupLocation: "local",
+    backupAutoEnabled: true,
+    lastBackedUpAt: null,
+    googleDriveAccount: null,
   });
 
   const [showCurrencyPicker, setShowCurrencyPicker] = useState(false);
@@ -450,6 +461,14 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
   const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
   const [aboutModalTitle, setAboutModalTitle] = useState<string>("");
   const [aboutModalContent, setAboutModalContent] = useState<string>("");
+
+  // Backup settings state
+  const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [showGoogleDriveModal, setShowGoogleDriveModal] = useState(false);
+  const [googleDriveEmailInput, setGoogleDriveEmailInput] = useState("");
 
   // Security settings state
   const [pinEnabled, setPinEnabled] = useState(false);
@@ -574,9 +593,72 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
         notificationsEnabled: profile.notificationsEnabled ?? true,
         notifyDaysBeforeTrip: profile.notifyDaysBeforeTrip ?? 3,
         notifyHoursBeforeActivity: profile.notifyHoursBeforeActivity ?? 2,
+        backupFrequency: profile.backupFrequency ?? "monthly",
+        backupLocation: profile.backupLocation ?? "local",
+        backupAutoEnabled: profile.backupAutoEnabled ?? true,
+        lastBackedUpAt: profile.lastBackedUpAt ?? null,
+        googleDriveAccount: profile.googleDriveAccount ?? null,
       });
+      checkAndRunScheduledBackup(profile);
     }
   }, [profile]);
+
+  const handleManualBackup = async () => {
+    setIsBackingUp(true);
+    try {
+      const location = form.backupLocation || "local";
+      let result: { success: boolean; message?: string };
+      if (location === "google_drive") {
+        result = await uploadBackupToGoogleDrive(form.googleDriveAccount || undefined);
+      } else {
+        result = await exportBackupLocally();
+      }
+
+      if (result.success) {
+        const now = Date.now();
+        const updatedForm = { ...form, lastBackedUpAt: now };
+        setForm(updatedForm);
+        saveProfile(updatedForm);
+        Alert.alert("Backup Complete", result.message || "Database backup completed successfully!");
+      } else {
+        Alert.alert("Backup Failed", result.message || "Failed to create database backup.");
+      }
+    } catch (err: any) {
+      Alert.alert("Backup Error", err?.message || "An error occurred during database backup.");
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
+  const handleRestoreDatabase = async () => {
+    Alert.alert(
+      "Restore Database",
+      "Restoring a backup file will replace your current database records. Are you sure you want to proceed?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Restore Backup",
+          style: "destructive",
+          onPress: async () => {
+            setIsRestoring(true);
+            try {
+              const res = await restoreBackupFromFile();
+              if (res.success) {
+                queryClient.invalidateQueries();
+                Alert.alert("Restore Successful", res.message);
+              } else if (res.message !== "Backup selection cancelled.") {
+                Alert.alert("Restore Failed", res.message);
+              }
+            } catch (err: any) {
+              Alert.alert("Restore Error", err?.message || "Failed to restore database.");
+            } finally {
+              setIsRestoring(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const handleSave = () => {
     saveProfile(form, {
@@ -1029,6 +1111,151 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
           )}
         </View>
 
+        {/* Database Backup & Restore */}
+        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
+          <View className="flex-row justify-between items-center mb-1">
+            <View className="flex-row items-center gap-2">
+              <Ionicons name="cloud-upload-outline" size={22} color={colors.primary} />
+              <Text className="text-xl font-semibold text-secondary/80">Database Backup</Text>
+              <View className="flex-row items-center gap-1 px-2 py-0.5 bg-[#DCFCE7] rounded-full border border-[#86EFAC]">
+                <Ionicons name="lock-closed" size={10} color="#15803D" />
+                <Text className="text-[10px] font-bold text-[#15803D]">AES-256 Encrypted</Text>
+              </View>
+            </View>
+            <Switch
+              value={form.backupAutoEnabled ?? true}
+              onValueChange={(v) => setForm(f => ({ ...f, backupAutoEnabled: v }))}
+              trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
+              thumbColor={form.backupAutoEnabled ? colors.primary : "#F3F4F6"}
+            />
+          </View>
+
+          {/* Backup Frequency */}
+          <View className="mb-2">
+            <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Backup Frequency</Text>
+            <TouchableOpacity
+              onPress={() => setShowFrequencyPicker(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Select backup frequency"
+              activeOpacity={0.7}
+              className="mt-1"
+            >
+              <View pointerEvents="none">
+                <TextInput
+                  mode="outlined"
+                  placeholder="Backup Frequency"
+                  value={
+                    form.backupFrequency === "weekly" ? "Weekly" :
+                    form.backupFrequency === "quarterly" ? "Quarterly" : "Monthly (Default)"
+                  }
+                  editable={false}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor={colors.primary}
+                  outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                  style={{ height: 52 }}
+                  left={<TextInput.Icon icon="calendar-sync" color="#6B7280" />}
+                  right={<TextInput.Icon icon="chevron-down" color="#9CA3AF" />}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Backup Location */}
+          <View className="mb-2">
+            <Text className="text-xs font-semibold tracking-wider uppercase text-[#374151]">Backup Storage Location</Text>
+            <TouchableOpacity
+              onPress={() => setShowLocationPicker(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Select backup storage location"
+              activeOpacity={0.7}
+              className="mt-1"
+            >
+              <View pointerEvents="none">
+                <TextInput
+                  mode="outlined"
+                  placeholder="Storage Location"
+                  value={form.backupLocation === "google_drive" ? "Google Drive" : "Local Storage"}
+                  editable={false}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor={colors.primary}
+                  outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                  style={{ height: 52 }}
+                  left={<TextInput.Icon icon={form.backupLocation === "google_drive" ? "google-drive" : "folder-outline"} color="#6B7280" />}
+                  right={<TextInput.Icon icon="chevron-down" color="#9CA3AF" />}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Google Drive Account Status */}
+          {form.backupLocation === "google_drive" && (
+            <View className="p-3 bg-[#F0FDF4] rounded-xl border border-[#BBF7D0] flex-row justify-between items-center">
+              <View className="flex-1 mr-2">
+                <Text className="text-xs font-bold text-[#166534] uppercase tracking-wider">Google Drive Account</Text>
+                <Text className="text-sm font-semibold text-[#15803D] mt-0.5" numberOfLines={1}>
+                  {form.googleDriveAccount || "user@gmail.com"}
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  setGoogleDriveEmailInput(form.googleDriveAccount || "user@gmail.com");
+                  setShowGoogleDriveModal(true);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Manage Google Drive Account"
+                className="bg-[#166534] px-3 py-1.5 rounded-lg"
+              >
+                <Text className="text-white text-xs font-semibold">Manage</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Last Backed Up Metadata */}
+          <View className="flex-row justify-between items-center py-1.5">
+            <Text className="text-sm font-medium text-tertiary">Last Backed Up</Text>
+            <Text className="text-sm font-semibold text-[#374151]">
+              {form.lastBackedUpAt
+                ? new Date(form.lastBackedUpAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })
+                : "Never"}
+            </Text>
+          </View>
+
+          <View className="h-[1px] bg-[#E5E7EB] my-1" />
+
+          {/* Action Buttons */}
+          <View className="flex-row gap-3 mt-1">
+            <TouchableOpacity
+              onPress={handleManualBackup}
+              disabled={isBackingUp}
+              accessibilityRole="button"
+              accessibilityLabel="Backup Now"
+              style={{ backgroundColor: colors.primary }}
+              className="flex-1 py-3 rounded-xl items-center justify-center flex-row gap-2"
+            >
+              {isBackingUp ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <>
+                  <Ionicons name="cloud-upload" size={18} color="#FFFFFF" />
+                  <Text className="text-white font-bold text-sm">Backup Now</Text>
+                </>
+              )}
+            </TouchableOpacity>
+
+            <Button
+              mode="outlined"
+              onPress={handleRestoreDatabase}
+              loading={isRestoring}
+              disabled={isRestoring}
+              textColor={colors.primary}
+              style={{ borderColor: colors.primary, borderRadius: 12 }}
+              contentStyle={{ height: 44 }}
+            >
+              Restore
+            </Button>
+          </View>
+        </View>
+
         {/* About Section */}
         <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6] will-change-variable">
           <Text className="text-xl font-semibold text-secondary">About</Text>
@@ -1358,6 +1585,85 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
             </ScrollView>
           </View>
         </SafeAreaView>
+      </Modal>
+
+      <PickerModal
+        visible={showFrequencyPicker}
+        title="Select Backup Frequency"
+        options={["Weekly", "Monthly", "Quarterly"]}
+        selected={
+          form.backupFrequency === "weekly" ? "Weekly" :
+          form.backupFrequency === "quarterly" ? "Quarterly" : "Monthly"
+        }
+        onSelect={(val) => {
+          const freq: BackupFrequency = val === "Weekly" ? "weekly" : val === "Quarterly" ? "quarterly" : "monthly";
+          setForm(f => ({ ...f, backupFrequency: freq }));
+        }}
+        onClose={() => setShowFrequencyPicker(false)}
+      />
+
+      <PickerModal
+        visible={showLocationPicker}
+        title="Select Storage Location"
+        options={["Local Storage", "Google Drive"]}
+        selected={form.backupLocation === "google_drive" ? "Google Drive" : "Local Storage"}
+        onSelect={(val) => {
+          const loc: BackupLocation = val === "Google Drive" ? "google_drive" : "local";
+          setForm(f => ({ ...f, backupLocation: loc }));
+        }}
+        onClose={() => setShowLocationPicker(false)}
+      />
+
+      {/* Google Drive Account Modal */}
+      <Modal visible={showGoogleDriveModal} transparent animationType="fade" onRequestClose={() => setShowGoogleDriveModal(false)}>
+        <View className="flex-1 bg-black/50 justify-center items-center p-5">
+          <View className="bg-white rounded-2xl p-6 w-full max-w-md gap-4 shadow-xl">
+            <View className="flex-row items-center gap-2 border-b border-[#F3F4F6] pb-3">
+              <Ionicons name="logo-google" size={24} color="#0EA5E9" />
+              <Text className="text-lg font-bold text-[#111827]">Google Drive Backup</Text>
+            </View>
+
+            <Text className="text-sm text-[#4B5563]">
+              Enter your Google email address to link Google Drive for automatic database backups.
+            </Text>
+
+            <RNTextInput
+              className="border border-[#E5E7EB] rounded-xl px-4 py-3 text-base text-[#111827] bg-[#F9FAFB]"
+              placeholder="e.g. user@gmail.com"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={googleDriveEmailInput}
+              onChangeText={setGoogleDriveEmailInput}
+            />
+
+            <View className="flex-row justify-end gap-3 pt-2">
+              <TouchableOpacity
+                onPress={() => setShowGoogleDriveModal(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel Google Drive setup"
+                className="px-4 py-2 rounded-xl bg-gray-100"
+              >
+                <Text className="text-sm font-semibold text-gray-700">Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  const email = googleDriveEmailInput.trim() || "user@gmail.com";
+                  setForm(f => ({ ...f, googleDriveAccount: email }));
+                  setShowGoogleDriveModal(false);
+                  Alert.alert("Google Drive Connected", `Account set to: ${email}`);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Save Google Drive account"
+                style={{ backgroundColor: colors.primary }}
+                className="px-5 py-2 rounded-xl"
+              >
+                <Text className="text-sm font-semibold text-white">Save Account</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       </Modal>
             </View>
           )}

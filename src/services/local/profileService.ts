@@ -1,6 +1,6 @@
 import { database } from "../../db";
 import UserProfile from "../../db/models/UserProfile";
-import { UserProfileDto, AccountType } from "../../types/UserProfileDto";
+import { UserProfileDto, AccountType, BackupFrequency, BackupLocation } from "../../types/UserProfileDto";
 
 const toDto = (p: UserProfile): UserProfileDto => ({
   id: p.id,
@@ -15,6 +15,11 @@ const toDto = (p: UserProfile): UserProfileDto => ({
   notificationsEnabled: p.notificationsEnabled ?? true,
   notifyDaysBeforeTrip: p.notifyDaysBeforeTrip ?? 3,
   notifyHoursBeforeActivity: p.notifyHoursBeforeActivity ?? 2,
+  backupFrequency: (p.backupFrequency as BackupFrequency) ?? "monthly",
+  backupLocation: (p.backupLocation as BackupLocation) ?? "local",
+  backupAutoEnabled: p.backupAutoEnabled ?? true,
+  lastBackedUpAt: p.lastBackedUpAt ?? null,
+  googleDriveAccount: p.googleDriveAccount ?? null,
   createdAt: p.createdAt,
   updatedAt: p.updatedAt,
 });
@@ -45,6 +50,11 @@ export const saveProfileLocally = async (data: UserProfileDto): Promise<UserProf
         if (data.notificationsEnabled !== undefined) p.notificationsEnabled = data.notificationsEnabled;
         if (data.notifyDaysBeforeTrip !== undefined) p.notifyDaysBeforeTrip = data.notifyDaysBeforeTrip;
         if (data.notifyHoursBeforeActivity !== undefined) p.notifyHoursBeforeActivity = data.notifyHoursBeforeActivity;
+        if (data.backupFrequency !== undefined) p.backupFrequency = data.backupFrequency;
+        if (data.backupLocation !== undefined) p.backupLocation = data.backupLocation;
+        if (data.backupAutoEnabled !== undefined) p.backupAutoEnabled = data.backupAutoEnabled;
+        if (data.lastBackedUpAt !== undefined) p.lastBackedUpAt = data.lastBackedUpAt;
+        if (data.googleDriveAccount !== undefined) p.googleDriveAccount = data.googleDriveAccount;
       });
 
       // Safeguard: Delete any duplicate profiles if they somehow exist
@@ -68,6 +78,11 @@ export const saveProfileLocally = async (data: UserProfileDto): Promise<UserProf
         p.notificationsEnabled = data.notificationsEnabled ?? true;
         p.notifyDaysBeforeTrip = data.notifyDaysBeforeTrip ?? 3;
         p.notifyHoursBeforeActivity = data.notifyHoursBeforeActivity ?? 2;
+        p.backupFrequency = data.backupFrequency ?? "monthly";
+        p.backupLocation = data.backupLocation ?? "local";
+        p.backupAutoEnabled = data.backupAutoEnabled ?? true;
+        p.lastBackedUpAt = data.lastBackedUpAt ?? null;
+        p.googleDriveAccount = data.googleDriveAccount ?? null;
       });
       return toDto(created);
     }

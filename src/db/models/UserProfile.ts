@@ -15,6 +15,11 @@ export default class UserProfile extends Model {
   @field("notifications_enabled") notificationsEnabled!: boolean;
   @field("notify_days_before_trip") notifyDaysBeforeTrip!: number;
   @field("notify_hours_before_activity") notifyHoursBeforeActivity!: number;
+  @text("backup_frequency") backupFrequency!: string | null;
+  @text("backup_location") backupLocation!: string | null;
+  @field("backup_auto_enabled") backupAutoEnabled!: boolean;
+  @field("last_backed_up_at") lastBackedUpAt!: number | null;
+  @text("google_drive_account") googleDriveAccount!: string | null;
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
 }

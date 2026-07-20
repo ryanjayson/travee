@@ -566,5 +566,20 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 27,
+      steps: [
+        addColumns({
+          table: "user_profiles",
+          columns: [
+            { name: "backup_frequency", type: "string", isOptional: true },
+            { name: "backup_location", type: "string", isOptional: true },
+            { name: "backup_auto_enabled", type: "boolean", isOptional: true },
+            { name: "last_backed_up_at", type: "number", isOptional: true },
+            { name: "google_drive_account", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });
