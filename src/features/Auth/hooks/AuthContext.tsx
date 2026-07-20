@@ -6,6 +6,7 @@ import React, {
   ReactNode,
 } from "react";
 import { View, ActivityIndicator } from "react-native";
+import { resetUser, trackEvent } from "../../../services/analytics/posthogService";
 
 // --- Types ---
 interface AuthContextType {
@@ -40,10 +41,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       signIn: () => {
         // In a real app, perform API login and save token
         setUserToken("dummy-auth-token");
+        trackEvent("user_signed_in");
       },
       signOut: () => {
         // Clear token from AsyncStorage
         setUserToken(null);
+        resetUser();
+        trackEvent("user_signed_out");
       },
       userToken,
     }),

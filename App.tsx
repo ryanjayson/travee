@@ -15,6 +15,7 @@ import ErrorBoundary from "./src/components/ErrorBoundary";
 import { logError, ErrorCategory, ErrorSeverity } from "./src/services/errorLogger";
 import { ToastProvider } from "./src/context/ToastContext";
 import { ConfirmProvider } from "./src/context/ConfirmContext";
+import { initPostHog } from "./src/services/analytics/posthogService";
 
 // ─── Global unhandled JS error capture ───────────────────────────────────────
 // Catches promise rejections and unhandled JS errors that escape React boundaries.
@@ -58,6 +59,10 @@ function TripStatusGuard() {
 }
 
 export default function App() {
+  React.useEffect(() => {
+    initPostHog();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

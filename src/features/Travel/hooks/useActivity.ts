@@ -12,6 +12,7 @@ import { ApiResponse } from "../../../types/api";
 import { saveActivityLocally, saveSectionLocally, fetchLocalItineraryActivity, getAllActivitiesWithDestinationLocally, deleteActivityLocally, getAllActivitiesLocally, getTravelPlanLocally } from "../../../services/local/travelService";
 import { UpdateSortVariables } from "../types/ActivityDto";
 import { fetchWithTimeout } from "../../../utils/fetchWithTimeout";
+import { trackEvent } from "../../../services/analytics/posthogService";
 
 const ACTIVITY_ENDPOINT = `${API_BASE_URL}/itineraryActivity`;
 const ITINERARY_QUERY_KEY = ["itineraryActivity"];
@@ -113,6 +114,13 @@ export const useUpdateActivityMutation = () => {
       showToast({
         type: "success",
         message: variables.id ? "Activity updated successfully!" : "Activity created successfully!",
+      });
+
+      trackEvent(variables.id ? "activity_updated" : "activity_created", {
+        activityId: variables.id || data?.data?.id,
+        title: variables.title,
+        travelId: targetTravelId,
+        category: (variables as any).category || (variables as any).activityType,
       });
       
       // Optimistically/synchronously update query cache for instant UI rendering

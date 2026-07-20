@@ -44,6 +44,7 @@ import {
   isBiometricsSupported,
   authenticateWithBiometrics,
 } from "../services/local/securityService";
+import { isAnalyticsOptedOut, setAnalyticsOptOut } from "../services/analytics/posthogService";
 import { saveNotificationLocally, seedTestNotifications } from "../services/local/notificationService";
 
 // Common currencies with flag emoji
@@ -100,9 +101,10 @@ const PickerModal = ({
   onSelect: (v: string) => void;
   onClose: () => void;
 }) => {
+  const insets = useSafeAreaInsets();
   const translateY = React.useRef(new Animated.Value(screenHeight)).current;
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (visible) {
       translateY.setValue(screenHeight);
       Animated.spring(translateY, {
@@ -163,8 +165,9 @@ const PickerModal = ({
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleDismiss}>
       <Animated.View
-        className="flex-1 justify-end"
         style={{
+          flex: 1,
+          justifyContent: "flex-end",
           backgroundColor: "rgba(0,0,0,0.5)",
           opacity: backdropOpacity,
         }}
@@ -172,50 +175,48 @@ const PickerModal = ({
         <TouchableOpacity
           activeOpacity={1}
           onPress={handleDismiss}
-          style={{ flex: 1, width: "100%", justifyContent: "flex-end" }}
-        >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {}}
-            style={{ width: "100%" }}
-          >
-            <Animated.View
-              className="bg-white rounded-t-[30px] max-h-[70%] pb-7 shadow-lg"
-              style={{ transform: [{ translateY }] }}
-            >
-              {/* Drag Handle Area */}
-              <View
-                {...dragPanResponder.panHandlers}
-                className="w-full items-center py-4 bg-white rounded-t-[30px]"
-              >
-                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
-              </View>
+          style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }}
+        />
 
-              <View className="flex-row justify-between items-center px-5 pb-4 border-b border-[#F3F4F6]">
-                <Text className="text-xl font-bold text-[#111827]">{title}</Text>
-                <TouchableOpacity onPress={handleDismiss} accessibilityRole="button" accessibilityLabel="Close picker">
-                  <Ionicons name="close" size={24} color="#374151" />
-                </TouchableOpacity>
-              </View>
-              
-              <ScrollView>
-                {options.map((opt) => (
-                  <TouchableOpacity
-                    key={opt}
-                    className={`flex-row justify-between items-center px-5 py-3.5 ${selected === opt ? 'bg-[#EFF6FF]' : ''}`}
-                    onPress={() => { onSelect(opt); handleDismiss(); }}
-                    accessibilityRole="button"
-                  >
-                    <Text className={`text-base ${selected === opt ? 'text-primary font-semibold' : 'text-[#374151]'}`}>
-                      {opt}
-                    </Text>
-                    {selected === opt && <Ionicons name="checkmark" size={18} color="#0EA5E9" />}
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </Animated.View>
-          </TouchableOpacity>
-        </TouchableOpacity>
+        <Animated.View
+          className="bg-white rounded-t-[30px] shadow-lg overflow-hidden"
+          style={{
+            transform: [{ translateY }],
+            maxHeight: screenHeight * 0.7,
+            paddingBottom: Math.max(insets.bottom, 16),
+          }}
+        >
+          {/* Drag Handle Area */}
+          <View
+            {...dragPanResponder.panHandlers}
+            className="w-full items-center py-3 bg-white rounded-t-[30px]"
+          >
+            <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+          </View>
+
+          <View className="flex-row justify-between items-center px-5 pb-3 border-b border-[#F3F4F6]">
+            <Text className="text-xl font-bold text-[#111827]">{title}</Text>
+            <TouchableOpacity onPress={handleDismiss} accessibilityRole="button" accessibilityLabel="Close picker">
+              <Ionicons name="close" size={24} color="#374151" />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+            {options.map((opt) => (
+              <TouchableOpacity
+                key={opt}
+                className={`flex-row justify-between items-center px-5 py-4 ${selected === opt ? 'bg-[#EFF6FF]' : ''}`}
+                onPress={() => { onSelect(opt); handleDismiss(); }}
+                accessibilityRole="button"
+              >
+                <Text className={`text-base ${selected === opt ? 'text-primary font-semibold' : 'text-[#374151]'}`}>
+                  {opt}
+                </Text>
+                {selected === opt && <Ionicons name="checkmark" size={18} color="#0EA5E9" />}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </Animated.View>
       </Animated.View>
     </Modal>
   );
@@ -236,6 +237,7 @@ const CountryPickerModal = ({
   onSelect: (v: string) => void;
   onClose: () => void;
 }) => {
+  const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState("");
   const translateY = React.useRef(new Animated.Value(screenHeight)).current;
 
@@ -306,8 +308,9 @@ const CountryPickerModal = ({
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleDismiss}>
       <Animated.View
-        className="flex-1 bg-black/50 justify-end"
         style={{
+          flex: 1,
+          justifyContent: "flex-end",
           backgroundColor: "rgba(0,0,0,0.5)",
           opacity: backdropOpacity,
         }}
@@ -315,17 +318,17 @@ const CountryPickerModal = ({
         <TouchableOpacity
           activeOpacity={1}
           onPress={handleDismiss}
-          style={{ flex: 1, width: "100%", justifyContent: "flex-end" }}
+          style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }}
+        />
+
+        <Animated.View
+          className="bg-white rounded-t-[30px] shadow-lg overflow-hidden"
+          style={{
+            transform: [{ translateY }],
+            height: screenHeight * 0.75,
+            paddingBottom: Math.max(insets.bottom, 16),
+          }}
         >
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {}}
-            style={{ width: "100%", height: "75%" }}
-          >
-            <Animated.View
-              className="bg-white rounded-t-[30px] h-full pb-7 shadow-lg"
-              style={{ transform: [{ translateY }] }}
-            >
               {/* Drag Handle Area */}
               <View
                 {...dragPanResponder.panHandlers}
@@ -386,8 +389,6 @@ const CountryPickerModal = ({
                 )}
               </ScrollView>
             </Animated.View>
-          </TouchableOpacity>
-        </TouchableOpacity>
       </Animated.View>
     </Modal>
   );
@@ -481,6 +482,19 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
   const [pinStage, setPinStage] = useState<"enter" | "confirm">("enter");
   const [pinError, setPinError] = useState("");
   const [correctPin, setCorrectPin] = useState<string | null>(null);
+
+  // Privacy / Analytics opt-out state
+  const [isAnalyticsOptedOutState, setIsAnalyticsOptedOutState] = useState<boolean>(isAnalyticsOptedOut());
+
+  useEffect(() => {
+    setIsAnalyticsOptedOutState(isAnalyticsOptedOut());
+  }, [visible]);
+
+  const handleToggleAnalytics = async (value: boolean) => {
+    const newOptOut = !value;
+    setIsAnalyticsOptedOutState(newOptOut);
+    await setAnalyticsOptOut(newOptOut);
+  };
 
   useEffect(() => {
     const loadSecurity = async () => {
@@ -1253,6 +1267,25 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
             >
               Restore
             </Button>
+          </View>
+        </View>
+
+        {/* Privacy & Analytics Section */}
+        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
+          <Text className="text-xl font-semibold text-secondary">Privacy & Analytics</Text>
+          <View className="flex-row justify-between items-center py-2">
+            <View className="flex-1 pr-4">
+              <Text className="text-base font-semibold text-tertiary">Share Usage Analytics</Text>
+              <Text className="text-xs text-gray-500 mt-0.5">Help improve Travee by sharing usage metrics and crash diagnostics</Text>
+            </View>
+            <Switch
+              value={!isAnalyticsOptedOutState}
+              onValueChange={handleToggleAnalytics}
+              trackColor={{ false: "#D1D5DB", true: colors.primary }}
+              thumbColor="#FFFFFF"
+              accessibilityRole="switch"
+              accessibilityLabel="Share Usage Analytics"
+            />
           </View>
         </View>
 

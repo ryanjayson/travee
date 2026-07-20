@@ -19,6 +19,7 @@ import Constants from "expo-constants";
 import type { Database } from "@nozbe/watermelondb";
 import ErrorLog from "../db/models/ErrorLog";
 import { Q } from "@nozbe/watermelondb";
+import { trackEvent } from "./analytics/posthogService";
 
 /**
  * Lazy getter for the WatermelonDB instance.
@@ -152,6 +153,21 @@ export function logError(
     const prefix = `[${category}][${severity.toUpperCase()}]${errorCode ? ` (${errorCode})` : ""}`;
     console.error(`${prefix} ${message}`, contextData ?? "");
     if (err.stack) console.error(err.stack);
+  }
+
+  // Send exception event to PostHog for High and Critical errors
+  if (severity === ErrorSeverity.High || severity === ErrorSeverity.Critical) {
+    trackEvent("$exception", {
+      $exception_message: message,
+      $exception_type: err.name || "Error",
+      $exception_stack_trace_raw: stackTrace,
+      category,
+      severity,
+      errorCode,
+      screen,
+      action,
+      ...(contextData ?? {}),
+    });
   }
 
   enqueue(async () => {

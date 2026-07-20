@@ -5,6 +5,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { UserProfileDto, BackupFrequency, BackupLocation } from "../../types/UserProfileDto";
 import { saveProfileLocally } from "./profileService";
 import { encryptBackupPayload, decryptBackupPayload } from "../../utils/crypto";
+import { trackEvent } from "../analytics/posthogService";
 
 const ALL_TABLE_NAMES = [
   "travels",
@@ -92,12 +93,15 @@ export const exportBackupLocally = async (): Promise<{ success: boolean; filePat
         dialogTitle: "Save Travee Encrypted Database Backup",
         UTI: "public.json",
       });
+      trackEvent("backup_completed", { location: "local", shared: true });
       return { success: true, filePath: fileUri, message: "Encrypted backup exported successfully!" };
     } else {
+      trackEvent("backup_completed", { location: "local", shared: false });
       return { success: true, filePath: fileUri, message: `Encrypted backup saved to ${fileUri}` };
     }
   } catch (error: any) {
     console.error("[Backup] Local export failed:", error);
+    trackEvent("backup_failed", { location: "local", error: error?.message });
     return { success: false, message: error?.message || "Failed to export encrypted backup locally." };
   }
 };
@@ -123,6 +127,7 @@ export const uploadBackupToGoogleDrive = async (
     const file = new File(Paths.cache, `gdrive_${fileName}`);
     file.write(encryptedContent);
 
+    trackEvent("backup_completed", { location: "google_drive", account });
     return {
       success: true,
       account,
@@ -130,6 +135,7 @@ export const uploadBackupToGoogleDrive = async (
     };
   } catch (error: any) {
     console.error("[Backup] Google Drive upload failed:", error);
+    trackEvent("backup_failed", { location: "google_drive", error: error?.message });
     return { success: false, message: error?.message || "Google Drive backup failed." };
   }
 };

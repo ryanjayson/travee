@@ -9,6 +9,7 @@ import { postRequestOptions } from "../../../utils/apiUtils";
 import { CreateTravelData, Travel, TravelPlan } from "../types/TravelDto";
 import { TravelStatus } from "../../../types/enums";
 import { fetchWithTimeout } from "../../../utils/fetchWithTimeout";
+import { trackEvent } from "../../../services/analytics/posthogService";
 
 const TRAVEL_ENDPOINT = `${API_BASE_URL}/travel`;
 const TRAVEL_QUERY_KEY = ["travel"];
@@ -85,6 +86,13 @@ export const useUpdateTravel = () => {
       showToast({
         type: "success",
         message: variables.id ? "Trip updated successfully!" : "Trip created successfully!",
+      });
+
+      trackEvent(variables.id ? "trip_updated" : "trip_created", {
+        tripId: updatedId,
+        title: variables.data.title,
+        destination: variables.data.destination,
+        isOffline: variables.data.isOffline,
       });
     },
     onError: (error) => {
@@ -196,6 +204,7 @@ export const useDeleteTravel = () => {
         type: "success",
         message: "Trip deleted successfully!",
       });
+      trackEvent("trip_deleted", { tripId: id });
     },
     onError: (error) => {
       console.error("Delete Travel Error:", error);
@@ -239,6 +248,7 @@ export const useCancelTravel = () => {
         type: "success",
         message: "Trip cancelled successfully!",
       });
+      trackEvent("trip_cancelled", { tripId: id });
     },
     onError: (error) => {
       console.error("Cancel Travel Error:", error);
@@ -282,6 +292,7 @@ export const useArchiveTravel = () => {
         type: "success",
         message: "Trip archived successfully!",
       });
+      trackEvent("trip_archived", { tripId: id });
     },
     onError: (error) => {
       console.error("Archive Travel Error:", error);
@@ -325,6 +336,7 @@ export const useUnarchiveTravel = () => {
         type: "success",
         message: "Trip unarchived successfully!",
       });
+      trackEvent("trip_unarchived", { tripId: id });
     },
     onError: (error) => {
       console.error("Unarchive Travel Error:", error);
