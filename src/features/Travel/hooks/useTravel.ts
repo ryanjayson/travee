@@ -7,7 +7,7 @@ import {
 import { archiveTravelLocally, cancelTravelLocally, deleteTravelLocally, getTravelPlanLocally, getTravelsLocally, saveTravelLocally, unarchiveTravelLocally } from "../../../services/local/travelService";
 import { postRequestOptions } from "../../../utils/apiUtils";
 import { CreateTravelData, Travel, TravelPlan } from "../types/TravelDto";
-import { TravelStatus } from "../../../types/enums";
+import { TravelStatus, TripType } from "../../../types/enums";
 import { fetchWithTimeout } from "../../../utils/fetchWithTimeout";
 import { trackEvent } from "../../../services/analytics/posthogService";
 
@@ -92,7 +92,9 @@ export const useUpdateTravel = () => {
         tripId: updatedId,
         title: variables.data.title,
         destination: variables.data.destination,
-        isOffline: variables.data.isOffline,
+        tripType: variables.data.type != null ? (TripType[variables.data.type] ?? String(variables.data.type)) : "none",
+        isGeneratedSections: variables.data.createSectionsBasedOnDates,
+        startDate: variables.data.startOrDepartureDate,
       });
     },
     onError: (error) => {

@@ -388,7 +388,7 @@ const CountryPickerModal = ({
                   </View>
                 )}
               </ScrollView>
-            </Animated.View>
+        </Animated.View>
       </Animated.View>
     </Modal>
   );

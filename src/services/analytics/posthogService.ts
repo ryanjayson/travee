@@ -36,16 +36,17 @@ export async function initPostHog(): Promise<PostHog | null> {
   const apiKey = POSTHOG_API_KEY ?? "";
   const host = POSTHOG_HOST || DEFAULT_POSTHOG_HOST;
 
-  if (!apiKey || apiKey.includes("placeholder")) {
+  if (!apiKey || apiKey.trim() === "" || apiKey.includes("placeholder")) {
     if (__DEV__) {
-      console.log("[PostHog] Initialized in DEV mode without production API Key.");
+      console.log("[PostHog] Operating in DEV mock mode (no valid API key provided).");
     }
+    return null;
   }
 
   try {
     postHogInstance = new PostHog(apiKey, {
       host,
-      disabled: !apiKey || isOptedOut,
+      disabled: isOptedOut,
       flushInterval: 30, // Flush buffered events every 30 seconds
       flushAt: 10,       // Flush when 10 events are queued
     });
