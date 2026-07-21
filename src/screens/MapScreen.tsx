@@ -86,9 +86,9 @@ export function ExploreScreen() {
       {/* Overlay UI Controls */}
       <View 
         className="absolute w-full px-4" 
-        style={{ top: insets.top + 10 }}
+        style={{ top: insets.top + 30 }}
       >
-        <View className="gap-y-3 bg-white p-3 rounded-3xl">
+        <View className="gap-y-3 bg-white/80 p-3 rounded-3xl shadow-xl border border-gray-200">
           {/* View By Toggle */}
           <View className="flex-row bg-white/90 rounded-2xl p-1 border border-gray-100">
             {["country", "city"].map((v) => (

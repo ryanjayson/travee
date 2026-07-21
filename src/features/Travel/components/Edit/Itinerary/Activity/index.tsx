@@ -1679,7 +1679,7 @@ const EditActivity = ({
                       value={values.description}
                       onChange={(text) => setFieldValue("description", text)}
                       label="Description"
-                      placeholder="Activity details..."
+                      placeholder="Activity details"
                       confirmLabel="Add"
                       maxLength={500}
                     />
@@ -1840,7 +1840,7 @@ const EditActivity = ({
                           className="flex-row items-center gap-1 mb-2 p-2 "
                         >
                           <Icon name="add" size={24} color="#263F69" />
-                          <Text className="text-lg font-medium text-primary underline">Add To-Do item</Text>
+                          <Text className="text-lg font-medium text-accent underline">Add To-Do item</Text>
                         </TouchableOpacity>
 {/* 
                              <Button
@@ -1960,9 +1960,12 @@ const EditActivity = ({
               onSelect={(place: MapboxPlace) => {
                 setValues({
                   ...values,
-                  destination: place.fullName,
+                  destination: place.name,
                   destinationData: {
                     id: place.id,
+                    city: place.city,
+                    regionOrState: place.regionOrState,
+                    country: place.country,
                     coordinates: {
                       longitude: place.coordinates.longitude,
                       latitude: place.coordinates.latitude,

@@ -88,8 +88,9 @@ const EditChecklistItem = ({
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
+
         {/* Title */}
-        <View className="mb-5">
+        <View className="mb-1">
           <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
           <TextInput
             ref={titleInputRef}
@@ -106,6 +107,26 @@ const EditChecklistItem = ({
             contentStyle={{ backgroundColor: "transparent" }}
           />
         </View>
+
+          {/* Checkbox: Add another item */}
+        {!checklistItem?.id && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            accessibilityRole="checkbox"
+            accessibilityLabel="Keep adding checklist items"
+            onPress={() => setKeepAdding(!keepAdding)}
+            className="flex-row items-center gap-1 mb-6"
+          >
+            <Checkbox.Android
+              status={keepAdding ? "checked" : "unchecked"}
+              onPress={() => setKeepAdding(!keepAdding)}
+              color="#263F69"
+            />
+            <Text className="text-sm font-medium text-gray-700">
+              Add another item after saved
+            </Text>
+          </TouchableOpacity>
+        )}
 
         {/* Optional Description */}
         <View className="mb-5">
@@ -128,7 +149,7 @@ const EditChecklistItem = ({
         </View>
 
         {/* Group / Activity Selector Header */}
-        <View className="mb-5">
+        <View className="mb-5 mt-3">
           <View className="flex-row items-center justify-between">
             <Text className="text-base font-semibold tracking-wider uppercase text-secondary">
               Item assignment
@@ -147,7 +168,7 @@ const EditChecklistItem = ({
           <TouchableOpacity
             accessibilityRole="button"
             onPress={onOpenContextModal}
-            className="flex-row items-center border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 gap-3 mt-2"
+            className="flex-row items-center border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 gap-3 my-5"
             style={{ height: 64 }}
           >
             {selectedContext?.type === "group" ? (
@@ -179,31 +200,12 @@ const EditChecklistItem = ({
           </TouchableOpacity>
         </View>
 
-        {/* Checkbox: Add another item */}
-        {!checklistItem?.id && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            accessibilityRole="checkbox"
-            accessibilityLabel="Keep adding checklist items"
-            onPress={() => setKeepAdding(!keepAdding)}
-            className="flex-row items-center gap-2 mb-0"
-          >
-            <Checkbox.Android
-              status={keepAdding ? "checked" : "unchecked"}
-              onPress={() => setKeepAdding(!keepAdding)}
-              color="#263F69"
-            />
-            <Text className="text-base font-medium text-gray-700">
-              Add another item after saved
-            </Text>
-          </TouchableOpacity>
-        )}
-
+        
          <View className="mb-5"></View>
       </ScrollView>
 
       {/* Save/Submit Button (Fixed Bottom) */}
-      <View className="px-5 py-8 bg-gray-100">
+      <View className="px-5 pb-8 bg-gray-100">
         <TouchButton
           buttonText={saveItemMutation.isPending
             ? "Saving..."

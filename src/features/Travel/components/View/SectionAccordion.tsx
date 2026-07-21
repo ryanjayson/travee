@@ -15,6 +15,7 @@ import { useTravelPlan } from "../../hooks/useTravel";
 import DraggableSectionContainer from "../Edit/Itinerary/DraggableSectionContainer";
 import SectionModal from "../Edit/Itinerary/Section/Modal";
 import ActivityItemCard from "./Activity/Card";
+import ViewActivityModal from "./Activity/Modal";
 
 interface SectionAccordionProps {
   travelPlan: TravelPlan;
@@ -410,6 +411,7 @@ const SectionAccordion = ({
   const { colors } = useTheme();
   const { openActivityModal } = useTravelContext();
   const [isAddSectionVisible, setIsAddSectionVisible] = useState(false);
+  const [selectedViewActivity, setSelectedViewActivity] = useState<{ id: string; travelId?: string } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const iterarysections = travelPlan.itinerarySection;
@@ -1210,27 +1212,38 @@ const SectionAccordion = ({
                   );
                 } else if (viewMode === "plain") {
                   return (
-                    <View key={section.id} className="mb-2 px-3">
-                      <View className="flex-row items-center gap-2 py-3">
-                        <Ionicons name="chevron-forward" size={22} color="#344054" />
-                          <Text className="text-lg font-medium text-secondary">
-                            {section.title}
-                          </Text>
+                    <View key={section.id} className="mb-4">
+                      <View className="flex-row items-center pb-3">
+                        <Text className="text-base font-bold text-secondary">
+                          {section.title}
+                        </Text>
                       </View>
                       
                       {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                         section.itineraryActivity.map(
                           (eventActivity, index, array) => {
                             return (
-                              <View key={index} className="ml-5 p-1 flex-row gap-x-3 items-center">
-                                <Ionicons name="pin" size={18} color="#dc3545" />
-                                <Text className="text-base text-secondary">{eventActivity.title}</Text>
-                              </View>
+                              <TouchableOpacity
+                                key={eventActivity.id || index}
+                                activeOpacity={0.7}
+                                accessibilityRole="button"
+                                accessibilityLabel={`View activity ${eventActivity.title}`}
+                                onPress={() => {
+                                  if (eventActivity.id) {
+                                    setSelectedViewActivity({ id: eventActivity.id, travelId: section.travelId });
+                                  }
+                                }}
+                                className="ml-5 py-2 flex-row gap-x-3 items-center"
+                              >
+                                {/* <Ionicons name="location-outline" size={16} color="#dc3545" /> */}
+                                <Ionicons name="chevron-forward" size={16} color="#344054" />
+                                <Text className="text-lg text-secondary/80">{eventActivity.title}</Text>
+                              </TouchableOpacity>
                             );
                           }
                         )) : (
-                          <Text className="text-sm text-tertiary  leading-5 p-1 opacity-50 ml-8">
-                            No activities found
+                          <Text className="text-base text-tertiary leading-5 p-1 opacity-50 ml-12 tracking-wide">
+                            No activity
                           </Text>
                         )}
                     </View>
@@ -1241,7 +1254,6 @@ const SectionAccordion = ({
                   const subSectionsLength = subSections.length;
                   return (
                     <View key={section.id}>
-                     
 
                     <DraggableSectionItem
                       key={section.id}
@@ -1264,8 +1276,6 @@ const SectionAccordion = ({
                       onPressMore={handleEditSection}
                     />
                     
-              
-
                     {/* //TODO: Hide this feat for now */}
                     {false && index === sections.length - 1 && (
                       <TouchableOpacity
@@ -1467,13 +1477,29 @@ const SectionAccordion = ({
         travelId={travelId}
       />
 
-      {/* `Edit Sect`ion Modal */}
+      {/* Edit Section Modal */}
       <SectionModal
         visible={editingSection !== null}
         onClose={() => setEditingSection(null)}
         itinerarySection={editingSection}
         travelId={travelId}
       />
+
+      {/* View Activity Modal */}
+      {selectedViewActivity && (
+        <ViewActivityModal
+          id={selectedViewActivity.id}
+          travelId={selectedViewActivity.travelId}
+          showModal={!!selectedViewActivity}
+          setShowModal={(val) => {
+            if (typeof val === "function") {
+              setSelectedViewActivity((prev) => (val(!!prev) ? prev : null));
+            } else if (!val) {
+              setSelectedViewActivity(null);
+            }
+          }}
+        />
+      )}
     </View>
   );
 };

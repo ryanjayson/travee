@@ -368,9 +368,12 @@ const EditActivity = ({
               onSelect={(place: MapboxPlace) => {
                 setValues({
                   ...values,
-                  destination: place.fullName,
+                  destination: place.name,
                   destinationData: {
                     id: place.id,
+                    city: place.city,
+                    regionOrState: place.regionOrState,
+                    country: place.country,
                     coordinates: {
                       longitude: place.coordinates.longitude,
                       latitude: place.coordinates.latitude,

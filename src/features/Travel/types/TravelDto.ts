@@ -392,6 +392,9 @@ export interface CreateTravelData {
 
 export interface DestinationDto {
   id: string;
+  city?: string;
+  regionOrState?: string;
+  country?: string;
   coordinates: CoordinatesDto;
 }
 

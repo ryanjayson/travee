@@ -14,7 +14,7 @@ import CreateTripModal from '../features/Travel/components/CreateOrEdit/Modal';
 import OnboardingModal from '../components/OnboardingModal';
 import { useUserProfile } from '../hooks/useUserProfile';
 import CountryOutline from '../features/Travel/components/ShareOverlay/CountryOutline';
-import { NotificationsModal } from '../components/NotificationsModal';
+import { Notifications } from '../features/Notification';
 import { 
   fetchLocalNotifications, 
   fetchUnreadNotificationsCount, 
@@ -396,7 +396,7 @@ const HomeScreen = () => {
         />
       )}
 
-      <NotificationsModal
+      <Notifications
         visible={showNotificationsModal}
         onClose={() => setShowNotificationsModal(false)}
         unreadNotifications={unreadNotifications}

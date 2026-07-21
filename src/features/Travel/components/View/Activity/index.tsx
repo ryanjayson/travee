@@ -400,7 +400,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
       return (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#263F69" />
-          <Text className="mt-2 text-gray-600">Loading activity details...</Text>
+          <Text className="mt-2 text-gray-600">Loading activity details</Text>
         </View>
       );
     }

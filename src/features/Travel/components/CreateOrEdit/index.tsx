@@ -1,32 +1,27 @@
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useFormik } from "formik";
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle, useMemo } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import {
   Animated,
-  Image,
-  Modal,
-  ScrollView,
-  TouchableOpacity,
-  View,
+  Image, ScrollView,
   Text,
-  Platform,
-  KeyboardAvoidingView,
+  TouchableOpacity,
+  View
 } from "react-native";
-import TravelDateModal from "./TravelDateModal";
 import { Checkbox, TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
 import TouchButton from "../../../../components/atoms/TouchButton";
-import CheckboxGroup from "../../../../components/GroupCheckboxes";
-import { TravelStatus, TripType } from "../../../../types/enums";
+import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 import TripIcon from "../../../../components/TripIcon";
-import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
-import { useNavigation } from "@react-navigation/native";
+import { useTravelContext } from "../../../../context/TravelContext";
+import { TravelStatus, TripType } from "../../../../types/enums";
 import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
 import { DestinationDto, Travel } from "../../types/TravelDto";
-import { useTravelContext } from "../../../../context/TravelContext";
+import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
 import { MapboxPlace } from "../MapboxDestinationSelector";
-import DescriptionInput from "../../../../components/molecules/DescriptionInput";
+import TravelDateModal from "./TravelDateModal";
 
 export interface CreateOrEditProps {
   onClose: () => void;
@@ -60,9 +55,12 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
   const { openDestinationModal } = useTravelContext();
   const handleOpenDestinationSelect = () => {
     openDestinationModal(formik.values.destination, (place: MapboxPlace) => {
-      formik.setFieldValue("destination", place.fullName);
+      formik.setFieldValue("destination", place.name);
       formik.setFieldValue("destinationData", {
         id: place.id,
+        city: place.city,
+        regionOrState: place.regionOrState,
+        country: place.country,
         coordinates: {
           longitude: place.coordinates.longitude,
           latitude: place.coordinates.latitude,
@@ -178,7 +176,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     },
   });
 
-  const words = ['Quick weekend gateaway', 'My International trip 2026', 'A trip with my friends', 'A trip to My Province', 'My Solo Trip to Japan'];
+  const words = ['Quick weekend getaway', 'My International trip 2026', 'Travel with friends', 'Travel to home province', 'My Solo Trip to Japan'];
   const [currentWord, setCurrentWord] = useState(words[0]);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -351,11 +349,10 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           ) : null}
 
           {formik.touched.title && formik.errors.title && (
- <View className="flex flex-row items-center mt-1">
-                      <Icon name="info-outline" size={14} color="#fb2c36" />
-                      <Text className="text-red-500 text-xs ml-1" >{formik.errors.title as string}</Text>
-                    </View>
-            
+            <View className="flex flex-row items-center mt-1">
+              <Icon name="info-outline" size={14} color="#fb2c36" />
+              <Text className="text-red-500 text-xs ml-1" >{formik.errors.title as string}</Text>
+            </View>
           )}
         </View>
 
@@ -422,6 +419,9 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   <View className="absolute bottom-2 left-2 px-3 py-1 rounded-xl flex-row items-center" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
                     <Icon name="location-on" size={14} color="#FFF" />
                     <Text className="text-white text-xs ml-1">{formik.values.destination}</Text>
+                    {/* <Text className="text-white text-xs ml-1">{formik.values.destinationData?.city} =</Text> 
+                    <Text className="text-white text-xs ml-1">{formik.values.destinationData?.regionOrState} = </Text>
+                    <Text className="text-white text-xs ml-1">{formik.values.destinationData?.country}</Text> */}
                   </View>
                   <View className="absolute top-2 right-2 px-2 py-1 rounded-full" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
                     <Text className="text-white text-[10px]">Tap to change</Text>
@@ -430,8 +430,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               </TouchableOpacity>
             );
           })()}
-
-
         </View>
 
 

@@ -500,14 +500,14 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
       {ongoingTrip && (
       <View className="m-xl py-xl flex-1 bg-white rounded-4xl border border-gray-200">
 
-        <Text className="text-sm uppercase font-semibold px-xl text-secondary ">Quick Actions</Text>
+        <Text className="text-xs uppercase font-semibold px-xl text-secondary ">Quick Actions</Text>
         <View className="flex-row items-center justify-between py-3 z-40 px-4xl">
 
         <View className="items-center">
           <TouchableOpacity 
             // style={{ borderCurve: 'continuous' }}
             className='items-center justify-center w-7xl h-7xl rounded-full border bg-gray-modern-50 border-gray-100' 
-            onPress={() => setShowTravelViewModal(true)}
+            onPress={() => setShowTravelViewModal(true)}a
           >
             <Ionicons name="briefcase" size={24} color="#263F69" />
           </TouchableOpacity>

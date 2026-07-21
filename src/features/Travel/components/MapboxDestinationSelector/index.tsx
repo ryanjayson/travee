@@ -1,18 +1,16 @@
-import React, { useState, useCallback, useRef } from "react";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
+import React, { useCallback, useRef, useState } from "react";
 import {
-  View,
+  ActivityIndicator, KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  SectionList,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  SectionList,
-  ActivityIndicator,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
+  View
 } from "react-native";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
@@ -23,6 +21,8 @@ export interface MapboxPlace {
   id: string;
   name: string;
   fullName: string;
+  city?: string;
+  regionOrState?: string;
   country?: string;
   countryCode?: string;
   type: string;
@@ -47,7 +47,7 @@ const FILTER_OPTIONS = [
 
 type FilterType = typeof FILTER_OPTIONS[number]["id"];
 
-const COUNTRY_NAME_TO_CODE: Record<string, string> = {
+const COUNTRY_NAME_TO_CODE: Record<string, string> = { //TODO: make this reusable
   "united states": "US",
   "united kingdom": "GB",
   "japan": "JP",
@@ -150,11 +150,20 @@ const MapboxDestinationSelector = ({
           const props = feature.properties || {};
           const geom = feature.geometry || {};
 
-          let countryName;
+          let countryName: string | undefined;
+          let regionName: string | undefined;
+          let cityName: string | undefined;
+
           if (Array.isArray(feature.context)) {
             countryName = feature.context.find((c: any) => c.id?.startsWith("country"))?.text;
-          } else if (props.context && props.context.country) {
-            countryName = props.context.country.name;
+            regionName = feature.context.find((c: any) => c.id?.startsWith("region"))?.text;
+            cityName = feature.context.find((c: any) => c.id?.startsWith("place") || c.id?.startsWith("locality") || c.id?.startsWith("district"))?.text;
+          } else if (props.context) {
+            if (props.context.country) countryName = props.context.country.name;
+            if (props.context.region) regionName = props.context.region.name;
+            if (props.context.place) cityName = props.context.place.name;
+            else if (props.context.district) cityName = props.context.district.name;
+            else if (props.context.locality) cityName = props.context.locality.name;
           }
 
           let countryCode;
@@ -165,7 +174,16 @@ const MapboxDestinationSelector = ({
             countryCode = countryItem?.properties?.country_code || countryItem?.short_code;
           }
 
-          const isCountry = (feature.place_type && feature.place_type.includes("country")) || props.feature_type === "country";
+          const featType = props.feature_type || (feature.place_type ? feature.place_type[0] : "place");
+          const isCountry = (feature.place_type && feature.place_type.includes("country")) || featType === "country";
+
+          if (isCountry) {
+            countryName = countryName || props.name || feature.text;
+          } else if (featType === "region" || featType === "state" || featType === "province") {
+            regionName = regionName || props.name || feature.text;
+          } else if (featType === "place" || featType === "locality" || featType === "city" || featType === "district") {
+            cityName = cityName || props.name || feature.text;
+          }
 
           // Fallback dictionary for flags
           if (!countryCode && countryName) {
@@ -179,9 +197,11 @@ const MapboxDestinationSelector = ({
             id: props.mapbox_id || feature.id || Math.random().toString(),
             name: props.name || feature.text || "Unknown Place",
             fullName: props.full_address || props.place_formatted || feature.place_name || props.name || feature.text || "",
+            city: cityName,
+            regionOrState: regionName,
             country: countryName || (isCountry ? (props.name || feature.text) : undefined),
             countryCode: countryCode,
-            type: props.feature_type || (feature.place_type ? feature.place_type[0] : "place"),
+            type: featType,
             coordinates: {
               longitude: geom.coordinates ? geom.coordinates[0] : (feature.center ? feature.center[0] : 0),
               latitude: geom.coordinates ? geom.coordinates[1] : (feature.center ? feature.center[1] : 0),

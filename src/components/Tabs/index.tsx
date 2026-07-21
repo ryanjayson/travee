@@ -96,12 +96,13 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
         : (tab.disabled ? "text-gray-300 font-medium text-base opacity-50" : "text-gray-500 font-medium text-base");
     } else { // "default"
       buttonClass = isActive
-        ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center" : "bg-brand-50 border border-brand-100 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center")
+        ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center" 
+                                  : "bg-primary/30 border border-primary/20 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center")
         : (tab.disabled 
             ? "bg-gray-50 border border-gray-300 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center opacity-30"
             : "bg-white border border-[#E0E0E0] rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center");
       textClass = isActive
-        ? (isOngoingWithActiveTrip ? "text-success-500 font-semibold text-base" : "text-primary font-semibold text-base")
+        ? (isOngoingWithActiveTrip ? "text-success-500 text-base" : "text-primary font-bold text-base")
         : (tab.disabled ? "text-gray-800 font-medium text-base" : "text-gray-600 font-medium text-base");
     }
 
@@ -134,7 +135,7 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
                     ? (isActive ? "white" : (tab.disabled ? "#D0D5DD" : "#667085"))
                     : type === "secondary"
                     ? (isActive ? "#263F69" : (tab.disabled ? "#E0E0E0" : "#667085"))
-                    : (isActive ? (isOngoingWithActiveTrip ? "#17B26A" : "#101828") : (tab.disabled ? "#98A2B3" : "#475467"))
+                    : (isActive ? (isOngoingWithActiveTrip ? "#17B26A" : "#0EA5E9") : (tab.disabled ? "#98A2B3" : "#475467"))
                 }
               />
             ) : (

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Modal, View, Text, TouchableOpacity, ScrollView, Animated, Dimensions, StatusBar } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { AppNotificationData } from "../services/local/notificationService";
+import { AppNotificationData } from "../../services/local/notificationService";
 
 const { width } = Dimensions.get("window");
 
@@ -15,7 +15,7 @@ interface NotificationsModalProps {
   onNotificationPress: (notif: AppNotificationData) => void;
 }
 
-export const NotificationsModal = ({
+export const Notifications = ({
   visible,
   onClose,
   unreadNotifications,

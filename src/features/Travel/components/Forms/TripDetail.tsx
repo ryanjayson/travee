@@ -341,9 +341,12 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           visible={showDestinationModal}
           onClose={() => setShowDestinationModal(false)}
           onSelect={(place: MapboxPlace) => {
-            formik.setFieldValue("destination", place.fullName);
+            formik.setFieldValue("destination", place.name);
             formik.setFieldValue("destinationData", {
               id: place.id,
+              city: place.city,
+              regionOrState: place.regionOrState,
+              country: place.country,
               coordinates: { longitude: place.coordinates.longitude, latitude: place.coordinates.latitude },
             } as DestinationDto);
             setShowDestinationModal(false);
