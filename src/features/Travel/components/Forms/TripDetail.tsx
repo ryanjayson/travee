@@ -18,6 +18,7 @@ import CheckboxGroup from "../../../../components/GroupCheckboxes";
 import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 import StatusBadge from "../../../../components/StatusBadge";
 import MapboxDestinationSelectorModal from "../MapboxDestinationSelector/Modal";
+import { getDestinationZoom } from "../../../../utils/mapUtils";
 import { MapboxPlace } from "../MapboxDestinationSelector";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import { useUpdateTravel, useTravels } from "../../hooks/useTravel";
@@ -320,7 +321,8 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           </>
         ) : (() => {
           const { longitude, latitude } = formik.values.destinationData!.coordinates;
-          const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+          const zoom = getDestinationZoom(formik.values.destination, formik.values.destinationData);
+          const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},${zoom},0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
           return (
             <TouchableOpacity activeOpacity={0.8} onPress={() => setShowDestinationModal(true)} disabled={isSaving}>
               <View className="mt-2 rounded-2xl overflow-hidden shadow-sm shadow-black/10 elevation-2">

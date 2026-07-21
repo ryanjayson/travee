@@ -33,6 +33,7 @@ import ItineraryTab from "./Tabs/ItineraryTab";
 import MembersTab from "./Tabs/MembersTab";
 import NotesTab from "./Tabs/NotesTab";
 import TravelActionFAB from "./TravelActionFAB";
+import { getDestinationZoom } from "../../../../utils/mapUtils";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -366,7 +367,7 @@ const ViewTravel = ({
             >
               <Image
                 source={{
-                  uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
+                  uri: `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude})/${travelPlan.travel.destinationData.coordinates.longitude},${travelPlan.travel.destinationData.coordinates.latitude},${getDestinationZoom(travelPlan.travel.destination, travelPlan.travel.destinationData)},0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`,
                 }}
                 className="w-full h-[200px] "
                 style={{ resizeMode: "cover" }}
@@ -667,7 +668,7 @@ const ViewTravel = ({
                       : "- "}
                   {travelPlan.travel.endOrReturnDate
                     ? " - " + new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                    : "-"}
+                    : ""}
                   </Text>
                 </>
               )}

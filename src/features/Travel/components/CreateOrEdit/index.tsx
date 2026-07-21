@@ -22,6 +22,7 @@ import { DestinationDto, Travel } from "../../types/TravelDto";
 import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
 import { MapboxPlace } from "../MapboxDestinationSelector";
 import TravelDateModal from "./TravelDateModal";
+import { getDestinationZoom } from "../../../../utils/mapUtils";
 
 export interface CreateOrEditProps {
   onClose: () => void;
@@ -403,7 +404,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             </>
           ) : (() => {
             const { longitude, latitude } = formik.values.destinationData.coordinates;
-            const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},10,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+            const zoom = getDestinationZoom(formik.values.destination, formik.values.destinationData);
+            const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},${zoom},0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
             return (
               <TouchableOpacity
                 activeOpacity={0.8}

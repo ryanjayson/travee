@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Travel } from '../../../features/Travel/types/TravelDto';
 import { tripIcons } from '../../TripIcon';
 import { TripType } from '../../../types/enums';
+import { getDestinationZoom } from '../../../utils/mapUtils';
 
 const getDestinationImage = (destination?: string, destinationData?: any) => {
   if (!destination) {
@@ -64,7 +65,8 @@ const getDestinationImage = (destination?: string, destinationData?: any) => {
 
   if (destinationData?.coordinates?.longitude && destinationData?.coordinates?.latitude && MAPBOX_ACCESS_TOKEN) {
     const { longitude, latitude } = destinationData.coordinates;
-    return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/${longitude},${latitude},12,0/400x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+    const zoom = getDestinationZoom(destination, destinationData);
+    return `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/static/${longitude},${latitude},${zoom},0/400x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
   }
 
   return "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=600&auto=format&fit=crop";
@@ -179,7 +181,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
                       {item.title}
                     </Text>
                     <View className="flex-row items-center gap-1">
-                      <Ionicons name="location-outline" size={18} color="#e5e7eb" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.5, shadowRadius: 1 }} />
+                      <Ionicons name="location-outline" size={16} color="#e5e7eb" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.5, shadowRadius: 1 }} />
                       <Text className="text-lg text-gray-200 font-semibold" style={textShadow} numberOfLines={1}>
                         {item.destination || 'Destination TBD'} 
                       </Text>

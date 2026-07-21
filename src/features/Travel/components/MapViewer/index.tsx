@@ -28,6 +28,8 @@ import Svg, { Line, Circle } from "react-native-svg";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Divider } from "react-native-paper";
+import { getDestinationZoom } from "../../../../utils/mapUtils";
+import { DestinationDto } from "../../types/TravelDto";
 
 const countriesGeoJSON = require("../../../../assets/geo/countries.json");
 
@@ -56,6 +58,7 @@ interface MapViewerProps {
   zoom?: number;
   markers?: MapMarker[];
   destination?: string;
+  destinationData?: DestinationDto;
   countryName?: string;
   dateRange?: string;
   doneActivities?: DoneActivity[];
@@ -97,7 +100,7 @@ const PIN_SIZE_MAP: Record<PinSize, { type: number; image: number; icon: number 
 
 const MAP_STYLE_URLS: Record<MapStyle, string> = {
   normal: "mapbox://styles/mapbox/streets-v12",
-  satellite: "mapbox://styles/mapbox/satellite-v9",
+  satellite: "mapbox://styles/mapbox/satellite-streets-v12",
   hybrid: "mapbox://styles/mapbox/satellite-streets-v12",
 };
 
@@ -117,15 +120,26 @@ const MapViewer = ({
   zoom,
   markers,
   destination,
+  destinationData,
   countryName,
   dateRange,
   doneActivities: doneActivitiesProp,
   inline = false,
 }: MapViewerProps) => {
+  const isCountryDestination = useMemo(() => {
+    if (countryName) return true;
+    const zoomVal = getDestinationZoom(destination || title, destinationData);
+    return zoomVal <= 6;
+  }, [countryName, destination, title, destinationData]);
+
   const [pinMode, setPinMode] = useState<PinMode>("type");
   const [pinSize, setPinSize] = useState<PinSize>("medium");
-  const [mapType, setMapType] = useState<MapStyle>("normal");
+  const [mapType, setMapType] = useState<MapStyle>(() => (isCountryDestination ? "normal" : "satellite"));
   const [displayMode, setDisplayMode] = useState<DisplayMode>("map");
+
+  useEffect(() => {
+    setMapType(isCountryDestination ? "normal" : "satellite");
+  }, [isCountryDestination]);
   const [showLabels, setShowLabels] = useState(false);
   const [settingsExpanded, setSettingsExpanded] = useState(false);
   const [htmlUri, setHtmlUri] = useState<string | null>(null);
@@ -483,9 +497,10 @@ const MapViewer = ({
 
   const buildStaticMapUrl = useCallback(() => {
     const allMarkers = markers || [];
-    const center = coordinates ? `${coordinates.longitude},${coordinates.latitude},${zoom || 6}` : "";
+    const effectiveZoom = zoom || getDestinationZoom(destination || title, destinationData);
+    const center = coordinates ? `${coordinates.longitude},${coordinates.latitude},${effectiveZoom}` : "";
     const pinSizeCode = pinSize === "small" ? "s" : pinSize === "medium" ? "m" : "l";
-    const mapStyle = mapType === "normal" ? "streets-v12" : mapType === "satellite" ? "satellite-v9" : "satellite-streets-v12";
+    const mapStyle = mapType === "normal" ? "streets-v12" : "satellite-streets-v12";
 
     let pins = "";
     if (allMarkers.length > 0) {
@@ -506,7 +521,7 @@ const MapViewer = ({
 
     const centerPart = center ? `${center}/` : "auto/";
     return `https://api.mapbox.com/styles/v1/mapbox/${mapStyle}/static/${pins}${path}/${centerPart}600x400@2x?access_token=${MAPBOX_ACCESS_TOKEN}`;
-  }, [markers, pinSize, mapType, visibleIds, coordinates, zoom]);
+  }, [markers, pinSize, mapType, visibleIds, coordinates, zoom, destination, destinationData, title]);
 
   const captureMapImage = useCallback(async (): Promise<string | null> => {
     try {
@@ -1853,7 +1868,7 @@ function generateMapHtml(
       container: 'map',
       style: '${mapStyleUrl}',
       center: [${centerLng}, ${centerLat}],
-      zoom: ${zoom || 6},
+      zoom: ${zoom || (opts.countryName ? 5 : 13.5)},
       attributionControl: false,
     });
     map.on('movestart', function() { try { window.ReactNativeWebView.postMessage(JSON.stringify({type:'mapMoveStart'})); } catch(e) {} });
