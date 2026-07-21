@@ -8,6 +8,7 @@ import { useAuth } from "../../../../Auth/hooks/AuthContext";
 import { ItineraryActivity, TravelPlan } from "../../../../Travel/types/TravelDto";
 import { useChecklistGroups, useChecklistItems, useToggleChecklistItemMutation } from "../../../hooks/useChecklist";
 import { useTravelContext } from "../../../../../context/TravelContext";
+import { FadeInView } from "../../../../../components/animations";
 
 interface ChecklistTabProps {
   travelPlan: TravelPlan;
@@ -198,7 +199,8 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
         {ungroupedItems.length > 0 && (() => {
           const isCollapsed = collapsedSections["general"] || false;
           return (
-            <View className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+            <FadeInView type="right" delay={100} duration={350}
+             className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
               <TouchableOpacity
                 activeOpacity={0.7}
                 accessibilityRole="button"
@@ -217,7 +219,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                 />
               </TouchableOpacity>
               {!isCollapsed && ungroupedItems.map(renderItem)}
-            </View>
+            </FadeInView>
           );
         })()}
 
@@ -234,35 +236,35 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           if (groupItems.length === 0) return null;
           const isCollapsed = collapsedSections[group.id || ""] || false;
           return (
-            <View key={group.id} className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
-              <TouchableOpacity
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                onPress={() => toggleSectionCollapse(group.id || "")}
-                className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
-              >
-                <Icon name="folder" size={24} color="#263F69" />
-                <View className="flex-1">
-                  <Text className="text-md font-bold text-[#263F69] uppercase tracking-wider">
-                    {group.title}
-                  </Text>
-                  {group.description ? (
-                    <Text className="text-xs text-gray-600 pt-1">{group.description}</Text>
-                  ) : null}
-                </View>
-                <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{groupItems.length}</Text>
-                <Icon 
-                  name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
-                  size={24} 
-                  color="#777" 
-                />
-              </TouchableOpacity>
-              {!isCollapsed && (
-                <>
-                  {groupItems.map(renderItem)}
-                </>
-              )}
-            </View>
+              <FadeInView key={group.id} type="right" delay={100} duration={350} className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    onPress={() => toggleSectionCollapse(group.id || "")}
+                    className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
+                  >
+                    <Icon name="folder" size={24} color="#263F69" />
+                    <View className="flex-1">
+                      <Text className="text-md font-bold text-[#263F69] uppercase tracking-wider">
+                        {group.title}
+                      </Text>
+                      {group.description ? (
+                        <Text className="text-xs text-gray-600 pt-1">{group.description}</Text>
+                      ) : null}
+                    </View>
+                    <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{groupItems.length}</Text>
+                    <Icon 
+                      name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
+                      size={24} 
+                      color="#777" 
+                    />
+                  </TouchableOpacity>
+                  {!isCollapsed && (
+                    <>
+                      {groupItems.map(renderItem)}
+                    </>
+                  )}
+             </FadeInView>
           );
         })}
 
@@ -279,28 +281,30 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           const doneCt = activityItems.filter((i) => i.isDone).length;
           const isCollapsed = collapsedSections[`activity-${activity.id}`] || false;
           return (
-            <View key={`activity-${activity.id}`} className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
-              <TouchableOpacity
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                onPress={() => toggleSectionCollapse(`activity-${activity.id}`)}
-                 className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
-              >
-                <ActivityIcon
-                  type={(activity.type ?? ActivityType.none) as ActivityType}
-                  size={24}
-                  showIconOnly
-                />
-                <Text className="text-md font-bold text-gray-600 flex-1">{activity.title}</Text>
-                <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{activityItems.length}</Text>
-                <Icon 
-                  name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
-                  size={24} 
-                  color="#777" 
-                />
-              </TouchableOpacity>
-              {!isCollapsed && activityItems.map(renderItem)}
-            </View>
+              <FadeInView key={`activity-${activity.id}`}
+               type="right" delay={100} duration={350} 
+               className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  onPress={() => toggleSectionCollapse(`activity-${activity.id}`)}
+                  className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
+                >
+                  <ActivityIcon
+                    type={(activity.type ?? ActivityType.none) as ActivityType}
+                    size={24}
+                    showIconOnly
+                  />
+                  <Text className="text-md font-bold text-gray-600 flex-1">{activity.title}</Text>
+                  <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{activityItems.length}</Text>
+                  <Icon 
+                    name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
+                    size={24} 
+                    color="#777" 
+                  />
+                </TouchableOpacity>
+                {!isCollapsed && activityItems.map(renderItem)}
+              </FadeInView>
           );
         })}
       </View>

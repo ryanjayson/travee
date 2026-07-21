@@ -1,25 +1,24 @@
 import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
   Animated,
-  Image,
+  Easing,
   PanResponder,
   Text,
-  TouchableOpacity,
   TouchableHighlight,
-  View,
-  Easing,
+  TouchableOpacity,
+  View
 } from "react-native";
 import ActivityIcon, { activityIcons } from "../../../../../components/ActivityIcon";
-import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
-import { useUpdateActivityMutation } from "../../../hooks/useActivity";
+import { FadeInView } from "../../../../../components/animations";
 import { useConfirm } from "../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../context/ToastContext";
-import { ItineraryActivity, ItineraryExpense, ItineraryNote, ChecklistItem } from "../../../types/TravelDto";
+import { useTravelContext } from "../../../../../context/TravelContext";
+import { getActivityTypeLabel } from "../../../../../types/enums";
+import { useUpdateActivityMutation } from "../../../hooks/useActivity";
+import { ChecklistItem, ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import MapViewer from "../../MapViewer";
 import ViewActivityModal from "./Modal";
-import { useTravelContext } from "../../../../../context/TravelContext";
 
 interface ItineraryActivityProps {
   itineraryActivity: ItineraryActivity;
@@ -491,205 +490,208 @@ const ActivityItemCard = ({
           </TouchableHighlight>
         )}
 
-        <TouchableOpacity
-          onPress={() => handleViewModeActivity(itineraryEventActivity.id!)}
-          onLongPress={handleLongPress}
-          delayLongPress={150}
-          onPressOut={() => {
-            if (!panResponderClaimed.current) {
-              pan.setValue({ x: 0, y: 0 });
-              setDragActiveState(false);
-              dragPropsRef.current.onDragEnd?.(dragPropsRef.current.index, dragPropsRef.current.index);
-            }
-          }}
-          accessibilityRole="button"
-          className={`w-[100px] border border-solid border-[#e0e0e0] rounded-xl grow ml-3 ${
-            isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")
-          } ${
-            itineraryEventActivity.isDone
-              ? "opacity-50 border border-success-700 bg-success-25"
-              : "bg-white"
-          } ${isDragActive ? "opacity-100 shadow-2xl" : ""}`}
-        >
-          <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
-          {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
-                <View 
-                  style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }} 
-                  className="items-end rounded-xs px-2 py-0.5"
-                >
-                  <Text 
-                    style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }} 
-                    className="text-[8px] tracking-wider uppercase font-extrabold"
-                  >
-                    {getActivityTypeDetails(itineraryEventActivity.type).text}
-                  </Text>
-                </View>
-              )}
-              {/* {itineraryEventActivity.startDate ? (
-                <View className="flex-row gap-1">
-                  <Text className="text-xs font-bold text-[#000] ">
-                      {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { weekday: 'long' })}
-                  </Text> 
-                  <Text className="text-xs font-bold text-[#000] ">
-                      {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })} |
-                  </Text>
-                  <Text className="text-xs font-semibold text-[#606060] ">
-                      {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute:   '2-digit' })}
-                  </Text>
-                </View>
-              ) : (
-                <Text className="text-xs font-semibold text-tertiary/50 ">
-                  Date not set
-                </Text>
-              )} */}
-          </View>
-
-
-          <View className="flex-row justify-between items-start mb-3 gap-x-2">
-            {/* {itineraryEventActivity && itineraryEventActivity.images && itineraryEventActivity.images.length > 0 && (
-              <View className="flex-1 ">
-                <View className="my-1 rounded-md">
-                  <Image
-                    src={itineraryEventActivity.images[0].url}
-                    className="rounded-md w-[100px] h-[100px]"
-                    style={{ resizeMode: "cover" }}
-                  />
+       
+          <TouchableOpacity
+            onPress={() => handleViewModeActivity(itineraryEventActivity.id!)}
+            onLongPress={handleLongPress}
+            delayLongPress={150}
+            onPressOut={() => {
+              if (!panResponderClaimed.current) {
+                pan.setValue({ x: 0, y: 0 });
+                setDragActiveState(false);
+                dragPropsRef.current.onDragEnd?.(dragPropsRef.current.index, dragPropsRef.current.index);
+              }
+            }}
+            accessibilityRole="button"
+           className={`flex-1 grow ml-3 `}
+          >
+             <FadeInView type="right" delay={100} duration={350}
+             className={`border border-solid border-[#e0e0e0] rounded-xl ${
+              itineraryEventActivity.isDone
+                ? "opacity-50 border border-success-700 bg-success-25"
+                : "bg-white"
+            } 
+            ${
+              isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")
+            }  ${isDragActive ? "opacity-100 shadow-2xl" : ""}` }>
+            <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
+            {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
                   <View 
-                    className="absolute inset-0 rounded-md w-[100px] h-[100px]"
-                    style={{ backgroundColor: "rgba(0,0,0,0.20)"}}
-                  />
-                </View>
-              </View>
-            )} */}
-
-              <View className="flex-2">
-                <View className="flex-row justify-between items-start mb-1 gap-x-2">
-                  <Text className={`text-lg font-medium mt-1 text-secondary leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
-                      {itineraryEventActivity.title}
-                  </Text>
-                </View>
-                {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
-                  <View 
-                    className="flex-row items-center text-ellipsis rounded-sm w-[80%] -mt-xxs"
+                    style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }} 
+                    className="items-end rounded-xs px-2 py-0.5"
                   >
-                    <Icon name="location-pin" size={14} color={"#B42318"} />
-                    <Text className="text-base text-tertiary "
-                    ellipsizeMode="tail"
-                    numberOfLines={1}>
-                      {itineraryEventActivity.destination}
+                    <Text 
+                      style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }} 
+                      className="text-[8px] tracking-wider uppercase font-extrabold"
+                    >
+                      {getActivityTypeDetails(itineraryEventActivity.type).text}
                     </Text>
                   </View>
-                )} 
-
-                {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (
-                  <Text className="text-sm text-tertiary  mt-2 
-                  mb-4" 
-                    numberOfLines={2}
-                    ellipsizeMode="tail">
-                    {itineraryEventActivity.description} 
-                  </Text>
                 )}
-             </View>
-          </View>
-          
-          {!isNarrow && (
-            <View className="flex-row justify-between items-center  border-gray-200 pt-1.5 ">
-              <View className="flex-row items-center mt-1 flex-wrap gap-5 hidden">
-                <TouchableOpacity
-                  onPress={() => {
-                    openExpenseModal(
-                      {
-                        activityId: itineraryEventActivity.id!,
-                        travelId: itineraryEventActivity.travelId,
-                        title: "",
-                        amount: 0,
-                        dateTime: new Date(),
-                      } as ItineraryExpense,
-                      itineraryEventActivity.id!,
-                      [itineraryEventActivity]
-                    );
-                  }}
-                  activeOpacity={0.6}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Add Expense to ${itineraryEventActivity.title}`}
-                  className="flex-row items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100"
-                >
-                  <Icon name="payments" size={18} color={"#263F69"} />
-                  <Text className="text-xs font-semibold text-[#263F69]">
-                    {itineraryEventActivity.expensesCount || "+"}
+                {/* {itineraryEventActivity.startDate ? (
+                  <View className="flex-row gap-1">
+                    <Text className="text-xs font-bold text-[#000] ">
+                        {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { weekday: 'long' })}
+                    </Text> 
+                    <Text className="text-xs font-bold text-[#000] ">
+                        {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })} |
+                    </Text>
+                    <Text className="text-xs font-semibold text-[#606060] ">
+                        {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute:   '2-digit' })}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text className="text-xs font-semibold text-tertiary/50 ">
+                    Date not set
                   </Text>
-                </TouchableOpacity>
+                )} */}
+            </View>
 
-                <TouchableOpacity
-                  onPress={() => {
-                    openChecklistModal(
-                      {
-                        activityId: itineraryEventActivity.id!,
-                        travelId: itineraryEventActivity.travelId,
-                        title: "",
-                        isDone: false,
-                        sortOrder: "0",
-                      } as ChecklistItem,
-                      [itineraryEventActivity],
-                      itineraryEventActivity.travelId!
-                    );
-                  }}
-                  activeOpacity={0.6}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Add Checklist item to ${itineraryEventActivity.title}`}
-                  className="flex-row items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100"
-                >
-                  <Icon name="checklist" size={18} color={"#263F69"} />
-                  <Text className="text-xs font-semibold text-[#263F69]">
-                    {itineraryEventActivity.checklistCount || "+"}
-                  </Text>
-                </TouchableOpacity>
+            <View className="flex-row justify-between items-start mb-3 gap-x-2">
+              {/* {itineraryEventActivity && itineraryEventActivity.images && itineraryEventActivity.images.length > 0 && (
+                <View className="flex-1 ">
+                  <View className="my-1 rounded-md">
+                    <Image
+                      src={itineraryEventActivity.images[0].url}
+                      className="rounded-md w-[100px] h-[100px]"
+                      style={{ resizeMode: "cover" }}
+                    />
+                    <View 
+                      className="absolute inset-0 rounded-md w-[100px] h-[100px]"
+                      style={{ backgroundColor: "rgba(0,0,0,0.20)"}}
+                    />
+                  </View>
+                </View>
+              )} */}
 
-                <TouchableOpacity
-                  onPress={() => {
-                    openNoteModal(
-                      {
-                        activityId: itineraryEventActivity.id!,
-                        travelId: itineraryEventActivity.travelId,
-                        title: "",
-                      } as ItineraryNote,
-                      [itineraryEventActivity]
-                    );
-                  }}
-                  activeOpacity={0.6}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Add Note to ${itineraryEventActivity.title}`}
-                  className="flex-row items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100"
-                >
-                  <Icon name="comment" size={18} color={"#263F69"} />
-                  <Text className="text-xs font-semibold text-[#263F69]">
-                    {itineraryEventActivity.notesCount || "+"}
-                  </Text>
-                </TouchableOpacity>
+                <View className="flex-2">
+                  <View className="flex-row justify-between items-start mb-1 gap-x-2">
+                    <Text className={`text-lg font-medium mt-1 text-secondary leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
+                        {itineraryEventActivity.title}
+                    </Text>
+                  </View>
+                  {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
+                    <View 
+                      className="flex-row items-center text-ellipsis rounded-sm w-[80%] -mt-xxs"
+                    >
+                      <Icon name="location-pin" size={14} color={"#B42318"} />
+                      <Text className="text-base text-tertiary "
+                      ellipsizeMode="tail"
+                      numberOfLines={1}>
+                        {itineraryEventActivity.destination}
+                      </Text>
+                    </View>
+                  )} 
+
+                  {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (
+                    <Text className="text-sm text-tertiary  mt-2 
+                    mb-4" 
+                      numberOfLines={2}
+                      ellipsizeMode="tail">
+                      {itineraryEventActivity.description} 
+                    </Text>
+                  )}
               </View>
             </View>
-          )}
+            
+            
+            {!isNarrow && (
+              <View className="flex-row justify-between items-center  border-gray-200 pt-1.5 ">
+                <View className="flex-row items-center mt-1 flex-wrap gap-5 hidden">
+                  <TouchableOpacity
+                    onPress={() => {
+                      openExpenseModal(
+                        {
+                          activityId: itineraryEventActivity.id!,
+                          travelId: itineraryEventActivity.travelId,
+                          title: "",
+                          amount: 0,
+                          dateTime: new Date(),
+                        } as ItineraryExpense,
+                        itineraryEventActivity.id!,
+                        [itineraryEventActivity]
+                      );
+                    }}
+                    activeOpacity={0.6}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add Expense to ${itineraryEventActivity.title}`}
+                    className="flex-row items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100"
+                  >
+                    <Icon name="payments" size={18} color={"#263F69"} />
+                    <Text className="text-xs font-semibold text-[#263F69]">
+                      {itineraryEventActivity.expensesCount || "+"}
+                    </Text>
+                  </TouchableOpacity>
 
-           <View className={`absolute right-2  ${isNarrow ? "top-[50%]" : "bottom-2"}`}>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={handleToggleDone}
-              className="flex-row items-center gap-1.5"
-            >
-              {!isNarrow && (
-                <Text className="text-[10px] text-[#999] font-medium uppercase tracking-tight">
-                  {itineraryEventActivity.isDone ? "" : "Mark as done"}
-                </Text>
-              )}
-              
-                {itineraryEventActivity.isDone ? 
-                    (<Icon name="check" size={24} color="#0c6134" />)
-                    : (<Icon name="check-box-outline-blank" size={24} color="#D0D5DD" />)}
-            </TouchableOpacity>
-        </View>
-       
-        </TouchableOpacity>
-        
+                  <TouchableOpacity
+                    onPress={() => {
+                      openChecklistModal(
+                        {
+                          activityId: itineraryEventActivity.id!,
+                          travelId: itineraryEventActivity.travelId,
+                          title: "",
+                          isDone: false,
+                          sortOrder: "0",
+                        } as ChecklistItem,
+                        [itineraryEventActivity],
+                        itineraryEventActivity.travelId!
+                      );
+                    }}
+                    activeOpacity={0.6}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add Checklist item to ${itineraryEventActivity.title}`}
+                    className="flex-row items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100"
+                  >
+                    <Icon name="checklist" size={18} color={"#263F69"} />
+                    <Text className="text-xs font-semibold text-[#263F69]">
+                      {itineraryEventActivity.checklistCount || "+"}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      openNoteModal(
+                        {
+                          activityId: itineraryEventActivity.id!,
+                          travelId: itineraryEventActivity.travelId,
+                          title: "",
+                        } as ItineraryNote,
+                        [itineraryEventActivity]
+                      );
+                    }}
+                    activeOpacity={0.6}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Add Note to ${itineraryEventActivity.title}`}
+                    className="flex-row items-center gap-1.5 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100"
+                  >
+                    <Icon name="comment" size={18} color={"#263F69"} />
+                    <Text className="text-xs font-semibold text-[#263F69]">
+                      {itineraryEventActivity.notesCount || "+"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            <View className={`absolute right-2  ${isNarrow ? "top-[50%]" : "bottom-2"}`}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={handleToggleDone}
+                className="flex-row items-center gap-1.5"
+              >
+                {!isNarrow && (
+                  <Text className="text-[10px] text-[#999] font-medium uppercase tracking-tight">
+                    {itineraryEventActivity.isDone ? "" : "Mark as done"}
+                  </Text>
+                )}
+                
+                  {itineraryEventActivity.isDone ? 
+                      (<Icon name="check" size={24} color="#0c6134" />)
+                      : (<Icon name="check-box-outline-blank" size={24} color="#D0D5DD" />)}
+              </TouchableOpacity>
+          </View>
+        </FadeInView>
+          </TouchableOpacity>
        
       </View>
 

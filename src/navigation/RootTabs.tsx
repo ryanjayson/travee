@@ -25,6 +25,7 @@ import FlightModal from "../features/Travel/components/Forms/Flight/FlightModal"
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
+import { AnimatedPressable } from "../components/animations";
 
 const { width: WIDTH } = Dimensions.get('window');
 // const TAB_WIDTH = WIDTH * 0.7;
@@ -163,9 +164,11 @@ function RootTabsComponent() {
       </Tab.Navigator>
 
       {/* Floating Add Button on the right side */}
-      <TouchableOpacity 
+      <AnimatedPressable 
         onPress={() => setVisibleCreateTravelModal(true)}
+        accessibilityLabel="Add a trip"
         className="bg-[#0EA5E9]"
+        scaleTo={0.90}
         style={{
           position: 'absolute',
           bottom: insets.bottom + 5,
@@ -182,11 +185,10 @@ function RootTabsComponent() {
           shadowOpacity: 0.1,
           shadowRadius: 10,
         }}
-        activeOpacity={0.8}
+        activeOpacity={0.85}
       >
         <Ionicons name="add" size={40} color="#ffffff" />
-        {/* <Text className="text-xs font-bold text-white">Add a trip</Text> */}
-      </TouchableOpacity>
+      </AnimatedPressable>
 
       <CreateTravelModal
         showModal={visibleCreateTravelModal}

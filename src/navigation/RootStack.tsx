@@ -23,6 +23,7 @@ export function RootStack() {
         component={CreateTravelPlanScreen}
         options={{
           presentation: "modal",
+          animation: "slide_from_bottom",
           headerShown: false,
         }}
       />
@@ -32,6 +33,7 @@ export function RootStack() {
         component={EditTravelPlanScreen}
         options={{
           presentation: "modal",
+          animation: "slide_from_bottom",
           headerShown: false,
         }}
       />

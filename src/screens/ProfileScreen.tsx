@@ -46,6 +46,7 @@ import {
 } from "../services/local/securityService";
 import { isAnalyticsOptedOut, setAnalyticsOptOut } from "../services/analytics/posthogService";
 import { saveNotificationLocally, seedTestNotifications } from "../services/local/notificationService";
+import { FadeInView } from "../components/animations";
 
 // Common currencies with flag emoji
 const CURRENCIES = [
@@ -834,7 +835,7 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }} showsVerticalScrollIndicator={false}>
 
         {/* Avatar & Badge */}
-        <View className="items-center py-5 gap-2.5">
+        <FadeInView type="zoom" delay={100} duration={350} className="items-center py-5 gap-2.5">
           <TouchableOpacity
             onPress={handlePickAvatar}
             activeOpacity={0.8}
@@ -858,35 +859,38 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
             </View>
           </TouchableOpacity>
           <AccountTypeBadge type={form.accountType ?? AccountType.Free} />
-        </View>
+        </FadeInView>
 
         {/* Account Type Card */}
-        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
-          <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Account Type</Text>
-          <View className="flex-row gap-2.5">
-            <TouchableOpacity
-              onPress={() => setForm(f => ({ ...f, accountType: AccountType.Free }))}
-              className={`flex-1 items-center p-3.5 rounded-xl border-2 bg-[#F9FAFB] gap-1 ${form.accountType === AccountType.Free ? 'border-primary bg-[#EFF6FF]' : 'border-[#E5E7EB]'}`}
-              accessibilityRole="button"
-            >
-              <Ionicons name="person" size={20} color={form.accountType === AccountType.Free ? "#0EA5E9" : "#9CA3AF"} />
-              <Text className={`text-base font-bold ${form.accountType === AccountType.Free ? 'text-primary' : 'text-[#9CA3AF]'}`}>Free</Text>
-              <Text className="text-sm text-[#9CA3AF]">Basic features</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setForm(f => ({ ...f, accountType: AccountType.Premium }))}
-              className={`flex-1 items-center p-3.5 rounded-xl border-2 bg-[#F9FAFB] gap-1 ${form.accountType === AccountType.Premium ? 'border-[#F59E0B] bg-[#FFFBEB]' : 'border-[#E5E7EB]'}`}
-              accessibilityRole="button"
-            >
-              <Ionicons name="star" size={20} color={form.accountType === AccountType.Premium ? "#F59E0B" : "#9CA3AF"} />
-              <Text className={`text-base font-bold ${form.accountType === AccountType.Premium ? 'text-[#D97706]' : 'text-[#9CA3AF]'}`}>Premium</Text>
-              <Text className="text-sm text-[#9CA3AF]">All features</Text>
-            </TouchableOpacity>
+        <FadeInView type="up" delay={150} duration={400}>
+          <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
+            <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">Account Type</Text>
+            <View className="flex-row gap-2.5">
+              <TouchableOpacity
+                onPress={() => setForm(f => ({ ...f, accountType: AccountType.Free }))}
+                className={`flex-1 items-center p-3.5 rounded-xl border-2 bg-[#F9FAFB] gap-1 ${form.accountType === AccountType.Free ? 'border-primary bg-[#EFF6FF]' : 'border-[#E5E7EB]'}`}
+                accessibilityRole="button"
+              >
+                <Ionicons name="person" size={20} color={form.accountType === AccountType.Free ? "#0EA5E9" : "#9CA3AF"} />
+                <Text className={`text-base font-bold ${form.accountType === AccountType.Free ? 'text-primary' : 'text-[#9CA3AF]'}`}>Free</Text>
+                <Text className="text-sm text-[#9CA3AF]">Basic features</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setForm(f => ({ ...f, accountType: AccountType.Premium }))}
+                className={`flex-1 items-center p-3.5 rounded-xl border-2 bg-[#F9FAFB] gap-1 ${form.accountType === AccountType.Premium ? 'border-[#F59E0B] bg-[#FFFBEB]' : 'border-[#E5E7EB]'}`}
+                accessibilityRole="button"
+              >
+                <Ionicons name="star" size={20} color={form.accountType === AccountType.Premium ? "#F59E0B" : "#9CA3AF"} />
+                <Text className={`text-base font-bold ${form.accountType === AccountType.Premium ? 'text-[#D97706]' : 'text-[#9CA3AF]'}`}>Premium</Text>
+                <Text className="text-sm text-[#9CA3AF]">All features</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </FadeInView>
 
         {/* Profile Info */}
-        <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
+        <FadeInView type="up" delay={200} duration={400}>
+          <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
             <Text className="text-xl font-semibold text-secondary/80">Profile Info</Text>
 
           <View className="mb-4">
@@ -986,8 +990,10 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
             </View>
           </View>
         </View>
+        </FadeInView>
 
         {/* Notification Settings */}
+        <FadeInView type="up" delay={250} duration={400}>
         <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
           <View className="flex-row justify-between items-center mb-1">
             <Text className="text-xl font-semibold text-secondary/80">Notification Settings</Text>
@@ -1064,6 +1070,7 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
             </View>
           )}
         </View>
+        </FadeInView>
 
         {/* Security Settings */}
         <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">

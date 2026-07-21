@@ -9,6 +9,7 @@ import { TravelStatus } from "../types/enums";
 import ExploreCountryMap from "../components/ExploreMap/ExploreCountryMap";
 import ExploreCityMap from "../components/ExploreMap/ExploreCityMap";
 import { useUserProfile } from "../hooks/useUserProfile";
+import { FadeInView } from "../components/animations";
 
 export function ExploreScreen() {
   const insets = useSafeAreaInsets();
@@ -84,7 +85,10 @@ export function ExploreScreen() {
       </View>
 
       {/* Overlay UI Controls */}
-      <View 
+      <FadeInView 
+        type="down"
+        delay={100}
+        duration={450}
         className="absolute w-full px-4" 
         style={{ top: insets.top + 30 }}
       >
@@ -96,6 +100,7 @@ export function ExploreScreen() {
                 key={v}
                 className={`flex-1 py-3 items-center rounded-xl ${viewBy === v ? "bg-primary" : ""}`}
                 onPress={() => setViewBy(v as any)}
+                accessibilityRole="button"
               >
                 <Text className={`text-lg ${viewBy === v ? "text-white" : "text-primary"}`}>
                   {v === "country" ? "International" : "Country"}
@@ -152,7 +157,7 @@ export function ExploreScreen() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </FadeInView>
     </View>
   );
 }

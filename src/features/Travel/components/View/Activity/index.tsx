@@ -422,6 +422,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
         type="default"
         initialActiveTabId="checklist"
         expanded={true}
+        applyFadeAnimation={false}
         onTabChange={() => {
           if (snappedY.current !== SNAP_90) {
             snapTo(SNAP_90);
@@ -442,7 +443,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
       content: <ExpensesTab activityId={id} onEditExpense={handleEditExpense} />
 ,
     },
-    { id: "checklist", title: "Checklist", icon: "checklist", content: <ChecklistTab activityId={id} itineraryActivity={itineraryActivity} /> },
+    { id: "checklist",  title: "Checklists", icon: "checklist", content: <ChecklistTab activityId={id} itineraryActivity={itineraryActivity} /> },
 
     {
       id: "notes",

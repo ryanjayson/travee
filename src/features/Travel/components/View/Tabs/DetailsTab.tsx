@@ -11,6 +11,7 @@ import { useChecklistGroups, useChecklistItems } from "../../../hooks/useCheckli
 import { useItineraryExpenses } from "../../../hooks/useExpense";
 import { useItineraryNotes } from "../../../hooks/useNote";
 import { getExpenseCategoryColor } from "../../Forms/Expense/ExpenseCategoryIcon";
+import { FadeInView, AnimatedPressable, StaggerItem } from "../../../../../components/animations";
 
 interface DetailsTabProps {
   travelPlan: TravelPlan;
@@ -34,24 +35,22 @@ const StatCard = ({
   accent?: string;
   onPress?: () => void;
 }) => (
-  <TouchableOpacity
+  <AnimatedPressable
     onPress={onPress}
     disabled={!onPress}
-    className="bg-white rounded-3xl border border-[#e0e0e0] p-4 flex-1 min-w-[44%]"
-    style={{ backgroundColor: accent + "" }}
+    className={` rounded-3xl border border-[#e0e0e0] p-4 flex-1 min-w-[44%] bg-[${accent}]`}
     accessibilityRole="button"
     activeOpacity={onPress ? 0.7 : 1}
   >
     <View
       className="w-9 h-9 rounded-full justify-center mb-3"
-      // style={{ backgroundColor: accent + "20" }}
     >
       <Icon name={icon} size={30} color={'white'} />
     </View>
     <Text className="text-3xl font-bold text-white">{value}</Text>
     <Text className="text-xs font-semibold text-gray-100 uppercase tracking-wider mt-2">{label}</Text>
     {sub ? <Text className="text-[11px] text-gray-300">{sub}</Text> : null}
-  </TouchableOpacity>
+  </AnimatedPressable>
 );
 
 const SectionHeader = ({ icon, title }: { icon: string | any; title: string }) => (
@@ -212,124 +211,95 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
     >
       <View className="px-5">
 
-        <SectionHeader icon="dashboard" title="Overview" />
-        <View className="flex-row flex-wrap gap-3 mb-4">
-          <StatCard
-            icon="event-note"
-            label="Activities"
-            value={totalActivities}
-            sub={doneActivities > 0 ? `${doneActivities} completed` : "None done yet"}
-            accent="#263F69"
-            onPress={() => onTabChange?.("itinerary")}
-          />
-          <StatCard
-            icon="playlist-add-check"
-            label="Checklist"
-            value={`${doneChecklist}/${totalChecklist}`}
-            sub={totalChecklist > 0 ? `${Math.round((doneChecklist / totalChecklist) * 100)}% complete` : "No items yet"}
-            accent="#059669"
-            onPress={() => onTabChange?.("checklist")}
-          />
-        </View>
-
-        {/* <View className="flex-row items-center flex-wrap rounded-lg p-2 mb-4">
-          <View className="flex-row items-center my-1 pr-3 border-r border-[#DDD]">
-            <View className="flex-row items-center">
-                <Icon name="calendar-month" size={28} color={"#858585"} />
-                <View className="flex-col px-1">
-                    <Text className="text-xs text-tertiary leading-3 pb-2">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
-                        ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
-                        : ""}</Text>
-                    <Text className="text-lg font-bold text-secondary -mt-2">
-                      {travelPlan.travel?.startOrDepartureDate
-                        ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day:"2-digit"})
-                        : ""}
-    
-                        - {travelPlan.travel?.endOrReturnDate
-                        ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day:"2-digit" })
-                        : ""}
-                    </Text>
-                </View>             
-            </View>
+        <FadeInView type="up" delay={100} duration={350}>
+          <SectionHeader icon="dashboard" title="Overview" />
+          <View className="flex-row flex-wrap gap-3 mb-4">
+            <StatCard
+              icon="event-note"
+              label="Activities"
+              value={totalActivities}
+              sub={doneActivities > 0 ? `${doneActivities} completed` : "None done yet"}
+              accent="#263F69"
+              onPress={() => onTabChange?.("itinerary")}
+            />
+            <StatCard
+              icon="playlist-add-check"
+              label="Checklist"
+              value={`${doneChecklist}/${totalChecklist}`}
+              sub={totalChecklist > 0 ? `${Math.round((doneChecklist / totalChecklist) * 100)}% complete` : "No items yet"}
+              accent="#059669"
+              onPress={() => onTabChange?.("checklist")}
+            />
           </View>
-          <View className="flex-row items-center my-1 pl-3">
-            <Icon name="location-pin" size={24} color={"#B42318"} />
-            <View className="flex-row items-center ">
-            {travelPlan.travel.destination ? (
-              <Text className="text-[#183B7A] font-medium mx-1 " numberOfLines={1} ellipsizeMode="tail">
-              {travelPlan.travel.destination}
-              </Text>
-            ) : (
-              <Text className="text-tertiary italic text-base  mx-1 " numberOfLines={1} ellipsizeMode="tail">
-                    Not set
-                  </Text>
-                  )}
-          </View>
-            
-            </View>
-          </View>  */}
+        </FadeInView>
 
         {travelPlan.travel.description && (
-          <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
-            <View className="flex-1 gap-2">
-              <Text className="text-xs font-bold uppercase tracking-wide">About this trip</Text>
+          <FadeInView type="up" delay={200} duration={400}>
+            <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
+              <View className="flex-1 gap-2">
+                <Text className="text-xs font-bold uppercase tracking-wide">About this trip</Text>
 
-               {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
-              <View className="flex-row items-center gap-2">
-                <TripIcon type={travelPlan.travel.type} size={34} showIconOnly/>
-                  <Text className="text-base font-bold text-[#1A1A1A] capitalize">
-                    {String(TripType[travelPlan.travel.type]).replace(/([A-Z])/g, " $1").trim()}
+                 {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
+                <View className="flex-row items-center gap-2">
+                  <TripIcon type={travelPlan.travel.type} size={34} showIconOnly/>
+                    <Text className="text-base font-bold text-[#1A1A1A] capitalize">
+                      {String(TripType[travelPlan.travel.type]).replace(/([A-Z])/g, " $1").trim()}
+                    </Text>
+                </View>
+                 )}
+
+              <View>
+              <Text 
+                 className="text-base leading-6 text-tertiary"
+                 numberOfLines={isDescriptionExpanded ? undefined : 3}
+                 onTextLayout={(e) => {
+                   if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
+                     setShowMoreButton(true);
+                   }
+                }}
+              >
+                {travelPlan.travel.description || null}
+              </Text>
+              
+              {travelPlan.travel.description && showMoreButton && (
+                <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+                  <Text className="text-sm font-black text-[#555] mt-1 underline">
+                    {isDescriptionExpanded ? "Show less" : "Show more"}
                   </Text>
+                </TouchableOpacity>
+              )}
               </View>
-               )}
-
-            <View>
-            <Text 
-               className="text-base leading-6 text-tertiary"
-               numberOfLines={isDescriptionExpanded ? undefined : 3}
-               onTextLayout={(e) => {
-                 if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
-                   setShowMoreButton(true);
-                 }
-              }}
-            >
-              {travelPlan.travel.description || null}
-            </Text>
-            
-            {travelPlan.travel.description && showMoreButton && (
-              <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
-                <Text className="text-sm font-black text-[#555] mt-1 underline">
-                  {isDescriptionExpanded ? "Show less" : "Show more"}
-                </Text>
-              </TouchableOpacity>
-            )}
             </View>
           </View>
-        </View>
-) }
-      
+        </FadeInView>
+        )}
+        
 
-        <View className="px-4">
-            <Text 
-               className="text-md text-tertiary leading-6"
-               numberOfLines={isNoteDescriptionExpanded ? undefined : 2}
-               onTextLayout={(e) => {
-                 if (!showNoteMoreButton && e.nativeEvent.lines.length >= 3) {
-                   setShowNoteMoreButton(true);
-                 }
-              }}
-            >
-              {travelPlan.travel.notes || null}
-            </Text>
-            
-            {travelPlan.travel.notes && showNoteMoreButton && (
-              <TouchableOpacity onPress={() => setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)}>
-                <Text className="text-sm font-medium text-[#555] mt-1 underline">
-                  {isNoteDescriptionExpanded ? "Show less" : "Show more"}
+        {travelPlan.travel.notes ? (
+          <FadeInView type="up" delay={300} duration={400}>
+            <View className="px-4">
+                <Text 
+                   className="text-md text-tertiary leading-6"
+                   numberOfLines={isNoteDescriptionExpanded ? undefined : 2}
+                   onTextLayout={(e) => {
+                     if (!showNoteMoreButton && e.nativeEvent.lines.length >= 3) {
+                       setShowNoteMoreButton(true);
+                     }
+                  }}
+                >
+                  {travelPlan.travel.notes || null}
                 </Text>
-              </TouchableOpacity>
-            )}
-        </View>
+                
+                {travelPlan.travel.notes && showNoteMoreButton && (
+                  <TouchableOpacity onPress={() => setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)}>
+                    <Text className="text-sm font-medium text-[#555] mt-1 underline">
+                      {isNoteDescriptionExpanded ? "Show less" : "Show more"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+            </View>
+          </FadeInView>
+        ) : null}
 
         {/* <View className="flex-row flex-wrap gap-3">
           <StatCard

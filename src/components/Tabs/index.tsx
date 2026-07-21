@@ -7,6 +7,7 @@ import {
   Animated,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { FadeInView } from "../animations";
 
 // --- Types ---
 interface TabItem {
@@ -16,6 +17,7 @@ interface TabItem {
   isVisible?: boolean;
   disabled?: boolean;
   icon?: string | ReactNode;
+  applyFadeAnimation?: boolean;
 }
 
 interface TabsProps {
@@ -29,12 +31,25 @@ interface TabsProps {
   onScroll?: (event: any) => void;
   scrollViewRef?: React.RefObject<ScrollView>;
   wrapperStyle?: string;
+  applyFadeAnimation?: boolean;
 }
 
 type TabsType = "primary" | "secondary" | "default";
 
 // --- Component ---
-const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlledActiveTabId, type = "primary", onTabChange, expanded, hasActionTripStatus, onScroll, scrollViewRef, wrapperStyle }) => {
+const Tabs: FC<TabsProps> = ({
+  tabs,
+  initialActiveTabId,
+  activeTabId: controlledActiveTabId,
+  type = "primary",
+  onTabChange,
+  expanded,
+  hasActionTripStatus,
+  onScroll,
+  scrollViewRef,
+  wrapperStyle,
+  applyFadeAnimation = true,
+}) => {
   const [localActiveTabId, setLocalActiveTabId] = useState(
     initialActiveTabId || tabs[0]?.id
   );
@@ -180,28 +195,44 @@ const Tabs: FC<TabsProps> = ({ tabs, initialActiveTabId, activeTabId: controlled
       </View>
      
       {/* Tab Content */}
-      {expanded ? (
-        <View className="flex-1">
-          {activeTab ? (
-            activeTab.content
-          ) : (
-            <Text className="text-[#999] text-center mt-5">No content found.</Text>
-          )}
-        </View>
-      ) : (
-        <ScrollView 
-          ref={scrollViewRef}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          onScroll={onScroll}
-          scrollEventThrottle={16}
-        >
-          {activeTab ? (
-            activeTab.content
-          ) : (
-            <Text className="text-[#999] text-center mt-5">No content found.</Text>
-          )}
-        </ScrollView>
-      )}
+      {(() => {
+        const shouldFade = activeTab?.applyFadeAnimation !== undefined ? activeTab.applyFadeAnimation : applyFadeAnimation;
+        
+        return expanded ? (
+          <View className="flex-1">
+            {activeTab ? (
+              shouldFade ? (
+                <FadeInView key={activeTabId} type="fade" duration={300} style={{ flex: 1 }}>
+                  {activeTab.content}
+                </FadeInView>
+              ) : (
+                activeTab.content
+              )
+            ) : (
+              <Text className="text-[#999] text-center mt-5">No content found.</Text>
+            )}
+          </View>
+        ) : (
+          <ScrollView 
+            ref={scrollViewRef}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            onScroll={onScroll}
+            scrollEventThrottle={16}
+          >
+            {activeTab ? (
+              shouldFade ? (
+                <FadeInView key={activeTabId} type="fade" duration={300}>
+                  {activeTab.content}
+                </FadeInView>
+              ) : (
+                activeTab.content
+              )
+            ) : (
+              <Text className="text-[#999] text-center mt-5">No content found.</Text>
+            )}
+          </ScrollView>
+        );
+      })()}
     </View>
   );
 };

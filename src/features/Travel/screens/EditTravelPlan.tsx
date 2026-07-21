@@ -22,6 +22,8 @@ import TripChecklist from "../components/Forms/TripChecklist";
 import TripMembers from "../components/Forms/TripMembers";
 import { useTravelPlan } from "../hooks/useTravel";
 
+import { FadeInView } from "../../../components/animations";
+
 type TabType = "detail" | "itinerary" | "checklist" | "members" | "settings";
 
 const EditTravelPlan = () => {

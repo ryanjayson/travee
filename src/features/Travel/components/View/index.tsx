@@ -481,6 +481,7 @@ const ViewTravel = ({
     {
       id: "details",
       title: "Details",
+      applyFadeAnimation: false,
       content: (
         <DetailsTab 
           travelPlan={travelPlan} 
@@ -491,6 +492,7 @@ const ViewTravel = ({
     { 
       id: "itinerary", 
       title: "Itinerary", 
+      applyFadeAnimation: false,
       content: (
           <ItineraryTab 
             travelPlan={travelPlan} 
@@ -518,6 +520,7 @@ const ViewTravel = ({
     {
       id: "checklist",
       title: "Checklist",
+      applyFadeAnimation: false,
       content: (
         <ChecklistTab
           travelPlan={travelPlan}

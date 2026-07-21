@@ -16,6 +16,7 @@ import DraggableSectionContainer from "../Edit/Itinerary/DraggableSectionContain
 import SectionModal from "../Edit/Itinerary/Section/Modal";
 import ActivityItemCard from "./Activity/Card";
 import ViewActivityModal from "./Activity/Modal";
+import { FadeInView } from "../../../../components/animations";
 
 interface SectionAccordionProps {
   travelPlan: TravelPlan;
@@ -1212,7 +1213,10 @@ const SectionAccordion = ({
                   );
                 } else if (viewMode === "plain") {
                   return (
-                    <View key={section.id} className="mb-4">
+                    <FadeInView
+                      type="right" delay={100} duration={350}
+                      key={section.id}
+                      className="mb-4">
                       <View className="flex-row items-center pb-3">
                         <Text className="text-base font-bold text-secondary">
                           {section.title}
@@ -1246,14 +1250,16 @@ const SectionAccordion = ({
                             No activity
                           </Text>
                         )}
-                    </View>
+                    </FadeInView>
                   );
                 } else {
                   const subSections = sections.filter(s => s.isDefaultSection === false);
                   const mapIndex = subSections.findIndex(s => s.id === section.id);
                   const subSectionsLength = subSections.length;
                   return (
-                    <View key={section.id}>
+                    <FadeInView
+                      type="right" delay={100} duration={350}
+                      key={section.id}>
 
                     <DraggableSectionItem
                       key={section.id}
@@ -1296,7 +1302,7 @@ const SectionAccordion = ({
                     </TouchableOpacity>
                     )}
                       
-                    </View>
+                    </FadeInView>
                   );
                 }
               })}

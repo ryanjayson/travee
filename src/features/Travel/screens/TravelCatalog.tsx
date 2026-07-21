@@ -19,6 +19,7 @@ import { useTravels } from "../hooks/useTravel";
 import { Travel } from "../types/TravelDto";
 import TripIcon, { tripIcons } from "../../../components/TripIcon";
 import CountryOutline from "../components/ShareOverlay/CountryOutline";
+import { FadeInView, StaggerItem } from "../../../components/animations";
 
 const TravelCatalog = () => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
@@ -121,7 +122,7 @@ const TravelCatalog = () => {
     refetch();
   };
 
-  const renderTravelCard = (travel: Travel) => {
+  const renderTravelCard = (travel: Travel, index: number = 0) => {
     const effectiveStatus = getEffectiveStatus(travel);
 
     const getCountryName = (dest?: string) => {
@@ -194,8 +195,9 @@ const TravelCatalog = () => {
     const assignedColor = tripIconConfig ? tripIconConfig.color : "#9E9E9E";
 
     return (
-      <View 
+      <StaggerItem
         key={travel.id} 
+        index={index}
         className="bg-white rounded-xl mb-2 shadow-sm mx-4 overflow-hidden "
       >
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
@@ -258,7 +260,7 @@ const TravelCatalog = () => {
             </View>
           </View>
         </TouchableOpacity>
-      </View>
+      </StaggerItem>
     );
   };
 

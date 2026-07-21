@@ -15,6 +15,7 @@ import OnboardingModal from '../components/OnboardingModal';
 import { useUserProfile } from '../hooks/useUserProfile';
 import CountryOutline from '../features/Travel/components/ShareOverlay/CountryOutline';
 import { Notifications } from '../features/Notification';
+import { FadeInView } from '../components/animations';
 import { 
   fetchLocalNotifications, 
   fetchUnreadNotificationsCount, 
@@ -251,102 +252,114 @@ const HomeScreen = () => {
             paddingTop: currentOngoingTrip ? 0 : 30,
           }}
         >
-          <UpcomingTrips
-            upcomingTrips={upcomingTrips}
-            isLoading={isLoading}
-            onPressTrip={handlePressTrip}
-            onAddTripPress={() => {
-              setPrefilledTripData(null);
-              setShowCreateModal(true);
-            }}
-          />
+          <FadeInView type="up" delay={100} duration={450}>
+            <UpcomingTrips
+              upcomingTrips={upcomingTrips}
+              isLoading={isLoading}
+              onPressTrip={handlePressTrip}
+              onAddTripPress={() => {
+                setPrefilledTripData(null);
+                setShowCreateModal(true);
+              }}
+            />
+          </FadeInView>
 
           <View className="justify-between mb-3 px-1">
-            <Text className="px-6 text-xl font-semibold text-secondary mb-5">Trip Insights</Text>
+            <FadeInView type="fade" delay={150} duration={350}>
+              <Text className="px-6 text-xl font-semibold text-secondary mb-5">Trip Insights</Text>
+            </FadeInView>
               
             <View className="flex-row px-5 mb-[15px] gap-[15px]">
 
               <View className="flex-1 h-[112px]">
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Maps", { viewBy: "city" })}
-                  disabled={false}
-                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full flex-row items-center justify-between"
-                  accessibilityRole="button"
-                  activeOpacity={0.7}
-                >
-                  <View className="flex-1 justify-center mr-2">
-                    <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">My Country {countryCode ? `[${countryCode}]` : ""}</Text>
-                    <Text className="text-3xl font-bold py-sm text-accent">0</Text>
-                    <Text className="text-sm text-tertiary">Cities visited</Text>
-                  </View>
-                  {profile?.defaultCountry ? (
-                    <View className="justify-center items-center absolute right-0 ">
-                      <CountryOutline
-                        countryName={profile.defaultCountry}
-                        width={80}
-                        height={120}
-                        strokeColor="#263F69"
-                        strokeWidth={0.5}
-                        fillColor="rgba(59, 130, 246, 0.1)"
-                        hideShadows={true}
-                      />
+                <FadeInView type="up" delay={200} duration={400}>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("Maps", { viewBy: "city" })}
+                    disabled={false}
+                    className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full flex-row items-center justify-between"
+                    accessibilityRole="button"
+                    activeOpacity={0.7}
+                  >
+                    <View className="flex-1 justify-center mr-2">
+                      <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">My Country {countryCode ? `[${countryCode}]` : ""}</Text>
+                      <Text className="text-3xl font-bold py-sm text-accent">0</Text>
+                      <Text className="text-sm text-tertiary">Cities visited</Text>
                     </View>
-                  ) : null}
-                </TouchableOpacity>
+                    {profile?.defaultCountry ? (
+                      <View className="justify-center items-center absolute right-0 ">
+                        <CountryOutline
+                          countryName={profile.defaultCountry}
+                          width={80}
+                          height={120}
+                          strokeColor="#263F69"
+                          strokeWidth={0.5}
+                          fillColor="rgba(59, 130, 246, 0.1)"
+                          hideShadows={true}
+                        />
+                      </View>
+                    ) : null}
+                  </TouchableOpacity>
+                </FadeInView>
               </View>
 
               <View className="flex-1 h-[112px]">
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Trips", { initialTab: "past" })}
-                  disabled={false}
-                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
-                  accessibilityRole="button"
-                  activeOpacity={0.5}
-                >
-                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Past</Text>
-                  <Text className="text-3xl font-bold py-sm text-accent">{tripStats.completed}</Text>
-                  <Text className="text-sm text-tertiary">Completed trips</Text>
+                <FadeInView type="up" delay={250} duration={400}>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("Trips", { initialTab: "past" })}
+                    disabled={false}
+                    className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
+                    accessibilityRole="button"
+                    activeOpacity={0.5}
+                  >
+                    <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">Past</Text>
+                    <Text className="text-3xl font-bold py-sm text-accent">{tripStats.completed}</Text>
+                    <Text className="text-sm text-tertiary">Completed trips</Text>
 
-                  <View className="w-[60px] h-[60px] justify-center items-center absolute right-0">
-                    <Text className="text-5xl text-[#e0e0e0]">⏱</Text>
-                  </View>
-                </TouchableOpacity>
+                    <View className="w-[60px] h-[60px] justify-center items-center absolute right-0">
+                      <Text className="text-5xl text-[#e0e0e0]">⏱</Text>
+                    </View>
+                  </TouchableOpacity>
+                </FadeInView>
               </View>
             </View>
 
             <View className="flex-row px-5 mb-6 gap-[15px] ">
               <View className="flex-1 h-[112px]">
-                <TouchableOpacity
-                  onPress={() => navigation.navigate("Maps", { viewBy: "country" })}
-                  disabled={false}
-                  className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
-                  accessibilityRole="button"
-                  activeOpacity={0.7}
-                >
-                  <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">International</Text>
-                  <Text className="text-3xl font-bold py-sm text-accent">{tripStats.completed}</Text>
-                  <Text className="text-sm text-tertiary">Countries visited</Text>
+                <FadeInView type="up" delay={300} duration={400}>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("Maps", { viewBy: "country" })}
+                    disabled={false}
+                    className="bg-white rounded-3xl border border-[#e0e0e0] p-5 h-full"
+                    accessibilityRole="button"
+                    activeOpacity={0.7}
+                  >
+                    <Text className="text-xs font-semibold uppercase tracking-wider text-gray-400 ">International</Text>
+                    <Text className="text-3xl font-bold py-sm text-accent">{tripStats.completed}</Text>
+                    <Text className="text-sm text-tertiary">Countries visited</Text>
 
-                  <View className="w-[60px] h-[60px] justify-center items-center absolute right-0">
-                    <Ionicons name="earth" size={28} color="#e0e0e0" />
-                  </View>
-                </TouchableOpacity>
+                    <View className="w-[60px] h-[60px] justify-center items-center absolute right-0">
+                      <Ionicons name="earth" size={28} color="#e0e0e0" />
+                    </View>
+                  </TouchableOpacity>
+                </FadeInView>
               </View>
 
               <View className="flex-1 h-[112px]">
-                <TouchableOpacity
-                  onPress={() => {
-                    setPrefilledTripData(null);
-                    setShowCreateModal(true);
-                  }}
-                  disabled={false}
-                  className="bg-gray-200 opacity-80 rounded-3xl border-2 border-[#e0e0e0] border-dashed p-4 h-full justify-center items-center"
-                  accessibilityRole="button"
-                  activeOpacity={0.5}
-                >
-                  <Ionicons name="add-circle-outline" size={32} color="#263F69" />
-                  <Text className="text-sm font-semibold text-accent mt-2">Add trip</Text>
-                </TouchableOpacity>
+                <FadeInView type="up" delay={350} duration={400}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setPrefilledTripData(null);
+                      setShowCreateModal(true);
+                    }}
+                    disabled={false}
+                    className="bg-gray-200 opacity-80 rounded-3xl border-2 border-[#e0e0e0] border-dashed p-4 h-full justify-center items-center"
+                    accessibilityRole="button"
+                    activeOpacity={0.5}
+                  >
+                    <Ionicons name="add-circle-outline" size={32} color="#263F69" />
+                    <Text className="text-sm font-semibold text-accent mt-2">Add trip</Text>
+                  </TouchableOpacity>
+                </FadeInView>
               </View>
             </View>
           </View>
