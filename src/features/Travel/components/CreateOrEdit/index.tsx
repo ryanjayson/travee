@@ -680,7 +680,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     {!hideSubmitButton && (
       <View className="mb-8 mt-2 mx-4 bg-red-50">
          <TouchButton
-            buttonText={isSaving ? "Saving..." : mode === "create" ? "Add trip" : "Update Changes"}
+            buttonText={isSaving ? "Saving..." : mode === "create" ? "Create trip" : "Update Changes"}
             icon={mode === "create" ? "add" : ""}
             onPress={() => formik.handleSubmit()}
             disabled={!formik.values.title.trim() || isSaving}

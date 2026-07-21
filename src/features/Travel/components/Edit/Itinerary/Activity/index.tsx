@@ -1946,7 +1946,7 @@ const EditActivity = ({
             {!(isKeyboardVisible && isChecklistFocused) && (
               <View className="mb-8 mx-4 bg-transparent">
                  <TouchButton
-                   buttonText={itineraryActivity?.id ? "Update Activity" : "Add Activity"}
+                   buttonText={itineraryActivity?.id ? "Update Activity" : "Create Activity"}
                    onPress={() => handleSubmit()}
                    disabled={isPending || updateMutation.isPending}
                    className="h-7xl p-6"

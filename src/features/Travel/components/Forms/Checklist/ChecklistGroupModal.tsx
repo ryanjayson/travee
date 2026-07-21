@@ -317,12 +317,12 @@ const ChecklistGroupModal = ({
                   </ScrollView>
 
                   {/* Save Button (Fixed Bottom) */}
-                  <View className="px-5 py-4  bg-gray-100">
+                  <View className="px-5 py-8 bg-gray-100">
                     <TouchButton
                       buttonText={isSaving ? "Saving..." : "Create Group"}
                       onPress={() => handleSubmit()}
                       disabled={!values.title.trim() || isSaving}
-                      className="h-[64px] p-6"
+                      className="h-7xl p-6"
                     />
                   </View>
                 </View>

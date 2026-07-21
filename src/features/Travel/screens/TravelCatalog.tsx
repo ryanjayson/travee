@@ -204,8 +204,8 @@ const TravelCatalog = () => {
             <View className="flex-row justify-between items-start ">
               <View className="flex-row items-center gap-4 flex-1 mr-2">
               {day && month && (
-                <View className="flex-col justify-center items-center border-r border-[#E0E0E0] pr-4">
-                  <Text className="text-2xl font-semibold text-primary">{day}</Text>
+                <View className="flex-col gap-0 justify-center items-center border-r border-[#E0E0E0] pr-4">
+                  <Text className="text-3xl font-semibold text-accent">{day}</Text>
                   <Text className="text-base font-medium text-tertiary">{month}</Text>
                   {countdownLabel ? (
                     <Text className="text-[10px] font-medium text-tertiary/50 mt-2">{countdownLabel}</Text>

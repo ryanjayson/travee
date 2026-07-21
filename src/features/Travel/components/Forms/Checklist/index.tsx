@@ -203,13 +203,13 @@ const EditChecklistItem = ({
       </ScrollView>
 
       {/* Save/Submit Button (Fixed Bottom) */}
-      <View className="px-5 py-4 bg-gray-100">
+      <View className="px-5 py-8 bg-gray-100">
         <TouchButton
           buttonText={saveItemMutation.isPending
             ? "Saving..."
             : checklistItem?.id
             ? "Save Changes"
-            : "Add Checklist Item"}
+            : "Add Item"}
           onPress={handleSaveItem}
           disabled={!title.trim() || saveItemMutation.isPending}
           className="h-[64px] p-6"

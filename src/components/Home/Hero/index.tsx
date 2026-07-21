@@ -271,7 +271,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
               </View>
               <Text
                 className="text-white font-semibold mb-3 tracking-normal"
-                style={{ fontSize: titleIsLong ? 46 : 36, lineHeight: titleIsLong ? 42 : 48 }}
+                style={{ fontSize: titleIsLong ? 40 : 46, lineHeight: titleIsLong ? 42 : 48 }}
                 numberOfLines={3}
                 onTextLayout={(e) => {
                   if (e.nativeEvent.lines.length > 1 && !adjustedRef.current) {
@@ -438,12 +438,11 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                 accessibilityLabel="Create a new trip"
               >
                 <Ionicons name="search" size={20} color="#6b7280" style={{ marginRight: 10 }} />
-                <Text className="text-base text-gray-400">Search a </Text>
+                <Text className="text-lg text-secondary/60 font-semibold">Search a </Text>
                 <Animated.Text 
-                  style={{ opacity: fadeAnim, color: "#98A2B3", fontWeight: "500" }} 
-                  className="flex-1 text-base "
+                  style={{ opacity: fadeAnim, color: "#6b7280", fontWeight: "600", fontSize: 16, lineHeight: 18 }} 
                 >
-                  {currentWord}...
+                  {currentWord}
                 </Animated.Text>
               </TouchableOpacity>
             </View> 

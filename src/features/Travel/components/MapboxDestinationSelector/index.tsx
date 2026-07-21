@@ -350,7 +350,7 @@ const MapboxDestinationSelector = ({
             <TextInput
               style={styles.searchInput}
               placeholder={
-                activeFilter ? `Search ${getTypeLabel(activeFilter)}...` : "Search destination..."
+                activeFilter ? `Search a ${getTypeLabel(activeFilter)}` : "Search your next destination"
               }
               placeholderTextColor="#999"
               value={query}

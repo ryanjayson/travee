@@ -234,19 +234,23 @@ const SectionLookupModal = ({
               {sections.map((section) => (
                 <TouchableOpacity
                   key={section.id}
-                  className="p-6 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
+                  className="px-6 py-4 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
                   onPress={() => handleSelect(section.id!)}
                   accessibilityRole="button"
                   accessibilityLabel={`Select section ${section.title}`}
                 >
                   <Icon name="folder" size={24} color="#263F69" />
                   <View className="flex-1">
-                    <Text className="text-base text-gray-800 font-semibold">
+                    <Text className="text-lg text-secondary font-semibold">
                       {section?.isDefaultSection ? "[Ungroup]" : section.title}
                     </Text>
-                    {section.startDate && !isNaN(new Date(section.startDate).getTime()) && (
-                      <Text className="text-sm text-gray-500 mt-0.5">
+                    {section.startDate && !isNaN(new Date(section.startDate).getTime()) ? (
+                      <Text className="text-base text-tertiary">
                         {new Date(section.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit' })}
+                      </Text>
+                    ) : (
+                      <Text className="text-base text-tertiary italic">
+                        No date
                       </Text>
                     )}
                   </View>

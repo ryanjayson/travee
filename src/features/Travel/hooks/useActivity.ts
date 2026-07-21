@@ -121,7 +121,7 @@ export const useUpdateActivityMutation = () => {
         title: variables.title,
         travelId: targetTravelId,
         category: (variables as any).category || (variables as any).activityType,
-        hasCustomSection: variables.sectionId ?? false,
+        hasCustomSection: variables.sectionId ? true : false,
       });
       
       // Optimistically/synchronously update query cache for instant UI rendering

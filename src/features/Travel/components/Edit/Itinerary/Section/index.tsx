@@ -400,7 +400,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
 
             <View className="mb-8 mx-4 bg-transparent">
               <TouchButton
-              buttonText={itinerarySection?.id ? "Update Section" : "Add Section"}
+              buttonText={itinerarySection?.id ? "Update Section" : "Create Section"}
               onPress={() => formik.handleSubmit()}
               disabled={!formik.values.title.trim() || isUpdating}
               className="h-7xl p-6"
