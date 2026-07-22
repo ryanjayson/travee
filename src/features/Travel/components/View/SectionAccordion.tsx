@@ -262,7 +262,7 @@ const DraggableSectionItem = ({
               onPressMore={() => onPressMore(section)}
               title={({ expanded }) => (
                 <View className="flex-row align-middle items-center ">
-                  {allowItemReordering && !isValidStartDate(section.startDate) && (
+                  {allowItemReordering && !isValidStartDate(section.startDate)  && (
                     <View
                       className="absolute top-0 z-50 -ml-md flex-row items-center justify-center w-2xl"
                       {...panHandlers}
@@ -272,10 +272,10 @@ const DraggableSectionItem = ({
                   )}
                   <View className="flex-row ">
                     {expanded ? (
-                      <>
-                        <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
-                        <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
-                      </>
+                      <View className={`${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`}>
+                        <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
+                        <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
+                      </View>
                     ) : null}
                   
                     <Text style={{ marginLeft: allowItemReordering && !isValidStartDate(section.startDate) ? 16 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-accent/90 rounded-xs px-2 ">
@@ -322,10 +322,26 @@ const DraggableSectionItem = ({
                 }}
               >
                   {section.description && section.description.trim() !== "" && (
-                    <View className="bg-white flex-1 px-3 z-100 ">
-                      <Text className="text-base text-tertiary leading-5 px-2 ml-7xl pb-2">
-                      {section.description}
-                    </Text>
+                    <View className="bg-white flex-1 px-3 z-0 ">
+                      <View className={`absolute h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[59px]' : 'left-[65px] '} z-0`}>
+                        <Svg height={'200%'} 
+                          width="5"
+                           >
+                          <Line
+                            x1="2.5"
+                            y1="2.5"
+                            x2="2.5"
+                            y2="100%"
+                            stroke="#ccc"
+                            strokeWidth="5"
+                            strokeDasharray="0, 10"
+                            strokeLinecap="round"
+                          />
+                        </Svg>
+                      </View>
+                      <Text className="text-base text-tertiary px-2 ml-7xl pb-1">
+                        {section.description}
+                      </Text>
                     </View>
                   )}
                   {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
@@ -334,37 +350,36 @@ const DraggableSectionItem = ({
                   </>
                 ) : (
                   <>
-                    <View className=" flex-1 items-center justify-center py-8 ml-7xl">
-                    <Text className="text-lg text-tertiary/50 text-center">
-                      No activities yet.
-                    </Text>
-                    <View className="text-center tracking-wide flex-row align-center gap-1">
-                   
-                    <Text className="text-md text-tertiary/50 text-base">
-                      {allowItemReordering ? "Drag and drop here or tap " : "Add now by tapping"}
-                    </Text>
-                       <TouchableOpacity
-                        onPress={() => openActivityModal(null, section.id || undefined, section.travelId)}
-                        accessibilityRole="button"
-                        activeOpacity={0.7}
-                        className="flex-row items-center"
-                      >
-                        <Icon name="add" size={16} color={"#263F69"} />
-                        <Text 
-                          className="font-medium text-base underline text-accent"
-                        >
-                          Add activity
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
+                    <View className=" flex-1 items-center justify-center my-8 ml-7xl">
+                      <Text className="text-lg text-tertiary/50 text-center">
+                        No activities yet.
+                      </Text>
+                      <View className="text-center tracking-wide flex-row align-center gap-1">
                     
+                      <Text className="text-md text-tertiary/50 text-base">
+                        {allowItemReordering ? "Drag and drop here or tap " : "Add now by tapping"}
+                      </Text>
+                        <TouchableOpacity
+                          onPress={() => openActivityModal(null, section.id || undefined, section.travelId)}
+                          accessibilityRole="button"
+                          activeOpacity={0.7}
+                          className="flex-row items-center"
+                        >
+                          <Icon name="add" size={16} color={"#263F69"} />
+                          <Text 
+                            className="font-medium text-base underline text-accent"
+                          >
+                            Add activity
+                          </Text>
+                        </TouchableOpacity>
+                      </View>                  
                   </View>
                   </>
                 )}
                 
                 {viewMode !== 'plain' && (
-                      <View className={`absolute h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[60px]' : 'left-[65px] '} z-0`}>
-                        <Svg height={'150%'} 
+                      <View className={`absolute  h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[59px]' : 'left-[65px] '} z-0`}>
+                        <Svg height={'130%'} 
                           width="5"
                            >
                           <Line
@@ -385,20 +400,7 @@ const DraggableSectionItem = ({
           </View>
         )}
       </DraggableSectionContainer>
-            <View className={`absolute top-5xl h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
-                       <Svg height={"100%"}>
-                          <Line
-                              x1="2.5"
-                              y1="2.5"
-                              x2="2.5"
-                              y2="100%"
-                              stroke="#ccc"
-                              strokeWidth="5"
-                              strokeDasharray="0, 10"
-                              strokeLinecap="round"
-                            />
-                      </Svg>
-                      </View>
+        
     </Animated.View>
   );
 };
@@ -1169,7 +1171,7 @@ const SectionAccordion = ({
 
           </View>
       ) : (
-          <View className={`flex-1 p-3 pt-3xl ${!hasAtleastOneActivityDate && sections.filter((section) => !section.isDefaultSection).length === 0  ? "-ml-4xl" : ""}`}>
+          <View className={`flex-1 p-3 ${!hasAtleastOneActivityDate && sections.filter((section) => !section.isDefaultSection).length === 0  ? "-ml-4xl" : ""}`}>
               {viewMode !== 'plain' && (
                 <View className={`flex-1 z-10 p-2 absolute rounded-full ${viewMode === "narrow" ? " ml-[58px]" : " ml-7xl"}`}>
                   <Icon name="circle" size={18} color="#F97066" />
@@ -1189,6 +1191,7 @@ const SectionAccordion = ({
                         zIndex: sectionDragState?.sectionId === section.id ? 99999 : 1,
                         elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
                         overflow: "visible",
+                        paddingTop: 10
                       }}
                     >
                       {section.itineraryActivity &&
@@ -1214,7 +1217,7 @@ const SectionAccordion = ({
                 } else if (viewMode === "plain") {
                   return (
                     <FadeInView
-                      type="right" delay={100} duration={350}
+                      type="right" delay={50} duration={250}
                       key={section.id}
                       className="mb-4">
                       <View className="flex-row items-center pb-3">
@@ -1257,9 +1260,15 @@ const SectionAccordion = ({
                   const mapIndex = subSections.findIndex(s => s.id === section.id);
                   const subSectionsLength = subSections.length;
                   return (
+
+                    <View key={section.id} 
+                      style={{ marginTop: index === 0 ? 24 : 0 }}>
+                      <View className={`absolute top-9px h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
+                      <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
+                      <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
+                    </View>
                     <FadeInView
-                      type="right" delay={100} duration={350}
-                      key={section.id}>
+                      type="right" delay={50} duration={250}>
 
                     <DraggableSectionItem
                       key={section.id}
@@ -1303,12 +1312,24 @@ const SectionAccordion = ({
                     )}
                       
                     </FadeInView>
+
+                    <View style={{ marginBottom: viewMode === "narrow" && subSectionsLength > 0 && index === subSectionsLength? 16 : 0 }}>
+                      <View className={`absolute top-9px h-full w-md  py-lg z-1 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
+                        <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
+                        <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
+                      </View>
+                    </View>
+                  </View>
                   );
                 }
               })}
 
             {viewMode !== 'plain' && (
-              <View className={`flex-1 z-10 p-2 mt-xl  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-[46px]" : " ml-[52px]"}`}>
+              <View className={`flex-1 z-10 px-2  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-[46px]" : " ml-[50px] mt-[28px]"}`}>
+                <View className={`${viewMode === 'narrow' ? 'hidden' : 'left-9px'}`}>
+                  <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full `} />
+                  <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full `} />
+                </View>
                 <Ionicons name="flag" size={20} color="#F97066" />
               </View>
             )}

@@ -401,7 +401,7 @@ const ActivityItemCard = ({
     >
 
     {showDateText && itineraryEventActivity.startDate ? (
-      <Text className="text-base font-bold -top-[xs] absolute px-2 ">
+      <Text className="text-sm font-bold absolute px-2 left-1">
         {new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })}
       </Text>
     ) : null}

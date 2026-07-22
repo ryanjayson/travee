@@ -98,28 +98,23 @@ export const seedTestNotifications = async (): Promise<void> => {
     const notificationsRepo = database.get<AppNotification>("app_notifications");
 
     await notificationsRepo.create((record) => {
-      record.title = "✈️ Packing List Ready";
+      record.title = "Packing List Ready";
       record.body = "Your checklist for Paris Trip is updated. 12 items pending pack.";
       record.isRead = false;
     });
 
     await notificationsRepo.create((record) => {
-      record.title = "☀️ Weather Update";
+      record.title = "Weather Update";
       record.body = "Sunny skies forecasted in Tokyo for the next 3 days. Average 24°C.";
       record.isRead = false;
     });
 
     await notificationsRepo.create((record) => {
-      record.title = "🧳 Trip Tomorrow";
+      record.title = "Trip Tomorrow";
       record.body = "Bon voyage! Your weekend getaway to Boracay starts tomorrow.";
       record.isRead = false;
     });
-
-    await notificationsRepo.create((record) => {
-      record.title = "📊 Expense Report";
-      record.body = "Weekly travel budget status: 45% spent, you are currently under budget.";
-      record.isRead = true;
-    });
+  
   });
 };
 

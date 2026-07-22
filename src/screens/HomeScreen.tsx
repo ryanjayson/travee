@@ -20,7 +20,8 @@ import {
   fetchLocalNotifications, 
   fetchUnreadNotificationsCount, 
   markNotificationAsRead, 
-  markAllNotificationsAsRead 
+  markAllNotificationsAsRead,
+  deleteNotificationLocally
 } from '../services/local/notificationService';
 
 const COUNTRY_CODES: Record<string, string> = {
@@ -95,6 +96,15 @@ const HomeScreen = () => {
   const handleMarkAllAsRead = async () => {
     await markAllNotificationsAsRead();
     loadNotificationsData();
+  };
+
+  const handleDeleteNotification = async (id: string) => {
+    try {
+      await deleteNotificationLocally(id);
+      loadNotificationsData();
+    } catch (err) {
+      console.warn("Failed to delete notification:", err);
+    }
   };
 
   const handlePressTrip = (trip: Travel) => {
@@ -416,6 +426,7 @@ const HomeScreen = () => {
         notificationsList={notificationsList}
         onMarkAllAsRead={handleMarkAllAsRead}
         onNotificationPress={handleNotificationPress}
+        onDeleteNotification={handleDeleteNotification}
       />
     </View>
   );

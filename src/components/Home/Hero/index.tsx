@@ -507,7 +507,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
           <TouchableOpacity 
             // style={{ borderCurve: 'continuous' }}
             className='items-center justify-center w-7xl h-7xl rounded-full border bg-gray-modern-50 border-gray-100' 
-            onPress={() => setShowTravelViewModal(true)}a
+            onPress={() => setShowTravelViewModal(true)}
           >
             <Ionicons name="briefcase" size={24} color="#263F69" />
           </TouchableOpacity>

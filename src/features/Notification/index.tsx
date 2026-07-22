@@ -1,10 +1,176 @@
 import React, { useEffect, useRef } from "react";
-import { Modal, View, Text, TouchableOpacity, ScrollView, Animated, Dimensions, StatusBar } from "react-native";
+import { Modal, View, Text, TouchableOpacity, ScrollView, Animated, Dimensions, StatusBar, PanResponder } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "react-native-paper";
 import { AppNotificationData } from "../../services/local/notificationService";
 
 const { width } = Dimensions.get("window");
+
+interface NotificationItemProps {
+  notif: AppNotificationData;
+  onPress: (notif: AppNotificationData) => void;
+  onDelete: (id: string) => void;
+}
+
+const NotificationItem = ({ notif, onPress, onDelete }: NotificationItemProps) => {
+  const { colors } = useTheme();
+  const translateX = useRef(new Animated.Value(0)).current;
+  const deleteBtnWidth = 80;
+  const isSwipeOpen = useRef(false);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        const { dx, dy } = gestureState;
+        return Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy);
+      },
+      onPanResponderGrant: () => {},
+      onPanResponderMove: (_, gestureState) => {
+        const base = isSwipeOpen.current ? -deleteBtnWidth : 0;
+        let newValue = base + gestureState.dx;
+        
+        if (newValue < -deleteBtnWidth) {
+          const excess = newValue + deleteBtnWidth;
+          newValue = -deleteBtnWidth + excess * 0.3;
+        } else if (newValue > 0) {
+          newValue = newValue * 0.3;
+        }
+        
+        translateX.setValue(newValue);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const base = isSwipeOpen.current ? -deleteBtnWidth : 0;
+        const finalValue = base + gestureState.dx;
+        
+        if (finalValue < -deleteBtnWidth / 2) {
+          Animated.spring(translateX, {
+            toValue: -deleteBtnWidth,
+            useNativeDriver: true,
+            tension: 40,
+            friction: 7,
+          }).start();
+          isSwipeOpen.current = true;
+        } else {
+          Animated.spring(translateX, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 40,
+            friction: 7,
+          }).start();
+          isSwipeOpen.current = false;
+        }
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(translateX, {
+          toValue: isSwipeOpen.current ? -deleteBtnWidth : 0,
+          useNativeDriver: true,
+        }).start();
+      },
+    })
+  ).current;
+
+  const handleDelete = () => {
+    Animated.timing(translateX, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      isSwipeOpen.current = false;
+      if (notif.id) {
+        onDelete(notif.id);
+      }
+    });
+  };
+
+  return (
+    <View style={{ position: "relative", overflow: "hidden", backgroundColor: colors.error || "#EF4444" }}>
+      {/* Background delete button layer */}
+      <View
+        style={{
+          position: "absolute",
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: deleteBtnWidth,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <TouchableOpacity
+          onPress={handleDelete}
+          style={{
+            flex: 1,
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          accessibilityRole="button"
+          accessibilityLabel={`Delete notification ${notif.title}`}
+        >
+          <Ionicons name="trash-outline" size={24} color="#FFFFFF" />
+          <Text style={{ color: "#FFFFFF", fontSize: 12, fontWeight: "600", marginTop: 4 }}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Foreground swipable content */}
+      <Animated.View
+        {...panResponder.panHandlers}
+        style={{
+          transform: [{ translateX }],
+          backgroundColor: "#FFFFFF",
+        }}
+      >
+        <TouchableOpacity
+          onPress={() => {
+            if (isSwipeOpen.current) {
+              Animated.spring(translateX, {
+                toValue: 0,
+                useNativeDriver: true,
+              }).start();
+              isSwipeOpen.current = false;
+            } else {
+              onPress(notif);
+            }
+          }}
+          activeOpacity={0.9}
+          className={`flex-row p-4 border-b border-gray-100 items-start ${notif.isRead ? "bg-white" : "bg-blue-50/40"}`}
+          accessibilityRole="button"
+        >
+          <View className="p-2 rounded-full bg-blue-50 mr-3">
+            <Ionicons name="notifications" size={18} color="#263F69" />
+          </View>
+          <View className="flex-1">
+            <View className="flex-row justify-between items-start mb-0.5">
+              <Text className={`text-lg ${notif.isRead ? "text-[#374151]" : "text-primary font-bold"}`} numberOfLines={1}>
+                {notif.title}
+              </Text>
+              <Text className="text-sm text-tertiary font-semibold" style={{ flexShrink: 0 }}>
+                {notif.createdAt
+                  ? `${new Date(notif.createdAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}, ${new Date(notif.createdAt).toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}`
+                  : ""}
+              </Text>
+            </View>
+            <Text className="text-base leading-6 text-tertiary/80" numberOfLines={2}>
+              {notif.body}
+            </Text>
+          </View>
+          {!notif.isRead && (
+            <View className="w-2 h-2 rounded-full bg-accent ml-2 self-center" />
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
+  );
+};
 
 interface NotificationsModalProps {
   visible: boolean;
@@ -13,6 +179,7 @@ interface NotificationsModalProps {
   notificationsList: AppNotificationData[];
   onMarkAllAsRead: () => void;
   onNotificationPress: (notif: AppNotificationData) => void;
+  onDeleteNotification: (id: string) => void;
 }
 
 export const Notifications = ({
@@ -22,6 +189,7 @@ export const Notifications = ({
   notificationsList,
   onMarkAllAsRead,
   onNotificationPress,
+  onDeleteNotification,
 }: NotificationsModalProps) => {
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(width)).current;
@@ -58,9 +226,10 @@ export const Notifications = ({
       visible={visible}
       transparent
       animationType="none"
+      statusBarTranslucent={true}
       onRequestClose={handleClose}
     >
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
       <View style={{ flex: 1, flexDirection: "row" }}>
         {/* Semi-transparent backdrop click to close */}
         <TouchableOpacity
@@ -136,32 +305,12 @@ export const Notifications = ({
                 </View>
               ) : (
                 notificationsList.map((notif) => (
-                  <TouchableOpacity
+                  <NotificationItem
                     key={notif.id}
-                    onPress={() => onNotificationPress(notif)}
-                    className={`flex-row p-4 border-b border-gray-100 items-start ${notif.isRead ? 'bg-white' : 'bg-blue-50/40'}`}
-                    accessibilityRole="button"
-                  >
-                    <View className="p-2 rounded-full bg-blue-50 mr-3">
-                      <Ionicons name="notifications" size={18} color="#263F69" />
-                    </View>
-                    <View className="flex-1">
-                      <View className="flex-row justify-between items-start mb-0.5">
-                        <Text className={`text-lg ${notif.isRead ? 'text-[#374151]' : 'text-primary font-bold'}`} numberOfLines={1}>
-                          {notif.title}
-                        </Text>
-                        <Text className="text-base text-tertiary font-semibold">
-                          {notif.createdAt ? new Date(notif.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ''}
-                        </Text>
-                      </View>
-                      <Text className="text-base leading-6 text-tertiary/80" numberOfLines={2}>
-                        {notif.body}
-                      </Text>
-                    </View>
-                    {!notif.isRead && (
-                      <View className="w-2 h-2 rounded-full bg-accent ml-2 self-center" />
-                    )}
-                  </TouchableOpacity>
+                    notif={notif}
+                    onPress={onNotificationPress}
+                    onDelete={onDeleteNotification}
+                  />
                 ))
               )}
             </ScrollView>
