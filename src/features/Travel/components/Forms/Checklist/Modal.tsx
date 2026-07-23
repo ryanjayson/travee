@@ -42,7 +42,7 @@ const ChecklistModal = ({
   travelId,
   onOpenNewGroupModal,
 }: ChecklistModalProps) => {
-  const [modalHeight] = useState(screenHeight * 0.68);
+  const [modalHeight] = useState(630);
   const { keyboardVisible } = useKeyboardVisible();
   const insets = useSafeAreaInsets();
   const [isChildModalOpen, setIsChildModalOpen] = useState(false);

@@ -1,15 +1,14 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
-  ActivityIndicator,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
-import { TextInput, useTheme, Checkbox } from "react-native-paper";
-import TouchButton from "../../../../../components/atoms/TouchButton";
+import { Checkbox, TextInput, useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../../components/ActivityIcon";
+import TouchButton from "../../../../../components/atoms/TouchButton";
 import { ActivityType } from "../../../../../types/enums";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
 import {
@@ -80,7 +79,7 @@ const EditChecklistItem = ({
   };
 
   return (
-    <View className="flex-1 bg-white rounded-t-[20px] overflow-hidden">
+    <View className="flex-1 bg-white overflow-hidden">
       <ScrollView
         className="flex-1 p-[15px] bg-gray-100"
         showsVerticalScrollIndicator={false}
@@ -108,7 +107,7 @@ const EditChecklistItem = ({
           />
         </View>
 
-          {/* Checkbox: Add another item */}
+        {/* Checkbox: Add another item */}
         {!checklistItem?.id && (
           <TouchableOpacity
             activeOpacity={0.7}
@@ -129,7 +128,7 @@ const EditChecklistItem = ({
         )}
 
         {/* Optional Description */}
-        <View className="mb-5">
+        <View className={`mb-5 ${checklistItem?.id ? 'mt-5' : 'mt-0'}`}>
           <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
           <TextInput
             mode="outlined"
@@ -200,8 +199,6 @@ const EditChecklistItem = ({
           </TouchableOpacity>
         </View>
 
-        
-         <View className="mb-5"></View>
       </ScrollView>
 
       {/* Save/Submit Button (Fixed Bottom) */}
@@ -210,13 +207,13 @@ const EditChecklistItem = ({
           buttonText={saveItemMutation.isPending
             ? "Saving..."
             : checklistItem?.id
-            ? "Save Changes"
-            : "Add Item"}
+              ? "Save Changes"
+              : "Add Item"}
           onPress={handleSaveItem}
           disabled={!title.trim() || saveItemMutation.isPending}
           className="h-[64px] p-6"
         />
-      </View> 
+      </View>
     </View>
   );
 };
