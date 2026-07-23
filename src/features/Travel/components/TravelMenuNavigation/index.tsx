@@ -1,9 +1,8 @@
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, Text } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import SlideModal from "../../../../components/molecules/SlideModal";
 import { TravelMenuAction, TravelStatus } from "../../../../types/enums";
-import { Divider, Text } from 'react-native-paper';
 import { Travel } from "../../../Travel/types/TravelDto";
 
 interface TravelMenuNavigationProps {
@@ -24,14 +23,14 @@ const TravelMenuNavigation = ({
   const isArchived = travel?.isArchived || travel?.status === TravelStatus.Archieved;
 
   return (
-    <SlideModal 
-      visible={showModal} 
+    <SlideModal
+      visible={showModal}
       onClose={() => setShowModal(false)}
       direction="bottom"
-      height={326}
+      height={270}
     >
       <View className="flex-1 pt-lg">
-        
+
         <View className="gap-sm">
           <TouchableOpacity
             className={`flex-row items-center justify-between px-4 py-2 ${isArchived ? 'opacity-50' : ''}`}
@@ -43,11 +42,11 @@ const TravelMenuNavigation = ({
             }}
           >
             <View className="w-10 h-10 justify-center items-center mx-3">
-              <Icon name="edit-note" size={32} color={"#00000"} />
+              <Icon name="edit-note" size={32} color={"#344054"} />
             </View>
-            <Text className="flex-1 ml-3 text-lg font-bold">Edit Trip</Text>
+            <Text className="flex-1 ml-3 text-lg font-medium text-secondary">Edit Trip</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity // TODO; enable once ready
             className={`flex-row items-center justify-between px-4 py-2 opacity-50 ${isArchived ? 'opacity-50' : ''}`}
             activeOpacity={0.7}
             disabled={true}
@@ -60,7 +59,7 @@ const TravelMenuNavigation = ({
               <Icon name="file-copy" size={28} color={"#00000"} />
             </View>
             <Text className="flex-1 ml-3 text-lg font-medium">Duplicate</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           {isArchived ? (
             <TouchableOpacity
               className="flex-row items-center justify-between px-4 py-2"
@@ -71,9 +70,9 @@ const TravelMenuNavigation = ({
               }}
             >
               <View className="w-10 h-10 justify-center items-center mx-3">
-                <Icon name="unarchive" size={28} color={"#00000"} />
+                <Icon name="unarchive" size={28} color={"#344054"} />
               </View>
-              <Text className="flex-1 ml-3 text-lg font-medium">Unarchive Trip</Text>
+              <Text className="flex-1 ml-3 text-lg font-medium text-secondary">Unarchive Trip</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -85,9 +84,9 @@ const TravelMenuNavigation = ({
               }}
             >
               <View className="w-10 h-10 justify-center items-center mx-3">
-                <Icon name="archive" size={28} color={"#00000"} />
+                <Icon name="archive" size={28} color={"#344054"} />
               </View>
-              <Text className="flex-1 ml-3 text-lg font-medium">Archive</Text>
+              <Text className="flex-1 ml-3 text-lg font-medium text-secondary">Archive</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -117,7 +116,7 @@ const TravelMenuNavigation = ({
             </View>
             <Text className="flex-1 ml-3 text-lg font-medium text-[#C62828]">Delete</Text>
           </TouchableOpacity>
-         
+
         </View>
       </View>
     </SlideModal>

@@ -497,6 +497,7 @@ const ViewTravel = ({
       content: (
         <ItineraryTab
           travelPlan={travelPlan}
+          onRefresh={onRefresh}
         />
       )
     },

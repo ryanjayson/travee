@@ -1,65 +1,52 @@
-import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import { Formik, useFormikContext } from "formik";
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  Keyboard,
-  LayoutAnimation,
-  Modal,
+  Alert, Image,
+  Keyboard, Modal,
   ScrollView,
   StatusBar,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { TextInput, useTheme, Button } from "react-native-paper";
 import { CalendarList } from "react-native-calendars";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
-import ActivityIcon, { activityIcons } from "../../../../../../components/ActivityIcon";
-import TouchButton from "../../../../../../components/atoms/TouchButton";
-import Tabs from "../../../../../../components/Tabs";
 import SimpleAccordion from "../../../../../../components/Accordion/Simple";
-import FlightTab from "./Tabs/FlightTab";
-import AccomodationTab from "./Tabs/AccomodationTab";
-import CafeRestaurantTab from "./Tabs/CafeRestaurantTab";
-import NatureTab from "./Tabs/NatureTab";
-import ShoppingTab from "./Tabs/ShoppingTab";
-import EntertainmentTab from "./Tabs/EntertainmentTab";
-import TransportationTab from "./Tabs/TransportationTab";
-import WalkTab from "./Tabs/WalkTab";
-import SightseeingTab from "./Tabs/SightseeingTab";
-import PreparationTab from "./Tabs/PreparationTab";
-import RestTab from "./Tabs/RestTab";
-import HikeOrCampTab from "./Tabs/HikeOrCampTab";
-import MotorcycleRideTab from "./Tabs/MotorcycleRideTab";
-import MeetupTab from "./Tabs/MeetupTab";
-import RideRentalTab from "./Tabs/RideRentalTab";
-import DateTime from "./DateTime";
+import ActivityIcon from "../../../../../../components/ActivityIcon";
+import TouchButton from "../../../../../../components/atoms/TouchButton";
+import DescriptionInput from "../../../../../../components/molecules/DescriptionInput";
+import Tabs from "../../../../../../components/Tabs";
+import { useConfirm } from "../../../../../../context/ConfirmContext";
+import { useToast } from "../../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
+import { fetchLocalItineraryActivity } from "../../../../../../services/local/travelService";
 import { ActivityType, getActivityTypeLabel } from "../../../../../../types/enums";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
 import { useDeleteActivityMutation, useUpdateActivityMutation } from "../../../../hooks/useActivity";
 import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItemMutation, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
-import { useTravelPlan } from "../../../../hooks/useTravel";
 import { useUpdateSectionMutation } from "../../../../hooks/useSection";
-import { fetchLocalItineraryActivity } from "../../../../../../services/local/travelService";
-import { DestinationDto, Images, ItineraryActivity, Attachment } from "../../../../types/TravelDto";
-import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
-import SectionLookupModal from "../../../Lookups/SectionLookupModal";
-import MapboxDestinationSelectorModal from "../../../MapboxDestinationSelector/Modal";
-import { MapboxPlace } from "../../../MapboxDestinationSelector";
+import { useTravelPlan } from "../../../../hooks/useTravel";
+import { Attachment, DestinationDto, Images, ItineraryActivity } from "../../../../types/TravelDto";
 import PoiLookupModal, { MapboxPoi } from "../../../Lookups/PoiLookupModal";
-import { useConfirm } from "../../../../../../context/ConfirmContext";
-import { useToast } from "../../../../../../context/ToastContext";
-import DescriptionInput from "../../../../../../components/molecules/DescriptionInput";
+import { MapboxPlace } from "../../../MapboxDestinationSelector";
+import MapboxDestinationSelectorModal from "../../../MapboxDestinationSelector/Modal";
+import DateTime from "./DateTime";
+import AccomodationTab from "./Tabs/AccomodationTab";
+import CafeRestaurantTab from "./Tabs/CafeRestaurantTab";
+import EntertainmentTab from "./Tabs/EntertainmentTab";
+import FlightTab from "./Tabs/FlightTab";
+import HikeOrCampTab from "./Tabs/HikeOrCampTab";
+import NatureTab from "./Tabs/NatureTab";
+import PreparationTab from "./Tabs/PreparationTab";
+import ShoppingTab from "./Tabs/ShoppingTab";
+import SightseeingTab from "./Tabs/SightseeingTab";
+import WalkTab from "./Tabs/WalkTab";
 
 interface Place {
   id: string;
@@ -1209,7 +1196,7 @@ const EditActivity = ({
             id: "details",
             title: "Details",
             content: (
-              <View className="flex-1 pt-2 px-5">
+              <View className="flex-1 px-5">
                 {/* Title */}
                 <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
@@ -1672,7 +1659,7 @@ const EditActivity = ({
                   </View>
 
                   {/* Description */}
-                  <View ref={(el) => { fieldRefs.current["description"] = el; }} className="mb-5">
+                  <View ref={(el) => { fieldRefs.current["description"] = el; }} className="">
                     <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
                     <DescriptionInput
                       value={values.description}
@@ -1685,39 +1672,6 @@ const EditActivity = ({
                   </View>
                 </SimpleAccordion>
 
-                {/* Delete Activity */}
-                {itineraryActivity?.id && (
-                  <>
-                    <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200">
-                      <TouchableOpacity
-                        className="flex-row items-center gap-2.5 justify-center py-2"
-                        onPress={() => handleDeleteActivity(itineraryActivity?.id || "", values.sectionId)}
-                        disabled={isPending}
-                        accessibilityRole="button"
-                      >
-                        <Icon name="delete-outline" size={24} color={"#c93030"} />
-                        <Text className="text-base capitalize font-medium text-[#c93030]">
-                          Delete Activity
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    <View className="mt-2 pt-4 ">
-                      <TouchableOpacity
-                        className="flex-row items-center justify-center py-2"
-                        onPress={() => handleAddActivity(values)}
-                        disabled={isPending}
-                        accessibilityRole="button"
-                      >
-                        <Icon name="add" size={24} color={colors.primary} />
-                        <Text className="text-base underline capitalize font-bold text-primary">
-                          Create New Activity
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </>
-
-                )}
               </View>
             ),
           },

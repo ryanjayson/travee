@@ -3,41 +3,42 @@ import { LexoRank } from 'lexorank';
 
 export const useLexicographicSort = () => {
   const generateSortOrder = useCallback((prev: string | null | undefined, next: string | null | undefined): string => {
+    const tryParseRank = (val: string | null | undefined): LexoRank | null => {
+      if (!val) return null;
+      try {
+        if (/^\d+$/.test(val)) {
+          return null;
+        }
+        return LexoRank.parse(val);
+      } catch (e) {
+        return null;
+      }
+    };
+
     try {
-      if (!prev && !next) {
+      const prevRank = tryParseRank(prev);
+      const nextRank = tryParseRank(next);
+
+      if (!prevRank && !nextRank) {
         return LexoRank.middle().toString();
       }
-      if (!prev) {
-        const nextRank = LexoRank.parse(next!);
-        return LexoRank.min().between(nextRank).toString();
+      if (!prevRank) {
+        return LexoRank.min().between(nextRank!).toString();
       }
-      if (!next) {
-        const prevRank = LexoRank.parse(prev);
+      if (!nextRank) {
         return prevRank.between(LexoRank.max()).toString();
       }
 
-      const prevRank = LexoRank.parse(prev);
-      const nextRank = LexoRank.parse(next);
-
-      if (prev === next) {
+      if (prevRank.toString() === nextRank.toString()) {
         return prevRank.genNext().toString();
       }
-      if (prev > next) {
-        // If chronological neighbors are lexicographically inverted, just swap them to find the middle
+      if (prevRank.compareTo(nextRank) > 0) {
         return nextRank.between(prevRank).toString();
       }
 
       return prevRank.between(nextRank).toString();
-    } catch (e) {
-      console.error("LexoRank generation failed", e);
-      // Fallback in case of parse error
-      if (prev) {
-        try {
-          return LexoRank.parse(prev).between(LexoRank.max()).toString();
-        } catch (err) {
-          return LexoRank.middle().toString();
-        }
-      }
+    } catch (e: any) {
+      console.warn("LexoRank generation failed, falling back to middle:", e.message);
       return LexoRank.middle().toString();
     }
   }, []);

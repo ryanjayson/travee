@@ -95,13 +95,17 @@ export const useUpdateActivityMutation = () => {
         queryKey: ["travels"],
       });
 
-      const targetTravelId = variables.travelId;
+      const targetTravelId = variables.travelId?.toString();
       if (targetTravelId) {
         queryClient.invalidateQueries({
           queryKey: ["travel", targetTravelId],
         });
 
         queryClient.invalidateQueries({
+          queryKey: ["selectedTravelPlan", targetTravelId],
+        });
+
+        queryClient.refetchQueries({
           queryKey: ["selectedTravelPlan", targetTravelId],
         });
       }
@@ -259,13 +263,17 @@ export const useDeleteActivityMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
       queryClient.invalidateQueries({ queryKey: ["travels"] });
 
-      const targetTravelId = variables.travelId;
+      const targetTravelId = variables.travelId?.toString();
       if (targetTravelId) {
         queryClient.invalidateQueries({
           queryKey: ["travel", targetTravelId],
         });
 
         queryClient.invalidateQueries({
+          queryKey: ["selectedTravelPlan", targetTravelId],
+        });
+
+        queryClient.refetchQueries({
           queryKey: ["selectedTravelPlan", targetTravelId],
         });
 

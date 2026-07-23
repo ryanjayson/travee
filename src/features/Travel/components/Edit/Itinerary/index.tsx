@@ -113,7 +113,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   const [masterHoverState, setMasterHoverState] = useState<{ index: number } | null>(null);
   const sectionRefs = useRef<Record<string, any>>({});
   const sectionBounds = useRef<Record<string, { pageY: number, height: number }>>({});
-  
+
   // Auto-scrolling Refs
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollOffset = useRef(0);
@@ -136,7 +136,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
     mutate: updateActivitySortMutation,
     isPending: isPendingActivitySort,
   } = useUpdateActivitySortOrderMutation();
-  
+
   const {
     mutate: updateSectionSortOrderMutation,
   } = useUpdateSectionSortOrderMutation();
@@ -210,7 +210,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-     
+
       if (onRefresh) {
         onRefresh();
       }
@@ -275,16 +275,16 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
       LayoutAnimation.configureNext(slowSpringAnimation);
       const defaultSections = sections.filter(s => s.isDefaultSection === true);
       const subSections = sections.filter(s => s.isDefaultSection === false);
-      
+
       const [moved] = subSections.splice(fromIndex, 1);
       subSections.splice(finalToIndex, 0, moved);
-      
+
       const prevSortOrder = subSections[finalToIndex - 1]?.sortOrder;
       const nextSortOrder = subSections[finalToIndex + 1]?.sortOrder;
-      
+
       const newSortOrder = generateSortOrder(prevSortOrder, nextSortOrder);
       moved.sortOrder = newSortOrder;
-      
+
       setSections([...defaultSections, ...subSections]);
 
       if (moved.id) {
@@ -325,7 +325,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   ) => {
 
 
-    const targetSectionId =  hoverState?.sectionId ?? sourceSectionId;
+    const targetSectionId = hoverState?.sectionId ?? sourceSectionId;
     const toIndex = hoverState?.index ?? fromIndex;
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -349,7 +349,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
           if (section.id === targetSectionId) {
             const newActivities = [...(section.itineraryActivity || [])];
             const safeToIndex = Math.min(toIndex, newActivities.length);
-            
+
             newActivities.splice(safeToIndex, 0, updatedActivity);
 
             const previousNeighbor = newActivities[safeToIndex - 1] ?? null;
@@ -359,13 +359,13 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
               previousNeighbor?.sortOrder,
               nextNeighbor?.sortOrder
             );
-            
+
             updatedActivity.sortOrder = newSortOrder;
 
             if (updatedActivity.id) {
               updateActivitySortOrderLocally(
-                updatedActivity.id, 
-                newSortOrder, 
+                updatedActivity.id,
+                newSortOrder,
                 targetSectionId !== sourceSectionId ? targetSectionId : undefined
               ).then(() => {
                 queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan"] });
@@ -448,7 +448,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
           travelSections.find(
             (section: ItinerarySection) => section.id == sectionId,
           )) ||
-          null,
+        null,
       );
     }
     setSectionMenuVisible(false);
@@ -477,7 +477,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   const computeIntersection = (moveY: number) => {
     let targetSectionId = sectionDragStateRef.current?.sectionId || null;
     let targetIndex = 0;
-    
+
     const scrollDelta = scrollOffset.current - initialScrollY.current;
 
     let foundIntersection = false;
@@ -490,7 +490,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
         targetSectionId = id;
         const relY = moveY - shiftedTop;
         const newTargetIndex = Math.max(0, Math.round(relY / 70));
-        
+
         const targetSection = sectionsRef.current?.find(s => s.id === id);
         const targetLen = targetSection?.itineraryActivity?.length || 0;
         targetIndex = Math.max(0, Math.min(newTargetIndex, targetLen));
@@ -558,544 +558,544 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
 
   return (
     <View className="flex-1">
-     <ScrollView
-      ref={scrollViewRef}
-      onScroll={(e) => {
-        scrollOffset.current = e.nativeEvent.contentOffset.y;
-      }}
-      scrollEventThrottle={16}
-      className="flex-1 w-full"
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ padding: 20 }}
-      // keyboardShouldPersistTaps="always"
-      scrollEnabled={!isDragging && !sectionDragState?.isDragging}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          colors={["#183B7A"]}
-          tintColor="#183B7A"
-        />
-      }
-    >
-      <View className="mb-5">
-        <Text className="text-xl font-semibold ">Manage Trip Itinerary</Text>
-                  <Text className="text-base font-normal text-gray-400 mb-5">
-                   Keep your travel plans organized and your entire trip schedule in one seamless timeline.
-                  </Text>
-
-        {!sections && (
-        <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Activities</Text>
-        )}
-        {sections && sections.length > 0 && sections.filter(section => section.isDefaultSection == true).map((section) => (
-          <View
-            key={section.id}
-            style={[
-              {
-                zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
-                elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
-                paddingBottom: (!section.itineraryActivity || section.itineraryActivity.length === 0) ? 20 : 0
-              }
-            ]}
-            ref={(ref) => {
-              if (ref && section.id) sectionRefs.current[section.id] = ref;
-            }}
-          >
-            {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
-              <View
-                key={activity.id}
-                className="relative"
-                style={{
-                  zIndex:
-                    sectionDragState?.dragIndex === index &&
-                    sectionDragState?.sectionId === section.id
-                      ? 9999
-                      : 1,
-                  elevation:
-                    sectionDragState?.dragIndex === index &&
-                    sectionDragState?.sectionId === section.id
-                      ? 10
-                      : 1,
-                }}
-              >
-                {hoverState?.index === index &&
-                  hoverState?.sectionId === section.id &&
-                  (sectionDragState?.sectionId !== section.id ||
-                    (sectionDragState?.dragIndex !== index &&
-                      (sectionDragState?.dragIndex ?? -1) > index)) && (
-                    <View className="absolute -top-7px h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
-                  )}
-
-                <DraggableActivityItem
-                  onPress={() => handleSectionActivityPress(activity, section.id || "")}
-                  title={activity.title}
-                  description={""}
-                  location={""}
-                  startDate={activity.startDate?.toString() || null}
-                  endDate={activity.endDate?.toString() || null}
-                  index={index}
-                  listLength={section.itineraryActivity?.length || 0}
-                  onDragMove={(currentIndex, dy, moveY) =>
-                    handleDragMove(
-                      currentIndex,
-                      dy,
-                      section.itineraryActivity?.length || 0,
-                      moveY
-                    )
-                  }
-                  onDragStart={(idx: number) =>
-                    handleSectionActivityDragStart(
-                      section.id || "",
-                      idx,
-                    )
-                  }
-                  onDragEnd={(fromIdx: number, _: number) =>
-                    handleSectionActivityDragEnd(
-                      section.id || "",
-                      activity,
-                      fromIdx,
-                      0,
-                    )
-                  }
-                  isDragging={
-                    sectionDragState?.sectionId != undefined &&
-                    sectionDragState?.sectionId === section.id &&
-                    sectionDragState?.isDragging
-                  }
-                  dragIndex={
-                    sectionDragState?.sectionId != undefined &&
-                    sectionDragState?.sectionId === section.id
-                      ? sectionDragState.dragIndex
-                      : null
-                  }
-                />
-                
-                {hoverState?.index === index &&
-                  hoverState?.sectionId === section.id &&
-                  sectionDragState?.sectionId === section.id &&
-                  sectionDragState?.dragIndex !== index &&
-                  (sectionDragState?.dragIndex ?? -1) < index && (
-                    <View className="absolute -bottom-7px h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
-                  )}
-              </View>
-            )) : (
-              <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
-                 <Text style={{ color: "#aaa" }}>or drop activities here </Text>
-                 {hoverState?.sectionId === section.id && (
-                   <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
-                 )}
-              </View>
-            )}
-          </View>
-        ))}
-
-        <TouchableOpacity
-          onPress={() => {
-            setModalVisible(true);
-            const defaultSection = sections.find(
-              (section) => section.isDefaultSection == true,
-            );
-            setCurrentSectionId(defaultSection?.id || null);
-          }}
-         
-          className="bg-primary-light flex-row items-center border border-primary/50 justify-center gap-2 py-3 rounded-4xl"
-        >
-            <Icon name="add" size={16} color={"#263F69"} />
-            <Text className="font-semibold flex items-center text-primary">
-            Add Activity
+      <ScrollView
+        ref={scrollViewRef}
+        onScroll={(e) => {
+          scrollOffset.current = e.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={16}
+        className="flex-1 w-full"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ padding: 20 }}
+        // keyboardShouldPersistTaps="always"
+        scrollEnabled={!isDragging && !sectionDragState?.isDragging}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={["#183B7A"]}
+            tintColor="#183B7A"
+          />
+        }
+      >
+        <View className="mb-5">
+          <Text className="text-xl font-semibold ">Manage Trip Itinerary</Text>
+          <Text className="text-base font-normal text-gray-400 mb-5">
+            Keep your travel plans organized and your entire trip schedule in one seamless timeline.
           </Text>
-        </TouchableOpacity>
-      </View>
 
-      <View className="mb-5">
-        {sections && sections.length > 0 && (
-
-      <View className="flex-row justify-between items-center">
-        <Text className="text-md text-gray-500 font-medium tracking-wider uppercase ">Sections</Text>
-        <TouchableOpacity
-          onPress={toggleAllSectionsCollapse}
-          className="flex flex-row items-center gap-2"
-        >
-
-            <Text className="text-xs text-gray-400 font-medium tracking-wider uppercase">collapse/expand</Text>
-            <Icon name="fullscreen" size={24} color={"#475467"} />
-        </TouchableOpacity>
-      </View>
-
-        )}
-        
-        {sections && sections.length > 0 && (
-          sections
-            .filter((section) => section.isDefaultSection == false)
-            .map((section, mapIndex) => (
-              <DraggableSectionContainer
-                key={section.id}
-                index={mapIndex}
-                listLength={sections.filter(s => s.isDefaultSection === false).length}
-                onDragStart={handleMasterSectionDragStart}
-                onDragMove={handleMasterSectionDragMove}
-                onDragEnd={handleMasterSectionDragEnd}
-                isChildActive={sectionDragState?.sectionId === section.id}
-              >
-                {(panHandlers, isSectionActive) => (
-                  <>
-                  <View
-                    className={`rounded-sm p-4 border border-[#DDD] flex-1 relative bg-white ${!section.isCollapsed && 'my-2'}`}
-                    style={[
-                      {
-                        zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
-                        // elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
-                      },
-                    ]}
-                  >
-                    {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) > mapIndex && (
-                      <View className="absolute -top-10px h-[3px] bg-[#183B7A] rounded-sm w-full self-center z-50" />
+          {!sections && (
+            <Text className="text-xs text-gray-500 font-medium tracking-wider uppercase mb-2">Activities</Text>
+          )}
+          {sections && sections.length > 0 && sections.filter(section => section.isDefaultSection == true).map((section) => (
+            <View
+              key={section.id}
+              style={[
+                {
+                  zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
+                  elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
+                  paddingBottom: (!section.itineraryActivity || section.itineraryActivity.length === 0) ? 20 : 0
+                }
+              ]}
+              ref={(ref) => {
+                if (ref && section.id) sectionRefs.current[section.id] = ref;
+              }}
+            >
+              {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
+                <View
+                  key={activity.id}
+                  className="relative"
+                  style={{
+                    zIndex:
+                      sectionDragState?.dragIndex === index &&
+                        sectionDragState?.sectionId === section.id
+                        ? 9999
+                        : 1,
+                    elevation:
+                      sectionDragState?.dragIndex === index &&
+                        sectionDragState?.sectionId === section.id
+                        ? 10
+                        : 1,
+                  }}
+                >
+                  {hoverState?.index === index &&
+                    hoverState?.sectionId === section.id &&
+                    (sectionDragState?.sectionId !== section.id ||
+                      (sectionDragState?.dragIndex !== index &&
+                        (sectionDragState?.dragIndex ?? -1) > index)) && (
+                      <View className="absolute -top-7px h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
                     )}
 
-                    <View className="absolute top-10px left-10px" {...panHandlers}>
-                      <Icon name="drag-handle" size={24} color={isSectionActive ? "#183B7A" : "#DDD"} />
-                    </View>
-                <View className="mx-[30px]">
-                  <TouchableOpacity
-                    className="px-2 flex-1 flex-row"
-                    onPress={() => toggleSectionCollapse(section.id || "")}
-                  >
-                    <View className="flex-1 ">
-                      <Text
-                        numberOfLines={section.isCollapsed ? 1 : 10}
-                        ellipsizeMode="tail"
-                        className="text-lg font-bold text-[#183B7A] mb-1.5 flex-1"
-                      >
-                        {section.title}
-                      </Text>
-                      
-                      {/* add checking here if has value show the date, copy the format MM/DD */}
-                      {section.startDate && (
-                        <Text className="text-xs font-bold text-[#999] mb-1">
-                          {new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })}
-                        </Text>
-                      )}
-                      
-                      {section.description && (
-                        <Text
-                          numberOfLines={section.isCollapsed ? 2 : 10}
-                          ellipsizeMode="tail"
-                          className="mb-0 text-xs text-[#6c757d]"
-                        >
-                          {section.description}
-                        </Text>
-                      )}
+                  <DraggableActivityItem
+                    onPress={() => handleSectionActivityPress(activity, section.id || "")}
+                    title={activity.title}
+                    description={""}
+                    location={""}
+                    startDate={activity.startDate?.toString() || null}
+                    endDate={activity.endDate?.toString() || null}
+                    index={index}
+                    listLength={section.itineraryActivity?.length || 0}
+                    onDragMove={(currentIndex, dy, moveY) =>
+                      handleDragMove(
+                        currentIndex,
+                        dy,
+                        section.itineraryActivity?.length || 0,
+                        moveY
+                      )
+                    }
+                    onDragStart={(idx: number) =>
+                      handleSectionActivityDragStart(
+                        section.id || "",
+                        idx,
+                      )
+                    }
+                    onDragEnd={(fromIdx: number, _: number) =>
+                      handleSectionActivityDragEnd(
+                        section.id || "",
+                        activity,
+                        fromIdx,
+                        0,
+                      )
+                    }
+                    isDragging={
+                      sectionDragState?.sectionId != undefined &&
+                      sectionDragState?.sectionId === section.id &&
+                      sectionDragState?.isDragging
+                    }
+                    dragIndex={
+                      sectionDragState?.sectionId != undefined &&
+                        sectionDragState?.sectionId === section.id
+                        ? sectionDragState.dragIndex
+                        : null
+                    }
+                  />
 
-                      <View style={{ flex: 1, flexDirection: "row" }}>
-                        <Text className="pt-1" >
-                          {section.isCollapsed ? (
-                            <Icon
-                              name="keyboard-arrow-down"
-                              size={20}
-                              color={"#ddd"}
-                            />
-                          ) : (
-                            <Icon
-                              name="keyboard-arrow-up"
-                              size={20}
-                              color={"#ddd"}
-                            />
-                          )}
-                        </Text>
-                        {section.itineraryActivity &&
-                        section.itineraryActivity.length > 0 ? (
-                          <Text className="text-xs text-[#888] mt-1.5">
-                            {section.itineraryActivity.length} Activi
-                            {section.itineraryActivity.length !== 1
-                              ? "ties"
-                              : "ty"}
-                          </Text>
-                        ) : (
-                          <Text className="text-xs text-[#888] mt-1.5">
-                            No activity yet
-                          </Text>
-                        )}
-                      </View>
-                    </View>
-                  </TouchableOpacity>
+                  {hoverState?.index === index &&
+                    hoverState?.sectionId === section.id &&
+                    sectionDragState?.sectionId === section.id &&
+                    sectionDragState?.dragIndex !== index &&
+                    (sectionDragState?.dragIndex ?? -1) < index && (
+                      <View className="absolute -bottom-7px h-[3px] bg-[#183B7A] rounded-sm w-4/5 self-center z-50" />
+                    )}
                 </View>
+              )) : (
+                <View style={{ height: 60, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 1, borderColor: "#ddd", borderRadius: 8 }}>
+                  <Text style={{ color: "#aaa" }}>or drop activities here </Text>
+                  {hoverState?.sectionId === section.id && (
+                    <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
+                  )}
+                </View>
+              )}
+            </View>
+          ))}
 
-                <View>
-                  {!section.isCollapsed && (
-                      <View 
-                        className="mt-3 z-0 bg-gray-100 rounded-2xl"
+          <TouchableOpacity
+            onPress={() => {
+              setModalVisible(true);
+              const defaultSection = sections.find(
+                (section) => section.isDefaultSection == true,
+              );
+              setCurrentSectionId(defaultSection?.id || null);
+            }}
+
+            className="bg-primary-light flex-row items-center border border-primary/50 justify-center gap-2 py-3 rounded-4xl"
+          >
+            <Icon name="add" size={16} color={"#263F69"} />
+            <Text className="font-semibold flex items-center text-primary">
+              Add Activity
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View className="mb-5">
+          {sections && sections.length > 0 && (
+
+            <View className="flex-row justify-between items-center">
+              <Text className="text-md text-gray-500 font-medium tracking-wider uppercase ">Sections</Text>
+              <TouchableOpacity
+                onPress={toggleAllSectionsCollapse}
+                className="flex flex-row items-center gap-2"
+              >
+
+                <Text className="text-xs text-gray-400 font-medium tracking-wider uppercase">collapse/expand</Text>
+                <Icon name="fullscreen" size={24} color={"#475467"} />
+              </TouchableOpacity>
+            </View>
+
+          )}
+
+          {sections && sections.length > 0 && (
+            sections
+              .filter((section) => section.isDefaultSection == false)
+              .map((section, mapIndex) => (
+                <DraggableSectionContainer
+                  key={section.id}
+                  index={mapIndex}
+                  listLength={sections.filter(s => s.isDefaultSection === false).length}
+                  onDragStart={handleMasterSectionDragStart}
+                  onDragMove={handleMasterSectionDragMove}
+                  onDragEnd={handleMasterSectionDragEnd}
+                  isChildActive={sectionDragState?.sectionId === section.id}
+                >
+                  {(panHandlers, isSectionActive) => (
+                    <>
+                      <View
+                        className={`rounded-sm p-4 border border-[#DDD] flex-1 relative bg-white ${!section.isCollapsed && 'my-2'}`}
                         style={[
                           {
                             zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
-                            // elevation: sectionDragState?.sectionId === section.id ? 10 : 0,
-                            padding: (!section.itineraryActivity || section.itineraryActivity.length === 0) ? 0 : 10
-                          }
+                            // elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
+                          },
                         ]}
-                        ref={(ref) => {
-                          if (ref && section.id) sectionRefs.current[section.id] = ref;
-                        }}
                       >
-                        {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
-                          <View
-                            key={activity.id}
-                            className="relative"
-                            style={{
-                              zIndex:
-                                sectionDragState?.sectionId === section.id &&
-                                sectionDragState?.dragIndex === index
-                                  ? 9999
-                                  : 1,
-                              elevation:
-                                sectionDragState?.sectionId === section.id &&
-                                sectionDragState?.dragIndex === index
-                                  ? 10
-                                  : 1,
-                            }}
-                          >
-                            {hoverState?.index === index &&
-                              hoverState?.sectionId === section.id &&
-                              (sectionDragState?.sectionId !== section.id ||
-                                (sectionDragState?.dragIndex !== index &&
-                                 (sectionDragState?.dragIndex ?? -1) > index)) && (
-                                <View className="absolute top-[-5px] h-[3px] bg-[#183B7A] rounded-sm w-[96%] self-center z-50" />
-                              )}
-
-                            <DraggableActivityItem
-                              onPress={() => handleSectionActivityPress(activity, section.id || "")}
-                              id={activity.id}
-                              title={activity.title}
-                              description={activity.description}
-                              location={""}
-                              startDate={activity.startDate?.toString() || null}
-                              endDate={activity.endDate?.toString() || null}
-                              index={index}
-                              listLength={section.itineraryActivity.length}
-                              onDragMove={(currentIndex, dy, moveY) =>
-                                handleDragMove(
-                                  currentIndex,
-                                  dy,
-                                  section.itineraryActivity?.length || 0,
-                                  moveY
-                                )
-                              }
-                              onDragStart={(idx: number) =>
-                                handleSectionActivityDragStart(
-                                  section.id || "",
-                                  idx,
-                                )
-                              }
-                              onDragEnd={(fromIdx: number, toIdx: number) =>
-                                handleSectionActivityDragEnd(
-                                  section.id || "",
-                                  activity,
-                                  fromIdx,
-                                  toIdx,
-                                )
-                              }
-                              isDragging={
-                                sectionDragState?.sectionId != undefined &&
-                                sectionDragState?.sectionId === section.id &&
-                                sectionDragState?.isDragging
-                              }
-                              dragIndex={
-                                sectionDragState?.sectionId != undefined &&
-                                sectionDragState?.sectionId === section.id
-                                  ? sectionDragState.dragIndex
-                                  : null
-                              }
-                            />
-                            
-                            {hoverState?.index === index &&
-                              hoverState?.sectionId === section.id &&
-                              sectionDragState?.sectionId === section.id &&
-                              sectionDragState?.dragIndex !== index &&
-                              (sectionDragState?.dragIndex ?? -1) < index && (
-                                <View className="absolute bottom-xxs h-[3px] bg-[#183B7A] rounded-sm w-[96%] self-center z-50 " />
-                              )}
-                          </View>
-                        )) : (
-                          // Render invisible or subtle drop zone for empty sections
-                          <View style={{ height: 64, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 2, borderColor: "#ddd", borderRadius: 8 }}>
-                             
-                              <TouchableOpacity
-                              onPress={() => {
-                                setModalVisible(true);
-                                const defaultSection = sections.find(
-                                  (section) => section.isDefaultSection == true,
-                                );
-                                setCurrentSectionId(defaultSection?.id || null);
-                              }}
-                              className="justify-center flex-row">
-                                <Icon name="add" size={18} color={"#aaa"} />
-                                <Text className=" font-semibold flex items-center text-[#aaa]">
-                                Add
-                              </Text>
-                            </TouchableOpacity>
-                             <Text style={{ color: "#aaa" }}> or drop activities here</Text>
-                             {hoverState?.sectionId === section.id && (
-                               <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
-                             )}
-                          </View>
+                        {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) > mapIndex && (
+                          <View className="absolute -top-10px h-[3px] bg-[#183B7A] rounded-sm w-full self-center z-50" />
                         )}
+
+                        <View className="absolute top-10px left-10px" {...panHandlers}>
+                          <Icon name="drag-handle" size={24} color={isSectionActive ? "#183B7A" : "#DDD"} />
+                        </View>
+                        <View className="mx-[30px]">
+                          <TouchableOpacity
+                            className="px-2 flex-1 flex-row"
+                            onPress={() => toggleSectionCollapse(section.id || "")}
+                          >
+                            <View className="flex-1 ">
+                              <Text
+                                numberOfLines={section.isCollapsed ? 1 : 10}
+                                ellipsizeMode="tail"
+                                className="text-lg font-bold text-[#183B7A] mb-1.5 flex-1"
+                              >
+                                {section.title}
+                              </Text>
+
+                              {/* add checking here if has value show the date, copy the format MM/DD */}
+                              {section.startDate && (
+                                <Text className="text-xs font-bold text-[#999] mb-1">
+                                  {new Date(section.startDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' })}
+                                </Text>
+                              )}
+
+                              {section.description && (
+                                <Text
+                                  numberOfLines={section.isCollapsed ? 2 : 10}
+                                  ellipsizeMode="tail"
+                                  className="mb-0 text-xs text-[#6c757d]"
+                                >
+                                  {section.description}
+                                </Text>
+                              )}
+
+                              <View style={{ flex: 1, flexDirection: "row" }}>
+                                <Text className="pt-1" >
+                                  {section.isCollapsed ? (
+                                    <Icon
+                                      name="keyboard-arrow-down"
+                                      size={20}
+                                      color={"#ddd"}
+                                    />
+                                  ) : (
+                                    <Icon
+                                      name="keyboard-arrow-up"
+                                      size={20}
+                                      color={"#ddd"}
+                                    />
+                                  )}
+                                </Text>
+                                {section.itineraryActivity &&
+                                  section.itineraryActivity.length > 0 ? (
+                                  <Text className="text-xs text-[#888] mt-1.5">
+                                    {section.itineraryActivity.length} Activi
+                                    {section.itineraryActivity.length !== 1
+                                      ? "ties"
+                                      : "ty"}
+                                  </Text>
+                                ) : (
+                                  <Text className="text-xs text-[#888] mt-1.5">
+                                    No activity yet
+                                  </Text>
+                                )}
+                              </View>
+                            </View>
+                          </TouchableOpacity>
+                        </View>
+
+                        <View>
+                          {!section.isCollapsed && (
+                            <View
+                              className="mt-3 z-0 bg-gray-100 rounded-2xl"
+                              style={[
+                                {
+                                  zIndex: sectionDragState?.sectionId === section.id ? 999 : 1,
+                                  // elevation: sectionDragState?.sectionId === section.id ? 10 : 0,
+                                  padding: (!section.itineraryActivity || section.itineraryActivity.length === 0) ? 0 : 10
+                                }
+                              ]}
+                              ref={(ref) => {
+                                if (ref && section.id) sectionRefs.current[section.id] = ref;
+                              }}
+                            >
+                              {section.itineraryActivity && section.itineraryActivity.length > 0 ? section.itineraryActivity.map((activity, index) => (
+                                <View
+                                  key={activity.id}
+                                  className="relative"
+                                  style={{
+                                    zIndex:
+                                      sectionDragState?.sectionId === section.id &&
+                                        sectionDragState?.dragIndex === index
+                                        ? 9999
+                                        : 1,
+                                    elevation:
+                                      sectionDragState?.sectionId === section.id &&
+                                        sectionDragState?.dragIndex === index
+                                        ? 10
+                                        : 1,
+                                  }}
+                                >
+                                  {hoverState?.index === index &&
+                                    hoverState?.sectionId === section.id &&
+                                    (sectionDragState?.sectionId !== section.id ||
+                                      (sectionDragState?.dragIndex !== index &&
+                                        (sectionDragState?.dragIndex ?? -1) > index)) && (
+                                      <View className="absolute top-[-5px] h-[3px] bg-[#183B7A] rounded-sm w-[96%] self-center z-50" />
+                                    )}
+
+                                  <DraggableActivityItem
+                                    onPress={() => handleSectionActivityPress(activity, section.id || "")}
+                                    id={activity.id}
+                                    title={activity.title}
+                                    description={activity.description}
+                                    location={""}
+                                    startDate={activity.startDate?.toString() || null}
+                                    endDate={activity.endDate?.toString() || null}
+                                    index={index}
+                                    listLength={section.itineraryActivity.length}
+                                    onDragMove={(currentIndex, dy, moveY) =>
+                                      handleDragMove(
+                                        currentIndex,
+                                        dy,
+                                        section.itineraryActivity?.length || 0,
+                                        moveY
+                                      )
+                                    }
+                                    onDragStart={(idx: number) =>
+                                      handleSectionActivityDragStart(
+                                        section.id || "",
+                                        idx,
+                                      )
+                                    }
+                                    onDragEnd={(fromIdx: number, toIdx: number) =>
+                                      handleSectionActivityDragEnd(
+                                        section.id || "",
+                                        activity,
+                                        fromIdx,
+                                        toIdx,
+                                      )
+                                    }
+                                    isDragging={
+                                      sectionDragState?.sectionId != undefined &&
+                                      sectionDragState?.sectionId === section.id &&
+                                      sectionDragState?.isDragging
+                                    }
+                                    dragIndex={
+                                      sectionDragState?.sectionId != undefined &&
+                                        sectionDragState?.sectionId === section.id
+                                        ? sectionDragState.dragIndex
+                                        : null
+                                    }
+                                  />
+
+                                  {hoverState?.index === index &&
+                                    hoverState?.sectionId === section.id &&
+                                    sectionDragState?.sectionId === section.id &&
+                                    sectionDragState?.dragIndex !== index &&
+                                    (sectionDragState?.dragIndex ?? -1) < index && (
+                                      <View className="absolute bottom-xxs h-[3px] bg-[#183B7A] rounded-sm w-[96%] self-center z-50 " />
+                                    )}
+                                </View>
+                              )) : (
+                                // Render invisible or subtle drop zone for empty sections
+                                <View style={{ height: 64, width: "100%", justifyContent: "center", alignItems: "center", borderStyle: "dashed", borderWidth: 2, borderColor: "#ddd", borderRadius: 8 }}>
+
+                                  <TouchableOpacity
+                                    onPress={() => {
+                                      setModalVisible(true);
+                                      const defaultSection = sections.find(
+                                        (section) => section.isDefaultSection == true,
+                                      );
+                                      setCurrentSectionId(defaultSection?.id || null);
+                                    }}
+                                    className="justify-center flex-row">
+                                    <Icon name="add" size={18} color={"#aaa"} />
+                                    <Text className=" font-semibold flex items-center text-[#aaa]">
+                                      Add
+                                    </Text>
+                                  </TouchableOpacity>
+                                  <Text style={{ color: "#aaa" }}> or drop activities here</Text>
+                                  {hoverState?.sectionId === section.id && (
+                                    <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-full self-center absolute top-1/2" />
+                                  )}
+                                </View>
+                              )}
+                            </View>
+                          )}
+                        </View>
+
+                        {!section.isCollapsed && section.itineraryActivity.length > 0 && (
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (!section.id) return;
+                              setModalVisible(true);
+                              setCurrentSectionId(section.id);
+                            }}
+                            className="mt-2 h-[44px] flex items-center justify-center flex-row"
+                          >
+                            <Icon name="add" size={20} color={"#263F69"} />
+                            <Text className="font-semibold flex items-center text-primary underline">
+                              Add Activity
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+
+                        <TouchableOpacity
+                          className="p-2 absolute right-0 top-3"
+                          onPress={() => handleSectionMenuPress(section)}
+                        >
+                          <Icon name="more-vert" size={20} color={"#475467"}
+                            className="opacity-50" />
+                        </TouchableOpacity>
                       </View>
-                    )}
-                </View>
+                      {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) < mapIndex && (
+                        <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-4/5 self-center mt-[15px]" />
+                      )}
+                    </>
+                  )}
+                </DraggableSectionContainer>
+              ))
+          )}
 
-                {!section.isCollapsed && section.itineraryActivity.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      if (!section.id) return;
-                      setModalVisible(true);
-                      setCurrentSectionId(section.id);
-                    }}
-                    className="mt-2 h-[44px] flex items-center justify-center flex-row"
-                  >
-                     <Icon name="add" size={20} color={"#263F69"} />
-                    <Text className="font-semibold flex items-center text-primary underline">
-                      Add Activity
-                    </Text>
-                  </TouchableOpacity>
-                )}
+          {sections && sections.length > 0 && (
+            <View className="mb-5">
+              <TouchableOpacity
+                onPress={() => {
+                  setSectionModalVisible(true);
+                }}
+                // className="mt-2 p-2 rounded-full h-[50px] flex items-center justify-center flex-row mx-4"
+                className="mt-2 rounded-md h-7xl border-0 bg-primary-light flex-row items-center justify-center gap-2"
+              >
+                <Icon name="add-circle-outline" size={20} color={"#263F69"} />
+                <Text className="font-semibold flex items-center text-primary">
+                  Add new section
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
-                <TouchableOpacity
-                  className="p-2 absolute right-0 top-3"
-                  onPress={() => handleSectionMenuPress(section)}
-                >
-                  <Icon name="more-vert" size={20} color={"#475467"} 
-                  className="opacity-50" />
-                </TouchableOpacity>
-              </View>
-              {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) < mapIndex && (
-                <View className="h-xxs bg-[#183B7A] rounded-sm my-1 w-4/5 self-center mt-[15px]" />
-              )}
-              </>
-              )}
-            </DraggableSectionContainer>
-            ))
-        )}
-      
-       {sections && sections.length > 0 && (
-         <View className="mb-5">
-            <TouchableOpacity
-              onPress={() => {
-                setSectionModalVisible(true);
+        </View>
+
+        <ActivityModal //ADD
+          visible={modalVisible}
+          onClose={() => {
+            setModalVisible(false);
+            setCurrentSectionId(null);
+          }}
+          itinerarySectionId={currentSectionId || undefined}
+          itineraryActivity={null}
+          travelId={travelId}
+        />
+
+        <ActivityModal //EDIT
+          visible={editActivityModalVisible}
+          onClose={() => {
+            setEditActivityModalVisible(false);
+            setEditingActivity(null);
+            // setEditingActivityType(null);
+            // setEditingActivitySectionId(null);
+          }}
+          itinerarySectionId={currentSectionId || undefined}
+          itineraryActivity={editingActivity}
+          travelId={travelId}
+        />
+
+        <SectionModal //ADD
+          visible={sectionModalVisible}
+          onClose={() => setSectionModalVisible(false)}
+          itinerarySection={null}
+          travelId={travelId}
+        />
+
+        <SectionModal //EDIT
+          visible={editSectionModalVisible}
+          onClose={() => {
+            setEditSectionModalVisible(false);
+            setEditingSection(null);
+          }}
+          // onSave={handleEditSection}
+          itinerarySection={selectedSection || null}
+          travelId={travelId}
+        />
+
+        {/* Main Menu Modal */}
+        {/* TODO move this to component */}
+        <SlideModal visible={menuVisible} onClose={() => setMenuVisible(false)}>
+          <View className="flex-1 bg-white">
+            <View
+              style={{
+                padding: 6,
+                borderBottomWidth: 1,
+                borderColor: "#eee",
+                flexDirection: "row",
+                alignItems: "center",
               }}
-              // className="mt-2 p-2 rounded-full h-[50px] flex items-center justify-center flex-row mx-4"
-              className="mt-2 rounded-md h-7xl border-0 bg-primary-light flex-row items-center justify-center gap-2"
             >
-              <Icon name="add-circle-outline" size={20} color={"#263F69"} />
-              <Text className="font-semibold flex items-center text-primary">
-                Add new section
+              <TouchableOpacity
+                style={{ paddingRight: 6 }}
+                onPress={() => setSectionMenuVisible(false)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Icon name="keyboard-arrow-left" size={36} color={"#EEE"} />
+              </TouchableOpacity>
+              <Text style={{ fontSize: 18, color: "#333", fontWeight: "600" }}>
+                Itinerary Menu
               </Text>
-            </TouchableOpacity>
-        </View>
-        )}
-  
-      </View>           
+            </View>
 
-      <ActivityModal //ADD
-        visible={modalVisible}
-        onClose={() => {
-          setModalVisible(false);
-          setCurrentSectionId(null);
-        }}
-        itinerarySectionId={currentSectionId || undefined}
-        itineraryActivity={null}
-        travelId={travelId}
-      />
+            <View style={{ paddingVertical: 8 }}>
+              <TouchableOpacity
+                className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
+                activeOpacity={0.7}
+                onPress={handleMenuAddSection}
+              >
+                <Icon name="grading" size={24} color={"#183B7A"} />
+                <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Add Section</Text>
+              </TouchableOpacity>
 
-      <ActivityModal //EDIT
-        visible={editActivityModalVisible}
-        onClose={() => {
-          setEditActivityModalVisible(false);
-          setEditingActivity(null);
-          // setEditingActivityType(null);
-          // setEditingActivitySectionId(null);
-        }}
-        itinerarySectionId={currentSectionId || undefined}
-        itineraryActivity={editingActivity}
-        travelId={travelId}
-      />
-
-      <SectionModal //ADD
-        visible={sectionModalVisible}
-        onClose={() => setSectionModalVisible(false)}
-        itinerarySection={null}
-        travelId={travelId}
-      />
-
-      <SectionModal //EDIT
-        visible={editSectionModalVisible}
-        onClose={() => {
-          setEditSectionModalVisible(false);
-          setEditingSection(null);
-        }}
-        // onSave={handleEditSection}
-        itinerarySection={selectedSection || null}
-        travelId={travelId}
-      />
-
-      {/* Main Menu Modal */}
-      {/* TODO move this to component */}
-      <SlideModal visible={menuVisible} onClose={() => setMenuVisible(false)}>
-        <View className="flex-1 bg-white">
-          <View
-            style={{
-              padding: 6,
-              borderBottomWidth: 1,
-              borderColor: "#eee",
-              flexDirection: "row",
-              alignItems: "center",
-            }}
-          >
-            <TouchableOpacity
-              style={{ paddingRight: 6 }}
-              onPress={() => setSectionMenuVisible(false)}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Icon name="keyboard-arrow-left" size={36} color={"#EEE"} />
-            </TouchableOpacity>
-            <Text style={{ fontSize: 18, color: "#333", fontWeight: "600" }}>
-              Itinerary Menu
-            </Text>
+              <TouchableOpacity
+                className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
+                activeOpacity={0.7}
+                onPress={handleSectionMenuAddActivity}
+              >
+                <Icon name="new-label" size={24} color={"#183B7A"} />
+                <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Add Activity</Text>
+              </TouchableOpacity>
+            </View>
           </View>
+        </SlideModal>
 
-          <View style={{ paddingVertical: 8 }}>
-            <TouchableOpacity
-              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
-              activeOpacity={0.7}
-              onPress={handleMenuAddSection}
-            >
-              <Icon name="grading" size={24} color={"#183B7A"} />
-              <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Add Section</Text>
-            </TouchableOpacity>
+        <SectionMenu
+          visible={sectionMenuVisible}
+          onClose={() => setSectionMenuVisible(false)}
+          onEditSection={() => handleSectionMenuEditSection(selectedSection?.id || "")}
+          onAddActivity={handleSectionMenuAddActivity}
+          onDeleteSection={() => handleSectionMenuDelete(selectedSection?.id || "")}
+        />
 
-            <TouchableOpacity
-              className="flex-row items-center justify-between px-4 py-5 border-b border-[#F0F0F0]"
-              activeOpacity={0.7}
-              onPress={handleSectionMenuAddActivity}
-            >
-              <Icon name="new-label" size={24} color={"#183B7A"} />
-              <Text className="flex-1 ml-3 text-base text-[#183B7A] font-medium">Add Activity</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SlideModal>
 
-      <SectionMenu
-        visible={sectionMenuVisible}
-        onClose={() => setSectionMenuVisible(false)}
-        onEditSection={() => handleSectionMenuEditSection(selectedSection?.id || "")}
-        onAddActivity={handleSectionMenuAddActivity}
-        onDeleteSection={() => handleSectionMenuDelete(selectedSection?.id || "")}
-      />
-
- 
-    </ScrollView>
+      </ScrollView>
 
     </View>
-   
+
   );
 });
 

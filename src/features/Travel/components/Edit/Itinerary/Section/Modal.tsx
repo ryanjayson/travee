@@ -19,6 +19,7 @@ import { ItinerarySection } from "../../../../types/TravelDto";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useDeleteSectionMutation } from "../../../../hooks/useSection";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
+import { useTheme } from "react-native-paper";
 
 interface SectionModalProps {
   visible: boolean;
@@ -38,6 +39,8 @@ const SectionModal = ({
   travelId,
   onSaveSuccess,
 }: SectionModalProps) => {
+  const { colors } = useTheme();
+  const [currentSection, setCurrentSection] = useState<ItinerarySection | null>(itinerarySection);
   const [isSaving, setIsSaving] = useState(false);
   const [modalHeight, setModalHeight] = useState(screenHeight * 0.60);
   const { keyboardVisible } = useKeyboardVisible();
@@ -51,7 +54,7 @@ const SectionModal = ({
   const { confirm } = useConfirm();
 
   const handleDeleteSection = async () => {
-    if (itinerarySection?.travelId && itinerarySection?.id) {
+    if (currentSection?.travelId && currentSection?.id) {
       const isConfirmed = await confirm({
         title: "Delete Section",
         message: "Are you sure you want to delete this section? All associated activities will also be permanently deleted. This action is irreversible.",
@@ -62,7 +65,7 @@ const SectionModal = ({
 
       if (isConfirmed) {
         deleteSectionMutation({
-          sectionId: itinerarySection.id!,
+          sectionId: currentSection.id!,
         });
         onClose();
       }
@@ -72,6 +75,8 @@ const SectionModal = ({
   // Slide up transition on opening
   useEffect(() => {
     if (visible) {
+      setCurrentSection(itinerarySection);
+      setIsSaving(false);
       isAtTop.current = true; // Reset scroll position tracker
       translateY.setValue(screenHeight);
       Animated.spring(translateY, {
@@ -237,31 +242,39 @@ const SectionModal = ({
 
             <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
               <View className="flex-row items-center gap-2">
-                <Text className="text-2xl text-gray-700 font-medium"
-                // style={{ marginTop: keyboardVisible ? insets.top: 0 }}
-                >
-                  {itinerarySection?.id && itinerarySection?.id !== ""
+                <Text className="text-2xl text-gray-700 font-medium">
+                  {currentSection?.id && currentSection?.id !== ""
                     ? "Edit Section"
                     : "Add Section"}
                 </Text>
               </View>
 
-              <View className="flex-row items-center gap-8">
-                {itinerarySection?.id && (
-                  <View className="rounded-md ">
+              <View className="flex-row items-center gap-6">
+                {currentSection?.id && (
+                  <>
                     <TouchableOpacity
-                      className="flex-row items-center justify-center"
                       onPress={handleDeleteSection}
                       disabled={isDeleting}
+                      accessibilityRole="button"
+                      accessibilityLabel="Delete section"
                     >
-                      <Icon name="delete-outline" size={24} color={"#c93030"} />
-                      <Text className="text-[#c93030] font-medium">Delete</Text>
+                      <Icon name="delete-outline" size={24} color="#c93030" />
                     </TouchableOpacity>
-                  </View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setCurrentSection(null);
+                      }}
+                      disabled={isSaving}
+                      accessibilityRole="button"
+                      accessibilityLabel="Switch to add section"
+                    >
+                      <Icon name="add" size={26} color={colors.primary} />
+                    </TouchableOpacity>
+                  </>
                 )}
 
-                <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-                  <Icon name="clear" size={24} color={"#999"} />
+                <TouchableOpacity onPress={handleCancel} disabled={isSaving} accessibilityRole="button" accessibilityLabel="Close modal">
+                  <Icon name="clear" size={24} color="#999" />
                 </TouchableOpacity>
               </View>
 
@@ -269,7 +282,7 @@ const SectionModal = ({
 
             <View className="flex-1">
               <EditSection
-                itinerarySection={itinerarySection}
+                itinerarySection={currentSection}
                 travelId={travelId}
                 onClose={onClose}
                 onSaveSuccess={onSaveSuccess}

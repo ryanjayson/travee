@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   View,
@@ -20,6 +20,9 @@ import { parseExtractedText } from "../../../../utils/ocrParser";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useTheme } from "react-native-paper";
+import { useDeleteActivityMutation } from "../../../../hooks/useActivity";
+import { useToast } from "../../../../../../context/ToastContext";
+import { useTravelPlan } from "../../../../hooks/useTravel";
 import { ActivityType } from "../../../../../../types/enums";
 import SectionLookupModal from "../../../Lookups/SectionLookupModal";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
@@ -43,6 +46,17 @@ const ActivityModal = ({
   travelId,
 }: ActivityModalProps) => {
   const [currentActivity, setCurrentActivity] = useState<ItineraryActivity | null>(itineraryActivity);
+
+  const { data: travelPlan } = useTravelPlan(travelId || "");
+
+  const dbActivity = useMemo(() => {
+    if (!travelPlan?.itinerarySection || !currentActivity?.id) return null;
+    return travelPlan.itinerarySection
+      .flatMap((s) => s.itineraryActivity || [])
+      .find((a) => a.id === currentActivity.id) || null;
+  }, [travelPlan, currentActivity?.id]);
+
+  const latestActivity = dbActivity || currentActivity;
 
   useEffect(() => {
     if (visible) {
@@ -115,6 +129,44 @@ const ActivityModal = ({
 
   const { confirm } = useConfirm();
   const { colors } = useTheme();
+  const { showToast } = useToast();
+  const { mutate: deleteActivityMutation, isPending: isDeleting } = useDeleteActivityMutation();
+
+  const handleDeleteActivity = async () => {
+    if (latestActivity?.id) {
+      const isConfirmed = await confirm({
+        title: "Delete Activity",
+        message: "Are you sure you want to delete this activity?",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        type: "danger",
+      });
+
+      if (isConfirmed) {
+        try {
+          deleteActivityMutation(
+            {
+              activityId: latestActivity.id,
+              sectionId: latestActivity.sectionId || itinerarySectionId || "",
+              travelId: travelId,
+            },
+            {
+              onSuccess: () => {
+                showToast({ type: "success", message: "Activity deleted successfully" });
+                handleCancel();
+              },
+              onError: () => {
+                showToast({ type: "error", message: "Failed to delete activity" });
+              },
+            }
+          );
+        } catch (err) {
+          showToast({ type: "error", message: "Failed to delete activity" });
+        }
+      }
+    }
+  };
+
   const { keyboardVisible } = useKeyboardVisible();
   const insets = useSafeAreaInsets();
 
@@ -367,22 +419,22 @@ const ActivityModal = ({
           if (isChildModalOpen) return;
           handleCancel();
         }}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
           style={{ flex: 1 }}
         >
-          <Animated.View 
-            className="flex-1 justify-end" 
-            style={{ 
+          <Animated.View
+            className="flex-1 justify-end"
+            style={{
               backgroundColor: "rgba(0,0,0,0.5)",
-              opacity: backdropOpacity 
+              opacity: backdropOpacity
             }}
           >
             <Animated.View
               {...sheetPanResponder.panHandlers}
               className="rounded-t-[30px] bg-white"
               style={[
-                { height: "100%"},
+                { height: "100%" },
                 {
                   paddingTop: insets.top + 20,
                   shadowColor: "#000",
@@ -395,7 +447,7 @@ const ActivityModal = ({
               ]}
             >
               <StatusBar style="dark" />
-              
+
               {/* Drag Handle Area */}
               {/* <View 
                 {...dragPanResponder.panHandlers}
@@ -405,40 +457,51 @@ const ActivityModal = ({
               </View> */}
 
               <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
-                  <View className="flex-row items-center gap-2">
-                      <Text className="text-2xl text-gray-700 font-medium">
-                          {currentActivity?.id ? "Edit Activity" : "Add Activity"}
-                      </Text>
-                  </View>
-                  <View className="flex-row items-center gap-4">
-                      {/* TODO: for future release, ability to scan booking receipt or ticket image and auto-populate fields */}
-                      {/* {isOcrPending ? ( 
-                        <ActivityIndicator size="small" color={colors.primary} />
-                      ) : (
-                        <TouchableOpacity 
-                          onPress={handleTextExtraction} 
-                          disabled={isSaving}
-                          accessibilityRole="button"
-                          accessibilityLabel="Extract details from booking receipt or ticket image"
-                        >
-                            <Icon name="camera-alt" size={24} color={colors.primary} />
-                        </TouchableOpacity>
-                      )} */}
-                      <TouchableOpacity 
-                        onPress={handleCancel} 
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-2xl text-gray-700 font-medium">
+                    {latestActivity?.id ? "Edit Activity" : "Add Activity"}
+                  </Text>
+                </View>
+
+                <View className="flex-row items-center gap-8">
+                  {latestActivity?.id && (
+                    <View className="flex-row items-center gap-5">
+                      <TouchableOpacity
+                        onPress={handleDeleteActivity}
+                        disabled={isSaving || isDeleting}
+                        accessibilityRole="button"
+                        accessibilityLabel="Delete activity"
+                      >
+                        <Icon name="delete-outline" size={24} color="#c93030" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setCurrentActivity(null);
+                          setExtractedData(null);
+                        }}
                         disabled={isSaving}
                         accessibilityRole="button"
-                        accessibilityLabel="Close modal"
+                        accessibilityLabel="Switch to add activity"
                       >
-                          <Icon name="clear" size={24} color={"#999"} />
+                        <Icon name="add" size={26} color={colors.primary} />
                       </TouchableOpacity>
-                  </View>
+                    </View>
+                  )}
+                  <TouchableOpacity
+                    onPress={handleCancel}
+                    disabled={isSaving}
+                    accessibilityRole="button"
+                    accessibilityLabel="Close modal"
+                  >
+                    <Icon name="clear" size={24} color={"#999"} />
+                  </TouchableOpacity>
+                </View>
               </View>
- 
+
               <View className="flex-1">
                 <EditActivity
                   itinerarySectionId={itinerarySectionId}
-                  itineraryActivity={extractedData ? { ...currentActivity, ...extractedData } as any : currentActivity}
+                  itineraryActivity={extractedData ? { ...latestActivity, ...extractedData } as any : latestActivity}
                   travelId={travelId}
                   onClose={onClose}
                   onSaveSuccess={(saved) => {

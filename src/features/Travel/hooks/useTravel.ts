@@ -135,24 +135,25 @@ export const useTravel = (travelId: string) => {
   });
 };
 
-export const useTravelPlan = (travelId: string) => {
+export const useTravelPlan = (travelId: string | number) => {
+  const normalizedId = travelId?.toString();
   return useQuery<TravelPlan, Error>({
-    queryKey: ["selectedTravelPlan", travelId],
+    queryKey: ["selectedTravelPlan", normalizedId],
     queryFn: async () => {
       // If it's a string, it generated locally and offline
-      if (travelId) {
-        return await getTravelPlanLocally(travelId);
+      if (normalizedId) {
+        return await getTravelPlanLocally(normalizedId);
       }
       
       try {
         // NOTE: This will not work as right now it will support offline first
-        // return await fetchTravelPlan(travelId);
+        // return await fetchTravelPlan(normalizedId);
       } catch (err) {
         console.warn("API fetch failed for travel plan, falling back to local database", err);
-        return await getTravelPlanLocally(travelId);
+        return await getTravelPlanLocally(normalizedId);
       }
     },
-    enabled: !!travelId,
+    enabled: !!normalizedId,
   });
 };
 

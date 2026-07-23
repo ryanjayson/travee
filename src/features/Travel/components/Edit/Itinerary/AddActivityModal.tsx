@@ -417,9 +417,9 @@ const AddActivityModal = ({
               style={[
                 styles.saveButton,
                 (!activity.trim() || !description.trim()) &&
-                  styles.saveButtonDisabled,
+                styles.saveButtonDisabled,
               ]}
-              onPress={() => {}} //handleSave
+              onPress={() => { }} //handleSave
               disabled={!activity.trim() || !description.trim()}
             >
               {isSaving ? (
@@ -429,7 +429,7 @@ const AddActivityModal = ({
                   style={[
                     styles.saveButtonText,
                     (!activity.trim() || !description.trim()) &&
-                      styles.saveButtonTextDisabled,
+                    styles.saveButtonTextDisabled,
                   ]}
                 >
                   {isEditing ? "Update Activity" : "Save Activity"}

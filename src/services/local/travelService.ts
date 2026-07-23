@@ -461,11 +461,25 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
       tripSetting,
     };
 
-    const sections = await database.get<Section>("itinerary_sections").query(
+    let sections = await database.get<Section>("itinerary_sections").query(
       Q.where("travel_id", travelId),
       Q.sortBy("is_default_section", Q.desc),
       Q.sortBy("sort_order", Q.asc)
     ).fetch();
+
+    const hasDefault = sections.some((s) => s.isDefaultSection);
+    if (!hasDefault) {
+      const defaultSec = await database.write(async () => {
+        return await database.get<Section>("itinerary_sections").create((s) => {
+          s.travel.id = travelId;
+          s.title = "Activities";
+          s.isDefaultSection = true;
+          s.sortOrder = "0";
+          s.isOffline = true;
+        });
+      });
+      sections = [defaultSec, ...sections];
+    }
 
     // ── Bulk-fetch all activity-level related records for this travel ──────────
     // This replaces the N+1 pattern (5 queries × N activities) with 5 flat
@@ -849,7 +863,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         sortOrder: s.sortOrder,
         isDefaultSection: s.isDefaultSection,
         isCollapsed: s.isCollapsed,
-        travelId: t.id,
+        travelId: t.id.toString(),
         itineraryActivity,
       };
     }));
@@ -901,6 +915,15 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           isArchived: travelData.isArchived ?? false,
           type: travelData.type ?? null,
         });
+      });
+
+      // Always create a default section
+      await database.get<Section>("itinerary_sections").create((s) => {
+        s.travel.id = newTravel.id;
+        s.title = "Activities";
+        s.isDefaultSection = true;
+        s.sortOrder = "0";
+        s.isOffline = true;
       });
 
       if (travelData.createSectionsBasedOnDates && travelData.startOrDepartureDate && travelData.endOrReturnDate) {
@@ -984,6 +1007,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
     if (id) {
       activity = await database.get<Activity>("itinerary_activities").find(id.toString());
       await activity.update((a) => {
+        if (activityData.sectionId) {
+          a.section.id = activityData.sectionId.toString();
+        }
         Object.assign(a, {
           title: activityData.title,
           description: activityData.description,

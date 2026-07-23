@@ -18,11 +18,11 @@ interface TravelActionFABProps {
   onEditTrip?: () => void;
 }
 
-const TravelActionFAB = ({ 
-  onAddNote, 
-  onAddChecklist, 
-  onAddExpense, 
-  onAddActivity, 
+const TravelActionFAB = ({
+  onAddNote,
+  onAddChecklist,
+  onAddExpense,
+  onAddActivity,
   onAddSection,
   currentTab = 'details',
   open: controlledOpen,
@@ -75,12 +75,12 @@ const TravelActionFAB = ({
         label: 'Add Section',
         labelTextColor: 'white',
         style: {
-            elevation: 0,
-            borderRadius: 50,
-            padding: 6,
-            backgroundColor: '#0EA5E9',
-            marginRight: -6,
-            marginBottom: 10
+          elevation: 0,
+          borderRadius: 50,
+          padding: 6,
+          backgroundColor: '#0EA5E9',
+          marginRight: -6,
+          marginBottom: 10
         },
         color: 'white',
         onPress: onAddSection,
@@ -107,12 +107,12 @@ const TravelActionFAB = ({
         label: 'Add To-do item',
         labelTextColor: 'white',
         style: {
-            elevation: 0,
-            borderRadius: 50,
-            padding: 6,
-            backgroundColor: '#0EA5E9',
-            marginRight: -6,
-            marginBottom: 10
+          elevation: 0,
+          borderRadius: 50,
+          padding: 6,
+          backgroundColor: '#0EA5E9',
+          marginRight: -6,
+          marginBottom: 10
         },
         color: 'white',
         onPress: onAddChecklist,
@@ -133,18 +133,18 @@ const TravelActionFAB = ({
       //   color: 'white',
       //   onPress: onAddExpense,
       // },
-       {
+      {
         id: 'activity',
         icon: 'calendar-plus',
         label: 'Add Activity',
         labelTextColor: 'white',
         style: {
-            elevation: 0,
-            borderRadius: 50,
-            padding: 6,
-            backgroundColor: '#0EA5E9',
-            marginRight: -6,
-            marginBottom: 10
+          elevation: 0,
+          borderRadius: 50,
+          padding: 6,
+          backgroundColor: '#0EA5E9',
+          marginRight: -6,
+          marginBottom: 10
         },
         color: 'white',
         onPress: onAddActivity,
@@ -173,7 +173,7 @@ const TravelActionFAB = ({
       {open && (
         <TouchableOpacity
           activeOpacity={1}
-          style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0, 0, 0, 0.75)'}]}
+          style={[StyleSheet.absoluteFillObject, { backgroundColor: 'rgba(0, 0, 0, 0.75)' }]}
           onPress={() => setOpen(false)}
         />
       )}
@@ -182,7 +182,7 @@ const TravelActionFAB = ({
           position: 'absolute',
           top: 0,
           left: 0,
-          right: 0,
+          right: 3,
           bottom: 0,
           transform: [{ translateY: translateYAnim }]
         }]}
@@ -200,19 +200,19 @@ const TravelActionFAB = ({
             }
           }}
           fabStyle={{
-              backgroundColor: open ? '#82181a' : '#0EA5E9',
-              borderRadius: 50,
-              padding: 6,
-              height: 68,
-              width: 68,
+            backgroundColor: open ? '#82181a' : '#0EA5E9',
+            borderRadius: 50,
+            padding: 6,
+            height: 68,
+            width: 68,
           }}
           backdropColor="transparent"
           color="white"
         />
         {open && (
           <TouchableOpacity
-          className='bg-brand-50'
-            style={[styles.editTripButton, { borderColor: "#263F69", borderWidth:  1}]}
+            className='bg-brand-50'
+            style={[styles.editTripButton, { borderColor: "#263F69", borderWidth: 1 }]}
             onPress={() => {
               setOpen(false);
               if (onEditTrip) {

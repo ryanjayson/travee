@@ -219,17 +219,17 @@ const ActivityItemCard = ({
           return;
         }
 
-        const { 
-          index: currentIndex, 
-          dragSectionId: latestDragSectionId, 
-          hoverSectionId: latestHoverSectionId, 
-          hoverIndex: latestHoverIndex 
+        const {
+          index: currentIndex,
+          dragSectionId: latestDragSectionId,
+          hoverSectionId: latestHoverSectionId,
+          hoverIndex: latestHoverIndex
         } = dragPropsRef.current;
-        
-        const isTargetDifferent = 
-          latestDragSectionId !== null && 
+
+        const isTargetDifferent =
+          latestDragSectionId !== null &&
           latestDragSectionId !== undefined &&
-          latestHoverSectionId !== null && 
+          latestHoverSectionId !== null &&
           latestHoverSectionId !== undefined &&
           (latestDragSectionId !== latestHoverSectionId || (latestHoverIndex !== null && latestHoverIndex !== undefined && latestHoverIndex !== currentIndex));
 
@@ -247,7 +247,7 @@ const ActivityItemCard = ({
         if (isTargetDifferent) {
           const activeDraggedHeight = draggedHeight ?? cardHeight;
           let targetY = 0;
-          
+
           if (latestDragSectionId === latestHoverSectionId) {
             const targetIndex = latestHoverIndex !== null && latestHoverIndex !== undefined ? latestHoverIndex : currentIndex;
             targetY = (targetIndex - currentIndex) * activeDraggedHeight;
@@ -264,7 +264,7 @@ const ActivityItemCard = ({
           }).start(() => {
             // Trigger the reorder, state update will clear parentIsDragging and trigger cleanup
             dragPropsRef.current.onDragEnd?.(
-              currentIndex, 
+              currentIndex,
               latestHoverIndex !== null && latestHoverIndex !== undefined ? latestHoverIndex : currentIndex,
               latestHoverSectionId
             );
@@ -359,7 +359,7 @@ const ActivityItemCard = ({
           isDone: nextStatus,
           isOffline: true,
         };
-        
+
         await updateMutation.mutateAsync(updatedPayload);
         setItineraryEventActivity(updatedPayload);
       } catch (err) {
@@ -400,11 +400,11 @@ const ActivityItemCard = ({
       }}
     >
 
-    {showDateText && itineraryEventActivity.startDate ? (
-      <Text className="text-sm font-bold absolute px-2 left-1">
-        {new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })}
-      </Text>
-    ) : null}
+      {showDateText && itineraryEventActivity.startDate ? (
+        <Text className="text-sm font-bold absolute px-2 left-1">
+          {new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })}
+        </Text>
+      ) : null}
 
       <View className={`px-2 flex-row justify-between items-center relative  pl-6xl   `}>
         {!isDragActive && (
@@ -430,7 +430,7 @@ const ActivityItemCard = ({
               </View>
             )} */}
 
-                  {/* <View className={`absolute h-1/2 w-1px top-1/2 ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-gray-300`}></View> */}
+            {/* <View className={`absolute h-1/2 w-1px top-1/2 ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-gray-300`}></View> */}
 
             <Text className="text-xs font-medium text-gray-400 absolute left-xl text-right">
               {(() => {
@@ -468,67 +468,65 @@ const ActivityItemCard = ({
                 isViewModeNarrow={viewMode === 'narrow'}
               />
             </TouchableOpacity>
-         
+
           </>
         )}
 
         {(!isDragActive && !parentIsDragging && isLastItem) && viewMode === 'expanded' && (
-        <TouchableHighlight 
-          underlayColor={"none"}
-          className={`absolute h-6xl w-6xl bottom-[-30px] left-[12px] z-9999 `} //TODO: apply to last item for now, later show this to cards between
-          onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined)}
-          onShowUnderlay={() => setIsAddPressed(true)}
-          onHideUnderlay={() => setIsAddPressed(false)}
-          accessibilityRole="button"
+          <TouchableHighlight
+            underlayColor={"none"}
+            className={`absolute h-6xl w-6xl bottom-[-30px] left-lg z-9999 `} //TODO: apply to last item for now, later show this to cards between
+            onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined, itineraryActivity.travelId)}
+            onShowUnderlay={() => setIsAddPressed(true)}
+            onHideUnderlay={() => setIsAddPressed(false)}
+            accessibilityRole="button"
             accessibilityLabel="Add activity"
           >
             <View
-                className={`${isAddPressed ? 'bg-[#183B7A] rounded-md' : ' rounded-md bg-white '} border-gray-300  left-[37px] absolute m-2 mt-2xl border px-1px z-9999`}
+              className={`${isAddPressed ? 'bg-[#183B7A] rounded-md' : ' rounded-md bg-white '} border-gray-300  left-[37px] absolute m-2 mt-2xl border px-1px z-9999`}
             >
-            <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`}/>
+              <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`} />
             </View>
           </TouchableHighlight>
         )}
 
-       
-          <TouchableOpacity
-            onPress={() => handleViewModeActivity(itineraryEventActivity.id!)}
-            onLongPress={handleLongPress}
-            delayLongPress={150}
-            onPressOut={() => {
-              if (!panResponderClaimed.current) {
-                pan.setValue({ x: 0, y: 0 });
-                setDragActiveState(false);
-                dragPropsRef.current.onDragEnd?.(dragPropsRef.current.index, dragPropsRef.current.index);
-              }
-            }}
-            accessibilityRole="button"
-           className={`flex-1 grow ml-3 `}
-          >
-             <FadeInView type="right" delay={100} duration={350}
-             className={`border border-solid border-[#e0e0e0] rounded-xl ${
-              itineraryEventActivity.isDone
-                ? "opacity-50 border border-success-700 bg-success-25"
-                : "bg-white"
-            } 
-            ${
-              isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")
-            }  ${isDragActive ? "opacity-100 shadow-2xl" : ""}` }>
+
+        <TouchableOpacity
+          onPress={() => handleViewModeActivity(itineraryEventActivity.id!)}
+          onLongPress={handleLongPress}
+          delayLongPress={150}
+          onPressOut={() => {
+            if (!panResponderClaimed.current) {
+              pan.setValue({ x: 0, y: 0 });
+              setDragActiveState(false);
+              dragPropsRef.current.onDragEnd?.(dragPropsRef.current.index, dragPropsRef.current.index);
+            }
+          }}
+          accessibilityRole="button"
+          className={`flex-1 grow ml-3 `}
+        >
+          <FadeInView type="right" delay={100} duration={350}
+            className={`border border-solid border-[#e0e0e0] rounded-xl ${itineraryEventActivity.isDone
+              ? "opacity-50 border border-success-700 bg-success-25"
+              : "bg-white"
+              } 
+            ${isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")
+              }  ${isDragActive ? "opacity-100 shadow-2xl" : ""}`}>
             <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
-            {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
-                  <View 
-                    style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }} 
-                    className="items-end rounded-xs px-2 py-0.5"
+              {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
+                <View
+                  style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }}
+                  className="items-end rounded-xs px-2 py-0.5"
+                >
+                  <Text
+                    style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }}
+                    className="text-[8px] tracking-wider uppercase font-extrabold"
                   >
-                    <Text 
-                      style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }} 
-                      className="text-[8px] tracking-wider uppercase font-extrabold"
-                    >
-                      {getActivityTypeDetails(itineraryEventActivity.type).text}
-                    </Text>
-                  </View>
-                )}
-                {/* {itineraryEventActivity.startDate ? (
+                    {getActivityTypeDetails(itineraryEventActivity.type).text}
+                  </Text>
+                </View>
+              )}
+              {/* {itineraryEventActivity.startDate ? (
                   <View className="flex-row gap-1">
                     <Text className="text-xs font-bold text-[#000] ">
                         {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { weekday: 'long' })}
@@ -564,37 +562,37 @@ const ActivityItemCard = ({
                 </View>
               )} */}
 
-                <View className="flex-2">
-                  <View className="flex-row justify-between items-start mb-1 gap-x-2">
-                    <Text className={`text-lg font-medium mt-1 text-secondary leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
-                        {itineraryEventActivity.title}
-                    </Text>
-                  </View>
-                  {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
-                    <View 
-                      className="flex-row items-center text-ellipsis rounded-sm w-[80%] -mt-xxs"
-                    >
-                      <Icon name="location-pin" size={14} color={"#B42318"} />
-                      <Text className="text-base text-tertiary "
+              <View className="flex-2">
+                <View className="flex-row justify-between items-start mb-1 gap-x-2">
+                  <Text className={`text-lg font-medium mt-1 text-secondary leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
+                    {itineraryEventActivity.title}
+                  </Text>
+                </View>
+                {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
+                  <View
+                    className="flex-row items-center text-ellipsis rounded-sm w-[80%] -mt-xxs"
+                  >
+                    <Icon name="location-pin" size={14} color={"#B42318"} />
+                    <Text className="text-base text-tertiary "
                       ellipsizeMode="tail"
                       numberOfLines={1}>
-                        {itineraryEventActivity.destination}
-                      </Text>
-                    </View>
-                  )} 
-
-                  {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (
-                    <Text className="text-sm text-tertiary  mt-2 
-                    mb-4" 
-                      numberOfLines={2}
-                      ellipsizeMode="tail">
-                      {itineraryEventActivity.description} 
+                      {itineraryEventActivity.destination}
                     </Text>
-                  )}
+                  </View>
+                )}
+
+                {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (
+                  <Text className="text-sm text-tertiary  mt-2 
+                    mb-4"
+                    numberOfLines={2}
+                    ellipsizeMode="tail">
+                    {itineraryEventActivity.description}
+                  </Text>
+                )}
               </View>
             </View>
-            
-            
+
+
             {!isNarrow && (
               <View className="flex-row justify-between items-center  border-gray-200 pt-1.5 ">
                 <View className="flex-row items-center mt-1 flex-wrap gap-5 hidden">
@@ -684,24 +682,24 @@ const ActivityItemCard = ({
                     {itineraryEventActivity.isDone ? "" : "Mark as done"}
                   </Text>
                 )}
-                
-                  {itineraryEventActivity.isDone ? 
-                      (<Icon name="check" size={24} color="#0c6134" />)
-                      : (<Icon name="check-box-outline-blank" size={24} color="#D0D5DD" />)}
+
+                {itineraryEventActivity.isDone ?
+                  (<Icon name="check" size={24} color="#0c6134" />)
+                  : (<Icon name="check-box-outline-blank" size={24} color="#D0D5DD" />)}
               </TouchableOpacity>
-          </View>
-        </FadeInView>
-          </TouchableOpacity>
-       
+            </View>
+          </FadeInView>
+        </TouchableOpacity>
+
       </View>
 
-     {isAddPressed && (
+      {isAddPressed && (
         <View className="w-[80%] rounded-full left-7xl absolute bottom-[2px]">
           <View className="flex-1 h-xxs bg-[#183B7A] rounded-full z-40" />
           <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50 absolute right-0 -bottom-1" />
         </View>
       )}
-      
+
       <ViewActivityModal
         id={itineraryEventActivity.id!}
         travelId={itineraryEventActivity.travelId}

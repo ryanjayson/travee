@@ -207,17 +207,17 @@ const SectionLookupModal = ({
             style={{ paddingTop: 4 }}
           >
             <View className="flex-1 gap-1">
-                <Text
-                  className="text-2xl font-semibold  text-primary"
-                >
-                  Trip sections
-                </Text>
-                <Text
-                  className="text-base  text-tertiary"
-                >
-                  Available section in this trip
-                </Text>
-              </View>
+              <Text
+                className="text-2xl font-semibold  text-primary"
+              >
+                Trip sections
+              </Text>
+              <Text
+                className="text-base  text-tertiary"
+              >
+                Available sections in this trip
+              </Text>
+            </View>
             <TouchableOpacity onPress={handleCancel}>
               <Icon name="clear" size={24} color={"#999"} />
             </TouchableOpacity>
@@ -241,9 +241,18 @@ const SectionLookupModal = ({
                 >
                   <Icon name="folder" size={24} color="#263F69" />
                   <View className="flex-1">
-                    <Text className="text-lg text-secondary font-semibold">
-                      {section?.isDefaultSection ? "[Ungroup]" : section.title}
-                    </Text>
+                    <View className="flex-row items-center gap-2 flex-wrap">
+                      <Text className="text-lg text-secondary font-semibold">
+                        {section?.isDefaultSection ? "[Ungroup]" : section.title}
+                      </Text>
+                      {section?.isDefaultSection && (
+                        <View className="bg-gray-100 rounded-lg px-2 py-0.5">
+                          <Text className="text-[10px] text-gray-500 font-bold uppercase">
+                            Default
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                     {section.startDate && !isNaN(new Date(section.startDate).getTime()) ? (
                       <Text className="text-base text-tertiary">
                         {new Date(section.startDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit' })}

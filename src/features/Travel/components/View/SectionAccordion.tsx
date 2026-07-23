@@ -20,6 +20,7 @@ import ViewActivityModal from "./Activity/Modal";
 
 interface SectionAccordionProps {
   travelPlan: TravelPlan;
+  onRefresh?: () => Promise<any>;
 }
 
 // Tactile spring layout animation configuration
@@ -407,6 +408,7 @@ const DraggableSectionItem = ({
 
 const SectionAccordion = ({
   travelPlan,
+  onRefresh,
 }: SectionAccordionProps) => {
   const { generateSortOrder } = useLexicographicSort();
   const queryClient = useQueryClient();
@@ -421,12 +423,17 @@ const SectionAccordion = ({
   const travelId = travelPlan.travel.id || "";
   const { data: dbSetting } = useTripSetting(travelId);
   const updateSettingMutation = useUpdateTripSetting();
-  const { refetch } = useTravelPlan(travelId);
 
   const handleRefresh = async () => {
+    if (!onRefresh) return;
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
+    try {
+      await onRefresh();
+    } catch (err) {
+      console.error("Failed to refresh itinerary:", err);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   // Combine fetched settings, travel payload settings, and defaults

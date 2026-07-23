@@ -92,18 +92,27 @@ export const useUpdateSectionMutation = () => {
         queryKey: ["travel"],
       });
 
-      if (variables.travelId) {
-        queryClient.invalidateQueries({
-          queryKey: ["travel", variables.travelId],
-        });
-      }
-
       queryClient.invalidateQueries({
         queryKey: ["selectedTravelPlan"],
       });
       queryClient.invalidateQueries({
         queryKey: ["travels"],
       });
+
+      const targetTravelId = variables.travelId?.toString();
+      if (targetTravelId) {
+        queryClient.invalidateQueries({
+          queryKey: ["travel", targetTravelId],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["selectedTravelPlan", targetTravelId],
+        });
+
+        queryClient.refetchQueries({
+          queryKey: ["selectedTravelPlan", targetTravelId],
+        });
+      }
 
       // Example: Manual update for a specific section within a trip // Optional: Manual update for better UI speed (if you have the full itinerary key)
       //commented for now but will add on online mode
