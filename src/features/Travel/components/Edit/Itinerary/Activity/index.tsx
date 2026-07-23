@@ -508,8 +508,6 @@ const EditActivity = ({
     onChildModalToggle?.(isAnyChildModalOpen);
   }, [isAnyChildModalOpen, onChildModalToggle]);
 
-
-
   const updateMutation = useUpdateActivityMutation();
   const createSectionMutation = useUpdateSectionMutation();
   const { openFlightModal, openDescriptionModal, openSectionModal, closeSectionModal, openChecklistModal } = useTravelContext();
@@ -670,7 +668,7 @@ const EditActivity = ({
 
       // If creating a new activity, or if the user changed the date/time, generate a new sortOrder
       if (!itineraryActivity?.id || dateChanged) {
-        const currentSection = travelPlan?.itinerarySection?.find(s => s.id === (values.sectionId || ""));
+        const currentSection = travelPlan?.itinerarySection?.find(s => s.id?.toString() === (values.sectionId || "").toString());
         // Filter out the current activity so it doesn't compare against itself when editing
         const existingActivities = [...(currentSection?.itineraryActivity || [])].filter(a => a.id !== itineraryActivity?.id);
 
@@ -1165,7 +1163,7 @@ const EditActivity = ({
       }) => {
         const sections = travelPlan?.itinerarySection || [];
         const hasSections = sections.length > 0;
-        const selectedSection = sections.find((s) => s.id === values.sectionId);
+        const selectedSection = sections.find((s) => s.id?.toString() === values.sectionId?.toString());
         const selectedSectionName = selectedSection
           ? (selectedSection.isDefaultSection ? "[Ungroup]" : selectedSection.title || "")
           : (values.sectionId ? createdSections[values.sectionId] || "" : "");
@@ -1196,7 +1194,7 @@ const EditActivity = ({
             id: "details",
             title: "Details",
             content: (
-              <View className="flex-1 px-5">
+              <View className="flex-1 px-5 mt-2">
                 {/* Title */}
                 <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
                   <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
@@ -1884,7 +1882,7 @@ const EditActivity = ({
               handleFlightSelect={handleFlightSelect}
             />
 
-            <View className="flex-1">
+            <View className="flex-1 py-3 ">
               <Tabs
                 tabs={tabData}
                 activeTabId={activeTabId}

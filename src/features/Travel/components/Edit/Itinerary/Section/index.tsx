@@ -135,9 +135,12 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
             if (sectionId && onSaveSuccess) {
               onSaveSuccess({ ...sectionData, id: sectionId });
             }
+            onClose();
+          },
+          onError: () => {
+            // Do not close on error so the form data is not lost
           }
         });
-        onClose();
       }
     },
   });

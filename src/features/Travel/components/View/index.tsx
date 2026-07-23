@@ -498,6 +498,7 @@ const ViewTravel = ({
         <ItineraryTab
           travelPlan={travelPlan}
           onRefresh={onRefresh}
+          isMinimized={currentSnap === SNAP_MIN}
         />
       )
     },

@@ -42,7 +42,7 @@ const SectionModal = ({
   const { colors } = useTheme();
   const [currentSection, setCurrentSection] = useState<ItinerarySection | null>(itinerarySection);
   const [isSaving, setIsSaving] = useState(false);
-  const [modalHeight, setModalHeight] = useState(screenHeight * 0.60);
+  const [modalHeight, setModalHeight] = useState(550);
   const { keyboardVisible } = useKeyboardVisible();
   const insets = useSafeAreaInsets();
 

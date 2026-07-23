@@ -105,31 +105,30 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
 
   const renderItem = (item: any) => (
     <View key={item.id} className="flex-row items-start gap-3 py-3 px-4 border-b border-gray-100 ">
-    <TouchableOpacity
-      accessibilityRole="checkbox"
-      onPress={() => handleToggle(item)}
-      className="flex-row items-start gap-3 "
-    >
-      <View
-        className={`items-center justify-center mt-0.5 shrink-0`}
+      <TouchableOpacity
+        accessibilityRole="checkbox"
+        onPress={() => handleToggle(item)}
+        className="flex-row items-start gap-3 "
       >
-        {item.isDone ? (<Icon name="check-box" size={24} color="#263F69" />) : (<Icon name="check-box-outline-blank" size={24} color="#777" />)}
-      </View>
-      <View className="flex-1 align-center justify-center">
-        <Text
-          className={`text-lg  ${
-            item.isDone ? "line-through text-gray-400" : "text-[#1A1A1A] font-medium"
-          }`}
+        <View
+          className={`items-center justify-center mt-0.5 shrink-0`}
         >
-          {item.title}
-        </Text>
-        {item.description ? (
-          <Text className="text-xs text-gray-400 leading-5 -mt-1" numberOfLines={2}>
-            {item.description}
+          {item.isDone ? (<Icon name="check-box" size={24} color="#263F69" />) : (<Icon name="check-box-outline-blank" size={24} color="#777" />)}
+        </View>
+        <View className="flex-1 align-center justify-center">
+          <Text
+            className={`text-lg  ${item.isDone ? "line-through text-gray-400" : "text-[#1A1A1A] font-medium"
+              }`}
+          >
+            {item.title}
           </Text>
-        ) : null}
-      </View>
-    </TouchableOpacity>
+          {item.description ? (
+            <Text className="text-xs text-gray-400 leading-5 -mt-1" numberOfLines={2}>
+              {item.description}
+            </Text>
+          ) : null}
+        </View>
+      </TouchableOpacity>
     </View>
 
   );
@@ -146,23 +145,23 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           </Text>
 
           <View className="text-center tracking-wide flex-row align-center gap-1 ">
-          <TouchableOpacity
+            <TouchableOpacity
               onPress={() => openChecklistModal(null, allActivities, travelId)}
               accessibilityRole="button"
               activeOpacity={0.7}
               className="flex-row items-center"
             >
               {/* <Icon name="add" size={16} color={colors.primary} /> */}
-              <Text 
+              <Text
                 style={{ color: colors.primary }}
                 className="font-medium text-base underline"
               >
                 Add to-do item
               </Text>
-            </TouchableOpacity> 
-             <Text className="text-base text-tertiary">
-                   now to your trip
-              </Text>
+            </TouchableOpacity>
+            <Text className="text-base text-tertiary">
+              now to your trip
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -177,9 +176,9 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       <View className="px-6 py-5">
         {/* Summary header */}
         <View className="flex-row items-center justify-between mb-2">
-           <Text className="text-md font-semibold tracking-wider uppercase mb-1">
-               Trip checklist
-              </Text>
+          <Text className="text-md font-semibold tracking-wider uppercase mb-1">
+            Trip checklist
+          </Text>
           <Text className="text-sm text-gray-500 font-medium">
             {totalDone}/{items.length} Done
           </Text>
@@ -200,22 +199,22 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           const isCollapsed = collapsedSections["general"] || false;
           return (
             <FadeInView type="right" delay={100} duration={350}
-             className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+              className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
               <TouchableOpacity
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 onPress={() => toggleSectionCollapse("general")}
-                 className={`flex-row items-center gap-3 px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
+                className={`flex-row items-center gap-3 px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
               >
                 <Icon name="list" size={24} color="#888" />
                 <Text className="text-md font-bold text-tertiary flex-1 uppercase tracking-wider">General</Text>
                 <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">
                   {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
                 </Text>
-                <Icon 
-                  name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
-                  size={24} 
-                  color="#777" 
+                <Icon
+                  name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"}
+                  size={24}
+                  color="#777"
                 />
               </TouchableOpacity>
               {!isCollapsed && ungroupedItems.map(renderItem)}
@@ -224,9 +223,9 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
         })()}
 
         {groups.length > 0 && (
-            <View className="flex-row items-center justify-between">
-              <Text className="text-xs font-semibold tracking-wide uppercase mb-2 text-tertiary">Custom Group</Text>
-            </View>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-xs font-semibold tracking-wide uppercase mb-2 text-tertiary">Custom Group</Text>
+          </View>
         )}
 
         {/* Grouped items */}
@@ -236,44 +235,44 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           if (groupItems.length === 0) return null;
           const isCollapsed = collapsedSections[group.id || ""] || false;
           return (
-              <FadeInView key={group.id} type="right" delay={100} duration={350} className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    onPress={() => toggleSectionCollapse(group.id || "")}
-                    className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
-                  >
-                    <Icon name="folder" size={24} color="#263F69" />
-                    <View className="flex-1">
-                      <Text className="text-md font-bold text-[#263F69] uppercase tracking-wider">
-                        {group.title}
-                      </Text>
-                      {group.description ? (
-                        <Text className="text-xs text-gray-600 pt-1">{group.description}</Text>
-                      ) : null}
-                    </View>
-                    <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{groupItems.length}</Text>
-                    <Icon 
-                      name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
-                      size={24} 
-                      color="#777" 
-                    />
-                  </TouchableOpacity>
-                  {!isCollapsed && (
-                    <>
-                      {groupItems.map(renderItem)}
-                    </>
-                  )}
-             </FadeInView>
+            <FadeInView key={group.id} type="right" delay={100} duration={350} className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                onPress={() => toggleSectionCollapse(group.id || "")}
+                className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
+              >
+                <Icon name="folder" size={24} color="#263F69" />
+                <View className="flex-1">
+                  <Text className="text-md font-bold text-[#263F69] uppercase tracking-wider">
+                    {group.title}
+                  </Text>
+                  {group.description ? (
+                    <Text className="text-xs text-gray-600 pt-1">{group.description}</Text>
+                  ) : null}
+                </View>
+                <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{groupItems.length}</Text>
+                <Icon
+                  name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"}
+                  size={24}
+                  color="#777"
+                />
+              </TouchableOpacity>
+              {!isCollapsed && (
+                <>
+                  {groupItems.map(renderItem)}
+                </>
+              )}
+            </FadeInView>
           );
         })}
 
         {hasActivityItems && (
-            <View className="flex-row items-center justify-between">
-              <Text className="text-xs font-semibold tracking-wide uppercase mb-2 text-tertiary">Activity checklist</Text>
-            </View>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-xs font-semibold tracking-wide uppercase mb-2 text-tertiary">Activity checklist</Text>
+          </View>
         )}
-  
+
         {/* Activity-linked items */}
         {allActivities.map((activity) => {
           const activityItems = items.filter((i) => i.activityId === activity.id);
@@ -281,30 +280,30 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           const doneCt = activityItems.filter((i) => i.isDone).length;
           const isCollapsed = collapsedSections[`activity-${activity.id}`] || false;
           return (
-              <FadeInView key={`activity-${activity.id}`}
-               type="right" delay={100} duration={350} 
-               className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  onPress={() => toggleSectionCollapse(`activity-${activity.id}`)}
-                  className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
-                >
-                  <ActivityIcon
-                    type={(activity.type ?? ActivityType.none) as ActivityType}
-                    size={24}
-                    showIconOnly
-                  />
-                  <Text className="text-md font-bold text-gray-600 flex-1">{activity.title}</Text>
-                  <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{activityItems.length}</Text>
-                  <Icon 
-                    name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"} 
-                    size={24} 
-                    color="#777" 
-                  />
-                </TouchableOpacity>
-                {!isCollapsed && activityItems.map(renderItem)}
-              </FadeInView>
+            <FadeInView key={`activity-${activity.id}`}
+              type="right" delay={100} duration={350}
+              className="bg-white rounded-2xl border border-[#e0e0e0] mb-4 overflow-hidden">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                onPress={() => toggleSectionCollapse(`activity-${activity.id}`)}
+                className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
+              >
+                <ActivityIcon
+                  type={(activity.type ?? ActivityType.none) as ActivityType}
+                  size={24}
+                  showIconOnly
+                />
+                <Text className="text-md font-bold text-gray-600 flex-1">{activity.title}</Text>
+                <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">{doneCt}/{activityItems.length}</Text>
+                <Icon
+                  name={isCollapsed ? "keyboard-arrow-down" : "keyboard-arrow-up"}
+                  size={24}
+                  color="#777"
+                />
+              </TouchableOpacity>
+              {!isCollapsed && activityItems.map(renderItem)}
+            </FadeInView>
           );
         })}
       </View>

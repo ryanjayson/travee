@@ -263,7 +263,7 @@ const SectionLookupModal = ({
                       </Text>
                     )}
                   </View>
-                  {selectedSectionId === section.id && (
+                  {selectedSectionId?.toString() === section.id?.toString() && (
                     <Icon name="check" size={24} color={colors.primary} style={{ marginLeft: "auto" }} />
                   )}
                 </TouchableOpacity>

@@ -21,6 +21,7 @@ import ViewActivityModal from "./Activity/Modal";
 interface SectionAccordionProps {
   travelPlan: TravelPlan;
   onRefresh?: () => Promise<any>;
+  isMinimized?: boolean;
 }
 
 // Tactile spring layout animation configuration
@@ -262,7 +263,7 @@ const DraggableSectionItem = ({
               viewMode={viewMode}
               onPressMore={() => onPressMore(section)}
               title={({ expanded }) => (
-                <View className="flex-row align-middle items-center ">
+                <View className="flex-row align-middle items-center">
                   {allowItemReordering && !isValidStartDate(section.startDate) && (
                     <View
                       className="absolute top-0 z-50 -ml-md flex-row items-center justify-center w-2xl"
@@ -366,9 +367,9 @@ const DraggableSectionItem = ({
                           activeOpacity={0.7}
                           className="flex-row items-center"
                         >
-                          <Icon name="add" size={16} color={"#263F69"} />
+                          <Icon name="add" size={16} color={"#0EA5E9"} />
                           <Text
-                            className="font-medium text-base underline text-accent"
+                            className="font-medium text-base underline text-primary"
                           >
                             Add activity
                           </Text>
@@ -409,6 +410,7 @@ const DraggableSectionItem = ({
 const SectionAccordion = ({
   travelPlan,
   onRefresh,
+  isMinimized,
 }: SectionAccordionProps) => {
   const { generateSortOrder } = useLexicographicSort();
   const queryClient = useQueryClient();
@@ -1148,9 +1150,9 @@ const SectionAccordion = ({
                 activeOpacity={0.7}
                 className="flex-row items-center"
               >
-                <Icon name="add" size={16} color={"#263F69"} />
+                <Icon name="add" size={16} color={"#0EA5E9"} />
                 <Text
-                  className="font-medium text-base underline text-accent"
+                  className="font-medium text-base underline text-primary"
                 >
                   Add activity
                 </Text>
@@ -1166,7 +1168,7 @@ const SectionAccordion = ({
               >
                 {/* <Icon name="add" size={16} color={colors.primary} /> */}
                 <Text
-                  className="font-medium text-base underline  text-accent"
+                  className="font-medium text-base underline  text-primary"
                 >
                   Create section
                 </Text>
@@ -1204,7 +1206,7 @@ const SectionAccordion = ({
                     {section.itineraryActivity &&
                       renderActivityCards(section, section.itineraryActivity)}
                     {viewMode !== 'plain' && (
-                      <View className={`absolute top-2 h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[60px]' : 'left-[66px] '} z-0`}>
+                      <View className={`absolute top-5 h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[60px]' : 'left-[66px] '} z-0`}>
                         <Svg height={viewMode === 'narrow' ? '103%' : '100%'} >
                           <Line
                             x1="2.5"
@@ -1268,7 +1270,7 @@ const SectionAccordion = ({
                 const subSectionsLength = subSections.length;
                 return (
                   <View key={section.id}
-                    style={{ marginTop: index === 0 ? 24 : 0 }}>
+                    style={{ marginTop: index === 1 ? 14 : 0 }}>
                     <View className={`absolute top-9px h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
                       <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
                       <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
@@ -1296,7 +1298,6 @@ const SectionAccordion = ({
                         allowItemReordering={allowItemReordering}
                         onPressMore={handleEditSection}
                       />
-
                       {/* //TODO: Hide this feat for now */}
                       {false && index === sections.length - 1 && (
                         <TouchableOpacity
@@ -1344,30 +1345,32 @@ const SectionAccordion = ({
       </ScrollView>
 
       {/* Settings Accordion Header */}
-      <Animated.View
-        pointerEvents="auto"
-        style={{
-          zIndex: 999999,
-          position: "absolute",
-          top: -60,
-          right: 10,
-        }}
-      >
-        <TouchableOpacity
-          onPress={toggleSettings}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Open Display Settings"
+      {!isMinimized && (
+        <Animated.View
+          pointerEvents="auto"
           style={{
-            paddingVertical: 10,
-            paddingHorizontal: 12,
-            alignItems: "center",
-            justifyContent: "center",
+            zIndex: 999999,
+            position: "absolute",
+            top: -56,
+            right: 10,
           }}
         >
-          <MaterialIcons name="settings" size={28} color={"#263F69"} />
-        </TouchableOpacity>
-      </Animated.View>
+          <TouchableOpacity
+            onPress={toggleSettings}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Open Display Settings"
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MaterialIcons name="settings" size={24} color={"#263F69"} />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       {/* Settings Accordion Body */}
       {/* Settings Bottom Form Sheet */}
