@@ -181,68 +181,68 @@ const EditActivity = ({
               contentContainerStyle={{ paddingBottom: 100 }}
               keyboardShouldPersistTaps="handled"
             >
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
-                  <TextInput
-                    mode="outlined"
-                    className="!h-[64px]"
-                    placeholder="Activity title"
-                    value={values.title}
-                    onChangeText={handleChange("title")}
-                    onBlur={handleBlur("title")}
-                    error={touched.title && Boolean(errors.title)}
-                    outlineColor="#E0E0E0"
-                    activeOutlineColor="#263F69"
-                    theme={{ colors: { onSurfaceVariant: '#888' } }}
-                    outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                    style={{ marginTop: 6 }}
-                    contentStyle={{ backgroundColor: "transparent" }}
-                  />
-                  {touched.title && errors.title && (
-                    <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
-                  )}
-                </View>
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
-                  <TextInput
-                    mode="outlined"
-                    placeholder="Activity details"
-                    multiline
-                    numberOfLines={4}
-                    value={values.description}
-                    onChangeText={handleChange("description")}
-                    onBlur={handleBlur("description")}
-                    error={touched.description && Boolean(errors.description)}
-                    outlineColor="#E0E0E0"
-                    activeOutlineColor="#263F69"
-                    theme={{ colors: { onSurfaceVariant: '#888' } }}
-                    outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                    style={{ marginTop: 6, height: 120 }}
-                    textAlignVertical="top"
-                    contentStyle={{ backgroundColor: "transparent" }}
-                  />
-                </View>
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase">Location</Text>
-                  {values.destinationData ? (() => {
-                    const { longitude, latitude } = values.destinationData.coordinates;
-                    const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
-                    return (
-                      <TouchableOpacity 
-                        activeOpacity={0.8} 
-                        onPress={() => setShowDestinationModal(true)}
-                        className="mt-1"
-                      >
-                        <View className="rounded-2xl overflow-hidden border border-gray-100">
-                          <Image source={{ uri: mapUrl }} style={{ width: '100%', height: 120, borderRadius: 16 }} resizeMode="cover" />
-                          <View className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded-full flex-row items-center">
-                            <Icon name="location-on" size={12} color="#FFF" />
-                            <Text className="text-white text-[10px] ml-1">{values.destination}</Text>
-                          </View>
+              <View className="mb-5">
+                <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
+                <TextInput
+                  mode="outlined"
+                  className="!h-[64px]"
+                  placeholder="Activity title"
+                  value={values.title}
+                  onChangeText={handleChange("title")}
+                  onBlur={handleBlur("title")}
+                  error={touched.title && Boolean(errors.title)}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor="#263F69"
+                  theme={{ colors: { onSurfaceVariant: '#888' } }}
+                  outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                  style={{ marginTop: 6 }}
+                  contentStyle={{ backgroundColor: "transparent" }}
+                />
+                {touched.title && errors.title && (
+                  <Text className="text-red-500 text-xs mt-1 ml-1">{errors.title}</Text>
+                )}
+              </View>
+              <View className="mb-5">
+                <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
+                <TextInput
+                  mode="outlined"
+                  placeholder="Activity details"
+                  multiline
+                  numberOfLines={4}
+                  value={values.description}
+                  onChangeText={handleChange("description")}
+                  onBlur={handleBlur("description")}
+                  error={touched.description && Boolean(errors.description)}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor="#263F69"
+                  theme={{ colors: { onSurfaceVariant: '#888' } }}
+                  outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                  style={{ marginTop: 6, height: 120 }}
+                  textAlignVertical="top"
+                  contentStyle={{ backgroundColor: "transparent" }}
+                />
+              </View>
+              <View className="mb-5">
+                <Text className="text-xs font-semibold tracking-wider uppercase">Location</Text>
+                {values.destinationData ? (() => {
+                  const { longitude, latitude } = values.destinationData.coordinates;
+                  const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => setShowDestinationModal(true)}
+                      className="mt-1"
+                    >
+                      <View className="rounded-2xl overflow-hidden border border-gray-100">
+                        <Image source={{ uri: mapUrl }} style={{ width: '100%', height: 120, borderRadius: 16 }} resizeMode="cover" />
+                        <View className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded-full flex-row items-center">
+                          <Icon name="location-on" size={12} color="#FFF" />
+                          <Text className="text-white text-[10px] ml-1">{values.destination}</Text>
                         </View>
-                      </TouchableOpacity>
-                    );
-                  })() : (
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })() : (
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => setShowDestinationModal(true)}
@@ -264,103 +264,103 @@ const EditActivity = ({
                       />
                     </View>
                   </TouchableOpacity>
+                )}
+              </View>
+
+              <View className="mb-5">
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
+                  <View className="flex-row items-center gap-2">
+                    <Text className="text-xs font-semibold tracking-wider uppercase">All Day</Text>
+                    <Switch value={isAllDay} onValueChange={setIsAllDay} color="#263F69" />
+                  </View>
+                </View>
+
+                <View className="flex-row items-center gap-4 mt-2">
+                  <TouchableOpacity
+                    onPress={() => setShowCalendarFor("startDate")}
+                    className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 flex-1 items-center"
+                  >
+                    <Text className="text-sm font-medium text-gray-800">
+                      {values.startDate ? String(values.startDate) : "Start Date"}
+                    </Text>
+                  </TouchableOpacity>
+                  {!isAllDay && (
+                    <TouchableOpacity
+                      onPress={() => setShowTimePickerFor("startTime")}
+                      className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 items-center"
+                    >
+                      <Text className="text-sm font-medium text-gray-800">
+                        {String((values as any).startTime)}
+                      </Text>
+                    </TouchableOpacity>
                   )}
                 </View>
 
-                <View className="mb-5">
-                  <View className="flex-row items-center justify-between">
-                     <Text className="text-xs font-semibold tracking-wider uppercase">Date & Time</Text>
-                     <View className="flex-row items-center gap-2">
-                        <Text className="text-xs font-semibold tracking-wider uppercase">All Day</Text>
-                        <Switch value={isAllDay} onValueChange={setIsAllDay} color="#263F69" />
-                     </View>
-                  </View>
-                  
-                  <View className="flex-row items-center gap-4 mt-2">
-                    <TouchableOpacity 
-                      onPress={() => setShowCalendarFor("startDate")}
-                      className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 flex-1 items-center"
-                    >
-                      <Text className="text-sm font-medium text-gray-800">
-                        {values.startDate ? String(values.startDate) : "Start Date"}
-                      </Text>
-                    </TouchableOpacity>
-                    {!isAllDay && (
-                      <TouchableOpacity 
-                        onPress={() => setShowTimePickerFor("startTime")}
-                        className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 items-center"
-                      >
-                        <Text className="text-sm font-medium text-gray-800">
-                          {String((values as any).startTime)}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-
-                  <View className="flex-row items-center gap-4 mt-3">
-                    <TouchableOpacity 
-                      onPress={() => setShowCalendarFor("endDate")}
-                      className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 flex-1 items-center"
-                    >
-                      <Text className="text-sm font-medium text-gray-800">
-                        {values.endDate ? String(values.endDate) : "End Date"}
-                      </Text>
-                    </TouchableOpacity>
-                    {!isAllDay && (
-                      <TouchableOpacity 
-                        onPress={() => setShowTimePickerFor("endTime")}
-                        className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 items-center"
-                      >
-                        <Text className="text-sm font-medium text-gray-800">
-                          {String((values as any).endTime)}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase">Activity Type</Text>
-                  <TouchableOpacity 
-                    onPress={() => setShowPrimaryTypeModal(true)}
-                    className="border rounded-2xl h-[64px] border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
+                <View className="flex-row items-center gap-4 mt-3">
+                  <TouchableOpacity
+                    onPress={() => setShowCalendarFor("endDate")}
+                    className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 flex-1 items-center"
                   >
-                    {values.type != null ? (
-                      <ActivityIcon type={values.type as number} size={32} color="#183B7A" />
-                    ) : (
-                      <Icon name="style" size={32} color={"#B3B3B3"} />
-                    )}
-                    <Text className="text-base text-gray-800 capitalize font-medium">
-                      {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
+                    <Text className="text-sm font-medium text-gray-800">
+                      {values.endDate ? String(values.endDate) : "End Date"}
+                    </Text>
+                  </TouchableOpacity>
+                  {!isAllDay && (
+                    <TouchableOpacity
+                      onPress={() => setShowTimePickerFor("endTime")}
+                      className="border border-[#E0E0E0] rounded-[16px] bg-white px-4 py-3 items-center"
+                    >
+                      <Text className="text-sm font-medium text-gray-800">
+                        {String((values as any).endTime)}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+
+              <View className="mb-5">
+                <Text className="text-xs font-semibold tracking-wider uppercase">Activity Type</Text>
+                <TouchableOpacity
+                  onPress={() => setShowPrimaryTypeModal(true)}
+                  className="border rounded-2xl h-[64px] border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
+                >
+                  {values.type != null ? (
+                    <ActivityIcon type={values.type as number} size={32} color="#183B7A" />
+                  ) : (
+                    <Icon name="style" size={32} color={"#B3B3B3"} />
+                  )}
+                  <Text className="text-base text-gray-800 capitalize font-medium">
+                    {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+
+              {itineraryActivity?.id && (
+                <View className="mt-5 pt-5 border-t border-[#E0E0E0]">
+                  <TouchableOpacity
+                    className="flex-row items-center gap-2.5 justify-center py-2"
+                    onPress={() => handleDeleteActivity(itineraryActivity?.id || "", values.sectionId)}
+                    disabled={isPending}
+                  >
+                    <Icon name="delete-outline" size={24} color={"#c93030"} />
+                    <Text className="text-base capitalize font-medium text-[#c93030]">
+                      Delete Activity
                     </Text>
                   </TouchableOpacity>
                 </View>
-
-
-                {itineraryActivity?.id && (
-                  <View className="mt-5 pt-5 border-t border-[#E0E0E0]">
-                    <TouchableOpacity 
-                      className="flex-row items-center gap-2.5 justify-center py-2"
-                      onPress={() => handleDeleteActivity(itineraryActivity?.id || "", values.sectionId)}
-                      disabled={isPending}
-                    >
-                      <Icon name="delete-outline" size={24} color={"#c93030"} />
-                      <Text className="text-base capitalize font-medium text-[#c93030]">
-                        Delete Activity
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+              )}
             </ScrollView>
 
-             <View className="px-5 py-4 border-t border-gray-200">
-               <TouchButton
-                 buttonText={itineraryActivity?.id ? "Update Activity" : "Add Activity"}
-                 onPress={() => handleSubmit()}
-                 disabled={isPending}
-                 className="h-[64px] p-6"
-               />
-             </View>
+            <View className="px-5 py-4 border-t border-gray-200">
+              <TouchButton
+                buttonText={itineraryActivity?.id ? "Update Activity" : "Add Activity"}
+                onPress={() => handleSubmit()}
+                disabled={isPending}
+                className="h-[64px] p-6"
+              />
+            </View>
 
             <MapboxDestinationSelectorModal
               visible={showDestinationModal}
@@ -400,7 +400,7 @@ const EditActivity = ({
                       <Icon name="close" size={24} color="#666" />
                     </TouchableOpacity>
                   </View>
-                  
+
                   <Calendar
                     onDayPress={(day: any) => {
                       if (showCalendarFor === "startDate") {
@@ -416,6 +416,9 @@ const EditActivity = ({
                     theme={{
                       todayTextColor: '#263F69',
                       arrowColor: '#263F69',
+                      textDayFontWeight: "600",
+                      textMonthFontWeight: "800",
+                      textMonthFontSize: 18,
                     }}
                   />
                 </View>

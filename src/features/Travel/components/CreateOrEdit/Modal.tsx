@@ -169,28 +169,28 @@ const CreateTripModal = ({
   });
 
   return (
-    <Modal visible={showModal} 
+    <Modal visible={showModal}
       transparent
-      animationType="none" 
+      animationType="none"
       onRequestClose={handleCancel}
-      >
+    >
       <StatusBar style="dark" />
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <Animated.View 
-          className="flex-1 justify-end" 
-          style={{ 
+        <Animated.View
+          className="flex-1 justify-end"
+          style={{
             backgroundColor: "rgba(0,0,0,0.5)",
-            opacity: backdropOpacity 
+            opacity: backdropOpacity
           }}
         >
           <Animated.View
             {...sheetPanResponder.panHandlers}
             className="rounded-t-[30px] bg-white"
             style={[
-              { height: (mode === "edit" || keyboardVisible) ? "100%" : modalHeight},
+              { height: (mode === "edit" || keyboardVisible) ? "100%" : modalHeight },
               {
                 paddingTop: (mode === "edit" || keyboardVisible) ? insets.top + 10 : 0,
                 shadowColor: "#000",
@@ -204,47 +204,47 @@ const CreateTripModal = ({
           >
             {/* Drag Handle Area */}
             {!(mode === "edit" || keyboardVisible) && (
-              <View 
+              <View
                 {...dragPanResponder.panHandlers}
                 className="w-full items-center py-4 bg-white rounded-t-4xl"
               >
                 <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
               </View>
             )}
-            <View 
+            <View
               {...(!(mode === "edit" || keyboardVisible) && dragPanResponder.panHandlers)}
-              className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" 
+              className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200"
               style={{ paddingTop: (mode === "edit" || keyboardVisible) ? 0 : 4 }}
             >
-                <View className="flex-row items-center gap-2">
-                    <Text className="text-2xl text-gray-700 font-medium">
-                      {mode === "edit" ? "Edit Trip" : "Create next trip"}
-                    </Text>
-                    <StatusBadge status={tripStatus} />
-                     <TouchableOpacity 
-                        onPress={() => setShowStatusExplainModal(true)} 
-                        disabled={isSaving}
-                        accessibilityRole="button"
-                        accessibilityLabel="Show status explanation"
-                      >
-                        <Icon name="info" size={16} color={"#999"} />
-                      </TouchableOpacity>
-
-                </View>
-                <TouchableOpacity 
-                  onPress={handleCancel} 
+              <View className="flex-row items-center gap-2">
+                <Text className="text-2xl text-gray-700 font-medium">
+                  {mode === "edit" ? "Edit Trip" : "Create next trip"}
+                </Text>
+                <StatusBadge status={tripStatus} />
+                <TouchableOpacity
+                  onPress={() => setShowStatusExplainModal(true)}
                   disabled={isSaving}
                   accessibilityRole="button"
-                  accessibilityLabel="Close edit trip modal"
+                  accessibilityLabel="Show status explanation"
                 >
-                    <Icon name="clear" size={24} color={"#999"} />
+                  <Icon name="info" size={16} color={"#999"} />
                 </TouchableOpacity>
+
+              </View>
+              <TouchableOpacity
+                onPress={handleCancel}
+                disabled={isSaving}
+                accessibilityRole="button"
+                accessibilityLabel="Close edit trip modal"
+              >
+                <Icon name="clear" size={24} color={"#999"} />
+              </TouchableOpacity>
             </View>
             <View className="flex-1">
-              <Create 
-                onClose={handleCancel} 
-                onStatusChange={setTripStatus} 
-                tripData={tripData} 
+              <Create
+                onClose={handleCancel}
+                onStatusChange={setTripStatus}
+                tripData={tripData}
                 mode={mode}
                 onCreated={onCreated}
                 onScroll={(e) => {
@@ -304,18 +304,18 @@ const CreateTripModal = ({
             </Text>
 
             {/* Warning / Notice Box */}
-            <View style={{ 
-              flexDirection: "row", 
-              backgroundColor: "#FFFBEB", 
-              borderRadius: 12, 
-              padding: 12, 
-              borderWidth: 1, 
+            <View style={{
+              flexDirection: "row",
+              backgroundColor: "#FFFBEB",
+              borderRadius: 12,
+              padding: 12,
+              borderWidth: 1,
               borderColor: "#FDE68A",
               gap: 8,
               marginBottom: 20,
               alignItems: "flex-start"
             }}>
-              <Icon name="warning" size={18} color="#D97706" style={{ marginTop: 2 }} />
+              <Icon name="schedule" size={18} color="#D97706" style={{ marginTop: 2 }} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 13, fontWeight: "bold", color: "#B45309", marginBottom: 2 }}>
                   Scheduling Policy

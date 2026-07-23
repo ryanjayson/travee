@@ -54,10 +54,10 @@ interface ViewTravelProps {
   onEditTrip?: () => void;
 }
 
-const ViewTravel = ({ 
-  travelPlan, 
-  onClose, 
-  expanded, 
+const ViewTravel = ({
+  travelPlan,
+  onClose,
+  expanded,
   onExpandedChange,
   onScrollY,
   showMap = true,
@@ -113,11 +113,11 @@ const ViewTravel = ({
 
   // --- Draggable Bottom Sheet Snap Values ---
   const insets = useSafeAreaInsets();
-  const screenHeight = Platform.OS === "android" 
-    ? Dimensions.get("screen").height 
+  const screenHeight = Platform.OS === "android"
+    ? Dimensions.get("screen").height
     : Dimensions.get("window").height;
   const SNAP_MAX = 0;
-  const SNAP_MID = screenHeight * 0.45;
+  const SNAP_MID = screenHeight * 0.20;
   const SNAP_MIN = screenHeight - 116;
 
   // Track the last-snapped position manually because Animated.Value.addListener
@@ -251,7 +251,7 @@ const ViewTravel = ({
         translateY.flattenOffset();
         const nextY = dragStartY.current + gestureState.dy;
         const velocityY = gestureState.vy;
-        
+
         let target = SNAP_MID;
         if (velocityY < -0.5) {
           target = nextY < SNAP_MID ? SNAP_MAX : SNAP_MID;
@@ -261,7 +261,7 @@ const ViewTravel = ({
           const distMax = Math.abs(nextY - SNAP_MAX);
           const distMid = Math.abs(nextY - SNAP_MID);
           const distMin = Math.abs(nextY - SNAP_MIN);
-          
+
           const minDist = Math.min(distMax, distMid, distMin);
           if (minDist === distMax) {
             target = SNAP_MAX;
@@ -298,7 +298,7 @@ const ViewTravel = ({
     .flatMap(s => s.itineraryActivity ?? [])
     .filter(a =>
       a.destinationData?.coordinates &&
-      a.destinationData.coordinates.latitude  !== 0 &&
+      a.destinationData.coordinates.latitude !== 0 &&
       a.destinationData.coordinates.longitude !== 0
     )
     .map(a => ({
@@ -315,7 +315,7 @@ const ViewTravel = ({
     .filter(a =>
       a.isDone &&
       a.destinationData?.coordinates &&
-      a.destinationData.coordinates.latitude  !== 0 &&
+      a.destinationData.coordinates.latitude !== 0 &&
       a.destinationData.coordinates.longitude !== 0
     )
     .map(a => ({
@@ -358,11 +358,12 @@ const ViewTravel = ({
       <View className="flex-1">
         <View className="flex-1 bg-white">
           {travelPlan.travel.destinationData?.coordinates ? (
-            <TouchableOpacity 
-              activeOpacity={0.9} 
+            <TouchableOpacity
+              activeOpacity={0.9}
               onPress={() => {
                 setShowDestinationOnlyMap(true)
-                setMapVisible(true)}}
+                setMapVisible(true)
+              }}
               className="w-full relative"
             >
               <Image
@@ -414,46 +415,46 @@ const ViewTravel = ({
             <View className="flex-row items-center my-1 pr-3 border-r border-[#DDD]">
               <View className="flex-row items-center">
                 <Icon name="calendar-month" size={28} color={"#858585"} />
-              <View className="flex-col px-1">
-                <Text className="text-xs text-tertiary leading-3">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
+                <View className="flex-col px-1">
+                  <Text className="text-xs text-tertiary leading-3">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
                     ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
                     : ""}</Text>
-                <Text className="text-lg font-bold text-secondary line-clamp-1 leading-6">
-                  {travelPlan.travel?.startOrDepartureDate
-                    ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day:"2-digit"})
-                    : ""}
+                  <Text className="text-lg font-bold text-secondary line-clamp-1 leading-6">
+                    {travelPlan.travel?.startOrDepartureDate
+                      ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+                      : ""}
 
                     - {travelPlan.travel?.endOrReturnDate
-                    ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day:"2-digit" })
-                    : ""}
-                </Text>
-                </View>              
+                      ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+                      : ""}
+                  </Text>
+                </View>
               </View>
             </View>
             <View className="flex-row items-center my-1 pl-3">
-                <TouchableOpacity 
-                  activeOpacity={0.8}
-                  className="flex-row items-center my-1 mr-2 "
-                  onPress={() => travelPlan.travel.destinationData?.coordinates && setMapVisible(true)}
-                >
-                  <Icon name="location-pin" size={24} color={"#B42318"} />
-               
+              <TouchableOpacity
+                activeOpacity={0.8}
+                className="flex-row items-center my-1 mr-2 "
+                onPress={() => travelPlan.travel.destinationData?.coordinates && setMapVisible(true)}
+              >
+                <Icon name="location-pin" size={24} color={"#B42318"} />
+
                 {travelPlan.travel.destination ? (
                   <Text className="text-[#183B7A] font-medium mx-1 " numberOfLines={1} ellipsizeMode="tail">
-                  {travelPlan.travel.destination}
-                </Text>
+                    {travelPlan.travel.destination}
+                  </Text>
                 ) : (
                   <Text className="text-tertiary italic text-base  mx-1 " numberOfLines={1} ellipsizeMode="tail">
-                  Not set
-                </Text>
+                    Not set
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
-        
+
           </View>
 
           <View className="mt-2.5">
-            <Text 
+            <Text
               className="text-base text-tertiary leading-6"
               numberOfLines={isDescriptionExpanded ? undefined : 3}
               onTextLayout={(e) => {
@@ -483,29 +484,29 @@ const ViewTravel = ({
       title: "Details",
       applyFadeAnimation: false,
       content: (
-        <DetailsTab 
-          travelPlan={travelPlan} 
+        <DetailsTab
+          travelPlan={travelPlan}
           onTabChange={setActiveTabId}
         />
       ),
     },
-    { 
-      id: "itinerary", 
-      title: "Itinerary", 
+    {
+      id: "itinerary",
+      title: "Itinerary",
       applyFadeAnimation: false,
       content: (
-          <ItineraryTab 
-            travelPlan={travelPlan} 
-          />
-      ) 
+        <ItineraryTab
+          travelPlan={travelPlan}
+        />
+      )
     },
     {
       id: "expenses",
       title: "Expenses",
       isVisible: false,
       content: (
-        <ExpensesTab 
-          travelPlan={travelPlan} 
+        <ExpensesTab
+          travelPlan={travelPlan}
           onEditExpense={(expense) => {
             openExpenseModal(
               expense,
@@ -573,11 +574,10 @@ const ViewTravel = ({
           countryName={countryName}
           dateRange={
             travelPlan.travel.startOrDepartureDate
-              ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
-                  travelPlan.travel.endOrReturnDate
-                    ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                    : ''
-                }`
+              ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${travelPlan.travel.endOrReturnDate
+                ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                : ''
+              }`
               : undefined
           }
           doneActivities={doneActivities}
@@ -607,12 +607,12 @@ const ViewTravel = ({
         ]}
       >
 
-        
+
         {/* Drag Handle Area */}
-        <Animated.View 
+        <Animated.View
           className="w-full items-center bg-white"
-          style={{ 
-            borderTopLeftRadius: 32, 
+          style={{
+            borderTopLeftRadius: 32,
             borderTopRightRadius: 32,
             paddingTop: headerPaddingTop,
             paddingBottom: 12,
@@ -620,9 +620,9 @@ const ViewTravel = ({
           accessibilityRole="button"
           accessibilityLabel="Drag up or down to expand or collapse trip details sheet"
         >
-          <Animated.View 
-            className="w-12 h-1.5 bg-gray-300 rounded-full" 
-            style={{ opacity: handleOpacity}}
+          <Animated.View
+            className="w-12 h-1.5 bg-gray-300 rounded-full"
+            style={{ opacity: handleOpacity }}
           />
         </Animated.View>
 
@@ -640,13 +640,13 @@ const ViewTravel = ({
               // })
             }}
           >
-            
+
             <View className="flex-row items-center gap-3">
               {/* {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
                 <TripIcon type={travelPlan.travel.type} size={24} showIconOnly={true} /> 
               )} */}
               <View className="absolute -top-md opacity-75">
-                  <StatusBadge type={1} status={travelPlan.travel.status!} />
+                <StatusBadge type={1} status={travelPlan.travel.status!} />
               </View>
               <Text className="text-4xl mt-sm leading-relaxed font-semibold text-secondary flex-1" numberOfLines={currentSnap === SNAP_MIN ? 1 : undefined}>
                 {travelPlan.travel.title}
@@ -655,7 +655,7 @@ const ViewTravel = ({
             <View className="flex-row items-center mt-2 flex-wrap">
               {travelPlan.travel.destination && (
                 <>
-                  <Icon name="location-pin" size={20} color="#858585"/>
+                  <Icon name="location-pin" size={20} color="#858585" />
                   <Text className="text-md font-medium text-tertiary ml-0.5 mr-3" numberOfLines={1}>
                     {travelPlan.travel.destination}
                   </Text>
@@ -669,34 +669,34 @@ const ViewTravel = ({
                     {travelPlan.travel.startOrDepartureDate
                       ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
                       : "- "}
-                  {travelPlan.travel.endOrReturnDate
-                    ? " - " + new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                    : ""}
+                    {travelPlan.travel.endOrReturnDate
+                      ? " - " + new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+                      : ""}
                   </Text>
                 </>
               )}
             </View>
-            
+
           </Animated.View>
         </View>
 
         {/* Tabbed Content */}
-        <Animated.View 
+        <Animated.View
           className="flex-1 mb-4 "
           style={{ paddingBottom: translateY }}
         >
-          <Tabs 
-            tabs={tabData} 
-            initialActiveTabId="details" 
+          <Tabs
+            tabs={tabData}
+            initialActiveTabId="details"
             activeTabId={activeTabId}
-            type="default" 
-            onTabChange={setActiveTabId} 
+            type="default"
+            onTabChange={setActiveTabId}
             expanded={true}
             wrapperStyle={`bg-white px-1 pb-2 ${activeTabId === 'itinerary' ? 'border-b border-[#e0e0e0]' : ''}`}
           />
         </Animated.View>
       </Animated.View>
-      <TravelActionFAB 
+      <TravelActionFAB
         currentTab={activeTabId}
         open={fabOpen}
         setOpen={setFabOpen}
@@ -746,11 +746,10 @@ const ViewTravel = ({
         doneActivities={doneActivities}
         dateRange={
           travelPlan.travel.startOrDepartureDate
-            ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${
-                travelPlan.travel.endOrReturnDate
-                  ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                  : ''
-              }`
+            ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${travelPlan.travel.endOrReturnDate
+              ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+              : ''
+            }`
             : undefined
         }
       />

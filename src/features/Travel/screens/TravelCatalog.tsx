@@ -54,9 +54,9 @@ const TravelCatalog = () => {
   };
 
   const getEffectiveStatus = (travel: Travel): TravelStatus => {
-    if (travel.status === TravelStatus.Past || 
-        travel.status === TravelStatus.Archieved || 
-        travel.status === TravelStatus.Cancelled) {
+    if (travel.status === TravelStatus.Past ||
+      travel.status === TravelStatus.Archieved ||
+      travel.status === TravelStatus.Cancelled) {
       return travel.status || TravelStatus.Draft;
     }
 
@@ -169,7 +169,7 @@ const TravelCatalog = () => {
         today.setHours(0, 0, 0, 0);
         const diffTime = tripDate.getTime() - today.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
+
         if (diffDays === 0) {
           return "Today";
         } else if (diffDays === 1) {
@@ -187,7 +187,7 @@ const TravelCatalog = () => {
     const { day, month } = getStartDateParts(travel.startOrDepartureDate);
     const countdownLabel = getCountdownLabel(travel.startOrDepartureDate);
     const duration = getDuration(travel.startOrDepartureDate, travel.endOrReturnDate);
-    const dateRange = travel.startOrDepartureDate && travel.endOrReturnDate 
+    const dateRange = travel.startOrDepartureDate && travel.endOrReturnDate
       ? `${formatDate(travel.startOrDepartureDate)} - ${formatDate(travel.endOrReturnDate)}`
       : travel.startOrDepartureDate ? formatDate(travel.startOrDepartureDate) : "Dates not set";
 
@@ -196,67 +196,67 @@ const TravelCatalog = () => {
 
     return (
       <StaggerItem
-        key={travel.id} 
+        key={travel.id}
         index={index}
         className="bg-white rounded-xl mb-2 shadow-sm mx-4 overflow-hidden "
       >
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
           <View className="px-4 border border-[#E0E0E0] rounded-xl relative overflow-hidden">
-          
+
             <View className="flex-row justify-between items-start ">
               <View className="flex-row items-center gap-4 flex-1 mr-2">
-              {day && month && (
-                <View className="flex-col gap-0 justify-center items-center border-r border-[#E0E0E0] pr-4">
-                  <Text className="text-3xl font-semibold text-accent">{day}</Text>
-                  <Text className="text-base font-medium text-tertiary">{month}</Text>
-                  {countdownLabel ? (
-                    <Text className="text-[10px] font-medium text-tertiary/50 mt-2">{countdownLabel}</Text>
-                  ) : null}
-                </View>
-              )}
-                  {destinationCountry ? (
-                    <View className={`w-[50px] h-[60px] justify-center items-center ${countdownLabel ? "" : "pl-2xl"}`}>
-                      <CountryOutline
-                        countryName={destinationCountry}
-                        width={120}
-                        height={120}
-                        strokeColor="#0EA5E9"
-                        strokeWidth={0.2}
-                        fillColor={assignedColor + '50'}
-                        hideShadows={true}
-                      />
-                    </View>
-                  ) : null}
+                {day && month && (
+                  <View className="flex-col gap-0 justify-center items-center border-r border-[#E0E0E0] pr-4">
+                    <Text className="text-3xl font-semibold text-accent">{day}</Text>
+                    <Text className="text-base font-medium text-tertiary">{month}</Text>
+                    {countdownLabel ? (
+                      <Text className="text-[10px] font-medium text-tertiary/50 mt-2">{countdownLabel}</Text>
+                    ) : null}
+                  </View>
+                )}
+                {destinationCountry ? (
+                  <View className={`w-[50px] h-[60px] justify-center items-center ${countdownLabel ? "" : "pl-2xl"}`}>
+                    <CountryOutline
+                      countryName={destinationCountry}
+                      width={120}
+                      height={120}
+                      strokeColor="#0EA5E9"
+                      strokeWidth={0.2}
+                      fillColor={assignedColor + '50'}
+                      hideShadows={true}
+                    />
+                  </View>
+                ) : null}
 
                 <View className="flex-1 gap-y-1 py-4 pl-lg">
                   <Text className="text-xl leading-5 font-medium ">{travel.title}</Text>
                   <View className="flex-row items-center gap-2">
                     <Text className="text-base  text-[#999]">{travel.destination || ""}</Text>
                     {travel.type != null && travel.type !== TripType.none && (
-                    <TripIcon type={travel.type} size={16} showIconOnly={true} />
+                      <TripIcon type={travel.type} size={16} showIconOnly={true} />
                     )}
                   </View>
-                  <View 
+                  <View
                     style={{ backgroundColor: assignedColor + '10' }}
                     className="flex-row gap-2 mt-sm p-0 px-2 rounded-full items-center justify-center"
                   >
-                      <Icon name="calendar-month" size={18} color={"#999999"} />
-                   
+                    <Icon name="calendar-month" size={18} color={"#999999"} />
+
                     <View className="flex-1  ">
-                        <Text className="text-sm text-[#999]">
-                          {dateRange} {duration ? `• ${duration}` : ""}
-                    </Text>
+                      <Text className="text-sm text-[#999]">
+                        {dateRange} {duration ? `• ${duration}` : ""}
+                      </Text>
                     </View>
-                  
+
                   </View>
-                 
+
                 </View>
               </View>
-             { travel && travel.isArchived &&(
-                  <View className="flex-row items-start justify-start">
-                    <StatusBadge status={effectiveStatus} />
-                  </View>
-             )}
+              {travel && travel.isArchived && (
+                <View className="flex-row items-start justify-start">
+                  <StatusBadge status={effectiveStatus} />
+                </View>
+              )}
             </View>
           </View>
         </TouchableOpacity>
@@ -269,7 +269,7 @@ const TravelCatalog = () => {
     return (
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100, paddingTop: 10, flexGrow: 1}}
+        contentContainerStyle={{ paddingBottom: 100, paddingTop: 10, flexGrow: 1 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -279,7 +279,7 @@ const TravelCatalog = () => {
           />
         }
       >
-        {data && data.length === 1 && data[0].status === TravelStatus.Ongoing ?(
+        {data && data.length === 1 && data[0].status === TravelStatus.Ongoing ? (
           <View key={data[0].id} className="rounded-[44px] mb-2 bg-white shadow-sm shadow-black/10 elevation-xl mx-4 overflow-hidden">
             <TouchableOpacity onPress={() => handleViewModeTravel(data[0])}>
               <View className="p-10 border border-success-500/50 rounded-[44px]">
@@ -295,7 +295,7 @@ const TravelCatalog = () => {
                 <View className=" flex-row justify-between content-between items-center mb-3">
                   <View className="flex-1 items-start mt-lg">
                     <TouchableOpacity
-                      onPress={() =>handleViewModeTravel(data[0])}
+                      onPress={() => handleViewModeTravel(data[0])}
                       accessibilityRole="button"
                       activeOpacity={0.7}
                       className="flex-row items-center gap-1 py-3 px-4 rounded-full bg-gray-100/50"
@@ -329,27 +329,27 @@ const TravelCatalog = () => {
             </TouchableOpacity>
           </View>
         ) :
-        data && data.length > 0 ? (
-          data.map(renderTravelCard)
-        ) : (
-          <View className="flex-1 justify-center items-center w-full">
-            <Text className="text-5xl mb-4 text-primary/60 h-[50px]">{emptyIcon}</Text>
-            <Text className="text-2xl text-tertiary mb-1">
-              {emptyTitle}
-            </Text>
-            <Text className="text-base text-tertiary text-center px-10 tracking-wide">
-              {emptySubtitle}
-            </Text>
-
-            <View className="absolute -bottom-6 right-10">
-              <Text className="text-lg text-red-600 font-bold ">
-              Add a trip now
+          data && data.length > 0 ? (
+            data.map(renderTravelCard)
+          ) : (
+            <View className="flex-1 justify-center items-center w-full">
+              <Text className="text-5xl mb-4 text-primary/60 h-[50px]">{emptyIcon}</Text>
+              <Text className="text-2xl text-tertiary mb-1">
+                {emptyTitle}
               </Text>
-              <Text className="text-7xl mb-4 ml-4xl text-red-600 -mt-1 rotate-90">⤳</Text>
+              <Text className="text-base text-tertiary text-center px-10 tracking-wide">
+                {emptySubtitle}
+              </Text>
+
+              <View className="absolute -bottom-6 right-10">
+                <Text className="text-lg text-red-600 font-bold ">
+                  Add a trip now
+                </Text>
+                <Text className="text-7xl mb-4 ml-4xl text-red-600 -mt-1 rotate-90">⤳</Text>
+              </View>
             </View>
-          </View>
-        )}
-        
+          )}
+
       </ScrollView>
     );
   };
@@ -407,7 +407,7 @@ const TravelCatalog = () => {
           theme={{
             monthTextColor: '#0EA5E9',
             textMonthFontWeight: '600',
-            textMonthFontSize: 16,
+            textMonthFontSize: 20,
             textSectionTitleColor: '#666666',
             todayTextColor: '#0EA5E9',
             arrowColor: '#0EA5E9',
@@ -457,7 +457,7 @@ const TravelCatalog = () => {
                     marginBottom: 2,
                   }}
                 >
-                  {date.day} 
+                  {date.day}
                 </Text>
                 <View style={{ gap: 2 }}>
                   {tripsOnDay.map((trip) => {
@@ -539,12 +539,12 @@ const TravelCatalog = () => {
 
   const renderListView = () => (
     <View className="py-2 flex-1 bg-gray-100">
-      <Tabs 
-        tabs={listTabsData} 
-        activeTabId={activeListTab} 
-        onTabChange={setActiveListTab} 
-        type="default" 
-        expanded={true} 
+      <Tabs
+        tabs={listTabsData}
+        activeTabId={activeListTab}
+        onTabChange={setActiveListTab}
+        type="default"
+        expanded={true}
         hasActionTripStatus={getTravelsByStatus(TravelStatus.Ongoing).length > 0}
       />
     </View>
@@ -587,7 +587,7 @@ const TravelCatalog = () => {
           </View>
         ) : isError ? (
           <View className="flex-1 justify-center items-center py-[60px]">
-             <Icon
+            <Icon
               name="warning-amber"
               size={60}
               color="#fdd787"
@@ -599,13 +599,13 @@ const TravelCatalog = () => {
             </TouchableOpacity>
           </View>
         ) : (
-            <Tabs 
-              tabs={viewTabsData} 
-              activeTabId={activeViewTab} 
-              onTabChange={setActiveViewTab} 
-              expanded={true} 
-              wrapperStyle="pb-2 w-full"
-            />
+          <Tabs
+            tabs={viewTabsData}
+            activeTabId={activeViewTab}
+            onTabChange={setActiveViewTab}
+            expanded={true}
+            wrapperStyle="pb-2 w-full"
+          />
         )}
       </View>
 
@@ -619,4 +619,3 @@ const TravelCatalog = () => {
 };
 
 export default TravelCatalog;
- 

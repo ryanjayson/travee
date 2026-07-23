@@ -23,6 +23,9 @@ const CALENDAR_THEME = {
   todayBackgroundColor: "#B42318",
   selectedDayBackgroundColor: "#FFFFFF",
   selectedDayTextColor: "#ffffff",
+  textDayFontWeight: "600",
+  textMonthFontWeight: "800",
+  textMonthFontSize: 18,
 };
 
 const TravelDateModal: React.FC<TravelDateModalProps> = ({
@@ -42,7 +45,7 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
 
   const dateLabel = useMemo(() => {
     if (!tempDepartureDate) {
-           return "Select date or date range";
+      return "Select date or date range";
     }
     if (!tempReturnDate || tempDepartureDate.getTime() === tempReturnDate.getTime()) {
       return "Day tour or overnight trip only";
@@ -154,7 +157,7 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
   const hasBlockedDateInBetween = useCallback((start: Date, end: Date) => {
     let current = new Date(start.getTime());
     current.setDate(current.getDate() + 1);
-    
+
     while (current.getTime() < end.getTime()) {
       const dateStr = current.toISOString().split("T")[0];
       if (blockedDates[dateStr]) {
@@ -221,7 +224,7 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
               <Text className="text-base text-tertiary underline font-bold">Clear</Text>
             </TouchableOpacity>
           )}
-           <TouchableOpacity
+          <TouchableOpacity
             onPress={onClose}
             accessibilityRole="button"
             accessibilityLabel="Close date selector"

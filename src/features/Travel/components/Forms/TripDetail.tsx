@@ -42,7 +42,7 @@ const TravelSchema = Yup.object().shape({
 const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDetailProps) => {
   const { colors } = useTheme();
   const { mutate: updateTravel, isPending: isSaving } = useUpdateTravel();
-  
+
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showDestinationModal, setShowDestinationModal] = useState(false);
@@ -107,11 +107,11 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
       };
 
       if (mode === "create") {
-        updateTravel({ 
-          data: { 
-            ...payload, 
-            isOffline: true, 
-            createSectionsBasedOnDates: values.createSectionsBasedOnDates 
+        updateTravel({
+          data: {
+            ...payload,
+            isOffline: true,
+            createSectionsBasedOnDates: values.createSectionsBasedOnDates
           } as any
         }, {
           onSuccess: () => {
@@ -142,9 +142,9 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
   const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
 
   const getEffectiveStatus = (): TravelStatus => {
-    if (tripData && (tripData.status === TravelStatus.Past || 
-        tripData.status === TravelStatus.Archieved || 
-        tripData.status === TravelStatus.Cancelled)) {
+    if (tripData && (tripData.status === TravelStatus.Past ||
+      tripData.status === TravelStatus.Archieved ||
+      tripData.status === TravelStatus.Cancelled)) {
       return tripData.status;
     }
     if (!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate) return TravelStatus.Draft;
@@ -179,7 +179,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
   const generateBlockedDates = () => {
     const dates: any = {};
     if (!travels) return dates;
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -187,7 +187,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
       // Don't block dates for the trip we're currently editing
       if (tripData && t.id === tripData.id) return;
       if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past].includes(t.status as TravelStatus)) return;
-      
+
       if (t.startOrDepartureDate) {
         const start = new Date(t.startOrDepartureDate);
         start.setHours(0, 0, 0, 0);
@@ -252,7 +252,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
         </View>
       )}
 
-       
+
       <View className="mb-5">
         <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
         <TextInput
@@ -272,7 +272,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           contentStyle={{ backgroundColor: "transparent" }}
         />
         {suggestion && !suggestionApplied ? (
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => {
               formik.setFieldValue("title", suggestion);
               setSuggestionApplied(true);
@@ -364,7 +364,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
 
       <View className="mb-5">
         <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Trip Type</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => setShowTripTypeModal(true)}
           className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
           accessibilityRole="button"
@@ -407,7 +407,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
               placeholder="Departure Date"
               value={formattedStartDate}
               editable={false}
-              left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
+              left={<TextInput.Icon icon="calendar" className="opacity-50" />}
               right={formik.values.startOrDepartureDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("startOrDepartureDate", null)} /> : null}
               outlineColor="#E0E0E0"
               activeOutlineColor="#263F69"
@@ -416,7 +416,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
               style={{ height: 64, flex: 1 }}
               contentStyle={{ backgroundColor: "transparent" }}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
               onPress={() => { setShowStartDatePicker(true); setShowEndDatePicker(false); }}
               activeOpacity={0.6}
@@ -443,7 +443,13 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
                       [formik.values.startOrDepartureDate.toISOString().split('T')[0]]: { selected: true, selectedColor: '#263F69', selectedTextColor: '#ffffff' }
                     } : {})
                   }}
-                  theme={{ todayTextColor: '#263F69', arrowColor: '#263F69' }}
+                  theme={{
+                    todayTextColor: '#263F69',
+                    arrowColor: '#263F69',
+                    textDayFontWeight: "600",
+                    textMonthFontWeight: "800",
+                    textMonthFontSize: 18,
+                  }}
                 />
               </View>
             </TouchableOpacity>
@@ -458,7 +464,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
               placeholder="Return Date"
               value={formattedEndDate}
               editable={false}
-              left={<TextInput.Icon icon="calendar" className="opacity-50"/>}
+              left={<TextInput.Icon icon="calendar" className="opacity-50" />}
               right={formik.values.endOrReturnDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("endOrReturnDate", null)} /> : null}
               outlineColor="#E0E0E0"
               activeOutlineColor="#263F69"
@@ -467,7 +473,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
               style={{ height: 64, flex: 1 }}
               contentStyle={{ backgroundColor: "transparent" }}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
               onPress={() => { setShowEndDatePicker(true); setShowStartDatePicker(false); }}
               activeOpacity={0.6}
@@ -510,7 +516,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
             disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
             color="#263F69"
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             activeOpacity={0.7}
             disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
             onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
@@ -548,7 +554,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
               value={formik.values.budget}
               onChangeText={formik.handleChange("budget")}
               onBlur={formik.handleBlur("budget")}
-              left={<TextInput.Icon icon="currency-php" className="opacity-50"/>}
+              left={<TextInput.Icon icon="currency-php" className="opacity-50" />}
               keyboardType="numeric"
               disabled={isSaving}
               outlineColor="#E0E0E0"

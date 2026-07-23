@@ -1,22 +1,22 @@
 import { MaterialIcons as Icon, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, Easing, LayoutAnimation, Modal, PanResponder, Pressable, ScrollView, Switch, Text, TouchableOpacity, View, RefreshControl } from "react-native";
+import { Animated, Dimensions, Easing, LayoutAnimation, Modal, PanResponder, Pressable, RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "react-native-paper";
 import Svg, { Line } from "react-native-svg";
 import Accordion from "../../../../components/Accordion";
+import { FadeInView } from "../../../../components/animations";
 import { useToast } from "../../../../context/ToastContext";
 import { useTravelContext } from "../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../hooks/useLexicographicSort";
 import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../services/local/travelService";
 import { ItineraryActivity, ItinerarySection, TravelPlan } from "../../../Travel/types/TravelDto";
-import { useTripSetting, useUpdateTripSetting } from "../../hooks/useTripSetting";
 import { useTravelPlan } from "../../hooks/useTravel";
+import { useTripSetting, useUpdateTripSetting } from "../../hooks/useTripSetting";
 import DraggableSectionContainer from "../Edit/Itinerary/DraggableSectionContainer";
 import SectionModal from "../Edit/Itinerary/Section/Modal";
 import ActivityItemCard from "./Activity/Card";
 import ViewActivityModal from "./Activity/Modal";
-import { FadeInView } from "../../../../components/animations";
 
 interface SectionAccordionProps {
   travelPlan: TravelPlan;
@@ -262,7 +262,7 @@ const DraggableSectionItem = ({
               onPressMore={() => onPressMore(section)}
               title={({ expanded }) => (
                 <View className="flex-row align-middle items-center ">
-                  {allowItemReordering && !isValidStartDate(section.startDate)  && (
+                  {allowItemReordering && !isValidStartDate(section.startDate) && (
                     <View
                       className="absolute top-0 z-50 -ml-md flex-row items-center justify-center w-2xl"
                       {...panHandlers}
@@ -277,7 +277,7 @@ const DraggableSectionItem = ({
                         <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
                       </View>
                     ) : null}
-                  
+
                     <Text style={{ marginLeft: allowItemReordering && !isValidStartDate(section.startDate) ? 16 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-accent/90 rounded-xs px-2 ">
                       {section?.title}
                       {isValidStartDate(section.startDate) ? (
@@ -300,15 +300,15 @@ const DraggableSectionItem = ({
               containerStyle={
                 isSectionActive
                   ? {
-                      borderColor: "#D0D5DD",
-                      borderWidth: 1.5,
-                      elevation: 10,
-                      shadowColor: "#000",
-                      shadowOffset: { width: 0, height: 10 },
-                      shadowOpacity: 0.15,
-                      shadowRadius: 15,
-                      backgroundColor: "#FFFFFF",
-                    }
+                    borderColor: "#D0D5DD",
+                    borderWidth: 1.5,
+                    elevation: 10,
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 10 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 15,
+                    backgroundColor: "#FFFFFF",
+                  }
                   : undefined
               }
             >
@@ -321,30 +321,30 @@ const DraggableSectionItem = ({
                   if (ref && section.id) sectionRefs.current[section.id] = ref;
                 }}
               >
-                  {section.description && section.description.trim() !== "" && (
-                    <View className="bg-white flex-1 px-3 z-0 ">
-                      <View className={`absolute h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[59px]' : 'left-[65px] '} z-0`}>
-                        <Svg height={'200%'} 
-                          width="5"
-                           >
-                          <Line
-                            x1="2.5"
-                            y1="2.5"
-                            x2="2.5"
-                            y2="100%"
-                            stroke="#ccc"
-                            strokeWidth="5"
-                            strokeDasharray="0, 10"
-                            strokeLinecap="round"
-                          />
-                        </Svg>
-                      </View>
-                      <Text className="text-base text-tertiary px-2 ml-7xl pb-1">
-                        {section.description}
-                      </Text>
+                {section.description && section.description.trim() !== "" && (
+                  <View className="bg-white flex-1 px-3 z-0 ">
+                    <View className={`absolute h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[59px]' : 'left-[65px] '} z-0`}>
+                      <Svg height={'200%'}
+                        width="5"
+                      >
+                        <Line
+                          x1="2.5"
+                          y1="2.5"
+                          x2="2.5"
+                          y2="100%"
+                          stroke="#ccc"
+                          strokeWidth="5"
+                          strokeDasharray="0, 10"
+                          strokeLinecap="round"
+                        />
+                      </Svg>
                     </View>
-                  )}
-                  {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
+                    <Text className="text-base text-tertiary px-2 ml-7xl pb-1">
+                      {section.description}
+                    </Text>
+                  </View>
+                )}
+                {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
                   <>
                     {renderActivityCards(section, section.itineraryActivity)}
                   </>
@@ -355,10 +355,10 @@ const DraggableSectionItem = ({
                         No activities yet.
                       </Text>
                       <View className="text-center tracking-wide flex-row align-center gap-1">
-                    
-                      <Text className="text-md text-tertiary/50 text-base">
-                        {allowItemReordering ? "Drag and drop here or tap " : "Add now by tapping"}
-                      </Text>
+
+                        <Text className="text-md text-tertiary/50 text-base">
+                          {allowItemReordering ? "Drag and drop here or tap " : "Add now by tapping"}
+                        </Text>
                         <TouchableOpacity
                           onPress={() => openActivityModal(null, section.id || undefined, section.travelId)}
                           accessibilityRole="button"
@@ -366,41 +366,41 @@ const DraggableSectionItem = ({
                           className="flex-row items-center"
                         >
                           <Icon name="add" size={16} color={"#263F69"} />
-                          <Text 
+                          <Text
                             className="font-medium text-base underline text-accent"
                           >
                             Add activity
                           </Text>
                         </TouchableOpacity>
-                      </View>                  
-                  </View>
+                      </View>
+                    </View>
                   </>
                 )}
-                
+
                 {viewMode !== 'plain' && (
-                      <View className={`absolute  h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[59px]' : 'left-[65px] '} z-0`}>
-                        <Svg height={'130%'} 
-                          width="5"
-                           >
-                          <Line
-                            x1="2.5"
-                            y1="2.5"
-                            x2="2.5"
-                            y2="100%"
-                            stroke="#ccc"
-                            strokeWidth="5"
-                            strokeDasharray="0, 10"
-                            strokeLinecap="round"
-                          />
-                        </Svg>
-                      </View>
+                  <View className={`absolute h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[59px]' : 'left-[65px] '} z-0`}>
+                    <Svg height={'130%'}
+                      width="5"
+                    >
+                      <Line
+                        x1="2.5"
+                        y1="2.5"
+                        x2="2.5"
+                        y2="100%"
+                        stroke="#ccc"
+                        strokeWidth="5"
+                        strokeDasharray="0, 10"
+                        strokeLinecap="round"
+                      />
+                    </Svg>
+                  </View>
                 )}
               </View>
             </Accordion>
           </View>
         )}
       </DraggableSectionContainer>
-        
+
     </Animated.View>
   );
 };
@@ -1001,7 +1001,7 @@ const SectionAccordion = ({
       let showDateText = false;
       if (eventActivity.startDate) {
         const currentDateString = new Date(eventActivity.startDate).toDateString();
-        const hasDateAppearedBefore = array.slice(0, index).some((act) => 
+        const hasDateAppearedBefore = array.slice(0, index).some((act) =>
           act.startDate && new Date(act.startDate).toDateString() === currentDateString
         );
         showDateText = !hasDateAppearedBefore;
@@ -1014,12 +1014,12 @@ const SectionAccordion = ({
           style={{
             zIndex:
               sectionDragState?.sectionId === section.id &&
-              sectionDragState?.dragIndex === index
+                sectionDragState?.dragIndex === index
                 ? 9999
                 : 1,
             elevation:
               sectionDragState?.sectionId === section.id &&
-              sectionDragState?.dragIndex === index
+                sectionDragState?.dragIndex === index
                 ? 10
                 : 1,
           }}
@@ -1090,7 +1090,7 @@ const SectionAccordion = ({
   };
 
   const hasAtleastOneActivityDate = useMemo(() => {
-    return sections.some((section) => 
+    return sections.some((section) =>
       section.itineraryActivity?.some((activity) => activity.startDate)
     );
   }, [sections]);
@@ -1127,9 +1127,9 @@ const SectionAccordion = ({
         }
       >
 
-      {sections.length === 0 || (sections.length === 1 && sections[0].isDefaultSection && sections[0].itineraryActivity.length === 0) ? (
+        {sections.length === 0 || (sections.length === 1 && sections[0].isDefaultSection && sections[0].itineraryActivity.length === 0) ? (
           <View className="flex-1 items-center justify-center py-8 gap-1">
-                <Icon name="add" size={46} color={"#D1D5DB"} />
+            <Icon name="add" size={46} color={"#D1D5DB"} />
 
             <Text className="text-2xl text-tertiary/50 text-center">
               No planned activities yet.
@@ -1142,14 +1142,14 @@ const SectionAccordion = ({
                 className="flex-row items-center"
               >
                 <Icon name="add" size={16} color={"#263F69"} />
-                <Text 
+                <Text
                   className="font-medium text-base underline text-accent"
                 >
                   Add activity
                 </Text>
               </TouchableOpacity>
-               <Text className="text-base text-tertiary">
-                now, or 
+              <Text className="text-base text-tertiary">
+                now, or
               </Text>
               <TouchableOpacity
                 onPress={() => setIsAddSectionVisible(true)}
@@ -1158,171 +1158,170 @@ const SectionAccordion = ({
                 className="flex-row items-center"
               >
                 {/* <Icon name="add" size={16} color={colors.primary} /> */}
-                <Text 
+                <Text
                   className="font-medium text-base underline  text-accent"
                 >
                   Create section
                 </Text>
               </TouchableOpacity>
-               <Text className="text-base text-tertiary">
-               to organize itinerary.
+              <Text className="text-base text-tertiary">
+                to organize itinerary.
               </Text>
             </View>
 
           </View>
-      ) : (
-          <View className={`flex-1 p-3 ${!hasAtleastOneActivityDate && sections.filter((section) => !section.isDefaultSection).length === 0  ? "-ml-4xl" : ""}`}>
-              {viewMode !== 'plain' && (
-                <View className={`flex-1 z-10 p-2 absolute rounded-full ${viewMode === "narrow" ? " ml-[58px]" : " ml-7xl"}`}>
-                  <Icon name="circle" size={18} color="#F97066" />
-                </View>
-              )}
-              {sections.map((section, index) => {
-                const isDefaultSection = section.isDefaultSection;
-                if (isDefaultSection) {
-                  return (
-                    <View
-                      key={section.id}
-                      collapsable={false}
-                      ref={(ref) => {
-                        if (ref && section.id) sectionRefs.current[section.id] = ref;
-                      }}
-                      style={{
-                        zIndex: sectionDragState?.sectionId === section.id ? 99999 : 1,
-                        elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
-                        overflow: "visible",
-                        paddingTop: 10
-                      }}
-                    >
-                      {section.itineraryActivity &&
-                        renderActivityCards(section, section.itineraryActivity)}
-                        {viewMode !== 'plain' && (
-                         <View className={`absolute top-2 h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[60px]' : 'left-[66px] '} z-0`}>
-                           <Svg height={viewMode === 'narrow' ? '103%' : '100%'} >
-                              <Line
-                                x1="2.5"
-                                y1="2.5"
-                                x2="2.5"
-                                y2="100%"
-                                stroke="#ccc"
-                                strokeWidth="5"
-                                strokeDasharray="0, 10"
-                                strokeLinecap="round"
-                              />
-                          </Svg>
-                         </View>
-                        )}
-                    </View>
-                  );
-                } else if (viewMode === "plain") {
-                  return (
-                    <FadeInView
-                      type="right" delay={50} duration={250}
-                      key={section.id}
-                      className="mb-4">
-                      <View className="flex-row items-center pb-3">
-                        <Text className="text-base font-bold text-secondary">
-                          {section.title}
-                        </Text>
+        ) : (
+          <View className={`flex-1 p-3 ${!hasAtleastOneActivityDate && sections.filter((section) => !section.isDefaultSection).length === 0 ? "-ml-4xl" : ""}`}>
+            {viewMode !== 'plain' && (
+              <View className={`flex-1 z-10 p-2 absolute rounded-full ${viewMode === "narrow" ? " ml-[58px]" : " ml-7xl"}`}>
+                <Icon name="circle" size={18} color="#F97066" />
+              </View>
+            )}
+            {sections.map((section, index) => {
+              const isDefaultSection = section.isDefaultSection;
+              if (isDefaultSection) {
+                return (
+                  <View
+                    key={section.id}
+                    collapsable={false}
+                    ref={(ref) => {
+                      if (ref && section.id) sectionRefs.current[section.id] = ref;
+                    }}
+                    style={{
+                      zIndex: sectionDragState?.sectionId === section.id ? 99999 : 1,
+                      elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
+                      overflow: "visible",
+                      paddingTop: 10
+                    }}
+                  >
+                    {section.itineraryActivity &&
+                      renderActivityCards(section, section.itineraryActivity)}
+                    {viewMode !== 'plain' && (
+                      <View className={`absolute top-2 h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[60px]' : 'left-[66px] '} z-0`}>
+                        <Svg height={viewMode === 'narrow' ? '103%' : '100%'} >
+                          <Line
+                            x1="2.5"
+                            y1="2.5"
+                            x2="2.5"
+                            y2="100%"
+                            stroke="#ccc"
+                            strokeWidth="5"
+                            strokeDasharray="0, 10"
+                            strokeLinecap="round"
+                          />
+                        </Svg>
                       </View>
-                      
-                      {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
-                        section.itineraryActivity.map(
-                          (eventActivity, index, array) => {
-                            return (
-                              <TouchableOpacity
-                                key={eventActivity.id || index}
-                                activeOpacity={0.7}
-                                accessibilityRole="button"
-                                accessibilityLabel={`View activity ${eventActivity.title}`}
-                                onPress={() => {
-                                  if (eventActivity.id) {
-                                    setSelectedViewActivity({ id: eventActivity.id, travelId: section.travelId });
-                                  }
-                                }}
-                                className="ml-5 py-2 flex-row gap-x-3 items-center"
-                              >
-                                {/* <Ionicons name="location-outline" size={16} color="#dc3545" /> */}
-                                <Ionicons name="chevron-forward" size={16} color="#344054" />
-                                <Text className="text-lg text-secondary/80">{eventActivity.title}</Text>
-                              </TouchableOpacity>
-                            );
-                          }
-                        )) : (
-                          <Text className="text-base text-tertiary leading-5 p-1 opacity-50 ml-12 tracking-wide">
-                            No activity
-                          </Text>
-                        )}
-                    </FadeInView>
-                  );
-                } else {
-                  const subSections = sections.filter(s => s.isDefaultSection === false);
-                  const mapIndex = subSections.findIndex(s => s.id === section.id);
-                  const subSectionsLength = subSections.length;
-                  return (
+                    )}
+                  </View>
+                );
+              } else if (viewMode === "plain") {
+                return (
+                  <FadeInView
+                    type="right" delay={50} duration={250}
+                    key={section.id}
+                    className="mb-4">
+                    <View className="flex-row items-center pb-3">
+                      <Text className="text-base font-bold text-secondary">
+                        {section.title}
+                      </Text>
+                    </View>
 
-                    <View key={section.id} 
-                      style={{ marginTop: index === 0 ? 24 : 0 }}>
-                      <View className={`absolute top-9px h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
+                    {section.itineraryActivity && section.itineraryActivity.length > 0 ? (
+                      section.itineraryActivity.map(
+                        (eventActivity, index, array) => {
+                          return (
+                            <TouchableOpacity
+                              key={eventActivity.id || index}
+                              activeOpacity={0.7}
+                              accessibilityRole="button"
+                              accessibilityLabel={`View activity ${eventActivity.title}`}
+                              onPress={() => {
+                                if (eventActivity.id) {
+                                  setSelectedViewActivity({ id: eventActivity.id, travelId: section.travelId });
+                                }
+                              }}
+                              className="ml-5 py-2 flex-row gap-x-3 items-center"
+                            >
+                              {/* <Ionicons name="location-outline" size={16} color="#dc3545" /> */}
+                              <Ionicons name="chevron-forward" size={16} color="#344054" />
+                              <Text className="text-lg text-secondary/80">{eventActivity.title}</Text>
+                            </TouchableOpacity>
+                          );
+                        }
+                      )) : (
+                      <Text className="text-base text-tertiary leading-5 p-1 opacity-50 ml-12 tracking-wide">
+                        No activity
+                      </Text>
+                    )}
+                  </FadeInView>
+                );
+              } else {
+                const subSections = sections.filter(s => s.isDefaultSection === false);
+                const mapIndex = subSections.findIndex(s => s.id === section.id);
+                const subSectionsLength = subSections.length;
+                return (
+                  <View key={section.id}
+                    style={{ marginTop: index === 0 ? 24 : 0 }}>
+                    <View className={`absolute top-9px h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
                       <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
                       <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
                     </View>
                     <FadeInView
                       type="right" delay={50} duration={250}>
 
-                    <DraggableSectionItem
-                      key={section.id}
-                      section={section}
-                      mapIndex={mapIndex}
-                      subSectionsLength={subSectionsLength}
-                      masterDragState={masterDragState}
-                      masterHoverState={masterHoverState}
-                      sections={sections}
-                      onMasterDragStart={handleMasterSectionDragStart}
-                      onMasterDragMove={handleMasterSectionDragMove}
-                      onMasterDragEnd={handleMasterSectionDragEnd}
-                      sectionDragState={sectionDragState}
-                      masterSectionRefs={masterSectionRefs}
-                      masterSectionBounds={masterSectionBounds}
-                      renderActivityCards={renderActivityCards}
-                      sectionRefs={sectionRefs}
-                      viewMode={viewMode}
-                      allowItemReordering={allowItemReordering}
-                      onPressMore={handleEditSection}
-                    />
-                    
-                    {/* //TODO: Hide this feat for now */}
-                    {false && index === sections.length - 1 && (
-                      <TouchableOpacity
-                      // onPress={() => {
-                      //   setModalVisible(true);
-                      //   const defaultSection = sections.find(
-                      //     (section) => section.isDefaultSection == true,
-                      //   );
-                      //   setCurrentSectionId(defaultSection?.id || null);
-                      // }}
-                      
-                      className="flex-row"
-                    >
-                        <Icon name="add" size={16} color={"#263F69"} />
-                        <Text className="font-medium text-base text-primary underline">
-                        Add section
-                      </Text>
-                    </TouchableOpacity>
-                    )}
-                      
+                      <DraggableSectionItem
+                        key={section.id}
+                        section={section}
+                        mapIndex={mapIndex}
+                        subSectionsLength={subSectionsLength}
+                        masterDragState={masterDragState}
+                        masterHoverState={masterHoverState}
+                        sections={sections}
+                        onMasterDragStart={handleMasterSectionDragStart}
+                        onMasterDragMove={handleMasterSectionDragMove}
+                        onMasterDragEnd={handleMasterSectionDragEnd}
+                        sectionDragState={sectionDragState}
+                        masterSectionRefs={masterSectionRefs}
+                        masterSectionBounds={masterSectionBounds}
+                        renderActivityCards={renderActivityCards}
+                        sectionRefs={sectionRefs}
+                        viewMode={viewMode}
+                        allowItemReordering={allowItemReordering}
+                        onPressMore={handleEditSection}
+                      />
+
+                      {/* //TODO: Hide this feat for now */}
+                      {false && index === sections.length - 1 && (
+                        <TouchableOpacity
+                          // onPress={() => {
+                          //   setModalVisible(true);
+                          //   const defaultSection = sections.find(
+                          //     (section) => section.isDefaultSection == true,
+                          //   );
+                          //   setCurrentSectionId(defaultSection?.id || null);
+                          // }}
+
+                          className="flex-row"
+                        >
+                          <Icon name="add" size={16} color={"#263F69"} />
+                          <Text className="font-medium text-base text-primary underline">
+                            Add section
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
                     </FadeInView>
 
-                    <View style={{ marginBottom: viewMode === "narrow" && subSectionsLength > 0 && index === subSectionsLength? 16 : 0 }}>
+                    <View style={{ marginBottom: viewMode === "narrow" && subSectionsLength > 0 && index === subSectionsLength ? 16 : 0 }}>
                       <View className={`absolute top-9px h-full w-md  py-lg z-1 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
                         <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
                         <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
                       </View>
                     </View>
                   </View>
-                  );
-                }
-              })}
+                );
+              }
+            })}
 
             {viewMode !== 'plain' && (
               <View className={`flex-1 z-10 px-2  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-[46px]" : " ml-[50px] mt-[28px]"}`}>
@@ -1334,7 +1333,7 @@ const SectionAccordion = ({
               </View>
             )}
           </View>
-      )}
+        )}
       </ScrollView>
 
       {/* Settings Accordion Header */}
@@ -1372,11 +1371,11 @@ const SectionAccordion = ({
         onRequestClose={collapseSettings}
       >
         {/* Animated Backdrop cover */}
-        <Animated.View 
+        <Animated.View
           className="flex-1 justify-end"
-          style={{ 
+          style={{
             backgroundColor: "rgba(0,0,0,0.5)",
-            opacity: settingsBackdropOpacity 
+            opacity: settingsBackdropOpacity
           }}
         >
           {/* Backdrop Dismiss Overlay */}
@@ -1386,7 +1385,7 @@ const SectionAccordion = ({
           />
 
           {/* Bottom Sheet Container */}
-          <Animated.View 
+          <Animated.View
             className="w-full px-6 pb-8"
             style={{
               backgroundColor: colors.surface,
@@ -1401,34 +1400,34 @@ const SectionAccordion = ({
             }}
           >
             {/* Drag Handle Area */}
-            <View 
+            <View
               {...settingsDragPanResponder.panHandlers}
               className="w-full items-center py-4 rounded-t-[28px]"
               style={{ backgroundColor: colors.surface }}
             >
-              <View 
-                style={{ 
-                  width: 42, 
-                  height: 5, 
-                  borderRadius: 2.5, 
-                  backgroundColor: colors.outline 
-                }} 
+              <View
+                style={{
+                  width: 42,
+                  height: 5,
+                  borderRadius: 2.5,
+                  backgroundColor: colors.outline
+                }}
               />
             </View>
 
             <View className="flex-row items-center justify-between mb-6">
-            <Text 
-              className="text-2xl font-bold text-accent"
-            >
-              Itinerary settings
-            </Text>
-            <TouchableOpacity 
-              onPress={() => alert(true)} 
-              accessibilityRole="button"
-              accessibilityLabel="Show status explanation"
-            >
-              <Icon name="info" size={20} color={"#999"} />
-            </TouchableOpacity>
+              <Text
+                className="text-2xl font-bold text-accent"
+              >
+                Itinerary settings
+              </Text>
+              <TouchableOpacity
+                onPress={() => alert(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Show status explanation"
+              >
+                <Icon name="info" size={20} color={"#999"} />
+              </TouchableOpacity>
             </View>
 
             {/* View Mode Selection Row */}
@@ -1437,7 +1436,7 @@ const SectionAccordion = ({
                 <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>View style</Text>
                 <Text className="text-base text-tertiary">Choose layout style for activities</Text>
               </View>
-              <View 
+              <View
                 className="flex-row rounded-full p-1 border"
                 style={{
                   backgroundColor: colors.outlineVariant,

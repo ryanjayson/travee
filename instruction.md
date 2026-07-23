@@ -31,6 +31,15 @@ Rebuild:
 
 Bash
 npx expo run:android
+ ipconfig getifaddr en0
+ python3 -m http.server 8000
+
+npx expo run:android --variant release
+
+
+
+
+
 
 
 

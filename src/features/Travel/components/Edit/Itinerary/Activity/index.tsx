@@ -381,19 +381,19 @@ const EditActivity = ({
 
   const handleFlightSelect = (flightData: any, setFieldValue: any) => {
     const { departureAirport, arrivalAirport, departureDate } = flightData;
-    
+
     // 1. Title: e.g. "Flight to Manila"
-    const arrCity = arrivalAirport.type === "city" 
-      ? arrivalAirport.name 
+    const arrCity = arrivalAirport.type === "city"
+      ? arrivalAirport.name
       : arrivalAirport.city_name;
     setFieldValue("title", `Flight to ${arrCity}`);
-    
+
     // 2. Destination: departure airport (e.g. "Singapore (SIN)")
-    const depCity = departureAirport.type === "city" 
-      ? departureAirport.name 
+    const depCity = departureAirport.type === "city"
+      ? departureAirport.name
       : departureAirport.city_name;
     setFieldValue("destination", `${depCity} (${departureAirport.code})`);
-    
+
     // 3. DestinationData: set coordinates and detail fields based on departure airport
     setFieldValue("destinationData", {
       id: departureAirport.id,
@@ -402,18 +402,18 @@ const EditActivity = ({
         latitude: departureAirport.coordinates.lat,
       },
     });
-    
+
     // 4. Start Date: YYYY-MM-DD
     const year = departureDate.getFullYear();
     const month = String(departureDate.getMonth() + 1).padStart(2, '0');
     const day = String(departureDate.getDate()).padStart(2, '0');
     setFieldValue("startDate", `${year}-${month}-${day}`);
-    
+
     // 5. Start Time: HH:MM
     const hours = String(departureDate.getHours()).padStart(2, '0');
     const minutes = String(departureDate.getMinutes()).padStart(2, '0');
     setFieldValue("startTime", `${hours}:${minutes}`);
-    
+
     // 6. Description: Flight details prefill
     const depName = departureAirport.type === "city" && departureAirport.main_airport_name
       ? departureAirport.main_airport_name
@@ -445,9 +445,9 @@ const EditActivity = ({
         const a =
           Math.sin(dLat / 2) * Math.sin(dLat / 2) +
           Math.cos((lat1 * Math.PI) / 180) *
-            Math.cos((lat2 * Math.PI) / 180) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
+          Math.cos((lat2 * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const distance = R * c;
 
@@ -530,7 +530,7 @@ const EditActivity = ({
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
   const { generateSortOrder } = useLexicographicSort();
-  
+
   const travelId = itineraryActivity?.travelId || propTravelId || "";
   const {
     data: travelPlan,
@@ -702,29 +702,29 @@ const EditActivity = ({
             if (b.startDate) return 1;
             return (a.sortOrder || "").localeCompare(b.sortOrder || "");
           });
-            
+
           // Find where this new activity belongs
           const nextNeighborIndex = sortedActivities.findIndex(a => {
             if (!a.startDate) return true; // untimed activities come after our timed activity
             return new Date(a.startDate).getTime() > finalStartDate!.getTime();
           });
-          
+
           let prevNeighbor = null;
           let nextNeighbor = null;
-          
+
           if (nextNeighborIndex !== -1) {
             nextNeighbor = sortedActivities[nextNeighborIndex];
             prevNeighbor = nextNeighborIndex > 0 ? sortedActivities[nextNeighborIndex - 1] : null;
           } else {
             prevNeighbor = sortedActivities.length > 0 ? sortedActivities[sortedActivities.length - 1] : null;
           }
-          
+
           finalSortOrder = generateSortOrder(prevNeighbor?.sortOrder, nextNeighbor?.sortOrder);
         } else {
           // No start date: append to the very end of the section
           const sortedActivities = [...existingActivities].sort((a, b) => (a.sortOrder || "").localeCompare(b.sortOrder || ""));
           const lastActivity = sortedActivities.length > 0 ? sortedActivities[sortedActivities.length - 1] : null;
-          
+
           finalSortOrder = generateSortOrder(lastActivity?.sortOrder, null);
         }
       }
@@ -746,77 +746,77 @@ const EditActivity = ({
         attachments: values.attachments,
         flightDetails: values.type === ActivityType.flight && values.flightDetails
           ? {
-              departureAirport: values.flightDetails.departureAirport,
-              arrivalAirport: values.flightDetails.arrivalAirport,
-              departureDate: values.flightDetails.departureDate
-                ? new Date(values.flightDetails.departureDate)
-                : new Date(),
-              arrivalDate: values.flightDetails.arrivalDate
-                ? new Date(values.flightDetails.arrivalDate)
-                : null,
-              flightNumber: values.flightDetails.flightNumber || null,
-              airline: values.flightDetails.airline || null,
-              gate: values.flightDetails.gate || null,
-              terminal: values.flightDetails.terminal || null,
-              seatNumber: values.flightDetails.seatNumber || null,
-              bookingReference: values.flightDetails.bookingReference || null,
-              price: values.flightDetails.price ? Number(values.flightDetails.price) : null,
-            }
+            departureAirport: values.flightDetails.departureAirport,
+            arrivalAirport: values.flightDetails.arrivalAirport,
+            departureDate: values.flightDetails.departureDate
+              ? new Date(values.flightDetails.departureDate)
+              : new Date(),
+            arrivalDate: values.flightDetails.arrivalDate
+              ? new Date(values.flightDetails.arrivalDate)
+              : null,
+            flightNumber: values.flightDetails.flightNumber || null,
+            airline: values.flightDetails.airline || null,
+            gate: values.flightDetails.gate || null,
+            terminal: values.flightDetails.terminal || null,
+            seatNumber: values.flightDetails.seatNumber || null,
+            bookingReference: values.flightDetails.bookingReference || null,
+            price: values.flightDetails.price ? Number(values.flightDetails.price) : null,
+          }
           : null,
         accomodationDetails: values.type === ActivityType.accomodation && values.accomodationDetails
           ? {
-              accomodationName: values.accomodationDetails.accomodationName,
-              address: values.accomodationDetails.address || null,
-              checkinDateTime: values.accomodationDetails.checkinDateTime
-                ? new Date(values.accomodationDetails.checkinDateTime)
-                : new Date(),
-              checkoutDateTime: values.accomodationDetails.checkoutDateTime
-                ? new Date(values.accomodationDetails.checkoutDateTime)
-                : null,
-              websiteAddress: values.accomodationDetails.websiteAddress || null,
-              bookingReference: values.accomodationDetails.bookingReference || null,
-              bookingStatus: values.accomodationDetails.bookingStatus || null,
-              contactNumber: values.accomodationDetails.contactNumber || null,
-              emailAddress: values.accomodationDetails.emailAddress || null,
-              contactName: values.accomodationDetails.contactName || null,
-            }
+            accomodationName: values.accomodationDetails.accomodationName,
+            address: values.accomodationDetails.address || null,
+            checkinDateTime: values.accomodationDetails.checkinDateTime
+              ? new Date(values.accomodationDetails.checkinDateTime)
+              : new Date(),
+            checkoutDateTime: values.accomodationDetails.checkoutDateTime
+              ? new Date(values.accomodationDetails.checkoutDateTime)
+              : null,
+            websiteAddress: values.accomodationDetails.websiteAddress || null,
+            bookingReference: values.accomodationDetails.bookingReference || null,
+            bookingStatus: values.accomodationDetails.bookingStatus || null,
+            contactNumber: values.accomodationDetails.contactNumber || null,
+            emailAddress: values.accomodationDetails.emailAddress || null,
+            contactName: values.accomodationDetails.contactName || null,
+          }
           : null,
         cafeRestaurantDetails: values.type === ActivityType.cafeRestaurant && values.cafeRestaurantDetails
           ? {
-              restaurantName: values.cafeRestaurantDetails.restaurantName,
-              address: values.cafeRestaurantDetails.address || null,
-              cuisine: values.cafeRestaurantDetails.cuisine || null,
-              priceRange: values.cafeRestaurantDetails.priceRange || null,
-              reservationLink: values.cafeRestaurantDetails.reservationLink || null,
-              websiteAddress: values.cafeRestaurantDetails.websiteAddress || null,
-              contactNumber: values.cafeRestaurantDetails.contactNumber || null,
-            }
+            restaurantName: values.cafeRestaurantDetails.restaurantName,
+            address: values.cafeRestaurantDetails.address || null,
+            cuisine: values.cafeRestaurantDetails.cuisine || null,
+            priceRange: values.cafeRestaurantDetails.priceRange || null,
+            reservationLink: values.cafeRestaurantDetails.reservationLink || null,
+            websiteAddress: values.cafeRestaurantDetails.websiteAddress || null,
+            contactNumber: values.cafeRestaurantDetails.contactNumber || null,
+          }
           : null,
         natureDetails: values.type === ActivityType.nature && values.natureDetails
           ? {
-              spotName: values.natureDetails.spotName,
-              address: values.natureDetails.address || null,
-              subType: values.natureDetails.subType || null,
-              entryFee: values.natureDetails.entryFee || null,
-            }
+            spotName: values.natureDetails.spotName,
+            address: values.natureDetails.address || null,
+            subType: values.natureDetails.subType || null,
+            entryFee: values.natureDetails.entryFee || null,
+          }
           : null,
         shoppingDetails: values.type === ActivityType.shopppingAndService && values.shoppingDetails
           ? {
-              venueName: values.shoppingDetails.venueName,
-              address: values.shoppingDetails.address || null,
-              subType: values.shoppingDetails.subType || null,
-              websiteAddress: values.shoppingDetails.websiteAddress || null,
-            }
+            venueName: values.shoppingDetails.venueName,
+            address: values.shoppingDetails.address || null,
+            subType: values.shoppingDetails.subType || null,
+            websiteAddress: values.shoppingDetails.websiteAddress || null,
+          }
           : null,
         entertainmentDetails: values.type === ActivityType.entertainmentAndRecreation && values.entertainmentDetails
           ? {
-              venueName: values.entertainmentDetails.venueName,
-              address: values.entertainmentDetails.address || null,
-              subType: values.entertainmentDetails.subType || null,
-              websiteAddress: values.entertainmentDetails.websiteAddress || null,
-              ticketPrice: values.entertainmentDetails.ticketPrice || null,
-              bookingReference: values.entertainmentDetails.bookingReference || null,
-            }
+            venueName: values.entertainmentDetails.venueName,
+            address: values.entertainmentDetails.address || null,
+            subType: values.entertainmentDetails.subType || null,
+            websiteAddress: values.entertainmentDetails.websiteAddress || null,
+            ticketPrice: values.entertainmentDetails.ticketPrice || null,
+            bookingReference: values.entertainmentDetails.bookingReference || null,
+          }
           : null,
         // transportationDetails: values.type === ActivityType.transportation && values.transportationDetails
         //   ? {
@@ -830,28 +830,28 @@ const EditActivity = ({
         //   : null,
         walkDetails: values.type === ActivityType.walk && values.walkDetails
           ? {
-              routeName: values.walkDetails.routeName || null,
-              estimatedDistanceKm: values.walkDetails.estimatedDistanceKm || null,
-              estimatedDuration: values.walkDetails.estimatedDuration || null,
-            }
+            routeName: values.walkDetails.routeName || null,
+            estimatedDistanceKm: values.walkDetails.estimatedDistanceKm || null,
+            estimatedDuration: values.walkDetails.estimatedDuration || null,
+          }
           : null,
         sightseeingDetails: values.type === ActivityType.sightseeing && values.sightseeingDetails
           ? {
-              attractionName: values.sightseeingDetails.attractionName,
-              address: values.sightseeingDetails.address || null,
-              entryFee: values.sightseeingDetails.entryFee || null,
-              websiteAddress: values.sightseeingDetails.websiteAddress || null,
-            }
+            attractionName: values.sightseeingDetails.attractionName,
+            address: values.sightseeingDetails.address || null,
+            entryFee: values.sightseeingDetails.entryFee || null,
+            websiteAddress: values.sightseeingDetails.websiteAddress || null,
+          }
           : null,
         preparationDetails: values.type === ActivityType.preparation && values.preparationDetails
           ? {
-              taskLabel: values.preparationDetails.taskLabel || null,
-              deadlineDateTime: values.preparationDetails.deadlineDateTime
-                ? new Date(values.preparationDetails.deadlineDateTime)
-                : null,
-              priority: values.preparationDetails.priority || null,
-              notes: values.preparationDetails.notes || null,
-            }
+            taskLabel: values.preparationDetails.taskLabel || null,
+            deadlineDateTime: values.preparationDetails.deadlineDateTime
+              ? new Date(values.preparationDetails.deadlineDateTime)
+              : null,
+            priority: values.preparationDetails.priority || null,
+            notes: values.preparationDetails.notes || null,
+          }
           : null,
         // restDetails: values.type === ActivityType.rest && values.restDetails
         //   ? {
@@ -861,23 +861,23 @@ const EditActivity = ({
         //   : null,
         hikeOrCampDetails: values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails
           ? {
-              trailOrSiteName: values.hikeOrCampDetails.trailOrSiteName,
-              address: values.hikeOrCampDetails.address || null,
-              subType: values.hikeOrCampDetails.subType || null,
-              estimatedDistanceKm: values.hikeOrCampDetails.estimatedDistanceKm || null,
-              campsiteName: values.hikeOrCampDetails.campsiteName || null,
-              permitRequired: values.hikeOrCampDetails.permitRequired ?? null,
-              contactPerson: values.hikeOrCampDetails.contactPerson || null,
-              contactNumber: values.hikeOrCampDetails.contactNumber || null,
-              websiteAddress: values.hikeOrCampDetails.websiteAddress || null,
-              reservationLink: values.hikeOrCampDetails.reservationLink || null,
-              checkinDateTime: values.hikeOrCampDetails.checkinDateTime
-                ? new Date(values.hikeOrCampDetails.checkinDateTime)
-                : null,
-              checkoutDateTime: values.hikeOrCampDetails.checkoutDateTime
-                ? new Date(values.hikeOrCampDetails.checkoutDateTime)
-                : null,
-            }
+            trailOrSiteName: values.hikeOrCampDetails.trailOrSiteName,
+            address: values.hikeOrCampDetails.address || null,
+            subType: values.hikeOrCampDetails.subType || null,
+            estimatedDistanceKm: values.hikeOrCampDetails.estimatedDistanceKm || null,
+            campsiteName: values.hikeOrCampDetails.campsiteName || null,
+            permitRequired: values.hikeOrCampDetails.permitRequired ?? null,
+            contactPerson: values.hikeOrCampDetails.contactPerson || null,
+            contactNumber: values.hikeOrCampDetails.contactNumber || null,
+            websiteAddress: values.hikeOrCampDetails.websiteAddress || null,
+            reservationLink: values.hikeOrCampDetails.reservationLink || null,
+            checkinDateTime: values.hikeOrCampDetails.checkinDateTime
+              ? new Date(values.hikeOrCampDetails.checkinDateTime)
+              : null,
+            checkoutDateTime: values.hikeOrCampDetails.checkoutDateTime
+              ? new Date(values.hikeOrCampDetails.checkoutDateTime)
+              : null,
+          }
           : null,
         // motorcycleRideDetails: values.type === ActivityType.motorcycleRide && values.motorcycleRideDetails
         //   ? {
@@ -997,13 +997,13 @@ const EditActivity = ({
       departureDate: itineraryActivity?.flightDetails?.departureDate
         ? new Date(itineraryActivity.flightDetails.departureDate)
         : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.startDate
-            ? new Date(itineraryActivity.startDate)
-            : null),
+          ? new Date(itineraryActivity.startDate)
+          : null),
       arrivalDate: itineraryActivity?.flightDetails?.arrivalDate
         ? new Date(itineraryActivity.flightDetails.arrivalDate)
         : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.endDate
-            ? new Date(itineraryActivity.endDate)
-            : null),
+          ? new Date(itineraryActivity.endDate)
+          : null),
       flightNumber: itineraryActivity?.flightDetails?.flightNumber || "",
       airline: itineraryActivity?.flightDetails?.airline || "",
       gate: itineraryActivity?.flightDetails?.gate || "",
@@ -1022,13 +1022,13 @@ const EditActivity = ({
       checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime
         ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
         : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.startDate
-            ? new Date(itineraryActivity.startDate)
-            : null),
+          ? new Date(itineraryActivity.startDate)
+          : null),
       checkoutDateTime: itineraryActivity?.accomodationDetails?.checkoutDateTime
         ? new Date(itineraryActivity.accomodationDetails.checkoutDateTime)
         : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.endDate
-            ? new Date(itineraryActivity.endDate)
-            : null),
+          ? new Date(itineraryActivity.endDate)
+          : null),
       websiteAddress: itineraryActivity?.accomodationDetails?.websiteAddress || "",
       bookingReference: itineraryActivity?.accomodationDetails?.bookingReference || "",
       bookingStatus: itineraryActivity?.accomodationDetails?.bookingStatus || "",
@@ -1259,21 +1259,21 @@ const EditActivity = ({
                 {/* Accomodation Details Accordion */}
                 {values.type === ActivityType.accomodation && (
                   <AccomodationTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      colors={colors}
-                      setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
-                      formatAccomodationDateTime={formatFlightDateTime}
-                      onOpenPoiModal={(category) => {
-                        setPoiTargetType("accommodation");
-                        setPoiModalInitialCategory(category);
-                        setShowPoiModal(true);
-                      }}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                    />
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    colors={colors}
+                    setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
+                    formatAccomodationDateTime={formatFlightDateTime}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("accommodation");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
                 )}
 
                 {/* Flight Details Accordion */}
@@ -1597,7 +1597,7 @@ const EditActivity = ({
                     {(() => {
                       const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
                       return (
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           onPress={() => {
                             onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
                               setFieldValue("type", type);
@@ -1612,9 +1612,8 @@ const EditActivity = ({
                           disabled={isTypeDisabled}
                           accessibilityRole="button"
                           accessibilityState={{ disabled: isTypeDisabled }}
-                          className={`border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 mt-1 flex-row items-center gap-3 ${
-                            isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
-                          }`}
+                          className={`border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 mt-1 flex-row items-center gap-3 ${isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
+                            }`}
                         >
                           {values.type != null ? (
                             <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
@@ -1637,7 +1636,7 @@ const EditActivity = ({
                       Select the Section to add this activity.
                     </Text>
                     <View className="flex-row items-center gap-2 mt-1">
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         onPress={() => {
                           onOpenSectionModal(sections, values.sectionId, (id) => {
                             setFieldValue("sectionId", id);
@@ -1671,7 +1670,7 @@ const EditActivity = ({
                       </TouchableOpacity>
                     </View>
                   </View>
-           
+
                   {/* Description */}
                   <View ref={(el) => { fieldRefs.current["description"] = el; }} className="mb-5">
                     <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
@@ -1689,35 +1688,35 @@ const EditActivity = ({
                 {/* Delete Activity */}
                 {itineraryActivity?.id && (
                   <>
-                   <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200">
-                    <TouchableOpacity 
-                      className="flex-row items-center gap-2.5 justify-center py-2"
-                      onPress={() => handleDeleteActivity(itineraryActivity?.id || "", values.sectionId)}
-                      disabled={isPending}
-                      accessibilityRole="button"
-                    >
-                      <Icon name="delete-outline" size={24} color={"#c93030"} />
-                      <Text className="text-base capitalize font-medium text-[#c93030]">
-                        Delete Activity
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                    <View className="mt-2 pt-4  rounded-md h-7xl border-0 bg-gray-200">
+                      <TouchableOpacity
+                        className="flex-row items-center gap-2.5 justify-center py-2"
+                        onPress={() => handleDeleteActivity(itineraryActivity?.id || "", values.sectionId)}
+                        disabled={isPending}
+                        accessibilityRole="button"
+                      >
+                        <Icon name="delete-outline" size={24} color={"#c93030"} />
+                        <Text className="text-base capitalize font-medium text-[#c93030]">
+                          Delete Activity
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
 
-                   <View className="mt-2 pt-4 ">
-                    <TouchableOpacity 
-                      className="flex-row items-center justify-center py-2"
-                      onPress={() => handleAddActivity(values)}
-                      disabled={isPending}
-                      accessibilityRole="button"
-                    >
-                      <Icon name="add" size={24} color={colors.primary} />
-                      <Text className="text-base underline capitalize font-bold text-primary">
-                        Create New Activity
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+                    <View className="mt-2 pt-4 ">
+                      <TouchableOpacity
+                        className="flex-row items-center justify-center py-2"
+                        onPress={() => handleAddActivity(values)}
+                        disabled={isPending}
+                        accessibilityRole="button"
+                      >
+                        <Icon name="add" size={24} color={colors.primary} />
+                        <Text className="text-base underline capitalize font-bold text-primary">
+                          Create New Activity
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   </>
-                 
+
                 )}
               </View>
             ),
@@ -1789,7 +1788,7 @@ const EditActivity = ({
                 {(values.attachments || []).length > 0 && (
                   <View className="gap-2">
                     {(values.attachments || []).map((file, index) => {
-                      const displaySize = file.size 
+                      const displaySize = file.size
                         ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
                         : "Unknown size";
                       return (
@@ -1828,21 +1827,21 @@ const EditActivity = ({
             disabled: !itineraryActivity?.id,
             content: (
               <View className="flex-1 pb-6 pt-2 px-5">
-              
-              <TouchableOpacity
-                          accessibilityRole="button"
-                          accessibilityLabel="Add To-Do item"
-                          onPress={() => {
-                            if (itineraryActivity) {
-                              openChecklistModal(null, [itineraryActivity], travelId);
-                            }
-                          }}
-                          className="flex-row items-center gap-1 mb-2 p-2 "
-                        >
-                          <Icon name="add" size={24} color="#263F69" />
-                          <Text className="text-lg font-medium text-accent underline">Add To-Do item</Text>
-                        </TouchableOpacity>
-{/* 
+
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel="Add To-Do item"
+                  onPress={() => {
+                    if (itineraryActivity) {
+                      openChecklistModal(null, [itineraryActivity], travelId);
+                    }
+                  }}
+                  className="flex-row items-center gap-1 mb-2 p-2 "
+                >
+                  <Icon name="add" size={24} color="#263F69" />
+                  <Text className="text-lg font-medium text-accent underline">Add To-Do item</Text>
+                </TouchableOpacity>
+                {/* 
                              <Button
                               mode="text"
                               icon="plus"
@@ -1867,9 +1866,8 @@ const EditActivity = ({
                         <TouchableOpacity
                           accessibilityRole="checkbox"
                           onPress={() => handleToggleChecklistItem(item)}
-                          className={`w-6 h-6 rounded-full border-2 items-center justify-center shrink-0 ${
-                            item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
-                          }`}
+                          className={`w-6 h-6 rounded-full border-2 items-center justify-center shrink-0 ${item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
+                            }`}
                         >
                           {item.isDone && <Icon name="check" size={14} color="#FFF" />}
                         </TouchableOpacity>
@@ -1933,25 +1931,25 @@ const EditActivity = ({
             />
 
             <View className="flex-1">
-              <Tabs 
-                tabs={tabData} 
+              <Tabs
+                tabs={tabData}
                 activeTabId={activeTabId}
                 onTabChange={setActiveTabId}
-                type="default" 
-                onScroll={onScroll} 
+                type="default"
+                onScroll={onScroll}
                 scrollViewRef={scrollViewRef}
               />
             </View>
 
             {!(isKeyboardVisible && isChecklistFocused) && (
               <View className="mb-8 mx-4 bg-transparent">
-                 <TouchButton
-                   buttonText={itineraryActivity?.id ? "Update Activity" : "Create Activity"}
-                   onPress={() => handleSubmit()}
-                   disabled={isPending || updateMutation.isPending}
-                   className="h-7xl p-6"
-                 />
-               </View>
+                <TouchButton
+                  buttonText={itineraryActivity?.id ? "Update Activity" : "Create Activity"}
+                  onPress={() => handleSubmit()}
+                  disabled={isPending || updateMutation.isPending}
+                  className="h-7xl p-6"
+                />
+              </View>
             )}
 
             <MapboxDestinationSelectorModal
@@ -2069,21 +2067,21 @@ const EditActivity = ({
               date={(() => {
                 const targetDateStr = showTimePickerFor === "startTime" ? values.startDate : values.endDate;
                 const targetTimeStr = showTimePickerFor === "startTime" ? values.startTime : values.endTime;
-                
+
                 const resultDate = new Date();
-                
+
                 if (targetDateStr) {
                   const [year, month, day] = targetDateStr.split('-').map(Number);
                   resultDate.setFullYear(year, month - 1, day);
                 }
-                
+
                 if (targetTimeStr && targetTimeStr.includes(':')) {
                   const [hours, minutes] = targetTimeStr.split(':').map(Number);
                   resultDate.setHours(hours, minutes, 0, 0);
                 } else {
                   resultDate.setHours(showTimePickerFor === "startTime" ? 9 : 17, 0, 0, 0);
                 }
-                
+
                 return resultDate;
               })()}
               onConfirm={(date) => {
@@ -2283,9 +2281,11 @@ interface ActivityCalendarModalProps {
 const ACTIVITY_CALENDAR_THEME = {
   todayTextColor: "#263F69",
   todayBackgroundColor: "#E3F2FD",
-  textDayFontWeight: "bold" as const,
   selectedDayBackgroundColor: "#263F69",
   selectedDayTextColor: "#ffffff",
+  textDayFontWeight: "600",
+  textMonthFontWeight: "800",
+  textMonthFontSize: 18,
 };
 
 const formatDateToYYYYMMDD = (dateVal: any) => {

@@ -128,7 +128,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         startOrDepartureDate: values.startOrDepartureDate || undefined,
         endOrReturnDate: values.endOrReturnDate || undefined,
         budget: values.budget,
-        notes: values.notes, 
+        notes: values.notes,
         type: values.type !== TripType.none ? values.type : undefined,
         status: (() => {
           if (!values.startOrDepartureDate || !values.endOrReturnDate) return TravelStatus.Draft;
@@ -201,7 +201,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     }, 2500);
     return () => clearInterval(interval);
   }, []);
-  
+
   const formattedStartDate = formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toLocaleDateString() : "";
   const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
   const { data: travels } = useTravels();
@@ -217,21 +217,21 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
   }, [formik.values.startOrDepartureDate, formik.values.endOrReturnDate]);
 
   const getEffectiveStatus = (): TravelStatus => {
-    if (tripData && (tripData.status === TravelStatus.Past || 
-        tripData.status === TravelStatus.Archieved || 
-        tripData.status === TravelStatus.Cancelled)) {
+    if (tripData && (tripData.status === TravelStatus.Past ||
+      tripData.status === TravelStatus.Archieved ||
+      tripData.status === TravelStatus.Cancelled)) {
       return tripData.status;
     }
     if (!formik.values.startOrDepartureDate) return TravelStatus.Draft;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const startOrDepartureDate = new Date(formik.values.startOrDepartureDate);
     startOrDepartureDate.setHours(0, 0, 0, 0);
-    
+
     const endOrReturnDate = formik.values.endOrReturnDate ? new Date(formik.values.endOrReturnDate) : startOrDepartureDate;
     endOrReturnDate.setHours(0, 0, 0, 0);
-    
+
     if (endOrReturnDate < today) return TravelStatus.Past;
     return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
   };
@@ -277,21 +277,21 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
   return (
     <View className="flex-1 bg-gray-100 overflow-hidden">
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
-        className="flex-1 p-[15px]" 
+        className="flex-1 p-[15px]"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 10 }}
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-{/* 
+        {/* 
         {error && (
           <View className="bg-[#FFEBEE] rounded-lg p-3 mb-4 border border-[#FFCDD2]">
             <Text className="text-[#D32F2F] text-sm">{error}</Text>
           </View>
         )} */}
- 
+
         <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
           <View className="relative justify-center">
@@ -307,7 +307,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               activeOutlineColor="#263F69"
               theme={{
                 colors: {
-                  onSurfaceVariant: '#98A2B3', 
+                  onSurfaceVariant: '#98A2B3',
                 },
               }}
               outlineStyle={{
@@ -333,7 +333,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             </Text>
           </View>
           {!tripData?.id && suggestion && !suggestionApplied ? (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => {
                 formik.setFieldValue("title", suggestion);
                 setSuggestionApplied(true);
@@ -357,7 +357,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           )}
         </View>
 
-         <View className="mb-5">
+        <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase">Destination</Text>
 
           {!formik.values.destinationData?.coordinates ? (
@@ -380,7 +380,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                     left={<TextInput.Icon icon="map-marker" color="#999" />}
                     theme={{
                       colors: {
-                        onSurfaceVariant: '#98A2B3', 
+                        onSurfaceVariant: '#98A2B3',
                       },
                     }}
                     outlineStyle={{
@@ -418,14 +418,14 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                     style={{ width: '100%', height: 160, borderRadius: 16 }}
                     resizeMode="cover"
                   />
-                  <View className="absolute bottom-2 left-2 px-3 py-1 rounded-xl flex-row items-center" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
+                  <View className="absolute bottom-2 left-2 px-3 py-1 rounded-xl flex-row items-center" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
                     <Icon name="location-on" size={14} color="#FFF" />
                     <Text className="text-white text-xs ml-1">{formik.values.destination}</Text>
                     {/* <Text className="text-white text-xs ml-1">{formik.values.destinationData?.city} =</Text> 
                     <Text className="text-white text-xs ml-1">{formik.values.destinationData?.regionOrState} = </Text>
                     <Text className="text-white text-xs ml-1">{formik.values.destinationData?.country}</Text> */}
                   </View>
-                  <View className="absolute top-2 right-2 px-2 py-1 rounded-full" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
+                  <View className="absolute top-2 right-2 px-2 py-1 rounded-full" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
                     <Text className="text-white text-[10px]">Tap to change</Text>
                   </View>
                 </View>
@@ -452,7 +452,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   label={`${!formik.values.startOrDepartureDate ? "Departure" : ""}`}
                   value={formattedStartDate}
                   editable={false}
-                  left={<TextInput.Icon icon="calendar" color="#999"/>}
+                  left={<TextInput.Icon icon="calendar" color="#999" />}
                   right={formik.values.startOrDepartureDate ? <TextInput.Icon icon="close" onPress={() => {
                     formik.setFieldValue("startOrDepartureDate", null);
                     formik.setFieldValue("endOrReturnDate", null);
@@ -460,24 +460,24 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   outlineColor="#E0E0E0"
                   activeOutlineColor="#263F69"
                   theme={{
-                      colors: {
-                        onSurfaceVariant: '#98A2B3', 
-                      },
-                    }}
-                    outlineStyle={{
-                      borderWidth: 1,
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: 16,
-                    }}
-                    style={{
-                      height: 64,
-                      marginTop: formik.values.startOrDepartureDate ? 0 : -6,
-                    }}
-                    contentStyle={{
-                      backgroundColor: "transparent",
-                    }}
+                    colors: {
+                      onSurfaceVariant: '#98A2B3',
+                    },
+                  }}
+                  outlineStyle={{
+                    borderWidth: 1,
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 16,
+                  }}
+                  style={{
+                    height: 64,
+                    marginTop: formik.values.startOrDepartureDate ? 0 : -6,
+                  }}
+                  contentStyle={{
+                    backgroundColor: "transparent",
+                  }}
                 />
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
                   onPress={() => {
                     setShowStartDatePicker(true);
@@ -498,7 +498,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   formik.setFieldValue("startOrDepartureDate", startDate);
                   formik.setFieldValue("endOrReturnDate", endDate);
                   setShowStartDatePicker(false);
-                  if (mode === "create") {
+                  if (mode === "create" && !formik.values.type) {
                     setTimeout(() => {
                       setShowTripTypeModal(true);
                     }, 300);
@@ -516,29 +516,29 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                       label={`${!formik.values.endOrReturnDate ? "Return" : ""}`}
                       value={formattedEndDate}
                       editable={false}
-                      left={<TextInput.Icon icon="calendar" color="#999"/>}
+                      left={<TextInput.Icon icon="calendar" color="#999" />}
                       right={formik.values.endOrReturnDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("endOrReturnDate", null)} /> : null}
                       outlineColor="#E0E0E0"
                       activeOutlineColor="#263F69"
                       theme={{
-                          colors: {
-                            onSurfaceVariant: '#98A2B3', 
-                          },
-                        }}
-                        outlineStyle={{
-                          borderWidth: 1,
-                          backgroundColor: "#FFFFFF",
-                          borderRadius: 16,
-                        }}
-                        style={{
-                          height: 64,
-                          marginTop: formik.values.endOrReturnDate ? 0 : -6,
-                        }}
-                        contentStyle={{
-                          backgroundColor: "transparent",
-                        }}
+                        colors: {
+                          onSurfaceVariant: '#98A2B3',
+                        },
+                      }}
+                      outlineStyle={{
+                        borderWidth: 1,
+                        backgroundColor: "#FFFFFF",
+                        borderRadius: 16,
+                      }}
+                      style={{
+                        height: 64,
+                        marginTop: formik.values.endOrReturnDate ? 0 : -6,
+                      }}
+                      contentStyle={{
+                        backgroundColor: "transparent",
+                      }}
                     />
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
                       onPress={() => {
                         setShowStartDatePicker(true);
@@ -557,32 +557,45 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
         <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Trip Type</Text>
-            <Text className={`text-sm text-gray-500`}>
-              Trip type helps organize activities and recommendations.
+          <Text className={`text-sm text-gray-500`}>
+            Type helps organize activities and recommendations.
           </Text>
-          <TouchableOpacity 
-            onPress={() => setShowTripTypeModal(true)}
-            className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 mt-1 flex-row items-center gap-3"
-            accessibilityRole="button"
-            activeOpacity={0.7}
-          >
-            {formik.values.type != null && formik.values.type !== TripType.none ? (
-              <TripIcon type={formik.values.type} size={24} showIconOnly={true} />
-            ) : (
-              <Icon name="style" size={24} color={"#B3B3B3"} />
-            )}
+          <View className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white mt-1 flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={() => setShowTripTypeModal(true)}
+              className="flex-1 flex-row items-center gap-3 px-4 py-4"
+              accessibilityRole="button"
+              activeOpacity={0.7}
+            >
+              {formik.values.type != null && formik.values.type !== TripType.none ? (
+                <TripIcon type={formik.values.type} size={24} showIconOnly={true} />
+              ) : (
+                <Icon name="style" size={24} color={"#B3B3B3"} />
+              )}
               {formik.values.type != null && formik.values.type !== TripType.none
                 ? (
-                   <Text className="text-lg text-[#000000] capitalize"> 
+                  <Text className="text-lg text-[#000000] capitalize">
                     {String(TripType[formik.values.type]).replace(/([A-Z])/g, ' $1').trim()}
                   </Text>
                 )
-               : (
-                <Text className="text-lg text-[#98A2B3]"> 
+                : (
+                  <Text className="text-lg text-[#98A2B3]">
                     Select travel purpose
-                </Text>
-               )}
-          </TouchableOpacity>
+                  </Text>
+                )}
+            </TouchableOpacity>
+            {formik.values.type != null && formik.values.type !== TripType.none && (
+              <TouchableOpacity
+                onPress={() => formik.setFieldValue("type", TripType.none)}
+                accessibilityRole="button"
+                accessibilityLabel="Clear travel type"
+                className="pr-4 py-4 pl-2 justify-center items-center"
+                activeOpacity={0.7}
+              >
+                <Icon name="close" size={20} color={colors.onSurfaceVariant} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         <TripTypeLookupModal
@@ -603,29 +616,29 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         {!tripData && (
           <View className="flex-row items-start mb-6 mr-5">
             <Checkbox
-                status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
-                onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
-                disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-                color="#263F69"
-                    />
-                    <TouchableOpacity 
-                      activeOpacity={0.7}
-                      disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-                      onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates )}
-                    >
-                      <Text className={`mt-1 text-lg ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'opacity-80' : 'text-gray-700'}`}>
-                        Generate sections
-                      </Text>
+              status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
+              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+              color="#263F69"
+            />
+            <TouchableOpacity
+              activeOpacity={0.7}
+              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+            >
+              <Text className={`mt-1 text-lg ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'opacity-80' : 'text-gray-700'}`}>
+                Generate sections
+              </Text>
 
-                        <Text className={`text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-80' : 'text-gray-500'}`}>
-                          When checked it will create itinerary sections based on dates. Travel dates should be set to create.
-                      </Text>
-                    </TouchableOpacity>
+              <Text className={`text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-80' : 'text-gray-500'}`}>
+                When checked it will create itinerary sections based on dates. Travel dates should be set to create.
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
-    
 
-      <View className="mb-5">
+
+        <View className="mb-5">
           <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
           <DescriptionInput
             value={formik.values.description}
@@ -671,23 +684,23 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               />
             </View>
 
-           
+
           </>
         )}
 
       </ScrollView>
 
-    {!hideSubmitButton && (
-      <View className="mb-8 mt-2 mx-4 bg-red-50">
-         <TouchButton
+      {!hideSubmitButton && (
+        <View className="mb-8 mt-2 mx-4 bg-red-50">
+          <TouchButton
             buttonText={isSaving ? "Saving..." : mode === "create" ? "Create trip" : "Update Changes"}
             icon={mode === "create" ? "add" : ""}
             onPress={() => formik.handleSubmit()}
             disabled={!formik.values.title.trim() || isSaving}
-            className="h-7xl p-6"  
+            className="h-7xl p-6"
           />
-      </View>
-    )}
+        </View>
+      )}
     </View>
   );
 });

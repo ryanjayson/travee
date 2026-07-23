@@ -17,6 +17,8 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
 import { ItinerarySection } from "../../../../types/TravelDto";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useDeleteSectionMutation } from "../../../../hooks/useSection";
+import { useConfirm } from "../../../../../../context/ConfirmContext";
 
 interface SectionModalProps {
   visible: boolean;
@@ -37,13 +39,35 @@ const SectionModal = ({
   onSaveSuccess,
 }: SectionModalProps) => {
   const [isSaving, setIsSaving] = useState(false);
-  const [modalHeight, setModalHeight] = useState(screenHeight * 0.6);
+  const [modalHeight, setModalHeight] = useState(screenHeight * 0.60);
   const { keyboardVisible } = useKeyboardVisible();
   const insets = useSafeAreaInsets();
-  
+
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
   const dragStartDy = useRef(0);
+
+  const { mutate: deleteSectionMutation, isPending: isDeleting } = useDeleteSectionMutation();
+  const { confirm } = useConfirm();
+
+  const handleDeleteSection = async () => {
+    if (itinerarySection?.travelId && itinerarySection?.id) {
+      const isConfirmed = await confirm({
+        title: "Delete Section",
+        message: "Are you sure you want to delete this section? All associated activities will also be permanently deleted. This action is irreversible.",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        type: "danger",
+      });
+
+      if (isConfirmed) {
+        deleteSectionMutation({
+          sectionId: itinerarySection.id!,
+        });
+        onClose();
+      }
+    }
+  };
 
   // Slide up transition on opening
   useEffect(() => {
@@ -166,21 +190,21 @@ const SectionModal = ({
   });
 
   return (
-    <Modal 
-      visible={visible} 
-      transparent 
+    <Modal
+      visible={visible}
+      transparent
       animationType="none"
       onRequestClose={handleCancel}
     >
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <Animated.View 
-          className="flex-1 justify-end" 
-          style={{ 
+        <Animated.View
+          className="flex-1 justify-end"
+          style={{
             backgroundColor: "rgba(0,0,0,0.5)",
-            opacity: backdropOpacity 
+            opacity: backdropOpacity
           }}
         >
           <Animated.View
@@ -200,10 +224,10 @@ const SectionModal = ({
             ]}
           >
             <StatusBar style="dark" />
-            
+
             {/* Drag Handle Area */}
             {!keyboardVisible && (
-              <View 
+              <View
                 {...dragPanResponder.panHandlers}
                 className="w-full items-center py-4 bg-white rounded-t-[30px]"
               >
@@ -221,9 +245,26 @@ const SectionModal = ({
                     : "Add Section"}
                 </Text>
               </View>
-              <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
-                <Icon name="clear" size={24} color={"#999"} />
-              </TouchableOpacity>
+
+              <View className="flex-row items-center gap-8">
+                {itinerarySection?.id && (
+                  <View className="rounded-md ">
+                    <TouchableOpacity
+                      className="flex-row items-center justify-center"
+                      onPress={handleDeleteSection}
+                      disabled={isDeleting}
+                    >
+                      <Icon name="delete-outline" size={24} color={"#c93030"} />
+                      <Text className="text-[#c93030] font-medium">Delete</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                <TouchableOpacity onPress={handleCancel} disabled={isSaving}>
+                  <Icon name="clear" size={24} color={"#999"} />
+                </TouchableOpacity>
+              </View>
+
             </View>
 
             <View className="flex-1">
