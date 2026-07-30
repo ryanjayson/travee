@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import TouchButton from "../../../../../components/atoms/TouchButton";
 import Tabs from "../../../../../components/Tabs";
 import { Typography } from "../../../../../styles/common";
 import { useItineraryActivity } from "../../../hooks/useActivity";
+import { useTravelPlan } from "../../../hooks/useTravel";
 import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
 import NotesTab from "./Tabs/NotesTab";
@@ -90,6 +91,20 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
     refetch,
   } = useItineraryActivity(id);
 
+  const travelId = itineraryActivity?.travelId || "";
+  const { data: travelPlan } = useTravelPlan(travelId);
+
+  const sectionName = useMemo(() => {
+    if (!travelPlan?.itinerarySection || !itineraryActivity?.sectionId) return null;
+    const section = travelPlan.itinerarySection.find(
+      (s) => s.id?.toString() === itineraryActivity.sectionId?.toString()
+    );
+    if (section && !section.isDefaultSection && section.title) {
+      return section.title;
+    }
+    return null;
+  }, [travelPlan?.itinerarySection, itineraryActivity?.sectionId]);
+
   const [fabOpen, setFabOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
@@ -129,6 +144,8 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
 
   // Reset horizontal position + fade in new content when activity ID changes
   useEffect(() => {
+    setIsDescriptionExpanded(false);
+    setShowMoreButton(false);
     translateX.setValue(0);
     fadeAnim.setValue(0);
     Animated.timing(fadeAnim, {
@@ -223,7 +240,8 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   // Snap points represent the translateY value (offset from top of parent container)
   // 90% sheet height: translateY = parentHeight * 0.1
   // Min sheet height: 25% sheet height -> 0.75 offset
-  const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 0.78 : 0.81;
+  const description = itineraryActivity?.description?.trim();
+  const SNAP_EXTENDED = description && description.length > 0 ? 0.76 : 0.81;
   const SNAP_90 = parentHeight * 0.1;
   const SNAP_MIN = parentHeight * SNAP_EXTENDED;
 
@@ -262,7 +280,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   const rangeEnd = SNAP_MIN;
   const overlayOpacity = translateY.interpolate({
     inputRange: [SNAP_90, rangeEnd],
-    outputRange: [0.55, 0],
+    outputRange: [0.55, 0.04],
     extrapolate: "clamp",
   });
 
@@ -441,9 +459,9 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
       title: "Expenses",
       icon: "receipt",
       content: <ExpensesTab activityId={id} onEditExpense={handleEditExpense} />
-,
+      ,
     },
-    { id: "checklist",  title: "Checklists", icon: "checklist", content: <ChecklistTab activityId={id} itineraryActivity={itineraryActivity} /> },
+    { id: "checklist", title: "Checklists", icon: "checklist", content: <ChecklistTab activityId={id} itineraryActivity={itineraryActivity} /> },
 
     {
       id: "notes",
@@ -465,13 +483,15 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
           style={{
             flex: 1,
             transform: [{ translateX }, { scale: swipeScale }],
-         
+
             // opacity: Animated.multiply(swipeOpacity, fadeAnim),
           }}
         >
+
           {/* Background Details Tab */}
-          <View style={{ height: parentHeight, width: "100%" ,
-            }}>
+          <View style={{
+            height: parentHeight, width: "100%",
+          }}>
             <DetailsTab itineraryActivity={itineraryActivity} />
             {/* Animated Black Overlay */}
             <TouchableWithoutFeedback
@@ -493,6 +513,8 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             </TouchableWithoutFeedback>
           </View>
 
+
+
           {/* Snappable Bottom Form Sheet */}
           <Animated.View
             {...(itineraryActivity?.type !== ActivityType.none ? panResponder.panHandlers : {})}
@@ -511,7 +533,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
                 borderBottomWidth: 0,
                 borderColor: "#E5E7EB",
                 shadowColor: "#000",
-                shadowOffset: { width: 1, height: 1},
+                shadowOffset: { width: 1, height: 1 },
                 shadowOpacity: 1,
                 shadowRadius: 26,
                 elevation: 34,
@@ -519,60 +541,81 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             ]}
           >
             {/* Drag Handle */}
-            <View className="w-full items-center pt-3 pb-1 bg-transparent rounded-t-[32px]">
+            <View className="w-full items-center pt-3 pb-2 bg-transparent rounded-t-[32px]">
               <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
             </View>
 
+            {sectionName && (
+              <View className="items-center py-1 px-md absolute -top-[24px] left-lg">
+                <Text
+                  className="font-semibold tracking-wide text-sm text-white"
+                  style={{
+                    textShadowColor: "rgba(0, 0, 0, 0.75)",
+                    textShadowOffset: { width: 2, height: 2 },
+                    textShadowRadius: 3,
+                  }}
+                >
+                  {sectionName}
+                </Text>
+              </View>
+            )}
             {/* Activity header with edit button */}
             <View className="px-5 pb-2 bg-white mt-2">
               <View className="flex-row items-start justify-between">
                 <View className="flex-1">
                   {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.none && (
-                     <View className={`flex-row items-center`}>
-                      <View 
-                          style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + '20' }} 
-                          className="items-end rounded-xs px-2 py-0.5"
+                    <View className={`flex-row items-center -mt-4 mb-3`}>
+                      <View
+                        style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + '20' }}
+                        className="items-end rounded-xs px-2 py-0.5"
+                      >
+                        <Text
+                          style={{ color: getActivityTypeDetails(itineraryActivity.type).color }}
+                          className="text-[8px] tracking-wider uppercase font-extrabold"
                         >
-                          <Text 
-                            style={{ color: getActivityTypeDetails(itineraryActivity.type).color }} 
-                            className="text-[8px] tracking-wider uppercase font-extrabold"
-                          >
-                            {getActivityTypeDetails(itineraryActivity.type).text}
-                          </Text>
-                        </View>
+                          {getActivityTypeDetails(itineraryActivity.type).text}
+                        </Text>
                       </View>
+                    </View>
                   )}
                   <Text className="text-xl font-semibold">{itineraryActivity?.title}</Text>
-                    {itineraryActivity?.description && (
-                        <View className="">
-                          <Text 
-                            className="text-base text-[#999] leading-6"
-                            numberOfLines={isDescriptionExpanded ? undefined : 1}
-                            onTextLayout={(e) => {
-                              if (!showMoreButton && e.nativeEvent.lines.length >= 1) {
-                                setShowMoreButton(true);
-                              }
-                            }}
-                          >
-                            {itineraryActivity?.description || null}
+                  {description && (
+                    <View className="">
+                      {/* Hidden text element for un-truncated line measurement */}
+                      <Text
+                        style={{ position: "absolute", opacity: 0, zIndex: -1000 }}
+                        className="text-base text-[#999] leading-6"
+                        onTextLayout={(e) => {
+                          setShowMoreButton(e.nativeEvent.lines.length > 1);
+                        }}
+                      >
+                        {description}
+                      </Text>
+
+                      {/* Visible description text */}
+                      <Text
+                        className="text-base text-[#999] leading-6"
+                        numberOfLines={isDescriptionExpanded ? undefined : 1}
+                      >
+                        {description}
+                      </Text>
+                      {showMoreButton && (
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (snappedY.current !== SNAP_90) {
+                              snapTo(SNAP_90);
+                            }
+                            setIsDescriptionExpanded(!isDescriptionExpanded);
+                          }}
+                          accessibilityRole="button"
+                        >
+                          <Text className="text-sm text-secondary font-medium -mb-1 underline">
+                            {isDescriptionExpanded ? "Show less" : "Show more"}
                           </Text>
-                          {showMoreButton && (
-                            <TouchableOpacity 
-                              onPress={() => {
-                                if (snappedY.current !== SNAP_90) {
-                                  snapTo(SNAP_90);
-                                }
-                                setIsDescriptionExpanded(!isDescriptionExpanded)
-                              }}
-                              accessibilityRole="button"
-                            >
-                              <Text className="text-sm text-secondary font-medium -mb-1 underline">
-                                {isDescriptionExpanded ? "Show less" : "Show more"}
-                              </Text>
-                            </TouchableOpacity>
-                          )}
-                        </View>
-                    )}
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
                 </View>
               </View>
             </View>
@@ -601,12 +644,12 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
                   icon: "cash",
                   label: "Add Expense",
                   style: {
-                      elevation: 0,
-                      borderRadius: 50,
-                      padding: 6,
-                      backgroundColor: '#263F69',
-                      marginRight: -6,
-                      marginBottom: 10
+                    elevation: 0,
+                    borderRadius: 50,
+                    padding: 6,
+                    backgroundColor: '#263F69',
+                    marginRight: -6,
+                    marginBottom: 10
                   },
                   color: 'white',
                   onPress: handleOpenAddExpense,
@@ -615,12 +658,12 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
                   icon: "fountain-pen-tip",
                   label: "Add Note",
                   style: {
-                      elevation: 0,
-                      borderRadius: 50,
-                      padding: 6,
-                      backgroundColor: '#263F69',
-                      marginRight: -6,
-                      marginBottom: 10
+                    elevation: 0,
+                    borderRadius: 50,
+                    padding: 6,
+                    backgroundColor: '#263F69',
+                    marginRight: -6,
+                    marginBottom: 10
                   },
                   color: 'white',
                   onPress: handleOpenAddNote,
@@ -628,8 +671,8 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
               ]}
               onStateChange={({ open }) => setFabOpen(open)}
               fabStyle={{
-                  backgroundColor: fabOpen ? '#82181a' : '#263F69',
-                  borderRadius: 50,
+                backgroundColor: fabOpen ? '#82181a' : '#263F69',
+                borderRadius: 50,
               }}
               color="white"
             />

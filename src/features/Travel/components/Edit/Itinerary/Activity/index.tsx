@@ -1197,7 +1197,7 @@ const EditActivity = ({
               <View className="flex-1 px-5 mt-2">
                 {/* Title */}
                 <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
+                  <Text className="text-xs font-semibold tracking-wider uppercase">Title <Text className="text-red-500 text-lg">*</Text></Text>
                   <View className="relative justify-center">
                     <TextInput
                       mode="outlined"

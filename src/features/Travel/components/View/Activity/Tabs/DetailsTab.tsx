@@ -67,9 +67,9 @@ const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
 
   return (
     <View className="flex-1 relative"
-    style={{
-      backgroundColor: activityColor,
-    }}>
+      style={{
+        backgroundColor: activityColor,
+      }}>
       {/* <LinearGradient
         colors={["rgba(33, 150, 243, 0.20)", "#FFFFFF"]}
         style={{

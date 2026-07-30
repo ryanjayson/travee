@@ -90,7 +90,7 @@ const EditChecklistItem = ({
 
         {/* Title */}
         <View className="mb-1">
-          <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
+          <Text className="text-xs font-semibold tracking-wider uppercase">Title <Text className="text-red-500 text-lg">*</Text></Text>
           <TextInput
             ref={titleInputRef}
             mode="outlined"

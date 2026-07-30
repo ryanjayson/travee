@@ -254,7 +254,8 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
 
 
       <View className="mb-5">
-        <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
+        <Text className="text-xs font-semibold tracking-wider uppercase">Title <Text className="text-red-500 text-lg">*</Text></Text>
+
         <TextInput
           mode="outlined"
           className="h-7xl"

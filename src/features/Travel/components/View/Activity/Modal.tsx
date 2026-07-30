@@ -30,8 +30,8 @@ interface ViewActivityModalProps {
 }
 
 const { width: screenWidth } = Dimensions.get("window");
-const screenHeight = Platform.OS === "android" 
-  ? Dimensions.get("screen").height 
+const screenHeight = Platform.OS === "android"
+  ? Dimensions.get("screen").height
   : Dimensions.get("window").height;
 
 const is60PercentSnap = (type?: ActivityType) => {
@@ -95,7 +95,7 @@ const ViewActivityModal = ({
       setCurrentActivityId(id);
     }
   }, [id, showModal]);
-  
+
   // Fetch current activity data for Edit Modal and color
   const { data: itineraryActivity } = useItineraryActivity(currentActivityId);
 
@@ -188,9 +188,9 @@ const ViewActivityModal = ({
       <StatusBar style="light" />
       <View style={{ flex: 1, backgroundColor: activityColor, justifyContent: "flex-start" }}>
 
-        <Animated.View 
-          style={{ 
-            height: modalHeight, 
+        <Animated.View
+          style={{
+            height: modalHeight,
             backgroundColor: animatedBgColor,
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
@@ -199,9 +199,9 @@ const ViewActivityModal = ({
           }}
         >
           {/* Header View using activity background color, showing only back and edit icons */}
-          <View style={{ 
-            height: 52, 
-            width: "100%", 
+          <View style={{
+            height: 52,
+            width: "100%",
             backgroundColor: activityColor,
             flexDirection: "row",
             alignItems: "center",

@@ -175,6 +175,13 @@ const SectionLookupModal = ({
           opacity: backdropOpacity,
         }}
       >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={handleCancel}
+          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+          accessibilityRole="button"
+          accessibilityLabel="Close section selection modal backdrop"
+        />
         <Animated.View
           {...sheetPanResponder.panHandlers}
           className="rounded-t-[30px] bg-white overflow-hidden"

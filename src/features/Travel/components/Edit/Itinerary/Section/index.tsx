@@ -1,24 +1,22 @@
-import React, { useState, useEffect } from "react";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { useFormik } from "formik";
+import React, { useState } from "react";
 import {
-  View,
+  Modal,
+  ScrollView,
+  StatusBar,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Modal,
-  StatusBar,
-  Alert,
+  View
 } from "react-native";
+import { CalendarList } from "react-native-calendars";
 import { TextInput, useTheme } from "react-native-paper";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
-import DestinationSelector from "../../../DestinationSelector";
-import { useFormik } from "formik";
 import * as Yup from "yup";
 import TouchButton from "../../../../../../components/atoms/TouchButton";
-import { ItinerarySection } from "../../../../types/TravelDto";
+import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import { useUpdateSectionMutation } from "../../../../hooks/useSection";
 import { useTravelPlan } from "../../../../hooks/useTravel";
-import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
-import { CalendarList } from "react-native-calendars";
+import { ItinerarySection } from "../../../../types/TravelDto";
 
 interface Place {
   id: string;
@@ -183,7 +181,7 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
         scrollEventThrottle={16}
       >
         <View className="mb-5">
-          <Text className="text-xs font-semibold tracking-wider uppercase">Title</Text>
+          <Text className="text-xs font-semibold tracking-wider uppercase">Title <Text className="text-red-500 text-lg">*</Text></Text>
           <View className="relative">
             <TextInput
               mode="outlined"

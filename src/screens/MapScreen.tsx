@@ -17,7 +17,7 @@ export function ExploreScreen() {
   const { data: travels, isLoading: isTravelsLoading } = useTravels();
   const { data: activities, isLoading: isActivitiesLoading } = useAllActivitiesWithDestination();
   const { data: profile } = useUserProfile();
-  
+
   const { colors } = useTheme();
   const [viewBy, setViewBy] = React.useState<"country" | "city">("country");
   const [filter, setFilter] = React.useState<"all" | "visited" | "tovisit">("all");
@@ -85,18 +85,18 @@ export function ExploreScreen() {
       </View>
 
       {/* Overlay UI Controls */}
-      <FadeInView 
+      <FadeInView
         type="down"
         delay={100}
         duration={450}
-        className="absolute w-full px-4" 
+        className="absolute w-full px-4"
         style={{ top: insets.top + 30 }}
       >
         <View className="gap-y-3 bg-white/80 p-3 rounded-3xl shadow-xl border border-gray-200">
           {/* View By Toggle */}
           <View className="flex-row bg-white/90 rounded-2xl p-1 border border-gray-100">
             {["country", "city"].map((v) => (
-              <TouchableOpacity 
+              <TouchableOpacity
                 key={v}
                 className={`flex-1 py-3 items-center rounded-xl ${viewBy === v ? "bg-primary" : ""}`}
                 onPress={() => setViewBy(v as any)}
@@ -112,7 +112,7 @@ export function ExploreScreen() {
           {/* Filter Toggle */}
           <View className="flex-row bg-white/90 rounded-2xl mt-1 p-1 border border-gray-100">
             {["all", "visited", "tovisit"].map((f) => (
-              <TouchableOpacity 
+              <TouchableOpacity
                 key={f}
                 className={`flex-1 py-1 items-center rounded-xl ${filter === f ? "bg-gray-100" : ""}`}
                 onPress={() => setFilter(f as any)}
@@ -128,18 +128,18 @@ export function ExploreScreen() {
           {/* Legend & Marker Checkbox */}
           <View className="flex-row items-center justify-between px-1">
             <View className="flex-row gap-x-4">
-              <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5">
+              <View className="flex-row items-center gap-x-2 px-3 py-1.5">
                 <View className="w-4 h-4 rounded-full bg-[#34699A]" />
-                <Text className="text-sm text-gray-700">Visited</Text>
+                <Text className="text-sm text-gray-700 font-semibold">Visited</Text>
               </View>
-              <View className="flex-row items-center gap-x-2 bg-white/80 px-3 py-1.5">
+              <View className="flex-row items-center gap-x-2  px-3 py-1.5">
                 <View className="w-4 h-4 rounded-full bg-[#78A2CC]" />
-                <Text className="text-sm text-gray-700">To Visit</Text>
+                <Text className="text-sm text-gray-700 font-semibold">To Visit</Text>
               </View>
             </View>
 
             {/* Checkbox for show Marker */}
-            <TouchableOpacity 
+            <TouchableOpacity
               className="flex-row items-center pr-1 py-1"
               onPress={() => setShowMarkers(!showMarkers)}
               activeOpacity={0.7}

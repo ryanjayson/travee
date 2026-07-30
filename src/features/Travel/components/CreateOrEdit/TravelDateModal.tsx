@@ -48,7 +48,7 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
       return "Select date or date range";
     }
     if (!tempReturnDate || tempDepartureDate.getTime() === tempReturnDate.getTime()) {
-      return "Day tour or overnight trip only";
+      return "Day tour only";
     }
     return "Multiple days trip";
   }, [tempDepartureDate, tempReturnDate]);
@@ -229,7 +229,7 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
             accessibilityRole="button"
             accessibilityLabel="Close date selector"
           >
-            <Icon name="close" size={28} color={colors.onSurface} />
+            <Icon name="close" size={24} color={"#999"} />
           </TouchableOpacity>
         </View>
 
