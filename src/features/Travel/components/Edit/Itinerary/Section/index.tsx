@@ -2,6 +2,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useFormik } from "formik";
 import React, { useState } from "react";
 import {
+  Alert,
   Modal,
   ScrollView,
   StatusBar,
@@ -12,11 +13,14 @@ import {
 import { CalendarList } from "react-native-calendars";
 import { TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
+import { useQueryClient } from "@tanstack/react-query";
 import TouchButton from "../../../../../../components/atoms/TouchButton";
+import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
+import { updateSectionActivitiesDatesLocally } from "../../../../../../services/local/travelService";
 import { useUpdateSectionMutation } from "../../../../hooks/useSection";
 import { useTravelPlan } from "../../../../hooks/useTravel";
-import { ItinerarySection } from "../../../../types/TravelDto";
+import { ItinerarySection, TravelPlan } from "../../../../types/TravelDto";
 
 interface Place {
   id: string;
@@ -42,6 +46,8 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const queryClient = useQueryClient();
+  const { confirm } = useConfirm();
   const { mutate: updateMutation, isPending: isUpdating } = useUpdateSectionMutation();
 
   const travelId = itinerarySection?.travelId || propTravelId || "";
@@ -127,18 +133,85 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
           startDate: values.startDate || undefined,
           isOffline: isNaN(Number(values.travelId)),
         };
-        updateMutation(sectionData, {
-          onSuccess: (result) => {
-            const sectionId = (result as any)?.id || (result as any)?.data?.id;
-            if (sectionId && onSaveSuccess) {
-              onSaveSuccess({ ...sectionData, id: sectionId });
+
+        const handleSave = (dataToSave: ItinerarySection, shouldUpdateActivities: boolean) => {
+          updateMutation(dataToSave, {
+            onSuccess: async (result) => {
+              const sectionId = (result as any)?.id || (result as any)?.data?.id || itinerarySection?.id;
+              if (shouldUpdateActivities && sectionId) {
+                await updateSectionActivitiesDatesLocally(sectionId, dataToSave.startDate || null);
+              }
+
+              // Update the UI cache immediately
+              if (travelId && sectionId) {
+                const targetTravelIdStr = travelId.toString();
+                queryClient.setQueryData<TravelPlan | undefined>(
+                  ["selectedTravelPlan", targetTravelIdStr],
+                  (oldPlan) => {
+                    if (!oldPlan) return oldPlan;
+                    const newSections = (oldPlan.itinerarySection || []).map((sec) => {
+                      if (sec.id?.toString() === sectionId.toString()) {
+                        const newActivities = (sec.itineraryActivity || []).map((act) => {
+                          if (shouldUpdateActivities) {
+                            return {
+                              ...act,
+                              startDate: dataToSave.startDate ? new Date(dataToSave.startDate) : undefined,
+                              endDate: dataToSave.startDate ? new Date(dataToSave.startDate) : undefined,
+                            };
+                          }
+                          return act;
+                        });
+                        return {
+                          ...sec,
+                          ...dataToSave,
+                          id: sectionId,
+                          itineraryActivity: newActivities,
+                        };
+                      }
+                      return sec;
+                    });
+                    return {
+                      ...oldPlan,
+                      itinerarySection: newSections,
+                    };
+                  }
+                );
+
+                queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", targetTravelIdStr] });
+                queryClient.refetchQueries({ queryKey: ["selectedTravelPlan", targetTravelIdStr] });
+              }
+
+              if (sectionId && onSaveSuccess) {
+                onSaveSuccess({ ...dataToSave, id: sectionId });
+              }
+              onClose();
+            },
+            onError: () => {
+              // Do not close on error so the form data is not lost
             }
-            onClose();
-          },
-          onError: () => {
-            // Do not close on error so the form data is not lost
+          });
+        };
+
+        const existingSectionInPlan = travelPlan?.itinerarySection?.find(
+          (s) => s.id?.toString() === itinerarySection?.id?.toString()
+        );
+        const sectionActivities = existingSectionInPlan?.itineraryActivity || [];
+
+        if (itinerarySection?.id && dateChanged && sectionActivities.length > 0) {
+          const isConfirmed = await confirm({
+            title: "Update Activity Dates?",
+            message: "Changing the section date will also update the date of all activities under this section to match the new section date. Do you want to proceed?",
+            confirmText: "Update",
+            cancelText: "Cancel",
+            type: "warning",
+          });
+
+          if (isConfirmed) {
+            handleSave(sectionData, true);
           }
-        });
+        } else {
+          handleSave(sectionData, false);
+        }
       }
     },
   });

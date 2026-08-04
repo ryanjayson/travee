@@ -1001,6 +1001,30 @@ export const saveSectionLocally = async (sectionData: any, id?: string) => {
   });
 };
 
+export const updateSectionActivitiesDatesLocally = async (sectionId: string, newStartDate?: Date | string | null) => {
+  if (!sectionId) return;
+  return await database.write(async () => {
+    const activities = await database
+      .get<Activity>("itinerary_activities")
+      .query(Q.where("section_id", sectionId.toString()))
+      .fetch();
+
+    const formattedDate = newStartDate ? new Date(newStartDate) : null;
+
+    for (const act of activities) {
+      await act.update((a) => {
+        a.startDate = formattedDate;
+        if (formattedDate) {
+          a.endDate = formattedDate;
+        } else {
+          a.endDate = null;
+        }
+      });
+    }
+    return activities;
+  });
+};
+
 export const saveActivityLocally = async (activityData: any, id?: string) => {
   return await database.write(async () => {
     let activity;
