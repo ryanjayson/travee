@@ -340,8 +340,6 @@ const ActivityItemCard = ({
     return { text, color };
   };
 
-
-
   const handleToggleDone = async () => {
     const nextStatus = !itineraryEventActivity.isDone;
     const isConfirmed = await confirm({
@@ -374,14 +372,35 @@ const ActivityItemCard = ({
 
   if (plainMode) {
     return (
-      <View className="flex-row items-center px-3 py-1">
-        <View className="z-10 items-center justify-center mr-3">
-          <Ionicons name="pin" size={18} color="#dc3545" />
-        </View>
-        <Text className="text-base text-secondary flex-1" numberOfLines={1}>
-          {itineraryEventActivity.title}
-        </Text>
-      </View>
+      <>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`View activity ${itineraryEventActivity.title}`}
+          onPress={() => {
+            if (itineraryEventActivity.id) {
+              handleViewModeActivity(itineraryEventActivity.id);
+            }
+          }}
+          className="flex-row items-center py-2"
+        >
+          <View className="z-10 items-center justify-center mr-3">
+            <Ionicons name="chevron-forward" size={16} color="#344054" />
+          </View>
+          <Text className="text-md font-medium text-secondary/80 flex-1" numberOfLines={1}>
+            {itineraryEventActivity.title}
+          </Text>
+        </TouchableOpacity>
+
+        {itineraryEventActivity.id ? (
+          <ViewActivityModal
+            id={itineraryEventActivity.id}
+            travelId={itineraryEventActivity.travelId}
+            showModal={showActivityViewModal}
+            setShowModal={setShowActivityViewModal}
+          />
+        ) : null}
+      </>
     );
   }
 

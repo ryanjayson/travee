@@ -1200,7 +1200,8 @@ const SectionAccordion = ({
                       zIndex: sectionDragState?.sectionId === section.id ? 99999 : 1,
                       elevation: sectionDragState?.sectionId === section.id ? 10 : 1,
                       overflow: "visible",
-                      paddingTop: 10
+                      paddingTop: viewMode === 'plain' ? 0 : 10,
+                      paddingBottom: viewMode === 'plain' ? 10 : 0,
                     }}
                   >
                     {section.itineraryActivity &&
@@ -1229,7 +1230,7 @@ const SectionAccordion = ({
                     type="right" delay={50} duration={250}
                     key={section.id}
                     className="mb-4">
-                    <View className="flex-row items-center pb-3">
+                    <View className="flex-row items-center p-2 bg-gray-200/50 rounded-sm">
                       <Text className="text-base font-bold text-secondary">
                         {section.title}
                       </Text>
@@ -1253,13 +1254,13 @@ const SectionAccordion = ({
                             >
                               {/* <Ionicons name="location-outline" size={16} color="#dc3545" /> */}
                               <Ionicons name="chevron-forward" size={16} color="#344054" />
-                              <Text className="text-lg text-secondary/80">{eventActivity.title}</Text>
+                              <Text className="text-md font-medium text-secondary/80">{eventActivity.title}</Text>
                             </TouchableOpacity>
                           );
                         }
                       )) : (
-                      <Text className="text-base text-tertiary leading-5 p-1 opacity-50 ml-12 tracking-wide">
-                        No activity
+                      <Text className="text-md text-tertiary/50 mt-4 py-3  ml-12 font-normal ">
+                        No activities here
                       </Text>
                     )}
                   </FadeInView>
