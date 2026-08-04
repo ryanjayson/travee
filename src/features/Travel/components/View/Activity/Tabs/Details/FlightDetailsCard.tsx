@@ -4,6 +4,7 @@ import { View, Text, TouchableOpacity, Clipboard, ToastAndroid, Platform, Alert 
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { FlightDetailsDto } from "../../../../../types/TravelDto";
+import { Barcode } from "../../../../../../../components/Barcode";
 
 interface FlightDetailsCardProps {
   data: FlightDetailsDto;
@@ -96,9 +97,6 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
     }
   };
 
-  const barcodeBars = [
-    2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 2, 1, 4, 1, 2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 2, 1, 4, 1, 2, 1, 3, 1, 2, 4
-  ];
 
   return (
     <View className="rounded-3xl border-gray-150 mb-6 shadow-md overflow-hidden bg-white mt-2">
@@ -349,24 +347,10 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
         </View>
 
         {/* Barcode Graphic */}
-        <View className="items-center justify-center pt-2">
-          <View className="flex-row items-center h-9 justify-center opacity-70">
-            {barcodeBars.map((width, index) => (
-              <View
-                key={index}
-                style={{
-                  width: width,
-                  height: "100%",
-                  backgroundColor: "#101828",
-                  marginLeft: index % 3 === 0 ? 2 : 1,
-                }}
-              />
-            ))}
-          </View>
-          <Text className="text-[9px] text-gray-400 text-center tracking-[4px] mt-1.5 uppercase">
-            {data.bookingReference || "BOARDING PASS"}
-          </Text>
-        </View>
+        <Barcode
+          value={data.bookingReference}
+          onPress={data.bookingReference ? () => handleCopy(data.bookingReference || "", "Booking reference") : undefined}
+        />
       </View>
     </View>
   );
