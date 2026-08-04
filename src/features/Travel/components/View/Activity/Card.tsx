@@ -385,7 +385,7 @@ const ActivityItemCard = ({
           className="flex-row items-center py-2"
         >
           <View className="z-10 items-center justify-center mr-3">
-            <Ionicons name="chevron-forward" size={16} color="#344054" />
+            <Ionicons name="chevron-forward" size={16} color="#999" />
           </View>
           <Text className="text-md font-medium text-secondary/80 flex-1" numberOfLines={1}>
             {itineraryEventActivity.title}
@@ -538,8 +538,9 @@ const ActivityItemCard = ({
                   className="items-end rounded-xs px-2 py-0.5"
                 >
                   <Text
-                    style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                    className="text-[8px] tracking-wider uppercase font-extrabold"
+                    // style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }}
+                    style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
+                    className="text-[8px] tracking-wider uppercase font-extrabold text-gray/60 "
                   >
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
                   </Text>
@@ -583,7 +584,7 @@ const ActivityItemCard = ({
 
               <View className="flex-2">
                 <View className="flex-row justify-between items-start mb-1 gap-x-2">
-                  <Text className={`text-lg font-medium mt-1 text-secondary leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl' : ''}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
+                  <Text className={`font-medium mt-1 text-secondary leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl text-lg ' : 'text-[20px]'}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
                     {itineraryEventActivity.title}
                   </Text>
                 </View>

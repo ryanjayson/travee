@@ -1253,7 +1253,7 @@ const SectionAccordion = ({
                               className="ml-5 py-2 flex-row gap-x-3 items-center"
                             >
                               {/* <Ionicons name="location-outline" size={16} color="#dc3545" /> */}
-                              <Ionicons name="chevron-forward" size={16} color="#344054" />
+                              <Ionicons name="chevron-forward" size={16} color="#999" />
                               <Text className="text-md font-medium text-secondary/80">{eventActivity.title}</Text>
                             </TouchableOpacity>
                           );
@@ -1276,9 +1276,9 @@ const SectionAccordion = ({
                       <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
                       <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
                     </View>
+
                     <FadeInView
                       type="right" delay={50} duration={250}>
-
                       <DraggableSectionItem
                         key={section.id}
                         section={section}

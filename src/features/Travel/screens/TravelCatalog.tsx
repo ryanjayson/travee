@@ -130,7 +130,11 @@ const TravelCatalog = () => {
       const parts = dest.split(",");
       return parts[parts.length - 1].trim();
     };
-    const destinationCountry = getCountryName(travel.destination);
+    const destinationCountry = getCountryName(travel.destinationData?.country);
+
+    const destinationLabel = travel.destinationData?.country === travel.destination
+      ? travel.destination
+      : travel.destination ? `${travel.destination}, ${travel.destinationData?.country}` : "";
 
     const formatDate = (dateValue: Date | string | undefined) => {
       if (!dateValue) return "";
@@ -189,7 +193,7 @@ const TravelCatalog = () => {
     const duration = getDuration(travel.startOrDepartureDate, travel.endOrReturnDate);
     const dateRange = travel.startOrDepartureDate && travel.endOrReturnDate
       ? `${formatDate(travel.startOrDepartureDate)} - ${formatDate(travel.endOrReturnDate)}`
-      : travel.startOrDepartureDate ? formatDate(travel.startOrDepartureDate) : "Dates not set";
+      : travel.startOrDepartureDate ? formatDate(travel.startOrDepartureDate) : "Travel dates not set";
 
     const tripIconConfig = travel.type != null ? tripIcons.find((i) => i.tripType === travel.type) : null;
     const assignedColor = tripIconConfig ? tripIconConfig.color : "#9E9E9E";
@@ -228,28 +232,28 @@ const TravelCatalog = () => {
                   </View>
                 ) : null}
 
-                <View className="flex-1 gap-y-1 py-4 pl-lg">
+                <View className="flex-1 gap-y-1 py-4"
+                  style={{ paddingLeft: travel.destination ? 12 : 0 }}>
                   <Text className="text-xl leading-5 font-medium ">{travel.title}</Text>
                   <View className="flex-row items-center gap-2">
-                    <Text className="text-base  text-[#999]">{travel.destination || ""}</Text>
+                    <Text className="text-base  text-[#999]">{destinationLabel || "No destination"}</Text>
                     {travel.type != null && travel.type !== TripType.none && (
                       <TripIcon type={travel.type} size={16} showIconOnly={true} />
                     )}
                   </View>
                   <View
-                    style={{ backgroundColor: assignedColor + '10' }}
-                    className="flex-row gap-2 mt-sm p-0 px-2 rounded-full items-center justify-center"
+                    // style={{ backgroundColor: assignedColor + '10' }}
+                    className="flex-row gap-2 mt-sm p-0 rounded-full items-center justify-center"
                   >
                     <Icon name="calendar-month" size={18} color={"#999999"} />
 
                     <View className="flex-1  ">
                       <Text className="text-sm text-[#999]">
-                        {dateRange} {duration ? `• ${duration}` : ""}
+                        {dateRange} {duration ? ` • ${duration}` : ""}
                       </Text>
                     </View>
 
                   </View>
-
                 </View>
               </View>
               {travel && travel.isArchived && (
