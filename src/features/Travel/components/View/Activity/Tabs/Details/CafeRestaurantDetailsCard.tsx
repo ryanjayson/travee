@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Linking } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useTheme } from "react-native-paper";
 import { CafeRestaurantDetailsDto } from "../../../../../types/TravelDto";
+import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 
 interface CafeRestaurantDetailsCardProps {
   data: CafeRestaurantDetailsDto;
@@ -48,12 +48,13 @@ const Field = ({
           <Icon name={icon as any} size={24} color={"#fffefe"} />
         </View>
       ) : null}
-      <View className="flex-1">
+      <View className="flex-1 pr-2xl">
         <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
         {onPress ? (
           <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
             <Text
               className="text-lg font-medium"
+              numberOfLines={1}
               style={{
                 color: "#ffffff",
                 textDecorationLine: isLink ? "underline" : "none",
@@ -80,23 +81,26 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
       <View className="p-2">
         <View className="mb-4">
           <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
-            Cafe / Restaurant / Venue 
+            Cafe / Restaurant / Venue
           </Text>
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.restaurantName || "N/A"}
           </Text>
           {data.address ? (
-            <TouchableOpacity
-              onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center gap-6 mt-1"
-              activeOpacity={0.7}
-              accessibilityRole="button"
-            >
-              <Icon name="location-on" size={24} color="#FFFFFF" />
-              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                {data.address}
-              </Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
+                className="flex-row items-center gap-6 mt-1 mb-2  pr-xl"
+                activeOpacity={0.7}
+                accessibilityRole="button"
+              >
+                <Icon name="location-on" size={24} color="#FFFFFF" />
+                <Text className="text-base text-white underline flex-1" numberOfLines={1}>
+                  {data.address}
+                </Text>
+              </TouchableOpacity>
+              <MapboxAddressMap address={data.address} title={data.restaurantName} height={180} />
+            </>
           ) : null}
         </View>
 
@@ -122,7 +126,7 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
       </View>
 
       {/* Stub Area */}
-           <View className="px-md mt-4">
+      <View className="px-md mt-4">
         {/* Contact Info and reservation */}
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dd2c2c]">
 

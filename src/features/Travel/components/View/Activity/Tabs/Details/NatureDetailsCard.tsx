@@ -5,6 +5,7 @@ import { useTheme } from "react-native-paper";
 import { NatureDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
+import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 
 interface NatureDetailsCardProps {
   data: NatureDetailsDto;
@@ -36,19 +37,21 @@ export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({ data }) =>
             {data.spotName || "N/A"}
           </Text>
           {data.address ? (
-            <TouchableOpacity
-              onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center mt-1"
-              activeOpacity={0.7}
-              accessibilityRole="button"
-            >
-              <Icon name="location-on" size={24} color="#FFFFFF" className="mr-6"/>
-              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                {data.address}
-              </Text>
-              <Icon name="open-in-new" size={16} color={"#FFFFFF"} />
-              
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
+                className="flex-row items-center mt-1 mb-2 pr-xl"
+                activeOpacity={0.7}
+                accessibilityRole="button"
+              >
+                <Icon name="location-on" size={24} color="#FFFFFF" className="mr-6"/>
+                <Text className="text-base text-white underline flex-1" numberOfLines={1}>
+                  {data.address}
+                </Text>
+                <Icon name="open-in-new" size={16} color={"#FFFFFF"} />
+              </TouchableOpacity>
+              <MapboxAddressMap address={data.address} title={data.spotName} height={180} />
+            </>
           ) : null}
         </View>
 

@@ -66,20 +66,12 @@ const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
   };
 
   return (
-    <View className="flex-1 relative"
+    <View
+      className="flex-1 relative"
       style={{
         backgroundColor: activityColor,
-      }}>
-      {/* <LinearGradient
-        colors={["rgba(33, 150, 243, 0.20)", "#FFFFFF"]}
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-        }}
-      /> */}
+      }}
+    >
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }} className="flex-1">
         <View className="px-3">{renderDetails()}</View>
       </ScrollView>

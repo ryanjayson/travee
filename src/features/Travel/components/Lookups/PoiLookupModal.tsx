@@ -16,6 +16,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN as ENV_TOKEN } from "@env";
+import { getValidMapboxCountryCode } from "../../../../utils/countryUtils";
 
 const MAPBOX_ACCESS_TOKEN = ENV_TOKEN || process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.MAPBOX_ACCESS_TOKEN || "";
 const MAPBOX_SEARCHBOX_URL = "https://api.mapbox.com/search/searchbox/v1/forward";
@@ -45,6 +46,7 @@ interface PoiLookupModalProps {
     latitude: number;
     longitude: number;
   };
+  country?: string;
 }
 
 const POI_CATEGORIES = [
@@ -94,6 +96,7 @@ const PoiLookupModal = ({
   onSelect,
   initialCategory = "accommodation",
   proximity,
+  country,
 }: PoiLookupModalProps) => {
   const { colors } = useTheme();
   const [query, setQuery] = useState("");
@@ -115,7 +118,13 @@ const PoiLookupModal = ({
         const categoryConfig = POI_CATEGORIES.find((c) => c.id === categoryId);
         const categoryValues = categoryConfig ? categoryConfig.value : "";
 
-        let url = `${MAPBOX_SEARCHBOX_URL}?q=${encodedQuery}&types=poi&poi_category=${categoryValues}&access_token=${MAPBOX_ACCESS_TOKEN}&limit=10&language=en`;
+        let url = `${MAPBOX_SEARCHBOX_URL}?q=${encodedQuery}&types=poi,place,locality,region&poi_category=${categoryValues}&access_token=${MAPBOX_ACCESS_TOKEN}&limit=10&language=en`;
+        // let url = `${MAPBOX_SEARCHBOX_URL}?q=${encodedQuery}&access_token=${MAPBOX_ACCESS_TOKEN}&limit=10`;
+
+        const validCountryCode = getValidMapboxCountryCode(country);
+        if (validCountryCode) {
+          url += `&country=${encodeURIComponent(validCountryCode)}`;
+        }
 
         if (
           proximity &&

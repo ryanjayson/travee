@@ -2012,6 +2012,7 @@ const EditActivity = ({
                 onClose={() => setShowPoiModal(false)}
                 initialCategory={poiModalInitialCategory}
                 proximity={travelPlan?.travel?.destinationData?.coordinates}
+                country={travelPlan?.travel?.destinationData?.country || travelPlan?.travel?.destination}
                 onSelect={(poi: MapboxPoi) => {
                   // Route field population based on which detail type opened the modal
                   if (poiTargetType === "accommodation") {

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, Clipboard, ToastAndroid, Platform, Alert, Linking } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { AccomodationDetailsDto } from "../../../../../types/TravelDto";
+import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 
 interface AccomodationDetailsCardProps {
   data: AccomodationDetailsDto;
@@ -124,17 +125,20 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
             {data.accomodationName || "N/A"}
           </Text>
           {data.address ? (
-            <TouchableOpacity
-              onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center gap-6 mt-1"
-              activeOpacity={0.7}
-              accessibilityRole="button"
-            >
-              <Icon name="location-on" size={24} color="#FFFFFF" />
-              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                {data.address}
-              </Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
+                className="flex-row items-center gap-6 mt-1 mb-2"
+                activeOpacity={0.7}
+                accessibilityRole="button"
+              >
+                <Icon name="location-on" size={24} color="#FFFFFF" />
+                <Text className="text-base text-white underline flex-1" numberOfLines={1}>
+                  {data.address}
+                </Text>
+              </TouchableOpacity>
+              <MapboxAddressMap address={data.address} title={data.accomodationName} height={180} />
+            </>
           ) : null}
         </View>
 
@@ -174,12 +178,12 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
       <View className="p-2 pt-3">
         {/* Row 1: Booking Reference & Website address */}
         <View className="flex-row justify-between mb-4 gap-4">
-            {data.bookingReference && (
+          {data.bookingReference && (
 
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-              Booking Ref
-            </Text>
+            <View className="flex-1">
+              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+                Booking Ref
+              </Text>
               <TouchableOpacity
                 onPress={() => handleCopy(data.bookingReference || "", "Booking reference")}
                 className="flex-row items-center gap-1"
@@ -191,8 +195,8 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
                 </Text>
                 <Icon name="content-copy" size={18} color="#FFFFFF" style={{ opacity: 0.6 }} />
               </TouchableOpacity>
-          </View>
-            )}
+            </View>
+          )}
 
           {data.websiteAddress ? (
             <View className="flex-1">
@@ -216,8 +220,8 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
 
       </View>
 
-       <View className="px-md ">
-              <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#9c46ec]">
+      <View className="px-md ">
+        <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#9c46ec]">
           <Field label="Contact Person" value={data.contactName} icon="person" showBorder={true} />
           <Field
             label="Contact Number"
@@ -233,7 +237,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
             onPress={data.emailAddress ? () => handleEmail(data.emailAddress!) : undefined}
           />
         </View>
-        </View>
+      </View>
     </View>
   );
 };

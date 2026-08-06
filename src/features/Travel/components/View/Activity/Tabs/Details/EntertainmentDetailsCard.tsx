@@ -5,6 +5,7 @@ import { useTheme } from "react-native-paper";
 import { EntertainmentDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
+import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 
 interface EntertainmentDetailsCardProps {
   data: EntertainmentDetailsDto;
@@ -90,17 +91,20 @@ export const EntertainmentDetailsCard: React.FC<EntertainmentDetailsCardProps> =
             {data.venueName || "N/A"}
           </Text>
           {data.address ? (
-            <TouchableOpacity
-              onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center gap-6 mt-1"
-              activeOpacity={0.7}
-              accessibilityRole="button"
-            >
-              <Icon name="location-on" size={24} color="#FFFFFF" />
-              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                {data.address}
-              </Text>
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity
+                onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
+                className="flex-row items-center gap-6 mt-1 mb-2 pr-xl"
+                activeOpacity={0.7}
+                accessibilityRole="button"
+              >
+                <Icon name="location-on" size={24} color="#FFFFFF" />
+                <Text className="text-base text-white underline flex-1" numberOfLines={1}>
+                  {data.address}
+                </Text>
+              </TouchableOpacity>
+              <MapboxAddressMap address={data.address} title={data.venueName} height={180} />
+            </>
           ) : null}
         </View>
 
