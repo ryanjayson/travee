@@ -100,6 +100,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       .required("Trip title is required")
       .min(2, "Trip title is too short, make it more descriptive")
       .max(40, "Trip title must be at most 40 characters"),
+    destination: Yup.string()
+      .required("Destination is required"),
   });
 
   const formik = useFormik({
@@ -358,7 +360,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         </View>
 
         <View className="mb-5">
-          <Text className="text-xs font-semibold tracking-wider uppercase">Destination</Text>
+          <Text className="text-xs font-semibold tracking-wider uppercase">Destination <Text className="text-red-500 text-lg">*</Text></Text>
 
           {!formik.values.destinationData?.coordinates ? (
             <>
@@ -399,7 +401,10 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                 </View>
               </TouchableOpacity>
               {formik.touched.destination && formik.errors.destination && (
-                <Text className="text-red-500 text-xs mt-1 ml-1">{formik.errors.destination as string}</Text>
+                <View className="flex flex-row items-center mt-1">
+                  <Icon name="info-outline" size={14} color="#fb2c36" />
+                  <Text className="text-red-500 text-xs ml-1">{formik.errors.destination as string}</Text>
+                </View>
               )}
             </>
           ) : (() => {
@@ -554,10 +559,35 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           </View>
         </View>
 
+        {!tripData && (
+          <View className="flex-row items-start mb-6 mr-5"
+            style={{ opacity: !formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 0.5 : 1 }}>
+            <Checkbox
+              status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
+              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+              color="#263F69"
+            />
+            <TouchableOpacity
+              activeOpacity={0.7}
+              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+            >
+              <Text className={`mt-1 text-lg text-gray-700`}>
+                Generate sections
+              </Text>
+
+              <Text className={`text-base text-gray-400`}>
+                When checked it will create itinerary sections based on dates. Travel dates should be set to create.
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
 
         <View className="mb-5">
-          <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Trip Type</Text>
-          <Text className={`text-sm text-gray-500`}>
+          <Text className="text-xs font-semibold tracking-wider uppercase">Trip Type</Text>
+          <Text className={`text-md text-gray-400`}>
             Type helps organize activities and recommendations.
           </Text>
           <View className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white mt-1 flex-row items-center justify-between">
@@ -613,29 +643,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           </View>
         )} */}
 
-        {!tripData && (
-          <View className="flex-row items-start mb-6 mr-5">
-            <Checkbox
-              status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
-              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
-              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-              color="#263F69"
-            />
-            <TouchableOpacity
-              activeOpacity={0.7}
-              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
-            >
-              <Text className={`mt-1 text-lg ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'opacity-80' : 'text-gray-700'}`}>
-                Generate sections
-              </Text>
-
-              <Text className={`text-base ${!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 'text-gray-400 opacity-80' : 'text-gray-500'}`}>
-                When checked it will create itinerary sections based on dates. Travel dates should be set to create.
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
 
 
         <View className="mb-5">

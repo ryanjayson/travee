@@ -657,7 +657,7 @@ const ViewTravel = ({
             <View className="flex-row items-center mt-2 flex-wrap">
               {travelPlan.travel.destination && (
                 <>
-                  <Icon name="location-pin" size={20} color="#858585" />
+                  <Icon name="location-pin" size={18} color="#999" />
                   <Text className="text-md font-medium text-tertiary ml-0.5 mr-3" numberOfLines={1}>
                     {travelPlan.travel.destination}
                   </Text>
@@ -666,7 +666,7 @@ const ViewTravel = ({
 
               {(travelPlan.travel.startOrDepartureDate || travelPlan.travel.endOrReturnDate) && (
                 <>
-                  <Icon name="calendar-month" size={20} color="#858585" />
+                  <Icon name="calendar-month" size={16} color="#999" />
                   <Text className="text-md font-medium text-tertiary ml-0.5">
                     {travelPlan.travel.startOrDepartureDate
                       ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })

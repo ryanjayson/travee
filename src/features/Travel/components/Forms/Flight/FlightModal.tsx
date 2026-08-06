@@ -42,16 +42,25 @@ interface FlightModalProps {
     arrivalAirport: Airport;
     departureDate: Date;
   }) => void;
+  defaultDate?: Date | string | null;
+  initialDate?: Date | string | null;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
 
-export default function FlightModal({ visible, onClose, onConfirm }: FlightModalProps) {
+export default function FlightModal({ visible, onClose, onConfirm, defaultDate, initialDate }: FlightModalProps) {
   const { colors } = useTheme();
   const [departureAirport, setDepartureAirport] = useState<Airport | null>(null);
   const [arrivalAirport, setArrivalAirport] = useState<Airport | null>(null);
-  const [departureDate, setDepartureDate] = useState<Date>(new Date());
-  
+
+  const parseInitialDate = (dateVal?: Date | string | null) => {
+    if (!dateVal) return new Date();
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? new Date() : d;
+  };
+
+  const [departureDate, setDepartureDate] = useState<Date>(() => parseInitialDate(defaultDate || initialDate));
+
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activeSearch, setActiveSearch] = useState<"departure" | "arrival" | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,7 +80,7 @@ export default function FlightModal({ visible, onClose, onConfirm }: FlightModal
     if (visible) {
       setDepartureAirport(null);
       setArrivalAirport(null);
-      setDepartureDate(new Date());
+      setDepartureDate(parseInitialDate(defaultDate || initialDate));
       setActiveSearch(null);
       setSearchQuery("");
       setResults([]);
@@ -85,7 +94,7 @@ export default function FlightModal({ visible, onClose, onConfirm }: FlightModal
         useNativeDriver: true,
       }).start();
     }
-  }, [visible]);
+  }, [visible, defaultDate, initialDate]);
 
   // Debounced search fetching
   useEffect(() => {
@@ -335,8 +344,8 @@ export default function FlightModal({ visible, onClose, onConfirm }: FlightModal
                 </View>
 
                 {/* Results List */}
-                <ScrollView 
-                  className="flex-1" 
+                <ScrollView
+                  className="flex-1"
                   keyboardShouldPersistTaps="always"
                   onScroll={(e) => {
                     const y = e.nativeEvent.contentOffset.y;
@@ -404,13 +413,13 @@ export default function FlightModal({ visible, onClose, onConfirm }: FlightModal
               <View className="flex-1 bg-white">
                 {/* Header */}
                 <View className="flex-row justify-between items-center px-6 pb-5 border-b border-gray-200">
-                  <Text 
+                  <Text
                     className="text-2xl font-bold"
                     style={{ color: colors.primary || "#263F69" }}
                   >
                     Flight Details
                   </Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={handleCancel}
                     accessibilityRole="button"
                     accessibilityLabel="Close Flight Details Modal"
@@ -419,8 +428,8 @@ export default function FlightModal({ visible, onClose, onConfirm }: FlightModal
                   </TouchableOpacity>
                 </View>
 
-                <ScrollView 
-                  className="flex-1 p-6" 
+                <ScrollView
+                  className="flex-1 p-6"
                   keyboardShouldPersistTaps="always"
                   onScroll={(e) => {
                     const y = e.nativeEvent.contentOffset.y;
@@ -445,16 +454,14 @@ export default function FlightModal({ visible, onClose, onConfirm }: FlightModal
                         color={departureAirport ? colors.primary : "#B3B3B3"}
                       />
                       <Text
-                        className={`text-base flex-1 font-medium ${
-                          departureAirport ? "text-gray-800" : "text-gray-400"
-                        }`}
+                        className={`text-base flex-1 font-medium ${departureAirport ? "text-gray-800" : "text-gray-400"
+                          }`}
                       >
                         {departureAirport
-                          ? `${
-                              departureAirport.type === "city" && departureAirport.main_airport_name
-                                ? departureAirport.main_airport_name
-                                : departureAirport.name
-                            } (${departureAirport.code})`
+                          ? `${departureAirport.type === "city" && departureAirport.main_airport_name
+                            ? departureAirport.main_airport_name
+                            : departureAirport.name
+                          } (${departureAirport.code})`
                           : "Select Departure Airport..."}
                       </Text>
                       <Icon name="search" size={20} color="#666" />
@@ -478,16 +485,14 @@ export default function FlightModal({ visible, onClose, onConfirm }: FlightModal
                         color={arrivalAirport ? colors.primary : "#B3B3B3"}
                       />
                       <Text
-                        className={`text-base flex-1 font-medium ${
-                          arrivalAirport ? "text-gray-800" : "text-gray-400"
-                        }`}
+                        className={`text-base flex-1 font-medium ${arrivalAirport ? "text-gray-800" : "text-gray-400"
+                          }`}
                       >
                         {arrivalAirport
-                          ? `${
-                              arrivalAirport.type === "city" && arrivalAirport.main_airport_name
-                                ? arrivalAirport.main_airport_name
-                                : arrivalAirport.name
-                            } (${arrivalAirport.code})`
+                          ? `${arrivalAirport.type === "city" && arrivalAirport.main_airport_name
+                            ? arrivalAirport.main_airport_name
+                            : arrivalAirport.name
+                          } (${arrivalAirport.code})`
                           : "Select Arrival Airport..."}
                       </Text>
                       <Icon name="search" size={20} color="#666" />
@@ -500,7 +505,12 @@ export default function FlightModal({ visible, onClose, onConfirm }: FlightModal
                       Departure Date & Time
                     </Text>
                     <TouchableOpacity
-                      onPress={() => setShowDatePicker(true)}
+                      onPress={() => {
+                        if (defaultDate || initialDate) {
+                          setDepartureDate(parseInitialDate(defaultDate || initialDate));
+                        }
+                        setShowDatePicker(true);
+                      }}
                       className="border rounded-2xl border-gray-200 bg-white p-5 flex-row items-center gap-3 active:bg-gray-50"
                       accessibilityRole="button"
                       accessibilityLabel="Choose departure date and time"

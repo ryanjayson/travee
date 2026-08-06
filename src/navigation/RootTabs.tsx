@@ -267,6 +267,7 @@ function RootTabsComponent() {
         />
         <FlightModal
           visible={flightModal.visible}
+          defaultDate={flightModal.defaultDate}
           onConfirm={(flightData) => {
             if (flightModal.onConfirm) {
               flightModal.onConfirm(flightData);

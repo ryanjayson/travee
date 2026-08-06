@@ -95,6 +95,7 @@ export interface FlightModalState {
     arrivalAirport: any;
     departureDate: Date;
   }) => void;
+  defaultDate?: Date | string | null;
 }
 
 export interface TravelContextType {
@@ -168,7 +169,8 @@ export interface TravelContextType {
       departureAirport: any;
       arrivalAirport: any;
       departureDate: Date;
-    }) => void
+    }) => void,
+    defaultDate?: Date | string | null
   ) => void;
   closeFlightModal: () => void;
 

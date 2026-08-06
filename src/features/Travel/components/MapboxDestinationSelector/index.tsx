@@ -256,12 +256,25 @@ const MapboxDestinationSelector = ({
     });
 
     const orderedTitles = ["Countries", "States & Regions", "Cities", "Other Locations"];
-    return orderedTitles
+    let sections = orderedTitles
       .map((title) => ({
         title,
         data: sectionsMap[title],
       }))
       .filter((section) => section.data.length > 0);
+
+    if (activeFilter) {
+      const filterToTitleMap: Record<FilterType, string> = {
+        country: "Countries",
+        region: "States & Regions",
+        place: "Cities",
+        poi: "Other Locations",
+      };
+      const targetTitle = filterToTitleMap[activeFilter];
+      sections = sections.filter((s) => s.title === targetTitle);
+    }
+
+    return sections;
   };
 
   const getTypeLabel = (type: string) => {
@@ -315,6 +328,14 @@ const MapboxDestinationSelector = ({
 
   const renderEmptyState = () => {
     if (query.trim().length === 0) {
+      const subtitle = (() => {
+        if (activeFilter === "country") return "Type a country to start planning";
+        if (activeFilter === "region") return "Type a region to start planning";
+        if (activeFilter === "place") return "Type a city to start planning";
+        if (activeFilter === "poi") return "Type a place to start planning";
+        return "Type a country, city, or region to start planning your itinerary.";
+      })();
+
       return (
         <ScrollView
           contentContainerStyle={styles.emptyStateContainer}
@@ -323,13 +344,14 @@ const MapboxDestinationSelector = ({
           <Icon name="explore" size={64} color="#C6D4E2" style={{ marginBottom: 16 }} />
           <Text style={styles.emptyStateTitle}>Find your next destination</Text>
           <Text style={styles.emptyStateSubtitle}>
-            Type a country, city, or region to start planning your itinerary.
+            {subtitle}
           </Text>
         </ScrollView>
       );
     }
 
-    if (!isLoading && results.length === 0) {
+    const groupedSections = getGroupedSections();
+    if (!isLoading && (results.length === 0 || groupedSections.length === 0)) {
       return (
         <ScrollView
           contentContainerStyle={styles.emptyStateContainer}
@@ -449,7 +471,7 @@ const MapboxDestinationSelector = ({
           <View style={styles.centeredContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
-        ) : query.trim().length === 0 || results.length === 0 ? (
+        ) : query.trim().length === 0 || getGroupedSections().length === 0 ? (
           renderEmptyState()
         ) : (
           <SectionList

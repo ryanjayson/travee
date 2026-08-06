@@ -239,9 +239,13 @@ const FormInitHandler = ({
         onOpenPrimaryTypeModal(values.type, (type: any) => {
           setFieldValue("type", type);
           if (type === ActivityType.flight) {
-            openFlightModal((flightData: any) => {
-              handleFlightSelect(flightData, setFieldValue);
-            });
+            const defaultFlightDate = values.flightDetails?.departureDate || values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+            openFlightModal(
+              (flightData: any) => {
+                handleFlightSelect(flightData, setFieldValue);
+              },
+              defaultFlightDate
+            );
           }
         });
       }, 350);
@@ -981,9 +985,13 @@ const EditActivity = ({
       arrivalAirport: itineraryActivity?.flightDetails?.arrivalAirport || "",
       departureDate: itineraryActivity?.flightDetails?.departureDate
         ? new Date(itineraryActivity.flightDetails.departureDate)
-        : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.startDate
+        : (itineraryActivity?.startDate
           ? new Date(itineraryActivity.startDate)
-          : null),
+          : (currentSection?.startDate
+            ? new Date(currentSection.startDate)
+            : (travelPlan?.travel?.startOrDepartureDate
+              ? new Date(travelPlan.travel.startOrDepartureDate)
+              : null))),
       arrivalDate: itineraryActivity?.flightDetails?.arrivalDate
         ? new Date(itineraryActivity.flightDetails.arrivalDate)
         : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.endDate
@@ -1588,9 +1596,13 @@ const EditActivity = ({
                               setFieldValue("type", type);
                               setActiveTabId("details");
                               if (type === ActivityType.flight) {
-                                openFlightModal((flightData: any) => {
-                                  handleFlightSelect(flightData, setFieldValue);
-                                });
+                                const defaultFlightDate = values.flightDetails?.departureDate || values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+                                openFlightModal(
+                                  (flightData: any) => {
+                                    handleFlightSelect(flightData, setFieldValue);
+                                  },
+                                  defaultFlightDate
+                                );
                               }
                             });
                           }}
@@ -2077,13 +2089,30 @@ const EditActivity = ({
                 const targetVal = showAccomodationDatePickerFor && values.accomodationDetails?.[showAccomodationDatePickerFor];
                 if (targetVal) {
                   const d = new Date(targetVal);
-                  return isNaN(d.getTime()) ? new Date() : d;
+                  if (!isNaN(d.getTime())) return d;
+                }
+                if (showAccomodationDatePickerFor === "checkoutDateTime") {
+                  const checkinVal = values.accomodationDetails?.checkinDateTime;
+                  if (checkinVal) {
+                    const d = new Date(checkinVal);
+                    if (!isNaN(d.getTime())) return d;
+                  }
+                }
+                const fallbackDate = values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+                if (fallbackDate) {
+                  const d = new Date(fallbackDate);
+                  if (!isNaN(d.getTime())) return d;
                 }
                 return new Date();
               })()}
               onConfirm={(date) => {
-                if (showAccomodationDatePickerFor) {
-                  setFieldValue(`accomodationDetails.${showAccomodationDatePickerFor}`, date);
+                if (showAccomodationDatePickerFor === "checkinDateTime") {
+                  setFieldValue("accomodationDetails.checkinDateTime", date);
+                  if (!values.accomodationDetails?.checkoutDateTime) {
+                    setFieldValue("accomodationDetails.checkoutDateTime", date);
+                  }
+                } else if (showAccomodationDatePickerFor === "checkoutDateTime") {
+                  setFieldValue("accomodationDetails.checkoutDateTime", date);
                 }
                 setShowAccomodationDatePickerFor(null);
               }}
@@ -2097,6 +2126,8 @@ const EditActivity = ({
               date={(() => {
                 const v = values.preparationDetails?.deadlineDateTime;
                 if (v) { const d = new Date(v); return isNaN(d.getTime()) ? new Date() : d; }
+                const fallbackDate = values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+                if (fallbackDate) { const d = new Date(fallbackDate); if (!isNaN(d.getTime())) return d; }
                 return new Date();
               })()}
               onConfirm={(date) => {
@@ -2112,12 +2143,23 @@ const EditActivity = ({
               mode="datetime"
               date={(() => {
                 const targetVal = showRideRentalDatePickerFor && values.rideRentalDetails?.[showRideRentalDatePickerFor];
-                if (targetVal) { const d = new Date(targetVal); return isNaN(d.getTime()) ? new Date() : d; }
+                if (targetVal) { const d = new Date(targetVal); if (!isNaN(d.getTime())) return d; }
+                if (showRideRentalDatePickerFor === "rentalEndDateTime") {
+                  const startVal = values.rideRentalDetails?.rentalStartDateTime;
+                  if (startVal) { const d = new Date(startVal); if (!isNaN(d.getTime())) return d; }
+                }
+                const fallbackDate = values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+                if (fallbackDate) { const d = new Date(fallbackDate); if (!isNaN(d.getTime())) return d; }
                 return new Date();
               })()}
               onConfirm={(date) => {
-                if (showRideRentalDatePickerFor) {
-                  setFieldValue(`rideRentalDetails.${showRideRentalDatePickerFor}`, date);
+                if (showRideRentalDatePickerFor === "rentalStartDateTime") {
+                  setFieldValue("rideRentalDetails.rentalStartDateTime", date);
+                  if (!values.rideRentalDetails?.rentalEndDateTime) {
+                    setFieldValue("rideRentalDetails.rentalEndDateTime", date);
+                  }
+                } else if (showRideRentalDatePickerFor === "rentalEndDateTime") {
+                  setFieldValue("rideRentalDetails.rentalEndDateTime", date);
                 }
                 setShowRideRentalDatePickerFor(null);
               }}
@@ -2130,12 +2172,23 @@ const EditActivity = ({
               mode="datetime"
               date={(() => {
                 const targetVal = showHikeOrCampDatePickerFor && values.hikeOrCampDetails?.[showHikeOrCampDatePickerFor];
-                if (targetVal) { const d = new Date(targetVal); return isNaN(d.getTime()) ? new Date() : d; }
+                if (targetVal) { const d = new Date(targetVal); if (!isNaN(d.getTime())) return d; }
+                if (showHikeOrCampDatePickerFor === "checkoutDateTime") {
+                  const checkinVal = values.hikeOrCampDetails?.checkinDateTime;
+                  if (checkinVal) { const d = new Date(checkinVal); if (!isNaN(d.getTime())) return d; }
+                }
+                const fallbackDate = values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+                if (fallbackDate) { const d = new Date(fallbackDate); if (!isNaN(d.getTime())) return d; }
                 return new Date();
               })()}
               onConfirm={(date) => {
-                if (showHikeOrCampDatePickerFor) {
-                  setFieldValue(`hikeOrCampDetails.${showHikeOrCampDatePickerFor}`, date);
+                if (showHikeOrCampDatePickerFor === "checkinDateTime") {
+                  setFieldValue("hikeOrCampDetails.checkinDateTime", date);
+                  if (!values.hikeOrCampDetails?.checkoutDateTime) {
+                    setFieldValue("hikeOrCampDetails.checkoutDateTime", date);
+                  }
+                } else if (showHikeOrCampDatePickerFor === "checkoutDateTime") {
+                  setFieldValue("hikeOrCampDetails.checkoutDateTime", date);
                 }
                 setShowHikeOrCampDatePickerFor(null);
               }}

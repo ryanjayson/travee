@@ -44,9 +44,12 @@ export default function FlightTab({
 
       <TouchableOpacity
         onPress={() => {
-          openFlightModal((flightData: any) => {
-            handleFlightSelect(flightData, setFieldValue);
-          });
+          openFlightModal(
+            (flightData: any) => {
+              handleFlightSelect(flightData, setFieldValue);
+            },
+            values.startDate || values.flightDetails?.departureDate
+          );
         }}
         className="mb-10 mt-3 p-4 rounded-2xl border border-dashed bg-blue-50/50 flex-row items-center gap-3 active:bg-blue-50"
         style={{ borderColor: colors.primary }}

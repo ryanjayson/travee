@@ -355,11 +355,13 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
         departureAirport: any;
         arrivalAirport: any;
         departureDate: Date;
-      }) => void
+      }) => void,
+      defaultDate?: Date | string | null
     ) => {
       setFlightModal({
         visible: true,
         onConfirm,
+        defaultDate,
       });
     },
     []
