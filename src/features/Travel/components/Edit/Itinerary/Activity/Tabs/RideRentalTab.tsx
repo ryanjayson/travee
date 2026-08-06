@@ -1,31 +1,37 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
-import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
 
 type PoiCategory = "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp";
 
-const VEHICLE_TYPES = ["Car", "Motorbike", "Motorcycle", "Bike", "RV", "Yacht", "Boat"];
+const VEHICLE_TYPES = ["Car", "Motorbike", "Motorcycle", "Scooter", "Bicycle", "RV / Camper", "Yacht", "Boat"];
 
 interface RideRentalTabProps {
   values: any;
   handleChange: any;
   handleBlur: any;
   setFieldValue: any;
-  onOpenPoiModal: (category: PoiCategory) => void;
-  formatDateTime: (val: any) => string;
-  onOpenRentalStartPicker: () => void;
-  onOpenRentalEndPicker: () => void;
+  colors?: any;
+  onOpenPoiModal?: (category: PoiCategory) => void;
+  formatDateTime?: (val: any) => string;
+  onOpenRentalStartPicker?: () => void;
+  onOpenRentalEndPicker?: () => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
 }
+
+const FloatingLabelInput = (props: any) => (
+  <FloatingLabelInputAtom {...props} />
+);
 
 export default function RideRentalTab({
   values,
   handleChange,
   handleBlur,
   setFieldValue,
+  colors: propColors,
   onOpenPoiModal,
   formatDateTime,
   onOpenRentalStartPicker,
@@ -33,7 +39,8 @@ export default function RideRentalTab({
   noPadding = false,
   fieldRefs,
 }: RideRentalTabProps) {
-  const { colors } = useTheme();
+  const paperTheme = useTheme();
+  const colors = propColors || paperTheme.colors;
   const currentVehicle = values.rideRentalDetails?.vehicleType || null;
 
   return (
@@ -41,7 +48,7 @@ export default function RideRentalTab({
       <View className="flex-row gap-2 justify-start items-center mb-5">
         <Icon name="directions-car" size={20} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">
-          Ride Rental Details
+          Rental Details
         </Text>
       </View>
 
@@ -53,12 +60,14 @@ export default function RideRentalTab({
           onChangeText={handleChange("rideRentalDetails.providerName")}
           onBlur={handleBlur("rideRentalDetails.providerName")}
           right={
-            <TextInput.Icon
-              style={{ backgroundColor: "#F2F4F7" }}
-              icon="map-marker-radius-outline"
-              color="#263f69"
-              onPress={() => onOpenPoiModal("shopppingAndService")}
-            />
+            onOpenPoiModal ? (
+              <TextInput.Icon
+                style={{ backgroundColor: "#F2F4F7" }}
+                icon="map-marker-radius-outline"
+                color="#263f69"
+                onPress={() => onOpenPoiModal("shopppingAndService")}
+              />
+            ) : null
           }
         />
       </View>
@@ -66,7 +75,7 @@ export default function RideRentalTab({
       {/* Address */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.address"] = el; }} className="mb-5">
         <FloatingLabelInput
-          label="Address"
+          label="Provider Address"
           value={values.rideRentalDetails?.address || ""}
           onChangeText={handleChange("rideRentalDetails.address")}
           onBlur={handleBlur("rideRentalDetails.address")}
@@ -104,6 +113,16 @@ export default function RideRentalTab({
         </ScrollView>
       </View>
 
+      {/* Vehicle Model / Details */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.vehicleModel"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Vehicle Model / Make"
+          value={values.rideRentalDetails?.vehicleModel || ""}
+          onChangeText={handleChange("rideRentalDetails.vehicleModel")}
+          onBlur={handleBlur("rideRentalDetails.vehicleModel")}
+        />
+      </View>
+
       {/* Pickup & Drop-off */}
       <View className="flex-row gap-4 mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.pickupLocation"] = el; }} style={{ flex: 1 }}>
@@ -124,7 +143,7 @@ export default function RideRentalTab({
         </View>
       </View>
 
-      {/* Rental Start & End Date/Time */}
+      {/* Rental Period (Start & End Date/Time) */}
       <View className="flex-row gap-2 justify-start items-center mb-2">
         <Text className="text-xs font-bold tracking-wider uppercase">Rental Period</Text>
       </View>
@@ -132,7 +151,7 @@ export default function RideRentalTab({
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.rentalStartDateTime"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Start"
-            value={values.rideRentalDetails?.rentalStartDateTime ? formatDateTime(values.rideRentalDetails.rentalStartDateTime) : ""}
+            value={values.rideRentalDetails?.rentalStartDateTime && formatDateTime ? formatDateTime(values.rideRentalDetails.rentalStartDateTime) : ""}
             editable={false}
             onPress={onOpenRentalStartPicker}
             right={
@@ -148,7 +167,7 @@ export default function RideRentalTab({
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.rentalEndDateTime"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="End"
-            value={values.rideRentalDetails?.rentalEndDateTime ? formatDateTime(values.rideRentalDetails.rentalEndDateTime) : ""}
+            value={values.rideRentalDetails?.rentalEndDateTime && formatDateTime ? formatDateTime(values.rideRentalDetails.rentalEndDateTime) : ""}
             editable={false}
             onPress={onOpenRentalEndPicker}
             right={
@@ -162,7 +181,7 @@ export default function RideRentalTab({
         </View>
       </View>
 
-      {/* Booking Reference & Price */}
+      {/* Booking Reference & Booking Status */}
       <View className="flex-row gap-4 mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingReference"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
@@ -172,6 +191,18 @@ export default function RideRentalTab({
             onBlur={handleBlur("rideRentalDetails.bookingReference")}
           />
         </View>
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Booking Status"
+            value={values.rideRentalDetails?.bookingStatus || ""}
+            onChangeText={handleChange("rideRentalDetails.bookingStatus")}
+            onBlur={handleBlur("rideRentalDetails.bookingStatus")}
+          />
+        </View>
+      </View>
+
+      {/* Price & Website Link */}
+      <View className="flex-row gap-4 mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.price"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Price"
@@ -181,6 +212,58 @@ export default function RideRentalTab({
             keyboardType="numeric"
           />
         </View>
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.websiteAddress"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Website / Link"
+            value={values.rideRentalDetails?.websiteAddress || ""}
+            onChangeText={handleChange("rideRentalDetails.websiteAddress")}
+            onBlur={handleBlur("rideRentalDetails.websiteAddress")}
+            contentStyle={{ textDecorationLine: "underline" }}
+            right={
+              values.rideRentalDetails?.websiteAddress ? (
+                <TextInput.Icon
+                  icon={() => (
+                    <Text
+                      style={{
+                        color: colors?.primary || "#263F69",
+                        textDecorationLine: "underline",
+                        fontWeight: "bold",
+                        fontSize: 14,
+                        marginTop: 2,
+                        opacity: 0.8,
+                      }}
+                    >
+                      open
+                    </Text>
+                  )}
+                  style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                  onPress={() => {
+                    let url = values.rideRentalDetails.websiteAddress;
+                    if (url) {
+                      if (!/^https?:\/\//i.test(url)) {
+                        url = "https://" + url;
+                      }
+                      Linking.openURL(url).catch((err) =>
+                        console.error("Failed to open URL", err)
+                      );
+                    }
+                  }}
+                />
+              ) : null
+            }
+          />
+        </View>
+      </View>
+
+      {/* Contact Number */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactNumber"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Contact Number"
+          value={values.rideRentalDetails?.contactNumber || ""}
+          onChangeText={handleChange("rideRentalDetails.contactNumber")}
+          onBlur={handleBlur("rideRentalDetails.contactNumber")}
+          keyboardType="phone-pad"
+        />
       </View>
     </View>
   );

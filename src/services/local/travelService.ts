@@ -245,8 +245,15 @@ export const fetchLocalTransportationDetails = async (activityId: string): Promi
         operatorProvider: item.operatorProvider,
         pickupLocation: item.pickupLocation,
         dropoffLocation: item.dropoffLocation,
+        departureDateTime: item.departureDateTime,
+        arrivalDateTime: item.arrivalDateTime,
+        seatOrVehicleNumber: item.seatOrVehicleNumber,
         bookingReference: item.bookingReference,
+        bookingStatus: item.bookingStatus,
         price: item.price,
+        websiteAddress: item.websiteAddress,
+        contactNumber: item.contactNumber,
+        notes: item.notes,
       };
     }
     return null;
@@ -386,12 +393,17 @@ export const fetchLocalRideRentalDetails = async (activityId: string): Promise<a
         providerName: item.providerName,
         address: item.address,
         vehicleType: item.vehicleType,
+        vehicleModel: item.vehicleModel,
         pickupLocation: item.pickupLocation,
         dropoffLocation: item.dropoffLocation,
         rentalStartDateTime: item.rentalStartDateTime,
         rentalEndDateTime: item.rentalEndDateTime,
         bookingReference: item.bookingReference,
+        bookingStatus: item.bookingStatus,
         price: item.price,
+        websiteAddress: item.websiteAddress,
+        contactNumber: item.contactNumber,
+        notes: item.notes,
       };
     }
     return null;
@@ -1370,28 +1382,30 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
         Q.where("activity_id", activity.id)
       ).fetch();
 
+      const transportPayload = {
+        mode: activityData.transportationDetails.mode || null,
+        operatorProvider: activityData.transportationDetails.operatorProvider || null,
+        pickupLocation: activityData.transportationDetails.pickupLocation || null,
+        dropoffLocation: activityData.transportationDetails.dropoffLocation || null,
+        departureDateTime: activityData.transportationDetails.departureDateTime ? new Date(activityData.transportationDetails.departureDateTime) : null,
+        arrivalDateTime: activityData.transportationDetails.arrivalDateTime ? new Date(activityData.transportationDetails.arrivalDateTime) : null,
+        seatOrVehicleNumber: activityData.transportationDetails.seatOrVehicleNumber || null,
+        bookingReference: activityData.transportationDetails.bookingReference || null,
+        bookingStatus: activityData.transportationDetails.bookingStatus || null,
+        price: activityData.transportationDetails.price || null,
+        websiteAddress: activityData.transportationDetails.websiteAddress || null,
+        contactNumber: activityData.transportationDetails.contactNumber || null,
+        notes: activityData.transportationDetails.notes || null,
+      };
+
       if (existingDetails.length > 0) {
         await existingDetails[0].update((t) => {
-          Object.assign(t, {
-            mode: activityData.transportationDetails.mode,
-            operatorProvider: activityData.transportationDetails.operatorProvider,
-            pickupLocation: activityData.transportationDetails.pickupLocation,
-            dropoffLocation: activityData.transportationDetails.dropoffLocation,
-            bookingReference: activityData.transportationDetails.bookingReference,
-            price: activityData.transportationDetails.price,
-          });
+          Object.assign(t, transportPayload);
         });
       } else {
         await transportationDetailsCollection.create((t) => {
           t.activity.id = activity.id;
-          Object.assign(t, {
-            mode: activityData.transportationDetails.mode,
-            operatorProvider: activityData.transportationDetails.operatorProvider,
-            pickupLocation: activityData.transportationDetails.pickupLocation,
-            dropoffLocation: activityData.transportationDetails.dropoffLocation,
-            bookingReference: activityData.transportationDetails.bookingReference,
-            price: activityData.transportationDetails.price,
-          });
+          Object.assign(t, transportPayload);
         });
       }
     }
@@ -1552,34 +1566,31 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
         Q.where("activity_id", activity.id)
       ).fetch();
 
+      const rentalPayload = {
+        providerName: activityData.rideRentalDetails.providerName,
+        address: activityData.rideRentalDetails.address || null,
+        vehicleType: activityData.rideRentalDetails.vehicleType || null,
+        vehicleModel: activityData.rideRentalDetails.vehicleModel || null,
+        pickupLocation: activityData.rideRentalDetails.pickupLocation || null,
+        dropoffLocation: activityData.rideRentalDetails.dropoffLocation || null,
+        rentalStartDateTime: activityData.rideRentalDetails.rentalStartDateTime ? new Date(activityData.rideRentalDetails.rentalStartDateTime) : null,
+        rentalEndDateTime: activityData.rideRentalDetails.rentalEndDateTime ? new Date(activityData.rideRentalDetails.rentalEndDateTime) : null,
+        bookingReference: activityData.rideRentalDetails.bookingReference || null,
+        bookingStatus: activityData.rideRentalDetails.bookingStatus || null,
+        price: activityData.rideRentalDetails.price || null,
+        websiteAddress: activityData.rideRentalDetails.websiteAddress || null,
+        contactNumber: activityData.rideRentalDetails.contactNumber || null,
+        notes: activityData.rideRentalDetails.notes || null,
+      };
+
       if (existingDetails.length > 0) {
         await existingDetails[0].update((r) => {
-          Object.assign(r, {
-            providerName: activityData.rideRentalDetails.providerName,
-            address: activityData.rideRentalDetails.address,
-            vehicleType: activityData.rideRentalDetails.vehicleType,
-            pickupLocation: activityData.rideRentalDetails.pickupLocation,
-            dropoffLocation: activityData.rideRentalDetails.dropoffLocation,
-            rentalStartDateTime: activityData.rideRentalDetails.rentalStartDateTime ? new Date(activityData.rideRentalDetails.rentalStartDateTime) : null,
-            rentalEndDateTime: activityData.rideRentalDetails.rentalEndDateTime ? new Date(activityData.rideRentalDetails.rentalEndDateTime) : null,
-            bookingReference: activityData.rideRentalDetails.bookingReference,
-            price: activityData.rideRentalDetails.price,
-          });
+          Object.assign(r, rentalPayload);
         });
       } else {
         await rideRentalDetailsCollection.create((r) => {
           r.activity.id = activity.id;
-          Object.assign(r, {
-            providerName: activityData.rideRentalDetails.providerName,
-            address: activityData.rideRentalDetails.address,
-            vehicleType: activityData.rideRentalDetails.vehicleType,
-            pickupLocation: activityData.rideRentalDetails.pickupLocation,
-            dropoffLocation: activityData.rideRentalDetails.dropoffLocation,
-            rentalStartDateTime: activityData.rideRentalDetails.rentalStartDateTime ? new Date(activityData.rideRentalDetails.rentalStartDateTime) : null,
-            rentalEndDateTime: activityData.rideRentalDetails.rentalEndDateTime ? new Date(activityData.rideRentalDetails.rentalEndDateTime) : null,
-            bookingReference: activityData.rideRentalDetails.bookingReference,
-            price: activityData.rideRentalDetails.price,
-          });
+          Object.assign(r, rentalPayload);
         });
       }
     }

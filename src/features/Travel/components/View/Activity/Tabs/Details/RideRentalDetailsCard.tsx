@@ -199,15 +199,39 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({ da
 
       {/* Stub Area */}
       <View className="p-5 pt-3">
-        <View className="flex-col gap-1">
+        <View className="flex-col gap-2">
+          {data.vehicleModel ? (
+            <Field
+              label="Vehicle Model"
+              value={data.vehicleModel}
+              icon="directions-car"
+            />
+          ) : null}
           <Field
             label="Booking Ref"
             value={data.bookingReference}
             icon="confirmation-number"
             onPress={data.bookingReference ? () => handleCopy(data.bookingReference || "", "Booking reference") : undefined}
           />
+          <Field
+            label="Booking Status"
+            value={data.bookingStatus}
+            icon="info-outline"
+          />
+          <Field
+            label="Website / Link"
+            value={data.websiteAddress}
+            icon="language"
+            isLink={true}
+            onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress || "") : undefined}
+          />
+          <Field
+            label="Contact"
+            value={data.contactNumber}
+            icon="phone"
+          />
           {data.vehicleType ? (
-            <View className="mb-3">
+            <View className="mb-2">
               <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
                 Vehicle Type
               </Text>

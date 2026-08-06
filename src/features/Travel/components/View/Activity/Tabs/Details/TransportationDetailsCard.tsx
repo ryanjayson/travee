@@ -113,6 +113,39 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
           ) : null}
         </View>
 
+        {/* Departure & Arrival Dates Row */}
+        {data.departureDateTime || data.arrivalDateTime ? (
+          <View className="flex-row items-center justify-between pt-4 border-t border-dashed border-cyan-800 mb-4">
+            <View className="flex-1">
+              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+                Departure
+              </Text>
+              <Text className="text-xl font-semibold text-white/80">
+                {data.departureDateTime ? new Date(data.departureDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
+              </Text>
+              <Text className="text-xxs font-medium text-white/80 mt-0.5">
+                {data.departureDateTime ? new Date(data.departureDateTime).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : "N/A"}
+              </Text>
+            </View>
+
+            <View className="px-3 items-center justify-center">
+              <Icon name="arrow-forward" size={18} color={"#FFFFFF"} />
+            </View>
+
+            <View className="flex-1 items-end">
+              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+                Arrival
+              </Text>
+              <Text className="text-xl font-semibold text-white/80 text-right">
+                {data.arrivalDateTime ? new Date(data.arrivalDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
+              </Text>
+              <Text className="text-xxs font-medium text-white/80 mt-0.5 text-right">
+                {data.arrivalDateTime ? new Date(data.arrivalDateTime).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : "N/A"}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
         {/* Pickup Location */}
         {data.pickupLocation ? (
           <View className="mb-3 pt-3 border-t border-gray-100/10">
@@ -156,12 +189,34 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
 
       {/* Stub Area */}
       <View className="p-5 pt-3">
-        <View className="flex-row justify-between mb-1 gap-4">
+        <View className="flex-col gap-2">
+          <Field
+            label="Seat / Vehicle #"
+            value={data.seatOrVehicleNumber}
+            icon="event-seat"
+          />
           <Field
             label="Booking Ref"
             value={data.bookingReference}
             icon="confirmation-number"
             onPress={data.bookingReference ? () => handleCopy(data.bookingReference || "", "Booking reference") : undefined}
+          />
+          <Field
+            label="Booking Status"
+            value={data.bookingStatus}
+            icon="info-outline"
+          />
+          <Field
+            label="Website / Ticket"
+            value={data.websiteAddress}
+            icon="language"
+            isLink={true}
+            onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress || "") : undefined}
+          />
+          <Field
+            label="Contact"
+            value={data.contactNumber}
+            icon="phone"
           />
         </View>
       </View>

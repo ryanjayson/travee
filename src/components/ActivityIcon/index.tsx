@@ -72,13 +72,13 @@ const activityIcons: ActivityIcon[] = [
     iconName: "local-play",
     color: "#0891b2", // purple hsl(289)
   },
-  // {
-  //   iconSet: IconSetProvider.material,
-  //   activityType: ActivityType.transportation,
-  //   name: ActivityType.transportation,
-  //   iconName: "directions-bus",
-  //   color: "#02899a", // cyan hsl(187)
-  // },
+  {
+    iconSet: IconSetProvider.material,
+    activityType: ActivityType.transportation,
+    name: ActivityType.transportation,
+    iconName: "directions-bus",
+    color: "#02899a", // cyan hsl(187)
+  },
   {
     iconSet: IconSetProvider.ionic,
     activityType: ActivityType.walk,
@@ -128,13 +128,13 @@ const activityIcons: ActivityIcon[] = [
   //   iconName: "people",
   //   color: "#26A69A", // teal hsl(175)
   // },
-  // {
-  //   iconSet: IconSetProvider.material,
-  //   activityType: ActivityType.rideRental,
-  //   name: ActivityType.rideRental,
-  //   iconName: "directions-car",
-  //   color: "#384690", // indigo hsl(231)
-  // },
+  {
+    iconSet: IconSetProvider.material,
+    activityType: ActivityType.rideRental,
+    name: ActivityType.rideRental,
+    iconName: "directions-car",
+    color: "#384690", // indigo hsl(231)
+  },
 ];
 
 export { activityIcons };

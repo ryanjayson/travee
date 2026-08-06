@@ -203,8 +203,15 @@ export interface TransportationDetailsDto {
   operatorProvider?: string | null;
   pickupLocation?: string | null;
   dropoffLocation?: string | null;
+  departureDateTime?: Date | string | null;
+  arrivalDateTime?: Date | string | null;
+  seatOrVehicleNumber?: string | null;
   bookingReference?: string | null;
+  bookingStatus?: string | null;
   price?: string | null;
+  websiteAddress?: string | null;
+  contactNumber?: string | null;
+  notes?: string | null;
 }
 
 export interface WalkDetailsDto {
@@ -286,12 +293,17 @@ export interface RideRentalDetailsDto {
   providerName: string;
   address?: string | null;
   vehicleType?: string | null; // RV, yacht, motorbike, car, bike
+  vehicleModel?: string | null;
   pickupLocation?: string | null;
   dropoffLocation?: string | null;
   rentalStartDateTime?: Date | string | null;
   rentalEndDateTime?: Date | string | null;
   bookingReference?: string | null;
+  bookingStatus?: string | null;
   price?: string | null;
+  websiteAddress?: string | null;
+  contactNumber?: string | null;
+  notes?: string | null;
 }
 
 export interface ItineraryActivity {

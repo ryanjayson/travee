@@ -44,8 +44,10 @@ import FlightTab from "./Tabs/FlightTab";
 import HikeOrCampTab from "./Tabs/HikeOrCampTab";
 import NatureTab from "./Tabs/NatureTab";
 import PreparationTab from "./Tabs/PreparationTab";
+import RideRentalTab from "./Tabs/RideRentalTab";
 import ShoppingTab from "./Tabs/ShoppingTab";
 import SightseeingTab from "./Tabs/SightseeingTab";
+import TransportationTab from "./Tabs/TransportationTab";
 import WalkTab from "./Tabs/WalkTab";
 
 interface Place {
@@ -150,8 +152,15 @@ export interface ActivityFormValues {
     operatorProvider?: string | null;
     pickupLocation?: string | null;
     dropoffLocation?: string | null;
+    departureDateTime?: Date | string | null;
+    arrivalDateTime?: Date | string | null;
+    seatOrVehicleNumber?: string | null;
     bookingReference?: string | null;
+    bookingStatus?: string | null;
     price?: string | null;
+    websiteAddress?: string | null;
+    contactNumber?: string | null;
+    notes?: string | null;
   } | null;
   walkDetails?: {
     routeName?: string | null;
@@ -206,15 +215,20 @@ export interface ActivityFormValues {
     rsvpLink?: string | null;
   } | null;
   rideRentalDetails?: {
-    providerName: string;
+    providerName?: string | null;
     address?: string | null;
     vehicleType?: string | null;
+    vehicleModel?: string | null;
     pickupLocation?: string | null;
     dropoffLocation?: string | null;
     rentalStartDateTime?: Date | string | null;
     rentalEndDateTime?: Date | string | null;
     bookingReference?: string | null;
+    bookingStatus?: string | null;
     price?: string | null;
+    websiteAddress?: string | null;
+    contactNumber?: string | null;
+    notes?: string | null;
   } | null;
 }
 
@@ -471,6 +485,7 @@ const EditActivity = ({
   const [isChecklistFocused, setIsChecklistFocused] = useState<boolean>(false);
   const [showFlightDatePickerFor, setShowFlightDatePickerFor] = useState<"departureDate" | "arrivalDate" | null>(null);
   const [showAccomodationDatePickerFor, setShowAccomodationDatePickerFor] = useState<"checkinDateTime" | "checkoutDateTime" | null>(null);
+  const [showTransportationDatePickerFor, setShowTransportationDatePickerFor] = useState<"departureDateTime" | "arrivalDateTime" | null>(null);
   const [showPreparationDeadlinePicker, setShowPreparationDeadlinePicker] = useState<boolean>(false);
   const [showRideRentalDatePickerFor, setShowRideRentalDatePickerFor] = useState<"rentalStartDateTime" | "rentalEndDateTime" | null>(null);
   const [showHikeOrCampDatePickerFor, setShowHikeOrCampDatePickerFor] = useState<"checkinDateTime" | "checkoutDateTime" | null>(null);
@@ -807,16 +822,27 @@ const EditActivity = ({
             bookingReference: values.entertainmentDetails.bookingReference || null,
           }
           : null,
-        // transportationDetails: values.type === ActivityType.transportation && values.transportationDetails
-        //   ? {
-        //       mode: values.transportationDetails.mode || null,
-        //       operatorProvider: values.transportationDetails.operatorProvider || null,
-        //       pickupLocation: values.transportationDetails.pickupLocation || null,
-        //       dropoffLocation: values.transportationDetails.dropoffLocation || null,
-        //       bookingReference: values.transportationDetails.bookingReference || null,
-        //       price: values.transportationDetails.price || null,
-        //     }
-        //   : null,
+        transportationDetails: values.type === ActivityType.transportation && values.transportationDetails
+          ? {
+              mode: values.transportationDetails.mode || null,
+              operatorProvider: values.transportationDetails.operatorProvider || null,
+              pickupLocation: values.transportationDetails.pickupLocation || null,
+              dropoffLocation: values.transportationDetails.dropoffLocation || null,
+              departureDateTime: values.transportationDetails.departureDateTime
+                ? new Date(values.transportationDetails.departureDateTime)
+                : null,
+              arrivalDateTime: values.transportationDetails.arrivalDateTime
+                ? new Date(values.transportationDetails.arrivalDateTime)
+                : null,
+              seatOrVehicleNumber: values.transportationDetails.seatOrVehicleNumber || null,
+              bookingReference: values.transportationDetails.bookingReference || null,
+              bookingStatus: values.transportationDetails.bookingStatus || null,
+              price: values.transportationDetails.price || null,
+              websiteAddress: values.transportationDetails.websiteAddress || null,
+              contactNumber: values.transportationDetails.contactNumber || null,
+              notes: values.transportationDetails.notes || null,
+            }
+          : null,
         walkDetails: values.type === ActivityType.walk && values.walkDetails
           ? {
             routeName: values.walkDetails.routeName || null,
@@ -889,23 +915,28 @@ const EditActivity = ({
         //       rsvpLink: values.meetupDetails.rsvpLink || null,
         //     }
         //   : null,
-        // rideRentalDetails: values.type === ActivityType.rideRental && values.rideRentalDetails
-        //   ? {
-        //       providerName: values.rideRentalDetails.providerName,
-        //       address: values.rideRentalDetails.address || null,
-        //       vehicleType: values.rideRentalDetails.vehicleType || null,
-        //       pickupLocation: values.rideRentalDetails.pickupLocation || null,
-        //       dropoffLocation: values.rideRentalDetails.dropoffLocation || null,
-        //       rentalStartDateTime: values.rideRentalDetails.rentalStartDateTime
-        //         ? new Date(values.rideRentalDetails.rentalStartDateTime)
-        //         : null,
-        //       rentalEndDateTime: values.rideRentalDetails.rentalEndDateTime
-        //         ? new Date(values.rideRentalDetails.rentalEndDateTime)
-        //         : null,
-        //       bookingReference: values.rideRentalDetails.bookingReference || null,
-        //       price: values.rideRentalDetails.price || null,
-        //     }
-        //   : null,
+        rideRentalDetails: values.type === ActivityType.rideRental && values.rideRentalDetails
+          ? {
+              providerName: values.rideRentalDetails.providerName,
+              address: values.rideRentalDetails.address || null,
+              vehicleType: values.rideRentalDetails.vehicleType || null,
+              vehicleModel: values.rideRentalDetails.vehicleModel || null,
+              pickupLocation: values.rideRentalDetails.pickupLocation || null,
+              dropoffLocation: values.rideRentalDetails.dropoffLocation || null,
+              rentalStartDateTime: values.rideRentalDetails.rentalStartDateTime
+                ? new Date(values.rideRentalDetails.rentalStartDateTime)
+                : null,
+              rentalEndDateTime: values.rideRentalDetails.rentalEndDateTime
+                ? new Date(values.rideRentalDetails.rentalEndDateTime)
+                : null,
+              bookingReference: values.rideRentalDetails.bookingReference || null,
+              bookingStatus: values.rideRentalDetails.bookingStatus || null,
+              price: values.rideRentalDetails.price || null,
+              websiteAddress: values.rideRentalDetails.websiteAddress || null,
+              contactNumber: values.rideRentalDetails.contactNumber || null,
+              notes: values.rideRentalDetails.notes || null,
+            }
+          : null,
       };
 
       const result = await updateMutation.mutateAsync(payload);
@@ -1063,8 +1094,27 @@ const EditActivity = ({
       operatorProvider: itineraryActivity?.transportationDetails?.operatorProvider || "",
       pickupLocation: itineraryActivity?.transportationDetails?.pickupLocation || "",
       dropoffLocation: itineraryActivity?.transportationDetails?.dropoffLocation || "",
+      departureDateTime: itineraryActivity?.transportationDetails?.departureDateTime
+        ? new Date(itineraryActivity.transportationDetails.departureDateTime)
+        : (itineraryActivity?.startDate
+          ? new Date(itineraryActivity.startDate)
+          : (currentSection?.startDate
+            ? new Date(currentSection.startDate)
+            : (travelPlan?.travel?.startOrDepartureDate
+              ? new Date(travelPlan.travel.startOrDepartureDate)
+              : null))),
+      arrivalDateTime: itineraryActivity?.transportationDetails?.arrivalDateTime
+        ? new Date(itineraryActivity.transportationDetails.arrivalDateTime)
+        : (itineraryActivity?.endDate
+          ? new Date(itineraryActivity.endDate)
+          : null),
+      seatOrVehicleNumber: itineraryActivity?.transportationDetails?.seatOrVehicleNumber || "",
       bookingReference: itineraryActivity?.transportationDetails?.bookingReference || "",
+      bookingStatus: itineraryActivity?.transportationDetails?.bookingStatus || "",
       price: itineraryActivity?.transportationDetails?.price || "",
+      websiteAddress: itineraryActivity?.transportationDetails?.websiteAddress || "",
+      contactNumber: itineraryActivity?.transportationDetails?.contactNumber || "",
+      notes: itineraryActivity?.transportationDetails?.notes || "",
     },
     walkDetails: {
       routeName: itineraryActivity?.walkDetails?.routeName || "",
@@ -1128,16 +1178,29 @@ const EditActivity = ({
       providerName: itineraryActivity?.rideRentalDetails?.providerName || "",
       address: itineraryActivity?.rideRentalDetails?.address || "",
       vehicleType: itineraryActivity?.rideRentalDetails?.vehicleType || null,
+      vehicleModel: itineraryActivity?.rideRentalDetails?.vehicleModel || "",
       pickupLocation: itineraryActivity?.rideRentalDetails?.pickupLocation || "",
       dropoffLocation: itineraryActivity?.rideRentalDetails?.dropoffLocation || "",
       rentalStartDateTime: itineraryActivity?.rideRentalDetails?.rentalStartDateTime
         ? new Date(itineraryActivity.rideRentalDetails.rentalStartDateTime)
-        : null,
+        : (itineraryActivity?.startDate
+          ? new Date(itineraryActivity.startDate)
+          : (currentSection?.startDate
+            ? new Date(currentSection.startDate)
+            : (travelPlan?.travel?.startOrDepartureDate
+              ? new Date(travelPlan.travel.startOrDepartureDate)
+              : null))),
       rentalEndDateTime: itineraryActivity?.rideRentalDetails?.rentalEndDateTime
         ? new Date(itineraryActivity.rideRentalDetails.rentalEndDateTime)
-        : null,
+        : (itineraryActivity?.endDate
+          ? new Date(itineraryActivity.endDate)
+          : null),
       bookingReference: itineraryActivity?.rideRentalDetails?.bookingReference || "",
+      bookingStatus: itineraryActivity?.rideRentalDetails?.bookingStatus || "",
       price: itineraryActivity?.rideRentalDetails?.price || "",
+      websiteAddress: itineraryActivity?.rideRentalDetails?.websiteAddress || "",
+      contactNumber: itineraryActivity?.rideRentalDetails?.contactNumber || "",
+      notes: itineraryActivity?.rideRentalDetails?.notes || "",
     },
   };
 
@@ -1371,20 +1434,19 @@ const EditActivity = ({
                 )}
 
                 {/* Transportation Details */}
-                {/* {values.type === ActivityType.transportation && (
+                {values.type === ActivityType.transportation && (
                   <TransportationTab
                     values={values}
                     handleChange={handleChange}
                     handleBlur={handleBlur}
                     setFieldValue={setFieldValue}
+                    colors={colors}
+                    setShowTransportationDatePickerFor={setShowTransportationDatePickerFor}
+                    formatTransportationDateTime={formatFlightDateTime}
                     noPadding={true}
                     fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )} */}
+                )}
 
                 {/* Walk Details */}
                 {values.type === ActivityType.walk && (
@@ -1511,12 +1573,13 @@ const EditActivity = ({
                 )} */}
 
                 {/* Ride Rental Details */}
-                {/* {values.type === ActivityType.rideRental && (
+                {values.type === ActivityType.rideRental && (
                   <RideRentalTab
                     values={values}
                     handleChange={handleChange}
                     handleBlur={handleBlur}
                     setFieldValue={setFieldValue}
+                    colors={colors}
                     onOpenPoiModal={(category) => {
                       setPoiTargetType("rideRental");
                       setPoiModalInitialCategory(category);
@@ -1528,7 +1591,7 @@ const EditActivity = ({
                     noPadding={true}
                     fieldRefs={fieldRefs}
                   />
-                )} */}
+                )}
 
                 {/* Activity Details Accordion */}
                 <SimpleAccordion key="activity-details-accordion" title="Other Details" defaultExpanded={true}>
@@ -2117,6 +2180,44 @@ const EditActivity = ({
                 setShowAccomodationDatePickerFor(null);
               }}
               onCancel={() => setShowAccomodationDatePickerFor(null)}
+            />
+
+            {/* Transportation Date Pickers */}
+            <DateTimePickerModal
+              isVisible={showTransportationDatePickerFor !== null}
+              mode="datetime"
+              date={(() => {
+                const targetVal = showTransportationDatePickerFor && values.transportationDetails?.[showTransportationDatePickerFor];
+                if (targetVal) {
+                  const d = new Date(targetVal);
+                  if (!isNaN(d.getTime())) return d;
+                }
+                if (showTransportationDatePickerFor === "arrivalDateTime") {
+                  const depVal = values.transportationDetails?.departureDateTime;
+                  if (depVal) {
+                    const d = new Date(depVal);
+                    if (!isNaN(d.getTime())) return d;
+                  }
+                }
+                const fallbackDate = values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+                if (fallbackDate) {
+                  const d = new Date(fallbackDate);
+                  if (!isNaN(d.getTime())) return d;
+                }
+                return new Date();
+              })()}
+              onConfirm={(date) => {
+                if (showTransportationDatePickerFor === "departureDateTime") {
+                  setFieldValue("transportationDetails.departureDateTime", date);
+                  if (!values.transportationDetails?.arrivalDateTime) {
+                    setFieldValue("transportationDetails.arrivalDateTime", date);
+                  }
+                } else if (showTransportationDatePickerFor === "arrivalDateTime") {
+                  setFieldValue("transportationDetails.arrivalDateTime", date);
+                }
+                setShowTransportationDatePickerFor(null);
+              }}
+              onCancel={() => setShowTransportationDatePickerFor(null)}
             />
 
             {/* Preparation Deadline Picker */}

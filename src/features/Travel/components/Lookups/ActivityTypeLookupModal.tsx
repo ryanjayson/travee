@@ -22,13 +22,18 @@ import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ACTIVITY_TYPE_SUBTEXT: Record<string, string> = {
-  flight: "Departures, arrivals, transit, layover",
-  accomodation: "Place to stay, checkin and checkout",
-  cafeRestaurant: "Food, eat, drink, snack, coffee, bar, lounge, pub",
-  nature: "Beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano",
-  shopppingAndService: "Spa, events,  supermarket, convenience store, atm, bank, etc.",
-  entertainmentAndRecreation: "Park, museum, gym, cinema, stadium, zoo, concert",
-  hikeOrCamp: "Mountain, forest, jungle, cave, desert, canyon, volcano, campground",
+  flight: "Flights, layovers, and airport transits",
+  accomodation: "Hotels, resorts, and stays",
+  cafeRestaurant: "Dining, cafes, bars, and local spots",
+  transportation: "Trains, buses, taxis, and transit",
+  rideRental: "Car, scooter, and vehicle rentals",
+  sightseeing: "Landmarks, tours, and attraction visits",
+  shopppingAndService: "Shopping, spas, markets, and essentials",
+  entertainmentAndRecreation: "Museums, shows, sports, and nightlife",
+  nature: "Beaches, lakes, parks, and natural spots",
+  walk: "City strolls, walking tours, and exploration",
+  hikeOrCamp: "Hiking trails, trekking, and camping",
+  preparation: "Packing, checklists, and pre-trip tasks",
 };
 
 
@@ -52,7 +57,7 @@ const ActivityTypeLookupModal = ({
   const [modalHeight] = useState(screenHeight * 0.78);
   const { keyboardVisible } = useKeyboardVisible();
   const insets = useSafeAreaInsets();
-  
+
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
   const dragStartDy = useRef(0);
@@ -245,16 +250,16 @@ const ActivityTypeLookupModal = ({
               style={{ paddingTop: keyboardVisible ? 0 : 4 }}
             >
               <View className="flex-col items-start gap-1">
-                 <Text
-                    className="text-2xl font-semibold  text-primary"
-                    >
-                      Activity type
-                    </Text>
-                    <Text
-                      className="text-base  text-tertiary"
-                    >
-                      Select type of activity
-                    </Text>
+                <Text
+                  className="text-2xl font-semibold  text-primary"
+                >
+                  Activity type
+                </Text>
+                <Text
+                  className="text-base  text-tertiary"
+                >
+                  Select type of activity
+                </Text>
               </View>
               <TouchableOpacity onPress={handleCancel}>
                 <Icon name="clear" size={24} color={"#999"} />
@@ -308,13 +313,13 @@ const ActivityTypeLookupModal = ({
                     accessibilityRole="button"
                     accessibilityLabel={`Select activity type ${noneItem.displayName}`}
                   >
-                    <ActivityIcon type={noneItem.typeValue} size={24} />
+                    <ActivityIcon type={noneItem.typeValue} size={18} />
                     <View>
                       <Text className="text-lg text-black font-medium">
                         {noneItem.displayName}
                       </Text>
-                      <Text style={{ fontSize: 14, color: "#999", marginTop: 0 }}>
-                        Not sure, or undecided? update later
+                      <Text style={{ fontSize: 14, color: "#858585", marginTop: 0, opacity: 0.6 }}>
+                        Not sure, or undecided, update later
                       </Text>
                     </View>
                     {(selectedType === noneItem.typeValue || selectedType === undefined) && (
@@ -361,7 +366,7 @@ const ActivityTypeLookupModal = ({
                             {displayName}
                           </Text>
                           {ACTIVITY_TYPE_SUBTEXT[key] ? (
-                            <Text style={{ fontSize: 14, color: "#999", marginTop: 0 }}>
+                            <Text style={{ fontSize: 14, color: "#858585", marginTop: 0, opacity: 0.6 }}>
                               {ACTIVITY_TYPE_SUBTEXT[key]}
                             </Text>
                           ) : null}
@@ -375,7 +380,7 @@ const ActivityTypeLookupModal = ({
                 )}
 
                 {otherList.length > 0 && (
-                  <View>
+                  <View className="pb-md">
                     <View
                       style={{
                         backgroundColor: "#F9FAFB",
@@ -412,7 +417,7 @@ const ActivityTypeLookupModal = ({
                             {displayName}
                           </Text>
                           {ACTIVITY_TYPE_SUBTEXT[key] ? (
-                            <Text style={{ fontSize: 14, color: "#999", marginTop: 0 }}>
+                            <Text style={{ fontSize: 14, color: "#858585", marginTop: 0, opacity: 0.6 }}>
                               {ACTIVITY_TYPE_SUBTEXT[key]}
                             </Text>
                           ) : null}

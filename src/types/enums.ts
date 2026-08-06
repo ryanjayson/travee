@@ -10,18 +10,18 @@ export enum ActivityType {
   accomodation = 3, // checkin and checkout
   cafeRestaurant = 4, // food, eat, drink, snack, coffee, bar, lounge, pub
   //more
-  nature = 5, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
+  transportation = 8, // ride, bike, boat, bus, taxi, train, ferry
+  rideRental = 16, // RV, yatch, Motorbike, Motorcycle, car, bike
+  sightseeing = 10,
   shopppingAndService = 6, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
   entertainmentAndRecreation = 7, //park, museum, gym, cinema, stadium, zoo, concert
-  // transportation = 8, // ride, bike, boat, bus, taxi, train, ferry
+  nature = 5, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
   walk = 9,
-  sightseeing = 10,
+  hikeOrCamp = 13, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
   preparation = 11,
   // rest = 12,
-  hikeOrCamp = 13, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
   // motorcycleRide = 14, // motorbike 
   // meetup = 15,
-  // rideRental = 16, // RV, yatch, Motorbike, Motorcycle, car, bike
 }
 
 export enum StatusType {
@@ -118,6 +118,10 @@ export function getActivityTypeLabel(type: ActivityType): string {
       return "Preparation";
     case ActivityType.hikeOrCamp:
       return "Hike / Camp";
+    case ActivityType.transportation:
+      return "Transportation";
+    case ActivityType.rideRental:
+      return "Rental";
     default:
       return "Activity";
   }

@@ -12,12 +12,17 @@ export default class RideRentalDetails extends Model {
   @text("provider_name") providerName!: string;
   @text("address") address!: string | null;
   @text("vehicle_type") vehicleType!: string | null;
+  @text("vehicle_model") vehicleModel!: string | null;
   @text("pickup_location") pickupLocation!: string | null;
   @text("dropoff_location") dropoffLocation!: string | null;
   @date("rental_start_date_time") rentalStartDateTime!: Date | null;
   @date("rental_end_date_time") rentalEndDateTime!: Date | null;
   @text("booking_reference") bookingReference!: string | null;
+  @text("booking_status") bookingStatus!: string | null;
   @text("price") price!: string | null;
+  @text("website_address") websiteAddress!: string | null;
+  @text("contact_number") contactNumber!: string | null;
+  @text("notes") notes!: string | null;
 
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
