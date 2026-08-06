@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Linking } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { CafeRestaurantDetailsDto } from "../../../../../types/TravelDto";
 import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
-
+import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 interface CafeRestaurantDetailsCardProps {
   data: CafeRestaurantDetailsDto;
 }
@@ -19,58 +19,6 @@ const handleCall = (phone: string) => {
   if (phone) {
     Linking.openURL(`tel:${phone}`).catch((err) => console.error("Failed to make call", err));
   }
-};
-
-const Field = ({
-  label,
-  value,
-  icon,
-  onPress,
-  isLink,
-}: {
-  label: string;
-  value?: string | number | null;
-  icon?: string;
-  onPress?: () => void;
-  isLink?: boolean;
-}) => {
-  if (value === undefined || value === null || String(value).trim() === "") return null;
-
-  return (
-    <View className="flex-row items-start mb-3 gap-6">
-      {icon ? (
-        <View
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Icon name={icon as any} size={24} color={"#fffefe"} />
-        </View>
-      ) : null}
-      <View className="flex-1 pr-2xl">
-        <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
-        {onPress ? (
-          <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
-            <Text
-              className="text-lg font-medium"
-              numberOfLines={1}
-              style={{
-                color: "#ffffff",
-                textDecorationLine: isLink ? "underline" : "none",
-                opacity: 0.6,
-              }}
-            >
-              {value}
-            </Text>
-            {isLink && <Icon name="open-in-new" size={16} color={"#FFFFFF"} style={{ opacity: 0.6 }} />}
-          </TouchableOpacity>
-        ) : (
-          <Text className="text-lg font-semibold text-white opacity-60">{value}</Text>
-        )}
-      </View>
-    </View>
-  );
 };
 
 export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps> = ({ data }) => {

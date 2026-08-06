@@ -47,62 +47,7 @@ const handleCall = (phone: string) => {
   }
 };
 
-const Field = ({
-  label,
-  value,
-  icon,
-  onPress,
-  isLink,
-  showBorder = true,
-}: {
-  label: string;
-  value?: string | number | null;
-  icon?: string;
-  onPress?: () => void;
-  isLink?: boolean;
-  showBorder?: boolean;
-}) => {
-  if (value === undefined || value === null || String(value).trim() === "") return null;
-
-  return (
-    <View className="flex-row items-start pr-xl gap-6 ">
-      {icon ? (
-        <View
-          style={{
-            // backgroundColor:"white",
-            // padding: 12,
-            // borderRadius: 12,
-            // width: 40,
-            // height: 40,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Icon name={icon as any} size={24} color={"#fffefe"} />
-        </View>
-      ) : null}
-      <View className={`flex-1 ${showBorder ? "border-b border-[#388052]" : ""} pb-3`} >
-        <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
-        {onPress ? (
-          <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
-            <Text
-              className="text-lg font-medium text-white/60"
-              style={{
-                // color: isLink ? hikeColor : "#182230",
-                textDecorationLine: isLink ? "underline" : "none",
-              }}
-            >
-              {value}
-            </Text>
-            {isLink && <Icon name="open-in-new" size={16} color={"#016630"} />}
-          </TouchableOpacity>
-        ) : (
-          <Text className="text-lg font-semibold text-white/60">{value}</Text>
-        )}
-      </View>
-    </View>
-  );
-};
+import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
 export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ data }) => {
   const { colors } = useTheme();
@@ -228,6 +173,8 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
             label="Contact Person / number"
             value={`${data.contactPerson} / ${data.contactNumber}`} 
             icon="person"
+            showBorder={true}
+            borderColor="border-[#388052]"
             onPress={data.contactNumber ? () => handleCall(data.contactNumber!) : undefined}
           />
           <Field
@@ -235,6 +182,8 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
             value={data.reservationLink}
             icon="book-online"
             isLink
+            showBorder={true}
+            borderColor="border-[#388052]"
             onPress={data.reservationLink ? () => handleOpenLink(data.reservationLink!) : undefined}
           />
           <Field

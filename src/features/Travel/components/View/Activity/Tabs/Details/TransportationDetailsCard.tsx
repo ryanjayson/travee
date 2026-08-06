@@ -19,51 +19,7 @@ const handleOpenLink = (url: string) => {
   }
 };
 
-const Field = ({
-  label,
-  value,
-  icon,
-  onPress,
-  isLink,
-}: {
-  label: string;
-  value?: string | number | null;
-  icon?: string;
-  onPress?: () => void;
-  isLink?: boolean;
-}) => {
-  if (value === undefined || value === null || String(value).trim() === "") return null;
-
-  return (
-    <View className="flex-row items-start mb-3 gap-6">
-      {icon ? (
-        <View style={{ alignItems: "center", justifyContent: "center" }}>
-          <Icon name={icon as any} size={24} color={"#fffefe"} />
-        </View>
-      ) : null}
-      <View className="flex-1">
-        <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">{label}</Text>
-        {onPress ? (
-          <TouchableOpacity onPress={onPress} activeOpacity={0.7} accessibilityRole="button" className="flex-row items-center gap-1">
-            <Text
-              className="text-lg font-medium"
-              style={{
-                color: "#ffffff",
-                textDecorationLine: isLink ? "underline" : "none",
-                opacity: 0.6,
-              }}
-            >
-              {value}
-            </Text>
-            {isLink && <Icon name="open-in-new" size={16} color={"#005d69"} />}
-          </TouchableOpacity>
-        ) : (
-          <Text className="text-lg font-semibold text-white opacity-60">{value}</Text>
-        )}
-      </View>
-    </View>
-  );
-};
+import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
 export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps> = ({ data }) => {
   const { colors } = useTheme();
