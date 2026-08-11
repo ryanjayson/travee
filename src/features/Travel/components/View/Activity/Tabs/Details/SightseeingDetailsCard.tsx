@@ -49,7 +49,7 @@ export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ 
                   {data.address}
                 </Text>
               </TouchableOpacity>
-              <MapboxAddressMap address={data.address} title={data.attractionName} height={180} />
+              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.attractionName} height={180} />
             </>
           ) : null}
         </View>
@@ -65,7 +65,7 @@ export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ 
             icon="money"
             isLink
           />
-           <Field
+          <Field
             label="Website"
             value={data.websiteAddress}
             icon="language"

@@ -145,6 +145,7 @@ export interface AccomodationDetailsDto {
   activityId?: string;
   accomodationName: string;
   address?: string | null;
+  destinationAddressData?: DestinationDto;
   checkinDateTime: Date | string;
   checkoutDateTime?: Date | string | null;
   websiteAddress?: string | null;
@@ -160,6 +161,7 @@ export interface CafeRestaurantDetailsDto {
   activityId?: string;
   restaurantName: string;
   address?: string | null;
+  destinationAddressData?: DestinationDto;
   cuisine?: string | null;
   priceRange?: string | null;
   reservationLink?: string | null;
@@ -172,6 +174,7 @@ export interface NatureDetailsDto {
   activityId?: string;
   spotName: string;
   address?: string | null;
+  destinationAddressData?: DestinationDto;
   subType?: string | null; // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
   entryFee?: string | null;
 }
@@ -181,6 +184,7 @@ export interface ShoppingDetailsDto {
   activityId?: string;
   venueName: string;
   address?: string | null;
+  destinationAddressData?: DestinationDto;
   subType?: string | null; // spa, market, store, atm, bank, pharmacy, gas_station
   websiteAddress?: string | null;
 }
@@ -190,6 +194,7 @@ export interface EntertainmentDetailsDto {
   activityId?: string;
   venueName: string;
   address?: string | null;
+  destinationAddressData?: DestinationDto;
   subType?: string | null; // park, museum, cinema, stadium, zoo, concert, gym
   websiteAddress?: string | null;
   ticketPrice?: string | null;
@@ -227,6 +232,7 @@ export interface SightseeingDetailsDto {
   activityId?: string;
   attractionName: string;
   address?: string | null;
+  destinationAddressData?: DestinationDto;
   entryFee?: string | null;
   websiteAddress?: string | null;
 }
@@ -252,6 +258,7 @@ export interface HikeOrCampDetailsDto {
   activityId?: string;
   trailOrSiteName: string;
   address?: string | null;
+  destinationAddressData?: DestinationDto;
   subType?: string | null; // hike, camp, both
   estimatedDistanceKm?: string | null;
   campsiteName?: string | null;
@@ -281,6 +288,7 @@ export interface MeetupDetailsDto {
   activityId?: string;
   venueName: string;
   address?: string | null;
+  destinationAddressData?: DestinationDto;
   hostOrOrganizer?: string | null;
   numberOfPeople?: string | null;
   meetupType?: string | null; // casual, business, group ride, etc.
@@ -292,6 +300,7 @@ export interface RideRentalDetailsDto {
   activityId?: string;
   providerName: string;
   address?: string | null;
+  destinationAddressData?: DestinationDto;
   vehicleType?: string | null; // RV, yacht, motorbike, car, bike
   vehicleModel?: string | null;
   pickupLocation?: string | null;

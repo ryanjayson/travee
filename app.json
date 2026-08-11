@@ -47,7 +47,11 @@
         {
           "faceIDPermission": "Allow $(PRODUCT_NAME) to use Face ID."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-secure-store",
+      "expo-sharing",
+      "expo-sqlite"
     ]
   }
 }

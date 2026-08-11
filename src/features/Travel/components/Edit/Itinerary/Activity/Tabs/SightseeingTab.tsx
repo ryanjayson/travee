@@ -12,7 +12,7 @@ interface SightseeingTabProps {
   handleChange: any;
   handleBlur: any;
   setFieldValue: any;
-  onOpenPoiModal: (category: PoiCategory) => void;
+  onOpenPoiModal: (category: PoiCategory, targetField?: "attractionName" | "address") => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
   onPressDate?: () => void;
@@ -70,6 +70,14 @@ export default function SightseeingTab({
           value={values.sightseeingDetails?.address || ""}
           onChangeText={handleChange("sightseeingDetails.address")}
           onBlur={handleBlur("sightseeingDetails.address")}
+          right={
+            <TextInput.Icon
+              style={{ backgroundColor: "#F2F4F7" }}
+              icon="map-marker-radius-outline"
+              color="#263f69"
+              onPress={() => onOpenPoiModal("entertainmentAndRecreation", "address")}
+            />
+          }
         />
       </View>
 

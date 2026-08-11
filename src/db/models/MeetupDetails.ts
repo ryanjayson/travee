@@ -11,6 +11,7 @@ export default class MeetupDetails extends Model {
 
   @text("venue_name") venueName!: string;
   @text("address") address!: string | null;
+  @text("destination_address_data") destinationAddressData!: string | null;
   @text("host_or_organizer") hostOrOrganizer!: string | null;
   @text("number_of_people") numberOfPeople!: string | null;
   @text("meetup_type") meetupType!: string | null;

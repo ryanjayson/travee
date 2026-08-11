@@ -50,7 +50,7 @@ export const ShoppingDetailsCard: React.FC<ShoppingDetailsCardProps> = ({ data }
                 </Text>
                 <Icon name="open-in-new" size={16} color={"#FFFFFF"} />
               </TouchableOpacity>
-              <MapboxAddressMap address={data.address} title={data.venueName} height={180} />
+              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.venueName} height={180} />
             </>
           ) : null}
         </View>

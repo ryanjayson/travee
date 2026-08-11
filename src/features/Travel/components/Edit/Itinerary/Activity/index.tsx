@@ -33,7 +33,8 @@ import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItem
 import { useUpdateSectionMutation } from "../../../../hooks/useSection";
 import { useTravelPlan } from "../../../../hooks/useTravel";
 import { Attachment, DestinationDto, Images, ItineraryActivity } from "../../../../types/TravelDto";
-import PoiLookupModal, { MapboxPoi } from "../../../Lookups/PoiLookupModal";
+import { MapboxPoi } from "../../../Lookups/PoiLookupModal";
+import OsmPoiLookupModal from "../../../Lookups/OsmPoiLookupModal";
 import { MapboxPlace } from "../../../MapboxDestinationSelector";
 import MapboxDestinationSelectorModal from "../../../MapboxDestinationSelector/Modal";
 import DateTime from "./DateTime";
@@ -109,6 +110,7 @@ export interface ActivityFormValues {
   accomodationDetails?: {
     accomodationName: string;
     address?: string | null;
+    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     checkinDateTime: Date | string | null;
     checkoutDateTime?: Date | string | null;
     websiteAddress?: string | null;
@@ -121,6 +123,7 @@ export interface ActivityFormValues {
   cafeRestaurantDetails?: {
     restaurantName: string;
     address?: string | null;
+    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     cuisine?: string | null;
     priceRange?: string | null;
     reservationLink?: string | null;
@@ -130,18 +133,21 @@ export interface ActivityFormValues {
   natureDetails?: {
     spotName: string;
     address?: string | null;
+    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     subType?: string | null;
     entryFee?: string | null;
   } | null;
   shoppingDetails?: {
     venueName: string;
     address?: string | null;
+    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     subType?: string | null;
     websiteAddress?: string | null;
   } | null;
   entertainmentDetails?: {
     venueName: string;
     address?: string | null;
+    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     subType?: string | null;
     websiteAddress?: string | null;
     ticketPrice?: string | null;
@@ -170,6 +176,7 @@ export interface ActivityFormValues {
   sightseeingDetails?: {
     attractionName: string;
     address?: string | null;
+    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     entryFee?: string | null;
     websiteAddress?: string | null;
   } | null;
@@ -186,6 +193,7 @@ export interface ActivityFormValues {
   hikeOrCampDetails?: {
     trailOrSiteName: string;
     address?: string | null;
+    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     subType?: string | null;
     estimatedDistanceKm?: string | null;
     campsiteName?: string | null;
@@ -209,6 +217,7 @@ export interface ActivityFormValues {
   meetupDetails?: {
     venueName: string;
     address?: string | null;
+    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     hostOrOrganizer?: string | null;
     numberOfPeople?: string | null;
     meetupType?: string | null;
@@ -217,6 +226,7 @@ export interface ActivityFormValues {
   rideRentalDetails?: {
     providerName?: string | null;
     address?: string | null;
+    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     vehicleType?: string | null;
     vehicleModel?: string | null;
     pickupLocation?: string | null;
@@ -771,6 +781,7 @@ const EditActivity = ({
           ? {
             accomodationName: values.accomodationDetails.accomodationName,
             address: values.accomodationDetails.address || null,
+            destinationAddressData: values.accomodationDetails.destinationAddressData ?? null,
             checkinDateTime: values.accomodationDetails.checkinDateTime
               ? new Date(values.accomodationDetails.checkinDateTime)
               : new Date(),
@@ -789,6 +800,7 @@ const EditActivity = ({
           ? {
             restaurantName: values.cafeRestaurantDetails.restaurantName,
             address: values.cafeRestaurantDetails.address || null,
+            destinationAddressData: values.cafeRestaurantDetails.destinationAddressData ?? null,
             cuisine: values.cafeRestaurantDetails.cuisine || null,
             priceRange: values.cafeRestaurantDetails.priceRange || null,
             reservationLink: values.cafeRestaurantDetails.reservationLink || null,
@@ -800,6 +812,7 @@ const EditActivity = ({
           ? {
             spotName: values.natureDetails.spotName,
             address: values.natureDetails.address || null,
+            destinationAddressData: values.natureDetails.destinationAddressData ?? null,
             subType: values.natureDetails.subType || null,
             entryFee: values.natureDetails.entryFee || null,
           }
@@ -808,6 +821,7 @@ const EditActivity = ({
           ? {
             venueName: values.shoppingDetails.venueName,
             address: values.shoppingDetails.address || null,
+            destinationAddressData: values.shoppingDetails.destinationAddressData ?? null,
             subType: values.shoppingDetails.subType || null,
             websiteAddress: values.shoppingDetails.websiteAddress || null,
           }
@@ -816,6 +830,7 @@ const EditActivity = ({
           ? {
             venueName: values.entertainmentDetails.venueName,
             address: values.entertainmentDetails.address || null,
+            destinationAddressData: values.entertainmentDetails.destinationAddressData ?? null,
             subType: values.entertainmentDetails.subType || null,
             websiteAddress: values.entertainmentDetails.websiteAddress || null,
             ticketPrice: values.entertainmentDetails.ticketPrice || null,
@@ -854,6 +869,7 @@ const EditActivity = ({
           ? {
             attractionName: values.sightseeingDetails.attractionName,
             address: values.sightseeingDetails.address || null,
+            destinationAddressData: values.sightseeingDetails.destinationAddressData ?? null,
             entryFee: values.sightseeingDetails.entryFee || null,
             websiteAddress: values.sightseeingDetails.websiteAddress || null,
           }
@@ -878,6 +894,7 @@ const EditActivity = ({
           ? {
             trailOrSiteName: values.hikeOrCampDetails.trailOrSiteName,
             address: values.hikeOrCampDetails.address || null,
+            destinationAddressData: values.hikeOrCampDetails.destinationAddressData ?? null,
             subType: values.hikeOrCampDetails.subType || null,
             estimatedDistanceKm: values.hikeOrCampDetails.estimatedDistanceKm || null,
             campsiteName: values.hikeOrCampDetails.campsiteName || null,
@@ -919,6 +936,7 @@ const EditActivity = ({
           ? {
               providerName: values.rideRentalDetails.providerName,
               address: values.rideRentalDetails.address || null,
+              destinationAddressData: values.rideRentalDetails.destinationAddressData ?? null,
               vehicleType: values.rideRentalDetails.vehicleType || null,
               vehicleModel: values.rideRentalDetails.vehicleModel || null,
               pickupLocation: values.rideRentalDetails.pickupLocation || null,
@@ -1043,6 +1061,7 @@ const EditActivity = ({
       address: (itineraryActivity?.accomodationDetails?.address || "").trim() !== ""
         ? itineraryActivity.accomodationDetails.address
         : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.destination || "" : ""),
+      destinationAddressData: itineraryActivity?.accomodationDetails?.destinationAddressData ?? null,
       checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime
         ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
         : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.startDate
@@ -1063,6 +1082,7 @@ const EditActivity = ({
     cafeRestaurantDetails: {
       restaurantName: itineraryActivity?.cafeRestaurantDetails?.restaurantName || "",
       address: itineraryActivity?.cafeRestaurantDetails?.address || "",
+      destinationAddressData: itineraryActivity?.cafeRestaurantDetails?.destinationAddressData ?? null,
       cuisine: itineraryActivity?.cafeRestaurantDetails?.cuisine || "",
       priceRange: itineraryActivity?.cafeRestaurantDetails?.priceRange || "",
       reservationLink: itineraryActivity?.cafeRestaurantDetails?.reservationLink || "",
@@ -1072,18 +1092,21 @@ const EditActivity = ({
     natureDetails: {
       spotName: itineraryActivity?.natureDetails?.spotName || "",
       address: itineraryActivity?.natureDetails?.address || "",
+      destinationAddressData: itineraryActivity?.natureDetails?.destinationAddressData ?? null,
       subType: itineraryActivity?.natureDetails?.subType || null,
       entryFee: itineraryActivity?.natureDetails?.entryFee || "",
     },
     shoppingDetails: {
       venueName: itineraryActivity?.shoppingDetails?.venueName || "",
       address: itineraryActivity?.shoppingDetails?.address || "",
+      destinationAddressData: itineraryActivity?.shoppingDetails?.destinationAddressData ?? null,
       subType: itineraryActivity?.shoppingDetails?.subType || null,
       websiteAddress: itineraryActivity?.shoppingDetails?.websiteAddress || "",
     },
     entertainmentDetails: {
       venueName: itineraryActivity?.entertainmentDetails?.venueName || "",
       address: itineraryActivity?.entertainmentDetails?.address || "",
+      destinationAddressData: itineraryActivity?.entertainmentDetails?.destinationAddressData ?? null,
       subType: itineraryActivity?.entertainmentDetails?.subType || null,
       websiteAddress: itineraryActivity?.entertainmentDetails?.websiteAddress || "",
       ticketPrice: itineraryActivity?.entertainmentDetails?.ticketPrice || "",
@@ -1124,6 +1147,7 @@ const EditActivity = ({
     sightseeingDetails: {
       attractionName: itineraryActivity?.sightseeingDetails?.attractionName || "",
       address: itineraryActivity?.sightseeingDetails?.address || "",
+      destinationAddressData: itineraryActivity?.sightseeingDetails?.destinationAddressData ?? null,
       entryFee: itineraryActivity?.sightseeingDetails?.entryFee || "",
       websiteAddress: itineraryActivity?.sightseeingDetails?.websiteAddress || "",
     },
@@ -1142,6 +1166,7 @@ const EditActivity = ({
     hikeOrCampDetails: {
       trailOrSiteName: itineraryActivity?.hikeOrCampDetails?.trailOrSiteName || "",
       address: itineraryActivity?.hikeOrCampDetails?.address || "",
+      destinationAddressData: itineraryActivity?.hikeOrCampDetails?.destinationAddressData ?? null,
       subType: itineraryActivity?.hikeOrCampDetails?.subType || null,
       estimatedDistanceKm: itineraryActivity?.hikeOrCampDetails?.estimatedDistanceKm || "",
       campsiteName: itineraryActivity?.hikeOrCampDetails?.campsiteName || "",
@@ -1169,6 +1194,7 @@ const EditActivity = ({
     meetupDetails: {
       venueName: itineraryActivity?.meetupDetails?.venueName || "",
       address: itineraryActivity?.meetupDetails?.address || "",
+      destinationAddressData: itineraryActivity?.meetupDetails?.destinationAddressData ?? null,
       hostOrOrganizer: itineraryActivity?.meetupDetails?.hostOrOrganizer || "",
       numberOfPeople: itineraryActivity?.meetupDetails?.numberOfPeople || "",
       meetupType: itineraryActivity?.meetupDetails?.meetupType || null,
@@ -1177,6 +1203,7 @@ const EditActivity = ({
     rideRentalDetails: {
       providerName: itineraryActivity?.rideRentalDetails?.providerName || "",
       address: itineraryActivity?.rideRentalDetails?.address || "",
+      destinationAddressData: itineraryActivity?.rideRentalDetails?.destinationAddressData ?? null,
       vehicleType: itineraryActivity?.rideRentalDetails?.vehicleType || null,
       vehicleModel: itineraryActivity?.rideRentalDetails?.vehicleModel || "",
       pickupLocation: itineraryActivity?.rideRentalDetails?.pickupLocation || "",
@@ -1471,8 +1498,8 @@ const EditActivity = ({
                     handleChange={handleChange}
                     handleBlur={handleBlur}
                     setFieldValue={setFieldValue}
-                    onOpenPoiModal={(category) => {
-                      setPoiTargetType("sightseeing");
+                    onOpenPoiModal={(category, targetField) => {
+                      setPoiTargetType(targetField === "address" ? "sightseeing_address" : "sightseeing");
                       setPoiModalInitialCategory(category);
                       setShowPoiModal(true);
                     }}
@@ -2007,7 +2034,7 @@ const EditActivity = ({
               transparent
               onRequestClose={() => setShowPoiModal(false)}
             >
-              <PoiLookupModal
+              <OsmPoiLookupModal
                 visible={showPoiModal}
                 onClose={() => setShowPoiModal(false)}
                 initialCategory={poiModalInitialCategory}
@@ -2020,6 +2047,13 @@ const EditActivity = ({
                     if (poi.address) setFieldValue("accomodationDetails.address", poi.address);
                     if (poi.website) setFieldValue("accomodationDetails.websiteAddress", poi.website);
                     if (poi.phone) setFieldValue("accomodationDetails.contactNumber", poi.phone);
+                    setFieldValue("accomodationDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
                   } else if (poiTargetType === "cafeRestaurant") {
                     setFieldValue("cafeRestaurantDetails.restaurantName", poi.name);
                     if (poi.address) setFieldValue("cafeRestaurantDetails.address", poi.address);
@@ -2027,36 +2061,102 @@ const EditActivity = ({
                     if (poi.phone) setFieldValue("cafeRestaurantDetails.contactNumber", poi.phone);
                     const cuisine = getCuisineFromCategories(poi.poiCategories || []);
                     if (cuisine) setFieldValue("cafeRestaurantDetails.cuisine", cuisine);
+                    setFieldValue("cafeRestaurantDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
                   } else if (poiTargetType === "nature") {
                     setFieldValue("natureDetails.spotName", poi.name);
                     if (poi.address) setFieldValue("natureDetails.address", poi.address);
                     const subType = matchNatureSubtype(poi);
                     if (subType) setFieldValue("natureDetails.subType", subType);
+                    setFieldValue("natureDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
                   } else if (poiTargetType === "shoppingDetails") {
                     setFieldValue("shoppingDetails.venueName", poi.name);
                     if (poi.address) setFieldValue("shoppingDetails.address", poi.address);
                     if (poi.website) setFieldValue("shoppingDetails.websiteAddress", poi.website);
                     const subType = matchShoppingSubtype(poi);
                     if (subType) setFieldValue("shoppingDetails.subType", subType);
+                    setFieldValue("shoppingDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
                   } else if (poiTargetType === "entertainmentDetails") {
                     setFieldValue("entertainmentDetails.venueName", poi.name);
                     if (poi.address) setFieldValue("entertainmentDetails.address", poi.address);
                     if (poi.website) setFieldValue("entertainmentDetails.websiteAddress", poi.website);
                     const subType = matchEntertainmentSubtype(poi);
                     if (subType) setFieldValue("entertainmentDetails.subType", subType);
+                    setFieldValue("entertainmentDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
                   } else if (poiTargetType === "sightseeing") {
                     setFieldValue("sightseeingDetails.attractionName", poi.name);
                     if (poi.address) setFieldValue("sightseeingDetails.address", poi.address);
                     if (poi.website) setFieldValue("sightseeingDetails.websiteAddress", poi.website);
+                    setFieldValue("sightseeingDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
+                  } else if (poiTargetType === "sightseeing_address") {
+                    // Address-field search: populate address + coordinates only, leave attraction name intact
+                    if (poi.address) setFieldValue("sightseeingDetails.address", poi.address);
+                    setFieldValue("sightseeingDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
                   } else if (poiTargetType === "hikeOrCamp") {
                     setFieldValue("hikeOrCampDetails.trailOrSiteName", poi.name);
                     if (poi.address) setFieldValue("hikeOrCampDetails.address", poi.address);
+                    setFieldValue("hikeOrCampDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
                   } else if (poiTargetType === "meetup") {
                     setFieldValue("meetupDetails.venueName", poi.name);
                     if (poi.address) setFieldValue("meetupDetails.address", poi.address);
+                    setFieldValue("meetupDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
                   } else if (poiTargetType === "rideRental") {
                     setFieldValue("rideRentalDetails.providerName", poi.name);
                     if (poi.address) setFieldValue("rideRentalDetails.address", poi.address);
+                    setFieldValue("rideRentalDetails.destinationAddressData", {
+                      id: poi.id,
+                      coordinates: {
+                        latitude: poi.coordinates.latitude,
+                        longitude: poi.coordinates.longitude,
+                      },
+                    });
                   }
 
                   // Auto-populate the activity's main destination and coordinates if they are empty

@@ -86,7 +86,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
                   {data.address}
                 </Text>
               </TouchableOpacity>
-              <MapboxAddressMap address={data.address} title={data.accomodationName} height={180} />
+              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.accomodationName} height={180} />
             </>
           ) : null}
         </View>

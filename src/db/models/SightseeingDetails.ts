@@ -11,6 +11,7 @@ export default class SightseeingDetails extends Model {
 
   @text("attraction_name") attractionName!: string;
   @text("address") address!: string | null;
+  @text("destination_address_data") destinationAddressData!: string | null;
   @text("entry_fee") entryFee!: string | null;
   @text("website_address") websiteAddress!: string | null;
 

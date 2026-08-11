@@ -11,6 +11,7 @@ export default class ShoppingDetails extends Model {
 
   @text("venue_name") venueName!: string;
   @text("address") address!: string | null;
+  @text("destination_address_data") destinationAddressData!: string | null;
   @text("sub_type") subType!: string | null;
   @text("website_address") websiteAddress!: string | null;
 

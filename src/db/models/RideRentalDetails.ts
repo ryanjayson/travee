@@ -11,6 +11,7 @@ export default class RideRentalDetails extends Model {
 
   @text("provider_name") providerName!: string;
   @text("address") address!: string | null;
+  @text("destination_address_data") destinationAddressData!: string | null;
   @text("vehicle_type") vehicleType!: string | null;
   @text("vehicle_model") vehicleModel!: string | null;
   @text("pickup_location") pickupLocation!: string | null;

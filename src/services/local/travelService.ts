@@ -33,6 +33,7 @@ export const fetchLocalAccomodationDetails = async (activityId: string): Promise
         activityId: a.activity.id,
         accomodationName: a.accomodationName,
         address: a.address,
+        destinationAddressData: safeJsonParse(a.destinationAddressData, undefined),
         checkinDateTime: a.checkinDateTime,
         checkoutDateTime: a.checkoutDateTime,
         websiteAddress: a.websiteAddress,
@@ -92,6 +93,7 @@ export const fetchLocalSightseeingDetails = async (activityId: string): Promise<
         activityId: s.activity.id,
         attractionName: s.attractionName,
         address: s.address,
+        destinationAddressData: s.destinationAddressData ? JSON.parse(s.destinationAddressData) : null,
         entryFee: s.entryFee,
         websiteAddress: s.websiteAddress,
       };
@@ -115,6 +117,7 @@ export const fetchLocalHikeOrCampDetails = async (activityId: string): Promise<a
         activityId: h.activity.id,
         trailOrSiteName: h.trailOrSiteName,
         address: h.address,
+        destinationAddressData: safeJsonParse(h.destinationAddressData, undefined),
         subType: h.subType,
         estimatedDistanceKm: h.estimatedDistanceKm,
         campsiteName: h.campsiteName,
@@ -146,6 +149,7 @@ export const fetchLocalCafeRestaurantDetails = async (activityId: string): Promi
         activityId: item.activity.id,
         restaurantName: item.restaurantName,
         address: item.address,
+        destinationAddressData: safeJsonParse(item.destinationAddressData, undefined),
         cuisine: item.cuisine,
         priceRange: item.priceRange,
         reservationLink: item.reservationLink,
@@ -172,6 +176,7 @@ export const fetchLocalNatureDetails = async (activityId: string): Promise<any |
         activityId: item.activity.id,
         spotName: item.spotName,
         address: item.address,
+        destinationAddressData: safeJsonParse(item.destinationAddressData, undefined),
         subType: item.subType,
         entryFee: item.entryFee,
       };
@@ -195,6 +200,7 @@ export const fetchLocalShoppingDetails = async (activityId: string): Promise<any
         activityId: item.activity.id,
         venueName: item.venueName,
         address: item.address,
+        destinationAddressData: safeJsonParse(item.destinationAddressData, undefined),
         subType: item.subType,
         websiteAddress: item.websiteAddress,
       };
@@ -218,6 +224,7 @@ export const fetchLocalEntertainmentDetails = async (activityId: string): Promis
         activityId: item.activity.id,
         venueName: item.venueName,
         address: item.address,
+        destinationAddressData: safeJsonParse(item.destinationAddressData, undefined),
         subType: item.subType,
         websiteAddress: item.websiteAddress,
         ticketPrice: item.ticketPrice,
@@ -367,6 +374,7 @@ export const fetchLocalMeetupDetails = async (activityId: string): Promise<any |
         activityId: item.activity.id,
         venueName: item.venueName,
         address: item.address,
+        destinationAddressData: safeJsonParse(item.destinationAddressData, undefined),
         hostOrOrganizer: item.hostOrOrganizer,
         numberOfPeople: item.numberOfPeople,
         meetupType: item.meetupType,
@@ -392,6 +400,7 @@ export const fetchLocalRideRentalDetails = async (activityId: string): Promise<a
         activityId: item.activity.id,
         providerName: item.providerName,
         address: item.address,
+        destinationAddressData: safeJsonParse(item.destinationAddressData, undefined),
         vehicleType: item.vehicleType,
         vehicleModel: item.vehicleModel,
         pickupLocation: item.pickupLocation,
@@ -588,6 +597,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           accomodationName: a.accomodationName,
           address: a.address,
+          destinationAddressData: a.destinationAddressData ? JSON.parse(a.destinationAddressData) : null,
           checkinDateTime: a.checkinDateTime,
           checkoutDateTime: a.checkoutDateTime,
           websiteAddress: a.websiteAddress,
@@ -608,6 +618,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           attractionName: s.attractionName,
           address: s.address,
+          destinationAddressData: s.destinationAddressData ? JSON.parse(s.destinationAddressData) : null,
           entryFee: s.entryFee,
           websiteAddress: s.websiteAddress,
         });
@@ -623,6 +634,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           trailOrSiteName: h.trailOrSiteName,
           address: h.address,
+          destinationAddressData: h.destinationAddressData ? JSON.parse(h.destinationAddressData) : null,
           subType: h.subType,
           estimatedDistanceKm: h.estimatedDistanceKm,
           campsiteName: h.campsiteName,
@@ -646,6 +658,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           restaurantName: item.restaurantName,
           address: item.address,
+          destinationAddressData: item.destinationAddressData ? JSON.parse(item.destinationAddressData) : null,
           cuisine: item.cuisine,
           priceRange: item.priceRange,
           reservationLink: item.reservationLink,
@@ -664,6 +677,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           spotName: item.spotName,
           address: item.address,
+          destinationAddressData: item.destinationAddressData ? JSON.parse(item.destinationAddressData) : null,
           subType: item.subType,
           entryFee: item.entryFee,
         });
@@ -679,6 +693,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           venueName: item.venueName,
           address: item.address,
+          destinationAddressData: item.destinationAddressData ? JSON.parse(item.destinationAddressData) : null,
           subType: item.subType,
           websiteAddress: item.websiteAddress,
         });
@@ -694,6 +709,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           venueName: item.venueName,
           address: item.address,
+          destinationAddressData: item.destinationAddressData ? JSON.parse(item.destinationAddressData) : null,
           subType: item.subType,
           websiteAddress: item.websiteAddress,
           ticketPrice: item.ticketPrice,
@@ -788,6 +804,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           venueName: item.venueName,
           address: item.address,
+          destinationAddressData: item.destinationAddressData ? JSON.parse(item.destinationAddressData) : null,
           hostOrOrganizer: item.hostOrOrganizer,
           numberOfPeople: item.numberOfPeople,
           meetupType: item.meetupType,
@@ -805,6 +822,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           providerName: item.providerName,
           address: item.address,
+          destinationAddressData: item.destinationAddressData ? JSON.parse(item.destinationAddressData) : null,
           vehicleType: item.vehicleType,
           pickupLocation: item.pickupLocation,
           dropoffLocation: item.dropoffLocation,
@@ -1146,6 +1164,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(f, {
             accomodationName: activityData.accomodationDetails.accomodationName,
             address: activityData.accomodationDetails.address,
+            destinationAddressData: activityData.accomodationDetails.destinationAddressData
+              ? JSON.stringify(activityData.accomodationDetails.destinationAddressData)
+              : null,
             checkinDateTime: activityData.accomodationDetails.checkinDateTime ? new Date(activityData.accomodationDetails.checkinDateTime) : new Date(),
             checkoutDateTime: activityData.accomodationDetails.checkoutDateTime ? new Date(activityData.accomodationDetails.checkoutDateTime) : null,
             websiteAddress: activityData.accomodationDetails.websiteAddress,
@@ -1162,6 +1183,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(f, {
             accomodationName: activityData.accomodationDetails.accomodationName,
             address: activityData.accomodationDetails.address,
+            destinationAddressData: activityData.accomodationDetails.destinationAddressData
+              ? JSON.stringify(activityData.accomodationDetails.destinationAddressData)
+              : null,
             checkinDateTime: activityData.accomodationDetails.checkinDateTime ? new Date(activityData.accomodationDetails.checkinDateTime) : new Date(),
             checkoutDateTime: activityData.accomodationDetails.checkoutDateTime ? new Date(activityData.accomodationDetails.checkoutDateTime) : null,
             websiteAddress: activityData.accomodationDetails.websiteAddress,
@@ -1187,6 +1211,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(s, {
             attractionName: activityData.sightseeingDetails.attractionName,
             address: activityData.sightseeingDetails.address,
+            destinationAddressData: activityData.sightseeingDetails.destinationAddressData
+              ? JSON.stringify(activityData.sightseeingDetails.destinationAddressData)
+              : null,
             entryFee: activityData.sightseeingDetails.entryFee,
             websiteAddress: activityData.sightseeingDetails.websiteAddress,
           });
@@ -1197,6 +1224,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(s, {
             attractionName: activityData.sightseeingDetails.attractionName,
             address: activityData.sightseeingDetails.address,
+            destinationAddressData: activityData.sightseeingDetails.destinationAddressData
+              ? JSON.stringify(activityData.sightseeingDetails.destinationAddressData)
+              : null,
             entryFee: activityData.sightseeingDetails.entryFee,
             websiteAddress: activityData.sightseeingDetails.websiteAddress,
           });
@@ -1216,6 +1246,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(h, {
             trailOrSiteName: activityData.hikeOrCampDetails.trailOrSiteName,
             address: activityData.hikeOrCampDetails.address,
+            destinationAddressData: activityData.hikeOrCampDetails.destinationAddressData
+              ? JSON.stringify(activityData.hikeOrCampDetails.destinationAddressData)
+              : null,
             subType: activityData.hikeOrCampDetails.subType,
             estimatedDistanceKm: activityData.hikeOrCampDetails.estimatedDistanceKm,
             campsiteName: activityData.hikeOrCampDetails.campsiteName,
@@ -1234,6 +1267,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(h, {
             trailOrSiteName: activityData.hikeOrCampDetails.trailOrSiteName,
             address: activityData.hikeOrCampDetails.address,
+            destinationAddressData: activityData.hikeOrCampDetails.destinationAddressData
+              ? JSON.stringify(activityData.hikeOrCampDetails.destinationAddressData)
+              : null,
             subType: activityData.hikeOrCampDetails.subType,
             estimatedDistanceKm: activityData.hikeOrCampDetails.estimatedDistanceKm,
             campsiteName: activityData.hikeOrCampDetails.campsiteName,
@@ -1261,6 +1297,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(c, {
             restaurantName: activityData.cafeRestaurantDetails.restaurantName,
             address: activityData.cafeRestaurantDetails.address,
+            destinationAddressData: activityData.cafeRestaurantDetails.destinationAddressData
+              ? JSON.stringify(activityData.cafeRestaurantDetails.destinationAddressData)
+              : null,
             cuisine: activityData.cafeRestaurantDetails.cuisine,
             priceRange: activityData.cafeRestaurantDetails.priceRange,
             reservationLink: activityData.cafeRestaurantDetails.reservationLink,
@@ -1274,6 +1313,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(c, {
             restaurantName: activityData.cafeRestaurantDetails.restaurantName,
             address: activityData.cafeRestaurantDetails.address,
+            destinationAddressData: activityData.cafeRestaurantDetails.destinationAddressData
+              ? JSON.stringify(activityData.cafeRestaurantDetails.destinationAddressData)
+              : null,
             cuisine: activityData.cafeRestaurantDetails.cuisine,
             priceRange: activityData.cafeRestaurantDetails.priceRange,
             reservationLink: activityData.cafeRestaurantDetails.reservationLink,
@@ -1296,6 +1338,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(n, {
             spotName: activityData.natureDetails.spotName,
             address: activityData.natureDetails.address,
+            destinationAddressData: activityData.natureDetails.destinationAddressData
+              ? JSON.stringify(activityData.natureDetails.destinationAddressData)
+              : null,
             subType: activityData.natureDetails.subType,
             entryFee: activityData.natureDetails.entryFee,
           });
@@ -1306,6 +1351,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(n, {
             spotName: activityData.natureDetails.spotName,
             address: activityData.natureDetails.address,
+            destinationAddressData: activityData.natureDetails.destinationAddressData
+              ? JSON.stringify(activityData.natureDetails.destinationAddressData)
+              : null,
             subType: activityData.natureDetails.subType,
             entryFee: activityData.natureDetails.entryFee,
           });
@@ -1325,6 +1373,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(s, {
             venueName: activityData.shoppingDetails.venueName,
             address: activityData.shoppingDetails.address,
+            destinationAddressData: activityData.shoppingDetails.destinationAddressData
+              ? JSON.stringify(activityData.shoppingDetails.destinationAddressData)
+              : null,
             subType: activityData.shoppingDetails.subType,
             websiteAddress: activityData.shoppingDetails.websiteAddress,
           });
@@ -1335,6 +1386,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(s, {
             venueName: activityData.shoppingDetails.venueName,
             address: activityData.shoppingDetails.address,
+            destinationAddressData: activityData.shoppingDetails.destinationAddressData
+              ? JSON.stringify(activityData.shoppingDetails.destinationAddressData)
+              : null,
             subType: activityData.shoppingDetails.subType,
             websiteAddress: activityData.shoppingDetails.websiteAddress,
           });
@@ -1354,6 +1408,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(e, {
             venueName: activityData.entertainmentDetails.venueName,
             address: activityData.entertainmentDetails.address,
+            destinationAddressData: activityData.entertainmentDetails.destinationAddressData
+              ? JSON.stringify(activityData.entertainmentDetails.destinationAddressData)
+              : null,
             subType: activityData.entertainmentDetails.subType,
             websiteAddress: activityData.entertainmentDetails.websiteAddress,
             ticketPrice: activityData.entertainmentDetails.ticketPrice,
@@ -1366,6 +1423,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(e, {
             venueName: activityData.entertainmentDetails.venueName,
             address: activityData.entertainmentDetails.address,
+            destinationAddressData: activityData.entertainmentDetails.destinationAddressData
+              ? JSON.stringify(activityData.entertainmentDetails.destinationAddressData)
+              : null,
             subType: activityData.entertainmentDetails.subType,
             websiteAddress: activityData.entertainmentDetails.websiteAddress,
             ticketPrice: activityData.entertainmentDetails.ticketPrice,
@@ -1538,6 +1598,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(m, {
             venueName: activityData.meetupDetails.venueName,
             address: activityData.meetupDetails.address,
+            destinationAddressData: activityData.meetupDetails.destinationAddressData
+              ? JSON.stringify(activityData.meetupDetails.destinationAddressData)
+              : null,
             hostOrOrganizer: activityData.meetupDetails.hostOrOrganizer,
             numberOfPeople: activityData.meetupDetails.numberOfPeople,
             meetupType: activityData.meetupDetails.meetupType,
@@ -1550,6 +1613,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           Object.assign(m, {
             venueName: activityData.meetupDetails.venueName,
             address: activityData.meetupDetails.address,
+            destinationAddressData: activityData.meetupDetails.destinationAddressData
+              ? JSON.stringify(activityData.meetupDetails.destinationAddressData)
+              : null,
             hostOrOrganizer: activityData.meetupDetails.hostOrOrganizer,
             numberOfPeople: activityData.meetupDetails.numberOfPeople,
             meetupType: activityData.meetupDetails.meetupType,
@@ -1569,6 +1635,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
       const rentalPayload = {
         providerName: activityData.rideRentalDetails.providerName,
         address: activityData.rideRentalDetails.address || null,
+        destinationAddressData: activityData.rideRentalDetails.destinationAddressData
+          ? JSON.stringify(activityData.rideRentalDetails.destinationAddressData)
+          : null,
         vehicleType: activityData.rideRentalDetails.vehicleType || null,
         vehicleModel: activityData.rideRentalDetails.vehicleModel || null,
         pickupLocation: activityData.rideRentalDetails.pickupLocation || null,

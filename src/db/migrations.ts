@@ -581,5 +581,46 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 28,
+      steps: [
+        addColumns({
+          table: "sightseeing_details",
+          columns: [{ name: "destination_address_data", type: "string", isOptional: true }],
+        }),
+        addColumns({
+          table: "accomodation_details",
+          columns: [{ name: "destination_address_data", type: "string", isOptional: true }],
+        }),
+        addColumns({
+          table: "hike_or_camp_details",
+          columns: [{ name: "destination_address_data", type: "string", isOptional: true }],
+        }),
+        addColumns({
+          table: "cafe_restaurant_details",
+          columns: [{ name: "destination_address_data", type: "string", isOptional: true }],
+        }),
+        addColumns({
+          table: "nature_details",
+          columns: [{ name: "destination_address_data", type: "string", isOptional: true }],
+        }),
+        addColumns({
+          table: "shopping_details",
+          columns: [{ name: "destination_address_data", type: "string", isOptional: true }],
+        }),
+        addColumns({
+          table: "entertainment_details",
+          columns: [{ name: "destination_address_data", type: "string", isOptional: true }],
+        }),
+        addColumns({
+          table: "meetup_details",
+          columns: [{ name: "destination_address_data", type: "string", isOptional: true }],
+        }),
+        addColumns({
+          table: "ride_rental_details",
+          columns: [{ name: "destination_address_data", type: "string", isOptional: true }],
+        }),
+      ],
+    },
   ],
 });

@@ -11,6 +11,7 @@ export default class NatureDetails extends Model {
 
   @text("spot_name") spotName!: string;
   @text("address") address!: string | null;
+  @text("destination_address_data") destinationAddressData!: string | null;
   @text("sub_type") subType!: string | null;
   @text("entry_fee") entryFee!: string | null;
 

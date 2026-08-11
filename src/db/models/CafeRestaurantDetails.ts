@@ -11,6 +11,7 @@ export default class CafeRestaurantDetails extends Model {
 
   @text("restaurant_name") restaurantName!: string;
   @text("address") address!: string | null;
+  @text("destination_address_data") destinationAddressData!: string | null;
   @text("cuisine") cuisine!: string | null;
   @text("price_range") priceRange!: string | null;
   @text("reservation_link") reservationLink!: string | null;

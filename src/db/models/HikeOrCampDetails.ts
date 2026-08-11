@@ -11,6 +11,7 @@ export default class HikeOrCampDetails extends Model {
 
   @text("trail_or_site_name") trailOrSiteName!: string;
   @text("address") address!: string | null;
+  @text("destination_address_data") destinationAddressData!: string | null;
   @text("sub_type") subType!: string | null;
   @text("estimated_distance_km") estimatedDistanceKm!: string | null;
   @text("campsite_name") campsiteName!: string | null;
