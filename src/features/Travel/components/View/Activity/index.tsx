@@ -114,6 +114,10 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   const isImageViewerOpenRef = useRef(false);
   isImageViewerOpenRef.current = isImageViewerOpen;
 
+  const [isMapFullScreen, setIsMapFullScreen] = useState(false);
+  const isMapFullScreenRef = useRef(false);
+  isMapFullScreenRef.current = isMapFullScreen;
+
   // ─── Horizontal swipe for activity navigation ───────────────────────────────
   const { width: screenWidth } = Dimensions.get("window");
   const translateX = useRef(new Animated.Value(0)).current;
@@ -159,13 +163,13 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
     PanResponder.create({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gs) => {
-        if (isImageViewerOpenRef.current) return false;
+        if (isImageViewerOpenRef.current || isMapFullScreenRef.current) return false;
         // Only claim horizontal gestures, ignore vertical
         const isHorizontal = Math.abs(gs.dx) > Math.abs(gs.dy) && Math.abs(gs.dx) > 3;
         return isHorizontal && !isSwipeAnimating.current;
       },
       onMoveShouldSetPanResponderCapture: (_, gs) => {
-        if (isImageViewerOpenRef.current) return false;
+        if (isImageViewerOpenRef.current || isMapFullScreenRef.current) return false;
         const isHorizontal = Math.abs(gs.dx) > Math.abs(gs.dy) && Math.abs(gs.dx) > 5;
         return isHorizontal && !isSwipeAnimating.current;
       },
@@ -188,7 +192,6 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
         const VELOCITY_THRESHOLD = 0.15;
         const swipedLeft = gs.dx < -SWIPE_THRESHOLD || gs.vx < -VELOCITY_THRESHOLD;
         const swipedRight = gs.dx > SWIPE_THRESHOLD || gs.vx > VELOCITY_THRESHOLD;
-
         if (swipedLeft && hasNextRef.current) {
           // Slide content off to the left
           isSwipeAnimating.current = true;
@@ -230,6 +233,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
         }).start();
       },
     })
+
   ).current;
 
   const insets = useSafeAreaInsets();
@@ -312,10 +316,12 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => {
+        if (isMapFullScreenRef.current) return false;
         const touchStartRelativeY = evt.nativeEvent.pageY - (yOffset + snappedY.current);
         return touchStartRelativeY > -30 && touchStartRelativeY < 180;
       },
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
+        if (isMapFullScreenRef.current) return false;
         const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 8;
         if (!isVertical) return false;
 
@@ -323,6 +329,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
         return touchStartRelativeY > -30 && touchStartRelativeY < 180;
       },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
+        if (isMapFullScreenRef.current) return false;
         const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 5;
         if (!isVertical) return false;
 
@@ -492,7 +499,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
           <View style={{
             height: parentHeight, width: "100%",
           }}>
-            <DetailsTab itineraryActivity={itineraryActivity} />
+            <DetailsTab itineraryActivity={itineraryActivity} onFullScreenChange={setIsMapFullScreen} />
             {/* Animated Black Overlay */}
             <TouchableWithoutFeedback
               onPress={() => snapTo(SNAP_MIN)}

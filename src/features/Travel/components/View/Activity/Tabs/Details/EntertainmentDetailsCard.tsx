@@ -9,6 +9,7 @@ import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 
 interface EntertainmentDetailsCardProps {
   data: EntertainmentDetailsDto;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
 const entColor = activityIcons.find((icon) => icon.name === ActivityType.entertainmentAndRecreation)?.color || "#7B1FA2";
@@ -22,7 +23,7 @@ const handleOpenLink = (url: string) => {
 
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
-export const EntertainmentDetailsCard: React.FC<EntertainmentDetailsCardProps> = ({ data }) => {
+export const EntertainmentDetailsCard: React.FC<EntertainmentDetailsCardProps> = ({ data, onFullScreenChange }) => {
   const { colors } = useTheme();
 
   const handleCopy = (text: string, label: string) => {
@@ -59,7 +60,7 @@ export const EntertainmentDetailsCard: React.FC<EntertainmentDetailsCardProps> =
                   {data.address}
                 </Text>
               </TouchableOpacity>
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.venueName} height={180} />
+              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.venueName} height={180} onFullScreenChange={onFullScreenChange} />
             </>
           ) : null}
         </View>

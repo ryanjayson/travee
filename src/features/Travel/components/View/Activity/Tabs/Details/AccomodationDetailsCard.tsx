@@ -6,6 +6,7 @@ import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 
 interface AccomodationDetailsCardProps {
   data: AccomodationDetailsDto;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
 const safeFormatTime = (dateValue: Date | string | null | undefined) => {
@@ -37,21 +38,10 @@ const handleOpenLink = (url: string) => {
   }
 };
 
-const handleCall = (phone: string) => {
-  if (phone) {
-    Linking.openURL(`tel:${phone}`).catch((err) => console.error("Failed to make call", err));
-  }
-};
-
-const handleEmail = (email: string) => {
-  if (email) {
-    Linking.openURL(`mailto:${email}`).catch((err) => console.error("Failed to send email", err));
-  }
-};
 
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
-export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = ({ data }) => {
+export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = ({ data, onFullScreenChange }) => {
   const handleCopy = (text: string, label: string) => {
     if (!text) return;
     Clipboard.setString(text);
@@ -86,13 +76,14 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
                   {data.address}
                 </Text>
               </TouchableOpacity>
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.accomodationName} height={180} />
+
+              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.accomodationName} height={180} onFullScreenChange={onFullScreenChange} />
             </>
           ) : null}
         </View>
 
         {/* Check-in & Check-out Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#9c46ec]">
+        <View className="flex-row items-center justify-between py-4 border-t-2 border-dashed border-[#9c46ec]">
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Check-in
@@ -123,68 +114,29 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
         </View>
       </View>
 
-      {/* Stay Voucher Stub */}
-      <View className="p-2 pt-3">
-        {/* Row 1: Booking Reference & Website address */}
-        <View className="flex-row justify-between mb-4 gap-4">
-          {data.bookingReference && (
-
-            <View className="flex-1">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-                Booking Ref
-              </Text>
-              <TouchableOpacity
-                onPress={() => handleCopy(data.bookingReference || "", "Booking reference")}
-                className="flex-row items-center gap-1"
-                activeOpacity={0.7}
-                accessibilityRole="button"
-              >
-                <Text className="text-base font-bold text-white/80">
-                  {data.bookingReference}
-                </Text>
-                <Icon name="content-copy" size={18} color="#FFFFFF" style={{ opacity: 0.6 }} />
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {data.websiteAddress ? (
-            <View className="flex-1">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-                Website
-              </Text>
-              <TouchableOpacity
-                onPress={() => handleOpenLink(data.websiteAddress || "")}
-                className="flex-row items-center gap-1"
-                activeOpacity={0.7}
-                accessibilityRole="button"
-              >
-                <Icon name="link" size={18} color="#FFFFFF" style={{ opacity: 0.6 }} />
-                <Text className="text-base font-bold text-white/80 underline" numberOfLines={1}>
-                  {data.websiteAddress}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : null}
-        </View>
-
-      </View>
-
       <View className="px-md ">
-        <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#9c46ec]">
-          <Field label="Contact Person" value={data.contactName} icon="person" showBorder={true} borderColor="border-[#9234ea]" />
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1"
+          style={{
+            backgroundColor: !data.bookingReference && !data.websiteAddress && !data.contactName && !data.contactNumber && !data.emailAddress
+              ? "transparent" : "#9c46ec",
+          }}>
+          <Field label="Booking Ref" value={data.bookingReference} icon="folder-open" showBorder={false} isCopyable={true} borderColor="border-[#9234ea]" />
+          <Field label="Website" value={data.websiteAddress} icon="link" showBorder={false} isLink={true} borderColor="border-[#9234ea]" />
+          <Field label="Contact Person" value={data.contactName} icon="person" showBorder={false} borderColor="border-[#9234ea]" />
           <Field
             label="Contact Number"
             value={data.contactNumber}
             icon="phone"
-            onPress={data.contactNumber ? () => handleCall(data.contactNumber!) : undefined}
-            showBorder={true}
+            showBorder={false}
             borderColor="border-[#9234ea]"
+            isCall
           />
           <Field
             label="Email Address"
             value={data.emailAddress}
             icon="email"
-            onPress={data.emailAddress ? () => handleEmail(data.emailAddress!) : undefined}
+            isEmail={false}
+
           />
         </View>
       </View>

@@ -22,7 +22,17 @@ interface MapboxAddressMapProps {
   pitch?: number;
   bearing?: number;
   interactive?: boolean;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
+
+const hasValidCoords = (c?: { latitude?: number | null; longitude?: number | null } | null): c is { latitude: number; longitude: number } => {
+  if (!c) return false;
+  const { latitude, longitude } = c;
+  if (typeof latitude !== "number" || typeof longitude !== "number") return false;
+  if (isNaN(latitude) || isNaN(longitude)) return false;
+  if (latitude === 0 && longitude === 0) return false;
+  return true;
+};
 
 export default function MapboxAddressMap({
   address,
@@ -33,14 +43,23 @@ export default function MapboxAddressMap({
   pitch = 40,
   bearing = 35,
   interactive = true,
+  onFullScreenChange,
 }: MapboxAddressMapProps) {
-  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(propCoords || null);
-  const [isLoading, setIsLoading] = useState<boolean>(!propCoords && !!address);
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(
+    hasValidCoords(propCoords) ? propCoords : null
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(
+    !hasValidCoords(propCoords) && !!address && !!address.trim()
+  );
   const [error, setError] = useState<string | null>(null);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const fullScreenWebViewRef = React.useRef<WebView>(null);
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    onFullScreenChange?.(isFullScreen);
+  }, [isFullScreen, onFullScreenChange]);
 
   const toggleTheme = () => {
     const nextMode = !isDarkMode;
@@ -55,13 +74,15 @@ export default function MapboxAddressMap({
   };
 
   useEffect(() => {
-    if (propCoords && typeof propCoords.latitude === "number" && typeof propCoords.longitude === "number") {
+    if (hasValidCoords(propCoords)) {
       setCoords(propCoords);
       setIsLoading(false);
+      setError(null);
       return;
     }
 
     if (!address || !address.trim()) {
+      setCoords(null);
       setIsLoading(false);
       return;
     }
@@ -78,7 +99,11 @@ export default function MapboxAddressMap({
         if (isMounted && data.features && data.features.length > 0) {
           const feature = data.features[0];
           const [lng, lat] = feature.geometry.coordinates;
-          setCoords({ latitude: lat, longitude: lng });
+          if (typeof lat === "number" && typeof lng === "number" && !isNaN(lat) && !isNaN(lng)) {
+            setCoords({ latitude: lat, longitude: lng });
+          } else if (isMounted) {
+            setError("Location coordinates not found");
+          }
         } else if (isMounted) {
           setError("Location coordinates not found");
         }

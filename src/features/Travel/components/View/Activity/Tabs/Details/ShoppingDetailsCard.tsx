@@ -9,6 +9,7 @@ import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 
 interface ShoppingDetailsCardProps {
   data: ShoppingDetailsDto;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
 const shopColor = activityIcons.find((icon) => icon.name === ActivityType.shopppingAndService)?.color || "#E91E63";
@@ -22,7 +23,7 @@ const handleOpenLink = (url: string) => {
 
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
-export const ShoppingDetailsCard: React.FC<ShoppingDetailsCardProps> = ({ data }) => {
+export const ShoppingDetailsCard: React.FC<ShoppingDetailsCardProps> = ({ data, onFullScreenChange }) => {
   const { colors } = useTheme();
 
   return (
@@ -50,7 +51,7 @@ export const ShoppingDetailsCard: React.FC<ShoppingDetailsCardProps> = ({ data }
                 </Text>
                 <Icon name="open-in-new" size={16} color={"#FFFFFF"} />
               </TouchableOpacity>
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.venueName} height={180} />
+              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.venueName} height={180} onFullScreenChange={onFullScreenChange} />
             </>
           ) : null}
         </View>

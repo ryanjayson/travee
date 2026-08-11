@@ -20,7 +20,7 @@ import { parseExtractedText } from "../../../../utils/ocrParser";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useTheme } from "react-native-paper";
-import { useDeleteActivityMutation } from "../../../../hooks/useActivity";
+import { useDeleteActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
 import { useToast } from "../../../../../../context/ToastContext";
 import { useTravelPlan } from "../../../../hooks/useTravel";
 import { ActivityType } from "../../../../../../types/enums";
@@ -41,11 +41,14 @@ const { height: screenHeight } = Dimensions.get("window");
 const ActivityModal = ({
   visible,
   onClose,
-  itineraryActivity,
+  itineraryActivity: propItineraryActivity,
   itinerarySectionId,
   travelId,
 }: ActivityModalProps) => {
-  const [currentActivity, setCurrentActivity] = useState<ItineraryActivity | null>(itineraryActivity);
+  const [currentActivity, setCurrentActivity] = useState<ItineraryActivity | null>(propItineraryActivity);
+
+  const activeId = currentActivity?.id || propItineraryActivity?.id || "";
+  const { data: fetchedDbActivity, refetch: refetchActivity } = useItineraryActivity(visible ? activeId : "");
 
   const { data: travelPlan } = useTravelPlan(travelId || "");
 
@@ -56,17 +59,20 @@ const ActivityModal = ({
       .find((a) => a.id === currentActivity.id) || null;
   }, [travelPlan, currentActivity?.id]);
 
-  const latestActivity = dbActivity || currentActivity;
+  const latestActivity = fetchedDbActivity || dbActivity || currentActivity || propItineraryActivity;
 
   useEffect(() => {
     if (visible) {
-      setCurrentActivity(itineraryActivity);
+      setCurrentActivity(propItineraryActivity);
+      if (activeId) {
+        refetchActivity();
+      }
       setIsSaving(false);
       setError(null);
       setExtractedData(null);
       setIsOcrPending(false);
     }
-  }, [visible, itineraryActivity]);
+  }, [visible, propItineraryActivity, activeId, refetchActivity]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);

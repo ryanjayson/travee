@@ -28,7 +28,7 @@ import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSo
 import { fetchLocalItineraryActivity } from "../../../../../../services/local/travelService";
 import { ActivityType, getActivityTypeLabel } from "../../../../../../types/enums";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
-import { useDeleteActivityMutation, useUpdateActivityMutation } from "../../../../hooks/useActivity";
+import { useDeleteActivityMutation, useUpdateActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
 import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItemMutation, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
 import { useUpdateSectionMutation } from "../../../../hooks/useSection";
 import { useTravelPlan } from "../../../../hooks/useTravel";
@@ -351,7 +351,7 @@ const matchEntertainmentSubtype = (poi: any): string | null => {
 
 const EditActivity = ({
   itinerarySectionId,
-  itineraryActivity,
+  itineraryActivity: propItineraryActivity,
   travelId: propTravelId,
   onClose,
   onScroll,
@@ -361,6 +361,10 @@ const EditActivity = ({
   onSaveSuccess,
   onSwitchToAddMode,
 }: EditActivityProps) => {
+  const editingActivityId = propItineraryActivity?.id || "";
+  const { data: dbFetchedActivity } = useItineraryActivity(editingActivityId);
+  const itineraryActivity = dbFetchedActivity || propItineraryActivity;
+
   const toLocalDateStr = (dInput: any) => {
     if (!dInput) return null;
     const d = new Date(dInput);
@@ -1234,6 +1238,8 @@ const EditActivity = ({
   const memoizedInitialValues = useMemo<ActivityFormValues>(() => initialValues, [
     itineraryActivity?.id,
     itineraryActivity?.updatedAt,
+    itineraryActivity?.type,
+    itineraryActivity,
     itinerarySectionId,
     travelId,
     travelPlan?.itinerarySection?.[0]?.id,
@@ -1242,8 +1248,8 @@ const EditActivity = ({
 
   return (
     <Formik<ActivityFormValues>
-      key={itineraryActivity?.id || "new-activity"}
-      enableReinitialize={false}
+      key={itineraryActivity?.id ? `${itineraryActivity.id}-${itineraryActivity.type}-${itineraryActivity.updatedAt || ''}` : "new-activity"}
+      enableReinitialize={true}
       initialValues={memoizedInitialValues}
       validationSchema={TravelSchema}
       onSubmit={handleSaveActivity}

@@ -9,6 +9,7 @@ import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 
 interface NatureDetailsCardProps {
   data: NatureDetailsDto;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
 const natureColor = activityIcons.find((icon) => icon.name === ActivityType.nature)?.color || "#429862";
@@ -20,7 +21,7 @@ const handleOpenLink = (url: string) => {
   }
 };
 
-export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({ data }) => {
+export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({ data, onFullScreenChange }) => {
 
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
@@ -50,7 +51,7 @@ export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({ data }) =>
                 </Text>
                 <Icon name="open-in-new" size={16} color={"#FFFFFF"} />
               </TouchableOpacity>
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.spotName} height={180} />
+              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.spotName} height={180} onFullScreenChange={onFullScreenChange} />
             </>
           ) : null}
         </View>

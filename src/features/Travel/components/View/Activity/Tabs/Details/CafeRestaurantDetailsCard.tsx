@@ -6,6 +6,7 @@ import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 interface CafeRestaurantDetailsCardProps {
   data: CafeRestaurantDetailsDto;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
 const handleOpenLink = (url: string) => {
@@ -21,7 +22,7 @@ const handleCall = (phone: string) => {
   }
 };
 
-export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps> = ({ data }) => {
+export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps> = ({ data, onFullScreenChange }) => {
 
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
@@ -47,7 +48,7 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
                   {data.address}
                 </Text>
               </TouchableOpacity>
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.restaurantName} height={180} />
+              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.restaurantName} height={180} onFullScreenChange={onFullScreenChange} />
             </>
           ) : null}
         </View>

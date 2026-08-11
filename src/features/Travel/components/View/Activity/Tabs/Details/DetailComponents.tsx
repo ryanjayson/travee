@@ -39,29 +39,29 @@ export const FlightDetails = ({ data }: { data?: FlightDetailsDto | null }) => {
   return <FlightDetailsCard data={data} />;
 };
 
-export const AccomodationDetails = ({ data }: { data?: AccomodationDetailsDto | null }) => {
+export const AccomodationDetails = ({ data, onFullScreenChange }: { data?: AccomodationDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!data) return <Text className="text-white p-4 text-center">No accommodation details available.</Text>;
-  return <AccomodationDetailsCard data={data} />;
+  return <AccomodationDetailsCard data={data} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const CafeRestaurantDetails = ({ data }: { data?: CafeRestaurantDetailsDto | null }) => {
+export const CafeRestaurantDetails = ({ data, onFullScreenChange }: { data?: CafeRestaurantDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!data) return <Text className="text-white p-4 text-center">No restaurant details available.</Text>;
-  return <CafeRestaurantDetailsCard data={data} />;
+  return <CafeRestaurantDetailsCard data={data} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const NatureDetails = ({ data }: { data?: NatureDetailsDto | null }) => {
+export const NatureDetails = ({ data, onFullScreenChange }: { data?: NatureDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!data) return <Text className="text-white p-4 text-center">No spot details available.</Text>;
-  return <NatureDetailsCard data={data} />;
+  return <NatureDetailsCard data={data} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const ShoppingDetails = ({ data }: { data?: ShoppingDetailsDto | null }) => {
+export const ShoppingDetails = ({ data, onFullScreenChange }: { data?: ShoppingDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!data) return <Text className="text-white p-4 text-center">No shopping details available.</Text>;
-  return <ShoppingDetailsCard data={data} />;
+  return <ShoppingDetailsCard data={data} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const EntertainmentDetails = ({ data }: { data?: EntertainmentDetailsDto | null }) => {
+export const EntertainmentDetails = ({ data, onFullScreenChange }: { data?: EntertainmentDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!data) return <Text className="text-white p-4 text-center">No entertainment details available.</Text>;
-  return <EntertainmentDetailsCard data={data} />;
+  return <EntertainmentDetailsCard data={data} onFullScreenChange={onFullScreenChange} />;
 };
 
 export const TransportationDetails = ({ data }: { data?: TransportationDetailsDto | null }) => {
@@ -74,9 +74,9 @@ export const WalkDetails = ({ data }: { data?: WalkDetailsDto | null }) => {
   return <WalkDetailsCard data={data} />;
 };
 
-export const SightseeingDetails = ({ data }: { data?: SightseeingDetailsDto | null }) => {
+export const SightseeingDetails = ({ data, onFullScreenChange }: { data?: SightseeingDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!data) return <Text className="text-white p-4 text-center">No sightseeing details available.</Text>;
-  return <SightseeingDetailsCard data={data} />;
+  return <SightseeingDetailsCard data={data} onFullScreenChange={onFullScreenChange} />;
 };
 
 export const PreparationDetails = ({ data }: { data?: PreparationDetailsDto | null }) => {

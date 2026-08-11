@@ -9,6 +9,7 @@ import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 
 interface SightseeingDetailsCardProps {
   data: SightseeingDetailsDto;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
 const sightColor = activityIcons.find((icon) => icon.name === ActivityType.sightseeing)?.color || "#FF9800";
@@ -22,7 +23,7 @@ const handleOpenLink = (url: string) => {
 
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
-export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ data }) => {
+export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ data, onFullScreenChange }) => {
   const { colors } = useTheme();
 
   return (
@@ -49,7 +50,7 @@ export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ 
                   {data.address}
                 </Text>
               </TouchableOpacity>
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.attractionName} height={180} />
+              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.attractionName} height={180} onFullScreenChange={onFullScreenChange} />
             </>
           ) : null}
         </View>

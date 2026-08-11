@@ -25,9 +25,10 @@ import {
 
 interface DetailsTabProps {
   itineraryActivity?: ItineraryActivity;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
-const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
+const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) => {
   const insets = useSafeAreaInsets();
   const { height: screenHeight } = Dimensions.get("window");
   const yOffset = insets.top + 60;
@@ -43,19 +44,19 @@ const DetailsTab = ({ itineraryActivity }: DetailsTabProps) => {
       case ActivityType.flight:
         return <FlightDetails data={itineraryActivity.flightDetails} />;
       case ActivityType.accomodation:
-        return <AccomodationDetails data={itineraryActivity.accomodationDetails} />;
+        return <AccomodationDetails data={itineraryActivity.accomodationDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.cafeRestaurant:
-        return <CafeRestaurantDetails data={itineraryActivity.cafeRestaurantDetails} />;
+        return <CafeRestaurantDetails data={itineraryActivity.cafeRestaurantDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.nature:
-        return <NatureDetails data={itineraryActivity.natureDetails} />;
+        return <NatureDetails data={itineraryActivity.natureDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.shopppingAndService:
-        return <ShoppingDetails data={itineraryActivity.shoppingDetails} />;
+        return <ShoppingDetails data={itineraryActivity.shoppingDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.entertainmentAndRecreation:
-        return <EntertainmentDetails data={itineraryActivity.entertainmentDetails} />;
+        return <EntertainmentDetails data={itineraryActivity.entertainmentDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.walk:
         return <WalkDetails data={itineraryActivity.walkDetails} />;
       case ActivityType.sightseeing:
-        return <SightseeingDetails data={itineraryActivity.sightseeingDetails} />;
+        return <SightseeingDetails data={itineraryActivity.sightseeingDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.preparation:
         return <PreparationDetails data={itineraryActivity.preparationDetails} />;
       case ActivityType.hikeOrCamp:
