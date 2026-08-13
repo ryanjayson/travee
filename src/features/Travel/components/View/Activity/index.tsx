@@ -31,6 +31,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
 
+import { hasActivityData } from "./Tabs/Details/DetailComponents";
+
 interface ViewTripActivityProps {
   id: string;
   onClose: () => void;
@@ -40,6 +42,43 @@ interface ViewTripActivityProps {
   hasNext?: boolean;
   hasPrev?: boolean;
 }
+
+const getActivityDetailData = (activity: ItineraryActivity | null) => {
+  if (!activity) return null;
+  switch (activity.type) {
+    case ActivityType.flight:
+      return activity.flightDetails;
+    case ActivityType.accomodation:
+      return activity.accomodationDetails;
+    case ActivityType.cafeRestaurant:
+      return activity.cafeRestaurantDetails;
+    case ActivityType.nature:
+      return activity.natureDetails;
+    case ActivityType.shopppingAndService:
+      return activity.shoppingDetails;
+    case ActivityType.entertainmentAndRecreation:
+      return activity.entertainmentDetails;
+    case ActivityType.transportation:
+      return activity.transportationDetails;
+    case ActivityType.walk:
+      return activity.walkDetails;
+    case ActivityType.sightseeing:
+      return activity.sightseeingDetails;
+    case ActivityType.preparation:
+      return activity.preparationDetails;
+    case ActivityType.hikeOrCamp:
+      return activity.hikeOrCampDetails;
+    case ActivityType.rideRental:
+      return activity.rideRentalDetails;
+    default:
+      return (
+        activity.restDetails ||
+        activity.motorcycleRideDetails ||
+        activity.meetupDetails ||
+        null
+      );
+  }
+};
 
 const is60PercentSnap = (type?: ActivityType) => {
   if (type == null) return false;
@@ -249,20 +288,27 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   const SNAP_90 = parentHeight * 0.1;
   const SNAP_MIN = parentHeight * SNAP_EXTENDED;
 
-  const snappedY = useRef(SNAP_MIN);
+  const initialDetailData = getActivityDetailData(itineraryActivity);
+  const initialHasDetails = hasActivityData(initialDetailData);
+  const initialSnapPoint = (itineraryActivity?.type === ActivityType.none || !initialHasDetails) ? SNAP_90 : SNAP_MIN;
+
+  const snappedY = useRef(initialSnapPoint);
   const dragStartY = useRef(0);
 
   // Use passed translateY prop or fallback to local Animated.Value
-  const translateYRef = useRef(translateYProp || new Animated.Value(SNAP_MIN));
+  const translateYRef = useRef(translateYProp || new Animated.Value(initialSnapPoint));
   const translateY = translateYProp || translateYRef.current;
-  const [currentSnap, setCurrentSnap] = useState(SNAP_MIN);
+  const [currentSnap, setCurrentSnap] = useState(initialSnapPoint);
 
   // Dynamically update snap configurations once itineraryActivity loads
   React.useEffect(() => {
     if (itineraryActivity) {
       const isNoType = itineraryActivity.type === ActivityType.none;
+      const detailData = getActivityDetailData(itineraryActivity);
+      const hasDetails = hasActivityData(detailData);
+
       const isAt90 = Math.abs(snappedY.current - SNAP_90) < 1;
-      const targetSnap = (isNoType || isAt90) ? SNAP_90 : SNAP_MIN;
+      const targetSnap = (isNoType || !hasDetails || isAt90) ? SNAP_90 : SNAP_MIN;
 
       snappedY.current = targetSnap;
       setCurrentSnap(targetSnap);
@@ -280,6 +326,12 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
     }
   }, [itineraryActivity, parentHeight, SNAP_MIN, SNAP_90]);
 
+  const detailData = getActivityDetailData(itineraryActivity);
+  const hasDetails = hasActivityData(detailData);
+  const canSnap = itineraryActivity?.type !== ActivityType.none && hasDetails;
+  const canSnapRef = useRef(canSnap);
+  canSnapRef.current = canSnap;
+
   // Slowly changing black overlay opacity as sheet is panned/scrolled towards SNAP_90
   const rangeEnd = SNAP_MIN;
   const overlayOpacity = translateY.interpolate({
@@ -289,6 +341,9 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   });
 
   const snapTo = (toValue: number) => {
+    if (!canSnapRef.current && toValue !== SNAP_90) {
+      return;
+    }
     snappedY.current = toValue;
     setCurrentSnap(toValue);
     Animated.spring(translateY, {
@@ -316,12 +371,12 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => {
-        if (isMapFullScreenRef.current) return false;
+        if (isMapFullScreenRef.current || !canSnapRef.current) return false;
         const touchStartRelativeY = evt.nativeEvent.pageY - (yOffset + snappedY.current);
         return touchStartRelativeY > -30 && touchStartRelativeY < 180;
       },
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        if (isMapFullScreenRef.current) return false;
+        if (isMapFullScreenRef.current || !canSnapRef.current) return false;
         const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 8;
         if (!isVertical) return false;
 
@@ -329,7 +384,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
         return touchStartRelativeY > -30 && touchStartRelativeY < 180;
       },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        if (isMapFullScreenRef.current) return false;
+        if (isMapFullScreenRef.current || !canSnapRef.current) return false;
         const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 5;
         if (!isVertical) return false;
 
@@ -503,10 +558,10 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             {/* Animated Black Overlay */}
             <TouchableWithoutFeedback
               onPress={() => snapTo(SNAP_MIN)}
-              disabled={currentSnap === SNAP_MIN || itineraryActivity?.type === ActivityType.none}
+              disabled={currentSnap === SNAP_MIN || !canSnap}
             >
               <Animated.View
-                pointerEvents={(currentSnap === SNAP_MIN || itineraryActivity?.type === ActivityType.none) ? "none" : "auto"}
+                pointerEvents={(currentSnap === SNAP_MIN || !canSnap) ? "none" : "auto"}
                 style={{
                   position: "absolute",
                   top: 0,
@@ -524,7 +579,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
 
           {/* Snappable Bottom Form Sheet */}
           <Animated.View
-            {...(itineraryActivity?.type !== ActivityType.none ? panResponder.panHandlers : {})}
+            {...(canSnap ? panResponder.panHandlers : {})}
             style={[
               {
                 transform: [{ translateY }],
@@ -553,13 +608,13 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             </View>
 
             {sectionName && (
-              <View className="items-center py-1 px-md absolute -top-[24px] left-lg">
+              <View className="items-center py-1 px-md absolute -top-[28px] left-lg">
                 <Text
-                  className="font-semibold tracking-wide text-sm text-white"
+                  className="font-semibold tracking-wide text-md text-white"
                   style={{
                     textShadowColor: "rgba(0, 0, 0, 0.75)",
                     textShadowOffset: { width: 2, height: 2 },
-                    textShadowRadius: 3,
+                    textShadowRadius: 10,
                   }}
                 >
                   {sectionName}
@@ -630,7 +685,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             {/* Tabs */}
             <Pressable
               onPress={() => {
-                if (snappedY.current !== SNAP_90) {
+                if (canSnap && snappedY.current !== SNAP_90) {
                   snapTo(SNAP_90);
                 }
               }}

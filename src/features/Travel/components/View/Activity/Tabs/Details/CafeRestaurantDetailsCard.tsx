@@ -36,7 +36,7 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
             Cafe / Restaurant / Venue
           </Text>
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
-            {data.restaurantName || "N/A"}
+            {data.restaurantName || "--"}
           </Text>
           {data.address ? (
             <>

@@ -10,7 +10,7 @@ interface MotorcycleRideDetailsCardProps {
   data: MotorcycleRideDetailsDto;
 }
 
-const motoColor = activityIcons.find((icon) => icon.name === ActivityType.motorcycleRide)?.color || "#F57F17";
+const rideColor = activityIcons.find((icon) => icon.name === (ActivityType as any).motorcycleRide)?.color || "#795548";
 
 const handleOpenLink = (url: string) => {
   if (url) {

@@ -10,7 +10,7 @@ interface MeetupDetailsCardProps {
   data: MeetupDetailsDto;
 }
 
-const meetupColor = activityIcons.find((icon) => icon.name === ActivityType.meetup)?.color || "#26A69A";
+const meetupColor = activityIcons.find((icon) => icon.name === (ActivityType as any).meetup)?.color || "#26A69A";
 
 const handleOpenLink = (url: string) => {
   if (url) {

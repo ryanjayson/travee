@@ -10,7 +10,7 @@ interface RestDetailsCardProps {
   data: RestDetailsDto;
 }
 
-const restColor = activityIcons.find((icon) => icon.name === ActivityType.rest)?.color || "#9E9E9E";
+const restColor = activityIcons.find((icon) => icon.name === (ActivityType as any).rest)?.color || "#9E9E9E";
 
 export const RestDetailsCard: React.FC<RestDetailsCardProps> = ({ data }) => {
   const { colors } = useTheme();
