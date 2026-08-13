@@ -5,32 +5,12 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { FlightDetailsDto } from "../../../../../types/TravelDto";
 import { Barcode } from "../../../../../../../components/Barcode";
+import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
 
 interface FlightDetailsCardProps {
   data: FlightDetailsDto;
 }
 
-const safeFormatTime = (dateValue: Date | string | null | undefined) => {
-  if (!dateValue) return "--:--";
-  try {
-    const d = new Date(dateValue);
-    if (isNaN(d.getTime())) return "--:--";
-    return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true });
-  } catch (e) {
-    return "--:--";
-  }
-};
-
-const safeFormatDate = (dateValue: Date | string | null | undefined) => {
-  if (!dateValue) return "N/A";
-  try {
-    const d = new Date(dateValue);
-    if (isNaN(d.getTime())) return "N/A";
-    return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-  } catch (e) {
-    return "N/A";
-  }
-};
 
 const parseAirport = (airportStr: string | null | undefined) => {
   if (!airportStr) return { code: "", name: "" };

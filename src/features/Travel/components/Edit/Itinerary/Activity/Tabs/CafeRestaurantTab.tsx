@@ -84,26 +84,6 @@ export default function CafeRestaurantTab({
         />
       )}
 
-      {/* Cuisine & Price Range */}
-      <View className="flex-row gap-4 mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.cuisine"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Cuisine"
-            value={values.cafeRestaurantDetails?.cuisine || ""}
-            onChangeText={handleChange("cafeRestaurantDetails.cuisine")}
-            onBlur={handleBlur("cafeRestaurantDetails.cuisine")}
-          />
-        </View>
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.priceRange"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Price Range"
-            value={values.cafeRestaurantDetails?.priceRange || ""}
-            onChangeText={handleChange("cafeRestaurantDetails.priceRange")}
-            onBlur={handleBlur("cafeRestaurantDetails.priceRange")}
-          />
-        </View>
-      </View>
-
       {/* Website */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.websiteAddress"] = el; }} className="mb-5">
         <FloatingLabelInput
@@ -167,6 +147,27 @@ export default function CafeRestaurantTab({
           keyboardType="phone-pad"
         />
       </View>
+
+      {/* Cuisine & Price Range */}
+      <View className="flex-row gap-4 mb-5">
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.cuisine"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Cuisine"
+            value={values.cafeRestaurantDetails?.cuisine || ""}
+            onChangeText={handleChange("cafeRestaurantDetails.cuisine")}
+            onBlur={handleBlur("cafeRestaurantDetails.cuisine")}
+          />
+        </View>
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.priceRange"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Price Range"
+            value={values.cafeRestaurantDetails?.priceRange || ""}
+            onChangeText={handleChange("cafeRestaurantDetails.priceRange")}
+            onBlur={handleBlur("cafeRestaurantDetails.priceRange")}
+          />
+        </View>
+      </View>
+
     </View>
   );
 }

@@ -46,7 +46,13 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
       case ActivityType.accomodation:
         return <AccomodationDetails data={itineraryActivity.accomodationDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.cafeRestaurant:
-        return <CafeRestaurantDetails data={itineraryActivity.cafeRestaurantDetails} onFullScreenChange={onFullScreenChange} />;
+        return (
+          <CafeRestaurantDetails
+            data={itineraryActivity.cafeRestaurantDetails}
+            activityStartDate={itineraryActivity.startDate}
+            onFullScreenChange={onFullScreenChange}
+          />
+        );
       case ActivityType.nature:
         return <NatureDetails data={itineraryActivity.natureDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.shopppingAndService:

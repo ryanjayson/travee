@@ -5,6 +5,7 @@ import { useTheme } from "react-native-paper";
 import { HikeOrCampDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
+import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
 
 interface HikeOrCampDetailsCardProps {
   data: HikeOrCampDetailsDto;
@@ -12,27 +13,6 @@ interface HikeOrCampDetailsCardProps {
 
 const hikeColor = activityIcons.find((icon) => icon.name === ActivityType.hikeOrCamp)?.color || "#558B2F";
 
-const safeFormatTime = (dateValue: Date | string | null | undefined) => {
-  if (!dateValue) return "--:--";
-  try {
-    const d = new Date(dateValue);
-    if (isNaN(d.getTime())) return "--:--";
-    return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true });
-  } catch (e) {
-    return "--:--";
-  }
-};
-
-const safeFormatDate = (dateValue: Date | string | null | undefined) => {
-  if (!dateValue) return "N/A";
-  try {
-    const d = new Date(dateValue);
-    if (isNaN(d.getTime())) return "N/A";
-    return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-  } catch (e) {
-    return "N/A";
-  }
-};
 
 const handleOpenLink = (url: string) => {
   if (url) {
@@ -51,31 +31,31 @@ import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
 export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ data }) => {
   const { colors } = useTheme();
- 
+
   return (
     <View className="rounded-3xl mb-6  overflow-hidden">
       {/* Main Details Body */}
       <View className="px-2">
         <View className="mb-4">
-        <View className="flex-row justify-between items-center">
-          <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
-            Trail / Site Name
-          </Text>
-                {data.permitRequired !== undefined && data.permitRequired !== null ? (
-          <View
-            className="px-3 py-2 rounded-full"
-            style={{ backgroundColor: data.permitRequired ? `#07945550` : "#07945525" }}
-          >
-            <Text
-              className="text-xs font-extrabold tracking-wide uppercase"
-              style={{ color: data.permitRequired ? colors.error : "#079455" }}
-            >
-              {data.permitRequired ? "Permit Required" : "No Permit Required"}
+          <View className="flex-row justify-between items-center">
+            <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
+              Trail / Site Name
             </Text>
+            {data.permitRequired !== undefined && data.permitRequired !== null ? (
+              <View
+                className="px-3 py-2 rounded-full"
+                style={{ backgroundColor: data.permitRequired ? `#07945550` : "#07945525" }}
+              >
+                <Text
+                  className="text-xs font-extrabold tracking-wide uppercase"
+                  style={{ color: data.permitRequired ? colors.error : "#079455" }}
+                >
+                  {data.permitRequired ? "Permit Required" : "No Permit Required"}
+                </Text>
+              </View>
+            ) : null}
           </View>
-        ) : null}
-        </View>
-          
+
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white ">
             {data.trailOrSiteName || "N/A"}
           </Text>
@@ -86,9 +66,9 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
               activeOpacity={0.7}
               accessibilityRole="button"
             >
-              <Icon name="location-on" size={24} color="#FFFFFF" className="mr-6"/>
+              <Icon name="location-on" size={24} color="#FFFFFF" className="mr-6" />
               <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                {data.address} 
+                {data.address}
               </Text>
               <Icon name="open-in-new" size={16} color={"#016630"} />
             </TouchableOpacity>
@@ -128,7 +108,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
 
         {/* Additional details */}
         <View className="flex-row justify-between mt-5 border-dashed-t border-gray-100">
-           {/* {data.campsiteName ? (
+          {/* {data.campsiteName ? (
           <View className="mt-3 pt-3">
             <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest mb-0.5">
               Campsite Name
@@ -162,7 +142,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
           ) : null}
         </View>
 
-       
+
       </View>
 
       {/* Stub Area */}
@@ -171,7 +151,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
           {/* <Field label="Contact Person / number" value={`${data.contactPerson} / ${data.contactNumber}`} icon="person" /> */}
           <Field
             label="Contact Person / number"
-            value={`${data.contactPerson} / ${data.contactNumber}`} 
+            value={`${data.contactPerson} / ${data.contactNumber}`}
             icon="person"
             showBorder={true}
             borderColor="border-[#388052]"

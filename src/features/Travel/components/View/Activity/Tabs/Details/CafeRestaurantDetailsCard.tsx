@@ -4,8 +4,11 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { CafeRestaurantDetailsDto } from "../../../../../types/TravelDto";
 import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
+import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
+
 interface CafeRestaurantDetailsCardProps {
   data: CafeRestaurantDetailsDto;
+  activityStartDate?: Date | string | null;
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
@@ -16,13 +19,13 @@ const handleOpenLink = (url: string) => {
   }
 };
 
-const handleCall = (phone: string) => {
-  if (phone) {
-    Linking.openURL(`tel:${phone}`).catch((err) => console.error("Failed to make call", err));
-  }
-};
 
-export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps> = ({ data, onFullScreenChange }) => {
+export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps> = ({
+  data,
+  activityStartDate,
+  onFullScreenChange,
+}) => {
+  const dateTimeVal = activityStartDate || (data as any)?.activitydatetime || (data as any)?.startDate;
 
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
@@ -39,11 +42,11 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
             <>
               <TouchableOpacity
                 onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-                className="flex-row items-center gap-6 mt-1 mb-2  pr-xl"
+                className="flex-row items-center gap-3 mt-1 mb-2  pr-xl"
                 activeOpacity={0.7}
                 accessibilityRole="button"
               >
-                <Icon name="location-on" size={24} color="#FFFFFF" />
+                <Icon name="location-on" size={18} color="#FFFFFF" />
                 <Text className="text-base text-white underline flex-1" numberOfLines={1}>
                   {data.address}
                 </Text>
@@ -53,51 +56,55 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
           ) : null}
         </View>
 
-        {/* Row of details: Cuisine & Price Range */}
-        <View className="flex-row items-center justify-between  pt-4 border-t-2 border-dashed border-[#d32222]">
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-              Cuisine
+      </View>
+
+      <View className="flex-row items-center justify-between pb-xl px-md ">
+        <View className="flex-1">
+          <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            Date & Time
+          </Text>
+          <View className="flex-row gap-3">
+            <Text className="text-2xl font-medium text-white/80 ">
+              {safeFormatDate(dateTimeVal)}
             </Text>
-            <Text className="text-xl font-semibold text-white/80">
-              {data.cuisine || "N/A"}
-            </Text>
-          </View>
-          <View className="flex-1 items-end">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-              Price Range
-            </Text>
-            <Text className="text-xl font-semibold text-white/80 text-right">
-              {data.priceRange || "N/A"}
+            <Text className="text-2xl font-semibold text-white/80">
+              {safeFormatTime(dateTimeVal)}
             </Text>
           </View>
         </View>
       </View>
 
-      {/* Stub Area */}
-      <View className="px-md mt-4">
-        {/* Contact Info and reservation */}
-        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dd2c2c]">
 
+      {/* Stub Area */}
+      <View className="px-md">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dd2c2c]">
+          <Field
+            label="Reservation Link"
+            value={data.reservationLink}
+            icon="book-online"
+            isLink
+          />
           <Field
             label="Contact Number"
             value={data.contactNumber}
             icon="phone"
-            onPress={data.contactNumber ? () => handleCall(data.contactNumber!) : undefined}
-          />
-          <Field
-            label="Reservation"
-            value={data.reservationLink}
-            icon="book-online"
-            isLink
-            onPress={data.reservationLink ? () => handleOpenLink(data.reservationLink!) : undefined}
+            isCall
           />
           <Field
             label="Website"
             value={data.websiteAddress}
             icon="language"
             isLink
-            onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress!) : undefined}
+          />
+          <Field
+            label="Cuisine"
+            value={data.cuisine}
+            icon="restaurant"
+          />
+          <Field
+            label="Price Range"
+            value={data.priceRange}
+            icon="money"
           />
         </View>
       </View>

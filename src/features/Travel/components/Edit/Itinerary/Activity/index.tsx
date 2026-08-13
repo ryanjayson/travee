@@ -674,8 +674,10 @@ const EditActivity = ({
       let finalStartDate: Date | undefined = undefined;
       if (values.type === ActivityType.flight && values.flightDetails?.departureDate) {
         finalStartDate = new Date(values.flightDetails.departureDate);
-      } else if (values.type === ActivityType.accomodation && values.accomodationDetails?.checkinDateTime) {
-        finalStartDate = new Date(values.accomodationDetails.checkinDateTime);
+      } else if (values.type === ActivityType.accomodation) {
+        finalStartDate = values.accomodationDetails?.checkinDateTime
+          ? new Date(values.accomodationDetails.checkinDateTime)
+          : undefined;
       } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkinDateTime) {
         finalStartDate = new Date(values.hikeOrCampDetails.checkinDateTime);
       } else if (values.startDate) {
@@ -685,8 +687,10 @@ const EditActivity = ({
       let finalEndDate: Date | undefined = undefined;
       if (values.type === ActivityType.flight && values.flightDetails?.arrivalDate) {
         finalEndDate = new Date(values.flightDetails.arrivalDate);
-      } else if (values.type === ActivityType.accomodation && values.accomodationDetails?.checkoutDateTime) {
-        finalEndDate = new Date(values.accomodationDetails.checkoutDateTime);
+      } else if (values.type === ActivityType.accomodation) {
+        finalEndDate = values.accomodationDetails?.checkoutDateTime
+          ? new Date(values.accomodationDetails.checkoutDateTime)
+          : undefined;
       } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkoutDateTime) {
         finalEndDate = new Date(values.hikeOrCampDetails.checkoutDateTime);
       } else if (values.endDate) {
@@ -786,10 +790,10 @@ const EditActivity = ({
             accomodationName: values.accomodationDetails.accomodationName,
             address: values.accomodationDetails.address || null,
             destinationAddressData: values.accomodationDetails.destinationAddressData ?? null,
-            checkinDateTime: values.accomodationDetails.checkinDateTime
+            checkinDateTime: values.accomodationDetails.checkinDateTime && new Date(values.accomodationDetails.checkinDateTime).getTime() > 0
               ? new Date(values.accomodationDetails.checkinDateTime)
-              : new Date(),
-            checkoutDateTime: values.accomodationDetails.checkoutDateTime
+              : null,
+            checkoutDateTime: values.accomodationDetails.checkoutDateTime && new Date(values.accomodationDetails.checkoutDateTime).getTime() > 0
               ? new Date(values.accomodationDetails.checkoutDateTime)
               : null,
             websiteAddress: values.accomodationDetails.websiteAddress || null,
@@ -1066,16 +1070,12 @@ const EditActivity = ({
         ? itineraryActivity.accomodationDetails.address
         : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.destination || "" : ""),
       destinationAddressData: itineraryActivity?.accomodationDetails?.destinationAddressData ?? null,
-      checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime
+      checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime && new Date(itineraryActivity.accomodationDetails.checkinDateTime).getTime() > 0
         ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
-        : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.startDate
-          ? new Date(itineraryActivity.startDate)
-          : null),
-      checkoutDateTime: itineraryActivity?.accomodationDetails?.checkoutDateTime
+        : null,
+      checkoutDateTime: itineraryActivity?.accomodationDetails?.checkoutDateTime && new Date(itineraryActivity.accomodationDetails.checkoutDateTime).getTime() > 0
         ? new Date(itineraryActivity.accomodationDetails.checkoutDateTime)
-        : (itineraryActivity?.type === ActivityType.accomodation && itineraryActivity?.endDate
-          ? new Date(itineraryActivity.endDate)
-          : null),
+        : null,
       websiteAddress: itineraryActivity?.accomodationDetails?.websiteAddress || "",
       bookingReference: itineraryActivity?.accomodationDetails?.bookingReference || "",
       bookingStatus: itineraryActivity?.accomodationDetails?.bookingStatus || "",

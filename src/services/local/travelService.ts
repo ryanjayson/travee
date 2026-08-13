@@ -21,6 +21,13 @@ import RideRentalDetails from "../../db/models/RideRentalDetails";
 import { ActivityType, TravelStatus } from "../../types/enums";
 import { safeJsonParse } from "../../utils/safeJsonParse";
 
+const sanitizeDate = (d: any) => {
+  if (!d) return null;
+  const dateObj = new Date(d);
+  if (isNaN(dateObj.getTime()) || dateObj.getTime() <= 0) return null;
+  return dateObj;
+};
+
 export const fetchLocalAccomodationDetails = async (activityId: string): Promise<any | null> => {
   try {
     const accomodationDetailsList = await database.get<AccomodationDetails>("accomodation_details").query(
@@ -34,8 +41,8 @@ export const fetchLocalAccomodationDetails = async (activityId: string): Promise
         accomodationName: a.accomodationName,
         address: a.address,
         destinationAddressData: safeJsonParse(a.destinationAddressData, undefined),
-        checkinDateTime: a.checkinDateTime,
-        checkoutDateTime: a.checkoutDateTime,
+        checkinDateTime: sanitizeDate(a.checkinDateTime),
+        checkoutDateTime: sanitizeDate(a.checkoutDateTime),
         websiteAddress: a.websiteAddress,
         bookingReference: a.bookingReference,
         bookingStatus: a.bookingStatus,
@@ -598,8 +605,8 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           accomodationName: a.accomodationName,
           address: a.address,
           destinationAddressData: a.destinationAddressData ? JSON.parse(a.destinationAddressData) : null,
-          checkinDateTime: a.checkinDateTime,
-          checkoutDateTime: a.checkoutDateTime,
+          checkinDateTime: sanitizeDate(a.checkinDateTime),
+          checkoutDateTime: sanitizeDate(a.checkoutDateTime),
           websiteAddress: a.websiteAddress,
           bookingReference: a.bookingReference,
           bookingStatus: a.bookingStatus,
@@ -1167,7 +1174,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
             destinationAddressData: activityData.accomodationDetails.destinationAddressData
               ? JSON.stringify(activityData.accomodationDetails.destinationAddressData)
               : null,
-            checkinDateTime: activityData.accomodationDetails.checkinDateTime ? new Date(activityData.accomodationDetails.checkinDateTime) : new Date(),
+            checkinDateTime: activityData.accomodationDetails.checkinDateTime ? new Date(activityData.accomodationDetails.checkinDateTime) : null,
             checkoutDateTime: activityData.accomodationDetails.checkoutDateTime ? new Date(activityData.accomodationDetails.checkoutDateTime) : null,
             websiteAddress: activityData.accomodationDetails.websiteAddress,
             bookingReference: activityData.accomodationDetails.bookingReference,
@@ -1186,8 +1193,8 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
             destinationAddressData: activityData.accomodationDetails.destinationAddressData
               ? JSON.stringify(activityData.accomodationDetails.destinationAddressData)
               : null,
-            checkinDateTime: activityData.accomodationDetails.checkinDateTime ? new Date(activityData.accomodationDetails.checkinDateTime) : new Date(),
-            checkoutDateTime: activityData.accomodationDetails.checkoutDateTime ? new Date(activityData.accomodationDetails.checkoutDateTime) : null,
+            checkinDateTime: sanitizeDate(activityData.accomodationDetails.checkinDateTime),
+            checkoutDateTime: sanitizeDate(activityData.accomodationDetails.checkoutDateTime),
             websiteAddress: activityData.accomodationDetails.websiteAddress,
             bookingReference: activityData.accomodationDetails.bookingReference,
             bookingStatus: activityData.accomodationDetails.bookingStatus,

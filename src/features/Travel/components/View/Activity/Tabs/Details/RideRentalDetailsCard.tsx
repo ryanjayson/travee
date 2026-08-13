@@ -5,6 +5,7 @@ import { useTheme } from "react-native-paper";
 import { RideRentalDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
+import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
 
 interface RideRentalDetailsCardProps {
   data: RideRentalDetailsDto;
@@ -12,27 +13,6 @@ interface RideRentalDetailsCardProps {
 
 const rentalColor = activityIcons.find((icon) => icon.name === ActivityType.rideRental)?.color || "#3F51B5";
 
-const safeFormatTime = (dateValue: Date | string | null | undefined) => {
-  if (!dateValue) return "--:--";
-  try {
-    const d = new Date(dateValue);
-    if (isNaN(d.getTime())) return "--:--";
-    return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", hour12: true });
-  } catch (e) {
-    return "--:--";
-  }
-};
-
-const safeFormatDate = (dateValue: Date | string | null | undefined) => {
-  if (!dateValue) return "N/A";
-  try {
-    const d = new Date(dateValue);
-    if (isNaN(d.getTime())) return "N/A";
-    return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-  } catch (e) {
-    return "N/A";
-  }
-};
 
 const handleOpenLink = (url: string) => {
   if (url) {

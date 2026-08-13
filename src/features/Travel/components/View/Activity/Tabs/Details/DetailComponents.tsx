@@ -44,9 +44,23 @@ export const AccomodationDetails = ({ data, onFullScreenChange }: { data?: Accom
   return <AccomodationDetailsCard data={data} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const CafeRestaurantDetails = ({ data, onFullScreenChange }: { data?: CafeRestaurantDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
+export const CafeRestaurantDetails = ({
+  data,
+  activityStartDate,
+  onFullScreenChange,
+}: {
+  data?: CafeRestaurantDetailsDto | null;
+  activityStartDate?: Date | string | null;
+  onFullScreenChange?: (fullScreen: boolean) => void;
+}) => {
   if (!data) return <Text className="text-white p-4 text-center">No restaurant details available.</Text>;
-  return <CafeRestaurantDetailsCard data={data} onFullScreenChange={onFullScreenChange} />;
+  return (
+    <CafeRestaurantDetailsCard
+      data={data}
+      activityStartDate={activityStartDate}
+      onFullScreenChange={onFullScreenChange}
+    />
+  );
 };
 
 export const NatureDetails = ({ data, onFullScreenChange }: { data?: NatureDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
