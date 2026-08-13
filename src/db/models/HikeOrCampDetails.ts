@@ -18,6 +18,7 @@ export default class HikeOrCampDetails extends Model {
   @field("permit_required") permitRequired!: boolean | null;
   @text("contact_person") contactPerson!: string | null;
   @text("contact_number") contactNumber!: string | null;
+  @text("email_address") emailAddress!: string | null;
   @text("website_address") websiteAddress!: string | null;
   @text("reservation_link") reservationLink!: string | null;
   @date("checkin_date_time") checkinDateTime!: Date | null;

@@ -260,16 +260,16 @@ export default function MapboxAddressMap({
           });
 
           // Add a line layer to highlight the clipped region boundary
-          map.addLayer({
-            'id': 'eraser-debug',
-            'type': 'line',
-            'source': 'eraser',
-            'paint': {
-              'line-color': 'rgba(211, 34, 34, 0.95)',
-              'line-dasharray': [0, 4, 3],
-              'line-width': 3.5
-            }
-          });
+          // map.addLayer({
+          //   'id': 'eraser-debug',
+          //   'type': 'line',
+          //   'source': 'eraser',
+          //   'paint': {
+          //     'line-color': 'rgba(211, 34, 34, 0.95)',
+          //     'line-dasharray': [0, 4, 3],
+          //     'line-width': 3.5
+          //   }
+          // });
 
           // Custom pin marker
           const el = document.createElement('div');

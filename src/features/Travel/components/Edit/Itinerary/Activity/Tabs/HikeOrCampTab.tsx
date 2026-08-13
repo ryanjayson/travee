@@ -73,71 +73,11 @@ export default function HikeOrCampTab({
         />
       </View>
 
-      {/* Sub-type tags */}
-      <View className="mb-5">
-        <Text className="text-xs font-bold tracking-wider uppercase mb-2">Activity</Text>
-        <View className="flex-row gap-2">
-          {HIKE_SUBTYPES.map((tag) => {
-            const isActive = currentSubType === tag;
-            return (
-              <TouchableOpacity
-                key={tag}
-                accessibilityRole="button"
-                onPress={() => setFieldValue("hikeOrCampDetails.subType", isActive ? null : tag)}
-                style={{
-                  borderRadius: 9999,
-                  borderWidth: 1,
-                  paddingHorizontal: 18,
-                  paddingVertical: 8,
-                  borderColor: isActive ? colors.primary : "#EAECF0",
-                  backgroundColor: isActive ? `${colors.primary}15` : "#FFF",
-                }}
-              >
-                <Text style={{ fontSize: 13, fontWeight: isActive ? "600" : "500", color: isActive ? colors.primary : "#475467" }}>
-                  {tag}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-
-      {/* Distance & Campsite Name */}
-      <View className="flex-row gap-4 mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.estimatedDistanceKm"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Distance (km)"
-            value={values.hikeOrCampDetails?.estimatedDistanceKm || ""}
-            onChangeText={handleChange("hikeOrCampDetails.estimatedDistanceKm")}
-            onBlur={handleBlur("hikeOrCampDetails.estimatedDistanceKm")}
-            keyboardType="numeric"
-          />
-        </View>
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.campsiteName"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Campsite Name"
-            value={values.hikeOrCampDetails?.campsiteName || ""}
-            onChangeText={handleChange("hikeOrCampDetails.campsiteName")}
-            onBlur={handleBlur("hikeOrCampDetails.campsiteName")}
-          />
-        </View>
-      </View>
-
-      {/* Permit Required toggle */}
-      <View className="flex-row items-center justify-between mb-5 bg-white border border-[#E0E0E0] rounded-2xl px-4 py-3">
-        <Text className="text-sm font-semibold text-gray-700">Permit Required</Text>
-        <Switch
-          value={!!values.hikeOrCampDetails?.permitRequired}
-          onValueChange={(v) => setFieldValue("hikeOrCampDetails.permitRequired", v)}
-          trackColor={{ false: "#E0E0E0", true: colors.primary }}
-          thumbColor="#FFF"
-        />
-      </View>
-
       {/* Check-in & Check-out Date/Time */}
       <View className="flex-row gap-2 justify-start items-center mb-2">
         <Text className="text-xs font-bold tracking-wider uppercase text-gray-500">Stay Period</Text>
       </View>
+
       <View className="flex-row items-center mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.checkinDateTime"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
@@ -172,26 +112,46 @@ export default function HikeOrCampTab({
         </View>
       </View>
 
-      {/* Contact Person & Contact Number */}
-      <View className="flex-row gap-4 mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.contactPerson"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Contact Person"
-            value={values.hikeOrCampDetails?.contactPerson || ""}
-            onChangeText={handleChange("hikeOrCampDetails.contactPerson")}
-            onBlur={handleBlur("hikeOrCampDetails.contactPerson")}
-          />
-        </View>
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.contactNumber"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Contact Number"
-            value={values.hikeOrCampDetails?.contactNumber || ""}
-            onChangeText={handleChange("hikeOrCampDetails.contactNumber")}
-            onBlur={handleBlur("hikeOrCampDetails.contactNumber")}
-            keyboardType="phone-pad"
-          />
+      {/* Sub-type tags */}
+      <View className="mb-5">
+        <Text className="text-xs font-bold tracking-wider uppercase mb-2">Activity</Text>
+        <View className="flex-row gap-2">
+          {HIKE_SUBTYPES.map((tag) => {
+            const isActive = currentSubType === tag;
+            return (
+              <TouchableOpacity
+                key={tag}
+                accessibilityRole="button"
+                onPress={() => setFieldValue("hikeOrCampDetails.subType", isActive ? null : tag)}
+                style={{
+                  borderRadius: 9999,
+                  borderWidth: 1,
+                  paddingHorizontal: 18,
+                  paddingVertical: 8,
+                  borderColor: isActive ? colors.primary : "#EAECF0",
+                  backgroundColor: isActive ? `${colors.primary}15` : "#FFF",
+                }}
+              >
+                <Text style={{ fontSize: 13, fontWeight: isActive ? "600" : "500", color: isActive ? colors.primary : "#475467" }}>
+                  {tag}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
+
+      {/* Permit Required toggle */}
+      <View className="flex-row items-center justify-between mb-5 bg-white border border-[#E0E0E0] rounded-2xl px-4 py-3">
+        <Text className="text-sm font-semibold text-gray-700">Permit Required</Text>
+        <Switch
+          value={!!values.hikeOrCampDetails?.permitRequired}
+          onValueChange={(v) => setFieldValue("hikeOrCampDetails.permitRequired", v)}
+          trackColor={{ false: "#E0E0E0", true: colors.primary }}
+          thumbColor="#FFF"
+        />
+      </View>
+
 
       {/* Website Address */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.websiteAddress"] = el; }} className="mb-5">
@@ -245,6 +205,45 @@ export default function HikeOrCampTab({
           onBlur={handleBlur("hikeOrCampDetails.reservationLink")}
         />
       </View>
+
+
+      <View className="flex-row gap-2 justify-start items-center mb-2">
+        <Text className="text-xs font-bold tracking-wider uppercase">
+          Contact
+        </Text>
+      </View>
+      {/* Contact Person & Contact Number */}
+      <View className="flex-row gap-4 mb-5">
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.contactPerson"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Contact Person"
+            value={values.hikeOrCampDetails?.contactPerson || ""}
+            onChangeText={handleChange("hikeOrCampDetails.contactPerson")}
+            onBlur={handleBlur("hikeOrCampDetails.contactPerson")}
+          />
+        </View>
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.contactNumber"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Contact Number"
+            value={values.hikeOrCampDetails?.contactNumber || ""}
+            onChangeText={handleChange("hikeOrCampDetails.contactNumber")}
+            onBlur={handleBlur("hikeOrCampDetails.contactNumber")}
+            keyboardType="phone-pad"
+          />
+        </View>
+      </View>
+
+      {/* Email Address */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.emailAddress"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Email Address"
+          value={values.hikeOrCampDetails?.emailAddress || ""}
+          onChangeText={handleChange("hikeOrCampDetails.emailAddress")}
+          onBlur={handleBlur("hikeOrCampDetails.emailAddress")}
+          keyboardType="email-address"
+        />
+      </View>
+
     </View>
   );
 }

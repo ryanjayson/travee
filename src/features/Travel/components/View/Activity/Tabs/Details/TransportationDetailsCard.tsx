@@ -1,16 +1,11 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Clipboard, ToastAndroid, Platform, Alert, Linking } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useTheme } from "react-native-paper";
+import React from "react";
+import { Linking, Text, TouchableOpacity, View } from "react-native";
 import { TransportationDetailsDto } from "../../../../../types/TravelDto";
-import { activityIcons } from "../../../../../../../components/ActivityIcon";
-import { ActivityType } from "../../../../../../../types/enums";
 
 interface TransportationDetailsCardProps {
   data: TransportationDetailsDto;
 }
-
-const transColor = activityIcons.find((icon) => icon.name === ActivityType.transportation)?.color || "#00BCD4";
 
 const handleOpenLink = (url: string) => {
   if (url) {
@@ -22,17 +17,6 @@ const handleOpenLink = (url: string) => {
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
 export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps> = ({ data }) => {
-  const { colors } = useTheme();
-
-  const handleCopy = (text: string, label: string) => {
-    if (!text) return;
-    Clipboard.setString(text);
-    if (Platform.OS === "android") {
-      ToastAndroid.show(`${label} copied to clipboard`, ToastAndroid.SHORT);
-    } else {
-      Alert.alert("Copied", `${label} copied to clipboard`);
-    }
-  };
 
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
@@ -47,31 +31,9 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
           </Text>
         </View>
 
-        {/* Mode & Price Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t border-dashed border-cyan-800 mb-4">
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-              Transit Mode
-            </Text>
-            <Text className="text-xl font-semibold text-white/80 capitalize">
-              {data.mode || "N/A"}
-            </Text>
-          </View>
-          {data.price ? (
-            <View className="flex-1 items-end">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-                Price
-              </Text>
-              <Text className="text-xl font-semibold text-white/80">
-                ₱{Number(data.price).toLocaleString()}
-              </Text>
-            </View>
-          ) : null}
-        </View>
-
         {/* Departure & Arrival Dates Row */}
         {data.departureDateTime || data.arrivalDateTime ? (
-          <View className="flex-row items-center justify-between pt-4 border-t border-dashed border-cyan-800 mb-4">
+          <View className="flex-row items-center justify-between mb-4">
             <View className="flex-1">
               <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
                 Departure
@@ -144,18 +106,24 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
       </View>
 
       {/* Stub Area */}
-      <View className="p-5 pt-3">
-        <View className="flex-col gap-2">
+      <View className="px-md">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#018091]">
+          <Field
+            label="Transit Mode"
+            value={data.mode}
+            icon="commute"
+          />
           <Field
             label="Seat / Vehicle #"
             value={data.seatOrVehicleNumber}
             icon="event-seat"
+            isCopy
           />
           <Field
             label="Booking Ref"
             value={data.bookingReference}
             icon="confirmation-number"
-            onPress={data.bookingReference ? () => handleCopy(data.bookingReference || "", "Booking reference") : undefined}
+            isCopy
           />
           <Field
             label="Booking Status"
@@ -163,19 +131,32 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
             icon="info-outline"
           />
           <Field
+            label="Price"
+            value={Number(data.price).toLocaleString()}
+            icon="attach-money"
+          />
+        </View>
+      </View>
+
+      <View className="px-md mt-sm">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#018091]">
+          <Field
             label="Website / Ticket"
             value={data.websiteAddress}
             icon="language"
             isLink={true}
             onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress || "") : undefined}
           />
+
           <Field
             label="Contact"
             value={data.contactNumber}
             icon="phone"
+            isCall
           />
         </View>
       </View>
+
     </View>
   );
 };

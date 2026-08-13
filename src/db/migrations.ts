@@ -622,5 +622,55 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 29,
+      steps: [
+        addColumns({
+          table: "nature_details",
+          columns: [
+            { name: "website_address", type: "string", isOptional: true },
+            { name: "contact_name", type: "string", isOptional: true },
+            { name: "contact_number", type: "string", isOptional: true },
+            { name: "email_address", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 30,
+      steps: [
+        addColumns({
+          table: "entertainment_details",
+          columns: [
+            { name: "contact_name", type: "string", isOptional: true },
+            { name: "contact_number", type: "string", isOptional: true },
+            { name: "email_address", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 31,
+      steps: [
+        addColumns({
+          table: "hike_or_camp_details",
+          columns: [
+            { name: "email_address", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 32,
+      steps: [
+        addColumns({
+          table: "ride_rental_details",
+          columns: [
+            { name: "contact_name", type: "string", isOptional: true },
+            { name: "email_address", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

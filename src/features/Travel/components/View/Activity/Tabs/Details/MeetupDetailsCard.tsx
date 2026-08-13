@@ -5,12 +5,13 @@ import { useTheme } from "react-native-paper";
 import { MeetupDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
+import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
 
 interface MeetupDetailsCardProps {
   data: MeetupDetailsDto;
 }
 
-const meetupColor = activityIcons.find((icon) => icon.name === (ActivityType as any).meetup)?.color || "#26A69A";
+// const meetupColor = activityIcons.find((icon) => icon.name === (ActivityType as any).meetup)?.color || "#26A69A";
 
 const handleOpenLink = (url: string) => {
   if (url) {
@@ -35,19 +36,11 @@ export const MeetupDetailsCard: React.FC<MeetupDetailsCardProps> = ({ data }) =>
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.venueName || "N/A"}
           </Text>
-          {data.address ? (
-            <TouchableOpacity
-              onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center gap-6 mt-1"
-              activeOpacity={0.7}
-              accessibilityRole="button"
-            >
-              <Icon name="location-on" size={24} color="#FFFFFF" />
-              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                {data.address}
-              </Text>
-            </TouchableOpacity>
-          ) : null}
+          <ActivityDetailCardAddress
+            address={data.address}
+            coordinates={data.destinationAddressData?.coordinates}
+            title={data.venueName}
+          />
         </View>
 
         {/* Row of details: Meetup Type & People count */}

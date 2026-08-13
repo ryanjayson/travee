@@ -1,22 +1,13 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Clipboard, ToastAndroid, Platform, Alert, Linking } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import React from "react";
+import { Linking, Text, View } from "react-native";
+import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateTimeUtils";
 import { AccomodationDetailsDto } from "../../../../../types/TravelDto";
-import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
-import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
+import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
 interface AccomodationDetailsCardProps {
   data: AccomodationDetailsDto;
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
-
-
-const handleOpenLink = (url: string) => {
-  if (url) {
-    const formattedUrl = url.startsWith("http") ? url : `https://${url}`;
-    Linking.openURL(formattedUrl).catch((err) => console.error("Failed to open link", err));
-  }
-};
-
 
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
@@ -33,23 +24,12 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.accomodationName || "N/A"}
           </Text>
-          {data.address ? (
-            <>
-              <TouchableOpacity
-                onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-                className="flex-row items-center gap-3 mt-1 mb-2"
-                activeOpacity={0.7}
-                accessibilityRole="button"
-              >
-                <Icon name="location-on" size={18} color="#FFFFFF" />
-                <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                  {data.address}
-                </Text>
-              </TouchableOpacity>
-
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.accomodationName} height={180} onFullScreenChange={onFullScreenChange} />
-            </>
-          ) : null}
+          <ActivityDetailCardAddress
+            address={data.address}
+            coordinates={data.destinationAddressData?.coordinates}
+            title={data.accomodationName}
+            onFullScreenChange={onFullScreenChange}
+          />
         </View>
       </View>
 
@@ -83,13 +63,14 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
         </View>
       </View>
       <View className="px-md ">
-        <View className="rounded-2xl flex-col gap-3 p-5 pb-1"
-          style={{
-            backgroundColor: !data.bookingReference && !data.websiteAddress && !data.contactName && !data.contactNumber && !data.emailAddress
-              ? "transparent" : "#9c46ec",
-          }}>
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#9c46ec]">
           <Field label="Booking Ref" value={data.bookingReference} icon="folder-open" showBorder={false} isCopyable={true} borderColor="border-[#9234ea]" />
           <Field label="Website" value={data.websiteAddress} icon="link" showBorder={false} isLink={true} borderColor="border-[#9234ea]" />
+        </View>
+      </View>
+
+      <View className="px-md mt-sm">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#9c46ec]">
           <Field label="Contact Person" value={data.contactName} icon="person" showBorder={false} borderColor="border-[#9234ea]" />
           <Field
             label="Contact Number"

@@ -5,7 +5,7 @@ import { useTheme } from "react-native-paper";
 import { ShoppingDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
-import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
+import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
 
 interface ShoppingDetailsCardProps {
   data: ShoppingDetailsDto;
@@ -37,23 +37,12 @@ export const ShoppingDetailsCard: React.FC<ShoppingDetailsCardProps> = ({ data, 
           <Text className="text-5xl font-semibold tracking-tight mb-2 text-white">
             {data.venueName || "N/A"}
           </Text>
-          {data.address ? (
-            <>
-              <TouchableOpacity
-                onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-                className="flex-row items-center mt-1 mb-2 pr-xl"
-                activeOpacity={0.7}
-                accessibilityRole="button"
-              >
-                <Icon name="location-on" size={24} color="#FFFFFF" className="mx-5"/>
-                <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                  {data.address}
-                </Text>
-                <Icon name="open-in-new" size={16} color={"#FFFFFF"} />
-              </TouchableOpacity>
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.venueName} height={180} onFullScreenChange={onFullScreenChange} />
-            </>
-          ) : null}
+          <ActivityDetailCardAddress
+            address={data.address}
+            coordinates={data.destinationAddressData?.coordinates}
+            title={data.venueName}
+            onFullScreenChange={onFullScreenChange}
+          />
         </View>
       </View>
 

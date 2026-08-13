@@ -5,7 +5,7 @@ import { useTheme } from "react-native-paper";
 import { SightseeingDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
-import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
+import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
 
 interface SightseeingDetailsCardProps {
   data: SightseeingDetailsDto;
@@ -37,22 +37,12 @@ export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ 
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.attractionName || "N/A"}
           </Text>
-          {data.address ? (
-            <>
-              <TouchableOpacity
-                onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-                className="flex-row items-center gap-6 mt-1 mb-2 pr-xl"
-                activeOpacity={0.7}
-                accessibilityRole="button"
-              >
-                <Icon name="location-on" size={24} color="#FFFFFF" />
-                <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                  {data.address}
-                </Text>
-              </TouchableOpacity>
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.attractionName} height={180} onFullScreenChange={onFullScreenChange} />
-            </>
-          ) : null}
+          <ActivityDetailCardAddress
+            address={data.address}
+            coordinates={data.destinationAddressData?.coordinates}
+            title={data.attractionName}
+            onFullScreenChange={onFullScreenChange}
+          />
         </View>
 
       </View>

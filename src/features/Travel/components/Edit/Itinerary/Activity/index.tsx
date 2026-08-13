@@ -136,6 +136,10 @@ export interface ActivityFormValues {
     destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     subType?: string | null;
     entryFee?: string | null;
+    websiteAddress?: string | null;
+    contactName?: string | null;
+    contactNumber?: string | null;
+    emailAddress?: string | null;
   } | null;
   shoppingDetails?: {
     venueName: string;
@@ -152,6 +156,9 @@ export interface ActivityFormValues {
     websiteAddress?: string | null;
     ticketPrice?: string | null;
     bookingReference?: string | null;
+    contactName?: string | null;
+    contactNumber?: string | null;
+    emailAddress?: string | null;
   } | null;
   transportationDetails?: {
     mode?: string | null;
@@ -200,6 +207,7 @@ export interface ActivityFormValues {
     permitRequired?: boolean | null;
     contactPerson?: string | null;
     contactNumber?: string | null;
+    emailAddress?: string | null;
     websiteAddress?: string | null;
     reservationLink?: string | null;
     checkinDateTime?: Date | string | null;
@@ -237,7 +245,9 @@ export interface ActivityFormValues {
     bookingStatus?: string | null;
     price?: string | null;
     websiteAddress?: string | null;
+    contactName?: string | null;
     contactNumber?: string | null;
+    emailAddress?: string | null;
     notes?: string | null;
   } | null;
 }
@@ -823,6 +833,10 @@ const EditActivity = ({
             destinationAddressData: values.natureDetails.destinationAddressData ?? null,
             subType: values.natureDetails.subType || null,
             entryFee: values.natureDetails.entryFee || null,
+            websiteAddress: values.natureDetails.websiteAddress || null,
+            contactName: values.natureDetails.contactName || null,
+            contactNumber: values.natureDetails.contactNumber || null,
+            emailAddress: values.natureDetails.emailAddress || null,
           }
           : null,
         shoppingDetails: values.type === ActivityType.shopppingAndService && values.shoppingDetails
@@ -843,6 +857,9 @@ const EditActivity = ({
             websiteAddress: values.entertainmentDetails.websiteAddress || null,
             ticketPrice: values.entertainmentDetails.ticketPrice || null,
             bookingReference: values.entertainmentDetails.bookingReference || null,
+            contactName: values.entertainmentDetails.contactName || null,
+            contactNumber: values.entertainmentDetails.contactNumber || null,
+            emailAddress: values.entertainmentDetails.emailAddress || null,
           }
           : null,
         transportationDetails: values.type === ActivityType.transportation && values.transportationDetails
@@ -909,6 +926,7 @@ const EditActivity = ({
             permitRequired: values.hikeOrCampDetails.permitRequired ?? null,
             contactPerson: values.hikeOrCampDetails.contactPerson || null,
             contactNumber: values.hikeOrCampDetails.contactNumber || null,
+            emailAddress: values.hikeOrCampDetails.emailAddress || null,
             websiteAddress: values.hikeOrCampDetails.websiteAddress || null,
             reservationLink: values.hikeOrCampDetails.reservationLink || null,
             checkinDateTime: values.hikeOrCampDetails.checkinDateTime
@@ -959,7 +977,9 @@ const EditActivity = ({
               bookingStatus: values.rideRentalDetails.bookingStatus || null,
               price: values.rideRentalDetails.price || null,
               websiteAddress: values.rideRentalDetails.websiteAddress || null,
+              contactName: values.rideRentalDetails.contactName || null,
               contactNumber: values.rideRentalDetails.contactNumber || null,
+              emailAddress: values.rideRentalDetails.emailAddress || null,
               notes: values.rideRentalDetails.notes || null,
             }
           : null,
@@ -1099,6 +1119,10 @@ const EditActivity = ({
       destinationAddressData: itineraryActivity?.natureDetails?.destinationAddressData ?? null,
       subType: itineraryActivity?.natureDetails?.subType || null,
       entryFee: itineraryActivity?.natureDetails?.entryFee || "",
+      websiteAddress: itineraryActivity?.natureDetails?.websiteAddress || "",
+      contactName: itineraryActivity?.natureDetails?.contactName || "",
+      contactNumber: itineraryActivity?.natureDetails?.contactNumber || "",
+      emailAddress: itineraryActivity?.natureDetails?.emailAddress || "",
     },
     shoppingDetails: {
       venueName: itineraryActivity?.shoppingDetails?.venueName || "",
@@ -1115,6 +1139,9 @@ const EditActivity = ({
       websiteAddress: itineraryActivity?.entertainmentDetails?.websiteAddress || "",
       ticketPrice: itineraryActivity?.entertainmentDetails?.ticketPrice || "",
       bookingReference: itineraryActivity?.entertainmentDetails?.bookingReference || "",
+      contactName: itineraryActivity?.entertainmentDetails?.contactName || "",
+      contactNumber: itineraryActivity?.entertainmentDetails?.contactNumber || "",
+      emailAddress: itineraryActivity?.entertainmentDetails?.emailAddress || "",
     },
     transportationDetails: {
       mode: itineraryActivity?.transportationDetails?.mode || null,
@@ -1177,6 +1204,7 @@ const EditActivity = ({
       permitRequired: itineraryActivity?.hikeOrCampDetails?.permitRequired ?? false,
       contactPerson: itineraryActivity?.hikeOrCampDetails?.contactPerson || "",
       contactNumber: itineraryActivity?.hikeOrCampDetails?.contactNumber || "",
+      emailAddress: itineraryActivity?.hikeOrCampDetails?.emailAddress || "",
       websiteAddress: itineraryActivity?.hikeOrCampDetails?.websiteAddress || "",
       reservationLink: itineraryActivity?.hikeOrCampDetails?.reservationLink || "",
       checkinDateTime: itineraryActivity?.hikeOrCampDetails?.checkinDateTime
@@ -1230,7 +1258,9 @@ const EditActivity = ({
       bookingStatus: itineraryActivity?.rideRentalDetails?.bookingStatus || "",
       price: itineraryActivity?.rideRentalDetails?.price || "",
       websiteAddress: itineraryActivity?.rideRentalDetails?.websiteAddress || "",
+      contactName: itineraryActivity?.rideRentalDetails?.contactName || "",
       contactNumber: itineraryActivity?.rideRentalDetails?.contactNumber || "",
+      emailAddress: itineraryActivity?.rideRentalDetails?.emailAddress || "",
       notes: itineraryActivity?.rideRentalDetails?.notes || "",
     },
   };

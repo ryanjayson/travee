@@ -54,11 +54,23 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
           />
         );
       case ActivityType.nature:
-        return <NatureDetails data={itineraryActivity.natureDetails} onFullScreenChange={onFullScreenChange} />;
+        return (
+          <NatureDetails
+            data={itineraryActivity.natureDetails}
+            activityStartDate={itineraryActivity.startDate}
+            onFullScreenChange={onFullScreenChange}
+          />
+        );
       case ActivityType.shopppingAndService:
         return <ShoppingDetails data={itineraryActivity.shoppingDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.entertainmentAndRecreation:
-        return <EntertainmentDetails data={itineraryActivity.entertainmentDetails} onFullScreenChange={onFullScreenChange} />;
+        return (
+          <EntertainmentDetails
+            data={itineraryActivity.entertainmentDetails}
+            activityStartDate={itineraryActivity.startDate}
+            onFullScreenChange={onFullScreenChange}
+          />
+        );
       case ActivityType.walk:
         return <WalkDetails data={itineraryActivity.walkDetails} />;
       case ActivityType.sightseeing:
@@ -67,6 +79,10 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
         return <PreparationDetails data={itineraryActivity.preparationDetails} />;
       case ActivityType.hikeOrCamp:
         return <HikeOrCampDetails data={itineraryActivity.hikeOrCampDetails} />;
+      case ActivityType.transportation:
+        return <TransportationDetails data={itineraryActivity.transportationDetails} />;
+      case ActivityType.rideRental:
+        return <RideRentalDetails data={itineraryActivity.rideRentalDetails} />;
       default:
         return <Text className="text-white p-4 text-center">No type-specific details available.</Text>;
     }

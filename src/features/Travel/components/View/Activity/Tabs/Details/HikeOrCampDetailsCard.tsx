@@ -1,17 +1,16 @@
-import React from "react";
-import { View, Text, TouchableOpacity, Clipboard, ToastAndroid, Platform, Alert, Linking } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import React from "react";
+import { Linking, Text, View } from "react-native";
 import { useTheme } from "react-native-paper";
-import { HikeOrCampDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
-import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
+import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateTimeUtils";
+import { HikeOrCampDetailsDto } from "../../../../../types/TravelDto";
+import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
 
 interface HikeOrCampDetailsCardProps {
   data: HikeOrCampDetailsDto;
 }
-
-const hikeColor = activityIcons.find((icon) => icon.name === ActivityType.hikeOrCamp)?.color || "#558B2F";
 
 
 const handleOpenLink = (url: string) => {
@@ -36,7 +35,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
     <View className="rounded-3xl mb-6  overflow-hidden">
       {/* Main Details Body */}
       <View className="px-2">
-        <View className="mb-4">
+        <View className="mb-1">
           <View className="flex-row justify-between items-center">
             <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
               Trail / Site Name
@@ -59,24 +58,15 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white ">
             {data.trailOrSiteName || "N/A"}
           </Text>
-          {data.address ? (
-            <TouchableOpacity
-              onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center  mt-1"
-              activeOpacity={0.7}
-              accessibilityRole="button"
-            >
-              <Icon name="location-on" size={24} color="#FFFFFF" className="mr-6" />
-              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                {data.address}
-              </Text>
-              <Icon name="open-in-new" size={16} color={"#016630"} />
-            </TouchableOpacity>
-          ) : null}
+          <ActivityDetailCardAddress
+            address={data.address}
+            coordinates={data.destinationAddressData?.coordinates}
+            title={data.trailOrSiteName}
+          />
         </View>
 
         {/* Start & End Dates Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#388052]">
+        <View className="flex-row items-center justify-between pb-xl px-md ">
           <View className="flex-1">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Start / Check-in
@@ -105,66 +95,23 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
             </Text>
           </View>
         </View>
-
-        {/* Additional details */}
-        <View className="flex-row justify-between mt-5 border-dashed-t border-gray-100">
-          {/* {data.campsiteName ? (
-          <View className="mt-3 pt-3">
-            <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest mb-0.5">
-              Campsite Name
-            </Text>
-            <Text className="text-lg font-medium text-white">
-              {data.campsiteName} /   {data.subType}
-            </Text>
-          </View>
-        ) : null} */}
-
-          {data.subType ? (
-            <View className="flex-1">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">
-                Activity Type
-              </Text>
-              <Text className="text-lg font-semibold text-white/60 capitalize">
-                {data.subType}
-              </Text>
-            </View>
-          ) : null}
-
-          {data.estimatedDistanceKm ? (
-            <View className="flex-1 items-end">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">
-                Distance
-              </Text>
-              <Text className="text-lg font-semibold text-white/60">
-                {data.estimatedDistanceKm} Km
-              </Text>
-            </View>
-          ) : null}
-        </View>
-
-
       </View>
 
       {/* Stub Area */}
-      <View className="px-md mt-4">
+      <View className="px-md">
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#3E8E5B]">
-          {/* <Field label="Contact Person / number" value={`${data.contactPerson} / ${data.contactNumber}`} icon="person" /> */}
           <Field
-            label="Contact Person / number"
-            value={`${data.contactPerson} / ${data.contactNumber}`}
-            icon="person"
-            showBorder={true}
-            borderColor="border-[#388052]"
-            onPress={data.contactNumber ? () => handleCall(data.contactNumber!) : undefined}
+            label="Activity Name"
+            value={data.subType == "Both" ? "Camp & Hike" : data.subType}
+            icon="book-online"
+            showBorder={false}
           />
           <Field
             label="Reservation"
             value={data.reservationLink}
             icon="book-online"
-            isLink
-            showBorder={true}
-            borderColor="border-[#388052]"
-            onPress={data.reservationLink ? () => handleOpenLink(data.reservationLink!) : undefined}
+            isCopy
+            showBorder={false}
           />
           <Field
             label="Website"
@@ -172,7 +119,32 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
             icon="language"
             isLink
             showBorder={false}
-            onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress!) : undefined}
+          />
+        </View>
+      </View>
+
+      <View className="px-md mt-sm">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#3E8E5B]">
+          <Field
+            label="Contact Person"
+            value={data.contactPerson}
+            icon="person"
+            showBorder={false}
+          />
+          <Field
+            label="Contact Number"
+            value={data.contactNumber}
+            icon="phone"
+            showBorder={false}
+            isCall
+            onPress={data.contactNumber ? () => handleCall(data.contactNumber!) : undefined}
+          />
+          <Field
+            label="Email Address"
+            value={data.emailAddress}
+            icon="email"
+            isEmail={true}
+            showBorder={false}
           />
         </View>
       </View>

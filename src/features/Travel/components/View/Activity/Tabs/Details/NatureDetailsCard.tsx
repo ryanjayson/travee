@@ -1,81 +1,81 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Linking } from "react-native";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useTheme } from "react-native-paper";
-import { NatureDetailsDto } from "../../../../../types/TravelDto";
+import { Linking, Text, View } from "react-native";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
-import MapboxAddressMap from "../../../../../../../components/MapboxAddressMap";
+import { NatureDetailsDto } from "../../../../../types/TravelDto";
+import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
+import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
+import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
 
 interface NatureDetailsCardProps {
   data: NatureDetailsDto;
+  activityStartDate?: Date | string | null;
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
-const natureColor = activityIcons.find((icon) => icon.name === ActivityType.nature)?.color || "#429862";
-
-const handleOpenLink = (url: string) => {
-  if (url) {
-    const formattedUrl = url.startsWith("http") ? url : `https://${url}`;
-    Linking.openURL(formattedUrl).catch((err) => console.error("Failed to open link", err));
-  }
-};
-
-export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({ data, onFullScreenChange }) => {
+export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({
+  data,
+  activityStartDate,
+  onFullScreenChange }) => {
+  const dateTimeVal = activityStartDate || (data as any)?.activitydatetime || (data as any)?.startDate;
 
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
       <View className="p-2">
-        <View className="mb-4">
+        <View className="mb-1">
           <View className="flex-row justify-between items-center">
             <Text className="text-xs font-medium text-white/80 uppercase tracking-widest mb-2">
               Spot Name
             </Text>
           </View>
-          
+
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.spotName || "N/A"}
           </Text>
-          {data.address ? (
-            <>
-              <TouchableOpacity
-                onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-                className="flex-row items-center mt-1 mb-2 pr-xl"
-                activeOpacity={0.7}
-                accessibilityRole="button"
-              >
-                <Icon name="location-on" size={24} color="#FFFFFF" className="mr-6"/>
-                <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                  {data.address}
-                </Text>
-                <Icon name="open-in-new" size={16} color={"#FFFFFF"} />
-              </TouchableOpacity>
-              <MapboxAddressMap address={data.address} coordinates={data.destinationAddressData?.coordinates} title={data.spotName} height={180} onFullScreenChange={onFullScreenChange} />
-            </>
-          ) : null}
+          <ActivityDetailCardAddress
+            address={data.address}
+            coordinates={data.destinationAddressData?.coordinates}
+            title={data.spotName}
+            onFullScreenChange={onFullScreenChange}
+          />
         </View>
+      </View>
 
-        {/* Row of details: Spot Type & Entry Fee */}
-        <View className="flex-row items-center justify-between pt-4 ">
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-              Spot Type
+      <View className="flex-row items-center justify-between pb-xl px-md ">
+        <View className="flex-1">
+          <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            Date & Time
+          </Text>
+          <View className="flex-row gap-3">
+            <Text className="text-2xl font-medium text-white/90 ">
+              {safeFormatDate(dateTimeVal)}
             </Text>
-            <Text className="text-2xl font-semibold text-white/60 capitalize">
-              {data.subType || "N/A"}
+            <Text className="text-2xl font-semibold text-white/60">
+              {safeFormatTime(dateTimeVal)}
             </Text>
           </View>
-          {data.entryFee ? (
-            <View className="flex-1 items-end">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-                Entry Fee
-              </Text>
-              <Text className="text-2xl font-semibold text-white/60 text-right">
-                {data.entryFee}
-              </Text>
-            </View>
-          ) : null}
+        </View>
+      </View>
+
+
+      {/* Additional Info Section */}
+      <View className="px-md">
+        <View
+          className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#205c41]">
+          <Field label="Spot Type" value={data.subType} icon="nature" showBorder={false} />
+          <Field label="Website" value={data.websiteAddress} icon="link" showBorder={false} isLink={true} />
+          <Field label="Entry Fee" value={data.entryFee} icon="price-check" showBorder={false} />
+        </View>
+      </View>
+
+      <View className="px-md mt-sm">
+        <View
+          className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#205c41]"
+        >
+          <Field label="Contact Person" value={data.contactName} icon="person" showBorder={false} />
+          <Field label="Contact Number" value={data.contactNumber} icon="phone" showBorder={false} isCall />
+          <Field label="Email Address" value={data.emailAddress} icon="email" isEmail={true} />
         </View>
       </View>
     </View>

@@ -177,6 +177,10 @@ export interface NatureDetailsDto {
   destinationAddressData?: DestinationDto;
   subType?: string | null; // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
   entryFee?: string | null;
+  websiteAddress?: string | null;
+  contactName?: string | null;
+  contactNumber?: string | null;
+  emailAddress?: string | null;
 }
 
 export interface ShoppingDetailsDto {
@@ -199,6 +203,9 @@ export interface EntertainmentDetailsDto {
   websiteAddress?: string | null;
   ticketPrice?: string | null;
   bookingReference?: string | null;
+  contactName?: string | null;
+  contactNumber?: string | null;
+  emailAddress?: string | null;
 }
 
 export interface TransportationDetailsDto {
@@ -265,6 +272,7 @@ export interface HikeOrCampDetailsDto {
   permitRequired?: boolean | null;
   contactPerson?: string | null;
   contactNumber?: string | null;
+  emailAddress?: string | null;
   websiteAddress?: string | null;
   reservationLink?: string | null;
   checkinDateTime?: Date | string | null;
@@ -311,7 +319,9 @@ export interface RideRentalDetailsDto {
   bookingStatus?: string | null;
   price?: string | null;
   websiteAddress?: string | null;
+  contactName?: string | null;
   contactNumber?: string | null;
+  emailAddress?: string | null;
   notes?: string | null;
 }
 

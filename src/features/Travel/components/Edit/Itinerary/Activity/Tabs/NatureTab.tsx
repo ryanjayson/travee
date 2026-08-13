@@ -1,6 +1,6 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
 import DateTime from "../DateTime";
@@ -129,6 +129,83 @@ export default function NatureTab({
           onBlur={handleBlur("natureDetails.entryFee")}
           keyboardType="numeric"
         />
+      </View>
+
+      {/* Website Address */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["natureDetails.websiteAddress"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Website Address"
+          value={values.natureDetails?.websiteAddress || ""}
+          onChangeText={handleChange("natureDetails.websiteAddress")}
+          onBlur={handleBlur("natureDetails.websiteAddress")}
+          contentStyle={{ textDecorationLine: "underline" }}
+          right={
+            values.natureDetails?.websiteAddress ? (
+              <TextInput.Icon
+                icon={() => (
+                  <Text
+                    style={{
+                      color: colors?.primary || "#263F69",
+                      textDecorationLine: "underline",
+                      fontWeight: "bold",
+                      fontSize: 14,
+                      marginTop: 2,
+                      opacity: 0.8,
+                    }}
+                  >
+                    open
+                  </Text>
+                )}
+                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                onPress={() => {
+                  let url = values.natureDetails.websiteAddress;
+                  if (url) {
+                    if (!/^https?:\/\//i.test(url)) {
+                      url = "https://" + url;
+                    }
+                    Linking.openURL(url).catch((err) =>
+                      console.error("Failed to open URL", err)
+                    );
+                  }
+                }}
+              />
+            ) : null
+          }
+        />
+      </View>
+
+      <View className="flex-row gap-2 justify-start items-center mb-2">
+        <Text className="text-xs font-bold tracking-wider uppercase">
+          Contact
+        </Text>
+      </View>
+
+      {/* Contact Name */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["natureDetails.contactName"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Contact Name"
+          value={values.natureDetails?.contactName || ""}
+          onChangeText={handleChange("natureDetails.contactName")}
+          onBlur={handleBlur("natureDetails.contactName")}
+        />
+      </View>
+
+      {/* Contact Number & Email Address */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["natureDetails.contactNumber"] = el; }} className="flex-row gap-4 mb-5">
+        <FloatingLabelInput
+          label="Contact Number"
+          value={values.natureDetails?.contactNumber || ""}
+          onChangeText={handleChange("natureDetails.contactNumber")}
+          onBlur={handleBlur("natureDetails.contactNumber")}
+        />
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["natureDetails.emailAddress"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Email Address"
+            value={values.natureDetails?.emailAddress || ""}
+            onChangeText={handleChange("natureDetails.emailAddress")}
+            onBlur={handleBlur("natureDetails.emailAddress")}
+          />
+        </View>
       </View>
     </View>
   );

@@ -131,6 +131,7 @@ export const fetchLocalHikeOrCampDetails = async (activityId: string): Promise<a
         permitRequired: h.permitRequired,
         contactPerson: h.contactPerson,
         contactNumber: h.contactNumber,
+        emailAddress: h.emailAddress,
         websiteAddress: h.websiteAddress,
         reservationLink: h.reservationLink,
         checkinDateTime: h.checkinDateTime,
@@ -186,6 +187,10 @@ export const fetchLocalNatureDetails = async (activityId: string): Promise<any |
         destinationAddressData: safeJsonParse(item.destinationAddressData, undefined),
         subType: item.subType,
         entryFee: item.entryFee,
+        websiteAddress: item.websiteAddress,
+        contactName: item.contactName,
+        contactNumber: item.contactNumber,
+        emailAddress: item.emailAddress,
       };
     }
     return null;
@@ -236,6 +241,9 @@ export const fetchLocalEntertainmentDetails = async (activityId: string): Promis
         websiteAddress: item.websiteAddress,
         ticketPrice: item.ticketPrice,
         bookingReference: item.bookingReference,
+        contactName: item.contactName,
+        contactNumber: item.contactNumber,
+        emailAddress: item.emailAddress,
       };
     }
     return null;
@@ -418,7 +426,9 @@ export const fetchLocalRideRentalDetails = async (activityId: string): Promise<a
         bookingStatus: item.bookingStatus,
         price: item.price,
         websiteAddress: item.websiteAddress,
+        contactName: item.contactName,
         contactNumber: item.contactNumber,
+        emailAddress: item.emailAddress,
         notes: item.notes,
       };
     }
@@ -1262,6 +1272,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
             permitRequired: activityData.hikeOrCampDetails.permitRequired,
             contactPerson: activityData.hikeOrCampDetails.contactPerson,
             contactNumber: activityData.hikeOrCampDetails.contactNumber,
+            emailAddress: activityData.hikeOrCampDetails.emailAddress || null,
             websiteAddress: activityData.hikeOrCampDetails.websiteAddress,
             reservationLink: activityData.hikeOrCampDetails.reservationLink,
             checkinDateTime: activityData.hikeOrCampDetails.checkinDateTime ? new Date(activityData.hikeOrCampDetails.checkinDateTime) : null,
@@ -1283,6 +1294,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
             permitRequired: activityData.hikeOrCampDetails.permitRequired,
             contactPerson: activityData.hikeOrCampDetails.contactPerson,
             contactNumber: activityData.hikeOrCampDetails.contactNumber,
+            emailAddress: activityData.hikeOrCampDetails.emailAddress || null,
             websiteAddress: activityData.hikeOrCampDetails.websiteAddress,
             reservationLink: activityData.hikeOrCampDetails.reservationLink,
             checkinDateTime: activityData.hikeOrCampDetails.checkinDateTime ? new Date(activityData.hikeOrCampDetails.checkinDateTime) : null,
@@ -1350,6 +1362,10 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
               : null,
             subType: activityData.natureDetails.subType,
             entryFee: activityData.natureDetails.entryFee,
+            websiteAddress: activityData.natureDetails.websiteAddress || null,
+            contactName: activityData.natureDetails.contactName || null,
+            contactNumber: activityData.natureDetails.contactNumber || null,
+            emailAddress: activityData.natureDetails.emailAddress || null,
           });
         });
       } else {
@@ -1363,6 +1379,10 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
               : null,
             subType: activityData.natureDetails.subType,
             entryFee: activityData.natureDetails.entryFee,
+            websiteAddress: activityData.natureDetails.websiteAddress || null,
+            contactName: activityData.natureDetails.contactName || null,
+            contactNumber: activityData.natureDetails.contactNumber || null,
+            emailAddress: activityData.natureDetails.emailAddress || null,
           });
         });
       }
@@ -1422,6 +1442,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
             websiteAddress: activityData.entertainmentDetails.websiteAddress,
             ticketPrice: activityData.entertainmentDetails.ticketPrice,
             bookingReference: activityData.entertainmentDetails.bookingReference,
+            contactName: activityData.entertainmentDetails.contactName || null,
+            contactNumber: activityData.entertainmentDetails.contactNumber || null,
+            emailAddress: activityData.entertainmentDetails.emailAddress || null,
           });
         });
       } else {
@@ -1437,6 +1460,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
             websiteAddress: activityData.entertainmentDetails.websiteAddress,
             ticketPrice: activityData.entertainmentDetails.ticketPrice,
             bookingReference: activityData.entertainmentDetails.bookingReference,
+            contactName: activityData.entertainmentDetails.contactName || null,
+            contactNumber: activityData.entertainmentDetails.contactNumber || null,
+            emailAddress: activityData.entertainmentDetails.emailAddress || null,
           });
         });
       }
@@ -1655,7 +1681,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
         bookingStatus: activityData.rideRentalDetails.bookingStatus || null,
         price: activityData.rideRentalDetails.price || null,
         websiteAddress: activityData.rideRentalDetails.websiteAddress || null,
+        contactName: activityData.rideRentalDetails.contactName || null,
         contactNumber: activityData.rideRentalDetails.contactNumber || null,
+        emailAddress: activityData.rideRentalDetails.emailAddress || null,
         notes: activityData.rideRentalDetails.notes || null,
       };
 

@@ -119,9 +119,23 @@ export const CafeRestaurantDetails = ({
   );
 };
 
-export const NatureDetails = ({ data, onFullScreenChange }: { data?: NatureDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
+export const NatureDetails = ({
+  data,
+  activityStartDate,
+  onFullScreenChange,
+}: {
+  data?: NatureDetailsDto | null;
+  activityStartDate?: Date | string | null;
+  onFullScreenChange?: (fullScreen: boolean) => void;
+}) => {
   if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <NatureDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
+  return (
+    <NatureDetailsCard
+      data={data!}
+      activityStartDate={activityStartDate}
+      onFullScreenChange={onFullScreenChange}
+    />
+  );
 };
 
 export const ShoppingDetails = ({ data, onFullScreenChange }: { data?: ShoppingDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
@@ -129,9 +143,23 @@ export const ShoppingDetails = ({ data, onFullScreenChange }: { data?: ShoppingD
   return <ShoppingDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const EntertainmentDetails = ({ data, onFullScreenChange }: { data?: EntertainmentDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
+export const EntertainmentDetails = ({
+  data,
+  activityStartDate,
+  onFullScreenChange,
+}: {
+  data?: EntertainmentDetailsDto | null;
+  activityStartDate?: Date | string | null;
+  onFullScreenChange?: (fullScreen: boolean) => void;
+}) => {
   if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <EntertainmentDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
+  return (
+    <EntertainmentDetailsCard
+      data={data!}
+      activityStartDate={activityStartDate}
+      onFullScreenChange={onFullScreenChange}
+    />
+  );
 };
 
 export const TransportationDetails = ({ data }: { data?: TransportationDetailsDto | null }) => {

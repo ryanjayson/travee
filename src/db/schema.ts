@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 28,
+  version: 32,
   tables: [
     tableSchema({
       name: "travels",
@@ -271,6 +271,7 @@ export const schema = appSchema({
         { name: "permit_required", type: "boolean", isOptional: true },
         { name: "contact_person", type: "string", isOptional: true },
         { name: "contact_number", type: "string", isOptional: true },
+        { name: "email_address", type: "string", isOptional: true },
         { name: "website_address", type: "string", isOptional: true },
         { name: "reservation_link", type: "string", isOptional: true },
         { name: "checkin_date_time", type: "number", isOptional: true },
@@ -304,6 +305,10 @@ export const schema = appSchema({
         { name: "destination_address_data", type: "string", isOptional: true },
         { name: "sub_type", type: "string", isOptional: true },
         { name: "entry_fee", type: "string", isOptional: true },
+        { name: "website_address", type: "string", isOptional: true },
+        { name: "contact_name", type: "string", isOptional: true },
+        { name: "contact_number", type: "string", isOptional: true },
+        { name: "email_address", type: "string", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],
@@ -332,6 +337,9 @@ export const schema = appSchema({
         { name: "website_address", type: "string", isOptional: true },
         { name: "ticket_price", type: "string", isOptional: true },
         { name: "booking_reference", type: "string", isOptional: true },
+        { name: "contact_name", type: "string", isOptional: true },
+        { name: "contact_number", type: "string", isOptional: true },
+        { name: "email_address", type: "string", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],
@@ -437,7 +445,9 @@ export const schema = appSchema({
         { name: "booking_status", type: "string", isOptional: true },
         { name: "price", type: "string", isOptional: true },
         { name: "website_address", type: "string", isOptional: true },
+        { name: "contact_name", type: "string", isOptional: true },
         { name: "contact_number", type: "string", isOptional: true },
+        { name: "email_address", type: "string", isOptional: true },
         { name: "notes", type: "string", isOptional: true },
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },

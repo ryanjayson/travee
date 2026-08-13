@@ -255,15 +255,42 @@ export default function RideRentalTab({
         </View>
       </View>
 
-      {/* Contact Number */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactNumber"] = el; }} className="mb-5">
+      <View className="flex-row gap-2 justify-start items-center mb-2">
+        <Text className="text-xs font-bold tracking-wider uppercase">
+          Contact
+        </Text>
+      </View>
+
+      {/* Contact Name */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactName"] = el; }} className="mb-5">
         <FloatingLabelInput
-          label="Contact Number"
-          value={values.rideRentalDetails?.contactNumber || ""}
-          onChangeText={handleChange("rideRentalDetails.contactNumber")}
-          onBlur={handleBlur("rideRentalDetails.contactNumber")}
-          keyboardType="phone-pad"
+          label="Contact Name"
+          value={values.rideRentalDetails?.contactName || ""}
+          onChangeText={handleChange("rideRentalDetails.contactName")}
+          onBlur={handleBlur("rideRentalDetails.contactName")}
         />
+      </View>
+
+      {/* Contact Number & Email Address */}
+      <View className="flex-row gap-4 mb-5">
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactNumber"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Contact Number"
+            value={values.rideRentalDetails?.contactNumber || ""}
+            onChangeText={handleChange("rideRentalDetails.contactNumber")}
+            onBlur={handleBlur("rideRentalDetails.contactNumber")}
+            keyboardType="phone-pad"
+          />
+        </View>
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.emailAddress"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Email Address"
+            value={values.rideRentalDetails?.emailAddress || ""}
+            onChangeText={handleChange("rideRentalDetails.emailAddress")}
+            onBlur={handleBlur("rideRentalDetails.emailAddress")}
+            keyboardType="email-address"
+          />
+        </View>
       </View>
     </View>
   );

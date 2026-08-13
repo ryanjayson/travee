@@ -22,7 +22,9 @@ export default class RideRentalDetails extends Model {
   @text("booking_status") bookingStatus!: string | null;
   @text("price") price!: string | null;
   @text("website_address") websiteAddress!: string | null;
+  @text("contact_name") contactName!: string | null;
   @text("contact_number") contactNumber!: string | null;
+  @text("email_address") emailAddress!: string | null;
   @text("notes") notes!: string | null;
 
   @readonly @date("created_at") createdAt!: Date;

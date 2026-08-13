@@ -6,6 +6,7 @@ import { RideRentalDetailsDto } from "../../../../../types/TravelDto";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 import { ActivityType } from "../../../../../../../types/enums";
 import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
+import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
 
 interface RideRentalDetailsCardProps {
   data: RideRentalDetailsDto;
@@ -47,19 +48,11 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({ da
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.providerName || "N/A"}
           </Text>
-          {data.address ? (
-            <TouchableOpacity
-              onPress={() => handleOpenLink(`https://maps.google.com/?q=${encodeURIComponent(data.address || "")}`)}
-              className="flex-row items-center gap-6 mt-1"
-              activeOpacity={0.7}
-              accessibilityRole="button"
-            >
-              <Icon name="location-on" size={24} color="#FFFFFF" />
-              <Text className="text-base text-white underline flex-1" numberOfLines={1}>
-                {data.address}
-              </Text>
-            </TouchableOpacity>
-          ) : null}
+          <ActivityDetailCardAddress
+            address={data.address}
+            coordinates={data.destinationAddressData?.coordinates}
+            title={data.providerName}
+          />
         </View>
 
         {/* Start & End Dates Row */}
@@ -134,20 +127,23 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({ da
       </View>
 
       {/* Stub Area */}
-      <View className="p-5 pt-3">
-        <View className="flex-col gap-2">
-          {data.vehicleModel ? (
-            <Field
-              label="Vehicle Model"
-              value={data.vehicleModel}
-              icon="directions-car"
-            />
-          ) : null}
+      <View className="px-md">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#303F9F]">
+          <Field
+            label="Vehicle Model"
+            value={data.vehicleModel}
+            icon="directions-car"
+          />
+          <Field
+            label="Vehicle Type"
+            value={data.vehicleType}
+            icon="commute"
+          />
           <Field
             label="Booking Ref"
             value={data.bookingReference}
             icon="confirmation-number"
-            onPress={data.bookingReference ? () => handleCopy(data.bookingReference || "", "Booking reference") : undefined}
+            isCopy
           />
           <Field
             label="Booking Status"
@@ -155,37 +151,40 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({ da
             icon="info-outline"
           />
           <Field
+            label="Price"
+            value={data.price ? `₱${Number(data.price).toLocaleString()}` : null}
+            icon="attach-money"
+          />
+          <Field
             label="Website / Link"
             value={data.websiteAddress}
             icon="language"
-            isLink={true}
-            onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress || "") : undefined}
+            isLink
+          />
+        </View>
+      </View>
+
+      <View className="px-md mt-sm">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#303F9F]">
+          <Field
+            label="Contact Person"
+            value={data.contactName}
+            icon="person"
+            showBorder={false}
           />
           <Field
-            label="Contact"
+            label="Contact Number"
             value={data.contactNumber}
             icon="phone"
+            showBorder={false}
+            isCall
           />
-          {data.vehicleType ? (
-            <View className="mb-2">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-                Vehicle Type
-              </Text>
-              <Text className="text-lg font-semibold text-white/80 capitalize">
-                {data.vehicleType}
-              </Text>
-            </View>
-          ) : null}
-          {data.price ? (
-            <View className="pt-3 border-t border-gray-100/10 flex-row justify-between items-center">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest">
-                Rental Cost
-              </Text>
-              <Text className="text-xl font-semibold text-white/80">
-                ₱{Number(data.price).toLocaleString()}
-              </Text>
-            </View>
-          ) : null}
+          <Field
+            label="Email Address"
+            value={data.emailAddress}
+            icon="email"
+            isEmail
+          />
         </View>
       </View>
     </View>

@@ -183,6 +183,40 @@ export default function EntertainmentTab({
           }
         />
       </View>
+
+      <View className="flex-row gap-2 justify-start items-center mb-2">
+        <Text className="text-xs font-bold tracking-wider uppercase">
+          Contact
+        </Text>
+      </View>
+
+      {/* Contact Name */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["entertainmentDetails.contactName"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Contact Name"
+          value={values.entertainmentDetails?.contactName || ""}
+          onChangeText={handleChange("entertainmentDetails.contactName")}
+          onBlur={handleBlur("entertainmentDetails.contactName")}
+        />
+      </View>
+
+      {/* Contact Number & Email Address */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["entertainmentDetails.contactNumber"] = el; }} className="flex-row gap-4 mb-5">
+        <FloatingLabelInput
+          label="Contact Number"
+          value={values.entertainmentDetails?.contactNumber || ""}
+          onChangeText={handleChange("entertainmentDetails.contactNumber")}
+          onBlur={handleBlur("entertainmentDetails.contactNumber")}
+        />
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["entertainmentDetails.emailAddress"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Email Address"
+            value={values.entertainmentDetails?.emailAddress || ""}
+            onChangeText={handleChange("entertainmentDetails.emailAddress")}
+            onBlur={handleBlur("entertainmentDetails.emailAddress")}
+          />
+        </View>
+      </View>
     </View>
   );
 }

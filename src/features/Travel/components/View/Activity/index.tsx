@@ -575,8 +575,6 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             </TouchableWithoutFeedback>
           </View>
 
-
-
           {/* Snappable Bottom Form Sheet */}
           <Animated.View
             {...(canSnap ? panResponder.panHandlers : {})}
@@ -640,7 +638,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
                       </View>
                     </View>
                   )}
-                  <Text className="text-xl font-semibold">{itineraryActivity?.title}</Text>
+                  <Text className="text-xl font-semibold pb-sm">{itineraryActivity?.title}</Text>
                   {description && (
                     <View className="">
                       {/* Hidden text element for un-truncated line measurement */}
@@ -654,27 +652,45 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
                         {description}
                       </Text>
 
-                      {/* Visible description text */}
-                      <Text
-                        className="text-base text-[#999] leading-6"
-                        numberOfLines={isDescriptionExpanded ? undefined : 1}
-                      >
-                        {description}
-                      </Text>
-                      {showMoreButton && (
-                        <TouchableOpacity
-                          onPress={() => {
-                            if (snappedY.current !== SNAP_90) {
-                              snapTo(SNAP_90);
-                            }
-                            setIsDescriptionExpanded(!isDescriptionExpanded);
-                          }}
-                          accessibilityRole="button"
-                        >
-                          <Text className="text-sm text-secondary font-medium -mb-1 underline">
-                            {isDescriptionExpanded ? "Show less" : "Show more"}
+                      {/* Visible description text with Show More / Show Less button on same line */}
+                      {showMoreButton && !isDescriptionExpanded ? (
+                        <View className="flex-row items-center">
+                          <Text
+                            className="flex-1 text-base text-[#999] leading-6"
+                            numberOfLines={1}
+                          >
+                            {description}
                           </Text>
-                        </TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() => {
+                              if (canSnap && snappedY.current !== SNAP_90) {
+                                snapTo(SNAP_90);
+                              }
+                              setIsDescriptionExpanded(true);
+                            }}
+                            accessibilityRole="button"
+                            className="ml-1"
+                          >
+                            <Text className="text-sm text-secondary font-medium underline">
+                              Show more
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <Text className="text-base text-[#999] leading-6">
+                          {description}
+                          {showMoreButton && isDescriptionExpanded && (
+                            <Text
+                              onPress={() => {
+                                setIsDescriptionExpanded(false);
+                              }}
+                              accessibilityRole="button"
+                              className="text-sm text-secondary font-medium underline"
+                            >
+                              {" Show less"}
+                            </Text>
+                          )}
+                        </Text>
                       )}
                     </View>
                   )}
