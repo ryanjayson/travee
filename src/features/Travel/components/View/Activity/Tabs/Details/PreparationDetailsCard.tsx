@@ -1,15 +1,12 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { Text, View } from "react-native";
 import { useTheme } from "react-native-paper";
 import { PreparationDetailsDto } from "../../../../../types/TravelDto";
-import { activityIcons } from "../../../../../../../components/ActivityIcon";
-import { ActivityType } from "../../../../../../../types/enums";
+import { safeFormatDate, safeFormatTime } from "../../../../../../../utils";
 
 interface PreparationDetailsCardProps {
   data: PreparationDetailsDto;
 }
-
-const prepColor = activityIcons.find((icon) => icon.name === ActivityType.preparation)?.color || "#607D8B";
 
 
 const formatDate = (dateValue: Date | string | null | undefined) => {
@@ -28,7 +25,6 @@ const formatDate = (dateValue: Date | string | null | undefined) => {
 };
 
 export const PreparationDetailsCard: React.FC<PreparationDetailsCardProps> = ({ data }) => {
-  const { colors } = useTheme();
 
   const getPriorityColor = (priority?: string | null) => {
     switch (priority?.toLowerCase()) {
@@ -66,27 +62,30 @@ export const PreparationDetailsCard: React.FC<PreparationDetailsCardProps> = ({ 
               </View>
             ) : null}
           </View>
-          
+
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.taskLabel || "N/A"}
           </Text>
         </View>
 
-        {/* Deadline Row */}
-        <View className="flex-row items-center justify-between pt-4 border-t-2 border-dashed border-[#546c78]">
-          <View className="flex-1 bg-[#5c7784] p-4 rounded-2xl">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
-              Deadline / Due
+        <View className="flex-1 bg-[#5c7784] p-4 rounded-2xl">
+          <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            Deadline / Due
+          </Text>
+          <View className="flex-row gap-3">
+            <Text className="text-2xl font-medium text-white/90 ">
+              {safeFormatDate(data.deadlineDateTime)}
             </Text>
-            <Text className="text-2xl font-semibold text-white/80">
-              {formatDate(data.deadlineDateTime)}
+            <Text className="text-2xl font-semibold text-white/60">
+              {safeFormatTime(data.deadlineDateTime)}
             </Text>
           </View>
         </View>
 
+
         {/* Notes block */}
         {data.notes ? (
-          <View className="mt-3 pt-3">
+          <View className="mt-3 pt-3 px-md">
             <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               Notes / Instructions
             </Text>

@@ -16,7 +16,7 @@ export enum ActivityType {
   shopppingAndService = 6, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
   entertainmentAndRecreation = 7, //park, museum, gym, cinema, stadium, zoo, concert
   nature = 5, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
-  walk = 9,
+  // walk = 9, TODO: reenable for the future
   hikeOrCamp = 13, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
   preparation = 11,
   // rest = 12,

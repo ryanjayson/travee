@@ -18,7 +18,7 @@ export const safeFormatTime = (
 
 export const safeFormatDate = (
   dateValue: Date | string | null | undefined,
-  fallback: string = "N/A"
+  fallback: string = ""
 ): string => {
   if (!dateValue) return fallback;
   try {

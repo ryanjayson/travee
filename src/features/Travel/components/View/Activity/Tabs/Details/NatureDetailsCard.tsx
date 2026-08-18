@@ -60,7 +60,8 @@ export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({
 
 
       {/* Additional Info Section */}
-      <View className="px-md">
+      <View className="px-md"
+        style={{ display: data.subType || data.websiteAddress || data.entryFee ? "flex" : "none" }}>
         <View
           className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#205c41]">
           <Field label="Spot Type" value={data.subType} icon="nature" showBorder={false} />
@@ -69,7 +70,8 @@ export const NatureDetailsCard: React.FC<NatureDetailsCardProps> = ({
         </View>
       </View>
 
-      <View className="px-md mt-sm">
+      <View className="px-md mt-sm"
+        style={{ display: data.contactName || data.contactNumber || data.emailAddress ? "flex" : "none" }}>
         <View
           className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#205c41]"
         >

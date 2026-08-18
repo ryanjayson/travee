@@ -64,7 +64,7 @@ const ActivityModal = ({
   useEffect(() => {
     if (visible) {
       setCurrentActivity(propItineraryActivity);
-      if (activeId) {
+      if (propItineraryActivity?.id) {
         refetchActivity();
       }
       setIsSaving(false);
@@ -72,7 +72,7 @@ const ActivityModal = ({
       setExtractedData(null);
       setIsOcrPending(false);
     }
-  }, [visible, propItineraryActivity, activeId, refetchActivity]);
+  }, [visible, propItineraryActivity, refetchActivity]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);

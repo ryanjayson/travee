@@ -29,7 +29,6 @@ const handleCall = (phone: string) => {
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
 export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ data }) => {
-  const { colors } = useTheme();
 
   return (
     <View className="rounded-3xl mb-6  overflow-hidden">
@@ -40,14 +39,14 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
             <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
               Trail / Site Name
             </Text>
-            {data.permitRequired !== undefined && data.permitRequired !== null ? (
+            {data.destinationAddressData && data.permitRequired !== undefined && data.permitRequired !== null ? (
               <View
-                className="px-3 py-2 rounded-full"
-                style={{ backgroundColor: data.permitRequired ? `#07945550` : "#07945525" }}
+                className="px-3 py-2 rounded-full opacity-75"
+                style={{ backgroundColor: data.permitRequired ? `#3E8E5B` : "#07945550" }}
               >
                 <Text
                   className="text-xs font-extrabold tracking-wide uppercase"
-                  style={{ color: data.permitRequired ? colors.error : "#079455" }}
+                  style={{ color: "#ddd" }}
                 >
                   {data.permitRequired ? "Permit Required" : "No Permit Required"}
                 </Text>
@@ -88,17 +87,18 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
               End / Check-out
             </Text>
             <Text className="text-2xl font-semibold text-white/60 text-right">
-              {data.checkoutDateTime ? safeFormatTime(data.checkoutDateTime) : "--:--"}
+              {safeFormatTime(data.checkoutDateTime)}
             </Text>
             <Text className="text-md font-medium text-white/60 mt-0.5 text-right">
-              {data.checkoutDateTime ? safeFormatDate(data.checkoutDateTime) : "N/A"}
+              {safeFormatDate(data.checkoutDateTime)}
             </Text>
           </View>
         </View>
       </View>
 
       {/* Stub Area */}
-      <View className="px-md">
+      <View className="px-md"
+        style={{ display: data.subType || data.reservationLink || data.websiteAddress ? "flex" : "none" }}>
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#3E8E5B]">
           <Field
             label="Activity Name"
@@ -123,7 +123,8 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
         </View>
       </View>
 
-      <View className="px-md mt-sm">
+      <View className="px-md mt-sm"
+        style={{ display: data.contactPerson || data.contactNumber || data.emailAddress ? "flex" : "none" }}>
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#3E8E5B]">
           <Field
             label="Contact Person"

@@ -995,12 +995,13 @@ const EditActivity = ({
 
       if (!values.id && savedId) {
         try {
-          let fullActivity = result?.data;
+          let fullActivity: ItineraryActivity | null = (result?.data || (result as any)) as ItineraryActivity;
           const isLocal = isNaN(Number(savedId));
           if (isLocal) {
-            fullActivity = await fetchLocalItineraryActivity(savedId);
+            const localActivity = await fetchLocalItineraryActivity(savedId);
+            if (localActivity) fullActivity = localActivity as ItineraryActivity;
           }
-          if (fullActivity) {
+          if (fullActivity && fullActivity.id) {
             onSaveSuccess?.(fullActivity);
           } else {
             onClose();

@@ -188,7 +188,8 @@ export const RestDetails = ({ data }: { data?: RestDetailsDto | null }) => {
 };
 
 export const HikeOrCampDetails = ({ data }: { data?: HikeOrCampDetailsDto | null }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
+  const dataWithoutPermit = { ...data, permitRequired: null }
+  if (!hasActivityData(dataWithoutPermit)) return <NoDetailsAdded />;
   return <HikeOrCampDetailsCard data={data!} />;
 };
 

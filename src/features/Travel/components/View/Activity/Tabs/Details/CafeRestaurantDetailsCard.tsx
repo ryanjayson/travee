@@ -1,10 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Linking } from "react-native";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { Text, View } from "react-native";
+import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateTimeUtils";
 import { CafeRestaurantDetailsDto } from "../../../../../types/TravelDto";
 import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
-import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
 
 interface CafeRestaurantDetailsCardProps {
   data: CafeRestaurantDetailsDto;
