@@ -2,7 +2,10 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
-import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
+import DescriptionInput from "../../../../../../../components/molecules/DescriptionInput";
+
+const FloatingLabelInput = (props: any) => <FloatingLabelInputAtom {...props} />;
 
 const PRIORITIES = ["High", "Medium", "Low"];
 
@@ -102,13 +105,14 @@ export default function PreparationTab({
 
       {/* Notes */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["preparationDetails.notes"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Notes"
+        <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Notes</Text>
+        <DescriptionInput
           value={values.preparationDetails?.notes || ""}
-          onChangeText={handleChange("preparationDetails.notes")}
-          onBlur={handleBlur("preparationDetails.notes")}
-          multiline
-          numberOfLines={3}
+          onChange={(text) => setFieldValue("preparationDetails.notes", text)}
+          label="Notes"
+          placeholder="Preparation notes"
+          confirmLabel="Add"
+          maxLength={500}
         />
       </View>
     </View>

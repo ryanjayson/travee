@@ -93,7 +93,7 @@ export interface FlightModalState {
   onConfirm?: (flightData: {
     departureAirport: any;
     arrivalAirport: any;
-    departureDate: Date;
+    departureDate: Date | null;
   }) => void;
   defaultDate?: Date | string | null;
 }
@@ -168,7 +168,7 @@ export interface TravelContextType {
     onConfirm: (flightData: {
       departureAirport: any;
       arrivalAirport: any;
-      departureDate: Date;
+      departureDate: Date | null;
     }) => void,
     defaultDate?: Date | string | null
   ) => void;

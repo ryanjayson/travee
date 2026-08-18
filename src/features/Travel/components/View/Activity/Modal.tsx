@@ -41,7 +41,7 @@ const is60PercentSnap = (type?: ActivityType) => {
     ActivityType.shopppingAndService,
     ActivityType.nature,
     ActivityType.sightseeing,
-    ActivityType.walk,
+    // ActivityType.walk,
     ActivityType.entertainmentAndRecreation,
     ActivityType.cafeRestaurant,
   ].includes(type);
@@ -62,8 +62,8 @@ const hasActivityDetails = (activity?: ItineraryActivity | null) => {
       return !!activity.shoppingDetails;
     case ActivityType.entertainmentAndRecreation:
       return !!activity.entertainmentDetails;
-    case ActivityType.walk:
-      return !!activity.walkDetails;
+    // case ActivityType.walk:
+    //   return !!activity.walkDetails;
     case ActivityType.sightseeing:
       return !!activity.sightseeingDetails;
     case ActivityType.preparation:
@@ -97,7 +97,14 @@ const ViewActivityModal = ({
   }, [id, showModal]);
 
   // Fetch current activity data for Edit Modal and color
-  const { data: itineraryActivity } = useItineraryActivity(currentActivityId);
+  const { data: itineraryActivity, isLoading } = useItineraryActivity(currentActivityId);
+
+  // Close modal if activity was deleted while modal is open
+  useEffect(() => {
+    if (showModal && currentActivityId && !isLoading && itineraryActivity === null) {
+      setShowModal(false);
+    }
+  }, [showModal, currentActivityId, isLoading, itineraryActivity, setShowModal]);
 
   // Fetch the full travel plan to get the ordered list of all activities
   const travelId = itineraryActivity?.travelId || propTravelId || "";
@@ -151,9 +158,10 @@ const ViewActivityModal = ({
   const yOffset = insets.top + 60; // Estimated parent modal header offset
   const parentHeight = screenHeight - yOffset;
 
-  const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 0.75 : 0.82;
+  // const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 0.80 : 0.81;
   const SNAP_90 = parentHeight * 0.1;
-  const SNAP_MIN = parentHeight * SNAP_EXTENDED;
+  const SNAP_MIN = parentHeight * 0.85;
+
 
   const translateY = useRef(new Animated.Value(SNAP_MIN)).current;
 
@@ -253,7 +261,6 @@ const ViewActivityModal = ({
             <TouchableOpacity
               onPress={() => {
                 if (itineraryActivity) {
-                  setShowModal(false);
                   openActivityModal(itineraryActivity, itineraryActivity.sectionId || undefined, travelId);
                 }
               }}

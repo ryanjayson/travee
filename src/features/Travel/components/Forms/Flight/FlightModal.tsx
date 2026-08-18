@@ -40,7 +40,7 @@ interface FlightModalProps {
   onConfirm?: (flightData: {
     departureAirport: Airport;
     arrivalAirport: Airport;
-    departureDate: Date;
+    departureDate: Date | null;
   }) => void;
   defaultDate?: Date | string | null;
   initialDate?: Date | string | null;
@@ -54,12 +54,21 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
   const [arrivalAirport, setArrivalAirport] = useState<Airport | null>(null);
 
   const parseInitialDate = (dateVal?: Date | string | null) => {
-    if (!dateVal) return new Date();
+    if (!dateVal) return null;
     const d = new Date(dateVal);
-    return isNaN(d.getTime()) ? new Date() : d;
+    return isNaN(d.getTime()) || d.getTime() <= 0 ? null : d;
   };
 
-  const [departureDate, setDepartureDate] = useState<Date>(() => parseInitialDate(defaultDate || initialDate));
+  const getCalendarFallbackDate = () => {
+    const dVal = defaultDate || initialDate;
+    if (dVal) {
+      const d = new Date(dVal);
+      if (!isNaN(d.getTime()) && d.getTime() > 0) return d;
+    }
+    return new Date();
+  };
+
+  const [departureDate, setDepartureDate] = useState<Date | null>(() => parseInitialDate(initialDate));
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [activeSearch, setActiveSearch] = useState<"departure" | "arrival" | null>(null);
@@ -80,7 +89,7 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
     if (visible) {
       setDepartureAirport(null);
       setArrivalAirport(null);
-      setDepartureDate(parseInitialDate(defaultDate || initialDate));
+      setDepartureDate(parseInitialDate(initialDate));
       setActiveSearch(null);
       setSearchQuery("");
       setResults([]);
@@ -94,7 +103,7 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
         useNativeDriver: true,
       }).start();
     }
-  }, [visible, defaultDate, initialDate]);
+  }, [visible, initialDate]);
 
   // Debounced search fetching
   useEffect(() => {
@@ -506,18 +515,19 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
                     </Text>
                     <TouchableOpacity
                       onPress={() => {
-                        if (defaultDate || initialDate) {
-                          setDepartureDate(parseInitialDate(defaultDate || initialDate));
-                        }
                         setShowDatePicker(true);
                       }}
                       className="border rounded-2xl border-gray-200 bg-white p-5 flex-row items-center gap-3 active:bg-gray-50"
                       accessibilityRole="button"
                       accessibilityLabel="Choose departure date and time"
                     >
-                      <Icon name="event" size={24} color={colors.primary} />
-                      <Text className="text-base flex-1 text-gray-800 font-medium">
-                        {formatDateTime(departureDate)}
+                      <Icon name="event" size={24} color={departureDate ? colors.primary : "#B3B3B3"} />
+                      <Text
+                        className={`text-base flex-1 font-medium ${
+                          departureDate ? "text-gray-800" : "text-gray-400"
+                        }`}
+                      >
+                        {departureDate ? formatDateTime(departureDate) : "Select Departure Date & Time..."}
                       </Text>
                       <Icon name="calendar-today" size={20} color="#666" />
                     </TouchableOpacity>
@@ -553,7 +563,7 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
                 <DateTimePickerModal
                   isVisible={showDatePicker}
                   mode="datetime"
-                  date={departureDate}
+                  date={departureDate || getCalendarFallbackDate()}
                   onConfirm={(date) => {
                     setDepartureDate(date);
                     setShowDatePicker(false);

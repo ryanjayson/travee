@@ -1,35 +1,31 @@
-import React, { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  Image,
   ActivityIndicator,
-  TouchableOpacity,
-  FlatList,
-  Dimensions,
-  PanResponder,
   Animated,
+  Dimensions, PanResponder,
   Pressable,
+  Text,
+  TouchableOpacity,
   TouchableWithoutFeedback,
+  View
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { FAB, Portal, Provider } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { activityIcons } from "../../../../../components/ActivityIcon";
+import { FadeInView } from "../../../../../components/animations";
 import TouchButton from "../../../../../components/atoms/TouchButton";
 import Tabs from "../../../../../components/Tabs";
-import { Typography } from "../../../../../styles/common";
+import { useTravelContext } from "../../../../../context/TravelContext";
 import { useItineraryActivity } from "../../../hooks/useActivity";
 import { useTravelPlan } from "../../../hooks/useTravel";
+import ChecklistTab from "./Tabs/ChecklistTab";
 import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
-import NotesTab from "./Tabs/NotesTab";
-import ChecklistTab from "./Tabs/ChecklistTab";
 import FilesTab from "./Tabs/FilesTab";
-import { FAB, Icon, Portal, Provider } from "react-native-paper";
-import { useTravelContext } from "../../../../../context/TravelContext";
-import { activityIcons } from "../../../../../components/ActivityIcon";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import NotesTab from "./Tabs/NotesTab";
 
-import { ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
+import { ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 
 import { hasActivityData } from "./Tabs/Details/DetailComponents";
 
@@ -60,8 +56,8 @@ const getActivityDetailData = (activity: ItineraryActivity | null) => {
       return activity.entertainmentDetails;
     case ActivityType.transportation:
       return activity.transportationDetails;
-    case ActivityType.walk:
-      return activity.walkDetails;
+    // case ActivityType.walk:
+    // return activity.walkDetails;
     case ActivityType.sightseeing:
       return activity.sightseeingDetails;
     case ActivityType.preparation:
@@ -87,7 +83,7 @@ const is60PercentSnap = (type?: ActivityType) => {
     ActivityType.shopppingAndService,
     ActivityType.nature,
     ActivityType.sightseeing,
-    ActivityType.walk,
+    // ActivityType.walk,
     ActivityType.entertainmentAndRecreation,
     ActivityType.cafeRestaurant,
   ].includes(type);
@@ -108,8 +104,8 @@ const hasActivityDetails = (activity?: ItineraryActivity | null) => {
       return !!activity.shoppingDetails;
     case ActivityType.entertainmentAndRecreation:
       return !!activity.entertainmentDetails;
-    case ActivityType.walk:
-      return !!activity.walkDetails;
+    // case ActivityType.walk:
+    //   return !!activity.walkDetails;
     case ActivityType.sightseeing:
       return !!activity.sightseeingDetails;
     case ActivityType.preparation:
@@ -284,7 +280,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   // 90% sheet height: translateY = parentHeight * 0.1
   // Min sheet height: 25% sheet height -> 0.75 offset
   const description = itineraryActivity?.description?.trim();
-  const SNAP_EXTENDED = description && description.length > 0 ? 0.76 : 0.81;
+  const SNAP_EXTENDED = description && description.length > 0 ? 0.80 : 0.81;
   const SNAP_90 = parentHeight * 0.1;
   const SNAP_MIN = parentHeight * SNAP_EXTENDED;
 
@@ -307,8 +303,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
       const detailData = getActivityDetailData(itineraryActivity);
       const hasDetails = hasActivityData(detailData);
 
-      const isAt90 = Math.abs(snappedY.current - SNAP_90) < 1;
-      const targetSnap = (isNoType || !hasDetails || isAt90) ? SNAP_90 : SNAP_MIN;
+      const targetSnap = (isNoType || !hasDetails) ? SNAP_90 : SNAP_MIN;
 
       snappedY.current = targetSnap;
       setCurrentSnap(targetSnap);
@@ -324,7 +319,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
         setIsDescriptionExpanded(false);
       }
     }
-  }, [itineraryActivity, parentHeight, SNAP_MIN, SNAP_90]);
+  }, [itineraryActivity?.id, parentHeight, SNAP_MIN, SNAP_90]);
 
   const detailData = getActivityDetailData(itineraryActivity);
   const hasDetails = hasActivityData(detailData);
@@ -602,7 +597,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
           >
             {/* Drag Handle */}
             <View className="w-full items-center pt-3 pb-2 bg-transparent rounded-t-[32px]">
-              <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              {canSnap && <View className="w-12 h-1.5 bg-gray-300 rounded-full" />}
             </View>
 
             {sectionName && (
@@ -623,76 +618,81 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
             <View className="px-5 pb-2 bg-white mt-2">
               <View className="flex-row items-start justify-between">
                 <View className="flex-1">
-                  {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.none && (
-                    <View className={`flex-row items-center -mt-4 mb-3`}>
-                      <View
-                        style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + '20' }}
-                        className="items-end rounded-xs px-2 py-0.5"
-                      >
-                        <Text
-                          style={{ color: getActivityTypeDetails(itineraryActivity.type).color }}
-                          className="text-[8px] tracking-wider uppercase font-extrabold"
+                  <FadeInView key={`title-${id}`} type="up" delay={50} duration={350}>
+                    {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.none && (
+                      <View className={`flex-row items-center -mt-4 mb-3`}>
+                        <View
+                          style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + '20' }}
+                          className="items-end rounded-xs px-2 py-0.5"
                         >
-                          {getActivityTypeDetails(itineraryActivity.type).text}
-                        </Text>
-                      </View>
-                    </View>
-                  )}
-                  <Text className="text-xl font-semibold pb-sm">{itineraryActivity?.title}</Text>
-                  {description && (
-                    <View className="">
-                      {/* Hidden text element for un-truncated line measurement */}
-                      <Text
-                        style={{ position: "absolute", opacity: 0, zIndex: -1000 }}
-                        className="text-base text-[#999] leading-6"
-                        onTextLayout={(e) => {
-                          setShowMoreButton(e.nativeEvent.lines.length > 1);
-                        }}
-                      >
-                        {description}
-                      </Text>
-
-                      {/* Visible description text with Show More / Show Less button on same line */}
-                      {showMoreButton && !isDescriptionExpanded ? (
-                        <View className="flex-row items-center">
                           <Text
-                            className="flex-1 text-base text-[#999] leading-6"
-                            numberOfLines={1}
+                            style={{ color: getActivityTypeDetails(itineraryActivity.type).color }}
+                            className="text-[8px] tracking-wider uppercase font-extrabold"
                           >
-                            {description}
+                            {getActivityTypeDetails(itineraryActivity.type).text}
                           </Text>
-                          <TouchableOpacity
-                            onPress={() => {
-                              if (canSnap && snappedY.current !== SNAP_90) {
-                                snapTo(SNAP_90);
-                              }
-                              setIsDescriptionExpanded(true);
-                            }}
-                            accessibilityRole="button"
-                            className="ml-1"
-                          >
-                            <Text className="text-sm text-secondary font-medium underline">
-                              Show more
-                            </Text>
-                          </TouchableOpacity>
                         </View>
-                      ) : (
-                        <Text className="text-base text-[#999] leading-6">
+                      </View>
+                    )}
+                    <Text className="text-xl font-semibold pb-sm">{itineraryActivity?.title}</Text>
+                  </FadeInView>
+
+                  {description && (
+                    <FadeInView key={`desc-${id}`} type="up" delay={120} duration={350}>
+                      <View className="">
+                        {/* Hidden text element for un-truncated line measurement */}
+                        <Text
+                          style={{ position: "absolute", opacity: 0, zIndex: -1000 }}
+                          className="text-base text-[#999] leading-6"
+                          onTextLayout={(e) => {
+                            setShowMoreButton(e.nativeEvent.lines.length > 1);
+                          }}
+                        >
                           {description}
-                          {showMoreButton && isDescriptionExpanded && (
+                        </Text>
+
+                        {/* Visible description text with Show More / Show Less button on same line */}
+                        {showMoreButton && !isDescriptionExpanded ? (
+                          <View className="flex-row items-center">
                             <Text
+                              className="flex-1 text-base text-[#999] leading-6"
+                              numberOfLines={1}
+                            >
+                              {description}
+                            </Text>
+                            <TouchableOpacity
                               onPress={() => {
-                                setIsDescriptionExpanded(false);
+                                if (canSnap && snappedY.current !== SNAP_90) {
+                                  snapTo(SNAP_90);
+                                }
+                                setIsDescriptionExpanded(true);
                               }}
                               accessibilityRole="button"
-                              className="text-sm text-secondary font-medium underline"
+                              className="ml-1"
                             >
-                              {" Show less"}
-                            </Text>
-                          )}
-                        </Text>
-                      )}
-                    </View>
+                              <Text className="text-sm text-secondary font-medium underline">
+                                Show more
+                              </Text>
+                            </TouchableOpacity>
+                          </View>
+                        ) : (
+                          <Text className="text-base text-[#999] leading-6">
+                            {description}
+                            {showMoreButton && isDescriptionExpanded && (
+                              <Text
+                                onPress={() => {
+                                  setIsDescriptionExpanded(false);
+                                }}
+                                accessibilityRole="button"
+                                className="text-sm text-secondary font-medium underline"
+                              >
+                                {" Show less"}
+                              </Text>
+                            )}
+                          </Text>
+                        )}
+                      </View>
+                    </FadeInView>
                   )}
                 </View>
               </View>
@@ -707,7 +707,9 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
               }}
               className="flex-1 "
             >
-              {renderContent()}
+              <FadeInView key={`tabs-${id}`} type="up" delay={180} duration={400} style={{ flex: 1 }}>
+                {renderContent()}
+              </FadeInView>
             </Pressable>
           </Animated.View>
 

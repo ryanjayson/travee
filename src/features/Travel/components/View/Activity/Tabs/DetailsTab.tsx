@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ItineraryActivity } from "../../../../types/TravelDto";
 import { ActivityType } from "../../../../../../types/enums";
 import { activityIcons } from "../../../../../../components/ActivityIcon";
+import { FadeInView } from "../../../../../../components/animations";
 import {
   FlightDetails,
   AccomodationDetails,
@@ -71,8 +72,8 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
             onFullScreenChange={onFullScreenChange}
           />
         );
-      case ActivityType.walk:
-        return <WalkDetails data={itineraryActivity.walkDetails} />;
+      // case ActivityType.walk:
+      //   return <WalkDetails data={itineraryActivity.walkDetails} />;
       case ActivityType.sightseeing:
         return <SightseeingDetails data={itineraryActivity.sightseeingDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.preparation:
@@ -96,7 +97,9 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
       }}
     >
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }} className="flex-1">
-        <View className="px-3">{renderDetails()}</View>
+        <FadeInView key={`details-${itineraryActivity.id}`} type="down" delay={40} duration={300} className="px-3">
+          {renderDetails()}
+        </FadeInView>
       </ScrollView>
     </View>
   );

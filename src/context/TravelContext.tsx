@@ -357,7 +357,7 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       onConfirm: (flightData: {
         departureAirport: any;
         arrivalAirport: any;
-        departureDate: Date;
+        departureDate: Date | null;
       }) => void,
       defaultDate?: Date | string | null
     ) => {

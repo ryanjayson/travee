@@ -395,9 +395,9 @@ const EditActivity = ({
   };
 
   const formatFlightDateTime = (dateVal: any) => {
-    if (!dateVal) return "Not Set";
+    if (!dateVal) return "";
     const d = new Date(dateVal);
-    if (isNaN(d.getTime())) return "Not Set";
+    if (isNaN(d.getTime()) || d.getTime() <= 0) return "";
     return d.toLocaleString("en-US", {
       month: "2-digit",
       day: "2-digit",
@@ -432,16 +432,21 @@ const EditActivity = ({
       },
     });
 
-    // 4. Start Date: YYYY-MM-DD
-    const year = departureDate.getFullYear();
-    const month = String(departureDate.getMonth() + 1).padStart(2, '0');
-    const day = String(departureDate.getDate()).padStart(2, '0');
-    setFieldValue("startDate", `${year}-${month}-${day}`);
+    // 4. Start Date & Time
+    if (departureDate && departureDate instanceof Date && !isNaN(departureDate.getTime())) {
+      const year = departureDate.getFullYear();
+      const month = String(departureDate.getMonth() + 1).padStart(2, '0');
+      const day = String(departureDate.getDate()).padStart(2, '0');
+      setFieldValue("startDate", `${year}-${month}-${day}`);
 
-    // 5. Start Time: HH:MM
-    const hours = String(departureDate.getHours()).padStart(2, '0');
-    const minutes = String(departureDate.getMinutes()).padStart(2, '0');
-    setFieldValue("startTime", `${hours}:${minutes}`);
+      const hours = String(departureDate.getHours()).padStart(2, '0');
+      const minutes = String(departureDate.getMinutes()).padStart(2, '0');
+      setFieldValue("startTime", `${hours}:${minutes}`);
+
+      setFieldValue("flightDetails.departureDate", departureDate);
+    } else {
+      setFieldValue("flightDetails.departureDate", null);
+    }
 
     // 6. Description: Flight details prefill
     const depName = departureAirport.type === "city" && departureAirport.main_airport_name
@@ -458,7 +463,6 @@ const EditActivity = ({
     // 7. Flight details nested properties
     setFieldValue("flightDetails.departureAirport", `${depName} (${departureAirport.code})`);
     setFieldValue("flightDetails.arrivalAirport", `${arrName} (${arrivalAirport.code})`);
-    setFieldValue("flightDetails.departureDate", departureDate);
 
     // 8. Prefill Arrival Date & Time if coordinates are available to calculate flight duration
     if (departureAirport?.coordinates && arrivalAirport?.coordinates) {
@@ -682,8 +686,10 @@ const EditActivity = ({
 
       // Build proper Date objects from strings
       let finalStartDate: Date | undefined = undefined;
-      if (values.type === ActivityType.flight && values.flightDetails?.departureDate) {
-        finalStartDate = new Date(values.flightDetails.departureDate);
+      if (values.type === ActivityType.flight) {
+        finalStartDate = values.flightDetails?.departureDate
+          ? new Date(values.flightDetails.departureDate)
+          : undefined;
       } else if (values.type === ActivityType.accomodation) {
         finalStartDate = values.accomodationDetails?.checkinDateTime
           ? new Date(values.accomodationDetails.checkinDateTime)
@@ -782,7 +788,7 @@ const EditActivity = ({
             arrivalAirport: values.flightDetails.arrivalAirport,
             departureDate: values.flightDetails.departureDate
               ? new Date(values.flightDetails.departureDate)
-              : new Date(),
+              : null,
             arrivalDate: values.flightDetails.arrivalDate
               ? new Date(values.flightDetails.arrivalDate)
               : null,
@@ -1071,20 +1077,12 @@ const EditActivity = ({
     flightDetails: {
       departureAirport: itineraryActivity?.flightDetails?.departureAirport || "",
       arrivalAirport: itineraryActivity?.flightDetails?.arrivalAirport || "",
-      departureDate: itineraryActivity?.flightDetails?.departureDate
+      departureDate: (itineraryActivity?.flightDetails?.departureDate && new Date(itineraryActivity.flightDetails.departureDate).getTime() > 0)
         ? new Date(itineraryActivity.flightDetails.departureDate)
-        : (travelPlan?.travel?.startOrDepartureDate
-          ? new Date(travelPlan.travel.startOrDepartureDate)
-          : (itineraryActivity?.startDate
-            ? new Date(itineraryActivity.startDate)
-            : (currentSection?.startDate
-              ? new Date(currentSection.startDate)
-              : null))),
-      arrivalDate: itineraryActivity?.flightDetails?.arrivalDate
+        : null,
+      arrivalDate: (itineraryActivity?.flightDetails?.arrivalDate && new Date(itineraryActivity.flightDetails.arrivalDate).getTime() > 0)
         ? new Date(itineraryActivity.flightDetails.arrivalDate)
-        : (itineraryActivity?.type === ActivityType.flight && itineraryActivity?.endDate
-          ? new Date(itineraryActivity.endDate)
-          : null),
+        : null,
       flightNumber: itineraryActivity?.flightDetails?.flightNumber || "",
       airline: itineraryActivity?.flightDetails?.airline || "",
       gate: itineraryActivity?.flightDetails?.gate || "",

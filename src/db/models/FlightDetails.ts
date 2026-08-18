@@ -11,7 +11,7 @@ export default class FlightDetails extends Model {
 
   @text("departure_airport") departureAirport!: string;
   @text("arrival_airport") arrivalAirport!: string;
-  @date("departure_date") departureDate!: Date;
+  @date("departure_date") departureDate!: Date | null;
   @date("arrival_date") arrivalDate!: Date | null;
   @text("flight_number") flightNumber!: string | null;
   @text("airline") airline!: string | null;
