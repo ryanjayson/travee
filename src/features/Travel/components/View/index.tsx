@@ -107,9 +107,10 @@ const ViewTravel = ({
     openNoteModal,
     openChecklistModal,
     openActivityModal,
+    activeTripViewTab: activeTabId,
+    setActiveTripViewTab: setActiveTabId,
   } = useTravelContext();
   const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
-  const [activeTabId, setActiveTabId] = useState<string>("details");
 
   // --- Draggable Bottom Sheet Snap Values ---
   const insets = useSafeAreaInsets();

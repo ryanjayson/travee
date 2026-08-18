@@ -27,6 +27,8 @@ import { ActivityType } from "../../../../../../types/enums";
 import SectionLookupModal from "../../../Lookups/SectionLookupModal";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
 
+import { useTravelContext } from "../../../../../../context/TravelContext";
+
 interface ActivityModalProps {
   visible: boolean;
   onClose: () => void;
@@ -136,6 +138,7 @@ const ActivityModal = ({
   const { confirm } = useConfirm();
   const { colors } = useTheme();
   const { showToast } = useToast();
+  const { setActiveTripViewTab } = useTravelContext();
   const { mutate: deleteActivityMutation, isPending: isDeleting } = useDeleteActivityMutation();
 
   const handleDeleteActivity = async () => {
@@ -159,6 +162,7 @@ const ActivityModal = ({
             {
               onSuccess: () => {
                 showToast({ type: "success", message: "Activity deleted successfully" });
+                setActiveTripViewTab("itinerary");
                 handleCancel();
               },
               onError: () => {

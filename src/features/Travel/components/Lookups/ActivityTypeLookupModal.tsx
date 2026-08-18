@@ -183,6 +183,7 @@ const ActivityTypeLookupModal = ({
 
   const types = Object.keys(ActivityType)
     .filter((key) => isNaN(Number(key)))
+    .filter((key) => key !== "walk")
     .map((key) => {
       const typeValue = ActivityType[key as keyof typeof ActivityType];
       const displayName = getActivityTypeLabel(typeValue);

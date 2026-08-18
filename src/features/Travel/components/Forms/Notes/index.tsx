@@ -444,6 +444,7 @@ const EditActivity = ({
                   <ScrollView>
                     {Object.keys(ActivityType)
                       .filter((key) => isNaN(Number(key)))
+                      .filter((key) => key !== "walk")
                       .map((key) => (
                         <TouchableOpacity
                           key={key}

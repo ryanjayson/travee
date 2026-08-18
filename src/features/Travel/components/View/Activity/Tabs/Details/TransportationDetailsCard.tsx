@@ -21,7 +21,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
   return (
     <View className="rounded-3xl mb-6 overflow-hidden">
       {/* Main Details Body */}
-      <View className="p-4">
+      <View className="p-2">
         <View className="mb-4">
           <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest">
             Operator / Provider
@@ -105,8 +105,9 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
         ) : null}
       </View>
 
-      {/* Stub Area */}
-      <View className="px-md">
+      <View className="px-md"
+        style={{ display: data.mode || data.seatOrVehicleNumber || data.bookingReference || data.bookingStatus || data.price ? "flex" : "none" }}
+      >
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#018091]">
           <Field
             label="Transit Mode"
@@ -138,14 +139,15 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
         </View>
       </View>
 
-      <View className="px-md mt-sm">
+      <View className="px-md mt-sm"
+        style={{ display: data.websiteAddress || data.contactNumber ? "flex" : "none" }}
+      >
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#018091]">
           <Field
             label="Website / Ticket"
             value={data.websiteAddress}
             icon="language"
             isLink={true}
-            onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress || "") : undefined}
           />
 
           <Field

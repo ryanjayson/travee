@@ -253,6 +253,7 @@ const ViewActivityModal = ({
             <TouchableOpacity
               onPress={() => {
                 if (itineraryActivity) {
+                  setShowModal(false);
                   openActivityModal(itineraryActivity, itineraryActivity.sectionId || undefined, travelId);
                 }
               }}

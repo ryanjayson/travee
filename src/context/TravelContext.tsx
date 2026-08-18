@@ -105,6 +105,9 @@ const initialContextValue: TravelContextType = {
   },
   openSectionModal: () => {},
   closeSectionModal: () => {},
+
+  activeTripViewTab: "details",
+  setActiveTripViewTab: () => {},
 };
 
 // Create the typed Context
@@ -397,6 +400,8 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     }));
   }, []);
 
+  const [activeTripViewTab, setActiveTripViewTab] = useState<string>("details");
+
   // Use useMemo and apply the context type to the value
   const contextValue = useMemo<TravelContextType>(
     () => ({
@@ -430,6 +435,8 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       sectionModal,
       openSectionModal,
       closeSectionModal,
+      activeTripViewTab,
+      setActiveTripViewTab,
     }),
     [
       expenseModal,
@@ -462,6 +469,8 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       sectionModal,
       openSectionModal,
       closeSectionModal,
+      activeTripViewTab,
+      setActiveTripViewTab,
     ]
   );
 

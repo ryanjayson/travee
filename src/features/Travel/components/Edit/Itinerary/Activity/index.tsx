@@ -273,7 +273,7 @@ const FormInitHandler = ({
         onOpenPrimaryTypeModal(values.type, (type: any) => {
           setFieldValue("type", type);
           if (type === ActivityType.flight) {
-            const defaultFlightDate = values.flightDetails?.departureDate || values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+            const defaultFlightDate = values.flightDetails?.departureDate || values.startDate;
             openFlightModal(
               (flightData: any) => {
                 handleFlightSelect(flightData, setFieldValue);
@@ -553,7 +553,7 @@ const EditActivity = ({
 
   const updateMutation = useUpdateActivityMutation();
   const createSectionMutation = useUpdateSectionMutation();
-  const { openFlightModal, openDescriptionModal, openSectionModal, closeSectionModal, openChecklistModal } = useTravelContext();
+  const { openFlightModal, openDescriptionModal, openSectionModal, closeSectionModal, openChecklistModal, setActiveTripViewTab } = useTravelContext();
   const { userToken } = useAuth();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
@@ -1028,12 +1028,22 @@ const EditActivity = ({
       });
 
       if (isConfirmed) {
-        deleteActivityMutation({
-          sectionId: targetSectionId,
-          activityId: activityId,
-          travelId: travelId,
-        });
-        onClose();
+        deleteActivityMutation(
+          {
+            sectionId: targetSectionId,
+            activityId: activityId,
+            travelId: travelId,
+          },
+          {
+            onSuccess: () => {
+              setActiveTripViewTab("itinerary");
+              onClose();
+            },
+            onError: () => {
+              onClose();
+            },
+          }
+        );
       }
     }
   };
@@ -1063,12 +1073,12 @@ const EditActivity = ({
       arrivalAirport: itineraryActivity?.flightDetails?.arrivalAirport || "",
       departureDate: itineraryActivity?.flightDetails?.departureDate
         ? new Date(itineraryActivity.flightDetails.departureDate)
-        : (itineraryActivity?.startDate
-          ? new Date(itineraryActivity.startDate)
-          : (currentSection?.startDate
-            ? new Date(currentSection.startDate)
-            : (travelPlan?.travel?.startOrDepartureDate
-              ? new Date(travelPlan.travel.startOrDepartureDate)
+        : (travelPlan?.travel?.startOrDepartureDate
+          ? new Date(travelPlan.travel.startOrDepartureDate)
+          : (itineraryActivity?.startDate
+            ? new Date(itineraryActivity.startDate)
+            : (currentSection?.startDate
+              ? new Date(currentSection.startDate)
               : null))),
       arrivalDate: itineraryActivity?.flightDetails?.arrivalDate
         ? new Date(itineraryActivity.flightDetails.arrivalDate)
@@ -1151,18 +1161,10 @@ const EditActivity = ({
       dropoffLocation: itineraryActivity?.transportationDetails?.dropoffLocation || "",
       departureDateTime: itineraryActivity?.transportationDetails?.departureDateTime
         ? new Date(itineraryActivity.transportationDetails.departureDateTime)
-        : (itineraryActivity?.startDate
-          ? new Date(itineraryActivity.startDate)
-          : (currentSection?.startDate
-            ? new Date(currentSection.startDate)
-            : (travelPlan?.travel?.startOrDepartureDate
-              ? new Date(travelPlan.travel.startOrDepartureDate)
-              : null))),
+        : null,
       arrivalDateTime: itineraryActivity?.transportationDetails?.arrivalDateTime
         ? new Date(itineraryActivity.transportationDetails.arrivalDateTime)
-        : (itineraryActivity?.endDate
-          ? new Date(itineraryActivity.endDate)
-          : null),
+        : null,
       seatOrVehicleNumber: itineraryActivity?.transportationDetails?.seatOrVehicleNumber || "",
       bookingReference: itineraryActivity?.transportationDetails?.bookingReference || "",
       bookingStatus: itineraryActivity?.transportationDetails?.bookingStatus || "",
@@ -1243,18 +1245,10 @@ const EditActivity = ({
       dropoffLocation: itineraryActivity?.rideRentalDetails?.dropoffLocation || "",
       rentalStartDateTime: itineraryActivity?.rideRentalDetails?.rentalStartDateTime
         ? new Date(itineraryActivity.rideRentalDetails.rentalStartDateTime)
-        : (itineraryActivity?.startDate
-          ? new Date(itineraryActivity.startDate)
-          : (currentSection?.startDate
-            ? new Date(currentSection.startDate)
-            : (travelPlan?.travel?.startOrDepartureDate
-              ? new Date(travelPlan.travel.startOrDepartureDate)
-              : null))),
+        : null,
       rentalEndDateTime: itineraryActivity?.rideRentalDetails?.rentalEndDateTime
         ? new Date(itineraryActivity.rideRentalDetails.rentalEndDateTime)
-        : (itineraryActivity?.endDate
-          ? new Date(itineraryActivity.endDate)
-          : null),
+        : null,
       bookingReference: itineraryActivity?.rideRentalDetails?.bookingReference || "",
       bookingStatus: itineraryActivity?.rideRentalDetails?.bookingStatus || "",
       price: itineraryActivity?.rideRentalDetails?.price || "",
@@ -2270,7 +2264,12 @@ const EditActivity = ({
                 const targetVal = showFlightDatePickerFor && values.flightDetails?.[showFlightDatePickerFor];
                 if (targetVal) {
                   const d = new Date(targetVal);
-                  return isNaN(d.getTime()) ? new Date() : d;
+                  if (!isNaN(d.getTime())) return d;
+                }
+                const fallbackDate = travelPlan?.travel?.startOrDepartureDate || values.startDate || currentSection?.startDate;
+                if (fallbackDate) {
+                  const d = new Date(fallbackDate);
+                  if (!isNaN(d.getTime())) return d;
                 }
                 return new Date();
               })()}
@@ -2337,7 +2336,7 @@ const EditActivity = ({
                     if (!isNaN(d.getTime())) return d;
                   }
                 }
-                const fallbackDate = values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+                const fallbackDate = travelPlan?.travel?.startOrDepartureDate || values.startDate || currentSection?.startDate;
                 if (fallbackDate) {
                   const d = new Date(fallbackDate);
                   if (!isNaN(d.getTime())) return d;
@@ -2387,7 +2386,7 @@ const EditActivity = ({
                   const startVal = values.rideRentalDetails?.rentalStartDateTime;
                   if (startVal) { const d = new Date(startVal); if (!isNaN(d.getTime())) return d; }
                 }
-                const fallbackDate = values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+                const fallbackDate = travelPlan?.travel?.startOrDepartureDate || values.startDate || currentSection?.startDate;
                 if (fallbackDate) { const d = new Date(fallbackDate); if (!isNaN(d.getTime())) return d; }
                 return new Date();
               })()}

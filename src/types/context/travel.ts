@@ -181,6 +181,9 @@ export interface TravelContextType {
     onSaveSuccess?: (section: ItinerarySection) => void
   ) => void;
   closeSectionModal: () => void;
+
+  activeTripViewTab: string;
+  setActiveTripViewTab: (tabId: string) => void;
 }
 
 
