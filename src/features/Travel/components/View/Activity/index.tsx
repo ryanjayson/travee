@@ -280,7 +280,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   // 90% sheet height: translateY = parentHeight * 0.1
   // Min sheet height: 25% sheet height -> 0.75 offset
   const description = itineraryActivity?.description?.trim();
-  const SNAP_EXTENDED = description && description.length > 0 ? 0.80 : 0.81;
+  const SNAP_EXTENDED = description && description.length > 0 ? 0.79 : 0.82;
   const SNAP_90 = parentHeight * 0.1;
   const SNAP_MIN = parentHeight * SNAP_EXTENDED;
 
@@ -634,7 +634,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
                         </View>
                       </View>
                     )}
-                    <Text className="text-xl font-semibold pb-sm">{itineraryActivity?.title}</Text>
+                    <Text className="text-xl font-semibold" style={{ paddingBottom: description ? 6 : 0 }}>{itineraryActivity?.title}</Text>
                   </FadeInView>
 
                   {description && (

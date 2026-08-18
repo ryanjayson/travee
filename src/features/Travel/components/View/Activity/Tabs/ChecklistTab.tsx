@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Button } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { useTravelContext } from "../../../../../../context/TravelContext";
@@ -65,20 +66,28 @@ const ChecklistTab = ({ activityId, itineraryActivity }: ChecklistTabProps) => {
         <Text className="text-2xl text-tertiary/50 text-center">
           No added to-do's yet.
         </Text>
-        <View className="text-center tracking-wide flex-row align-center gap-2 ">
-          <TouchableOpacity
+        <View className="text-center tracking-wide flex-row align-center  items-center ">
+          <Button
+            mode="text"
+            icon="plus"
             onPress={handleAddItem}
+            textColor="#0EA5E9"
+            style={{
+              alignSelf: "center",
+              paddingHorizontal: 0,
+            }}
+            labelStyle={{
+              fontSize: 14,
+              fontWeight: "600",
+              textDecorationLine: "underline",
+            }}
+
             accessibilityRole="button"
-            activeOpacity={0.7}
-            className="flex-row items-center"
+            accessibilityLabel="Add To-Do item"
           >
-            {/* <Icon name="add" size={16} color={colors.primary} /> */}
-            <Text
-              className="font-medium text-base underline text-primary"
-            >
-              Add item
-            </Text>
-          </TouchableOpacity>
+            Add item
+          </Button>
+
           <Text className="text-base text-tertiary">
             now to this activity
           </Text>

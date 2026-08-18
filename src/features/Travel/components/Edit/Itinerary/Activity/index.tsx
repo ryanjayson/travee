@@ -870,32 +870,32 @@ const EditActivity = ({
           : null,
         transportationDetails: values.type === ActivityType.transportation && values.transportationDetails
           ? {
-              mode: values.transportationDetails.mode || null,
-              operatorProvider: values.transportationDetails.operatorProvider || null,
-              pickupLocation: values.transportationDetails.pickupLocation || null,
-              dropoffLocation: values.transportationDetails.dropoffLocation || null,
-              departureDateTime: values.transportationDetails.departureDateTime
-                ? new Date(values.transportationDetails.departureDateTime)
-                : null,
-              arrivalDateTime: values.transportationDetails.arrivalDateTime
-                ? new Date(values.transportationDetails.arrivalDateTime)
-                : null,
-              seatOrVehicleNumber: values.transportationDetails.seatOrVehicleNumber || null,
-              bookingReference: values.transportationDetails.bookingReference || null,
-              bookingStatus: values.transportationDetails.bookingStatus || null,
-              price: values.transportationDetails.price || null,
-              websiteAddress: values.transportationDetails.websiteAddress || null,
-              contactNumber: values.transportationDetails.contactNumber || null,
-              notes: values.transportationDetails.notes || null,
-            }
-          : null,
-        walkDetails: values.type === ActivityType.walk && values.walkDetails
-          ? {
-            routeName: values.walkDetails.routeName || null,
-            estimatedDistanceKm: values.walkDetails.estimatedDistanceKm || null,
-            estimatedDuration: values.walkDetails.estimatedDuration || null,
+            mode: values.transportationDetails.mode || null,
+            operatorProvider: values.transportationDetails.operatorProvider || null,
+            pickupLocation: values.transportationDetails.pickupLocation || null,
+            dropoffLocation: values.transportationDetails.dropoffLocation || null,
+            departureDateTime: values.transportationDetails.departureDateTime
+              ? new Date(values.transportationDetails.departureDateTime)
+              : null,
+            arrivalDateTime: values.transportationDetails.arrivalDateTime
+              ? new Date(values.transportationDetails.arrivalDateTime)
+              : null,
+            seatOrVehicleNumber: values.transportationDetails.seatOrVehicleNumber || null,
+            bookingReference: values.transportationDetails.bookingReference || null,
+            bookingStatus: values.transportationDetails.bookingStatus || null,
+            price: values.transportationDetails.price || null,
+            websiteAddress: values.transportationDetails.websiteAddress || null,
+            contactNumber: values.transportationDetails.contactNumber || null,
+            notes: values.transportationDetails.notes || null,
           }
           : null,
+        // walkDetails: values.type === ActivityType.walk && values.walkDetails
+        //   ? {
+        //     routeName: values.walkDetails.routeName || null,
+        //     estimatedDistanceKm: values.walkDetails.estimatedDistanceKm || null,
+        //     estimatedDuration: values.walkDetails.estimatedDuration || null,
+        //   }
+        //   : null,
         sightseeingDetails: values.type === ActivityType.sightseeing && values.sightseeingDetails
           ? {
             attractionName: values.sightseeingDetails.attractionName,
@@ -966,28 +966,28 @@ const EditActivity = ({
         //   : null,
         rideRentalDetails: values.type === ActivityType.rideRental && values.rideRentalDetails
           ? {
-              providerName: values.rideRentalDetails.providerName,
-              address: values.rideRentalDetails.address || null,
-              destinationAddressData: values.rideRentalDetails.destinationAddressData ?? null,
-              vehicleType: values.rideRentalDetails.vehicleType || null,
-              vehicleModel: values.rideRentalDetails.vehicleModel || null,
-              pickupLocation: values.rideRentalDetails.pickupLocation || null,
-              dropoffLocation: values.rideRentalDetails.dropoffLocation || null,
-              rentalStartDateTime: values.rideRentalDetails.rentalStartDateTime
-                ? new Date(values.rideRentalDetails.rentalStartDateTime)
-                : null,
-              rentalEndDateTime: values.rideRentalDetails.rentalEndDateTime
-                ? new Date(values.rideRentalDetails.rentalEndDateTime)
-                : null,
-              bookingReference: values.rideRentalDetails.bookingReference || null,
-              bookingStatus: values.rideRentalDetails.bookingStatus || null,
-              price: values.rideRentalDetails.price || null,
-              websiteAddress: values.rideRentalDetails.websiteAddress || null,
-              contactName: values.rideRentalDetails.contactName || null,
-              contactNumber: values.rideRentalDetails.contactNumber || null,
-              emailAddress: values.rideRentalDetails.emailAddress || null,
-              notes: values.rideRentalDetails.notes || null,
-            }
+            providerName: values.rideRentalDetails.providerName,
+            address: values.rideRentalDetails.address || null,
+            destinationAddressData: values.rideRentalDetails.destinationAddressData ?? null,
+            vehicleType: values.rideRentalDetails.vehicleType || null,
+            vehicleModel: values.rideRentalDetails.vehicleModel || null,
+            pickupLocation: values.rideRentalDetails.pickupLocation || null,
+            dropoffLocation: values.rideRentalDetails.dropoffLocation || null,
+            rentalStartDateTime: values.rideRentalDetails.rentalStartDateTime
+              ? new Date(values.rideRentalDetails.rentalStartDateTime)
+              : null,
+            rentalEndDateTime: values.rideRentalDetails.rentalEndDateTime
+              ? new Date(values.rideRentalDetails.rentalEndDateTime)
+              : null,
+            bookingReference: values.rideRentalDetails.bookingReference || null,
+            bookingStatus: values.rideRentalDetails.bookingStatus || null,
+            price: values.rideRentalDetails.price || null,
+            websiteAddress: values.rideRentalDetails.websiteAddress || null,
+            contactName: values.rideRentalDetails.contactName || null,
+            contactNumber: values.rideRentalDetails.contactNumber || null,
+            emailAddress: values.rideRentalDetails.emailAddress || null,
+            notes: values.rideRentalDetails.notes || null,
+          }
           : null,
       };
 

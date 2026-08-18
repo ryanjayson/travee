@@ -70,7 +70,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
   const images: Images[] = itineraryActivity?.images || [];
   const attachments: Attachment[] = itineraryActivity?.attachments || [];
   const [viewerActiveIndex, setViewerActiveIndex] = useState<number | null>(null);
-  
+
   // Document/Attachment web viewer states
   const [selectedFileUrl, setSelectedFileUrl] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>("");
@@ -107,7 +107,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
           title: "",
           url: asset.uri,
         }));
-        
+
         if (itineraryActivity) {
           const updatedActivity: ItineraryActivity = {
             ...itineraryActivity,
@@ -189,7 +189,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
   const handleOpenLocalFile = async (url: string, name: string) => {
     try {
       let shareUrl = url;
-      
+
       // Try to copy to cache directory with original name to maintain filename in share sheet
       try {
         const sourceFile = new File(url);
@@ -227,11 +227,11 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
     try {
       // Create a target File instance with the exact original filename to maintain name
       const targetFile = new File(Paths.cache, item.name);
-      
+
       // Download remote file to the specific file location, overwriting if exists
       const downloadedFile = await File.downloadFileAsync(item.url, targetFile, { idempotent: true });
       setIsDownloading(false);
-      
+
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
         await Sharing.shareAsync(downloadedFile.uri);
@@ -254,7 +254,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
 
   const handleOpenAttachment = (item: Attachment) => {
     const isLocal = isLocalUrl(item.url);
-    
+
     const options: AlertButton[] = [
       {
         text: "View Natively (System Viewer)",
@@ -366,8 +366,8 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
             icon="plus"
             onPress={handleAddAttachmentPress}
             disabled={updateMutation.isPending}
-            textColor="#263F69"
-            style={[styles.addAttachmentButtonEmpty, { }]}
+            textColor="#0EA5E9"
+            style={[styles.addAttachmentButtonEmpty, {}]}
             labelStyle={styles.addAttachmentButtonLabel}
             accessibilityRole="button"
             accessibilityLabel="Add attachment"
@@ -422,7 +422,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
               accessibilityRole="button"
               accessibilityLabel={`Open file ${item.name}`}
             >
-              <View style={[styles.iconWrapper, {  }]}>
+              <View style={[styles.iconWrapper, {}]}>
                 <MaterialIcons name={iconName as any} size={24} color={"#263F69"} />
               </View>
               <View style={styles.attachmentDetails}>
@@ -493,7 +493,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                 index,
               })}
               renderItem={({ item }) => (
-                <Pressable 
+                <Pressable
                   style={styles.viewerSlide}
                   onPress={() => {
                     setViewerActiveIndex(null);
@@ -502,10 +502,10 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                   accessibilityRole="button"
                   accessibilityLabel="Close image viewer"
                 >
-                  <Image 
-                    source={{ uri: item.url }} 
-                    style={styles.viewerImage} 
-                    resizeMode="contain" 
+                  <Image
+                    source={{ uri: item.url }}
+                    style={styles.viewerImage}
+                    resizeMode="contain"
                   />
                 </Pressable>
               )}
