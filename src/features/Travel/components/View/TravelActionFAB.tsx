@@ -41,7 +41,7 @@ const TravelActionFAB = ({
 
   useEffect(() => {
     Animated.spring(translateYAnim, {
-      toValue: isIncreasePosition ? -92 : 0,
+      toValue: isIncreasePosition ? -112 : 0,
       tension: 60,
       friction: 10,
       useNativeDriver: true,

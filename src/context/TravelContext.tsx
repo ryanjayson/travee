@@ -108,6 +108,9 @@ const initialContextValue: TravelContextType = {
 
   activeTripViewTab: "details",
   setActiveTripViewTab: () => {},
+
+  refetchTravelPlan: () => {},
+  setRefetchTravelPlan: () => {},
 };
 
 // Create the typed Context
@@ -402,6 +405,16 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
 
   const [activeTripViewTab, setActiveTripViewTab] = useState<string>("details");
 
+  const [refetchTravelPlanFn, setRefetchTravelPlanFn] = useState<(() => void) | null>(null);
+
+  const refetchTravelPlan = useCallback(() => {
+    refetchTravelPlanFn?.();
+  }, [refetchTravelPlanFn]);
+
+  const setRefetchTravelPlan = useCallback((fn: (() => void) | null) => {
+    setRefetchTravelPlanFn(() => fn);
+  }, []);
+
   // Use useMemo and apply the context type to the value
   const contextValue = useMemo<TravelContextType>(
     () => ({
@@ -437,6 +450,8 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       closeSectionModal,
       activeTripViewTab,
       setActiveTripViewTab,
+      refetchTravelPlan,
+      setRefetchTravelPlan,
     }),
     [
       expenseModal,
@@ -471,6 +486,8 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       closeSectionModal,
       activeTripViewTab,
       setActiveTripViewTab,
+      refetchTravelPlan,
+      setRefetchTravelPlan,
     ]
   );
 

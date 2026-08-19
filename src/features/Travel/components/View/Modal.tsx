@@ -8,6 +8,7 @@ import { Modal, Text, TouchableOpacity, View, Animated, StyleSheet } from "react
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ViewTravel from ".";
 import { useConfirm } from "../../../../context/ConfirmContext";
+import { useTravelContext } from "../../../../context/TravelContext";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
 import { TravelMenuAction } from "../../../../types/enums";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
@@ -81,6 +82,7 @@ const ViewTripModal = ({
   const navContext = useContext(NavigationContext);
   const navigation = navContext as NativeStackNavigationProp<RootStackParamList> | null;
   const queryClient = useQueryClient();
+  const { setRefetchTravelPlan } = useTravelContext();
   const {
     data: travelPlan,
     refetch,
@@ -88,10 +90,11 @@ const ViewTripModal = ({
 
   useEffect(() => {
     if (showModal && travelId) {
+      setRefetchTravelPlan(() => refetch);
       queryClient.invalidateQueries({ queryKey: ["selectedTravelPlan", travelId] });
       queryClient.invalidateQueries({ queryKey: ["checklistItems", travelId] });
     }
-  }, [showModal, travelId, queryClient]);
+  }, [showModal, travelId, queryClient, refetch, setRefetchTravelPlan]);
 
   useEffect(() => {
     // console.log("SELECTED", travelPlan);

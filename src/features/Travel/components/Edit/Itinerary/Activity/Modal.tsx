@@ -1,31 +1,30 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  View,
-  Text, TouchableOpacity,
-  Modal,
   Animated, Dimensions,
   Keyboard,
   KeyboardAvoidingView,
+  Modal,
+  PanResponder,
   Platform,
-  ActivityIndicator,
-  PanResponder
+  Text, TouchableOpacity,
+  View
 } from "react-native";
-import EditActivity from "../Activity";
-import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
-import { ItineraryActivity } from "../../../../types/TravelDto";
-import * as ImagePicker from "expo-image-picker";
-import { parseExtractedText } from "../../../../utils/ocrParser";
+import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
-import { useTheme } from "react-native-paper";
-import { useDeleteActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
 import { useToast } from "../../../../../../context/ToastContext";
-import { useTravelPlan } from "../../../../hooks/useTravel";
+import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
 import { ActivityType } from "../../../../../../types/enums";
-import SectionLookupModal from "../../../Lookups/SectionLookupModal";
+import { useDeleteActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
+import { useTravelPlan } from "../../../../hooks/useTravel";
+import { ItineraryActivity } from "../../../../types/TravelDto";
+import { parseExtractedText } from "../../../../utils/ocrParser";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
+import SectionLookupModal from "../../../Lookups/SectionLookupModal";
+import EditActivity from "../Activity";
 
 import { useTravelContext } from "../../../../../../context/TravelContext";
 

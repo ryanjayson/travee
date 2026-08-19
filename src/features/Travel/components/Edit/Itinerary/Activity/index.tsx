@@ -74,7 +74,7 @@ interface EditActivityProps {
 const TravelSchema = Yup.object().shape({
   title: Yup.string()
     .required("Activity title is required")
-    .min(2, "Activity title is too short, make it more descriptive")
+    .min(3, "Activity title is too short, make it more descriptive")
     .max(40, "Activity title must be at most 40 characters"),
 });
 
@@ -557,7 +557,7 @@ const EditActivity = ({
 
   const updateMutation = useUpdateActivityMutation();
   const createSectionMutation = useUpdateSectionMutation();
-  const { openFlightModal, openDescriptionModal, openSectionModal, closeSectionModal, openChecklistModal, setActiveTripViewTab } = useTravelContext();
+  const { openFlightModal, openDescriptionModal, openSectionModal, closeSectionModal, openChecklistModal, setActiveTripViewTab, refetchTravelPlan } = useTravelContext();
   const { userToken } = useAuth();
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
@@ -992,6 +992,8 @@ const EditActivity = ({
       };
 
       const result = await updateMutation.mutateAsync(payload);
+
+      refetchTravelPlan();
       const savedId = result?.data?.id || (result as any)?.id;
 
       showToast({
@@ -1042,6 +1044,8 @@ const EditActivity = ({
           },
           {
             onSuccess: () => {
+              refetchTravelPlan();
+              showToast({ type: "success", message: "Activity deleted successfully" });
               setActiveTripViewTab("itinerary");
               onClose();
             },
@@ -1505,7 +1509,7 @@ const EditActivity = ({
                 )}
 
                 {/* Walk Details */}
-                {values.type === ActivityType.walk && (
+                {/* {values.type === ActivityType.walk && (
                   <WalkTab
                     values={values}
                     handleChange={handleChange}
@@ -1518,7 +1522,7 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
                 {/* Sightseeing Details */}
                 {values.type === ActivityType.sightseeing && (

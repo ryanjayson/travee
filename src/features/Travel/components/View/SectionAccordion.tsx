@@ -1208,7 +1208,9 @@ const SectionAccordion = ({
                       renderActivityCards(section, section.itineraryActivity)}
                     {viewMode !== 'plain' && (
                       <View className={`absolute top-5 h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[60px]' : 'left-[66px] '} z-0`}>
-                        <Svg height={viewMode === 'narrow' ? '103%' : '100%'} >
+                        <Svg
+                          key={`${section.id}-${section.itineraryActivity?.length}`}
+                          height={viewMode === 'narrow' ? '103%' : '100%'} >
                           <Line
                             x1="2.5"
                             y1="2.5"

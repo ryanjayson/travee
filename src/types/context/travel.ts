@@ -184,6 +184,9 @@ export interface TravelContextType {
 
   activeTripViewTab: string;
   setActiveTripViewTab: (tabId: string) => void;
+
+  refetchTravelPlan: () => void;
+  setRefetchTravelPlan: (fn: (() => void) | null) => void;
 }
 
 
