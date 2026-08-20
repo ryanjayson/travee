@@ -42,7 +42,7 @@ export default function TransportationTab({
   const currentMode = values.transportationDetails?.mode || null;
 
   return (
-    <View className={`flex-1 pb-6 pt-2 ${noPadding ? "" : "px-5"}`}>
+    <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-5">
         <Icon name="directions-bus" size={20} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">
@@ -170,7 +170,7 @@ export default function TransportationTab({
       </View>
 
       {/* Seat / Coach / Vehicle Number & Booking Reference */}
-      <View className="flex-row gap-4 mb-5">
+      <View className="mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.seatOrVehicleNumber"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Seat / Coach / Vehicle #"
@@ -180,12 +180,7 @@ export default function TransportationTab({
           />
         </View>
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.bookingReference"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Booking Reference"
-            value={values.transportationDetails?.bookingReference || ""}
-            onChangeText={handleChange("transportationDetails.bookingReference")}
-            onBlur={handleBlur("transportationDetails.bookingReference")}
-          />
+
         </View>
       </View>
 
@@ -193,10 +188,10 @@ export default function TransportationTab({
       <View className="flex-row gap-4 mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
-            label="Booking Status"
-            value={values.transportationDetails?.bookingStatus || ""}
-            onChangeText={handleChange("transportationDetails.bookingStatus")}
-            onBlur={handleBlur("transportationDetails.bookingStatus")}
+            label="Booking Reference"
+            value={values.transportationDetails?.bookingReference || ""}
+            onChangeText={handleChange("transportationDetails.bookingReference")}
+            onBlur={handleBlur("transportationDetails.bookingReference")}
           />
         </View>
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.price"] = el; }} style={{ flex: 1 }}>

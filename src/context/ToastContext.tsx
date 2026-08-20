@@ -70,7 +70,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [animValue, swipeValue]);
 
   const showToast = useCallback(
-    ({ type, message, duration = 5000 }: ToastOptions) => {
+    ({ type, message, duration = 3000 }: ToastOptions) => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
@@ -196,7 +196,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
               style={[
                 styles.toastWrapper,
                 {
-                  top: insets.top + 10,
+                  top: insets.top + 20,
                   opacity,
                   transform: [{ translateY }, { translateX: swipeValue }],
                 },
@@ -213,7 +213,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
                 ]}
               >
                 <Icon
-                  name={colors.icon}
+                  name={colors.icon as any}
                   size={24}
                   color={colors.border}
                   style={styles.icon}
@@ -260,8 +260,8 @@ const styles = StyleSheet.create({
   toastContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     borderRadius: 16,
     borderWidth: 1.5,
     shadowColor: "#000",

@@ -44,7 +44,7 @@ export default function RideRentalTab({
   const currentVehicle = values.rideRentalDetails?.vehicleType || null;
 
   return (
-    <View className={`flex-1 pb-6 pt-2 ${noPadding ? "" : "px-5"}`}>
+    <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-5">
         <Icon name="directions-car" size={20} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">
@@ -95,7 +95,7 @@ export default function RideRentalTab({
                   accessibilityRole="button"
                   onPress={() => setFieldValue("rideRentalDetails.vehicleType", isActive ? null : tag)}
                   style={{
-                    borderRadius: 9999,
+                    borderRadius: 10,
                     borderWidth: 1,
                     paddingHorizontal: 14,
                     paddingVertical: 7,

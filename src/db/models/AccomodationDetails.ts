@@ -12,6 +12,7 @@ export default class AccomodationDetails extends Model {
   @text("accomodation_name") accomodationName!: string;
   @text("address") address!: string | null;
   @text("destination_address_data") destinationAddressData!: string | null;
+  @text("sub_type") subType!: string | null;
   @date("checkin_date_time") checkinDateTime!: Date | null;
   @date("checkout_date_time") checkoutDateTime!: Date | null;
   @text("website_address") websiteAddress!: string | null;

@@ -679,5 +679,16 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 33,
+      steps: [
+        addColumns({
+          table: "accomodation_details",
+          columns: [
+            { name: "sub_type", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

@@ -158,7 +158,7 @@ const ViewActivityModal = ({
   const yOffset = insets.top + 60; // Estimated parent modal header offset
   const parentHeight = screenHeight - yOffset;
 
-  const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 170 : 144;
+  const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 100 : 90;
   const SNAP_90 = parentHeight * 0.1;
   const SNAP_MIN = parentHeight - SNAP_EXTENDED;
 

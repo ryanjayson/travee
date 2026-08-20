@@ -49,12 +49,12 @@ export const SimpleAccordion = ({
             {title}
           </Text>
         </View>
-               
+
         {!disabled && (
           <Icon name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={22} color="#263F69" />
         )}
       </TouchableOpacity>
-      
+
       {isExpanded && (
         <View style={styles.content}>
           {children}
@@ -66,7 +66,7 @@ export const SimpleAccordion = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    // marginBottom: 16,
     overflow: "hidden", // Crucial for layout clipping during animations
   },
   content: {

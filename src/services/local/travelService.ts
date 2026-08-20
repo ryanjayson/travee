@@ -41,6 +41,7 @@ export const fetchLocalAccomodationDetails = async (activityId: string): Promise
         accomodationName: a.accomodationName,
         address: a.address,
         destinationAddressData: safeJsonParse(a.destinationAddressData, undefined),
+        subType: a.subType,
         checkinDateTime: sanitizeDate(a.checkinDateTime),
         checkoutDateTime: sanitizeDate(a.checkoutDateTime),
         websiteAddress: a.websiteAddress,
@@ -615,6 +616,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           accomodationName: a.accomodationName,
           address: a.address,
           destinationAddressData: a.destinationAddressData ? JSON.parse(a.destinationAddressData) : null,
+          subType: a.subType,
           checkinDateTime: sanitizeDate(a.checkinDateTime),
           checkoutDateTime: sanitizeDate(a.checkoutDateTime),
           websiteAddress: a.websiteAddress,
@@ -1184,6 +1186,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
             destinationAddressData: activityData.accomodationDetails.destinationAddressData
               ? JSON.stringify(activityData.accomodationDetails.destinationAddressData)
               : null,
+            subType: activityData.accomodationDetails.subType || null,
             checkinDateTime: activityData.accomodationDetails.checkinDateTime ? new Date(activityData.accomodationDetails.checkinDateTime) : null,
             checkoutDateTime: activityData.accomodationDetails.checkoutDateTime ? new Date(activityData.accomodationDetails.checkoutDateTime) : null,
             websiteAddress: activityData.accomodationDetails.websiteAddress,
@@ -1203,6 +1206,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
             destinationAddressData: activityData.accomodationDetails.destinationAddressData
               ? JSON.stringify(activityData.accomodationDetails.destinationAddressData)
               : null,
+            subType: activityData.accomodationDetails.subType || null,
             checkinDateTime: sanitizeDate(activityData.accomodationDetails.checkinDateTime),
             checkoutDateTime: sanitizeDate(activityData.accomodationDetails.checkoutDateTime),
             websiteAddress: activityData.accomodationDetails.websiteAddress,

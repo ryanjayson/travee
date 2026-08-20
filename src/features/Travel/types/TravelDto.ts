@@ -146,6 +146,7 @@ export interface AccomodationDetailsDto {
   accomodationName: string;
   address?: string | null;
   destinationAddressData?: DestinationDto;
+  subType?: string | null; // Hotel, Resort, Hostel, Apartment, Villa, Airbnb, Guesthouse, Motel, Cabin, Glamping, Homestay, Bed & Breakfast, Other
   checkinDateTime: Date | string;
   checkoutDateTime?: Date | string | null;
   websiteAddress?: string | null;

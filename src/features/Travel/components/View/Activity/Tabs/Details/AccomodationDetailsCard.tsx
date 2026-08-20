@@ -63,9 +63,10 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
         </View>
       </View>
       <View className="px-md"
-        style={{ display: data.bookingReference || data.websiteAddress ? "flex" : "none" }}>
+        style={{ display: data.subType || data.bookingReference || data.websiteAddress ? "flex" : "none" }}>
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#9c46ec]">
           <Field label="Booking Ref" value={data.bookingReference} icon="folder-open" showBorder={false} isCopyable={true} borderColor="border-[#9234ea]" />
+          <Field label="Type" value={data.subType} icon="hotel" showBorder={false} borderColor="border-[#9234ea]" />
           <Field label="Website" value={data.websiteAddress} icon="link" showBorder={false} isLink={true} borderColor="border-[#9234ea]" />
         </View>
       </View>

@@ -42,7 +42,7 @@ export default function NatureTab({
   const currentSubType = values.natureDetails?.subType || null;
 
   return (
-    <View className={`flex-1 pb-6 pt-2 ${noPadding ? "" : "px-5"}`}>
+    <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-5">
         <Icon name="terrain" size={20} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">

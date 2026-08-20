@@ -34,7 +34,7 @@ export default function FlightTab({
   const { colors } = useTheme();
 
   return (
-    <View className={`pb-6 pt-2 ${noPadding ? "" : "px-5"}`}>
+    <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-5">
         <Icon name="local-airport" size={20} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">
@@ -100,7 +100,7 @@ export default function FlightTab({
       </View>
 
       <View className="items-center justify-center mb-5">
-        <Icon name="arrow-downward" size={24} color={colors.primary}/>
+        <Icon name="arrow-downward" size={24} color={colors.primary} />
       </View>
 
       {/* Arrival Airport */}
@@ -114,8 +114,8 @@ export default function FlightTab({
       </View>
 
       {/* Arrival Date & Time */}
-      <View 
-        ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalDate"] = el; }} 
+      <View
+        ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalDate"] = el; }}
         className="flex-col mb-10"
       >
         <View className="flex-row gap-4">
@@ -137,9 +137,9 @@ export default function FlightTab({
             onPress={() => setShowFlightDatePickerFor("arrivalDate")}
           />
         </View>
-          <Text className={`text-xs text-[#DC6803] mt-1 ml-2 font-medium ${showArrivalPrefillNotice ? "" : "hidden"}`}>
-            Please check the actual date of your flight arrival and update accordingly.
-          </Text>
+        <Text className={`text-xs text-[#DC6803] mt-1 ml-2 font-medium ${showArrivalPrefillNotice ? "" : "hidden"}`}>
+          Please check the actual date of your flight arrival and update accordingly.
+        </Text>
       </View>
 
       {/* Flight Number & Airline */}

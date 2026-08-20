@@ -111,6 +111,7 @@ export interface ActivityFormValues {
     accomodationName: string;
     address?: string | null;
     destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
+    subType?: string | null;
     checkinDateTime: Date | string | null;
     checkoutDateTime?: Date | string | null;
     websiteAddress?: string | null;
@@ -806,6 +807,7 @@ const EditActivity = ({
             accomodationName: values.accomodationDetails.accomodationName,
             address: values.accomodationDetails.address || null,
             destinationAddressData: values.accomodationDetails.destinationAddressData ?? null,
+            subType: values.accomodationDetails.subType || null,
             checkinDateTime: values.accomodationDetails.checkinDateTime && new Date(values.accomodationDetails.checkinDateTime).getTime() > 0
               ? new Date(values.accomodationDetails.checkinDateTime)
               : null,
@@ -1103,6 +1105,7 @@ const EditActivity = ({
         ? itineraryActivity.accomodationDetails.address
         : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.destination || "" : ""),
       destinationAddressData: itineraryActivity?.accomodationDetails?.destinationAddressData ?? null,
+      subType: itineraryActivity?.accomodationDetails?.subType || null,
       checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime && new Date(itineraryActivity.accomodationDetails.checkinDateTime).getTime() > 0
         ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
         : null,
