@@ -63,7 +63,7 @@ export default function TransportationTab({
                   accessibilityRole="button"
                   onPress={() => setFieldValue("transportationDetails.mode", isActive ? null : tag)}
                   style={{
-                    borderRadius: 9999,
+                    borderRadius: 10,
                     borderWidth: 1,
                     paddingHorizontal: 14,
                     paddingVertical: 7,

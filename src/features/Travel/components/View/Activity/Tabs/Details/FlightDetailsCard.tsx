@@ -316,11 +316,11 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
 
           {data.price ? (
             <View className="flex-1 items-end">
-              <Text className="text-xxs font-semibold text-gray-400 uppercase tracking-widest mb-1">
+              <Text className="text-xs font-semibold text-gray-800 uppercase tracking-widest mb-1">
                 Price
               </Text>
-              <Text className="text-sm font-bold text-emerald-600">
-                ₱{Number(data.price).toLocaleString()}
+              <Text className="text-lg font-bold text-emerald-600">
+                {Number(data.price).toLocaleString()}
               </Text>
             </View>
           ) : null}
