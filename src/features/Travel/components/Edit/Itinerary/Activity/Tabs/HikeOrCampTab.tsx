@@ -75,7 +75,7 @@ export default function HikeOrCampTab({
 
       {/* Check-in & Check-out Date/Time */}
       <View className="flex-row gap-2 justify-start items-center mb-2">
-        <Text className="text-xs font-bold tracking-wider uppercase text-gray-500">Stay Period</Text>
+        <Text className="text-xs font-bold tracking-wider uppercase">Stay Period</Text>
       </View>
 
       <View className="flex-row items-center mb-5">
@@ -124,7 +124,7 @@ export default function HikeOrCampTab({
                 accessibilityRole="button"
                 onPress={() => setFieldValue("hikeOrCampDetails.subType", isActive ? null : tag)}
                 style={{
-                  borderRadius: 9999,
+                  borderRadius: 10,
                   borderWidth: 1,
                   paddingHorizontal: 18,
                   paddingVertical: 8,

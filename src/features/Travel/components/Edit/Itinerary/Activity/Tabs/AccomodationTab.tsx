@@ -232,14 +232,14 @@ export default function AccomodationTab({
           onChangeText={handleChange("accomodationDetails.bookingReference")}
           onBlur={handleBlur("accomodationDetails.bookingReference")}
         />
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
+        {/* <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Booking Status"
             value={values.accomodationDetails?.bookingStatus || ""}
             onChangeText={handleChange("accomodationDetails.bookingStatus")}
             onBlur={handleBlur("accomodationDetails.bookingStatus")}
           />
-        </View>
+        </View> */}
       </View>
 
       <View className="flex-row gap-2 justify-start items-center mb-2">

@@ -93,7 +93,7 @@ export default function SightseeingTab({
       )}
 
       {/* Entry Fee */}
-      <View className="mb-5">
+      <View className="mb-5 mt-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["sightseeingDetails.entryFee"] = el; }} className="flex-1">
           <FloatingLabelInput
             label="Entry Fee"

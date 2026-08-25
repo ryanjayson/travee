@@ -133,6 +133,10 @@ export default function RideRentalTab({
             onBlur={handleBlur("rideRentalDetails.pickupLocation")}
           />
         </View>
+
+      </View>
+
+      <View className="flex-row gap-4 mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.dropoffLocation"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Drop-off Location"
@@ -143,11 +147,14 @@ export default function RideRentalTab({
         </View>
       </View>
 
+
+
+
       {/* Rental Period (Start & End Date/Time) */}
       <View className="flex-row gap-2 justify-start items-center mb-2">
         <Text className="text-xs font-bold tracking-wider uppercase">Rental Period</Text>
       </View>
-      <View className="flex-row items-center mb-5">
+      <View className="flex-row items-center mb-10">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.rentalStartDateTime"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Start"
@@ -191,19 +198,19 @@ export default function RideRentalTab({
             onBlur={handleBlur("rideRentalDetails.bookingReference")}
           />
         </View>
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
+        {/* <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Booking Status"
             value={values.rideRentalDetails?.bookingStatus || ""}
             onChangeText={handleChange("rideRentalDetails.bookingStatus")}
             onBlur={handleBlur("rideRentalDetails.bookingStatus")}
           />
-        </View>
+        </View> */}
       </View>
 
       {/* Price & Website Link */}
       <View className="flex-row gap-4 mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.price"] = el; }} style={{ flex: 1 }}>
+        {/* <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.price"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Price"
             value={values.rideRentalDetails?.price || ""}
@@ -211,7 +218,7 @@ export default function RideRentalTab({
             onBlur={handleBlur("rideRentalDetails.price")}
             keyboardType="numeric"
           />
-        </View>
+        </View> */}
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.websiteAddress"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Website / Link"

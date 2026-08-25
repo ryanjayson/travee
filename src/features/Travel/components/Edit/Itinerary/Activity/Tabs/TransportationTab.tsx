@@ -50,36 +50,7 @@ export default function TransportationTab({
         </Text>
       </View>
 
-      {/* Transportation Mode Chips */}
-      <View className="mb-5">
-        <Text className="text-xs font-bold tracking-wider uppercase mb-2">Transit Mode</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-2">
-            {TRANSPORT_MODES.map((tag) => {
-              const isActive = currentMode === tag;
-              return (
-                <TouchableOpacity
-                  key={tag}
-                  accessibilityRole="button"
-                  onPress={() => setFieldValue("transportationDetails.mode", isActive ? null : tag)}
-                  style={{
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
-                    borderColor: isActive ? colors.primary : "#EAECF0",
-                    backgroundColor: isActive ? `${colors.primary}15` : "#FFF",
-                  }}
-                >
-                  <Text style={{ fontSize: 13, fontWeight: isActive ? "600" : "500", color: isActive ? colors.primary : "#475467" }}>
-                    {tag}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </ScrollView>
-      </View>
+
 
       {/* Operator / Provider */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.operatorProvider"] = el; }} className="mb-5">
@@ -91,10 +62,15 @@ export default function TransportationTab({
         />
       </View>
 
+      <View className="flex-row gap-2 justify-start items-center mb-2">
+        <Text className="text-xs font-bold tracking-wider uppercase">
+          Pickup - drop-off Location
+        </Text>
+      </View>
       {/* Pickup Location */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.pickupLocation"] = el; }} className="mb-5">
         <FloatingLabelInput
-          label="Pickup / Departure Location"
+          label="Pickup / Departure"
           value={values.transportationDetails?.pickupLocation || ""}
           onChangeText={handleChange("transportationDetails.pickupLocation")}
           onBlur={handleBlur("transportationDetails.pickupLocation")}
@@ -104,12 +80,13 @@ export default function TransportationTab({
       {/* Drop-off Location */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.dropoffLocation"] = el; }} className="mb-5">
         <FloatingLabelInput
-          label="Drop-off / Arrival Location"
+          label="Drop-off / Arrival"
           value={values.transportationDetails?.dropoffLocation || ""}
           onChangeText={handleChange("transportationDetails.dropoffLocation")}
           onBlur={handleBlur("transportationDetails.dropoffLocation")}
         />
       </View>
+
 
       {/* Departure / Arrival Date & Time */}
       <View className="flex-row gap-2 justify-start items-center mb-2">
@@ -117,7 +94,7 @@ export default function TransportationTab({
           Departure / Arrival Date & Time
         </Text>
       </View>
-      <View className="flex-row justify-center items-center mb-5">
+      <View className="flex-row justify-center items-center mb-10">
         {/* Departure Date & Time */}
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.departureDateTime"] = el; }} className="flex-1 gap-4">
           <FloatingLabelInput
@@ -167,6 +144,37 @@ export default function TransportationTab({
             onPress={() => setShowTransportationDatePickerFor?.("arrivalDateTime")}
           />
         </View>
+      </View>
+
+      {/* Transportation Mode Chips */}
+      <View className="mb-5">
+        <Text className="text-xs font-bold tracking-wider uppercase mb-2">Transit Mode</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-2">
+            {TRANSPORT_MODES.map((tag) => {
+              const isActive = currentMode === tag;
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  accessibilityRole="button"
+                  onPress={() => setFieldValue("transportationDetails.mode", isActive ? null : tag)}
+                  style={{
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderColor: isActive ? colors.primary : "#EAECF0",
+                    backgroundColor: isActive ? `${colors.primary}15` : "#FFF",
+                  }}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: isActive ? "600" : "500", color: isActive ? colors.primary : "#475467" }}>
+                    {tag}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
       </View>
 
       {/* Seat / Coach / Vehicle Number & Booking Reference */}

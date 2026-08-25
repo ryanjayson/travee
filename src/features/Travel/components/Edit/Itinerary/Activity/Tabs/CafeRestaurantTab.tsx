@@ -46,7 +46,7 @@ export default function CafeRestaurantTab({
       </View>
 
       {/* Restaurant Name — searchable */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.restaurantName"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.restaurantName"] = el; }} className="flex-1 mb-5">
         <FloatingLabelInput
           label="Restaurant / Cafe Name"
           value={values.cafeRestaurantDetails?.restaurantName || ""}
@@ -64,7 +64,7 @@ export default function CafeRestaurantTab({
       </View>
 
       {/* Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.address"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.address"] = el; }} className="flex-1 mb-5">
         <FloatingLabelInput
           label="Address"
           value={values.cafeRestaurantDetails?.address || ""}

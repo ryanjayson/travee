@@ -86,7 +86,7 @@ export default function PreparationTab({
                 accessibilityRole="button"
                 onPress={() => setFieldValue("preparationDetails.priority", isActive ? null : p)}
                 style={{
-                  borderRadius: 9999,
+                  borderRadius: 10,
                   borderWidth: 1,
                   paddingHorizontal: 18,
                   paddingVertical: 8,

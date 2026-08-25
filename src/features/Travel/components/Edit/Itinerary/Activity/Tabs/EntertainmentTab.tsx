@@ -90,7 +90,7 @@ export default function EntertainmentTab({
       )}
 
       {/* Sub-type tags */}
-      <View className="mb-5">
+      <View className="mb-5 mt-5">
         <Text className="text-xs font-bold tracking-wider uppercase mb-2">Type</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row gap-2">
@@ -102,7 +102,7 @@ export default function EntertainmentTab({
                   accessibilityRole="button"
                   onPress={() => setFieldValue("entertainmentDetails.subType", isActive ? null : tag)}
                   style={{
-                    borderRadius: 9999,
+                    borderRadius: 10,
                     borderWidth: 1,
                     paddingHorizontal: 14,
                     paddingVertical: 7,
