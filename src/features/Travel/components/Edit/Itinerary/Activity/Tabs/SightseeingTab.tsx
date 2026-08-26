@@ -147,6 +147,44 @@ export default function SightseeingTab({
           }
         />
       </View>
+
+      {/* Booking Reference */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["sightseeingDetails.bookingReference"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Booking Reference / Confirmation #"
+          value={values.sightseeingDetails?.bookingReference || ""}
+          onChangeText={handleChange("sightseeingDetails.bookingReference")}
+          onBlur={handleBlur("sightseeingDetails.bookingReference")}
+        />
+      </View>
+
+      <View className="flex-row gap-2 justify-start items-center mb-2">
+        <Text className="text-xs font-bold tracking-wider uppercase">
+          Contact
+        </Text>
+      </View>
+
+      {/* Contact Number & Email Address */}
+      <View className="flex-row gap-4 mb-5">
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["sightseeingDetails.contactNumber"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Contact Number"
+            value={values.sightseeingDetails?.contactNumber || ""}
+            onChangeText={handleChange("sightseeingDetails.contactNumber")}
+            onBlur={handleBlur("sightseeingDetails.contactNumber")}
+            keyboardType="phone-pad"
+          />
+        </View>
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["sightseeingDetails.emailAddress"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Email Address"
+            value={values.sightseeingDetails?.emailAddress || ""}
+            onChangeText={handleChange("sightseeingDetails.emailAddress")}
+            onBlur={handleBlur("sightseeingDetails.emailAddress")}
+            keyboardType="email-address"
+          />
+        </View>
+      </View>
     </View>
   );
 }

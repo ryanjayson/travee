@@ -345,7 +345,7 @@ const OsmPoiLookupModal = ({
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.keyboardContainer}
+      style={[styles.keyboardContainer, { height: "100%" }]}
     >
       {/* ── Header ── */}
       <View style={styles.headerBorderContainer}>
@@ -437,13 +437,13 @@ const OsmPoiLookupModal = ({
 
         {/* ── OSM attribution ── */}
         <View style={styles.attributionRow}>
-          <Icon name="public" size={11} color="#98A2B3" style={{ marginRight: 4 }} />
+          <Icon name="public" size={12} color="#98A2B3" style={{ marginRight: 4 }} />
           <Text style={styles.attributionText}>Powered by OpenStreetMap contributors</Text>
         </View>
       </View>
 
       {/* ── Main content ── */}
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, }}>
         {isLoading && results.length === 0 ? (
           <View style={styles.centeredContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -524,6 +524,8 @@ const OsmPoiLookupModal = ({
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
+    height: "100%",
+    width: "100%",
     backgroundColor: "#FFFFFF",
     paddingTop: Platform.OS === "android" ? 40 : 50,
   },
@@ -583,7 +585,7 @@ const styles = StyleSheet.create({
     paddingBottom: 2,
   },
   attributionText: {
-    fontSize: 10,
+    fontSize: 12,
     color: "#98A2B3",
   },
   itemContainer: {

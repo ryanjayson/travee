@@ -710,5 +710,32 @@ export default schemaMigrations({
         }),
       ],
     },
+    {
+      toVersion: 35,
+      steps: [
+        addColumns({
+          table: "sightseeing_details",
+          columns: [
+            { name: "booking_reference", type: "string", isOptional: true },
+            { name: "contact_number", type: "string", isOptional: true },
+            { name: "email_address", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
+    {
+      toVersion: 36,
+      steps: [
+        addColumns({
+          table: "shopping_details",
+          columns: [
+            { name: "booking_reference_or_link", type: "string", isOptional: true },
+            { name: "promo_code_or_link", type: "string", isOptional: true },
+            { name: "contact_number", type: "string", isOptional: true },
+            { name: "email_address", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
   ],
 });

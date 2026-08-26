@@ -104,6 +104,9 @@ export const fetchLocalSightseeingDetails = async (activityId: string): Promise<
         destinationAddressData: s.destinationAddressData ? JSON.parse(s.destinationAddressData) : null,
         entryFee: s.entryFee,
         websiteAddress: s.websiteAddress,
+        bookingReference: s.bookingReference,
+        contactNumber: s.contactNumber,
+        emailAddress: s.emailAddress,
       };
     }
     return null;
@@ -216,6 +219,10 @@ export const fetchLocalShoppingDetails = async (activityId: string): Promise<any
         destinationAddressData: safeJsonParse(item.destinationAddressData, undefined),
         subType: item.subType,
         websiteAddress: item.websiteAddress,
+        bookingReferenceOrLink: item.bookingReferenceOrLink,
+        promoCodeOrLink: item.promoCodeOrLink,
+        contactNumber: item.contactNumber,
+        emailAddress: item.emailAddress,
       };
     }
     return null;
@@ -640,6 +647,9 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           destinationAddressData: s.destinationAddressData ? JSON.parse(s.destinationAddressData) : null,
           entryFee: s.entryFee,
           websiteAddress: s.websiteAddress,
+          bookingReference: s.bookingReference,
+          contactNumber: s.contactNumber,
+          emailAddress: s.emailAddress,
         });
       }
     }
@@ -715,6 +725,10 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           destinationAddressData: item.destinationAddressData ? JSON.parse(item.destinationAddressData) : null,
           subType: item.subType,
           websiteAddress: item.websiteAddress,
+          bookingReferenceOrLink: item.bookingReferenceOrLink,
+          promoCodeOrLink: item.promoCodeOrLink,
+          contactNumber: item.contactNumber,
+          emailAddress: item.emailAddress,
         });
       }
     }
@@ -1237,6 +1251,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
               : null,
             entryFee: activityData.sightseeingDetails.entryFee,
             websiteAddress: activityData.sightseeingDetails.websiteAddress,
+            bookingReference: activityData.sightseeingDetails.bookingReference,
+            contactNumber: activityData.sightseeingDetails.contactNumber,
+            emailAddress: activityData.sightseeingDetails.emailAddress,
           });
         });
       } else {
@@ -1250,6 +1267,9 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
               : null,
             entryFee: activityData.sightseeingDetails.entryFee,
             websiteAddress: activityData.sightseeingDetails.websiteAddress,
+            bookingReference: activityData.sightseeingDetails.bookingReference,
+            contactNumber: activityData.sightseeingDetails.contactNumber,
+            emailAddress: activityData.sightseeingDetails.emailAddress,
           });
         });
       }
@@ -1409,6 +1429,10 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
               : null,
             subType: activityData.shoppingDetails.subType,
             websiteAddress: activityData.shoppingDetails.websiteAddress,
+            bookingReferenceOrLink: activityData.shoppingDetails.bookingReferenceOrLink,
+            promoCodeOrLink: activityData.shoppingDetails.promoCodeOrLink,
+            contactNumber: activityData.shoppingDetails.contactNumber,
+            emailAddress: activityData.shoppingDetails.emailAddress,
           });
         });
       } else {
@@ -1422,6 +1446,10 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
               : null,
             subType: activityData.shoppingDetails.subType,
             websiteAddress: activityData.shoppingDetails.websiteAddress,
+            bookingReferenceOrLink: activityData.shoppingDetails.bookingReferenceOrLink,
+            promoCodeOrLink: activityData.shoppingDetails.promoCodeOrLink,
+            contactNumber: activityData.shoppingDetails.contactNumber,
+            emailAddress: activityData.shoppingDetails.emailAddress,
           });
         });
       }

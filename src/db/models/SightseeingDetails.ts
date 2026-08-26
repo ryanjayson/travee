@@ -14,6 +14,9 @@ export default class SightseeingDetails extends Model {
   @text("destination_address_data") destinationAddressData!: string | null;
   @text("entry_fee") entryFee!: string | null;
   @text("website_address") websiteAddress!: string | null;
+  @text("booking_reference") bookingReference!: string | null;
+  @text("contact_number") contactNumber!: string | null;
+  @text("email_address") emailAddress!: string | null;
 
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;

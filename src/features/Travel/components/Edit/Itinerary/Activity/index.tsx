@@ -148,6 +148,10 @@ export interface ActivityFormValues {
     destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     subType?: string | null;
     websiteAddress?: string | null;
+    bookingReferenceOrLink?: string | null;
+    promoCodeOrLink?: string | null;
+    contactNumber?: string | null;
+    emailAddress?: string | null;
   } | null;
   entertainmentDetails?: {
     venueName: string;
@@ -187,6 +191,9 @@ export interface ActivityFormValues {
     destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     entryFee?: string | null;
     websiteAddress?: string | null;
+    bookingReference?: string | null;
+    contactNumber?: string | null;
+    emailAddress?: string | null;
   } | null;
   preparationDetails?: {
     taskLabel?: string | null;
@@ -550,7 +557,18 @@ const EditActivity = ({
     };
   }, []);
 
-  const isAnyChildModalOpen = showDestinationModal || (showCalendarFor !== null) || showPoiModal;
+  const isAnyChildModalOpen = Boolean(
+    showDestinationModal ||
+    showCalendarFor !== null ||
+    showTimePickerFor !== null ||
+    showFlightDatePickerFor !== null ||
+    showAccomodationDatePickerFor !== null ||
+    showTransportationDatePickerFor !== null ||
+    showPreparationDeadlinePicker ||
+    showRideRentalDatePickerFor !== null ||
+    showHikeOrCampDatePickerFor !== null ||
+    showPoiModal
+  );
 
   useEffect(() => {
     onChildModalToggle?.(isAnyChildModalOpen);
@@ -854,6 +872,10 @@ const EditActivity = ({
             destinationAddressData: values.shoppingDetails.destinationAddressData ?? null,
             subType: values.shoppingDetails.subType || null,
             websiteAddress: values.shoppingDetails.websiteAddress || null,
+            bookingReferenceOrLink: values.shoppingDetails.bookingReferenceOrLink || null,
+            promoCodeOrLink: values.shoppingDetails.promoCodeOrLink || null,
+            contactNumber: values.shoppingDetails.contactNumber || null,
+            emailAddress: values.shoppingDetails.emailAddress || null,
           }
           : null,
         entertainmentDetails: values.type === ActivityType.entertainmentAndRecreation && values.entertainmentDetails
@@ -905,6 +927,9 @@ const EditActivity = ({
             destinationAddressData: values.sightseeingDetails.destinationAddressData ?? null,
             entryFee: values.sightseeingDetails.entryFee || null,
             websiteAddress: values.sightseeingDetails.websiteAddress || null,
+            bookingReference: values.sightseeingDetails.bookingReference || null,
+            contactNumber: values.sightseeingDetails.contactNumber || null,
+            emailAddress: values.sightseeingDetails.emailAddress || null,
           }
           : null,
         preparationDetails: values.type === ActivityType.preparation && values.preparationDetails
@@ -1146,6 +1171,10 @@ const EditActivity = ({
       destinationAddressData: itineraryActivity?.shoppingDetails?.destinationAddressData ?? null,
       subType: itineraryActivity?.shoppingDetails?.subType || null,
       websiteAddress: itineraryActivity?.shoppingDetails?.websiteAddress || "",
+      bookingReferenceOrLink: itineraryActivity?.shoppingDetails?.bookingReferenceOrLink || "",
+      promoCodeOrLink: itineraryActivity?.shoppingDetails?.promoCodeOrLink || "",
+      contactNumber: itineraryActivity?.shoppingDetails?.contactNumber || "",
+      emailAddress: itineraryActivity?.shoppingDetails?.emailAddress || "",
     },
     entertainmentDetails: {
       venueName: itineraryActivity?.entertainmentDetails?.venueName || "",
@@ -1189,6 +1218,9 @@ const EditActivity = ({
       destinationAddressData: itineraryActivity?.sightseeingDetails?.destinationAddressData ?? null,
       entryFee: itineraryActivity?.sightseeingDetails?.entryFee || "",
       websiteAddress: itineraryActivity?.sightseeingDetails?.websiteAddress || "",
+      bookingReference: itineraryActivity?.sightseeingDetails?.bookingReference || "",
+      contactNumber: itineraryActivity?.sightseeingDetails?.contactNumber || "",
+      emailAddress: itineraryActivity?.sightseeingDetails?.emailAddress || "",
     },
     preparationDetails: {
       taskLabel: itineraryActivity?.preparationDetails?.taskLabel || "",
@@ -1711,7 +1743,7 @@ const EditActivity = ({
 
 
                   {/* Activity Type */}
-                  <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5">
+                  <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5 ">
                     <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
                     {(() => {
                       const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
@@ -1735,7 +1767,7 @@ const EditActivity = ({
                           disabled={isTypeDisabled}
                           accessibilityRole="button"
                           accessibilityState={{ disabled: isTypeDisabled }}
-                          className={`border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 mt-1 flex-row items-center gap-3 ${isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
+                          className={`flex-row items-center justify-between border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 gap-3 ${isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
                             }`}
                         >
                           {values.type != null ? (
@@ -1743,9 +1775,11 @@ const EditActivity = ({
                           ) : (
                             <Icon name="style" size={24} color={"#B3B3B3"} />
                           )}
-                          <Text className="text-base text-gray-800 font-medium capitalize">
+                          <Text className="text-base flex-1 text-gray-800 font-medium capitalize">
                             {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
                           </Text>
+                          <Icon name="keyboard-arrow-down" size={24} color="#999" />
+
                         </TouchableOpacity>
                       );
                     })()}
@@ -1780,7 +1814,7 @@ const EditActivity = ({
                         <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
                           {selectedSectionName || "Select Section"}
                         </Text>
-                        <Icon name="keyboard-arrow-down" size={24} color="#666" />
+                        <Icon name="keyboard-arrow-down" size={24} color="#999" />
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -2067,7 +2101,7 @@ const EditActivity = ({
             <Modal
               visible={showPoiModal}
               animationType="slide"
-              transparent
+              transparent={false}
               onRequestClose={() => setShowPoiModal(false)}
             >
               <OsmPoiLookupModal
@@ -2223,8 +2257,6 @@ const EditActivity = ({
               tripStartDate={travelPlan?.travel?.startOrDepartureDate}
             />
 
-
-
             <DateTimePickerModal
               isVisible={showTimePickerFor !== null}
               mode="time"
@@ -2265,6 +2297,13 @@ const EditActivity = ({
             <DateTimePickerModal
               isVisible={showFlightDatePickerFor !== null}
               mode="datetime"
+              minimumDate={(() => {
+                if (showFlightDatePickerFor === "arrivalDate" && values.flightDetails?.departureDate) {
+                  const d = new Date(values.flightDetails.departureDate);
+                  if (!isNaN(d.getTime())) return d;
+                }
+                return undefined;
+              })()}
               date={(() => {
                 const targetVal = showFlightDatePickerFor && values.flightDetails?.[showFlightDatePickerFor];
                 if (targetVal) {
@@ -2281,6 +2320,11 @@ const EditActivity = ({
               onConfirm={(date) => {
                 if (showFlightDatePickerFor) {
                   setFieldValue(`flightDetails.${showFlightDatePickerFor}`, date);
+                  if (showFlightDatePickerFor === "departureDate") {
+                    if (values.flightDetails?.arrivalDate && new Date(values.flightDetails.arrivalDate).getTime() < date.getTime()) {
+                      setFieldValue("flightDetails.arrivalDate", date);
+                    }
+                  }
                 }
                 setShowFlightDatePickerFor(null);
               }}
@@ -2290,6 +2334,13 @@ const EditActivity = ({
             <DateTimePickerModal
               isVisible={showAccomodationDatePickerFor !== null}
               mode="datetime"
+              minimumDate={(() => {
+                if (showAccomodationDatePickerFor === "checkoutDateTime" && values.accomodationDetails?.checkinDateTime) {
+                  const d = new Date(values.accomodationDetails.checkinDateTime);
+                  if (!isNaN(d.getTime())) return d;
+                }
+                return undefined;
+              })()}
               date={(() => {
                 const targetVal = showAccomodationDatePickerFor && values.accomodationDetails?.[showAccomodationDatePickerFor];
                 if (targetVal) {
@@ -2313,7 +2364,7 @@ const EditActivity = ({
               onConfirm={(date) => {
                 if (showAccomodationDatePickerFor === "checkinDateTime") {
                   setFieldValue("accomodationDetails.checkinDateTime", date);
-                  if (!values.accomodationDetails?.checkoutDateTime) {
+                  if (values.accomodationDetails?.checkoutDateTime && new Date(values.accomodationDetails.checkoutDateTime).getTime() < date.getTime()) {
                     setFieldValue("accomodationDetails.checkoutDateTime", date);
                   }
                 } else if (showAccomodationDatePickerFor === "checkoutDateTime") {
@@ -2328,6 +2379,13 @@ const EditActivity = ({
             <DateTimePickerModal
               isVisible={showTransportationDatePickerFor !== null}
               mode="datetime"
+              minimumDate={(() => {
+                if (showTransportationDatePickerFor === "arrivalDateTime" && values.transportationDetails?.departureDateTime) {
+                  const d = new Date(values.transportationDetails.departureDateTime);
+                  if (!isNaN(d.getTime())) return d;
+                }
+                return undefined;
+              })()}
               date={(() => {
                 const targetVal = showTransportationDatePickerFor && values.transportationDetails?.[showTransportationDatePickerFor];
                 if (targetVal) {
@@ -2351,7 +2409,7 @@ const EditActivity = ({
               onConfirm={(date) => {
                 if (showTransportationDatePickerFor === "departureDateTime") {
                   setFieldValue("transportationDetails.departureDateTime", date);
-                  if (!values.transportationDetails?.arrivalDateTime) {
+                  if (values.transportationDetails?.arrivalDateTime && new Date(values.transportationDetails.arrivalDateTime).getTime() < date.getTime()) {
                     setFieldValue("transportationDetails.arrivalDateTime", date);
                   }
                 } else if (showTransportationDatePickerFor === "arrivalDateTime") {
@@ -2384,6 +2442,13 @@ const EditActivity = ({
             <DateTimePickerModal
               isVisible={showRideRentalDatePickerFor !== null}
               mode="datetime"
+              minimumDate={(() => {
+                if (showRideRentalDatePickerFor === "rentalEndDateTime" && values.rideRentalDetails?.rentalStartDateTime) {
+                  const d = new Date(values.rideRentalDetails.rentalStartDateTime);
+                  if (!isNaN(d.getTime())) return d;
+                }
+                return undefined;
+              })()}
               date={(() => {
                 const targetVal = showRideRentalDatePickerFor && values.rideRentalDetails?.[showRideRentalDatePickerFor];
                 if (targetVal) { const d = new Date(targetVal); if (!isNaN(d.getTime())) return d; }
@@ -2398,7 +2463,7 @@ const EditActivity = ({
               onConfirm={(date) => {
                 if (showRideRentalDatePickerFor === "rentalStartDateTime") {
                   setFieldValue("rideRentalDetails.rentalStartDateTime", date);
-                  if (!values.rideRentalDetails?.rentalEndDateTime) {
+                  if (values.rideRentalDetails?.rentalEndDateTime && new Date(values.rideRentalDetails.rentalEndDateTime).getTime() < date.getTime()) {
                     setFieldValue("rideRentalDetails.rentalEndDateTime", date);
                   }
                 } else if (showRideRentalDatePickerFor === "rentalEndDateTime") {
@@ -2413,6 +2478,13 @@ const EditActivity = ({
             <DateTimePickerModal
               isVisible={showHikeOrCampDatePickerFor !== null}
               mode="datetime"
+              minimumDate={(() => {
+                if (showHikeOrCampDatePickerFor === "checkoutDateTime" && values.hikeOrCampDetails?.checkinDateTime) {
+                  const d = new Date(values.hikeOrCampDetails.checkinDateTime);
+                  if (!isNaN(d.getTime())) return d;
+                }
+                return undefined;
+              })()}
               date={(() => {
                 const targetVal = showHikeOrCampDatePickerFor && values.hikeOrCampDetails?.[showHikeOrCampDatePickerFor];
                 if (targetVal) { const d = new Date(targetVal); if (!isNaN(d.getTime())) return d; }
@@ -2427,7 +2499,7 @@ const EditActivity = ({
               onConfirm={(date) => {
                 if (showHikeOrCampDatePickerFor === "checkinDateTime") {
                   setFieldValue("hikeOrCampDetails.checkinDateTime", date);
-                  if (!values.hikeOrCampDetails?.checkoutDateTime) {
+                  if (values.hikeOrCampDetails?.checkoutDateTime && new Date(values.hikeOrCampDetails.checkoutDateTime).getTime() < date.getTime()) {
                     setFieldValue("hikeOrCampDetails.checkoutDateTime", date);
                   }
                 } else if (showHikeOrCampDatePickerFor === "checkoutDateTime") {

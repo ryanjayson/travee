@@ -51,10 +51,15 @@ export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ 
       <View className="px-md mt-4">
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dc9804]">
           <Field
+            label="Booking Ref"
+            value={data.bookingReference}
+            icon="confirmation-number"
+            isCopy
+          />
+          <Field
             label="Entry Fee"
             value={data.entryFee}
             icon="money"
-            isLink
           />
           <Field
             label="Website"
@@ -65,6 +70,16 @@ export const SightseeingDetailsCard: React.FC<SightseeingDetailsCardProps> = ({ 
           />
         </View>
       </View>
+
+      {/* Contact Info Section */}
+      {(data.contactNumber || data.emailAddress) ? (
+        <View className="px-md mt-sm">
+          <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dc9804]">
+            <Field label="Contact Number" value={data.contactNumber} icon="phone" showBorder={false} isCall />
+            <Field label="Email Address" value={data.emailAddress} icon="email" isEmail={true} />
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 };

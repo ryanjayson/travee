@@ -201,10 +201,10 @@ const TravelActionFAB = ({
           }}
           fabStyle={{
             backgroundColor: open ? '#82181a' : '#0EA5E9',
-            borderRadius: 50,
-            padding: 6,
-            height: 68,
-            width: 68,
+            borderRadius: 24,
+            padding: 1,
+            height: 58,
+            width: 58,
           }}
           backdropColor="transparent"
           color="white"

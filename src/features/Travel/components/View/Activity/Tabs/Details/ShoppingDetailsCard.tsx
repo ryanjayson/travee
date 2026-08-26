@@ -48,23 +48,49 @@ export const ShoppingDetailsCard: React.FC<ShoppingDetailsCardProps> = ({ data, 
 
       {/* Stub Area */}
       <View className="px-md">
-        <View className="rounded-2xl  flex-col gap-3 p-5 pb-1 bg-[#d12372]">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#d12372]">
           <Field
             label="Store Type"
-            value={data.subType || "N/A"}
+            value={data.subType}
             icon="store"
             showBorder
             borderColor="border-[#c02168]"
           />
           <Field
+            label="Booking Ref / Link"
+            value={data.bookingReferenceOrLink}
+            icon="confirmation-number"
+            isCopy={!data.bookingReferenceOrLink?.startsWith("http")}
+            isLink={!!data.bookingReferenceOrLink?.startsWith("http")}
+            onPress={data.bookingReferenceOrLink?.startsWith("http") ? () => handleOpenLink(data.bookingReferenceOrLink!) : undefined}
+          />
+          <Field
+            label="Promo Code / Link"
+            value={data.promoCodeOrLink}
+            icon="local-offer"
+            isCopy={!data.promoCodeOrLink?.startsWith("http")}
+            isLink={!!data.promoCodeOrLink?.startsWith("http")}
+            onPress={data.promoCodeOrLink?.startsWith("http") ? () => handleOpenLink(data.promoCodeOrLink!) : undefined}
+          />
+          <Field
             label="Website"
-            value={data.websiteAddress || "N/A"}
+            value={data.websiteAddress}
             icon="language"
             isLink
             onPress={data.websiteAddress ? () => handleOpenLink(data.websiteAddress!) : undefined}
           />
         </View>
       </View>
+
+      {/* Contact Info Section */}
+      {(data.contactNumber || data.emailAddress) ? (
+        <View className="px-md mt-sm">
+          <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#d12372]">
+            <Field label="Contact Number" value={data.contactNumber} icon="phone" showBorder={false} isCall />
+            <Field label="Email Address" value={data.emailAddress} icon="email" isEmail={true} />
+          </View>
+        </View>
+      ) : null}
     </View>
   );
 };

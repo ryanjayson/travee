@@ -67,7 +67,8 @@ export default function PreparationTab({
                 onPress={() => setFieldValue("preparationDetails.deadlineDateTime", null)}
               />
             ) : (
-              <TextInput.Icon icon="calendar" color="#999" />
+              <TextInput.Icon icon="calendar" color="#999"
+                onPress={onOpenDatePicker} />
             )
           }
         />

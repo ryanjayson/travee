@@ -14,6 +14,10 @@ export default class ShoppingDetails extends Model {
   @text("destination_address_data") destinationAddressData!: string | null;
   @text("sub_type") subType!: string | null;
   @text("website_address") websiteAddress!: string | null;
+  @text("booking_reference_or_link") bookingReferenceOrLink!: string | null;
+  @text("promo_code_or_link") promoCodeOrLink!: string | null;
+  @text("contact_number") contactNumber!: string | null;
+  @text("email_address") emailAddress!: string | null;
 
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;

@@ -90,7 +90,7 @@ export default function ShoppingTab({
       )}
 
       {/* Sub-type tags */}
-      <View className="mb-5 mt-5">
+      <View className="mb-5">
         <Text className="text-xs font-bold tracking-wider uppercase mb-2">Type</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row gap-2">
@@ -161,6 +161,118 @@ export default function ShoppingTab({
             ) : null
           }
         />
+      </View>
+
+      {/* Booking Reference / Link */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["shoppingDetails.bookingReferenceOrLink"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Booking Reference / Link"
+          value={values.shoppingDetails?.bookingReferenceOrLink || ""}
+          onChangeText={handleChange("shoppingDetails.bookingReferenceOrLink")}
+          onBlur={handleBlur("shoppingDetails.bookingReferenceOrLink")}
+          right={
+            values.shoppingDetails?.bookingReferenceOrLink && /^https?:\/\//i.test(values.shoppingDetails.bookingReferenceOrLink) ? (
+              <TextInput.Icon
+                icon={() => (
+                  <Text
+                    style={{
+                      color: colors?.primary || "#263F69",
+                      textDecorationLine: "underline",
+                      fontWeight: "bold",
+                      fontSize: 14,
+                      marginTop: 2,
+                      opacity: 0.8,
+                    }}
+                  >
+                    open
+                  </Text>
+                )}
+                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                onPress={() => {
+                  let url = values.shoppingDetails.bookingReferenceOrLink;
+                  if (url) {
+                    if (!/^https?:\/\//i.test(url)) {
+                      url = "https://" + url;
+                    }
+                    Linking.openURL(url).catch((err) =>
+                      console.error("Failed to open URL", err)
+                    );
+                  }
+                }}
+              />
+            ) : null
+          }
+        />
+      </View>
+
+      {/* Promo Code / Link */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["shoppingDetails.promoCodeOrLink"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Promo Code / Link"
+          value={values.shoppingDetails?.promoCodeOrLink || ""}
+          onChangeText={handleChange("shoppingDetails.promoCodeOrLink")}
+          onBlur={handleBlur("shoppingDetails.promoCodeOrLink")}
+          right={
+            values.shoppingDetails?.promoCodeOrLink && /^https?:\/\//i.test(values.shoppingDetails.promoCodeOrLink) ? (
+              <TextInput.Icon
+                icon={() => (
+                  <Text
+                    style={{
+                      color: colors?.primary || "#263F69",
+                      textDecorationLine: "underline",
+                      fontWeight: "bold",
+                      fontSize: 14,
+                      marginTop: 2,
+                      opacity: 0.8,
+                    }}
+                  >
+                    open
+                  </Text>
+                )}
+                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                onPress={() => {
+                  let url = values.shoppingDetails.promoCodeOrLink;
+                  if (url) {
+                    if (!/^https?:\/\//i.test(url)) {
+                      url = "https://" + url;
+                    }
+                    Linking.openURL(url).catch((err) =>
+                      console.error("Failed to open URL", err)
+                    );
+                  }
+                }}
+              />
+            ) : null
+          }
+        />
+      </View>
+
+      <View className="flex-row gap-2 justify-start items-center mb-2">
+        <Text className="text-xs font-bold tracking-wider uppercase">
+          Contact
+        </Text>
+      </View>
+
+      {/* Contact Number & Email Address */}
+      <View className="flex-row gap-4 mb-5">
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["shoppingDetails.contactNumber"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Contact Number"
+            value={values.shoppingDetails?.contactNumber || ""}
+            onChangeText={handleChange("shoppingDetails.contactNumber")}
+            onBlur={handleBlur("shoppingDetails.contactNumber")}
+            keyboardType="phone-pad"
+          />
+        </View>
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["shoppingDetails.emailAddress"] = el; }} style={{ flex: 1 }}>
+          <FloatingLabelInput
+            label="Email Address"
+            value={values.shoppingDetails?.emailAddress || ""}
+            onChangeText={handleChange("shoppingDetails.emailAddress")}
+            onBlur={handleBlur("shoppingDetails.emailAddress")}
+            keyboardType="email-address"
+          />
+        </View>
       </View>
     </View>
   );

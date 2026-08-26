@@ -44,8 +44,14 @@ const ChecklistModal = ({
 }: ChecklistModalProps) => {
   const [modalHeight] = useState(630);
   const { keyboardVisible } = useKeyboardVisible();
+  const keyboardVisibleRef = useRef(false);
+  useEffect(() => {
+    keyboardVisibleRef.current = keyboardVisible;
+  }, [keyboardVisible]);
+
   const insets = useSafeAreaInsets();
   const [isChildModalOpen, setIsChildModalOpen] = useState(false);
+  const isChildModalOpenRef = useRef(false);
   const childModalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleChildModalToggle = (isOpen: boolean) => {
@@ -54,10 +60,12 @@ const ChecklistModal = ({
       childModalTimeoutRef.current = null;
     }
 
+    isChildModalOpenRef.current = isOpen;
     if (isOpen) {
       setIsChildModalOpen(true);
     } else {
       childModalTimeoutRef.current = setTimeout(() => {
+        isChildModalOpenRef.current = false;
         setIsChildModalOpen(false);
       }, 300);
     }
@@ -191,7 +199,7 @@ const ChecklistModal = ({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        if (keyboardVisible || isChildModalOpen) return false;
+        if (keyboardVisibleRef.current || isChildModalOpenRef.current) return false;
         const { dy } = gestureState;
         // If we are at the top and swipe down
         if (isAtTop.current && dy > 8) {
@@ -203,6 +211,7 @@ const ChecklistModal = ({
         dragStartDy.current = gestureState.dy;
       },
       onPanResponderMove: (_, gestureState) => {
+        if (isChildModalOpenRef.current) return;
         const currentDy = gestureState.dy - dragStartDy.current;
         if (currentDy > 0) {
           translateY.setValue(currentDy);
@@ -211,6 +220,7 @@ const ChecklistModal = ({
         }
       },
       onPanResponderRelease: (_, gestureState) => {
+        if (isChildModalOpenRef.current) return;
         const currentDy = gestureState.dy - dragStartDy.current;
         if (currentDy > 120 || gestureState.vy > 0.5) {
           Animated.timing(translateY, {
@@ -297,7 +307,7 @@ const ChecklistModal = ({
         transparent
         animationType="none"
         onRequestClose={() => {
-          if (isChildModalOpen) return;
+          if (isChildModalOpenRef.current || isChildModalOpen) return;
           handleCancel();
         }}
       >

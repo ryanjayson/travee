@@ -192,6 +192,10 @@ export interface ShoppingDetailsDto {
   destinationAddressData?: DestinationDto;
   subType?: string | null; // spa, market, store, atm, bank, pharmacy, gas_station
   websiteAddress?: string | null;
+  bookingReferenceOrLink?: string | null;
+  promoCodeOrLink?: string | null;
+  contactNumber?: string | null;
+  emailAddress?: string | null;
 }
 
 export interface EntertainmentDetailsDto {
@@ -243,6 +247,9 @@ export interface SightseeingDetailsDto {
   destinationAddressData?: DestinationDto;
   entryFee?: string | null;
   websiteAddress?: string | null;
+  bookingReference?: string | null;
+  contactNumber?: string | null;
+  emailAddress?: string | null;
 }
 
 export interface PreparationDetailsDto {

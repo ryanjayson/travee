@@ -133,7 +133,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
           />
           <Field
             label="Price"
-            value={Number(data.price).toLocaleString()}
+            value={data.price ? Number(data.price).toLocaleString() : null}
             icon="attach-money"
           />
         </View>

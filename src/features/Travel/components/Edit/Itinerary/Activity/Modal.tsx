@@ -80,6 +80,7 @@ const ActivityModal = ({
   const [extractedData, setExtractedData] = useState<Partial<ItineraryActivity> | null>(null);
   const [isOcrPending, setIsOcrPending] = useState(false);
   const [isChildModalOpen, setIsChildModalOpen] = useState(false);
+  const isChildModalOpenRef = useRef(false);
   const childModalTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleChildModalToggle = (isOpen: boolean) => {
@@ -88,10 +89,12 @@ const ActivityModal = ({
       childModalTimeoutRef.current = null;
     }
 
+    isChildModalOpenRef.current = isOpen;
     if (isOpen) {
       setIsChildModalOpen(true);
     } else {
       childModalTimeoutRef.current = setTimeout(() => {
+        isChildModalOpenRef.current = false;
         setIsChildModalOpen(false);
       }, 300);
     }
@@ -177,6 +180,11 @@ const ActivityModal = ({
   };
 
   const { keyboardVisible } = useKeyboardVisible();
+  const keyboardVisibleRef = useRef(false);
+  useEffect(() => {
+    keyboardVisibleRef.current = keyboardVisible;
+  }, [keyboardVisible]);
+
   const insets = useSafeAreaInsets();
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
@@ -203,7 +211,7 @@ const ActivityModal = ({
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        if (keyboardVisible || isChildModalOpen) return false;
+        if (keyboardVisibleRef.current || isChildModalOpenRef.current) return false;
         const { dx, dy } = gestureState;
         // Verify downward swipe and ensure vertical dominance to not block other gestures
         if (isAtTop.current && dy > 8 && Math.abs(dy) > Math.abs(dx)) {
@@ -215,6 +223,7 @@ const ActivityModal = ({
         dragStartDy.current = gestureState.dy;
       },
       onPanResponderMove: (_, gestureState) => {
+        if (isChildModalOpenRef.current) return;
         const currentDy = gestureState.dy - dragStartDy.current;
         if (currentDy > 0) {
           translateY.setValue(currentDy);
@@ -223,6 +232,7 @@ const ActivityModal = ({
         }
       },
       onPanResponderRelease: (_, gestureState) => {
+        if (isChildModalOpenRef.current) return;
         const currentDy = gestureState.dy - dragStartDy.current;
         if (currentDy > 120 || gestureState.vy > 0.5) {
           Animated.timing(translateY, {
@@ -425,7 +435,7 @@ const ActivityModal = ({
     <>
       <Modal visible={visible} transparent animationType="none"
         onRequestClose={() => {
-          if (isChildModalOpen) return;
+          if (isChildModalOpenRef.current || isChildModalOpen) return;
           handleCancel();
         }}>
         <KeyboardAvoidingView
@@ -513,6 +523,7 @@ const ActivityModal = ({
                   itineraryActivity={extractedData ? { ...latestActivity, ...extractedData } as any : latestActivity}
                   travelId={travelId}
                   onClose={onClose}
+                  onChildModalToggle={handleChildModalToggle}
                   onSaveSuccess={(saved) => {
                     setCurrentActivity(saved);
                   }}

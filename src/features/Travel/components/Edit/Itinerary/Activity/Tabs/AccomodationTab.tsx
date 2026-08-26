@@ -112,7 +112,8 @@ export default function AccomodationTab({
                   onPress={() => setFieldValue("accomodationDetails.checkinDateTime", null)}
                 />
               ) : (
-                <TextInput.Icon icon="calendar" color="#999" />
+                <TextInput.Icon icon="calendar" color="#999"
+                  onPress={() => setShowAccomodationDatePickerFor("checkinDateTime")} />
               )
             }
             onPress={() => setShowAccomodationDatePickerFor("checkinDateTime")}
@@ -133,7 +134,8 @@ export default function AccomodationTab({
                   onPress={() => setFieldValue("accomodationDetails.checkoutDateTime", null)}
                 />
               ) : (
-                <TextInput.Icon icon="calendar" color="#999" />
+                <TextInput.Icon icon="calendar" color="#999"
+                  onPress={() => setShowAccomodationDatePickerFor("checkoutDateTime")} />
               )
             }
             onPress={() => setShowAccomodationDatePickerFor("checkoutDateTime")}

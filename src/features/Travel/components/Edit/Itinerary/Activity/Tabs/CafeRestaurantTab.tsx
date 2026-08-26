@@ -85,7 +85,7 @@ export default function CafeRestaurantTab({
       )}
 
       {/* Website */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.websiteAddress"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.websiteAddress"] = el; }} className="mb-5 mt-5">
         <FloatingLabelInput
           label="Website"
           value={values.cafeRestaurantDetails?.websiteAddress || ""}
@@ -130,7 +130,7 @@ export default function CafeRestaurantTab({
       {/* Reservation Link */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.reservationLink"] = el; }} className="mb-5">
         <FloatingLabelInput
-          label="Reservation Link"
+          label="Reservation Link / Booking Reference"
           value={values.cafeRestaurantDetails?.reservationLink || ""}
           onChangeText={handleChange("cafeRestaurantDetails.reservationLink")}
           onBlur={handleBlur("cafeRestaurantDetails.reservationLink")}
@@ -158,14 +158,14 @@ export default function CafeRestaurantTab({
             onBlur={handleBlur("cafeRestaurantDetails.cuisine")}
           />
         </View>
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.priceRange"] = el; }} style={{ flex: 1 }}>
+        {/* <View ref={(el) => { if (fieldRefs) fieldRefs.current["cafeRestaurantDetails.priceRange"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Price Range"
             value={values.cafeRestaurantDetails?.priceRange || ""}
             onChangeText={handleChange("cafeRestaurantDetails.priceRange")}
             onBlur={handleBlur("cafeRestaurantDetails.priceRange")}
           />
-        </View>
+        </View> */}
       </View>
 
     </View>
