@@ -55,7 +55,9 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
       </View>
 
       {/* Stub Area */}
-      <View className="px-md">
+      <View className="px-md"
+        style={{ display: data.reservationLink || data.cuisine || data.priceRange ? "flex" : "none" }}
+      >
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dd2c2c]">
           <Field
             label="Reservation Link"
@@ -75,7 +77,9 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
           />
         </View>
       </View>
-      <View className="px-md mt-sm">
+      <View className="px-md mt-sm"
+        style={{ display: data.contactNumber || data.websiteAddress ? "flex" : "none" }}
+      >
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dd2c2c]">
           <Field
             label="Contact Number"

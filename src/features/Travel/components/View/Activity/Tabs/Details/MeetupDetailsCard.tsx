@@ -9,6 +9,7 @@ import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
 
 interface MeetupDetailsCardProps {
   data: MeetupDetailsDto;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
 // const meetupColor = activityIcons.find((icon) => icon.name === (ActivityType as any).meetup)?.color || "#26A69A";
@@ -22,7 +23,10 @@ const handleOpenLink = (url: string) => {
 
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
-export const MeetupDetailsCard: React.FC<MeetupDetailsCardProps> = ({ data }) => {
+export const MeetupDetailsCard: React.FC<MeetupDetailsCardProps> = ({
+  data,
+  onFullScreenChange,
+}) => {
   const { colors } = useTheme();
 
   return (
@@ -40,6 +44,7 @@ export const MeetupDetailsCard: React.FC<MeetupDetailsCardProps> = ({ data }) =>
             address={data.address}
             coordinates={data.destinationAddressData?.coordinates}
             title={data.venueName}
+            onFullScreenChange={onFullScreenChange}
           />
         </View>
 

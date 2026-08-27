@@ -74,56 +74,6 @@ export default function RideRentalTab({
         />
       </View>
 
-      {/* Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.address"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Provider Address"
-          value={values.rideRentalDetails?.address || ""}
-          onChangeText={handleChange("rideRentalDetails.address")}
-          onBlur={handleBlur("rideRentalDetails.address")}
-        />
-      </View>
-
-      {/* Vehicle type tags */}
-      <View className="mb-5">
-        <Text className="text-xs font-bold tracking-wider uppercase mb-2">Vehicle Type</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-2">
-            {VEHICLE_TYPES.map((tag) => {
-              const isActive = currentVehicle === tag;
-              return (
-                <TouchableOpacity
-                  key={tag}
-                  accessibilityRole="button"
-                  onPress={() => setFieldValue("rideRentalDetails.vehicleType", isActive ? null : tag)}
-                  style={{
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
-                    borderColor: isActive ? colors.primary : "#EAECF0",
-                    backgroundColor: isActive ? `${colors.primary}15` : "#FFF",
-                  }}
-                >
-                  <Text style={{ fontSize: 13, fontWeight: isActive ? "600" : "500", color: isActive ? colors.primary : "#475467" }}>
-                    {tag}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </ScrollView>
-      </View>
-
-      {/* Vehicle Model / Details */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.vehicleModel"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Vehicle Model / Make"
-          value={values.rideRentalDetails?.vehicleModel || ""}
-          onChangeText={handleChange("rideRentalDetails.vehicleModel")}
-          onBlur={handleBlur("rideRentalDetails.vehicleModel")}
-        />
-      </View>
 
       {/* Pickup & Drop-off */}
       <View className="mb-5">
@@ -178,23 +128,59 @@ export default function RideRentalTab({
           style={{ opacity: values?.rideRentalDetails?.address ? 1 : 0.3 }}>
           <TouchableOpacity
             onPress={() => {
-              setFieldValue("rideRentalDetails.pickupLocation", values.rideRentalDetails?.address || "");
-              setFieldValue("rideRentalDetails.dropoffLocation", values.rideRentalDetails?.address || "");
+              setFieldValue("rideRentalDetails.dropoffLocation", values.rideRentalDetails?.pickupLocation || "");
             }}
             accessibilityRole="button"
-            accessibilityLabel="Copy from Provider address"
+            accessibilityLabel=" Same with Pickup Address"
           >
             <Text style={{ color: colors.primary }} className="text-sm underline">
-              Copy from Provider Address
+              Same with Pickup Address
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
 
+      {/* Vehicle type tags */}
+      <View className="mb-5">
+        <Text className="text-xs font-bold tracking-wider uppercase mb-2">Vehicle Type</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-2">
+            {VEHICLE_TYPES.map((tag) => {
+              const isActive = currentVehicle === tag;
+              return (
+                <TouchableOpacity
+                  key={tag}
+                  accessibilityRole="button"
+                  onPress={() => setFieldValue("rideRentalDetails.vehicleType", isActive ? null : tag)}
+                  style={{
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderColor: isActive ? colors.primary : "#EAECF0",
+                    backgroundColor: isActive ? `${colors.primary}15` : "#FFF",
+                  }}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: isActive ? "600" : "500", color: isActive ? colors.primary : "#475467" }}>
+                    {tag}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
+      </View>
 
-
-
+      {/* Vehicle Model / Details */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.vehicleModel"] = el; }} className="mb-5">
+        <FloatingLabelInput
+          label="Vehicle Model / Make"
+          value={values.rideRentalDetails?.vehicleModel || ""}
+          onChangeText={handleChange("rideRentalDetails.vehicleModel")}
+          onBlur={handleBlur("rideRentalDetails.vehicleModel")}
+        />
+      </View>
 
       {/* Rental Period (Start & End Date/Time) */}
       <View className="flex-row gap-2 justify-start items-center mb-2">

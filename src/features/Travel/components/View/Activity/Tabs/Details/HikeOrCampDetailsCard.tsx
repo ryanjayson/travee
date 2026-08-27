@@ -10,6 +10,7 @@ import ActivityDetailCardAddress from "../../../../ActivityDetailCardAddress";
 
 interface HikeOrCampDetailsCardProps {
   data: HikeOrCampDetailsDto;
+  onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
 
@@ -28,7 +29,10 @@ const handleCall = (phone: string) => {
 
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 
-export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ data }) => {
+export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({
+  data,
+  onFullScreenChange,
+}) => {
 
   return (
     <View className="rounded-3xl mb-6  overflow-hidden">
@@ -61,6 +65,7 @@ export const HikeOrCampDetailsCard: React.FC<HikeOrCampDetailsCardProps> = ({ da
             address={data.address}
             coordinates={data.destinationAddressData?.coordinates}
             title={data.trailOrSiteName}
+            onFullScreenChange={onFullScreenChange}
           />
         </View>
 

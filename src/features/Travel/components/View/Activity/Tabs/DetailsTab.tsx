@@ -34,7 +34,7 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
   const { height: screenHeight } = Dimensions.get("window");
   const yOffset = insets.top + 60;
   const parentHeight = screenHeight - yOffset;
-  const paddingBottom = parentHeight * 0.35 + 40; // 35% sheet height + extra spacing
+  const paddingBottom = 100; //parentHeight * 0.35 + 40; // 35% sheet height + extra spacing
 
   if (!itineraryActivity) return null;
 
@@ -79,11 +79,13 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
       case ActivityType.preparation:
         return <PreparationDetails data={itineraryActivity.preparationDetails} />;
       case ActivityType.hikeOrCamp:
-        return <HikeOrCampDetails data={itineraryActivity.hikeOrCampDetails} />;
+        return <HikeOrCampDetails data={itineraryActivity.hikeOrCampDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.transportation:
-        return <TransportationDetails data={itineraryActivity.transportationDetails} />;
+        return <TransportationDetails data={itineraryActivity.transportationDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.rideRental:
-        return <RideRentalDetails data={itineraryActivity.rideRentalDetails} />;
+        return <RideRentalDetails data={itineraryActivity.rideRentalDetails} onFullScreenChange={onFullScreenChange} />;
+      // case ActivityType.meetup:
+      //   return <MeetupDetails data={itineraryActivity.meetupDetails} onFullScreenChange={onFullScreenChange} />;
       default:
         return <Text className="text-white p-4 text-center">No type-specific details available.</Text>;
     }
@@ -91,7 +93,7 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
 
   return (
     <View
-      className="flex-1 relative"
+      className="flex-1 "
       style={{
         backgroundColor: activityColor,
       }}

@@ -162,9 +162,9 @@ export const EntertainmentDetails = ({
   );
 };
 
-export const TransportationDetails = ({ data }: { data?: TransportationDetailsDto | null }) => {
+export const TransportationDetails = ({ data, onFullScreenChange }: { data?: TransportationDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <TransportationDetailsCard data={data!} />;
+  return <TransportationDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };
 
 export const WalkDetails = ({ data }: { data?: WalkDetailsDto | null }) => {
@@ -187,10 +187,10 @@ export const RestDetails = ({ data }: { data?: RestDetailsDto | null }) => {
   return <RestDetailsCard data={data!} />;
 };
 
-export const HikeOrCampDetails = ({ data }: { data?: HikeOrCampDetailsDto | null }) => {
+export const HikeOrCampDetails = ({ data, onFullScreenChange }: { data?: HikeOrCampDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   const dataWithoutPermit = { ...data, permitRequired: null }
   if (!hasActivityData(dataWithoutPermit)) return <NoDetailsAdded />;
-  return <HikeOrCampDetailsCard data={data!} />;
+  return <HikeOrCampDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };
 
 export const MotorcycleRideDetails = ({ data }: { data?: MotorcycleRideDetailsDto | null }) => {
@@ -198,12 +198,12 @@ export const MotorcycleRideDetails = ({ data }: { data?: MotorcycleRideDetailsDt
   return <MotorcycleRideDetailsCard data={data!} />;
 };
 
-export const MeetupDetails = ({ data }: { data?: MeetupDetailsDto | null }) => {
+export const MeetupDetails = ({ data, onFullScreenChange }: { data?: MeetupDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <MeetupDetailsCard data={data!} />;
+  return <MeetupDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const RideRentalDetails = ({ data }: { data?: RideRentalDetailsDto | null }) => {
+export const RideRentalDetails = ({ data, onFullScreenChange }: { data?: RideRentalDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <RideRentalDetailsCard data={data!} />;
+  return <RideRentalDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };
