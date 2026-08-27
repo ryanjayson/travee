@@ -10,7 +10,9 @@ import {
   PanResponder,
   Platform,
   Text, TouchableOpacity,
-  View
+  View,
+  ActivityIndicator,
+  StyleSheet
 } from "react-native";
 import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -67,12 +69,15 @@ const ActivityModal = ({
 
   useEffect(() => {
     if (visible) {
-      setCurrentActivity(propItineraryActivity);
       setIsAddMode(!propItineraryActivity?.id);
       if (propItineraryActivity?.id) {
         refetchActivity();
       }
       setIsSaving(false);
+      setIsSubmitting(false);
+      setIsDirty(false);
+      isDirtyRef.current = false;
+      setShowUnsavedDialog(false);
       setError(null);
       setExtractedData(null);
       setIsOcrPending(false);
@@ -80,6 +85,12 @@ const ActivityModal = ({
   }, [visible, propItineraryActivity, refetchActivity]);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const isDirtyRef = useRef(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [unsavedActionTarget, setUnsavedActionTarget] = useState<"close" | "addNew">("close");
+  const submitFormRef = useRef<(() => void) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<Partial<ItineraryActivity> | null>(null);
   const [isOcrPending, setIsOcrPending] = useState(false);
@@ -239,19 +250,22 @@ const ActivityModal = ({
         if (isChildModalOpenRef.current) return;
         const currentDy = gestureState.dy - dragStartDy.current;
         if (currentDy > 120 || gestureState.vy > 0.5) {
-          Animated.timing(translateY, {
-            toValue: screenHeight,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            onClose();
-          });
+          if (isDirtyRef.current) {
+            Animated.spring(translateY, {
+              toValue: 0,
+              useNativeDriver: true,
+              bounciness: 4,
+            }).start();
+            setUnsavedActionTarget("close");
+            setShowUnsavedDialog(true);
+            return;
+          }
+          closeDirectly();
         } else {
           Animated.spring(translateY, {
             toValue: 0,
-            tension: 80,
-            friction: 12,
             useNativeDriver: true,
+            bounciness: 4,
           }).start();
         }
       },
@@ -410,10 +424,14 @@ const ActivityModal = ({
   //   },
   // });
 
-  const handleCancel = () => {
+  const closeDirectly = () => {
     Keyboard.dismiss();
     setError(null);
     setIsSaving(false);
+    setIsSubmitting(false);
+    setIsDirty(false);
+    isDirtyRef.current = false;
+    setShowUnsavedDialog(false);
     setExtractedData(null);
 
     // Smoothly slide down first, then dismiss
@@ -424,6 +442,33 @@ const ActivityModal = ({
     }).start(() => {
       onClose();
     });
+  };
+
+  const switchToAddModeDirectly = () => {
+    setIsDirty(false);
+    isDirtyRef.current = false;
+    setIsAddMode(true);
+    setCurrentActivity(null);
+    setExtractedData(null);
+    setShowUnsavedDialog(false);
+  };
+
+  const handleAddNewActivityPress = () => {
+    if (isDirtyRef.current) {
+      setUnsavedActionTarget("addNew");
+      setShowUnsavedDialog(true);
+      return;
+    }
+    switchToAddModeDirectly();
+  };
+
+  const handleCancel = () => {
+    if (isDirtyRef.current) {
+      setUnsavedActionTarget("close");
+      setShowUnsavedDialog(true);
+      return;
+    }
+    closeDirectly();
   };
 
   // Interpolate backdrop opacity based on translateY position for smooth fading
@@ -459,7 +504,7 @@ const ActivityModal = ({
               style={[
                 { height: "100%" },
                 {
-                  paddingTop: insets.top + 20,
+                  paddingTop: insets.top + 16,
                   shadowColor: "#000",
                   shadowOffset: { width: 0, height: -8 },
                   shadowOpacity: 0.12,
@@ -479,8 +524,16 @@ const ActivityModal = ({
                 <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
               </View> */}
 
-              <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
+              <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 0 }}>
                 <View className="flex-row items-center gap-2">
+                  <TouchableOpacity
+                    onPress={handleCancel}
+                    disabled={isSaving}
+                    accessibilityRole="button"
+                    accessibilityLabel="Close modal"
+                  >
+                    <Icon name="chevron-left" size={26} color={"#999"} />
+                  </TouchableOpacity>
                   <Text className="text-2xl text-gray-700 font-medium">
                     {latestActivity?.id ? "Edit Activity" : "Add Activity"}
                   </Text>
@@ -498,11 +551,7 @@ const ActivityModal = ({
                         <Icon name="delete-outline" size={24} color="#c93030" />
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => {
-                          setIsAddMode(true);
-                          setCurrentActivity(null);
-                          setExtractedData(null);
-                        }}
+                        onPress={handleAddNewActivityPress}
                         disabled={isSaving}
                         accessibilityRole="button"
                         accessibilityLabel="Switch to add activity"
@@ -512,12 +561,30 @@ const ActivityModal = ({
                     </View>
                   )}
                   <TouchableOpacity
-                    onPress={handleCancel}
-                    disabled={isSaving}
+                    onPress={() => {
+                      submitFormRef.current?.();
+                    }}
+                    disabled={isSaving || isSubmitting}
                     accessibilityRole="button"
-                    accessibilityLabel="Close modal"
+                    accessibilityLabel={latestActivity?.id ? "Save activity" : "Add activity"}
                   >
-                    <Icon name="clear" size={24} color={"#999"} />
+                    <View className="flex-row items-center gap-1">
+                      {isSaving || isSubmitting ? (
+                        <>
+                          <ActivityIndicator size="small" color={colors.primary} />
+                          <Text className="text-xl font-medium" style={{ color: colors.primary }}>
+                            Saving
+                          </Text>
+                        </>
+                      ) : (
+                        <>
+                          <Icon name="check" size={22} color={colors.primary} />
+                          <Text className="text-xl font-medium" style={{ color: colors.primary }}>
+                            {latestActivity?.id ? "Save" : "Add"}
+                          </Text>
+                        </>
+                      )}
+                    </View>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -528,16 +595,20 @@ const ActivityModal = ({
                   itineraryActivity={extractedData ? { ...latestActivity, ...extractedData } as any : latestActivity}
                   travelId={travelId}
                   onClose={onClose}
+                  onSubmitRef={submitFormRef}
+                  onSubmittingChange={setIsSubmitting}
+                  onDirtyChange={(dirty) => {
+                    setIsDirty(dirty);
+                    isDirtyRef.current = dirty;
+                  }}
                   onChildModalToggle={handleChildModalToggle}
                   onSaveSuccess={(saved) => {
+                    setIsDirty(false);
+                    isDirtyRef.current = false;
                     setIsAddMode(false);
                     setCurrentActivity(saved);
                   }}
-                  onSwitchToAddMode={() => {
-                    setIsAddMode(true);
-                    setCurrentActivity(null);
-                    setExtractedData(null);
-                  }}
+                  onSwitchToAddMode={handleAddNewActivityPress}
                   onOpenSectionModal={handleOpenSectionModal}
                   onOpenPrimaryTypeModal={handleOpenPrimaryTypeModal}
                   onScroll={(e) => {
@@ -575,8 +646,123 @@ const ActivityModal = ({
           setShowPrimaryTypeModal(false);
         }}
       />
+
+      {/* Unsaved Changes Confirmation Modal */}
+      <Modal
+        visible={showUnsavedDialog}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowUnsavedDialog(false)}
+      >
+        <View style={styles.dialogOverlay}>
+          <View style={styles.dialogBox}>
+            <View className="flex-row items-center gap-3 mb-2">
+              <View
+                style={{
+                  backgroundColor: `${colors.error || "#D32F2F"}15`,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon name="info-outline" size={26} color={colors.error || "#D32F2F"} />
+              </View>
+              <Text className="text-xl font-bold text-gray-800 flex-1">
+                Unsaved Changes
+              </Text>
+            </View>
+
+            <Text className="text-base text-gray-600 mb-6 leading-5">
+              {unsavedActionTarget === "addNew"
+                ? "You have unsaved changes. Do you want to save them before adding a new activity?"
+                : "You have unsaved changes. Do you want to save them before leaving?"}
+            </Text>
+
+            <View className="flex-row items-center justify-between">
+              {/* Left Button: Discard */}
+              <TouchableOpacity
+                onPress={() => {
+                  setShowUnsavedDialog(false);
+                  if (unsavedActionTarget === "addNew") {
+                    switchToAddModeDirectly();
+                  } else {
+                    closeDirectly();
+                  }
+                }}
+                className="py-2.5 px-3 rounded-xl"
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Discard changes"
+              >
+                <Text
+                  style={{ color: colors.error || "#DC2626" }}
+                  className="text-base font-semibold"
+                >
+                  Discard
+                </Text>
+              </TouchableOpacity>
+
+              {/* Right Buttons: Cancel & Save */}
+              <View className="flex-row items-center gap-2">
+                <TouchableOpacity
+                  onPress={() => setShowUnsavedDialog(false)}
+                  className="py-2.5 px-4 rounded-full border border-gray-300"
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel and continue editing"
+                >
+                  <Text className="text-base font-semibold text-gray-700">Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setShowUnsavedDialog(false);
+                    submitFormRef.current?.();
+                  }}
+                  style={{ backgroundColor: colors.primary }}
+                  className="py-2.5 px-6 rounded-full border border-primary"
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="Save changes"
+                >
+                  <Text
+                    style={{ color: colors.onPrimary || "#FFFFFF" }}
+                    className="text-base font-bold"
+                  >
+                    Save
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
 
 export default ActivityModal;
+
+const styles = StyleSheet.create({
+  dialogOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  dialogBox: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 24,
+    width: "100%",
+    maxWidth: 400,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+});

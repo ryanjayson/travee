@@ -70,6 +70,9 @@ interface EditActivityProps {
   onChildModalToggle?: (isOpen: boolean) => void;
   onSaveSuccess?: (activity: ItineraryActivity) => void;
   onSwitchToAddMode?: () => void;
+  onSubmitRef?: React.MutableRefObject<(() => void) | null>;
+  onSubmittingChange?: (isSubmitting: boolean) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 const TravelSchema = Yup.object().shape({
@@ -379,6 +382,9 @@ const EditActivity = ({
   onOpenPrimaryTypeModal,
   onSaveSuccess,
   onSwitchToAddMode,
+  onSubmitRef,
+  onSubmittingChange,
+  onDirtyChange,
 }: EditActivityProps) => {
   const editingActivityId = propItineraryActivity?.id || "";
   const { data: dbFetchedActivity } = useItineraryActivity(editingActivityId);
@@ -593,6 +599,10 @@ const EditActivity = ({
   const { mutate: deleteActivityMutation, isPending } =
     useDeleteActivityMutation();
   const { generateSortOrder } = useLexicographicSort();
+
+  useEffect(() => {
+    onSubmittingChange?.(isPending || updateMutation.isPending);
+  }, [isPending, updateMutation.isPending, onSubmittingChange]);
 
   const travelId = itineraryActivity?.travelId || propTravelId || "";
   const {
@@ -1339,6 +1349,9 @@ const EditActivity = ({
         setFieldValue,
         submitCount,
       }) => {
+        if (onSubmitRef) {
+          onSubmitRef.current = handleSubmit;
+        }
         const sections = travelPlan?.itinerarySection || [];
         const hasSections = sections.length > 0;
         const selectedSection = sections.find((s) => s.id?.toString() === values.sectionId?.toString());
@@ -2059,6 +2072,7 @@ const EditActivity = ({
               activeTabId={activeTabId}
               setActiveTabId={setActiveTabId}
             />
+            <FormikDirtyListener onDirtyChange={onDirtyChange} />
             <FormInitHandler
               values={values}
               setFieldValue={setFieldValue}
@@ -2078,17 +2092,6 @@ const EditActivity = ({
                 scrollViewRef={scrollViewRef}
               />
             </View>
-
-            {!(isKeyboardVisible && isChecklistFocused) && (
-              <View className="mb-8 mx-4 bg-transparent">
-                <TouchButton
-                  buttonText={itineraryActivity?.id ? "Update Activity" : "Create Activity"}
-                  onPress={() => handleSubmit()}
-                  disabled={isPending || updateMutation.isPending}
-                  className="h-7xl p-6"
-                />
-              </View>
-            )}
 
             <MapboxDestinationSelectorModal
               visible={showDestinationModal}
@@ -2546,6 +2549,14 @@ const EditActivity = ({
 };
 
 export default EditActivity;
+
+const FormikDirtyListener = ({ onDirtyChange }: { onDirtyChange?: (dirty: boolean) => void }) => {
+  const { dirty } = useFormikContext<any>();
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
+  return null;
+};
 
 const FormikErrorScroller = ({
   scrollViewRef,
