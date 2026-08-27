@@ -17,6 +17,7 @@ interface TransportationTabProps {
   setShowTransportationDatePickerFor?: (field: "departureDateTime" | "arrivalDateTime" | null) => void;
   formatTransportationDateTime?: (dateVal: any) => string;
   onOpenPoiModal?: (category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => void;
+  onOpenMapPinModal?: (field: string, initialValue?: string) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
 }
@@ -34,6 +35,7 @@ export default function TransportationTab({
   setShowTransportationDatePickerFor,
   formatTransportationDateTime,
   onOpenPoiModal,
+  onOpenMapPinModal,
   noPadding = false,
   fieldRefs,
 }: TransportationTabProps) {
@@ -68,23 +70,53 @@ export default function TransportationTab({
         </Text>
       </View>
       {/* Pickup Location */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.pickupLocation"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Pickup / Departure"
-          value={values.transportationDetails?.pickupLocation || ""}
-          onChangeText={handleChange("transportationDetails.pickupLocation")}
-          onBlur={handleBlur("transportationDetails.pickupLocation")}
-        />
+      <View className="mb-5">
+        <View className="flex-row items-center gap-2" ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.pickupLocation"] = el; }}>
+          <FloatingLabelInput
+            label="Pickup / Departure"
+            value={values.transportationDetails?.pickupLocation || ""}
+            onChangeText={handleChange("transportationDetails.pickupLocation")}
+            onBlur={handleBlur("transportationDetails.pickupLocation")}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              onOpenMapPinModal?.(
+                "transportationDetails.pickupLocation",
+                values.transportationDetails?.pickupLocation
+              );
+            }}
+            className="w-12 h-12 rounded-full items-center justify-center"
+            accessibilityRole="button"
+            accessibilityLabel="Pin pickup location on map"
+          >
+            <Icon name="pin-drop" size={28} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Drop-off Location */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.dropoffLocation"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Drop-off / Arrival"
-          value={values.transportationDetails?.dropoffLocation || ""}
-          onChangeText={handleChange("transportationDetails.dropoffLocation")}
-          onBlur={handleBlur("transportationDetails.dropoffLocation")}
-        />
+      <View className="mb-5">
+        <View className="flex-row items-center gap-2" ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.dropoffLocation"] = el; }}>
+          <FloatingLabelInput
+            label="Drop-off / Arrival"
+            value={values.transportationDetails?.dropoffLocation || ""}
+            onChangeText={handleChange("transportationDetails.dropoffLocation")}
+            onBlur={handleBlur("transportationDetails.dropoffLocation")}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              onOpenMapPinModal?.(
+                "transportationDetails.dropoffLocation",
+                values.transportationDetails?.dropoffLocation
+              );
+            }}
+            className="w-12 h-12 rounded-full items-center justify-center"
+            accessibilityRole="button"
+            accessibilityLabel="Pin drop-off location on map"
+          >
+            <Icon name="pin-drop" size={28} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
 

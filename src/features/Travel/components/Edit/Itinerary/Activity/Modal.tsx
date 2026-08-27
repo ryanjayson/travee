@@ -47,24 +47,28 @@ const ActivityModal = ({
   travelId,
 }: ActivityModalProps) => {
   const [currentActivity, setCurrentActivity] = useState<ItineraryActivity | null>(propItineraryActivity);
+  const [isAddMode, setIsAddMode] = useState(!propItineraryActivity?.id);
 
-  const activeId = currentActivity?.id || propItineraryActivity?.id || "";
-  const { data: fetchedDbActivity, refetch: refetchActivity } = useItineraryActivity(visible ? activeId : "");
+  const activeId = !isAddMode ? (currentActivity?.id || propItineraryActivity?.id || "") : "";
+  const { data: fetchedDbActivity, refetch: refetchActivity } = useItineraryActivity(visible && activeId ? activeId : "");
 
   const { data: travelPlan } = useTravelPlan(travelId || "");
 
   const dbActivity = useMemo(() => {
-    if (!travelPlan?.itinerarySection || !currentActivity?.id) return null;
+    if (isAddMode || !travelPlan?.itinerarySection || !currentActivity?.id) return null;
     return travelPlan.itinerarySection
       .flatMap((s) => s.itineraryActivity || [])
       .find((a) => a.id === currentActivity.id) || null;
-  }, [travelPlan, currentActivity?.id]);
+  }, [isAddMode, travelPlan, currentActivity?.id]);
 
-  const latestActivity = fetchedDbActivity || dbActivity || currentActivity || propItineraryActivity;
+  const latestActivity = isAddMode
+    ? null
+    : (fetchedDbActivity || dbActivity || currentActivity || propItineraryActivity);
 
   useEffect(() => {
     if (visible) {
       setCurrentActivity(propItineraryActivity);
+      setIsAddMode(!propItineraryActivity?.id);
       if (propItineraryActivity?.id) {
         refetchActivity();
       }
@@ -495,6 +499,7 @@ const ActivityModal = ({
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => {
+                          setIsAddMode(true);
                           setCurrentActivity(null);
                           setExtractedData(null);
                         }}
@@ -525,9 +530,11 @@ const ActivityModal = ({
                   onClose={onClose}
                   onChildModalToggle={handleChildModalToggle}
                   onSaveSuccess={(saved) => {
+                    setIsAddMode(false);
                     setCurrentActivity(saved);
                   }}
                   onSwitchToAddMode={() => {
+                    setIsAddMode(true);
                     setCurrentActivity(null);
                     setExtractedData(null);
                   }}

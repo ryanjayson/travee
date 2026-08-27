@@ -35,6 +35,7 @@ import { useTravelPlan } from "../../../../hooks/useTravel";
 import { Attachment, DestinationDto, Images, ItineraryActivity } from "../../../../types/TravelDto";
 import { MapboxPoi } from "../../../Lookups/PoiLookupModal";
 import OsmPoiLookupModal from "../../../Lookups/OsmPoiLookupModal";
+import OsmMapPinModal, { PinnedLocation } from "../../../Lookups/OsmMapPinModal";
 import { MapboxPlace } from "../../../MapboxDestinationSelector";
 import MapboxDestinationSelectorModal from "../../../MapboxDestinationSelector/Modal";
 import DateTime from "./DateTime";
@@ -528,6 +529,16 @@ const EditActivity = ({
   const [showPoiModal, setShowPoiModal] = useState<boolean>(false);
   const [poiModalInitialCategory, setPoiModalInitialCategory] = useState<"accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp">("accommodation");
   const [poiTargetType, setPoiTargetType] = useState<string>("accommodation");
+  const [showMapPinModal, setShowMapPinModal] = useState<boolean>(false);
+  const [mapPinTargetField, setMapPinTargetField] = useState<string>("rideRentalDetails.pickupLocation");
+  const [mapPinInitialValue, setMapPinInitialValue] = useState<string>("");
+
+  const handleOpenMapPinModal = (targetField: string, initialText?: string) => {
+    setMapPinTargetField(targetField);
+    setMapPinInitialValue(initialText || "");
+    setShowMapPinModal(true);
+  };
+
   const scrollViewRef = useRef<ScrollView>(null);
   const fieldRefs = useRef<{ [key: string]: any }>({});
   const [activeTabId, setActiveTabId] = useState<string>("details");
@@ -567,7 +578,8 @@ const EditActivity = ({
     showPreparationDeadlinePicker ||
     showRideRentalDatePickerFor !== null ||
     showHikeOrCampDatePickerFor !== null ||
-    showPoiModal
+    showPoiModal ||
+    showMapPinModal
   );
 
   useEffect(() => {
@@ -1538,6 +1550,7 @@ const EditActivity = ({
                     colors={colors}
                     setShowTransportationDatePickerFor={setShowTransportationDatePickerFor}
                     formatTransportationDateTime={formatFlightDateTime}
+                    onOpenMapPinModal={handleOpenMapPinModal}
                     noPadding={true}
                     fieldRefs={fieldRefs}
                   />
@@ -1680,6 +1693,7 @@ const EditActivity = ({
                       setPoiModalInitialCategory(category);
                       setShowPoiModal(true);
                     }}
+                    onOpenMapPinModal={handleOpenMapPinModal}
                     formatDateTime={formatFlightDateTime}
                     onOpenRentalStartPicker={() => setShowRideRentalDatePickerFor("rentalStartDateTime")}
                     onOpenRentalEndPicker={() => setShowRideRentalDatePickerFor("rentalEndDateTime")}
@@ -2246,6 +2260,21 @@ const EditActivity = ({
                 }}
               />
             </Modal>
+
+            <OsmMapPinModal
+              visible={showMapPinModal}
+              onClose={() => setShowMapPinModal(false)}
+              initialValue={mapPinInitialValue}
+              destination={travelPlan?.travel?.destination || travelPlan?.travel?.destinationData?.city || travelPlan?.travel?.destinationData?.country || ""}
+              destinationCoordinates={travelPlan?.travel?.destinationData?.coordinates}
+              country={travelPlan?.travel?.destinationData?.country}
+              onSelect={(location: PinnedLocation) => {
+                if (mapPinTargetField) {
+                  setFieldValue(mapPinTargetField, location.address || location.name || "");
+                }
+                setShowMapPinModal(false);
+              }}
+            />
 
             <ActivityCalendarModal
               visible={showCalendarFor !== null}

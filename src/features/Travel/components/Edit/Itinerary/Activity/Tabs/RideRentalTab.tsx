@@ -15,6 +15,7 @@ interface RideRentalTabProps {
   setFieldValue: any;
   colors?: any;
   onOpenPoiModal?: (category: PoiCategory) => void;
+  onOpenMapPinModal?: (field: string, initialValue?: string) => void;
   formatDateTime?: (val: any) => string;
   onOpenRentalStartPicker?: () => void;
   onOpenRentalEndPicker?: () => void;
@@ -33,6 +34,7 @@ export default function RideRentalTab({
   setFieldValue,
   colors: propColors,
   onOpenPoiModal,
+  onOpenMapPinModal,
   formatDateTime,
   onOpenRentalStartPicker,
   onOpenRentalEndPicker,
@@ -133,10 +135,15 @@ export default function RideRentalTab({
             onBlur={handleBlur("rideRentalDetails.pickupLocation")}
           />
           <TouchableOpacity
-            onPress={() => { alert("hi"); }}
+            onPress={() => {
+              onOpenMapPinModal?.(
+                "rideRentalDetails.pickupLocation",
+                values.rideRentalDetails?.pickupLocation
+              );
+            }}
             className="w-12 h-12 rounded-full items-center justify-center"
             accessibilityRole="button"
-            accessibilityLabel="Use current location"
+            accessibilityLabel="Pin pickup location on map"
           >
             <Icon name="pin-drop" size={28} color={colors.primary} />
           </TouchableOpacity>
@@ -153,10 +160,15 @@ export default function RideRentalTab({
           />
 
           <TouchableOpacity
-            onPress={() => { alert("hi"); }}
+            onPress={() => {
+              onOpenMapPinModal?.(
+                "rideRentalDetails.dropoffLocation",
+                values.rideRentalDetails?.dropoffLocation
+              );
+            }}
             className="w-12 h-12 rounded-full items-center justify-center"
             accessibilityRole="button"
-            accessibilityLabel="Use current location"
+            accessibilityLabel="Pin drop-off location on map"
           >
             <Icon name="pin-drop" size={28} color={colors.primary} />
           </TouchableOpacity>
