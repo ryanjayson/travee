@@ -17,6 +17,7 @@ interface EntertainmentTabProps {
   handleBlur: any;
   setFieldValue: any;
   onOpenPoiModal: (category: PoiCategory) => void;
+  onOpenMapPinModal?: (field: string, initialValue?: string) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
   onPressDate?: () => void;
@@ -31,6 +32,7 @@ export default function EntertainmentTab({
   handleBlur,
   setFieldValue,
   onOpenPoiModal,
+  onOpenMapPinModal,
   noPadding = false,
   fieldRefs,
   onPressDate,
@@ -69,13 +71,28 @@ export default function EntertainmentTab({
       </View>
 
       {/* Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["entertainmentDetails.address"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Address"
-          value={values.entertainmentDetails?.address || ""}
-          onChangeText={handleChange("entertainmentDetails.address")}
-          onBlur={handleBlur("entertainmentDetails.address")}
-        />
+      <View className="mb-5">
+        <View className="flex-row items-center gap-2" ref={(el) => { if (fieldRefs) fieldRefs.current["entertainmentDetails.address"] = el; }}>
+          <FloatingLabelInput
+            label="Address"
+            value={values.entertainmentDetails?.address || ""}
+            onChangeText={handleChange("entertainmentDetails.address")}
+            onBlur={handleBlur("entertainmentDetails.address")}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              onOpenMapPinModal?.(
+                "entertainmentDetails.address",
+                values.entertainmentDetails?.address
+              );
+            }}
+            className="w-12 h-12 rounded-full items-center justify-center"
+            accessibilityRole="button"
+            accessibilityLabel="Pin address on map"
+          >
+            <Icon name="pin-drop" size={28} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {onPressDate && onPressTime && onClearDate && onClearTime && (
@@ -90,7 +107,7 @@ export default function EntertainmentTab({
       )}
 
       {/* Sub-type tags */}
-      <View className="mb-5 mt-5">
+      <View className="mb-5">
         <Text className="text-xs font-bold tracking-wider uppercase mb-2">Type</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row gap-2">

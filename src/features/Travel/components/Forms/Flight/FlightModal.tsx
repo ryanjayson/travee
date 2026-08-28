@@ -44,11 +44,12 @@ interface FlightModalProps {
   }) => void;
   defaultDate?: Date | string | null;
   initialDate?: Date | string | null;
+  tripStartDate?: Date | string | null;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
 
-export default function FlightModal({ visible, onClose, onConfirm, defaultDate, initialDate }: FlightModalProps) {
+export default function FlightModal({ visible, onClose, onConfirm, defaultDate, initialDate, tripStartDate }: FlightModalProps) {
   const { colors } = useTheme();
   const [departureAirport, setDepartureAirport] = useState<Airport | null>(null);
   const [arrivalAirport, setArrivalAirport] = useState<Airport | null>(null);
@@ -60,7 +61,7 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
   };
 
   const getCalendarFallbackDate = () => {
-    const dVal = defaultDate || initialDate;
+    const dVal = tripStartDate || defaultDate || initialDate;
     if (dVal) {
       const d = new Date(dVal);
       if (!isNaN(d.getTime()) && d.getTime() > 0) return d;
@@ -535,7 +536,18 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
                       >
                         {departureDate ? formatDateTime(departureDate) : "Select Departure Date & Time..."}
                       </Text>
-                      <Icon name="calendar-today" size={20} color="#666" />
+                      {departureDate ? (
+                        <TouchableOpacity
+                          onPress={() => setDepartureDate(null)}
+                          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                          accessibilityRole="button"
+                          accessibilityLabel="Clear departure date and time"
+                        >
+                          <Icon name="close" size={20} color="#999" />
+                        </TouchableOpacity>
+                      ) : (
+                        <Icon name="calendar-today" size={20} color="#666" />
+                      )}
                     </TouchableOpacity>
                   </View>
 

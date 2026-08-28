@@ -271,6 +271,9 @@ const FormInitHandler = ({
   onOpenPrimaryTypeModal,
   openFlightModal,
   handleFlightSelect,
+  tripStartDate,
+  currentSectionStartDate,
+  scrollViewRef,
 }: {
   values: any;
   setFieldValue: any;
@@ -278,14 +281,18 @@ const FormInitHandler = ({
   onOpenPrimaryTypeModal: any;
   openFlightModal: any;
   handleFlightSelect: any;
+  tripStartDate?: Date | string | null;
+  currentSectionStartDate?: Date | string | null;
+  scrollViewRef?: React.RefObject<ScrollView>;
 }) => {
   useEffect(() => {
     if (!itineraryActivity?.id && values.type === ActivityType.none) {
       const timer = setTimeout(() => {
         onOpenPrimaryTypeModal(values.type, (type: any) => {
           setFieldValue("type", type);
+          scrollViewRef?.current?.scrollTo({ y: 0, animated: true });
           if (type === ActivityType.flight) {
-            const defaultFlightDate = values.flightDetails?.departureDate || values.startDate;
+            const defaultFlightDate = tripStartDate || values.startDate || values.flightDetails?.departureDate || currentSectionStartDate;
             openFlightModal(
               (flightData: any) => {
                 handleFlightSelect(flightData, setFieldValue);
@@ -297,7 +304,7 @@ const FormInitHandler = ({
       }, 350);
       return () => clearTimeout(timer);
     }
-  }, [itineraryActivity?.id, values.type]);
+  }, [itineraryActivity?.id, values.type, tripStartDate, currentSectionStartDate]);
 
   return null;
 };
@@ -447,18 +454,28 @@ const EditActivity = ({
       },
     });
 
+    const parsedDepartureDate =
+      departureDate && departureDate instanceof Date
+        ? (!isNaN(departureDate.getTime()) && departureDate.getTime() > 0 ? departureDate : null)
+        : departureDate
+          ? (() => {
+            const d = new Date(departureDate);
+            return !isNaN(d.getTime()) && d.getTime() > 0 ? d : null;
+          })()
+          : null;
+
     // 4. Start Date & Time
-    if (departureDate && departureDate instanceof Date && !isNaN(departureDate.getTime())) {
-      const year = departureDate.getFullYear();
-      const month = String(departureDate.getMonth() + 1).padStart(2, '0');
-      const day = String(departureDate.getDate()).padStart(2, '0');
+    if (parsedDepartureDate) {
+      const year = parsedDepartureDate.getFullYear();
+      const month = String(parsedDepartureDate.getMonth() + 1).padStart(2, '0');
+      const day = String(parsedDepartureDate.getDate()).padStart(2, '0');
       setFieldValue("startDate", `${year}-${month}-${day}`);
 
-      const hours = String(departureDate.getHours()).padStart(2, '0');
-      const minutes = String(departureDate.getMinutes()).padStart(2, '0');
+      const hours = String(parsedDepartureDate.getHours()).padStart(2, '0');
+      const minutes = String(parsedDepartureDate.getMinutes()).padStart(2, '0');
       setFieldValue("startTime", `${hours}:${minutes}`);
 
-      setFieldValue("flightDetails.departureDate", departureDate);
+      setFieldValue("flightDetails.departureDate", parsedDepartureDate);
     } else {
       setFieldValue("flightDetails.departureDate", null);
     }
@@ -479,8 +496,8 @@ const EditActivity = ({
     setFieldValue("flightDetails.departureAirport", `${depName} (${departureAirport.code})`);
     setFieldValue("flightDetails.arrivalAirport", `${arrName} (${arrivalAirport.code})`);
 
-    // 8. Prefill Arrival Date & Time if coordinates are available to calculate flight duration
-    if (departureAirport?.coordinates && arrivalAirport?.coordinates) {
+    // 8. Prefill Arrival Date & Time only if departure date is set and coordinates are available
+    if (parsedDepartureDate && departureAirport?.coordinates && arrivalAirport?.coordinates) {
       const lat1 = departureAirport.coordinates.lat;
       const lon1 = departureAirport.coordinates.lon;
       const lat2 = arrivalAirport.coordinates.lat;
@@ -502,7 +519,7 @@ const EditActivity = ({
         // Average commercial jet speed is ~800 km/h
         // Add 30 minutes (0.5 hours) for taxi, takeoff, and landing
         const durationHours = distance / 800 + 0.5;
-        const arrivalDate = new Date(new Date(departureDate).getTime() + durationHours * 60 * 60 * 1000);
+        const arrivalDate = new Date(parsedDepartureDate.getTime() + durationHours * 60 * 60 * 1000);
         setFieldValue("flightDetails.arrivalDate", arrivalDate);
 
         // Prefill warning notice trigger
@@ -513,6 +530,12 @@ const EditActivity = ({
         prefillNoticeTimerRef.current = setTimeout(() => {
           setShowArrivalPrefillNotice(false);
         }, 6000); // 6 seconds
+      }
+    } else {
+      setFieldValue("flightDetails.arrivalDate", null);
+      setShowArrivalPrefillNotice(false);
+      if (prefillNoticeTimerRef.current) {
+        clearTimeout(prefillNoticeTimerRef.current);
       }
     }
   };
@@ -538,10 +561,12 @@ const EditActivity = ({
   const [showMapPinModal, setShowMapPinModal] = useState<boolean>(false);
   const [mapPinTargetField, setMapPinTargetField] = useState<string>("rideRentalDetails.pickupLocation");
   const [mapPinInitialValue, setMapPinInitialValue] = useState<string>("");
+  const [mapPinInitialCoordinates, setMapPinInitialCoordinates] = useState<any>(null);
 
-  const handleOpenMapPinModal = (targetField: string, initialText?: string) => {
+  const handleOpenMapPinModal = (targetField: string, initialText?: string, initialCoords?: any) => {
     setMapPinTargetField(targetField);
     setMapPinInitialValue(initialText || "");
+    setMapPinInitialCoordinates(initialCoords || null);
     setShowMapPinModal(true);
   };
 
@@ -1464,6 +1489,7 @@ const EditActivity = ({
                     formatFlightDateTime={formatFlightDateTime}
                     handleFlightSelect={handleFlightSelect}
                     showArrivalPrefillNotice={showArrivalPrefillNotice}
+                    tripStartDate={travelPlan?.travel?.startOrDepartureDate}
                     noPadding={true}
                     fieldRefs={fieldRefs}
                   />
@@ -1502,6 +1528,7 @@ const EditActivity = ({
                       setPoiModalInitialCategory(category);
                       setShowPoiModal(true);
                     }}
+                    onOpenMapPinModal={handleOpenMapPinModal}
                     noPadding={true}
                     fieldRefs={fieldRefs}
                     onPressDate={() => setShowCalendarFor("startDate")}
@@ -1523,6 +1550,7 @@ const EditActivity = ({
                       setPoiModalInitialCategory(category);
                       setShowPoiModal(true);
                     }}
+                    onOpenMapPinModal={handleOpenMapPinModal}
                     noPadding={true}
                     fieldRefs={fieldRefs}
                     onPressDate={() => setShowCalendarFor("startDate")}
@@ -1544,6 +1572,7 @@ const EditActivity = ({
                       setPoiModalInitialCategory(category);
                       setShowPoiModal(true);
                     }}
+                    onOpenMapPinModal={handleOpenMapPinModal}
                     noPadding={true}
                     fieldRefs={fieldRefs}
                     onPressDate={() => setShowCalendarFor("startDate")}
@@ -1648,6 +1677,7 @@ const EditActivity = ({
                       setPoiModalInitialCategory(category);
                       setShowPoiModal(true);
                     }}
+                    onOpenMapPinModal={handleOpenMapPinModal}
                     formatDateTime={formatFlightDateTime}
                     onOpenCheckinPicker={() => setShowHikeOrCampDatePickerFor("checkinDateTime")}
                     onOpenCheckoutPicker={() => setShowHikeOrCampDatePickerFor("checkoutDateTime")}
@@ -1780,8 +1810,9 @@ const EditActivity = ({
                             onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
                               setFieldValue("type", type);
                               setActiveTabId("details");
+                              scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                               if (type === ActivityType.flight) {
-                                const defaultFlightDate = values.flightDetails?.departureDate || values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
+                                const defaultFlightDate = travelPlan?.travel?.startOrDepartureDate || values.startDate || values.flightDetails?.departureDate || currentSection?.startDate;
                                 openFlightModal(
                                   (flightData: any) => {
                                     handleFlightSelect(flightData, setFieldValue);
@@ -1863,7 +1894,7 @@ const EditActivity = ({
                       onChange={(text) => setFieldValue("description", text)}
                       label="Description"
                       placeholder="Activity details"
-                      confirmLabel="Add"
+                      confirmLabel={`${values.description ? `Update` : 'Add'}`}
                       maxLength={500}
                     />
                   </View>
@@ -2080,6 +2111,9 @@ const EditActivity = ({
               onOpenPrimaryTypeModal={onOpenPrimaryTypeModal}
               openFlightModal={openFlightModal}
               handleFlightSelect={handleFlightSelect}
+              tripStartDate={travelPlan?.travel?.startOrDepartureDate}
+              currentSectionStartDate={currentSection?.startDate}
+              scrollViewRef={scrollViewRef}
             />
 
             <View className="flex-1 py-3 ">
@@ -2268,12 +2302,49 @@ const EditActivity = ({
               visible={showMapPinModal}
               onClose={() => setShowMapPinModal(false)}
               initialValue={mapPinInitialValue}
+              initialCoordinates={mapPinInitialCoordinates}
               destination={travelPlan?.travel?.destination || travelPlan?.travel?.destinationData?.city || travelPlan?.travel?.destinationData?.country || ""}
               destinationCoordinates={travelPlan?.travel?.destinationData?.coordinates}
               country={travelPlan?.travel?.destinationData?.country}
               onSelect={(location: PinnedLocation) => {
                 if (mapPinTargetField) {
                   setFieldValue(mapPinTargetField, location.address || location.name || "");
+                  if (mapPinTargetField === "shoppingDetails.address" && location.coordinates) {
+                    setFieldValue("shoppingDetails.destinationAddressData", {
+                      id: location.id || undefined,
+                      coordinates: {
+                        latitude: location.coordinates.latitude,
+                        longitude: location.coordinates.longitude,
+                      },
+                    });
+                  }
+                  if (mapPinTargetField === "natureDetails.address" && location.coordinates) {
+                    setFieldValue("natureDetails.destinationAddressData", {
+                      id: location.id || undefined,
+                      coordinates: {
+                        latitude: location.coordinates.latitude,
+                        longitude: location.coordinates.longitude,
+                      },
+                    });
+                  }
+                  if (mapPinTargetField === "entertainmentDetails.address" && location.coordinates) {
+                    setFieldValue("entertainmentDetails.destinationAddressData", {
+                      id: location.id || undefined,
+                      coordinates: {
+                        latitude: location.coordinates.latitude,
+                        longitude: location.coordinates.longitude,
+                      },
+                    });
+                  }
+                  if (mapPinTargetField === "hikeOrCampDetails.address" && location.coordinates) {
+                    setFieldValue("hikeOrCampDetails.destinationAddressData", {
+                      id: location.id || undefined,
+                      coordinates: {
+                        latitude: location.coordinates.latitude,
+                        longitude: location.coordinates.longitude,
+                      },
+                    });
+                  }
                 }
                 setShowMapPinModal(false);
               }}

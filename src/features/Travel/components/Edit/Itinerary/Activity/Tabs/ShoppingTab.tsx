@@ -17,6 +17,7 @@ interface ShoppingTabProps {
   handleBlur: any;
   setFieldValue: any;
   onOpenPoiModal: (category: PoiCategory) => void;
+  onOpenMapPinModal?: (field: string, initialValue?: string) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
   onPressDate?: () => void;
@@ -31,6 +32,7 @@ export default function ShoppingTab({
   handleBlur,
   setFieldValue,
   onOpenPoiModal,
+  onOpenMapPinModal,
   noPadding = false,
   fieldRefs,
   onPressDate,
@@ -69,13 +71,28 @@ export default function ShoppingTab({
       </View>
 
       {/* Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["shoppingDetails.address"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Address"
-          value={values.shoppingDetails?.address || ""}
-          onChangeText={handleChange("shoppingDetails.address")}
-          onBlur={handleBlur("shoppingDetails.address")}
-        />
+      <View className="mb-5">
+        <View className="flex-row items-center gap-2" ref={(el) => { if (fieldRefs) fieldRefs.current["shoppingDetails.address"] = el; }}>
+          <FloatingLabelInput
+            label="Address"
+            value={values.shoppingDetails?.address || ""}
+            onChangeText={handleChange("shoppingDetails.address")}
+            onBlur={handleBlur("shoppingDetails.address")}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              onOpenMapPinModal?.(
+                "shoppingDetails.address",
+                values.shoppingDetails?.address
+              );
+            }}
+            className="w-12 h-12 rounded-full items-center justify-center"
+            accessibilityRole="button"
+            accessibilityLabel="Pin address on map"
+          >
+            <Icon name="pin-drop" size={28} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {onPressDate && onPressTime && onClearDate && onClearTime && (

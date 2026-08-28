@@ -17,7 +17,12 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { WebView } from "react-native-webview";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getValidMapboxCountryCode } from "../../../../utils/countryUtils";
+// @ts-ignore
+import { MAPBOX_ACCESS_TOKEN as ENV_TOKEN } from "@env";
+
+const MAPBOX_ACCESS_TOKEN = ENV_TOKEN || process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.MAPBOX_ACCESS_TOKEN || "";
+const MAPBOX_SEARCHBOX_URL = "https://api.mapbox.com/search/searchbox/v1/forward";
+const MAPBOX_PLACES_V5_URL = "https://api.mapbox.com/geocoding/v5/mapbox.places";
 
 const NOMINATIM_SEARCH_URL = "https://nominatim.openstreetmap.org/search";
 const NOMINATIM_REVERSE_URL = "https://nominatim.openstreetmap.org/reverse";
@@ -51,30 +56,19 @@ export interface OsmMapPinModalProps {
   country?: string;
 }
 
-interface NominatimSearchResult {
-  place_id: number;
-  osm_id: number;
+interface PlaceSearchResult {
+  id: string | number;
   display_name: string;
   name: string;
-  lat: string;
-  lon: string;
-  type: string;
-  class: string;
-  address?: {
-    road?: string;
-    suburb?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-    postcode?: string;
-  };
+  lat: number;
+  lng: number;
 }
 
 const buildLeafletHtml = (
   initialLat: number,
   initialLng: number,
-  initialZoom: number = 14,
-  pinColor: string = "#E53935"
+  initialZoom: number = 15,
+  pinColor: string = "#c93030"
 ) => `
 <!DOCTYPE html>
 <html>
@@ -86,23 +80,27 @@ const buildLeafletHtml = (
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body, #map { width: 100%; height: 100%; overflow: hidden; background: #f0f2f5; }
+    .leaflet-div-icon {
+      background: transparent !important;
+      border: none !important;
+    }
     .custom-pin {
+      width: 38px;
+      height: 48px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
+      cursor: grab;
+      position: relative;
+    }
+    .custom-pin:active {
+      cursor: grabbing;
     }
     .pin-icon {
       width: 38px;
-      height: 38px;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));
-      animation: pinBounce 0.35s ease-out;
-    }
-    @keyframes pinBounce {
-      0% { transform: translateY(-20px) scale(0.8); opacity: 0; }
-      60% { transform: translateY(4px) scale(1.05); opacity: 1; }
-      100% { transform: translateY(0) scale(1); }
+      height: 48px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.45));
+      display: block;
     }
     .leaflet-control-attribution {
       font-size: 9px !important;
@@ -144,6 +142,9 @@ const buildLeafletHtml = (
       autoPan: true
     }).addTo(map);
 
+    window.map = map;
+    window.marker = marker;
+
     function notifyPosition(lat, lng) {
       if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
         window.ReactNativeWebView.postMessage(JSON.stringify({
@@ -165,16 +166,32 @@ const buildLeafletHtml = (
     });
 
     window.flyToLocation = function(lat, lng, zoom) {
-      map.flyTo([lat, lng], zoom || 15, { animate: true, duration: 1 });
-      marker.setLatLng([lat, lng]);
+      if (window.map) {
+        window.map.setView([lat, lng], zoom || 16);
+      }
+      if (window.marker) {
+        window.marker.setLatLng([lat, lng]);
+      }
     };
 
     window.setPinLocation = function(lat, lng) {
-      marker.setLatLng([lat, lng]);
+      if (window.marker) {
+        window.marker.setLatLng([lat, lng]);
+      }
     };
 
-    window.zoomIn = function() { map.zoomIn(); };
-    window.zoomOut = function() { map.zoomOut(); };
+    window.zoomIn = function() { if (window.map) window.map.zoomIn(); };
+    window.zoomOut = function() { if (window.map) window.map.zoomOut(); };
+
+    setTimeout(function() {
+      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'map_ready',
+          lat: ${initialLat},
+          lng: ${initialLng}
+        }));
+      }
+    }, 100);
   </script>
 </body>
 </html>
@@ -194,6 +211,8 @@ const OsmMapPinModal = ({
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const webViewRef = useRef<WebView>(null);
+  const isMapReadyRef = useRef<boolean>(false);
+  const pendingFlyToRef = useRef<{ lat: number; lng: number; zoom: number } | null>(null);
 
   // Default coordinate determination
   const defaultCoords = initialCoordinates || destinationCoordinates || {
@@ -216,13 +235,137 @@ const OsmMapPinModal = ({
   const abortSearchControllerRef = useRef<AbortController | null>(null);
   const abortReverseControllerRef = useRef<AbortController | null>(null);
 
+  const flyMapTo = useCallback((lat: number, lng: number, zoom: number = 16) => {
+    if (isMapReadyRef.current) {
+      webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}, ${zoom}); true;`);
+    } else {
+      pendingFlyToRef.current = { lat, lng, zoom };
+    }
+  }, []);
+
+  // Geocode address text on open
+  const geocodeAddress = async (queryText: string) => {
+    const trimmed = queryText.trim();
+    if (!trimmed) return;
+    setIsGeocoding(true);
+
+    try {
+      const validCountryCode = getValidMapboxCountryCode(country || destination);
+      const biasCoords = destinationCoordinates || currentCoords;
+
+      // 1. Try Mapbox SearchBox Forward
+      if (MAPBOX_ACCESS_TOKEN) {
+        try {
+          let mbUrl = `${MAPBOX_SEARCHBOX_URL}?q=${encodeURIComponent(trimmed)}&access_token=${MAPBOX_ACCESS_TOKEN}&limit=1&language=en`;
+          if (validCountryCode) mbUrl += `&country=${encodeURIComponent(validCountryCode)}`;
+          if (biasCoords && (biasCoords.latitude !== 0 || biasCoords.longitude !== 0)) {
+            mbUrl += `&proximity=${biasCoords.longitude},${biasCoords.latitude}`;
+          }
+          const res = await fetch(mbUrl);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.features && data.features.length > 0) {
+              const feat = data.features[0];
+              const geom = feat.geometry;
+              const props = feat.properties || {};
+              const lng = Array.isArray(geom?.coordinates) ? geom.coordinates[0] : props?.coordinates?.longitude;
+              const lat = Array.isArray(geom?.coordinates) ? geom.coordinates[1] : props?.coordinates?.latitude;
+              if (typeof lat === "number" && typeof lng === "number" && !isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0)) {
+                const coords = { latitude: lat, longitude: lng };
+                setCurrentCoords(coords);
+                setSelectedPlaceName(props.name || feat.text || props.full_address?.split(",")[0] || trimmed);
+                setSelectedAddress(props.full_address || props.place_formatted || props.name || trimmed);
+                flyMapTo(lat, lng, 16);
+                return;
+              }
+            }
+          }
+        } catch (mbErr) {
+          console.warn("[OsmMapPinModal] Mapbox searchbox geocode error:", mbErr);
+        }
+
+        // 2. Try Mapbox Places v5
+        try {
+          let v5Url = `${MAPBOX_PLACES_V5_URL}/${encodeURIComponent(trimmed)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=1&language=en`;
+          if (validCountryCode) v5Url += `&country=${encodeURIComponent(validCountryCode)}`;
+          if (biasCoords && (biasCoords.latitude !== 0 || biasCoords.longitude !== 0)) {
+            v5Url += `&proximity=${biasCoords.longitude},${biasCoords.latitude}`;
+          }
+          const res = await fetch(v5Url);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.features && data.features.length > 0) {
+              const feat = data.features[0];
+              const [lng, lat] = feat.center || feat.geometry?.coordinates || [];
+              if (typeof lat === "number" && typeof lng === "number" && !isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0)) {
+                const coords = { latitude: lat, longitude: lng };
+                setCurrentCoords(coords);
+                setSelectedPlaceName(feat.text || feat.place_name?.split(",")[0] || trimmed);
+                setSelectedAddress(feat.place_name || trimmed);
+                flyMapTo(lat, lng, 16);
+                return;
+              }
+            }
+          }
+        } catch (v5Err) {
+          console.warn("[OsmMapPinModal] Mapbox v5 geocode error:", v5Err);
+        }
+      }
+
+      // 3. Fallback to Nominatim OSM
+      let url = `${NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(trimmed)}&format=json&addressdetails=1&limit=1&accept-language=en`;
+      if (validCountryCode) {
+        url += `&countrycodes=${encodeURIComponent(validCountryCode)}`;
+      }
+      if (biasCoords && (biasCoords.latitude !== 0 || biasCoords.longitude !== 0)) {
+        const delta = 1.5;
+        url += `&viewbox=${biasCoords.longitude - delta},${biasCoords.latitude + delta},${biasCoords.longitude + delta},${biasCoords.latitude - delta}&bounded=0`;
+      }
+      const response = await fetch(url, {
+        headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.length > 0) {
+          const item = data[0];
+          const lat = parseFloat(item.lat);
+          const lng = parseFloat(item.lon);
+          if (!isNaN(lat) && !isNaN(lng)) {
+            const coords = { latitude: lat, longitude: lng };
+            setCurrentCoords(coords);
+            setSelectedPlaceName(item.name || item.display_name.split(",")[0] || trimmed);
+            setSelectedAddress(item.display_name || trimmed);
+            flyMapTo(lat, lng, 16);
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[OsmMapPinModal] Address geocode error:", e);
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
   // Initialize or reset when modal opens
   useEffect(() => {
     if (visible) {
-      const activeCoords = initialCoordinates || destinationCoordinates || {
-        latitude: 35.6762,
-        longitude: 139.6503,
-      };
+      isMapReadyRef.current = false;
+      const hasInitialCoords = Boolean(
+        initialCoordinates &&
+        typeof initialCoordinates.latitude === "number" &&
+        typeof initialCoordinates.longitude === "number" &&
+        (initialCoordinates.latitude !== 0 || initialCoordinates.longitude !== 0)
+      );
+      const hasInitialValue = Boolean(initialValue && initialValue.trim().length > 0);
+
+      const activeCoords = hasInitialCoords
+        ? initialCoordinates!
+        : destinationCoordinates || {
+          latitude: 35.6762,
+          longitude: 139.6503,
+        };
+
       setCurrentCoords(activeCoords);
       setSelectedPlaceName(initialValue || destination || "Selected Pin Location");
       setSelectedAddress(initialValue || "");
@@ -230,18 +373,19 @@ const OsmMapPinModal = ({
       setSearchResults([]);
       setShowSearchResults(false);
 
-      // If no initial coordinates were passed but destination coordinates exist, fly to destination
-      if (!initialCoordinates && destinationCoordinates) {
-        setTimeout(() => {
-          webViewRef.current?.injectJavaScript(
-            `window.flyToLocation(${destinationCoordinates.latitude}, ${destinationCoordinates.longitude}, 14); true;`
-          );
-        }, 500);
+      if (hasInitialCoords) {
+        flyMapTo(activeCoords.latitude, activeCoords.longitude, 16);
+        if (!hasInitialValue) {
+          reverseGeocode(activeCoords.latitude, activeCoords.longitude);
+        }
+      } else if (hasInitialValue) {
+        geocodeAddress(initialValue.trim());
+      } else if (destinationCoordinates) {
+        flyMapTo(destinationCoordinates.latitude, destinationCoordinates.longitude, 14);
         reverseGeocode(destinationCoordinates.latitude, destinationCoordinates.longitude);
-      } else if (!initialCoordinates && !destinationCoordinates && destination) {
+      } else if (destination) {
         geocodeDestination(destination);
       } else {
-        // Reverse geocode starting coordinates to show nice address
         reverseGeocode(activeCoords.latitude, activeCoords.longitude);
       }
     }
@@ -250,18 +394,42 @@ const OsmMapPinModal = ({
 
   // Geocode destination name on load if no explicit coords
   const geocodeDestination = async (queryText: string) => {
+    const trimmed = queryText.trim();
+    if (!trimmed) return;
+    setIsGeocoding(true);
+
     try {
-      setIsGeocoding(true);
-      let url = `${NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(queryText)}&format=json&addressdetails=1&limit=1&accept-language=en`;
-      const countryCode = getValidMapboxCountryCode(country || queryText);
-      if (countryCode) {
-        url += `&countrycodes=${encodeURIComponent(countryCode)}`;
+      const validCountryCode = getValidMapboxCountryCode(country || trimmed);
+      if (MAPBOX_ACCESS_TOKEN) {
+        let v5Url = `${MAPBOX_PLACES_V5_URL}/${encodeURIComponent(trimmed)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=1&language=en`;
+        if (validCountryCode) v5Url += `&country=${encodeURIComponent(validCountryCode)}`;
+        const res = await fetch(v5Url);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.features && data.features.length > 0) {
+            const feat = data.features[0];
+            const [lng, lat] = feat.center || feat.geometry?.coordinates || [];
+            if (typeof lat === "number" && typeof lng === "number" && !isNaN(lat) && !isNaN(lng)) {
+              const coords = { latitude: lat, longitude: lng };
+              setCurrentCoords(coords);
+              setSelectedPlaceName(feat.text || feat.place_name?.split(",")[0] || trimmed);
+              setSelectedAddress(feat.place_name || trimmed);
+              flyMapTo(lat, lng, 13);
+              return;
+            }
+          }
+        }
+      }
+
+      let url = `${NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(trimmed)}&format=json&addressdetails=1&limit=1&accept-language=en`;
+      if (validCountryCode) {
+        url += `&countrycodes=${encodeURIComponent(validCountryCode)}`;
       }
       const response = await fetch(url, {
         headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
       });
       if (response.ok) {
-        const data: NominatimSearchResult[] = await response.json();
+        const data = await response.json();
         if (data.length > 0) {
           const item = data[0];
           const lat = parseFloat(item.lat);
@@ -270,11 +438,7 @@ const OsmMapPinModal = ({
           setCurrentCoords(coords);
           setSelectedPlaceName(item.name || item.display_name.split(",")[0]);
           setSelectedAddress(item.display_name);
-
-          // Fly map to new coordinates
-          setTimeout(() => {
-            webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}, 13); true;`);
-          }, 600);
+          flyMapTo(lat, lng, 13);
         }
       }
     } catch (e) {
@@ -290,9 +454,28 @@ const OsmMapPinModal = ({
       abortReverseControllerRef.current.abort();
     }
     abortReverseControllerRef.current = new AbortController();
-
     setIsGeocoding(true);
+
     try {
+      if (MAPBOX_ACCESS_TOKEN) {
+        try {
+          const v5Url = `${MAPBOX_PLACES_V5_URL}/${lng},${lat}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=1&language=en`;
+          const res = await fetch(v5Url, { signal: abortReverseControllerRef.current.signal });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.features && data.features.length > 0) {
+              const feat = data.features[0];
+              setSelectedPlaceName(feat.text || feat.place_name?.split(",")[0] || "Pinned Location");
+              setSelectedAddress(feat.place_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+              return;
+            }
+          }
+        } catch (mbErr: any) {
+          if (mbErr?.name === "AbortError") return;
+          console.warn("[OsmMapPinModal] Mapbox reverse geocode error:", mbErr);
+        }
+      }
+
       const url = `${NOMINATIM_REVERSE_URL}?lat=${lat}&lon=${lng}&format=json&addressdetails=1&accept-language=en`;
       const response = await fetch(url, {
         signal: abortReverseControllerRef.current.signal,
@@ -329,7 +512,8 @@ const OsmMapPinModal = ({
   // Forward search for place/address
   const searchPlaces = useCallback(
     async (text: string) => {
-      if (text.trim().length < 2) {
+      const trimmed = text.trim();
+      if (trimmed.length < 2) {
         setSearchResults([]);
         setShowSearchResults(false);
         return;
@@ -339,16 +523,46 @@ const OsmMapPinModal = ({
         abortSearchControllerRef.current.abort();
       }
       abortSearchControllerRef.current = new AbortController();
-
       setIsSearching(true);
+
       try {
-        let url = `${NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(text)}&format=json&addressdetails=1&limit=5&accept-language=en`;
         const validCountryCode = getValidMapboxCountryCode(country || destination);
+        const targetCoords = destinationCoordinates || currentCoords;
+
+        if (MAPBOX_ACCESS_TOKEN) {
+          let mbUrl = `${MAPBOX_SEARCHBOX_URL}?q=${encodeURIComponent(trimmed)}&access_token=${MAPBOX_ACCESS_TOKEN}&limit=6&language=en`;
+          if (validCountryCode) mbUrl += `&country=${encodeURIComponent(validCountryCode)}`;
+          if (targetCoords && (targetCoords.latitude !== 0 || targetCoords.longitude !== 0)) {
+            mbUrl += `&proximity=${targetCoords.longitude},${targetCoords.latitude}`;
+          }
+          const res = await fetch(mbUrl, { signal: abortSearchControllerRef.current.signal });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.features && data.features.length > 0) {
+              const mapped: PlaceSearchResult[] = data.features.map((f: any) => {
+                const props = f.properties || {};
+                const geom = f.geometry || {};
+                const lng = Array.isArray(geom.coordinates) ? geom.coordinates[0] : (props.coordinates?.longitude ?? 0);
+                const lat = Array.isArray(geom.coordinates) ? geom.coordinates[1] : (props.coordinates?.latitude ?? 0);
+                return {
+                  id: props.mapbox_id || f.id || Math.random().toString(),
+                  name: props.name || f.text || props.full_address?.split(",")[0] || "Location",
+                  display_name: props.full_address || props.place_formatted || props.name || "Location",
+                  lat,
+                  lng,
+                };
+              });
+              setSearchResults(mapped);
+              setShowSearchResults(mapped.length > 0);
+              return;
+            }
+          }
+        }
+
+        let url = `${NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(trimmed)}&format=json&addressdetails=1&limit=5&accept-language=en`;
         if (validCountryCode) {
           url += `&countrycodes=${encodeURIComponent(validCountryCode)}`;
         }
-
-        const targetCoords = destinationCoordinates || currentCoords;
         if (targetCoords && (targetCoords.latitude !== 0 || targetCoords.longitude !== 0)) {
           const delta = 1.0;
           url += `&viewbox=${targetCoords.longitude - delta},${targetCoords.latitude + delta},${targetCoords.longitude + delta},${targetCoords.latitude - delta}&bounded=0`;
@@ -361,9 +575,16 @@ const OsmMapPinModal = ({
 
         if (!response.ok) throw new Error("Search failed");
 
-        const data: NominatimSearchResult[] = await response.json();
-        setSearchResults(data);
-        setShowSearchResults(data.length > 0);
+        const data = await response.json();
+        const mapped: PlaceSearchResult[] = data.map((item: any) => ({
+          id: item.place_id,
+          name: item.name || item.display_name.split(",")[0],
+          display_name: item.display_name,
+          lat: parseFloat(item.lat),
+          lng: parseFloat(item.lon),
+        }));
+        setSearchResults(mapped);
+        setShowSearchResults(mapped.length > 0);
       } catch (error: any) {
         if (error?.name === "AbortError") return;
         console.warn("[OsmMapPinModal] Search error:", error);
@@ -372,7 +593,7 @@ const OsmMapPinModal = ({
         setIsSearching(false);
       }
     },
-    [country]
+    [country, destination]
   );
 
   const handleSearchTextChange = (text: string) => {
@@ -383,10 +604,10 @@ const OsmMapPinModal = ({
     }, 400);
   };
 
-  const handleSelectSearchResult = (item: NominatimSearchResult) => {
+  const handleSelectSearchResult = (item: PlaceSearchResult) => {
     Keyboard.dismiss();
-    const lat = parseFloat(item.lat);
-    const lng = parseFloat(item.lon);
+    const lat = item.lat;
+    const lng = item.lng;
     const coords = { latitude: lat, longitude: lng };
 
     setCurrentCoords(coords);
@@ -395,15 +616,21 @@ const OsmMapPinModal = ({
     setSearchQuery(item.name || item.display_name.split(",")[0]);
     setShowSearchResults(false);
 
-    // Fly map in WebView
-    webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}, 16); true;`);
+    flyMapTo(lat, lng, 16);
   };
 
   // Handle messages from Leaflet WebView
   const handleWebViewMessage = (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
-      if (data.type === "pin_moved") {
+      if (data.type === "map_ready") {
+        isMapReadyRef.current = true;
+        if (pendingFlyToRef.current) {
+          const { lat, lng, zoom } = pendingFlyToRef.current;
+          pendingFlyToRef.current = null;
+          webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}, ${zoom}); true;`);
+        }
+      } else if (data.type === "pin_moved") {
         const coords = { latitude: data.lat, longitude: data.lng };
         setCurrentCoords(coords);
         reverseGeocode(data.lat, data.lng);
@@ -418,7 +645,7 @@ const OsmMapPinModal = ({
     if (destinationCoordinates) {
       const { latitude, longitude } = destinationCoordinates;
       setCurrentCoords(destinationCoordinates);
-      webViewRef.current?.injectJavaScript(`window.flyToLocation(${latitude}, ${longitude}, 14); true;`);
+      flyMapTo(latitude, longitude, 14);
       reverseGeocode(latitude, longitude);
     } else if (destination) {
       geocodeDestination(destination);
@@ -427,9 +654,7 @@ const OsmMapPinModal = ({
 
   // Quick action: Center on current pin
   const handleCenterOnPin = () => {
-    webViewRef.current?.injectJavaScript(
-      `window.flyToLocation(${currentCoords.latitude}, ${currentCoords.longitude}, 16); true;`
-    );
+    flyMapTo(currentCoords.latitude, currentCoords.longitude, 16);
   };
 
   const handleConfirm = () => {
@@ -462,7 +687,7 @@ const OsmMapPinModal = ({
               accessibilityRole="button"
               accessibilityLabel="Close map pin modal"
             >
-              <Icon name="arrow-back" size={24} color={colors.primary} />
+              <Icon name="arrow-back" size={24} color={"#999"} />
             </TouchableOpacity>
 
             {/* Search Input */}
@@ -532,7 +757,7 @@ const OsmMapPinModal = ({
                 defaultCoords.latitude,
                 defaultCoords.longitude,
                 14,
-                colors.primary || "#E53935"
+                "#c93030"
               ),
             }}
             style={styles.webView}
@@ -545,6 +770,16 @@ const OsmMapPinModal = ({
                 <Text style={styles.loadingText}>Loading Map...</Text>
               </View>
             )}
+            onLoadEnd={() => {
+              isMapReadyRef.current = true;
+              if (pendingFlyToRef.current) {
+                const { lat, lng, zoom } = pendingFlyToRef.current;
+                pendingFlyToRef.current = null;
+                webViewRef.current?.injectJavaScript(`window.flyToLocation(${lat}, ${lng}, ${zoom}); true;`);
+              } else {
+                webViewRef.current?.injectJavaScript(`window.flyToLocation(${currentCoords.latitude}, ${currentCoords.longitude}, 16); true;`);
+              }
+            }}
             onMessage={handleWebViewMessage}
           />
 

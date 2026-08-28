@@ -126,7 +126,7 @@ export default function TransportationTab({
           Departure / Arrival Date & Time
         </Text>
       </View>
-      <View className="flex-row justify-center items-center mb-10">
+      <View className="flex-row justify-center items-center mb-5">
         {/* Departure Date & Time */}
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.departureDateTime"] = el; }} className="flex-1 gap-4">
           <FloatingLabelInput

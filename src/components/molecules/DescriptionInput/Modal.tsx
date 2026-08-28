@@ -137,7 +137,7 @@ const DescriptionModal = ({
               {/* Confirm / Add */}
               <TouchableOpacity
                 onPress={handleConfirm}
-                className="px-4 py-1.5 rounded-full bg-[#263F69]"
+                className="px-4 py-1.5 rounded-full bg-primary"
                 accessibilityRole="button"
                 accessibilityLabel={confirmLabel}
                 activeOpacity={0.75}

@@ -14,6 +14,7 @@ interface HikeOrCampTabProps {
   handleBlur: any;
   setFieldValue: any;
   onOpenPoiModal: (category: PoiCategory) => void;
+  onOpenMapPinModal?: (field: string, initialValue?: string) => void;
   formatDateTime: (val: any) => string;
   onOpenCheckinPicker: () => void;
   onOpenCheckoutPicker: () => void;
@@ -27,6 +28,7 @@ export default function HikeOrCampTab({
   handleBlur,
   setFieldValue,
   onOpenPoiModal,
+  onOpenMapPinModal,
   formatDateTime,
   onOpenCheckinPicker,
   onOpenCheckoutPicker,
@@ -64,13 +66,28 @@ export default function HikeOrCampTab({
       </View>
 
       {/* Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.address"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Address / Location"
-          value={values.hikeOrCampDetails?.address || ""}
-          onChangeText={handleChange("hikeOrCampDetails.address")}
-          onBlur={handleBlur("hikeOrCampDetails.address")}
-        />
+      <View className="mb-5">
+        <View className="flex-row items-center gap-2" ref={(el) => { if (fieldRefs) fieldRefs.current["hikeOrCampDetails.address"] = el; }}>
+          <FloatingLabelInput
+            label="Address / Location"
+            value={values.hikeOrCampDetails?.address || ""}
+            onChangeText={handleChange("hikeOrCampDetails.address")}
+            onBlur={handleBlur("hikeOrCampDetails.address")}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              onOpenMapPinModal?.(
+                "hikeOrCampDetails.address",
+                values.hikeOrCampDetails?.address
+              );
+            }}
+            className="w-12 h-12 rounded-full items-center justify-center"
+            accessibilityRole="button"
+            accessibilityLabel="Pin address on map"
+          >
+            <Icon name="pin-drop" size={28} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Check-in & Check-out Date/Time */}

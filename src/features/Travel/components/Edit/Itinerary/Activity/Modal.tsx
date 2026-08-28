@@ -578,7 +578,7 @@ const ActivityModal = ({
                         </>
                       ) : (
                         <>
-                          <Icon name="check" size={22} color={colors.primary} />
+                          <Icon name="check" size={26} color={colors.primary} />
                           <Text className="text-xl font-medium" style={{ color: colors.primary }}>
                             {latestActivity?.id ? "Save" : "Add"}
                           </Text>

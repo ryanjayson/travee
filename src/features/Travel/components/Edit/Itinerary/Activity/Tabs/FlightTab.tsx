@@ -16,6 +16,7 @@ interface FlightTabProps {
   showArrivalPrefillNotice?: boolean;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+  tripStartDate?: Date | string | null;
 }
 
 export default function FlightTab({
@@ -30,6 +31,7 @@ export default function FlightTab({
   showArrivalPrefillNotice = false,
   noPadding = false,
   fieldRefs,
+  tripStartDate,
 }: FlightTabProps) {
   const { colors } = useTheme();
 
@@ -48,7 +50,7 @@ export default function FlightTab({
             (flightData: any) => {
               handleFlightSelect(flightData, setFieldValue);
             },
-            values.startDate || values.flightDetails?.departureDate
+            tripStartDate || values.startDate || values.flightDetails?.departureDate
           );
         }}
         className="mb-10 mt-3 p-4 rounded-2xl border border-dashed bg-blue-50/50 flex-row items-center gap-3 active:bg-blue-50"
@@ -62,7 +64,7 @@ export default function FlightTab({
             Search for Airport
           </Text>
           <Text className="text-base text-gray-500 mt-0.5">
-            Lookup airports worldwide to populate dates and destination.
+            Lookup airports worldwide to populate.
           </Text>
         </View>
         <Icon name="search" size={20} color={colors.primary} />
