@@ -64,7 +64,7 @@ export const generateBackupPayload = async (): Promise<BackupPayload> => {
   return {
     appName: "Travee",
     version: 1,
-    schemaVersion: 27,
+    schemaVersion: 1,
     createdAt: new Date().toISOString(),
     tables: tablesData,
   };

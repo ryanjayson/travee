@@ -19,6 +19,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as Application from "expo-application";
+import Constants from "expo-constants";
 import { TextInput, useTheme, Button } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
@@ -1302,7 +1304,9 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
           
           <View className="flex-row justify-between items-center py-2">
             <Text className="text-base font-semibold text-tertiary">App Version</Text>
-            <Text className="text-sm text-gray-500 font-medium">1.0.0 (Build 1)</Text>
+            <Text className="text-sm text-gray-500 font-medium">
+              {Application.nativeApplicationVersion || Constants.expoConfig?.version || "1.0.0"} (Build {Application.nativeBuildVersion || (Constants.expoConfig?.android as any)?.versionCode || "1"})
+            </Text>
           </View>
           
           <View className="h-[1px] bg-[#E5E7EB]" />
