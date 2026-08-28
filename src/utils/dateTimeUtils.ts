@@ -24,12 +24,13 @@ export const safeFormatDate = (
   try {
     const d = new Date(dateValue);
     if (isNaN(d.getTime()) || d.getTime() <= 0) return fallback;
-    return d.toLocaleDateString(undefined, {
-      weekday: "short",
+    return `${d.toLocaleDateString(undefined, {
       month: "short",
       day: "numeric",
       year: "numeric",
-    });
+    })} - ${d.toLocaleDateString(undefined, {
+      weekday: "short",
+    })}`;
   } catch (e) {
     return fallback;
   }

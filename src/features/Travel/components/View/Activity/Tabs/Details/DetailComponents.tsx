@@ -36,6 +36,13 @@ import {
 } from "../../../../../types/TravelDto";
 
 export const hasActivityData = (data: any): boolean => {
+  // if (data?.activityStartDate) {
+  //   const hasDate = Boolean(
+  //     data.activityStartDate && (data.activityStartDate instanceof Date || String(data.activityStartDate).trim() !== "")
+  //   );
+  //   if (hasDate) return true;
+  // }
+
   if (!data || typeof data !== "object") return false;
 
   const ignoredKeys = new Set([
@@ -109,10 +116,13 @@ export const CafeRestaurantDetails = ({
   activityStartDate?: Date | string | null;
   onFullScreenChange?: (fullScreen: boolean) => void;
 }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
+  const hasDate = Boolean(
+    activityStartDate && (activityStartDate instanceof Date || String(activityStartDate).trim() !== "")
+  );
+  if (!hasActivityData(data) && !hasDate) return <NoDetailsAdded />;
   return (
     <CafeRestaurantDetailsCard
-      data={data!}
+      data={data || ({} as any)}
       activityStartDate={activityStartDate}
       onFullScreenChange={onFullScreenChange}
     />
@@ -128,10 +138,13 @@ export const NatureDetails = ({
   activityStartDate?: Date | string | null;
   onFullScreenChange?: (fullScreen: boolean) => void;
 }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
+  const hasDate = Boolean(
+    activityStartDate && (activityStartDate instanceof Date || String(activityStartDate).trim() !== "")
+  );
+  if (!hasActivityData(data) && !hasDate) return <NoDetailsAdded />;
   return (
     <NatureDetailsCard
-      data={data!}
+      data={data || ({} as any)}
       activityStartDate={activityStartDate}
       onFullScreenChange={onFullScreenChange}
     />
@@ -152,10 +165,13 @@ export const EntertainmentDetails = ({
   activityStartDate?: Date | string | null;
   onFullScreenChange?: (fullScreen: boolean) => void;
 }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
+  const hasDate = Boolean(
+    activityStartDate && (activityStartDate instanceof Date || String(activityStartDate).trim() !== "")
+  );
+  if (!hasActivityData(data) && !hasDate) return <NoDetailsAdded />;
   return (
     <EntertainmentDetailsCard
-      data={data!}
+      data={data || ({} as any)}
       activityStartDate={activityStartDate}
       onFullScreenChange={onFullScreenChange}
     />

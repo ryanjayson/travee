@@ -45,7 +45,7 @@ export default function DateTime({
             className={`flex-1 flex-row items-center p-5 gap-2 ${!finalAllowedClear ? "opacity-30" : ""}`}
             accessibilityRole="button"
             accessibilityLabel="Select date"
-            disabled={startDate ? true : false}  
+            disabled={!finalAllowedClear}  
           >
             <Icon name="calendar-today" size={24} color="#98A2B3" />
             <Text className={`text-lg  ${startDate ? "text-gray-800" : "text-[#98A2B3]"}`}>
@@ -66,12 +66,13 @@ export default function DateTime({
         <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
           <TouchableOpacity 
             onPress={onPressTime}
-            className="flex-1 flex-row items-center p-5 gap-2"
+            className={`flex-1 flex-row items-center p-5 gap-2 ${!finalAllowedClear ? "opacity-30" : ""}`}
             accessibilityRole="button"
             accessibilityLabel="Select time"
+            disabled={!finalAllowedClear}
           >
             <Icon name="access-time" size={24} color="#98A2B3" />
-            <Text className={`text-lg ${startDate ? "text-gray-800" : "text-[#98A2B3]"}`}>
+            <Text className={`text-lg ${startTime ? "text-gray-800" : "text-[#98A2B3]"}`}>
               {startTime ? String(startTime) : "Time"}
             </Text>
           </TouchableOpacity>

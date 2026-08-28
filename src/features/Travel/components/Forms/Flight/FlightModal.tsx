@@ -293,13 +293,13 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
             {...sheetPanResponder.panHandlers}
             className="rounded-t-[30px] bg-white overflow-hidden"
             style={[
-              { height: modalHeight },
+              { height: "100%" },
               {
-                paddingTop: insets.top + 20,
+                paddingTop: insets.top + 16,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: -8 },
                 shadowOpacity: 0.12,
-                shadowRadius: 16,
+                shadowRadius: 24,
                 elevation: 24,
                 transform: [{ translateY }],
               },
@@ -329,7 +329,7 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
                 </View>
 
                 {/* Search Input */}
-                <View className="px-6 py-4 bg-white border-b border-gray-200">
+                <View className="px-6 py-3 bg-white border-b border-gray-200">
                   <TextInput
                     mode="outlined"
                     placeholder="Search by Airport Name or IATA Code..."
@@ -350,6 +350,12 @@ export default function FlightModal({ visible, onClose, onConfirm, defaultDate, 
                     outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
                     style={{ height: 60 }}
                   />
+                  <View className="flex-row items-center justify-start mt-2 ml-1 gap-1">
+                    <Icon name="flight" size={13} color="#98A2B3" />
+                    <Text className="text-xs text-gray-400">
+                      Search powered by <Text className="font-medium text-gray-500">Travelpayouts</Text>
+                    </Text>
+                  </View>
                 </View>
 
                 {/* Results List */}
