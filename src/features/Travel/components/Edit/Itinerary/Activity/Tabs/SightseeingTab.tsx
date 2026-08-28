@@ -92,21 +92,8 @@ export default function SightseeingTab({
         />
       )}
 
-      {/* Entry Fee */}
-      <View className="mb-5 mt-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["sightseeingDetails.entryFee"] = el; }} className="flex-1">
-          <FloatingLabelInput
-            label="Entry Fee"
-            value={values.sightseeingDetails?.entryFee || ""}
-            onChangeText={handleChange("sightseeingDetails.entryFee")}
-            onBlur={handleBlur("sightseeingDetails.entryFee")}
-            keyboardType="numeric"
-          />
-        </View>
-      </View>
-
       {/* Website */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["sightseeingDetails.websiteAddress"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["sightseeingDetails.websiteAddress"] = el; }} className="mt-5 mb-5">
         <FloatingLabelInput
           label="Website"
           value={values.sightseeingDetails?.websiteAddress || ""}
@@ -157,6 +144,20 @@ export default function SightseeingTab({
           onBlur={handleBlur("sightseeingDetails.bookingReference")}
         />
       </View>
+
+      {/* Entry Fee */}
+      <View className="mb-5 ">
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["sightseeingDetails.entryFee"] = el; }} className="flex-1">
+          <FloatingLabelInput
+            label="Entry Fee"
+            value={values.sightseeingDetails?.entryFee || ""}
+            onChangeText={handleChange("sightseeingDetails.entryFee")}
+            onBlur={handleBlur("sightseeingDetails.entryFee")}
+            keyboardType="numeric"
+          />
+        </View>
+      </View>
+
 
       <View className="flex-row gap-2 justify-start items-center mb-2">
         <Text className="text-xs font-bold tracking-wider uppercase">

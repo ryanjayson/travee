@@ -60,7 +60,7 @@ export const CafeRestaurantDetailsCard: React.FC<CafeRestaurantDetailsCardProps>
       >
         <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#dd2c2c]">
           <Field
-            label="Reservation Link"
+            label="Reservation / Booking reference"
             value={data.reservationLink}
             icon="book-online"
             isLink
