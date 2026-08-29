@@ -18,7 +18,7 @@ import TripIcon from "../../../../components/TripIcon";
 import { useTravelContext } from "../../../../context/TravelContext";
 import { TravelStatus, TripType } from "../../../../types/enums";
 import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
-import { DestinationDto, Travel } from "../../types/TravelDto";
+import { DestinationDto, Travel, TripDestinationDto } from "../../types/TravelDto";
 import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
 import { MapboxPlace } from "../MapboxDestinationSelector";
 import TravelDateModal from "./TravelDateModal";
@@ -54,25 +54,54 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     isValid: formik.isValid,
   }));
   const { openDestinationModal } = useTravelContext();
+
   const handleOpenDestinationSelect = () => {
-    openDestinationModal(formik.values.destination, (place: MapboxPlace) => {
-      formik.setFieldValue("destination", place.name);
-      formik.setFieldValue("destinationData", {
-        id: place.id,
-        city: place.city,
-        regionOrState: place.regionOrState,
-        country: place.country,
-        coordinates: {
-          longitude: place.coordinates.longitude,
-          latitude: place.coordinates.latitude,
-        },
-      } as DestinationDto);
-      if (mode === "create") {
+    openDestinationModal("", (place: MapboxPlace) => {
+      const newDest: TripDestinationDto = {
+        destination: place.name,
+        destinationData: {
+          id: place.id,
+          city: place.city,
+          regionOrState: place.regionOrState,
+          country: place.country,
+          coordinates: {
+            longitude: place.coordinates.longitude,
+            latitude: place.coordinates.latitude,
+          },
+        } as DestinationDto,
+      };
+
+      const currentList: TripDestinationDto[] = formik.values.tripDestinations || [];
+      const isDuplicate = currentList.some(
+        (d) => d.destination.trim().toLowerCase() === place.name.trim().toLowerCase()
+      );
+
+      const nextList = isDuplicate ? currentList : [...currentList, newDest];
+      formik.setFieldValue("tripDestinations", nextList);
+      if (nextList.length > 0) {
+        formik.setFieldValue("destination", nextList[0].destination);
+        formik.setFieldValue("destinationData", nextList[0].destinationData);
+      }
+
+      if (mode === "create" && currentList.length === 0) {
         setTimeout(() => {
           setShowStartDatePicker(true);
         }, 300);
       }
     });
+  };
+
+  const handleRemoveDestination = (index: number) => {
+    const currentList: TripDestinationDto[] = formik.values.tripDestinations || [];
+    const nextList = currentList.filter((_, i) => i !== index);
+    formik.setFieldValue("tripDestinations", nextList);
+    if (nextList.length > 0) {
+      formik.setFieldValue("destination", nextList[0].destination);
+      formik.setFieldValue("destinationData", nextList[0].destinationData);
+    } else {
+      formik.setFieldValue("destination", "");
+      formik.setFieldValue("destinationData", null);
+    }
   };
 
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +129,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       .required("Trip title is required")
       .min(2, "Trip title is too short, make it more descriptive")
       .max(40, "Trip title must be at most 40 characters"),
-    destination: Yup.string()
+    tripDestinations: Yup.array()
+      .min(1, "At least one destination is required")
       .required("Destination is required"),
   });
 
@@ -110,6 +140,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       description: tripData?.description || "",
       destination: tripData?.destination || "",
       destinationData: tripData?.destinationData || null as DestinationDto | null,
+      tripDestinations: (tripData?.tripDestinations && tripData.tripDestinations.length > 0)
+        ? tripData.tripDestinations
+        : (tripData?.destination
+            ? [{ destination: tripData.destination, destinationData: tripData.destinationData || null }]
+            : [] as TripDestinationDto[]),
       startOrDepartureDate: tripData?.startOrDepartureDate ? new Date(tripData.startOrDepartureDate) : null as Date | null,
       endOrReturnDate: tripData?.endOrReturnDate ? new Date(tripData.endOrReturnDate) : null as Date | null,
       budget: tripData?.budget || "",
@@ -122,11 +157,16 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     onSubmit: (values) => {
       setError(null);
 
+      const tripDestinations = values.tripDestinations || [];
+      const primaryDestination = tripDestinations[0]?.destination || values.destination.trim();
+      const primaryDestinationData = tripDestinations[0]?.destinationData || values.destinationData || undefined;
+
       const payload = {
         title: values.title.trim(),
         description: values.description.trim(),
-        destination: values.destination.trim(),
-        destinationData: values.destinationData || undefined,
+        destination: primaryDestination,
+        destinationData: primaryDestinationData,
+        tripDestinations: tripDestinations,
         startOrDepartureDate: values.startOrDepartureDate || undefined,
         endOrReturnDate: values.endOrReturnDate || undefined,
         budget: values.budget,
@@ -164,15 +204,15 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             setError("Failed to save travel. Please try again.");
           },
         });
-      } else {
-        createTravel({ id: tripData!.id, data: { ...payload, isOffline: true } as any }, {
+      } else if (mode === "edit" && tripData?.id) {
+        createTravel({ id: tripData.id, data: payload as any }, {
           onSuccess: () => {
-            console.log("Trip updated successfully");
+            formik.resetForm();
             onClose();
           },
           onError: (err: any) => {
-            console.error("Failed to update trip:", err);
-            setError("Failed to update trip. Please try again.");
+            console.error("Failed to update travel:", err);
+            setError("Failed to update travel. Please try again.");
           },
         });
       }
@@ -360,78 +400,165 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         </View>
 
         <View className="mb-5">
-          <Text className="text-xs font-semibold tracking-wider uppercase">Destination <Text className="text-red-500 text-lg">*</Text></Text>
-
-          {!formik.values.destinationData?.coordinates ? (
-            <>
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-xs font-semibold tracking-wider uppercase">
+              Trip Destinations <Text className="text-red-500 text-lg">*</Text>
+            </Text>
+            {formik.values.tripDestinations && formik.values.tripDestinations.length > 0 && (
               <TouchableOpacity
-                activeOpacity={0.7}
                 onPress={handleOpenDestinationSelect}
                 disabled={isSaving}
+                activeOpacity={0.7}
+                className="flex-row items-center gap-1 py-1 px-3 rounded-full bg-primary/10"
+                accessibilityRole="button"
+                accessibilityLabel="Add another destination"
               >
-                <View pointerEvents="none">
-                  <TextInput
-                    mode="outlined"
-                    className="h-7xl"
-                    placeholder="Search place"
-                    value={formik.values.destination}
-                    editable={false}
-                    error={formik.touched.destination && Boolean(formik.errors.destination)}
-                    outlineColor="#E0E0E0"
-                    activeOutlineColor="#263F69"
-                    left={<TextInput.Icon icon="map-marker" color="#999" />}
-                    theme={{
-                      colors: {
-                        onSurfaceVariant: '#98A2B3',
-                      },
-                    }}
-                    outlineStyle={{
-                      borderWidth: 1,
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: 16,
-                    }}
-                    style={{
-                      marginTop: 6,
-                      height: 64,
-                    }}
-                    contentStyle={{
-                      backgroundColor: "transparent",
-                    }}
-                  />
-                </View>
+                <Icon name="add-location-alt" size={14} color={colors.primary} />
+                <Text style={{ color: colors.primary }} className="text-xs font-bold">
+                  Add Place
+                </Text>
               </TouchableOpacity>
-              {formik.touched.destination && formik.errors.destination && (
-                <View className="flex flex-row items-center mt-1">
-                  <Icon name="info-outline" size={14} color="#fb2c36" />
-                  <Text className="text-red-500 text-xs ml-1">{formik.errors.destination as string}</Text>
+            )}
+          </View>
+
+          {/* Selected Destination Tags */}
+          {formik.values.tripDestinations && formik.values.tripDestinations.length > 0 ? (
+            <View className="flex-row flex-wrap gap-2 mb-2">
+              {formik.values.tripDestinations.map((item: TripDestinationDto, index: number) => (
+                <View
+                  key={`${item.destination}-${index}`}
+                  className="flex-row items-center bg-[#F2F4F7] border border-[#E0E0E0] rounded-full py-1.5 pl-3 pr-2 shadow-xs"
+                >
+                  <Icon name="place" size={15} color={colors.primary} style={{ marginRight: 4 }} />
+                  <Text className="text-xs font-semibold text-[#101828] mr-2" numberOfLines={1}>
+                    {item.destination}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => handleRemoveDestination(index)}
+                    disabled={isSaving}
+                    activeOpacity={0.7}
+                    className="w-5 h-5 rounded-full bg-gray-300/70 items-center justify-center"
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${item.destination}`}
+                  >
+                    <Icon name="close" size={12} color="#475467" />
+                  </TouchableOpacity>
                 </View>
-              )}
-            </>
-          ) : (() => {
-            const { longitude, latitude } = formik.values.destinationData.coordinates;
-            const zoom = getDestinationZoom(formik.values.destination, formik.values.destinationData);
-            const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},${zoom},0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
+              ))}
+            </View>
+          ) : (
+            /* Empty state: Search input button */
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={handleOpenDestinationSelect}
+              disabled={isSaving}
+              accessibilityRole="button"
+              accessibilityLabel="Select trip destination"
+            >
+              <View pointerEvents="none">
+                <TextInput
+                  mode="outlined"
+                  className="h-7xl"
+                  placeholder="Search place or country"
+                  value=""
+                  editable={false}
+                  error={formik.touched.tripDestinations && Boolean(formik.errors.tripDestinations)}
+                  outlineColor="#E0E0E0"
+                  activeOutlineColor="#263F69"
+                  left={<TextInput.Icon icon="map-marker" color="#999" />}
+                  theme={{
+                    colors: {
+                      onSurfaceVariant: "#98A2B3",
+                    },
+                  }}
+                  outlineStyle={{
+                    borderWidth: 1,
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 16,
+                  }}
+                  style={{
+                    marginTop: 4,
+                    height: 56,
+                  }}
+                  contentStyle={{
+                    backgroundColor: "transparent",
+                  }}
+                />
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {/* Validation error */}
+          {formik.touched.tripDestinations && formik.errors.tripDestinations && (
+            <View className="flex flex-row items-center mt-1">
+              <Icon name="info-outline" size={14} color="#fb2c36" />
+              <Text className="text-red-500 text-xs ml-1">
+                {typeof formik.errors.tripDestinations === "string"
+                  ? (formik.errors.tripDestinations as string)
+                  : "At least one destination is required"}
+              </Text>
+            </View>
+          )}
+
+          {/* Multi-destination Map Preview */}
+          {(() => {
+            const validDestinations = (formik.values.tripDestinations || []).filter(
+              (d: TripDestinationDto) =>
+                d.destinationData?.coordinates &&
+                (d.destinationData.coordinates.latitude !== 0 || d.destinationData.coordinates.longitude !== 0)
+            );
+
+            if (validDestinations.length === 0) return null;
+
+            let mapUrl: string;
+            if (validDestinations.length === 1) {
+              const destObj = validDestinations[0];
+              const { longitude, latitude } = destObj.destinationData!.coordinates;
+              const zoom = getDestinationZoom(destObj.destination, destObj.destinationData);
+              mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},${zoom},0/600x260?access_token=${MAPBOX_ACCESS_TOKEN}`;
+            } else {
+              const pins = validDestinations
+                .slice(0, 5)
+                .map((d: TripDestinationDto) => {
+                  const c = d.destinationData!.coordinates;
+                  return `pin-s+263F69(${c.longitude},${c.latitude})`;
+                })
+                .join(",");
+              mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pins}/auto/600x260?padding=40,40,40,40&access_token=${MAPBOX_ACCESS_TOKEN}`;
+            }
+
             return (
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={handleOpenDestinationSelect}
                 disabled={isSaving}
+                className="mt-2"
+                accessibilityRole="button"
+                accessibilityLabel="Add or view trip destinations on map"
               >
-                <View className="mt-2 rounded-2xl overflow-hidden">
+                <View className="rounded-2xl overflow-hidden shadow-xs border border-[#EAECF0]">
                   <Image
                     source={{ uri: mapUrl }}
-                    style={{ width: '100%', height: 160, borderRadius: 16 }}
+                    style={{ width: "100%", height: 140, borderRadius: 16 }}
                     resizeMode="cover"
                   />
-                  <View className="absolute bottom-2 left-2 px-3 py-1 rounded-xl flex-row items-center" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                  <View
+                    className="absolute bottom-2 left-2 px-3 py-1 rounded-xl flex-row items-center"
+                    style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+                  >
                     <Icon name="location-on" size={14} color="#FFF" />
-                    <Text className="text-white text-xs ml-1">{formik.values.destination}</Text>
-                    {/* <Text className="text-white text-xs ml-1">{formik.values.destinationData?.city} =</Text> 
-                    <Text className="text-white text-xs ml-1">{formik.values.destinationData?.regionOrState} = </Text>
-                    <Text className="text-white text-xs ml-1">{formik.values.destinationData?.country}</Text> */}
+                    <Text className="text-white text-xs ml-1 font-medium">
+                      {validDestinations.length === 1
+                        ? validDestinations[0].destination
+                        : `${validDestinations.length} destinations`}
+                    </Text>
                   </View>
-                  <View className="absolute top-2 right-2 px-2 py-1 rounded-full" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-                    <Text className="text-white text-[10px]">Tap to change</Text>
+                  <View
+                    className="absolute top-2 right-2 px-2.5 py-1 rounded-full flex-row items-center gap-1"
+                    style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+                  >
+                    <Icon name="add" size={12} color="#FFF" />
+                    <Text className="text-white text-[10px] font-semibold">Tap to add</Text>
                   </View>
                 </View>
               </TouchableOpacity>

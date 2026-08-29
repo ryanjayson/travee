@@ -18,6 +18,7 @@ import RestDetails from "../../db/models/RestDetails";
 import MotorcycleRideDetails from "../../db/models/MotorcycleRideDetails";
 import MeetupDetails from "../../db/models/MeetupDetails";
 import RideRentalDetails from "../../db/models/RideRentalDetails";
+import TripDestination from "../../db/models/TripDestination";
 import { ActivityType, TravelStatus } from "../../types/enums";
 import { safeJsonParse } from "../../utils/safeJsonParse";
 
@@ -447,10 +448,44 @@ export const fetchLocalRideRentalDetails = async (activityId: string): Promise<a
   }
 };
 
+export const fetchLocalTripDestinations = async (travelId: string): Promise<any[]> => {
+  try {
+    const list = await database.get<TripDestination>("trip_destinations").query(
+      Q.where("travel_id", travelId)
+    ).fetch();
+    return list.map((d) => ({
+      id: d.id,
+      travelId: d.travelId,
+      destination: d.destination,
+      destinationData: safeJsonParse(d.destinationData, undefined),
+    }));
+  } catch (err) {
+    console.error("Error fetching local trip destinations:", err);
+    return [];
+  }
+};
+
 export const getTravelsLocally = async (): Promise<any[]> => {
   const offlineTravels = await database.get<Travel>("travels").query(
     Q.where("is_offline", true)
   ).fetch();
+
+  let destinationsByTravelId = new Map<string, any[]>();
+  try {
+    const allTripDestinations = await database.get<TripDestination>("trip_destinations").query().fetch();
+    for (const d of allTripDestinations) {
+      const list = destinationsByTravelId.get(d.travelId) || [];
+      list.push({
+        id: d.id,
+        travelId: d.travelId,
+        destination: d.destination,
+        destinationData: safeJsonParse(d.destinationData, undefined),
+      });
+      destinationsByTravelId.set(d.travelId, list);
+    }
+  } catch (e) {
+    console.warn("Could not query trip_destinations:", e);
+  }
 
   return offlineTravels.map((t) => ({
     id: t.id,
@@ -458,6 +493,7 @@ export const getTravelsLocally = async (): Promise<any[]> => {
     description: t.description,
     destination: t.destination,
     destinationData: safeJsonParse(t.destinationData, undefined),
+    tripDestinations: destinationsByTravelId.get(t.id) || (t.destination ? [{ destination: t.destination, destinationData: safeJsonParse(t.destinationData, undefined) }] : []),
     startOrDepartureDate: t.startOrDepartureDate,
     endOrReturnDate: t.endOrReturnDate,
     status: t.status,
@@ -490,12 +526,15 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
       };
     }
 
+    const tripDestinations = await fetchLocalTripDestinations(travelId);
+
     const travelDto = {
       id: t.id,
       title: t.title,
       description: t.description,
       destination: t.destination,
       destinationData: safeJsonParse(t.destinationData, undefined),
+      tripDestinations,
       startOrDepartureDate: t.startOrDepartureDate,
       endOrReturnDate: t.endOrReturnDate,
       status: t.status,
@@ -943,14 +982,24 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
 
 export const saveTravelLocally = async (travelData: any, id?: string) => {
   return await database.write(async () => {
+    const tripDestinationsInput = Array.isArray(travelData.tripDestinations)
+      ? travelData.tripDestinations
+      : (travelData.destination ? [{ destination: travelData.destination, destinationData: travelData.destinationData }] : []);
+    const primaryDest = tripDestinationsInput[0]?.destination || travelData.destination || "";
+    const primaryDestData = tripDestinationsInput[0]?.destinationData || travelData.destinationData;
+
+    let travelId: string;
+    let resultTravel: any;
+
     if (id) {
-      const travel = await database.get<Travel>("travels").find(id.toString());
+      travelId = id.toString();
+      const travel = await database.get<Travel>("travels").find(travelId);
       await travel.update((t) => {
         Object.assign(t, {
           title: travelData.title,
           description: travelData.description,
-          destination: travelData.destination,
-          destinationData: JSON.stringify(travelData.destinationData),
+          destination: primaryDest,
+          destinationData: primaryDestData ? JSON.stringify(primaryDestData) : null,
           startOrDepartureDate: travelData.startOrDepartureDate ? new Date(travelData.startOrDepartureDate) : null,
           endOrReturnDate: travelData.endOrReturnDate ? new Date(travelData.endOrReturnDate) : null,
           status: travelData.status,
@@ -961,14 +1010,29 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           type: travelData.type ?? null,
         });
       });
-      return travel;
+      resultTravel = travel;
+
+      // Sync trip_destinations
+      if (tripDestinationsInput.length > 0) {
+        const existing = await database.get<TripDestination>("trip_destinations").query(Q.where("travel_id", travelId)).fetch();
+        for (const item of existing) {
+          await item.destroyPermanently();
+        }
+        for (const destItem of tripDestinationsInput) {
+          await database.get<TripDestination>("trip_destinations").create((d) => {
+            d.travel.id = travelId;
+            d.destination = destItem.destination;
+            d.destinationData = destItem.destinationData ? JSON.stringify(destItem.destinationData) : null;
+          });
+        }
+      }
     } else {
       const newTravel = await database.get<Travel>("travels").create((t) => {
         Object.assign(t, {
           title: travelData.title,
           description: travelData.description,
-          destination: travelData.destination,
-          destinationData: JSON.stringify(travelData.destinationData),
+          destination: primaryDest,
+          destinationData: primaryDestData ? JSON.stringify(primaryDestData) : null,
           startOrDepartureDate: travelData.startOrDepartureDate ? new Date(travelData.startOrDepartureDate) : null,
           endOrReturnDate: travelData.endOrReturnDate ? new Date(travelData.endOrReturnDate) : null,
           status: travelData.status,
@@ -979,6 +1043,19 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           type: travelData.type ?? null,
         });
       });
+      travelId = newTravel.id;
+      resultTravel = newTravel;
+
+      // Insert trip_destinations
+      if (tripDestinationsInput.length > 0) {
+        for (const destItem of tripDestinationsInput) {
+          await database.get<TripDestination>("trip_destinations").create((d) => {
+            d.travel.id = travelId;
+            d.destination = destItem.destination;
+            d.destinationData = destItem.destinationData ? JSON.stringify(destItem.destinationData) : null;
+          });
+        }
+      }
 
       // Always create a default section
       await database.get<Section>("itinerary_sections").create((s) => {
@@ -1015,9 +1092,9 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           });
         }
       }
-
-      return newTravel;
     }
+
+    return resultTravel;
   });
 };
 
@@ -1961,8 +2038,15 @@ export const deleteTravelLocally = async (id: string): Promise<void> => {
     }
   }
 
+  const tripDestinations = await database.get<TripDestination>("trip_destinations").query(
+    Q.where("travel_id", id)
+  ).fetch();
+
   // ── Phase 2: Writes (all batched in one transaction) ───────────────────────
   await database.write(async () => {
+    for (const d of tripDestinations) {
+      await d.destroyPermanently();
+    }
     for (const section of sections) {
       const activities = activitiesBySectionId.get(section.id) ?? [];
       for (const activity of activities) {

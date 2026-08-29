@@ -132,9 +132,11 @@ const TravelCatalog = () => {
     };
     const destinationCountry = getCountryName(travel.destinationData?.country);
 
-    const destinationLabel = travel.destinationData?.country === travel.destination
-      ? travel.destination
-      : travel.destination ? `${travel.destination}, ${travel.destinationData?.country}` : "";
+    const destinationLabel = (travel.tripDestinations && travel.tripDestinations.length > 0)
+      ? travel.tripDestinations.map((d: any) => d.destination).filter(Boolean).join(" | ")
+      : (travel.destinationData?.country === travel.destination
+          ? travel.destination
+          : travel.destination ? `${travel.destination}, ${travel.destinationData?.country}` : "");
 
     const formatDate = (dateValue: Date | string | undefined) => {
       if (!dateValue) return "";

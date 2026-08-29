@@ -78,6 +78,7 @@ export interface Travel {
   description?: string;
   destination?: string;
   destinationData?: DestinationDto;
+  tripDestinations?: TripDestinationDto[];
   startOrDepartureDate?: Date;
   endOrReturnDate?: Date;
   status?: TravelStatus;
@@ -437,6 +438,13 @@ export interface DestinationDto {
   coordinates: CoordinatesDto;
 }
 
+export interface TripDestinationDto {
+  id?: string;
+  travelId?: string;
+  destination: string;
+  destinationData?: DestinationDto | null;
+}
+
 export interface CoordinatesDto {
   longitude: number;
   latitude: number;
@@ -447,6 +455,7 @@ export interface UpdateTravelData {
   description?: string;
   destination?: string;
   destinationData?: DestinationDto;
+  tripDestinations?: TripDestinationDto[];
   startOrDepartureDate?: Date;
   endOrReturnDate?: Date;
   budget?: string;

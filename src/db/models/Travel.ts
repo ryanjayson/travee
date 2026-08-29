@@ -8,6 +8,7 @@ export default class Travel extends Model {
     trip_members: { type: "has_many" as const, foreignKey: "travel_id" },
     member_split_bills: { type: "has_many" as const, foreignKey: "travel_id" },
     trip_settings: { type: "has_many" as const, foreignKey: "travel_id" },
+    trip_destinations: { type: "has_many" as const, foreignKey: "travel_id" },
   };
 
   @text("title") title!: string;
@@ -29,4 +30,5 @@ export default class Travel extends Model {
   @children("trip_members") tripMembers!: any;
   @children("member_split_bills") memberSplitBills!: any;
   @children("trip_settings") tripSettings!: any;
+  @children("trip_destinations") tripDestinations!: any;
 }

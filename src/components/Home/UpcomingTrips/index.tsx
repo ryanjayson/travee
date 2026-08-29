@@ -183,7 +183,9 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
                     <View className="flex-row items-center gap-1">
                       <Ionicons name="location-outline" size={16} color="#e5e7eb" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.5, shadowRadius: 1 }} />
                       <Text className="text-lg text-gray-200 font-semibold" style={textShadow} numberOfLines={1}>
-                        {item.destination || 'Destination TBD'} 
+                        {(item.tripDestinations && item.tripDestinations.length > 0)
+                          ? item.tripDestinations.map((d: any) => d.destination).filter(Boolean).join(" | ")
+                          : (item.destination || 'Destination TBD')} 
                       </Text>
                     </View>
                   </View>
