@@ -24,6 +24,7 @@ import UpcomingTrips from '../components/Home/UpcomingTrips';
 import ViewTravelModal from '../features/Travel/components/View/Modal';
 import CreateTripModal from '../features/Travel/components/CreateOrEdit/Modal';
 import OnboardingModal from '../components/OnboardingModal';
+import { ProfileScreen } from './ProfileScreen';
 import { useUserProfile } from '../hooks/useUserProfile';
 import CountryOutline from '../features/Travel/components/ShareOverlay/CountryOutline';
 import { Notifications } from '../features/Notification';
@@ -76,6 +77,7 @@ const HomeScreen = () => {
 
   const [unreadNotifications, setUnreadNotifications] = useState<number>(0);
   const [showNotificationsModal, setShowNotificationsModal] = useState<boolean>(false);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
   const lastBackPressedRef = React.useRef<number>(0);
 
@@ -309,6 +311,7 @@ const HomeScreen = () => {
           }}
           unreadNotifications={unreadNotifications}
           onOpenNotifications={() => setShowNotificationsModal(true)}
+          onOpenProfile={() => setShowProfileModal(true)}
         />
 
         <View
@@ -485,6 +488,11 @@ const HomeScreen = () => {
         onMarkAllAsRead={handleMarkAllAsRead}
         onNotificationPress={handleNotificationPress}
         onDeleteNotification={handleDeleteNotification}
+      />
+
+      <ProfileScreen
+        visible={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
       />
     </View>
   );

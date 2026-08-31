@@ -185,16 +185,19 @@ const AboutBottomSheet: React.FC<AboutBottomSheetProps> = ({
           </View>
 
           {/* Header */}
-          <View className="flex-row justify-between items-center px-6 py-3 border-b border-[#F3F4F6] bg-white">
-            <Text className="text-xl font-bold text-[#111827]">{title}</Text>
-            <TouchableOpacity
-              onPress={handleDismiss}
-              accessibilityRole="button"
-              accessibilityLabel="Close modal"
-              className="p-1 rounded-full bg-gray-100"
-            >
-              <Ionicons name="close" size={22} color="#374151" />
-            </TouchableOpacity>
+          <View className="flex-row justify-between items-center px-5 pt-2 pb-4 bg-white border-b border-gray-200">
+            <View className="flex-row items-center gap-2">
+              <TouchableOpacity
+                onPress={handleDismiss}
+                accessibilityRole="button"
+                accessibilityLabel="Close modal"
+              >
+                <Ionicons name="chevron-back" size={26} color="#999" />
+              </TouchableOpacity>
+              <Text className="text-2xl text-gray-700 font-medium">
+                {title}
+              </Text>
+            </View>
           </View>
 
           {/* Scrollable Content */}
@@ -275,7 +278,6 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
     googleDriveAccount: null,
   });
 
-  const [saved, setSaved] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
   const [aboutModalTitle, setAboutModalTitle] = useState<string>("");
   const [aboutModalContent, setAboutModalContent] = useState<string>("");
@@ -292,6 +294,10 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
     const newOptOut = !value;
     setIsAnalyticsOptedOutState(newOptOut);
     await setAnalyticsOptOut(newOptOut);
+    showToast({
+      type: "success",
+      message: value ? "Usage analytics enabled" : "Usage analytics disabled",
+    });
   };
 
   useEffect(() => {
@@ -320,8 +326,16 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
   const handleSave = () => {
     saveProfile(form, {
       onSuccess: () => {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        showToast({
+          type: "success",
+          message: "Profile saved successfully",
+        });
+      },
+      onError: (err: any) => {
+        showToast({
+          type: "error",
+          message: err?.message || "Failed to save profile",
+        });
       },
     });
   };
@@ -378,12 +392,10 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
       saveProfile(updatedForm, {
         onSuccess: () => {
           setIsUploadingAvatar(false);
-          setSaved(true);
           showToast({
             type: "success",
             message: "Avatar updated successfully!",
           });
-          setTimeout(() => setSaved(false), 2000);
         },
         onError: () => {
           setIsUploadingAvatar(false);
@@ -429,27 +441,19 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
           ) : (
             <View style={{ flex: 1 }}>
               {/* Header */}
-              <View className="flex-row items-center justify-between px-5 py-3.5 ">
+              <View className="flex-row items-center justify-between px-5 py-3.5">
                 <TouchableOpacity onPress={handleClose} accessibilityRole="button" accessibilityLabel="Close profile">
                   <Ionicons name="close" size={28} color="#374151" />
                 </TouchableOpacity>
                 <Text className="text-lg font-bold text-[#111827] flex-1 text-center">Profile</Text>
-                <TouchableOpacity
-                  onPress={handleSave}
-                  disabled={isSaving}
-                  accessibilityRole="button"
-                  accessibilityLabel="Save profile"
-                  className="bg-primary px-4 py-1.5 rounded-full min-w-[60px] items-center"
-                >
-                  {isSaving ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <View className="flex-row items-center gap-1">
-                      <Ionicons name="checkmark" size={20} color="#fff" />
-                      <Text className="text-white text-xs font-semibold">{saved ? "Saved" : "Save"}</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
+                {isSaving ? (
+                  <View className="flex-row items-center gap-1.5 min-w-[28px] justify-end">
+                    <ActivityIndicator size="small" color={colors.primary} />
+                    <Text className="text-xs font-medium text-gray-500">Saving..</Text>
+                  </View>
+                ) : (
+                  <View className="w-7" />
+                )}
               </View>
 
               <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }} showsVerticalScrollIndicator={false}>

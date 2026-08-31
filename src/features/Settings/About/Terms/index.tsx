@@ -133,19 +133,23 @@ export const TermsBottomSheet: React.FC<TermsBottomSheetProps> = ({
             {...dragPanResponder.panHandlers}
             className="w-full items-center pt-3 pb-2 bg-white rounded-t-[30px]"
           >
-            <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            <View className="w-10 h-1 bg-gray-200 rounded-full" />
           </View>
 
           {/* Header */}
-          <View className="flex-row justify-between items-center px-6 pt-2 pb-4 bg-white border-b border-gray-200">
-            <Text className="text-xl font-bold text-[#111827]">Terms and Conditions</Text>
-            <TouchableOpacity
-              onPress={handleDismiss}
-              accessibilityRole="button"
-              accessibilityLabel="Close terms and conditions"
-            >
-              <Ionicons name="close" size={26} color="#999" />
-            </TouchableOpacity>
+          <View className="flex-row justify-between items-center px-5 pt-2 pb-4 bg-white border-b border-gray-200">
+            <View className="flex-row items-center gap-2">
+              <TouchableOpacity
+                onPress={handleDismiss}
+                accessibilityRole="button"
+                accessibilityLabel="Close terms and conditions"
+              >
+                <Ionicons name="chevron-back" size={26} color="#999" />
+              </TouchableOpacity>
+              <Text className="text-2xl text-gray-700 font-medium">
+                Terms and Conditions
+              </Text>
+            </View>
           </View>
 
           {/* Scrollable Content */}

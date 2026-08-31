@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Switch, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useToast } from "../../../context/ToastContext";
 import { UserProfileDto } from "../../../types/UserProfileDto";
 
 export interface NotificationSettingsProps {
@@ -26,12 +27,20 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
   saveProfile,
 }) => {
   const { colors } = useTheme();
+  const { showToast } = useToast();
 
   const handleToggleNotifications = (enabled: boolean) => {
     const updated = { ...form, notificationsEnabled: enabled };
     setForm(updated);
     if (saveProfile) {
-      saveProfile(updated);
+      saveProfile(updated, {
+        onSuccess: () => {
+          showToast({
+            type: "success",
+            message: enabled ? "Notifications enabled" : "Notifications disabled",
+          });
+        },
+      });
     }
   };
 
@@ -40,7 +49,14 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     const updated = { ...form, notifyDaysBeforeTrip: clamped };
     setForm(updated);
     if (saveProfile) {
-      saveProfile(updated);
+      saveProfile(updated, {
+        onSuccess: () => {
+          showToast({
+            type: "success",
+            message: "Trip reminder updated",
+          });
+        },
+      });
     }
   };
 
@@ -49,7 +65,14 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     const updated = { ...form, notifyHoursBeforeActivity: clamped };
     setForm(updated);
     if (saveProfile) {
-      saveProfile(updated);
+      saveProfile(updated, {
+        onSuccess: () => {
+          showToast({
+            type: "success",
+            message: "Activity reminder updated",
+          });
+        },
+      });
     }
   };
 
@@ -249,19 +272,23 @@ export const NotificationBottomSheet: React.FC<NotificationBottomSheetProps> = (
             {...dragPanResponder.panHandlers}
             className="w-full items-center pt-3 pb-2 bg-white rounded-t-[30px]"
           >
-            <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            <View className="w-10 h-1 bg-gray-200 rounded-full" />
           </View>
 
           {/* Header */}
-          <View className="flex-row justify-between items-center px-6 pt-2 pb-4 bg-white border-b border-gray-200">
-            <Text className="text-xl font-bold text-[#111827]">Notification Settings</Text>
-            <TouchableOpacity
-              onPress={handleDismiss}
-              accessibilityRole="button"
-              accessibilityLabel="Close notification settings"
-            >
-              <Ionicons name="close" size={26} color="#999" />
-            </TouchableOpacity>
+          <View className="flex-row justify-between items-center px-5 pt-2 pb-4 bg-white border-b border-gray-200">
+            <View className="flex-row items-center gap-2">
+              <TouchableOpacity
+                onPress={handleDismiss}
+                accessibilityRole="button"
+                accessibilityLabel="Close notification settings"
+              >
+                <Ionicons name="chevron-back" size={26} color="#999" />
+              </TouchableOpacity>
+              <Text className="text-2xl text-gray-700 font-medium">
+                Notification Settings
+              </Text>
+            </View>
           </View>
 
           {/* Scrollable Body */}

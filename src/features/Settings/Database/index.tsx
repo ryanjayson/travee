@@ -22,6 +22,7 @@ import {
   restoreBackupFromFile,
   uploadBackupToGoogleDrive,
 } from "../../../services/local/backupService";
+import { useToast } from "../../../context/ToastContext";
 import { BackupFrequency, BackupLocation, UserProfileDto } from "../../../types/UserProfileDto";
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -111,7 +112,7 @@ const PickerModal = ({
           className="bg-white rounded-t-3xl border-t border-[#E0E0E0] overflow-hidden"
         >
           <View {...dragPanResponder.panHandlers} className="w-full items-center pt-3 pb-2">
-            <View className="w-10 h-1 rounded-full bg-[#E0E0E0]" />
+            <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
           </View>
 
           <View className="flex-row justify-between items-center px-6 py-3 border-b border-[#F3F4F6]">
@@ -138,14 +139,12 @@ const PickerModal = ({
                   }}
                   accessibilityRole="button"
                   accessibilityLabel={`Select ${opt}`}
-                  className={`flex-row justify-between items-center py-4 border-b border-[#F3F4F6] ${
-                    isSelected ? "bg-primary/5 -mx-6 px-6" : ""
-                  }`}
+                  className={`flex-row justify-between items-center py-4 border-b border-[#F3F4F6] ${isSelected ? "bg-primary/5 -mx-6 px-6" : ""
+                    }`}
                 >
                   <Text
-                    className={`text-base ${
-                      isSelected ? "font-bold text-primary" : "font-normal text-secondary"
-                    }`}
+                    className={`text-base ${isSelected ? "font-bold text-primary" : "font-normal text-secondary"
+                      }`}
                   >
                     {opt}
                   </Text>
@@ -174,6 +173,7 @@ export const DatabaseBackup: React.FC<DatabaseBackupProps> = ({
   profile,
 }) => {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const queryClient = useQueryClient();
 
   const [showFrequencyPicker, setShowFrequencyPicker] = useState(false);
@@ -205,12 +205,21 @@ export const DatabaseBackup: React.FC<DatabaseBackupProps> = ({
         const updatedForm = { ...form, lastBackedUpAt: now };
         setForm(updatedForm);
         saveProfile(updatedForm);
-        Alert.alert("Backup Complete", result.message || "Database backup completed successfully!");
+        showToast({
+          type: "success",
+          message: result.message || "Database backup completed successfully!",
+        });
       } else {
-        Alert.alert("Backup Failed", result.message || "Failed to create database backup.");
+        showToast({
+          type: "error",
+          message: result.message || "Failed to create database backup.",
+        });
       }
     } catch (err: any) {
-      Alert.alert("Backup Error", err?.message || "An error occurred during database backup.");
+      showToast({
+        type: "error",
+        message: err?.message || "An error occurred during database backup.",
+      });
     } finally {
       setIsBackingUp(false);
     }
@@ -231,12 +240,21 @@ export const DatabaseBackup: React.FC<DatabaseBackupProps> = ({
               const res = await restoreBackupFromFile();
               if (res.success) {
                 queryClient.invalidateQueries();
-                Alert.alert("Restore Successful", res.message);
+                showToast({
+                  type: "success",
+                  message: res.message || "Database restored successfully!",
+                });
               } else if (res.message !== "Backup selection cancelled.") {
-                Alert.alert("Restore Failed", res.message);
+                showToast({
+                  type: "error",
+                  message: res.message || "Failed to restore database.",
+                });
               }
             } catch (err: any) {
-              Alert.alert("Restore Error", err?.message || "Failed to restore database.");
+              showToast({
+                type: "error",
+                message: err?.message || "Failed to restore database.",
+              });
             } finally {
               setIsRestoring(false);
             }
@@ -263,7 +281,14 @@ export const DatabaseBackup: React.FC<DatabaseBackupProps> = ({
             onValueChange={(v) => {
               const updated = { ...form, backupAutoEnabled: v };
               setForm(updated);
-              saveProfile(updated);
+              saveProfile(updated, {
+                onSuccess: () => {
+                  showToast({
+                    type: "success",
+                    message: v ? "Automatic backup enabled" : "Automatic backup disabled",
+                  });
+                },
+              });
             }}
             trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
             thumbColor={form.backupAutoEnabled ? colors.primary : "#F3F4F6"}
@@ -290,8 +315,8 @@ export const DatabaseBackup: React.FC<DatabaseBackupProps> = ({
                   form.backupFrequency === "weekly"
                     ? "Weekly"
                     : form.backupFrequency === "quarterly"
-                    ? "Quarterly"
-                    : "Monthly (Default)"
+                      ? "Quarterly"
+                      : "Monthly (Default)"
                 }
                 editable={false}
                 outlineColor="#E0E0E0"
@@ -370,9 +395,9 @@ export const DatabaseBackup: React.FC<DatabaseBackupProps> = ({
           <Text className="text-sm font-semibold text-[#374151]">
             {form.lastBackedUpAt
               ? new Date(form.lastBackedUpAt).toLocaleString([], {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })
+                dateStyle: "medium",
+                timeStyle: "short",
+              })
               : "Never"}
           </Text>
         </View>
@@ -422,15 +447,22 @@ export const DatabaseBackup: React.FC<DatabaseBackupProps> = ({
           form.backupFrequency === "weekly"
             ? "Weekly"
             : form.backupFrequency === "quarterly"
-            ? "Quarterly"
-            : "Monthly"
+              ? "Quarterly"
+              : "Monthly"
         }
         onSelect={(val) => {
           const freq: BackupFrequency =
             val === "Weekly" ? "weekly" : val === "Quarterly" ? "quarterly" : "monthly";
           const updated = { ...form, backupFrequency: freq };
           setForm(updated);
-          saveProfile(updated);
+          saveProfile(updated, {
+            onSuccess: () => {
+              showToast({
+                type: "success",
+                message: `Backup frequency set to ${val}`,
+              });
+            },
+          });
         }}
         onClose={() => setShowFrequencyPicker(false)}
       />
@@ -444,7 +476,14 @@ export const DatabaseBackup: React.FC<DatabaseBackupProps> = ({
           const loc: BackupLocation = val === "Google Drive" ? "google_drive" : "local";
           const updated = { ...form, backupLocation: loc };
           setForm(updated);
-          saveProfile(updated);
+          saveProfile(updated, {
+            onSuccess: () => {
+              showToast({
+                type: "success",
+                message: `Backup location set to ${val}`,
+              });
+            },
+          });
         }}
         onClose={() => setShowLocationPicker(false)}
       />
@@ -492,9 +531,15 @@ export const DatabaseBackup: React.FC<DatabaseBackupProps> = ({
                   const email = googleDriveEmailInput.trim() || "user@gmail.com";
                   const updated = { ...form, googleDriveAccount: email };
                   setForm(updated);
-                  saveProfile(updated);
+                  saveProfile(updated, {
+                    onSuccess: () => {
+                      showToast({
+                        type: "success",
+                        message: `Google Drive account set to ${email}`,
+                      });
+                    },
+                  });
                   setShowGoogleDriveModal(false);
-                  Alert.alert("Google Drive Connected", `Account set to: ${email}`);
                 }}
                 accessibilityRole="button"
                 accessibilityLabel="Save Google Drive account"
@@ -614,19 +659,23 @@ export const DatabaseBottomSheet: React.FC<DatabaseBottomSheetProps> = ({
             {...dragPanResponder.panHandlers}
             className="w-full items-center pt-3 pb-2 bg-white rounded-t-[30px]"
           >
-            <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            <View className="w-10 h-1 bg-gray-200 rounded-full" />
           </View>
 
           {/* Header */}
-          <View className="flex-row justify-between items-center px-6 pt-2 pb-4 bg-white border-b border-gray-200">
-            <Text className="text-xl font-bold text-[#111827]">Database Backup</Text>
-            <TouchableOpacity
-              onPress={handleDismiss}
-              accessibilityRole="button"
-              accessibilityLabel="Close database backup"
-            >
-              <Ionicons name="close" size={26} color="#999" />
-            </TouchableOpacity>
+          <View className="flex-row justify-between items-center px-5 pt-2 pb-4 bg-white border-b border-gray-200">
+            <View className="flex-row items-center gap-2">
+              <TouchableOpacity
+                onPress={handleDismiss}
+                accessibilityRole="button"
+                accessibilityLabel="Close database backup"
+              >
+                <Ionicons name="chevron-back" size={26} color="#999" />
+              </TouchableOpacity>
+              <Text className="text-2xl text-gray-700 font-medium">
+                Database Backup
+              </Text>
+            </View>
           </View>
 
           {/* Scrollable Body */}

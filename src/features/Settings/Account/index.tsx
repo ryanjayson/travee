@@ -3,8 +3,10 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
+  KeyboardAvoidingView,
   Modal,
   PanResponder,
+  Platform,
   ScrollView,
   Text,
   TextInput as RNTextInput,
@@ -14,6 +16,8 @@ import {
 import { TextInput, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TRAVELER_TYPES } from "../../../components/OnboardingModal";
+import { useKeyboardVisible } from "../../../hooks/useKeyboardVisible";
+import { useToast } from "../../../context/ToastContext";
 import { UserProfileDto } from "../../../types/UserProfileDto";
 
 const COUNTRIES = [
@@ -141,7 +145,7 @@ const CountryPickerModal = ({
             {...dragPanResponder.panHandlers}
             className="w-full items-center py-4 rounded-t-[30px]"
           >
-            <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            <View className="w-10 h-1 bg-gray-200 rounded-full" />
           </View>
 
           <View className="flex-row justify-between items-center px-5 pb-4 border-b border-[#F3F4F6] mb-4">
@@ -205,6 +209,23 @@ const CountryPickerModal = ({
   );
 };
 
+export const getNicknameValidationError = (nickname?: string): string | null => {
+  const value = nickname ?? "";
+  if (!value || value.trim().length === 0) {
+    return "Nickname cannot be empty";
+  }
+  if (value.includes(" ") || /\s/.test(value)) {
+    return "Spaces are not accepted";
+  }
+  if (value.length < 3) {
+    return "Nickname must be at least 3 characters";
+  }
+  if (value.length > 20) {
+    return "Nickname cannot exceed 20 characters";
+  }
+  return null;
+};
+
 export interface AccountSettingsProps {
   form: UserProfileDto;
   setForm: React.Dispatch<React.SetStateAction<UserProfileDto>>;
@@ -217,6 +238,8 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
 }) => {
   const { colors } = useTheme();
   const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const nicknameError = getNicknameValidationError(form.nickname);
+  const currentLength = form.nickname?.length || 0;
 
   return (
     <View className="p-2 gap-3 will-change-variable">
@@ -230,11 +253,13 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
             placeholder="Nickname"
             value={form.nickname}
             onChangeText={(v) => setForm(f => ({ ...f, nickname: v }))}
+            error={Boolean(nicknameError)}
             outlineColor="#E0E0E0"
-            activeOutlineColor={colors.primary}
+            activeOutlineColor={nicknameError ? colors.error : colors.primary}
             theme={{
               colors: {
                 onSurfaceVariant: '#9CA3AF',
+                error: colors.error,
               },
             }}
             outlineStyle={{
@@ -246,8 +271,22 @@ export const AccountSettings: React.FC<AccountSettingsProps> = ({
               marginTop: 6,
               height: 56,
             }}
-            left={<TextInput.Icon icon="account" color="#6B7280" />}
           />
+        </View>
+        <View className="flex-row justify-between items-center mt-1 px-1">
+          {nicknameError ? (
+            <Text style={{ color: colors.error }} className="text-xs flex-1 mr-2">
+              {nicknameError}
+            </Text>
+          ) : (
+            <View className="flex-1" />
+          )}
+          <Text
+            style={{ color: currentLength > 20 ? colors.error : "#9CA3AF" }}
+            className="text-xs"
+          >
+            {currentLength}/20
+          </Text>
         </View>
       </View>
 
@@ -345,7 +384,10 @@ export const AccountBottomSheet: React.FC<AccountBottomSheetProps> = ({
   setForm,
   saveProfile,
 }) => {
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const { showToast } = useToast();
+  const { keyboardVisible } = useKeyboardVisible();
   const translateY = useRef(new Animated.Value(screenHeight)).current;
 
   useEffect(() => {
@@ -368,6 +410,39 @@ export const AccountBottomSheet: React.FC<AccountBottomSheetProps> = ({
     }).start(() => {
       onClose();
     });
+  };
+
+  const handleUpdate = () => {
+    const nicknameError = getNicknameValidationError(form.nickname);
+    if (nicknameError) {
+      showToast({
+        type: "error",
+        message: nicknameError,
+      });
+      return;
+    }
+    if (saveProfile) {
+      saveProfile(form, {
+        onSuccess: () => {
+          showToast({
+            type: "success",
+            message: "Profile updated successfully",
+          });
+        },
+        onError: (err: any) => {
+          showToast({
+            type: "error",
+            message: err?.message || "Failed to update profile",
+          });
+        },
+      });
+    } else {
+      showToast({
+        type: "success",
+        message: "Profile updated successfully",
+      });
+    }
+    handleDismiss();
   };
 
   const dragPanResponder = useRef(
@@ -408,59 +483,92 @@ export const AccountBottomSheet: React.FC<AccountBottomSheetProps> = ({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleDismiss}>
-      <Animated.View
-        style={{
-          flex: 1,
-          justifyContent: "flex-end",
-          backgroundColor: "rgba(0,0,0,0.5)",
-          opacity: backdropOpacity,
-        }}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
+        style={{ flex: 1 }}
       >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={handleDismiss}
-          style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }}
-        />
-
         <Animated.View
-          className="bg-[#F9FAFB] rounded-t-[30px] shadow-lg overflow-hidden "
           style={{
-            transform: [{ translateY }],
-            maxHeight: screenHeight * 0.85,
-            paddingBottom: Math.max(insets.bottom, 20),
+            flex: 1,
+            justifyContent: "flex-end",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            opacity: backdropOpacity,
           }}
         >
-          {/* Drag Handle Area */}
-          <View
-            {...dragPanResponder.panHandlers}
-            className="w-full items-center pt-3 pb-2 bg-white rounded-t-[30px]"
-          >
-            <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
-          </View>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={handleDismiss}
+            style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }}
+          />
 
-          {/* Header */}
-          <View className="flex-row justify-between items-center px-6 pt-2 pb-4 bg-white border-b border-gray-200">
-            <Text className="text-xl font-bold text-[#111827]">Profile</Text>
-            <TouchableOpacity
-              onPress={handleDismiss}
-              accessibilityRole="button"
-              accessibilityLabel="Close profile settings"
+          <Animated.View
+            className="bg-white rounded-t-[30px] shadow-lg overflow-hidden "
+            style={[
+              { height: keyboardVisible ? "100%" : screenHeight * 0.60 },
+              {
+                paddingTop: keyboardVisible ? insets.top + 10 : 0,
+                paddingBottom: keyboardVisible ? 0 : Math.max(insets.bottom, 20),
+                transform: [{ translateY }],
+              },
+            ]}
+          >
+            {/* Drag Handle Area */}
+            {!keyboardVisible && (
+              <View
+                {...dragPanResponder.panHandlers}
+                className="w-full items-center pt-3 pb-2 bg-white rounded-t-[30px]"
+              >
+                <View className="w-10 h-1 bg-gray-200 rounded-full" />
+              </View>
+            )}
+
+            {/* Header */}
+            <View
+              {...(!keyboardVisible && dragPanResponder.panHandlers)}
+              className="flex-row justify-between items-center px-5 pb-4 bg-white border-b border-gray-200"
+              style={{ paddingTop: keyboardVisible ? 4 : 8 }}
             >
-              <Ionicons name="close" size={26} color="#999" />
-            </TouchableOpacity>
-          </View>
+              <View className="flex-row items-center gap-2">
+                <TouchableOpacity
+                  onPress={handleDismiss}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close profile settings"
+                >
+                  <Ionicons name="chevron-back" size={26} color="#999" />
+                </TouchableOpacity>
+                <Text className="text-2xl text-gray-700 font-medium">
+                  Profile
+                </Text>
+              </View>
 
-          {/* Scrollable Body */}
-          <ScrollView
-            className="p-4"
-            contentContainerStyle={{ paddingBottom: 30 }}
-            showsVerticalScrollIndicator={true}
-            bounces={false}
-          >
-            <AccountSettings form={form} setForm={setForm} saveProfile={saveProfile} />
-          </ScrollView>
+              <TouchableOpacity
+                onPress={handleUpdate}
+                disabled={Boolean(getNicknameValidationError(form.nickname))}
+                style={{ opacity: getNicknameValidationError(form.nickname) ? 0.4 : 1 }}
+                accessibilityRole="button"
+                accessibilityLabel="Update profile"
+              >
+                <View className="flex-row items-center gap-1">
+                  <Ionicons name="checkmark" size={22} color={colors.primary} />
+                  <Text className="text-md font-medium" style={{ color: colors.primary }}>
+                    Update
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            {/* Scrollable Body */}
+            <ScrollView
+              className="p-4 bg-gray-50"
+              contentContainerStyle={{ paddingBottom: 30 }}
+              showsVerticalScrollIndicator={true}
+              bounces={false}
+            >
+              <AccountSettings form={form} setForm={setForm} saveProfile={saveProfile} />
+            </ScrollView>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };

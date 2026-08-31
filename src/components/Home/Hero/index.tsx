@@ -8,7 +8,6 @@ import ViewTravelModal from "../../../features/Travel/components/View/Modal";
 import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
 import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
 import { Travel } from '../../../features/Travel/types/TravelDto';
-import { ProfileScreen } from '../../../screens/ProfileScreen';
 import { useUserProfile } from '../../../hooks/useUserProfile';
 
 export const fetchWeatherInfo = async (destination?: string, coords?: { latitude?: number; longitude?: number }) => {
@@ -59,16 +58,15 @@ interface HeroProps {
   onOpenCreateTripModal?: (tripData: any) => void;
   unreadNotifications?: number;
   onOpenNotifications?: () => void;
+  onOpenProfile?: () => void;
 }
 
-const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onOpenNotifications }: HeroProps) => {
+const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onOpenNotifications, onOpenProfile }: HeroProps) => {
   const navigation = useNavigation<any>();
   const { openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
   const { data: profile } = useUserProfile();
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
-
-  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
   const [plainMode, setPlainMode] = useState<boolean>(false);
 
   const adjustedRef = useRef(false);
@@ -216,7 +214,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
           <View className="flex-row items-center gap-2">
             <TouchableOpacity
               className="w-12 h-12 rounded-full bg-white items-center justify-center overflow-hidden shadow-lg elevation-5"
-              onPress={() => setShowProfileModal(true)}
+              onPress={onOpenProfile}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Open profile"
@@ -489,12 +487,6 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
             </Modal>
           </>
         )}
-
-
-        <ProfileScreen
-          visible={showProfileModal}
-          onClose={() => setShowProfileModal(false)}
-        />
       </View>
 
       {ongoingTrip && (
