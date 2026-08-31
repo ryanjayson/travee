@@ -85,7 +85,7 @@ export interface DescriptionModalState {
 export interface DestinationModalState {
   visible: boolean;
   initialValue?: string;
-  onSelect?: (place: MapboxPlace) => void;
+  onSelect?: (place: MapboxPlace, isAddMore?: boolean) => void;
 }
 
 export interface FlightModalState {
@@ -159,7 +159,7 @@ export interface TravelContextType {
   destinationModal: DestinationModalState;
   openDestinationModal: (
     initialValue?: string,
-    onSelect?: (place: MapboxPlace) => void
+    onSelect?: (place: MapboxPlace, isAddMore?: boolean) => void
   ) => void;
   closeDestinationModal: () => void;
 

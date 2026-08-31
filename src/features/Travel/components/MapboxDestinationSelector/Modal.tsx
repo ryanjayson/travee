@@ -5,7 +5,7 @@ import MapboxDestinationSelector, { MapboxPlace } from "./index";
 interface MapboxDestinationSelectorModalProps {
   visible: boolean;
   onClose: () => void;
-  onSelect: (place: MapboxPlace) => void;
+  onSelect: (place: MapboxPlace, isAddMore?: boolean) => void;
   initialValue?: string;
 }
 

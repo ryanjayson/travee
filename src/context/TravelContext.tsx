@@ -337,7 +337,7 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
   const openDestinationModal = useCallback(
     (
       initialValue: string = "",
-      onSelect?: (place: MapboxPlace) => void
+      onSelect?: (place: MapboxPlace, isAddMore?: boolean) => void
     ) => {
       setDestinationModal({
         visible: true,

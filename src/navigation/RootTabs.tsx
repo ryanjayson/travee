@@ -257,11 +257,10 @@ function RootTabsComponent() {
         <MapboxDestinationSelectorModal
           visible={destinationModal.visible}
           initialValue={destinationModal.initialValue}
-          onSelect={(place) => {
+          onSelect={(place, isAddMore) => {
             if (destinationModal.onSelect) {
-              destinationModal.onSelect(place);
+              destinationModal.onSelect(place, isAddMore);
             }
-            closeDestinationModal();
           }}
           onClose={closeDestinationModal}
         />

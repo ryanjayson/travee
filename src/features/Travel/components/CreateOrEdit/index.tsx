@@ -56,7 +56,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
   const { openDestinationModal } = useTravelContext();
 
   const handleOpenDestinationSelect = () => {
-    openDestinationModal("", (place: MapboxPlace) => {
+    openDestinationModal("", (place: MapboxPlace, isAddMore?: boolean) => {
       const newDest: TripDestinationDto = {
         destination: place.name,
         destinationData: {
@@ -71,19 +71,22 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         } as DestinationDto,
       };
 
-      const currentList: TripDestinationDto[] = formik.values.tripDestinations || [];
-      const isDuplicate = currentList.some(
-        (d) => d.destination.trim().toLowerCase() === place.name.trim().toLowerCase()
-      );
+      formik.setValues((prevValues) => {
+        const currentList: TripDestinationDto[] = prevValues.tripDestinations || [];
+        const isDuplicate = currentList.some(
+          (d) => d.destination.trim().toLowerCase() === place.name.trim().toLowerCase()
+        );
 
-      const nextList = isDuplicate ? currentList : [...currentList, newDest];
-      formik.setFieldValue("tripDestinations", nextList);
-      if (nextList.length > 0) {
-        formik.setFieldValue("destination", nextList[0].destination);
-        formik.setFieldValue("destinationData", nextList[0].destinationData);
-      }
+        const nextList = isDuplicate ? currentList : [...currentList, newDest];
+        return {
+          ...prevValues,
+          tripDestinations: nextList,
+          destination: nextList.length > 0 ? nextList[0].destination : prevValues.destination,
+          destinationData: nextList.length > 0 ? nextList[0].destinationData : prevValues.destinationData,
+        };
+      });
 
-      if (mode === "create" && currentList.length === 0) {
+      if (mode === "create" && !isAddMore) {
         setTimeout(() => {
           setShowStartDatePicker(true);
         }, 300);
@@ -143,8 +146,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       tripDestinations: (tripData?.tripDestinations && tripData.tripDestinations.length > 0)
         ? tripData.tripDestinations
         : (tripData?.destination
-            ? [{ destination: tripData.destination, destinationData: tripData.destinationData || null }]
-            : [] as TripDestinationDto[]),
+          ? [{ destination: tripData.destination, destinationData: tripData.destinationData || null }]
+          : [] as TripDestinationDto[]),
       startOrDepartureDate: tripData?.startOrDepartureDate ? new Date(tripData.startOrDepartureDate) : null as Date | null,
       endOrReturnDate: tripData?.endOrReturnDate ? new Date(tripData.endOrReturnDate) : null as Date | null,
       budget: tripData?.budget || "",
@@ -409,13 +412,13 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                 onPress={handleOpenDestinationSelect}
                 disabled={isSaving}
                 activeOpacity={0.7}
-                className="flex-row items-center gap-1 py-1 px-3 rounded-full bg-primary/10"
+                className="flex-row items-center gap-1 py-1 px-3 rounded-lg bg-primary/10 border border-primary/30"
                 accessibilityRole="button"
                 accessibilityLabel="Add another destination"
               >
                 <Icon name="add-location-alt" size={14} color={colors.primary} />
                 <Text style={{ color: colors.primary }} className="text-xs font-bold">
-                  Add Place
+                  Add more Destination
                 </Text>
               </TouchableOpacity>
             )}
@@ -427,10 +430,10 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               {formik.values.tripDestinations.map((item: TripDestinationDto, index: number) => (
                 <View
                   key={`${item.destination}-${index}`}
-                  className="flex-row items-center bg-[#F2F4F7] border border-[#E0E0E0] rounded-full py-1.5 pl-3 pr-2 shadow-xs"
+                  className="flex-row items-center bg-white border border-[#E0E0E0] rounded-full py-2 pl-3 pr-2 shadow-xs"
                 >
                   <Icon name="place" size={15} color={colors.primary} style={{ marginRight: 4 }} />
-                  <Text className="text-xs font-semibold text-[#101828] mr-2" numberOfLines={1}>
+                  <Text className="text-sm font-semibold text-[#101828] mr-2" numberOfLines={1}>
                     {item.destination}
                   </Text>
                   <TouchableOpacity

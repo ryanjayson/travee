@@ -11,7 +11,8 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { useTheme } from "react-native-paper";
+import { Checkbox, useTheme } from "react-native-paper";
+import { useToast } from "../../../../context/ToastContext";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 
@@ -34,7 +35,7 @@ export interface MapboxPlace {
 
 interface MapboxDestinationSelectorProps {
   onClose: () => void;
-  onSelect: (place: MapboxPlace) => void;
+  onSelect: (place: MapboxPlace, isAddMore?: boolean) => void;
   initialValue?: string;
 }
 
@@ -120,12 +121,15 @@ const MapboxDestinationSelector = ({
   initialValue = "",
 }: MapboxDestinationSelectorProps) => {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const [query, setQuery] = useState(initialValue);
   const [activeFilter, setActiveFilter] = useState<FilterType | null>("country");
   const [results, setResults] = useState<MapboxPlace[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [addMore, setAddMore] = useState<boolean>(false);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchInputRef = useRef<TextInput>(null);
 
   const searchPlaces = useCallback(async (text: string, filter: FilterType | null = null) => {
     if (text.length < 2) {
@@ -293,8 +297,22 @@ const MapboxDestinationSelector = ({
       <TouchableOpacity
         style={styles.itemContainer}
         onPress={() => {
-          onSelect(item);
-          onClose();
+          onSelect(item, addMore);
+          if (!addMore) {
+            onClose();
+          } else {
+            showToast({
+              type: "success",
+              message: `Added ${item.name}`,
+            });
+            setAddMore(false);
+            setQuery("");
+            setResults([]);
+            setShowResults(false);
+            setTimeout(() => {
+              searchInputRef.current?.focus();
+            }, 100);
+          }
         }}
         activeOpacity={0.6}
         accessibilityRole="button"
@@ -390,6 +408,7 @@ const MapboxDestinationSelector = ({
           <View style={styles.searchInputContainer}>
             <Icon name="search" size={22} color="#999" style={{ marginRight: 8 }} />
             <TextInput
+              ref={searchInputRef}
               style={styles.searchInput}
               placeholder={
                 activeFilter ? `Search a ${getTypeLabel(activeFilter)}` : "Search your next destination"
@@ -422,9 +441,14 @@ const MapboxDestinationSelector = ({
           </View>
         </View>
 
-        {/* Filter Toggle */}
+        {/* Filter Toggle & Add More Checkbox */}
         <View style={styles.filterRow}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="always">
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="always"
+            style={styles.filterScrollView}
+          >
             {FILTER_OPTIONS.map((filter) => {
               const isActive = activeFilter === filter.id;
               return (
@@ -462,6 +486,31 @@ const MapboxDestinationSelector = ({
               );
             })}
           </ScrollView>
+
+          {/* Add More Destination Checkbox */}
+          {(() => {
+            const isSearchFound = results.length > 0 && getGroupedSections().length > 0;
+            return (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                disabled={!isSearchFound}
+                accessibilityRole="checkbox"
+                accessibilityLabel="Add more destinations"
+                onPress={() => isSearchFound && setAddMore(!addMore)}
+                style={[styles.addMoreContainer, !isSearchFound && { opacity: 0.4 }]}
+              >
+                <Checkbox.Android
+                  status={addMore ? "checked" : "unchecked"}
+                  disabled={!isSearchFound}
+                  onPress={() => isSearchFound && setAddMore(!addMore)}
+                  color={colors.primary}
+                />
+                <Text style={[styles.addMoreText, !isSearchFound && { color: "#9CA3AF" }]}>
+                  Add more
+                </Text>
+              </TouchableOpacity>
+            );
+          })()}
         </View>
       </View>
 
@@ -535,6 +584,22 @@ const styles = StyleSheet.create({
   filterRow: {
     paddingHorizontal: 16,
     marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  filterScrollView: {
+    flex: 1,
+  },
+  addMoreContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 6,
+  },
+  addMoreText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#475467",
+    marginLeft: -4,
   },
   filterChip: {
     flexDirection: "row",
