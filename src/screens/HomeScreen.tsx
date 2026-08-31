@@ -1,6 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState, useEffect } from 'react';
-import { Dimensions, RefreshControl, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  Dimensions,
+  RefreshControl,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  BackHandler,
+  ToastAndroid,
+  Platform
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAllActivities } from '../features/Travel/hooks/useActivity';
@@ -16,10 +28,10 @@ import { useUserProfile } from '../hooks/useUserProfile';
 import CountryOutline from '../features/Travel/components/ShareOverlay/CountryOutline';
 import { Notifications } from '../features/Notification';
 import { FadeInView } from '../components/animations';
-import { 
-  fetchLocalNotifications, 
-  fetchUnreadNotificationsCount, 
-  markNotificationAsRead, 
+import {
+  fetchLocalNotifications,
+  fetchUnreadNotificationsCount,
+  markNotificationAsRead,
   markAllNotificationsAsRead,
   deleteNotificationLocally
 } from '../services/local/notificationService';
@@ -65,6 +77,7 @@ const HomeScreen = () => {
   const [unreadNotifications, setUnreadNotifications] = useState<number>(0);
   const [showNotificationsModal, setShowNotificationsModal] = useState<boolean>(false);
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
+  const lastBackPressedRef = React.useRef<number>(0);
 
   const loadNotificationsData = async () => {
     try {
@@ -118,7 +131,7 @@ const HomeScreen = () => {
   const startDate = new Date(currentYear, 0, 1);
   const completedTripIds = travels?.filter(t => t.status === TravelStatus.Past).map(t => t.id) || [];
   // const activitiesFromCompletedTrips = allActivities?.filter(a => a.travelId && completedTripIds.includes(a.travelId)) || [];
-  
+
   const activityCountsByDay: Record<string, number> = {};
   allActivities && allActivities.forEach(a => {
     if (a.createdAt) {
@@ -136,7 +149,52 @@ const HomeScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       refetch();
-    }, [refetch])
+
+      const onBackPress = () => {
+        // If modals are open, close the modal first
+        if (showTravelViewModal) {
+          setShowTravelViewModal(false);
+          setSelectedTravelForModal(null);
+          return true;
+        }
+        if (showCreateModal) {
+          setShowCreateModal(false);
+          setPrefilledTripData(null);
+          return true;
+        }
+        if (showNotificationsModal) {
+          setShowNotificationsModal(false);
+          return true;
+        }
+        if (showOnboarding) {
+          return true;
+        }
+
+        const now = Date.now();
+        if (now - lastBackPressedRef.current < 2000) {
+          BackHandler.exitApp();
+          return true;
+        }
+
+        lastBackPressedRef.current = now;
+        if (Platform.OS === 'android') {
+          ToastAndroid.show('Swipe again to close the app', ToastAndroid.SHORT);
+        }
+        return true;
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => {
+        subscription.remove();
+      };
+    }, [
+      refetch,
+      showTravelViewModal,
+      showCreateModal,
+      showNotificationsModal,
+      showOnboarding
+    ])
   );
 
   useEffect(() => {
@@ -152,10 +210,10 @@ const HomeScreen = () => {
     travels.forEach(t => {
       if (t.isArchived || t.status === TravelStatus.Cancelled || t.status === TravelStatus.Archieved) return;
       if (t.status === TravelStatus.Past) { completed++; return; }
-      if (t.status === TravelStatus.Upcoming)  { upcoming++;  return; }
+      if (t.status === TravelStatus.Upcoming) { upcoming++; return; }
       if (t.startOrDepartureDate) {
         const start = new Date(t.startOrDepartureDate); start.setHours(0, 0, 0, 0);
-        const end   = t.endOrReturnDate ? new Date(t.endOrReturnDate) : start;
+        const end = t.endOrReturnDate ? new Date(t.endOrReturnDate) : start;
         end.setHours(0, 0, 0, 0);
         if (end < today) completed++;
         else if (start >= today) upcoming++;
@@ -191,7 +249,7 @@ const HomeScreen = () => {
       [ActivityType.shopppingAndService]: 'cart',
       [ActivityType.entertainmentAndRecreation]: 'film',
       // [ActivityType.transportation]: 'bus',
-      [ActivityType.walk]: 'walk',
+      // [ActivityType.walk]: 'walk',
       [ActivityType.sightseeing]: 'camera',
       [ActivityType.preparation]: 'construct',
       // [ActivityType.rest]: 'bed',
@@ -231,8 +289,8 @@ const HomeScreen = () => {
   return (
     <View className="flex-1 bg-red-100">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      <ScrollView showsVerticalScrollIndicator={false} 
-        contentContainerStyle={{ paddingBottom: 100 }} 
+      <ScrollView showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
         className="bg-gray-100"
         refreshControl={
           <RefreshControl
@@ -255,9 +313,9 @@ const HomeScreen = () => {
 
         <View
           className="bg-gray-100 "
-          style={{ 
-            marginTop: currentOngoingTrip ? 0 : -50 , 
-            borderTopLeftRadius: currentOngoingTrip ? 0 : 30, 
+          style={{
+            marginTop: currentOngoingTrip ? 0 : -50,
+            borderTopLeftRadius: currentOngoingTrip ? 0 : 30,
             borderTopRightRadius: currentOngoingTrip ? 0 : 30,
             paddingTop: currentOngoingTrip ? 0 : 30,
           }}
@@ -278,7 +336,7 @@ const HomeScreen = () => {
             <FadeInView type="fade" delay={150} duration={350}>
               <Text className="px-6 text-xl font-semibold text-secondary mb-5">Trip Insights</Text>
             </FadeInView>
-              
+
             <View className="flex-row px-5 mb-[15px] gap-[15px]">
 
               <View className="flex-1 h-[112px]">

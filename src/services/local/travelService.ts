@@ -1613,31 +1613,31 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
     }
 
     // Save associated walk details
-    if (activityData.type === ActivityType.walk && activityData.walkDetails) {
-      const walkDetailsCollection = database.get<WalkDetails>("walk_details");
-      const existingDetails = await walkDetailsCollection.query(
-        Q.where("activity_id", activity.id)
-      ).fetch();
+    // if (activityData.type === ActivityType.walk && activityData.walkDetails) {
+    //   const walkDetailsCollection = database.get<WalkDetails>("walk_details");
+    //   const existingDetails = await walkDetailsCollection.query(
+    //     Q.where("activity_id", activity.id)
+    //   ).fetch();
 
-      if (existingDetails.length > 0) {
-        await existingDetails[0].update((w) => {
-          Object.assign(w, {
-            routeName: activityData.walkDetails.routeName,
-            estimatedDistanceKm: activityData.walkDetails.estimatedDistanceKm,
-            estimatedDuration: activityData.walkDetails.estimatedDuration,
-          });
-        });
-      } else {
-        await walkDetailsCollection.create((w) => {
-          w.activity.id = activity.id;
-          Object.assign(w, {
-            routeName: activityData.walkDetails.routeName,
-            estimatedDistanceKm: activityData.walkDetails.estimatedDistanceKm,
-            estimatedDuration: activityData.walkDetails.estimatedDuration,
-          });
-        });
-      }
-    }
+    //   if (existingDetails.length > 0) {
+    //     await existingDetails[0].update((w) => {
+    //       Object.assign(w, {
+    //         routeName: activityData.walkDetails.routeName,
+    //         estimatedDistanceKm: activityData.walkDetails.estimatedDistanceKm,
+    //         estimatedDuration: activityData.walkDetails.estimatedDuration,
+    //       });
+    //     });
+    //   } else {
+    //     await walkDetailsCollection.create((w) => {
+    //       w.activity.id = activity.id;
+    //       Object.assign(w, {
+    //         routeName: activityData.walkDetails.routeName,
+    //         estimatedDistanceKm: activityData.walkDetails.estimatedDistanceKm,
+    //         estimatedDuration: activityData.walkDetails.estimatedDuration,
+    //       });
+    //     });
+    //   }
+    // }
 
     // Save associated preparation details
     if (activityData.type === ActivityType.preparation && activityData.preparationDetails) {
@@ -1669,103 +1669,103 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
     }
 
     // Save associated rest details
-    if (activityData.type === ActivityType.rest && activityData.restDetails) {
-      const restDetailsCollection = database.get<RestDetails>("rest_details");
-      const existingDetails = await restDetailsCollection.query(
-        Q.where("activity_id", activity.id)
-      ).fetch();
+    // if (activityData.type === ActivityType.rest && activityData.restDetails) {
+    //   const restDetailsCollection = database.get<RestDetails>("rest_details");
+    //   const existingDetails = await restDetailsCollection.query(
+    //     Q.where("activity_id", activity.id)
+    //   ).fetch();
 
-      if (existingDetails.length > 0) {
-        await existingDetails[0].update((r) => {
-          Object.assign(r, {
-            restLocationName: activityData.restDetails.restLocationName,
-            restLocationType: activityData.restDetails.restLocationType,
-          });
-        });
-      } else {
-        await restDetailsCollection.create((r) => {
-          r.activity.id = activity.id;
-          Object.assign(r, {
-            restLocationName: activityData.restDetails.restLocationName,
-            restLocationType: activityData.restDetails.restLocationType,
-          });
-        });
-      }
-    }
+    //   if (existingDetails.length > 0) {
+    //     await existingDetails[0].update((r) => {
+    //       Object.assign(r, {
+    //         restLocationName: activityData.restDetails.restLocationName,
+    //         restLocationType: activityData.restDetails.restLocationType,
+    //       });
+    //     });
+    //   } else {
+    //     await restDetailsCollection.create((r) => {
+    //       r.activity.id = activity.id;
+    //       Object.assign(r, {
+    //         restLocationName: activityData.restDetails.restLocationName,
+    //         restLocationType: activityData.restDetails.restLocationType,
+    //       });
+    //     });
+    //   }
+    // }
 
-    // Save associated motorcycle ride details
-    if (activityData.type === ActivityType.motorcycleRide && activityData.motorcycleRideDetails) {
-      const motorcycleRideDetailsCollection = database.get<MotorcycleRideDetails>("motorcycle_ride_details");
-      const existingDetails = await motorcycleRideDetailsCollection.query(
-        Q.where("activity_id", activity.id)
-      ).fetch();
+    // // Save associated motorcycle ride details
+    // if (activityData.type === ActivityType.motorcycleRide && activityData.motorcycleRideDetails) {
+    //   const motorcycleRideDetailsCollection = database.get<MotorcycleRideDetails>("motorcycle_ride_details");
+    //   const existingDetails = await motorcycleRideDetailsCollection.query(
+    //     Q.where("activity_id", activity.id)
+    //   ).fetch();
 
-      if (existingDetails.length > 0) {
-        await existingDetails[0].update((m) => {
-          Object.assign(m, {
-            routeName: activityData.motorcycleRideDetails.routeName,
-            startingPoint: activityData.motorcycleRideDetails.startingPoint,
-            endingPoint: activityData.motorcycleRideDetails.endingPoint,
-            estimatedDistanceKm: activityData.motorcycleRideDetails.estimatedDistanceKm,
-            roadType: activityData.motorcycleRideDetails.roadType,
-            bikeModel: activityData.motorcycleRideDetails.bikeModel,
-            fuelStops: activityData.motorcycleRideDetails.fuelStops,
-          });
-        });
-      } else {
-        await motorcycleRideDetailsCollection.create((m) => {
-          m.activity.id = activity.id;
-          Object.assign(m, {
-            routeName: activityData.motorcycleRideDetails.routeName,
-            startingPoint: activityData.motorcycleRideDetails.startingPoint,
-            endingPoint: activityData.motorcycleRideDetails.endingPoint,
-            estimatedDistanceKm: activityData.motorcycleRideDetails.estimatedDistanceKm,
-            roadType: activityData.motorcycleRideDetails.roadType,
-            bikeModel: activityData.motorcycleRideDetails.bikeModel,
-            fuelStops: activityData.motorcycleRideDetails.fuelStops,
-          });
-        });
-      }
-    }
+    //   if (existingDetails.length > 0) {
+    //     await existingDetails[0].update((m) => {
+    //       Object.assign(m, {
+    //         routeName: activityData.motorcycleRideDetails.routeName,
+    //         startingPoint: activityData.motorcycleRideDetails.startingPoint,
+    //         endingPoint: activityData.motorcycleRideDetails.endingPoint,
+    //         estimatedDistanceKm: activityData.motorcycleRideDetails.estimatedDistanceKm,
+    //         roadType: activityData.motorcycleRideDetails.roadType,
+    //         bikeModel: activityData.motorcycleRideDetails.bikeModel,
+    //         fuelStops: activityData.motorcycleRideDetails.fuelStops,
+    //       });
+    //     });
+    //   } else {
+    //     await motorcycleRideDetailsCollection.create((m) => {
+    //       m.activity.id = activity.id;
+    //       Object.assign(m, {
+    //         routeName: activityData.motorcycleRideDetails.routeName,
+    //         startingPoint: activityData.motorcycleRideDetails.startingPoint,
+    //         endingPoint: activityData.motorcycleRideDetails.endingPoint,
+    //         estimatedDistanceKm: activityData.motorcycleRideDetails.estimatedDistanceKm,
+    //         roadType: activityData.motorcycleRideDetails.roadType,
+    //         bikeModel: activityData.motorcycleRideDetails.bikeModel,
+    //         fuelStops: activityData.motorcycleRideDetails.fuelStops,
+    //       });
+    //     });
+    //   }
+    // }
 
-    // Save associated meetup details
-    if (activityData.type === ActivityType.meetup && activityData.meetupDetails) {
-      const meetupDetailsCollection = database.get<MeetupDetails>("meetup_details");
-      const existingDetails = await meetupDetailsCollection.query(
-        Q.where("activity_id", activity.id)
-      ).fetch();
+    // // Save associated meetup details
+    // if (activityData.type === ActivityType.meetup && activityData.meetupDetails) {
+    //   const meetupDetailsCollection = database.get<MeetupDetails>("meetup_details");
+    //   const existingDetails = await meetupDetailsCollection.query(
+    //     Q.where("activity_id", activity.id)
+    //   ).fetch();
 
-      if (existingDetails.length > 0) {
-        await existingDetails[0].update((m) => {
-          Object.assign(m, {
-            venueName: activityData.meetupDetails.venueName,
-            address: activityData.meetupDetails.address,
-            destinationAddressData: activityData.meetupDetails.destinationAddressData
-              ? JSON.stringify(activityData.meetupDetails.destinationAddressData)
-              : null,
-            hostOrOrganizer: activityData.meetupDetails.hostOrOrganizer,
-            numberOfPeople: activityData.meetupDetails.numberOfPeople,
-            meetupType: activityData.meetupDetails.meetupType,
-            rsvpLink: activityData.meetupDetails.rsvpLink,
-          });
-        });
-      } else {
-        await meetupDetailsCollection.create((m) => {
-          m.activity.id = activity.id;
-          Object.assign(m, {
-            venueName: activityData.meetupDetails.venueName,
-            address: activityData.meetupDetails.address,
-            destinationAddressData: activityData.meetupDetails.destinationAddressData
-              ? JSON.stringify(activityData.meetupDetails.destinationAddressData)
-              : null,
-            hostOrOrganizer: activityData.meetupDetails.hostOrOrganizer,
-            numberOfPeople: activityData.meetupDetails.numberOfPeople,
-            meetupType: activityData.meetupDetails.meetupType,
-            rsvpLink: activityData.meetupDetails.rsvpLink,
-          });
-        });
-      }
-    }
+    //   if (existingDetails.length > 0) {
+    //     await existingDetails[0].update((m) => {
+    //       Object.assign(m, {
+    //         venueName: activityData.meetupDetails.venueName,
+    //         address: activityData.meetupDetails.address,
+    //         destinationAddressData: activityData.meetupDetails.destinationAddressData
+    //           ? JSON.stringify(activityData.meetupDetails.destinationAddressData)
+    //           : null,
+    //         hostOrOrganizer: activityData.meetupDetails.hostOrOrganizer,
+    //         numberOfPeople: activityData.meetupDetails.numberOfPeople,
+    //         meetupType: activityData.meetupDetails.meetupType,
+    //         rsvpLink: activityData.meetupDetails.rsvpLink,
+    //       });
+    //     });
+    //   } else {
+    //     await meetupDetailsCollection.create((m) => {
+    //       m.activity.id = activity.id;
+    //       Object.assign(m, {
+    //         venueName: activityData.meetupDetails.venueName,
+    //         address: activityData.meetupDetails.address,
+    //         destinationAddressData: activityData.meetupDetails.destinationAddressData
+    //           ? JSON.stringify(activityData.meetupDetails.destinationAddressData)
+    //           : null,
+    //         hostOrOrganizer: activityData.meetupDetails.hostOrOrganizer,
+    //         numberOfPeople: activityData.meetupDetails.numberOfPeople,
+    //         meetupType: activityData.meetupDetails.meetupType,
+    //         rsvpLink: activityData.meetupDetails.rsvpLink,
+    //       });
+    //     });
+    //   }
+    // }
 
     // Save associated ride rental details
     if (activityData.type === ActivityType.rideRental && activityData.rideRentalDetails) {
