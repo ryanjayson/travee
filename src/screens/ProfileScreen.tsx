@@ -37,6 +37,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isAnalyticsOptedOut, setAnalyticsOptOut } from "../services/analytics/posthogService";
 import { FadeInView } from "../components/animations";
 import { useToast } from "../context/ToastContext";
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Common currencies with flag emoji
 const CURRENCIES = [
@@ -418,8 +419,10 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
       onRequestClose={handleClose}
     >
       <StatusBar barStyle="dark-content" />
+
       <View style={{ flex: 1, flexDirection: "row" }}>
         {/* Animated Container - Full Height, slides from left to right */}
+
         <Animated.View
           style={{
             width: screenWidth,
@@ -434,6 +437,13 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
             paddingTop: insets.top,
           }}
         >
+
+          <LinearGradient
+            colors={["#dbeaff", "#F2F4F7", "#F2F4F7", "#F2F4F7", "#F2F4F7"]}
+            start={{ x: 0.8, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}
+          />
           {isLoading ? (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
               <ActivityIndicator size="large" color="#0EA5E9" />
@@ -441,6 +451,7 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
           ) : (
             <View style={{ flex: 1 }}>
               {/* Header */}
+
               <View className="flex-row items-center justify-between px-5 py-3.5">
                 <TouchableOpacity onPress={handleClose} accessibilityRole="button" accessibilityLabel="Close profile">
                   <Ionicons name="close" size={28} color="#374151" />
@@ -578,23 +589,25 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
                 </FadeInView>
 
                 {/* Privacy & Analytics Section */}
-                <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
-                  <Text className="text-xl font-semibold text-secondary">Privacy & Analytics</Text>
-                  <View className="flex-row justify-between items-center py-2">
-                    <View className="flex-1 pr-4">
-                      <Text className="text-base font-semibold text-tertiary">Share Usage Analytics</Text>
-                      <Text className="text-xs text-gray-500 mt-0.5">Help improve Travee by sharing usage metrics and crash diagnostics</Text>
+                <FadeInView type="up" delay={150} duration={400}>
+                  <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6] will-change-variable">
+                    <Text className="text-xl font-semibold text-secondary">Privacy & Analytics</Text>
+                    <View className="flex-row justify-between items-center py-2">
+                      <View className="flex-1 pr-4">
+                        <Text className="text-base font-semibold text-tertiary">Share Usage Analytics</Text>
+                        <Text className="text-xs text-gray-500 mt-0.5">Help improve Travee by sharing usage metrics and crash diagnostics</Text>
+                      </View>
+                      <Switch
+                        value={!isAnalyticsOptedOutState}
+                        onValueChange={handleToggleAnalytics}
+                        trackColor={{ false: "#D1D5DB", true: colors.primary }}
+                        thumbColor="#FFFFFF"
+                        accessibilityRole="switch"
+                        accessibilityLabel="Share Usage Analytics"
+                      />
                     </View>
-                    <Switch
-                      value={!isAnalyticsOptedOutState}
-                      onValueChange={handleToggleAnalytics}
-                      trackColor={{ false: "#D1D5DB", true: colors.primary }}
-                      thumbColor="#FFFFFF"
-                      accessibilityRole="switch"
-                      accessibilityLabel="Share Usage Analytics"
-                    />
                   </View>
-                </View>
+                </FadeInView>
 
                 {/* About Section */}
                 <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6] will-change-variable">

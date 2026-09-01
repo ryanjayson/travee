@@ -114,7 +114,7 @@ function RootTabsComponent() {
             tabBarIcon: ({ color, focused }) => {
               const iconName = iconForRoute(route.name, focused);
               return (
-                <View className="flex-1 justify-center items-center top-0">
+                <View className="flex-1 justify-center items-center -top-1">
                   <Ionicons
                     name={iconName}
                     size={28}
@@ -128,7 +128,7 @@ function RootTabsComponent() {
             tabBarStyle: {
               position: 'absolute',
               marginLeft: WIDTH - 230 - 120,
-              bottom: insets.bottom + 5,
+              bottom: insets.bottom + 20,
               width: 230,
               height: 70,
               borderRadius: 35,
@@ -171,8 +171,8 @@ function RootTabsComponent() {
           scaleTo={0.90}
           style={{
             position: 'absolute',
-            bottom: insets.bottom + 5,
-            left: WIDTH - 100,
+            bottom: insets.bottom + 20,
+            left: WIDTH - 110,
             width: 70,
             height: 70,
             borderRadius: 35,

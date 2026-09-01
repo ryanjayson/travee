@@ -36,6 +36,7 @@ import {
   markAllNotificationsAsRead,
   deleteNotificationLocally
 } from '../services/local/notificationService';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const COUNTRY_CODES: Record<string, string> = {
   "Philippines": "PH",
@@ -302,6 +303,12 @@ const HomeScreen = () => {
             tintColor="#0EA5E9"
           />
         }>
+        <LinearGradient
+          colors={["#dbeaff", "#F2F4F7", "#F2F4F7", "#F2F4F7", "#F2F4F7"]}
+          start={{ x: 0.1, y: 0 }}
+          end={{ x: 0.1, y: 1 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}
+        />
 
         <Hero
           ongoingTrip={currentOngoingTrip}
@@ -315,12 +322,12 @@ const HomeScreen = () => {
         />
 
         <View
-          className="bg-gray-100 "
+          // className="z-20 "
           style={{
-            marginTop: currentOngoingTrip ? 0 : -50,
-            borderTopLeftRadius: currentOngoingTrip ? 0 : 30,
-            borderTopRightRadius: currentOngoingTrip ? 0 : 30,
-            paddingTop: currentOngoingTrip ? 0 : 30,
+            marginTop: currentOngoingTrip ? 20 : 0,
+            // borderTopLeftRadius: currentOngoingTrip ? 0 : 30,
+            // borderTopRightRadius: currentOngoingTrip ? 0 : 30,
+            // paddingTop: currentOngoingTrip ? 0 : 30,
           }}
         >
           <FadeInView type="up" delay={100} duration={450}>
@@ -335,7 +342,8 @@ const HomeScreen = () => {
             />
           </FadeInView>
 
-          <View className="justify-between mb-3 px-1">
+          {/* TODO: Add this section in future releases */}
+          {/* <View className="justify-between mb-3 px-1">
             <FadeInView type="fade" delay={150} duration={350}>
               <Text className="px-6 text-xl font-semibold text-secondary mb-5">Trip Insights</Text>
             </FadeInView>
@@ -433,7 +441,7 @@ const HomeScreen = () => {
                 </FadeInView>
               </View>
             </View>
-          </View>
+          </View> */}
 
           {/* <View className="pb-2">
             <Text className="text-xl font-bold text-gray-800 px-5 mb-[15px]">Your top activities</Text>
@@ -453,9 +461,8 @@ const HomeScreen = () => {
               )}
             </ScrollView>
           </View> */}
-
         </View>
-      </ScrollView>
+      </ScrollView >
 
       <ViewTravelModal
         travelId={selectedTravelForModal?.id || ""}
@@ -473,12 +480,14 @@ const HomeScreen = () => {
         }}
       />
 
-      {showOnboarding && (
-        <OnboardingModal
-          visible={showOnboarding}
-          onClose={() => setShowOnboarding(false)}
-        />
-      )}
+      {
+        showOnboarding && (
+          <OnboardingModal
+            visible={showOnboarding}
+            onClose={() => setShowOnboarding(false)}
+          />
+        )
+      }
 
       <Notifications
         visible={showNotificationsModal}
@@ -494,7 +503,7 @@ const HomeScreen = () => {
         visible={showProfileModal}
         onClose={() => setShowProfileModal(false)}
       />
-    </View>
+    </View >
   );
 };
 

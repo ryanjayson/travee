@@ -13,7 +13,7 @@ const getDestinationImage = (destination?: string, destinationData?: any) => {
     return "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=600&auto=format&fit=crop";
   }
   const dest = destination.toLowerCase().trim();
-  
+
   if (dest.includes("japan") || dest.includes("tokyo") || dest.includes("osaka") || dest.includes("kyoto") || dest.includes("fuji")) {
     return "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=600&auto=format&fit=crop";
   }
@@ -84,7 +84,7 @@ interface UpcomingTripsProps {
 
 const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }: UpcomingTripsProps) => {
   const cardWidth = upcomingTrips.length === 1 ? SCREEN_WIDTH - 40 : SCREEN_WIDTH * 0.8;
-  
+
   const textShadow = {
     textShadowColor: 'rgba(0, 0, 0, 1)',
     textShadowOffset: { width: 0, height: 1 },
@@ -102,7 +102,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
     startDate.setHours(0, 0, 0, 0);
     const diffTime = startDate.getTime() - today.getTime();
     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) {
       return 'Today';
     } else if (diffDays === 1) {
@@ -120,10 +120,10 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
     }
     const found = tripIcons.find((i) => i.tripType === type);
     const baseColor = found ? found.color : '#9E9E9E';
-    return baseColor + '50'; // 8.2% opacity tint for a very light background color
+    return baseColor + '40'; // 8.2% opacity tint for a very light background color
   };
 
-   const getTextColor = (type?: TripType) => {
+  const getTextColor = (type?: TripType) => {
     if (type == null || type === TripType.none) {
       return '#f9fafb';
     }
@@ -133,12 +133,12 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
   };
 
   return (
-    <View className="mb-6 px-1">
-      <View className="flex-row items-center justify-between px-6 mb-5">
-        <Text className="text-2xl font-semibold text-secondary">Upcoming Trips</Text>
+    <View className="mb-6 px-1 flex-1">
+      <View className="flex-row items-center justify-between px-6 mb-4">
+        <Text className="text-xl font-semibold text-secondary">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
-          <Text className="text-sm text-primary font-semibold">
-            {upcomingTrips.length} trip{upcomingTrips.length > 1 ? 's' : ''}
+          <Text className="text-md text-secondary/50 font-medium">
+            {upcomingTrips.length} Trip{upcomingTrips.length > 1 ? 's' : ''}
           </Text>
         )}
       </View>
@@ -146,70 +146,66 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
       {isLoading ? (
         <Text className="text-gray-500 text-sm px-5">Loading...</Text>
       ) : upcomingTrips.length > 0 ? (
-        <FlatList
-          data={upcomingTrips}
-          keyExtractor={item => String(item.id)}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={cardWidth + 16}
-          decelerationRate="fast"
-          contentContainerStyle={{ paddingHorizontal: 20, gap: 16 }}
-          renderItem={({ item, index }) => (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => onPressTrip?.(item)}
-                className="rounded-3xl shadow-sm elevation-3 overflow-hidden flex-1 bg-white"
-                style={{ borderColor: getBgColor(item.type), width: cardWidth, height: 135 }}
-                accessibilityRole="button"
-                accessibilityLabel={`View trip ${item.title}`}
-              >
-                <Image
-                  source={{ uri: getDestinationImage(item.destination, item.destinationData) }}
-                  style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: 0.8 }}
-                  resizeMode="cover"
-                />
-                <LinearGradient
-                  colors={["rgba(0, 0, 0, 0.85)", "rgba(0, 0, 0, 0.15)"]}
-                  start={{ x: 0.1, y: 0 }}
-                  end={{ x: 0.9, y: 1 }}
-                  style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-                />
-                <View className="p-5 flex-1 justify-between">
-                  {/* Title + destination */}
-                  <View className="pr-8">
-                    <Text className="text-2xl font-bold mb-1 text-white shadow-sm" style={textShadow} numberOfLines={1}>
-                      {item.title}
+        <View className="px-4 gap-4 flex-1">
+          {upcomingTrips.map((item) => (
+            <TouchableOpacity
+              key={String(item.id)}
+              activeOpacity={0.7}
+              onPress={() => onPressTrip?.(item)}
+              className="rounded-4xl overflow-hidden flex-1 bg-white"
+              style={{ backgroundColor: getBgColor(item.type), height: 155 }}
+              accessibilityRole="button"
+              accessibilityLabel={`View trip ${item.title}`}
+            >
+              {/* <Image
+                source={{ uri: getDestinationImage(item.destination, item.destinationData) }}
+                style={{ position: "absolute", right: 20, bottom: 20, borderRadius: 12 }}
+                resizeMode="cover"
+                width={140}
+                height={80}
+              /> */}
+              {/* <LinearGradient
+                colors={["rgba(0, 0, 0, 0.85)", "rgba(0, 0, 0, 0.15)"]}
+                start={{ x: 0.1, y: 0 }}
+                end={{ x: 0.9, y: 1 }}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+              /> */}
+              <View className="p-2xl flex-1 justify-between">
+                {/* Title + destination */}
+                <View className="pr-8">
+                  <Text className="text-2xl font-bold mb-1 text-secondary " numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                  <View className="flex-row items-center gap-1">
+                    <Ionicons name="location-outline" size={16} color="#344054" style={{ opacity: 0.6 }} />
+                    <Text className="text-lg text-secondary/60 " numberOfLines={1}>
+                      {(item.tripDestinations && item.tripDestinations.length > 0)
+                        ? item.tripDestinations.map((d: any) => d.destination).filter(Boolean).join(" | ")
+                        : (item.destination || 'Destination TBD')}
                     </Text>
-                    <View className="flex-row items-center gap-1">
-                      <Ionicons name="location-outline" size={16} color="#e5e7eb" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.5, shadowRadius: 1 }} />
-                      <Text className="text-lg text-gray-200 font-semibold" style={textShadow} numberOfLines={1}>
-                        {(item.tripDestinations && item.tripDestinations.length > 0)
-                          ? item.tripDestinations.map((d: any) => d.destination).filter(Boolean).join(" | ")
-                          : (item.destination || 'Destination TBD')} 
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Date + duration */}
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-1.5">
-                      <Ionicons name="calendar-outline" size={18} color="#e5e7eb" style={{ shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.5, shadowRadius: 1 }} />
-                      <Text className="text-[13px] font-semibold text-gray-200" style={textShadow}>
-                        {item.startOrDepartureDate ? formatDate(item.startOrDepartureDate) : 'Date TBD'}
-                      </Text>
-                    </View>
-                    {getDaysUntil(item.startOrDepartureDate) ? (
-                      <View className="bg-white/50 px-2.5 py-0.5 rounded-full items-center">
-                        <Text className="text-[12px] text-white" >
-                          {getDaysUntil(item.startOrDepartureDate)}
-                        </Text>
-                      </View>
-                    ) : null}
                   </View>
                 </View>
-              </TouchableOpacity>
-          )}
-        />
+
+                {/* Date + duration */}
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-1.5">
+                    <Ionicons name="calendar-outline" size={18} color="#344054" style={{ opacity: 0.6 }} />
+                    <Text className="text-[13px] font-semibold text-secondary/60" >
+                      {item.startOrDepartureDate ? formatDate(item.startOrDepartureDate) : 'Date TBD'}
+                    </Text>
+                  </View>
+                  {getDaysUntil(item.startOrDepartureDate) ? (
+                    <View className="bg-white/50 px-2.5 py-0.5 rounded-full items-center">
+                      <Text className="text-[12px] text-secondary" >
+                        {getDaysUntil(item.startOrDepartureDate)}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
       ) : (
         <TouchableOpacity
           onPress={onAddTripPress}
@@ -223,11 +219,11 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
           <View className='flex-row gap-1'>
 
             <Text className="text-base text-accent/80  text-center underline font-semibold">
-           Add trip
-          </Text>
-           <Text className="text-base text-tertiary/80 text-center ">
-            and start planning your next adventure!
-          </Text>
+              Add trip
+            </Text>
+            <Text className="text-base text-tertiary/80 text-center ">
+              and start planning your next adventure!
+            </Text>
           </View>
         </TouchableOpacity>
       )}
