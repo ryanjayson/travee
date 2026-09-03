@@ -133,7 +133,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
   };
 
   return (
-    <View className="mb-6 px-1 flex-1">
+    <View className="w-full mb-6 px-1 mt-lg">
       <View className="flex-row items-center justify-between px-6 mb-4">
         <Text className="text-xl font-semibold text-secondary">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
@@ -146,13 +146,13 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
       {isLoading ? (
         <Text className="text-gray-500 text-sm px-5">Loading...</Text>
       ) : upcomingTrips.length > 0 ? (
-        <View className="px-4 gap-4 flex-1">
+        <View className="w-full px-4 gap-4">
           {upcomingTrips.map((item) => (
             <TouchableOpacity
               key={String(item.id)}
               activeOpacity={0.7}
               onPress={() => onPressTrip?.(item)}
-              className="rounded-4xl overflow-hidden flex-1 bg-white"
+              className="w-full rounded-4xl overflow-hidden bg-white mb-3"
               style={{ backgroundColor: getBgColor(item.type), height: 155 }}
               accessibilityRole="button"
               accessibilityLabel={`View trip ${item.title}`}
@@ -170,7 +170,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
                 end={{ x: 0.9, y: 1 }}
                 style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
               /> */}
-              <View className="p-2xl flex-1 justify-between">
+              <View className="p-5 flex-1 justify-between">
                 {/* Title + destination */}
                 <View className="pr-8">
                   <Text className="text-2xl font-bold mb-1 text-secondary " numberOfLines={1}>

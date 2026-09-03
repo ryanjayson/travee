@@ -493,7 +493,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
               <View className="items-center">
                 <TouchableOpacity
                   // style={{ borderCurve: 'continuous' }}
-                  className='items-center justify-center w-7xl h-7xl rounded-full border bg-gray-modern-50 border-gray-100'
+                  className='items-center justify-center w-5xl h-5xl rounded-full border bg-gray-modern-50 border-gray-100'
                   onPress={() => setShowTravelViewModal(true)}
                 >
                   <Ionicons name="briefcase" size={24} color="#263F69" />
@@ -503,7 +503,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
 
               <View className="items-center">
                 <TouchableOpacity
-                  className='items-center justify-center w-7xl h-7xl rounded-full border  bg-gray-modern-50 border-gray-100'
+                  className='items-center justify-center w-5xl h-5xl rounded-full border  bg-gray-modern-50 border-gray-100'
                   onPress={() => {
                     openActivityModal(null, undefined, ongoingTrip?.id);
                   }}
@@ -554,7 +554,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
 
               <View className="items-center">
                 <TouchableOpacity
-                  className='items-center justify-center w-7xl h-7xl rounded-full border  bg-gray-modern-50 border-gray-100'
+                  className='items-center justify-center w-5xl h-5xl rounded-full border  bg-gray-modern-50 border-gray-100'
                   onPress={() => setShowItineraryTab(true)}
                 >
                   <Ionicons name="list" size={24} color="#263F69" />

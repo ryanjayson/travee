@@ -14,6 +14,8 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import StatusBadge from "../../../components/StatusBadge";
 import Tabs from "../../../components/Tabs/index";
 import { TravelStatus, TripType } from "../../../types/enums";
+import { Ionicons } from "@expo/vector-icons";
+import DestinationsBottomSheet from "../components/DestinationsBottomSheet";
 import ViewTravelModal from "../components/View/Modal";
 import { useTravels } from "../hooks/useTravel";
 import { Travel } from "../types/TravelDto";
@@ -27,6 +29,8 @@ const TravelCatalog = () => {
   const [selectedTravel, setSelectedTravel] = useState<Travel | null>(null);
   const [showTravelDetail, setShowTravelDetail] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedDestinationsTravel, setSelectedDestinationsTravel] = useState<Travel | null>(null);
+  const [showDestinationsSheet, setShowDestinationsSheet] = useState(false);
 
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
@@ -132,9 +136,19 @@ const TravelCatalog = () => {
     };
     const destinationCountry = getCountryName(travel.destinationData?.country);
 
-    const destinationLabel = (travel.tripDestinations && travel.tripDestinations.length > 0)
-      ? travel.tripDestinations.map((d: any) => d.destination).filter(Boolean).join(" | ")
-      : (travel.destinationData?.country === travel.destination
+    const validDestinations = (travel.tripDestinations && travel.tripDestinations.length > 0)
+      ? travel.tripDestinations.map((d: any) => d.destination).filter(Boolean)
+      : (travel.destination ? travel.destination.split(" | ").map((s: string) => s.trim()).filter(Boolean) : []);
+
+    const destinationLabel = validDestinations.length > 1
+      ? validDestinations.length + " destinations"
+      : validDestinations.length === 1
+        ? (travel.destinationData?.country === validDestinations[0]
+          ? validDestinations[0]
+          : travel.destinationData?.country
+            ? `${validDestinations[0]}, ${travel.destinationData?.country}`
+            : validDestinations[0])
+        : (travel.destinationData?.country === travel.destination
           ? travel.destination
           : travel.destination ? `${travel.destination}, ${travel.destinationData?.country}` : "");
 
@@ -204,10 +218,11 @@ const TravelCatalog = () => {
       <StaggerItem
         key={travel.id}
         index={index}
-        className="bg-white rounded-xl mb-2 shadow-sm mx-4 overflow-hidden "
+        className="rounded-4xl mb-4 shadow-sm mx-4 overflow-hidden "
+        style={{ backgroundColor: assignedColor + '30' }}
       >
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
-          <View className="px-4 border border-[#E0E0E0] rounded-xl relative overflow-hidden">
+          <View className="px-4 rounded-4xl relative overflow-hidden">
 
             <View className="flex-row justify-between items-start ">
               <View className="flex-row items-center gap-4 flex-1 mr-2">
@@ -228,7 +243,7 @@ const TravelCatalog = () => {
                       height={120}
                       strokeColor="#0EA5E9"
                       strokeWidth={0.2}
-                      fillColor={assignedColor + '50'}
+                      fillColor={assignedColor + '90'}
                       hideShadows={true}
                     />
                   </View>
@@ -238,10 +253,25 @@ const TravelCatalog = () => {
                   style={{ paddingLeft: travel.destination ? 12 : 0 }}>
                   <Text className="text-xl leading-5 font-medium ">{travel.title}</Text>
                   <View className="flex-row items-center gap-2">
-                    <Text className="text-base  text-[#999]">{destinationLabel || "No destination"}</Text>
-                    {travel.type != null && travel.type !== TripType.none && (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`View destinations for ${travel.title}`}
+                      onPress={(e) => {
+                        e?.stopPropagation?.();
+                        setSelectedDestinationsTravel(travel);
+                        setShowDestinationsSheet(true);
+                      }}
+                      className="flex-row items-center gap-1 py-0.5"
+                    >
+                      <Text className="text-base text-[#999]">{destinationLabel || "No destination"}</Text>
+                      {validDestinations.length > 1 && (
+                        <Ionicons name="chevron-down" size={14} color="#999" />
+                      )}
+                    </TouchableOpacity>
+                    {/* {travel.type != null && travel.type !== TripType.none && (
                       <TripIcon type={travel.type} size={16} showIconOnly={true} />
-                    )}
+                    )} */}
                   </View>
                   <View
                     // style={{ backgroundColor: assignedColor + '10' }}
@@ -619,6 +649,15 @@ const TravelCatalog = () => {
         travelId={selectedTravel?.id || ""}
         showModal={showTravelViewModal}
         setShowModal={setShowTravelViewModal}
+      />
+
+      <DestinationsBottomSheet
+        visible={showDestinationsSheet}
+        travel={selectedDestinationsTravel}
+        onClose={() => {
+          setShowDestinationsSheet(false);
+          setSelectedDestinationsTravel(null);
+        }}
       />
     </View>
   );

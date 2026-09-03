@@ -271,11 +271,18 @@ const HomeScreen = () => {
     return travels
       .filter(t => {
         if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past, TravelStatus.Ongoing].includes(t.status as TravelStatus)) return false;
-        if (!t.startOrDepartureDate) return false;
-        const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);
-        return s > today;
+        if (t.status === TravelStatus.Upcoming) return true;
+        if (t.startOrDepartureDate) {
+          const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);
+          return s >= today;
+        }
+        return true;
       })
-      .sort((a, b) => new Date(a.startOrDepartureDate!).getTime() - new Date(b.startOrDepartureDate!).getTime());
+      .sort((a, b) => {
+        if (!a.startOrDepartureDate) return 1;
+        if (!b.startOrDepartureDate) return -1;
+        return new Date(a.startOrDepartureDate).getTime() - new Date(b.startOrDepartureDate).getTime();
+      });
   };
 
   const tripStats = getTripStats();
@@ -302,7 +309,7 @@ const HomeScreen = () => {
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 120 }}
         className="flex-1"
         refreshControl={
           <RefreshControl
@@ -330,7 +337,7 @@ const HomeScreen = () => {
             marginTop: currentOngoingTrip ? 12 : 16,
           }}
         >
-          <FadeInView type="up" delay={100} duration={450}>
+          <FadeInView type="up" delay={100} duration={450} style={{ width: '100%' }}>
             <UpcomingTrips
               upcomingTrips={upcomingTrips}
               isLoading={isLoading}

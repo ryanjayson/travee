@@ -1,4 +1,4 @@
-import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
@@ -26,6 +26,7 @@ import { TravelPlan } from "../../../Travel/types/TravelDto";
 import SectionModal from "../Edit/Itinerary/Section/Modal";
 import MapViewer from "../MapViewer";
 import ShareTripModal from "../ShareOverlay/ShareTripModal";
+import DestinationsBottomSheet from "../DestinationsBottomSheet";
 import ChecklistTab from "./Tabs/ChecklistTab";
 import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
@@ -111,6 +112,7 @@ const ViewTravel = ({
     setActiveTripViewTab: setActiveTabId,
   } = useTravelContext();
   const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
+  const [showDestinationsSheet, setShowDestinationsSheet] = useState<boolean>(false);
 
   // --- Draggable Bottom Sheet Snap Values ---
   const insets = useSafeAreaInsets();
@@ -687,16 +689,33 @@ const ViewTravel = ({
               </Text>
             </View>
             <View className="flex-row items-center mt-2 flex-wrap">
-              {((travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0) || travelPlan.travel.destination) && (
-                <>
-                  <Icon name="location-pin" size={18} color="#999" />
-                  <Text className="text-md font-medium text-tertiary ml-0.5 mr-3" numberOfLines={1}>
-                    {(travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0)
-                      ? travelPlan.travel.tripDestinations.map((d: any) => d.destination).filter(Boolean).join(" | ")
-                      : travelPlan.travel.destination}
-                  </Text>
-                </>
-              )}
+              {((travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0) || travelPlan.travel.destination) && (() => {
+                const validDestinations = (travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0)
+                  ? travelPlan.travel.tripDestinations.map((d: any) => d.destination).filter(Boolean)
+                  : (travelPlan.travel.destination ? travelPlan.travel.destination.split(" | ").map((s: string) => s.trim()).filter(Boolean) : []);
+                const isMultiple = validDestinations.length > 1;
+                const destinationText = isMultiple
+                  ? `${validDestinations.length} destinations`
+                  : (validDestinations[0] || travelPlan.travel.destination);
+
+                return (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`View destinations (${destinationText})`}
+                    onPress={() => setShowDestinationsSheet(true)}
+                    className="flex-row items-center mr-3 my-0.5"
+                  >
+                    <Icon name="location-pin" size={18} color="#999" />
+                    <Text className="text-md font-medium text-tertiary ml-0.5" numberOfLines={1}>
+                      {destinationText}
+                    </Text>
+                    {isMultiple && (
+                      <Ionicons name="chevron-down" size={14} color="#999" style={{ marginLeft: 3 }} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })()}
 
               {(travelPlan.travel.startOrDepartureDate || travelPlan.travel.endOrReturnDate) && (
                 <>
@@ -788,6 +807,12 @@ const ViewTravel = ({
             }`
             : undefined
         }
+      />
+
+      <DestinationsBottomSheet
+        visible={showDestinationsSheet}
+        travel={travelPlan.travel}
+        onClose={() => setShowDestinationsSheet(false)}
       />
     </Portal.Host>
   );
