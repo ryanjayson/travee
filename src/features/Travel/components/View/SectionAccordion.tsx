@@ -1117,7 +1117,7 @@ const SectionAccordion = ({
   }, [sections]);
 
 
-  const setSelectedViewSection = ({ id, travelId }: { id: string; travelId?: string }) => {
+  const setSelectedViewSection = ({ id, travelId, isDefaultSection }: { id: string; travelId?: string, isDefaultSection?: boolean }) => {
     setSelectedSectionId(id);
 
     // Expand the section if it is an accordion
@@ -1128,8 +1128,9 @@ const SectionAccordion = ({
 
     const scrollToTarget = () => {
       const y = sectionPositions.current[id];
+      const addN = isDefaultSection ? -3 : 8;
       if (y !== undefined && scrollViewRef.current) {
-        scrollViewRef.current.scrollTo({ y: Math.max(0, y + 8), animated: true });
+        scrollViewRef.current.scrollTo({ y: Math.max(0, y + addN), animated: true });
       }
     };
 
@@ -1146,31 +1147,50 @@ const SectionAccordion = ({
         style={{ flexGrow: 0, height: 48 }}
         contentContainerStyle={{ alignItems: "center", paddingRight: 20 }}
       >
-        {sections.map((section, index) => {
-          const isSelected = selectedSectionId === section.id;
-          return (
-            <TouchableOpacity
-              key={section.id || index}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`View section ${section.title}`}
-              onPress={() => {
-                if (section.id) {
-                  setSelectedViewSection({ id: section.id, travelId: section.travelId });
-                }
-              }}
-              className={`ml-4 py-1.5 px-3 flex-row gap-x-2 items-center  ${isSelected ? "border-b-2 border-accent" : "bg-transparent"
-                }`}
-            >
-              <Text
-                className={`text-md font-medium ${isSelected ? "text-secondary font-semibold" : "text-secondary/50"
-                  }`}
+        {sections
+          .filter((section) => {
+            if (section.isDefaultSection) {
+              return Boolean(section.itineraryActivity && section.itineraryActivity.length > 0);
+            }
+            return true;
+          })
+          .map((section, index) => {
+            const isSelected = selectedSectionId === section.id;
+            return (
+              <TouchableOpacity
+                key={section.id || index}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`View section ${section.title}`}
+                onPress={() => {
+                  if (section.id) {
+                    setSelectedViewSection({ id: section.id, travelId: section.travelId, isDefaultSection: section.isDefaultSection });
+                  }
+                }}
+                className="ml-4 py-1.5 px-3 flex-col items-center justify-center"
               >
-                {section.title}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+                {section.isDefaultSection ? (
+                  <Ionicons
+                    name="list"
+                    size={20}
+                    color={isSelected ? "#263F69" : "rgba(38, 63, 105, 0.3)"}
+                  />
+                ) : (
+                  <Text
+                    className={`text-base font-bold ${isSelected ? "text-accent font-bold" : "text-secondary/30"
+                      }`}
+                  >
+                    {section.title}
+                  </Text>
+                )}
+                {isSelected ? (
+                  <View className="w-6 h-0.5 bg-primary rounded-full mt-1" />
+                ) : (
+                  <View className="w-6 h-0.5 bg-transparent mt-1" />
+                )}
+              </TouchableOpacity>
+            );
+          })}
       </ScrollView>
 
       <ScrollView
@@ -1258,6 +1278,9 @@ const SectionAccordion = ({
             {sections.map((section, index) => {
               const isDefaultSection = section.isDefaultSection;
               if (isDefaultSection) {
+                if (!section.itineraryActivity || section.itineraryActivity.length === 0) {
+                  return null;
+                }
                 return (
                   <View
                     key={section.id}
