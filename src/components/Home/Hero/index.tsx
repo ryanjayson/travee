@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { useTravelContext } from "../../../context/TravelContext";
 
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import ViewTravelModal from "../../../features/Travel/components/View/Modal";
 import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
 import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
@@ -63,6 +64,7 @@ interface HeroProps {
 }
 
 const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onOpenNotifications, onOpenProfile }: HeroProps) => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const { openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
   const { data: profile } = useUserProfile();
@@ -195,23 +197,17 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
   };
 
   return (
-    <View className=''>
-      <View className="w-full h-[350px] relative"
-        style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
+    <View className="w-full">
+      <View
+        className="w-full px-5"
+        style={{
+          paddingTop: Math.max(insets.top + 8, 48),
+          borderBottomLeftRadius: ongoingTrip ? 30 : 0,
+          borderBottomRightRadius: ongoingTrip ? 30 : 0,
+        }}
       >
-        {/* <Image
-          source={require('../../../assets/images/home_hero.png')}
-          className="w-full h-full "
-          resizeMode="cover"
-          style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0, backgroundColor: "#F2F4F7" }}
-        /> */}
-        <View
-          // className="absolute inset-0 bg-[#0EA5E9]"
-          style={{ borderBottomLeftRadius: ongoingTrip ? 30 : 0, borderBottomRightRadius: ongoingTrip ? 30 : 0 }}
-        />
-
         {/* Appbar: Good morning message + Profile icon */}
-        <View className="absolute top-[52px] left-5 right-5 flex-row justify-between items-center" style={{ zIndex: 10 }}>
+        <View className="flex-row justify-between items-center z-10 mb-4">
           <View className="flex-row items-center gap-2">
             <TouchableOpacity
               className="w-12 h-12 rounded-full bg-white items-center justify-center overflow-hidden shadow-lg elevation-5"
@@ -232,11 +228,11 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
               )}
             </TouchableOpacity>
 
-            <View className='flex-col'>
+            <View className="flex-col">
               <Text className="text-secondary/70 text-lg font-semibold">
                 {getGreeting()}, {profile?.nickname || "traveller"} 👋
               </Text>
-              <Text className="text-secondary/50 text-sm ">
+              <Text className="text-secondary/50 text-sm">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </Text>
             </View>
@@ -249,7 +245,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
           >
             <Ionicons name="notifications" size={28} color="#263F69" />
             {unreadNotifications > 0 && (
-              <View className="absolute -top-2 -right-1 bg-[#D92D20] min-w-2xl h-2xl rounded-full items-center justify-center px-1 ">
+              <View className="absolute -top-2 -right-1 bg-[#D92D20] min-w-2xl h-2xl rounded-full items-center justify-center px-1">
                 <Text className="text-white text-[10px] font-bold">
                   {unreadNotifications > 99 ? "99+" : unreadNotifications}
                 </Text>
@@ -258,7 +254,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
           </TouchableOpacity>
         </View>
 
-        <View className="absolute left-5 right-5" style={{ top: 120 }}>
+        <View className="w-full">
           {ongoingTrip ? (
             <FadeInView type="down" delay={100} duration={450}>
               <View className="py-2 mt-2 px-1">
@@ -271,7 +267,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                 </View>
                 <Text
                   className="text-accent font-semibold mb-3 tracking-normal"
-                  style={{ fontSize: titleIsLong ? 40 : 46, lineHeight: titleIsLong ? 42 : 48 }}
+                  style={{ fontSize: titleIsLong ? 42 : 46, lineHeight: titleIsLong ? 42 : 48 }}
                   numberOfLines={3}
                   onTextLayout={(e) => {
                     if (e.nativeEvent.lines.length > 1 && !adjustedRef.current) {
@@ -488,7 +484,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
       </View>
 
       {ongoingTrip && (
-        <View className="m-xl py-lg flex-1 bg-white rounded-4xl border border-gray-200">
+        <View className="mx-5 my-3 py-4 bg-white rounded-4xl border border-gray-200">
 
           <Text className="text-xs uppercase font-semibold px-2xl text-secondary ">Quick Actions</Text>
           <FadeInView type="up" delay={100} duration={450}>

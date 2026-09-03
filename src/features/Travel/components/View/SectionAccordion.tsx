@@ -133,6 +133,8 @@ interface DraggableSectionItemProps {
   viewMode?: "plain" | "narrow" | "expanded";
   allowItemReordering?: boolean;
   onPressMore: (section: ItinerarySection) => void;
+  isExpanded?: boolean;
+  onToggleExpand?: (isExpanded: boolean) => void;
 }
 
 const DraggableSectionItem = ({
@@ -153,6 +155,8 @@ const DraggableSectionItem = ({
   viewMode,
   allowItemReordering = true,
   onPressMore,
+  isExpanded,
+  onToggleExpand,
 }: DraggableSectionItemProps) => {
   const shiftAnim = useRef(new Animated.Value(0)).current;
   const lastTargetShift = useRef(0);
@@ -261,6 +265,8 @@ const DraggableSectionItem = ({
 
             <Accordion
               viewMode={viewMode}
+              expanded={isExpanded}
+              onToggle={onToggleExpand}
               onPressMore={() => onPressMore(section)}
               title={({ expanded }) => (
                 <View className="flex-row align-middle items-center">
@@ -622,6 +628,12 @@ const SectionAccordion = ({
     dragIndex: number | null;
   }>({ isDragging: false, dragIndex: null });
   const [masterHoverState, setMasterHoverState] = useState<{ index: number } | null>(null);
+
+  // --- Selection & Expansion State ---
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [expandedSectionIds, setExpandedSectionIds] = useState<Record<string, boolean>>({});
+  const sectionPositions = useRef<Record<string, number>>({});
+  const horizontalScrollViewRef = useRef<ScrollView>(null);
 
   // --- Refs ---
   const scrollViewRef = useRef<ScrollView>(null);
@@ -1105,8 +1117,62 @@ const SectionAccordion = ({
   }, [sections]);
 
 
+  const setSelectedViewSection = ({ id, travelId }: { id: string; travelId?: string }) => {
+    setSelectedSectionId(id);
+
+    // Expand the section if it is an accordion
+    setExpandedSectionIds((prev) => ({
+      ...prev,
+      [id]: true,
+    }));
+
+    const scrollToTarget = () => {
+      const y = sectionPositions.current[id];
+      if (y !== undefined && scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({ y: Math.max(0, y + 8), animated: true });
+      }
+    };
+
+    scrollToTarget();
+    setTimeout(scrollToTarget, 80);
+  };
+
   return (
     <View className="flex-1 bg-gray-100">
+      <ScrollView
+        ref={horizontalScrollViewRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0, height: 48 }}
+        contentContainerStyle={{ alignItems: "center", paddingRight: 20 }}
+      >
+        {sections.map((section, index) => {
+          const isSelected = selectedSectionId === section.id;
+          return (
+            <TouchableOpacity
+              key={section.id || index}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`View section ${section.title}`}
+              onPress={() => {
+                if (section.id) {
+                  setSelectedViewSection({ id: section.id, travelId: section.travelId });
+                }
+              }}
+              className={`ml-4 py-1.5 px-3 flex-row gap-x-2 items-center  ${isSelected ? "border-b-2 border-accent" : "bg-transparent"
+                }`}
+            >
+              <Text
+                className={`text-md font-medium ${isSelected ? "text-secondary font-semibold" : "text-secondary/50"
+                  }`}
+              >
+                {section.title}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
       <ScrollView
         ref={scrollViewRef}
         onScroll={(e) => {
@@ -1182,7 +1248,10 @@ const SectionAccordion = ({
         ) : (
           <View className={`flex-1 p-3 ${!hasAtleastOneActivityDate && sections.filter((section) => !section.isDefaultSection).length === 0 ? "-ml-4xl" : ""}`}>
             {viewMode !== 'plain' && (
-              <View className={`flex-1 z-10 p-2 absolute rounded-full ${viewMode === "narrow" ? " ml-[58px]" : " ml-7xl"}`}>
+              <View
+                style={{ marginLeft: viewMode === "narrow" ? 58 : 64 }}
+                className="flex-1 z-10 p-2 absolute rounded-full"
+              >
                 <Icon name="circle" size={18} color="#F97066" />
               </View>
             )}
@@ -1193,6 +1262,9 @@ const SectionAccordion = ({
                   <View
                     key={section.id}
                     collapsable={false}
+                    onLayout={(e) => {
+                      if (section.id) sectionPositions.current[section.id] = e.nativeEvent.layout.y;
+                    }}
                     ref={(ref) => {
                       if (ref && section.id) sectionRefs.current[section.id] = ref;
                     }}
@@ -1232,7 +1304,16 @@ const SectionAccordion = ({
                     type="right" delay={50} duration={250}
                     key={section.id}
                     className="mb-4">
-                    <View className="flex-row items-center p-2 bg-gray-200/50 rounded-sm">
+                    <View
+                      collapsable={false}
+                      onLayout={(e) => {
+                        if (section.id) sectionPositions.current[section.id] = e.nativeEvent.layout.y;
+                      }}
+                      ref={(ref) => {
+                        if (ref && section.id) sectionRefs.current[section.id] = ref;
+                      }}
+                      className="flex-row items-center p-2 bg-gray-200/50 rounded-sm"
+                    >
                       <Text className="text-base font-bold text-secondary">
                         {section.title}
                       </Text>
@@ -1273,6 +1354,9 @@ const SectionAccordion = ({
                 const subSectionsLength = subSections.length;
                 return (
                   <View key={section.id}
+                    onLayout={(e) => {
+                      if (section.id) sectionPositions.current[section.id] = e.nativeEvent.layout.y;
+                    }}
                     style={{ marginTop: index === 1 ? 14 : 0 }}>
                     <View className={`absolute top-9px h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
                       <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
@@ -1300,6 +1384,18 @@ const SectionAccordion = ({
                         viewMode={viewMode}
                         allowItemReordering={allowItemReordering}
                         onPressMore={handleEditSection}
+                        isExpanded={section.id ? (expandedSectionIds[section.id] ?? false) : false}
+                        onToggleExpand={(isExp) => {
+                          if (section.id) {
+                            setExpandedSectionIds((prev) => ({
+                              ...prev,
+                              [section.id!]: isExp,
+                            }));
+                            if (isExp) {
+                              setSelectedSectionId(section.id);
+                            }
+                          }
+                        }}
                       />
                       {/* //TODO: Hide this feat for now */}
                       {false && index === sections.length - 1 && (
@@ -1335,7 +1431,13 @@ const SectionAccordion = ({
             })}
 
             {viewMode !== 'plain' && (
-              <View className={`flex-1 z-10 px-2  w-4xl h-4xl rounded-full ${viewMode === "narrow" ? " ml-[46px]" : " ml-[50px] mt-[28px]"}`}>
+              <View
+                style={{
+                  marginLeft: viewMode === "narrow" ? 46 : 50,
+                  marginTop: viewMode === "narrow" ? 0 : 28,
+                }}
+                className="flex-1 z-10 px-2 w-4xl h-4xl rounded-full"
+              >
                 <View className={`${viewMode === 'narrow' ? 'hidden' : 'left-9px'}`}>
                   <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full `} />
                   <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full `} />

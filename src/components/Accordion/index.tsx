@@ -23,6 +23,8 @@ import Svg, { Line } from "react-native-svg";
 
 interface AccordionProps extends PropsWithChildren {
   title: React.ReactNode | string | ((props: { expanded: boolean }) => React.ReactNode);
+  expanded?: boolean;
+  onToggle?: (expanded: boolean) => void;
   defaultExpanded?: boolean;
   defaultFullscreen?: boolean;
   containerStyle?: ViewStyle;
@@ -39,6 +41,8 @@ interface AccordionProps extends PropsWithChildren {
 const Accordion: FC<AccordionProps> = ({
   title,
   children,
+  expanded: propExpanded,
+  onToggle,
   defaultExpanded = false,
   defaultFullscreen = false,
   containerStyle,
@@ -51,16 +55,22 @@ const Accordion: FC<AccordionProps> = ({
   onPressMore,
   viewMode,
 }) => {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
+  const isControlled = propExpanded !== undefined;
+  const expanded = isControlled ? propExpanded : internalExpanded;
   const [fullscreen, setFullscreen] = useState(defaultFullscreen);
   const animationController = useRef(
-    new Animated.Value(defaultExpanded ? 1 : 0)
+    new Animated.Value(expanded ? 1 : 0)
   ).current;
   const insets = useSafeAreaInsets();
 
   const toggleAccordion = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpanded(!expanded);
+    const nextState = !expanded;
+    if (!isControlled) {
+      setInternalExpanded(nextState);
+    }
+    onToggle?.(nextState);
   };
 
   const toggleFullscreenAccordion = () => {

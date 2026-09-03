@@ -5,6 +5,7 @@ import {
   RefreshControl,
   ScrollView,
   StatusBar,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -290,11 +291,19 @@ const HomeScreen = () => {
   };
 
   return (
-    <View className="flex-1 bg-red-100">
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      <ScrollView showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        className="bg-gray-100"
+    <View className="flex-1 bg-[#F2F4F7]">
+      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+      <LinearGradient
+        colors={["#dbeaff", "#F2F4F7", "#F2F4F7", "#F2F4F7", "#F2F4F7", "#F2F4F7", "#F2F4F7"]}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
+        className="flex-1"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -302,14 +311,8 @@ const HomeScreen = () => {
             colors={["#0EA5E9"]}
             tintColor="#0EA5E9"
           />
-        }>
-        <LinearGradient
-          colors={["#dbeaff", "#F2F4F7", "#F2F4F7", "#F2F4F7", "#F2F4F7"]}
-          start={{ x: 0.1, y: 0 }}
-          end={{ x: 0.1, y: 1 }}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}
-        />
-
+        }
+      >
         <Hero
           ongoingTrip={currentOngoingTrip}
           onOpenCreateTripModal={(tripData) => {
@@ -322,12 +325,9 @@ const HomeScreen = () => {
         />
 
         <View
-          // className="z-20 "
+          className="z-20 w-full"
           style={{
-            marginTop: currentOngoingTrip ? 20 : 0,
-            // borderTopLeftRadius: currentOngoingTrip ? 0 : 30,
-            // borderTopRightRadius: currentOngoingTrip ? 0 : 30,
-            // paddingTop: currentOngoingTrip ? 0 : 30,
+            marginTop: currentOngoingTrip ? 12 : 16,
           }}
         >
           <FadeInView type="up" delay={100} duration={450}>
