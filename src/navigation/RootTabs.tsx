@@ -35,7 +35,13 @@ export type RootTabsParamList = {
   Home: undefined;
   Trips: undefined;
   Maps: undefined;
-  AddFab: undefined;
+  AddFab: {
+    key?: string;
+    color?: string;
+    icon?: string;
+    name?: string;
+    label?: string;
+  };
   // Profile: undefined;
   // Settings: undefined;
 };
@@ -46,6 +52,8 @@ function iconForRoute(routeName: keyof RootTabsParamList, focused: boolean) {
   switch (routeName) {
     case "Home":
       return focused ? "home" : "home-outline";
+    case "AddFab":
+      return focused ? "add-outline" : "add-outline";
     case "Trips":
       return focused ? "briefcase" : "briefcase-outline";
     case "Maps":
@@ -113,23 +121,37 @@ function RootTabsComponent() {
             },
             tabBarIcon: ({ color, focused }) => {
               const iconName = iconForRoute(route.name, focused);
+              const isAddTab = route.name === "AddFab";
+
               return (
-                <View className="flex-1 justify-center items-center -top-1">
+                <View className="flex-1 justify-center items-center -top-1 "
+                >
                   <Ionicons
-                    name={iconName}
-                    size={28}
+                    name={iconName as any}
+                    size={isAddTab ? 32 : 28}
                     color={focused ? "#0EA5E9" : color}
+                    style={{
+                      backgroundColor: isAddTab ? '#0EA5E9' : 'transparent',
+                      width: isAddTab ? 60 : 28,
+                      height: isAddTab ? 60 : 28,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderRadius: isAddTab ? 30 : 15,
+                      padding: isAddTab ? 14 : 0,
+                      color: isAddTab ? '#fff' : '#0EA5E9',
+                    }}
                   />
-                  <Text className={`text-xs font-bold  ${focused ? 'text-primary' : 'text-gray-400'}`}>{route.name}</Text>
+                  {!isAddTab && <Text className={`text-xs font-bold  ${focused ? 'text-primary' : 'text-gray-400'}`}>{route.name}</Text>}
                 </View>
               );
             },
 
             tabBarStyle: {
               position: 'absolute',
-              marginLeft: WIDTH - 230 - 120,
+              marginLeft: "50%",
+              transform: [{ translateX: -125 }],
               bottom: insets.bottom + 20,
-              width: 230,
+              width: 250,
               height: 70,
               borderRadius: 35,
               backgroundColor: '#fff',
@@ -147,24 +169,35 @@ function RootTabsComponent() {
         >
           <Tab.Screen name="Home" component={HomeTabScreen} options={{ headerShown: false }} />
           <Tab.Screen
-            name="Trips"
-            component={TravelCatalog}
-            options={{
-              headerRight: () => (
-                <TouchableOpacity
-                  onPress={() => setVisibleCreateTravelModal(true)}
-                  style={{ marginRight: 16 }}
-                >
-                  <Ionicons name="add" size={32} color="#0EA5E9" />
-                </TouchableOpacity>
-              ),
+            name="AddFab"
+            component={HomeTabScreen}
+            options={{ headerShown: false }}
+            listeners={{
+              tabPress: (e) => {
+                (e as any).preventDefault?.();
+                setVisibleCreateTravelModal(true);
+              },
             }}
           />
-          <Tab.Screen name="Maps" component={ExploreScreen} options={{ headerShown: false }} />
+          <Tab.Screen
+            name="Trips"
+            component={TravelCatalog}
+          // options={{
+          //   headerRight: () => (
+          //     <TouchableOpacity
+          //       onPress={() => setVisibleCreateTravelModal(true)}
+          //       style={{ marginRight: 16 }}
+          //     >
+          //       <Ionicons name="add" size={32} color="#0EA5E9" />
+          //     </TouchableOpacity>
+          //   ),
+          // }}
+          />
+          {/* <Tab.Screen name="Maps" component={ExploreScreen} options={{ headerShown: false }} /> */}
         </Tab.Navigator>
 
         {/* Floating Add Button on the right side */}
-        <AnimatedPressable
+        {/* <AnimatedPressable
           onPress={() => setVisibleCreateTravelModal(true)}
           accessibilityLabel="Add a trip"
           className="bg-[#0EA5E9]"
@@ -188,7 +221,7 @@ function RootTabsComponent() {
           activeOpacity={0.85}
         >
           <Ionicons name="add" size={40} color="#ffffff" />
-        </AnimatedPressable>
+        </AnimatedPressable> */}
 
         <CreateTravelModal
           showModal={visibleCreateTravelModal}
