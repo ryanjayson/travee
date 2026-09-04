@@ -61,6 +61,7 @@ export interface TripSetting {
   timezone: string;
   itineraryView: "plain" | "compact" | "detailed";
   allowItemReordering: boolean;
+  showSectionTabNavigation?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
 }

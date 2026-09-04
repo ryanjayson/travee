@@ -1,7 +1,18 @@
-import { schemaMigrations, createTable } from "@nozbe/watermelondb/Schema/migrations";
+import { schemaMigrations, createTable, addColumns } from "@nozbe/watermelondb/Schema/migrations";
 
 export default schemaMigrations({
   migrations: [
+    {
+      toVersion: 3,
+      steps: [
+        addColumns({
+          table: "trip_settings",
+          columns: [
+            { name: "show_section_tab_navigation", type: "boolean", isOptional: true },
+          ],
+        }),
+      ],
+    },
     {
       toVersion: 2,
       steps: [

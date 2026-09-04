@@ -21,6 +21,7 @@ export const fetchLocalTripSetting = async (travelId: string): Promise<TripSetti
     timezone: s.timezone,
     itineraryView: s.itineraryView as "plain" | "compact" | "detailed",
     allowItemReordering: s.allowItemReordering,
+    showSectionTabNavigation: s.showSectionTabNavigation ?? false,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
   };
@@ -54,6 +55,7 @@ export const saveTripSettingLocally = async (settingData: TripSetting): Promise<
         record.timezone = settingData.timezone;
         record.itineraryView = settingData.itineraryView;
         record.allowItemReordering = settingData.allowItemReordering;
+        record.showSectionTabNavigation = settingData.showSectionTabNavigation ?? false;
         // @ts-ignore
         record.travel.id = settingData.travelId;
       });
@@ -63,6 +65,7 @@ export const saveTripSettingLocally = async (settingData: TripSetting): Promise<
         record.timezone = settingData.timezone;
         record.itineraryView = settingData.itineraryView;
         record.allowItemReordering = settingData.allowItemReordering;
+        record.showSectionTabNavigation = settingData.showSectionTabNavigation ?? false;
         // @ts-ignore
         record.travel.id = settingData.travelId;
       });

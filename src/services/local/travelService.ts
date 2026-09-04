@@ -19,6 +19,7 @@ import MotorcycleRideDetails from "../../db/models/MotorcycleRideDetails";
 import MeetupDetails from "../../db/models/MeetupDetails";
 import RideRentalDetails from "../../db/models/RideRentalDetails";
 import TripDestination from "../../db/models/TripDestination";
+import TripSetting from "../../db/models/TripSetting";
 import { ActivityType, TravelStatus } from "../../types/enums";
 import { safeJsonParse } from "../../utils/safeJsonParse";
 
@@ -521,6 +522,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         timezone: s.timezone,
         itineraryView: s.itineraryView,
         allowItemReordering: s.allowItemReordering,
+        showSectionTabNavigation: s.showSectionTabNavigation ?? false,
         createdAt: s.createdAt,
         updatedAt: s.updatedAt,
       };
@@ -1092,6 +1094,16 @@ export const saveTravelLocally = async (travelData: any, id?: string) => {
           });
         }
       }
+
+      // Initialize trip settings with showSectionTabNavigation default
+      await database.get<TripSetting>("trip_settings").create((setting) => {
+        setting.travel.id = newTravel.id;
+        setting.currency = "USD";
+        setting.timezone = "UTC";
+        setting.itineraryView = "narrow";
+        setting.allowItemReordering = false;
+        setting.showSectionTabNavigation = Boolean(travelData.createSectionsBasedOnDates);
+      });
     }
 
     return resultTravel;

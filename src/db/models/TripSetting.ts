@@ -13,6 +13,7 @@ export default class TripSetting extends Model {
   @text("timezone") timezone!: string;
   @text("itinerary_view") itineraryView!: string;
   @field("allow_item_reordering") allowItemReordering!: boolean;
+  @field("show_section_tab_navigation") showSectionTabNavigation!: boolean;
 
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;

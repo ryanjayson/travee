@@ -506,6 +506,7 @@ const SectionAccordion = ({
 
   const [viewMode, setViewMode] = useState<"plain" | "narrow" | "expanded">("expanded");
   const [allowItemReordering, setAllowItemReordering] = useState(true);
+  const [showSectionTabNavigation, setShowSectionTabNavigation] = useState(false);
   const [editingSection, setEditingSection] = useState<ItinerarySection | null>(null);
 
   const handleEditSection = (section: ItinerarySection) => {
@@ -517,6 +518,7 @@ const SectionAccordion = ({
     if (currentSetting) {
       setViewMode(toViewMode(currentSetting.itineraryView));
       setAllowItemReordering(currentSetting.allowItemReordering);
+      setShowSectionTabNavigation(currentSetting.showSectionTabNavigation ?? false);
     }
   }, [currentSetting]);
 
@@ -552,6 +554,7 @@ const SectionAccordion = ({
       timezone: currentSetting?.timezone || "Asia/Manila",
       itineraryView,
       allowItemReordering,
+      showSectionTabNavigation,
     });
     // setTimeout(collapseSettings, 300);
   };
@@ -567,8 +570,24 @@ const SectionAccordion = ({
       timezone: currentSetting?.timezone || "Asia/Manila",
       itineraryView,
       allowItemReordering: value,
+      showSectionTabNavigation,
     });
     setTimeout(collapseSettings, 300);
+  };
+
+  const handleSectionTabNavToggle = (value: boolean) => {
+    setShowSectionTabNavigation(value);
+
+    const itineraryView = toItineraryView(viewMode);
+    updateSettingMutation.mutate({
+      id: currentSetting?.id,
+      travelId,
+      currency: currentSetting?.currency || "PHP",
+      timezone: currentSetting?.timezone || "Asia/Manila",
+      itineraryView,
+      allowItemReordering,
+      showSectionTabNavigation: value,
+    });
   };
 
   // --- Local mutable sections state ---
@@ -1140,58 +1159,60 @@ const SectionAccordion = ({
 
   return (
     <View className="flex-1 bg-gray-100">
-      <ScrollView
-        ref={horizontalScrollViewRef}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0, height: 48 }}
-        contentContainerStyle={{ alignItems: "center", paddingRight: 20 }}
-      >
-        {sections
-          .filter((section) => {
-            if (section.isDefaultSection) {
-              return Boolean(section.itineraryActivity && section.itineraryActivity.length > 0);
-            }
-            return true;
-          })
-          .map((section, index) => {
-            const isSelected = selectedSectionId === section.id;
-            return (
-              <TouchableOpacity
-                key={section.id || index}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel={`View section ${section.title}`}
-                onPress={() => {
-                  if (section.id) {
-                    setSelectedViewSection({ id: section.id, travelId: section.travelId, isDefaultSection: section.isDefaultSection });
-                  }
-                }}
-                className="ml-4 py-1.5 px-3 flex-col items-center justify-center"
-              >
-                {section.isDefaultSection ? (
-                  <Ionicons
-                    name="list"
-                    size={20}
-                    color={isSelected ? "#263F69" : "rgba(38, 63, 105, 0.3)"}
-                  />
-                ) : (
-                  <Text
-                    className={`text-base font-bold ${isSelected ? "text-accent font-bold" : "text-secondary/30"
-                      }`}
-                  >
-                    {section.title}
-                  </Text>
-                )}
-                {isSelected ? (
-                  <View className="w-6 h-0.5 bg-primary rounded-full mt-1" />
-                ) : (
-                  <View className="w-6 h-0.5 bg-transparent mt-1" />
-                )}
-              </TouchableOpacity>
-            );
-          })}
-      </ScrollView>
+      {showSectionTabNavigation && (
+        <ScrollView
+          ref={horizontalScrollViewRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0, height: 48 }}
+          contentContainerStyle={{ alignItems: "center", paddingRight: 20 }}
+        >
+          {sections
+            .filter((section) => {
+              if (section.isDefaultSection) {
+                return Boolean(section.itineraryActivity && section.itineraryActivity.length > 0);
+              }
+              return true;
+            })
+            .map((section, index) => {
+              const isSelected = selectedSectionId === section.id;
+              return (
+                <TouchableOpacity
+                  key={section.id || index}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`View section ${section.title}`}
+                  onPress={() => {
+                    if (section.id) {
+                      setSelectedViewSection({ id: section.id, travelId: section.travelId, isDefaultSection: section.isDefaultSection });
+                    }
+                  }}
+                  className="ml-4 py-1.5 px-3 flex-col items-center justify-center"
+                >
+                  {section.isDefaultSection ? (
+                    <Ionicons
+                      name="list"
+                      size={20}
+                      color={isSelected ? "#263F69" : "rgba(38, 63, 105, 0.3)"}
+                    />
+                  ) : (
+                    <Text
+                      className={`text-base font-bold ${isSelected ? "text-accent font-bold" : "text-secondary/30"
+                        }`}
+                    >
+                      {section.title}
+                    </Text>
+                  )}
+                  {isSelected ? (
+                    <View className="w-6 h-0.5 bg-primary rounded-full mt-1" />
+                  ) : (
+                    <View className="w-6 h-0.5 bg-transparent mt-1" />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+        </ScrollView>
+      )}
 
       <ScrollView
         ref={scrollViewRef}
@@ -1626,6 +1647,24 @@ const SectionAccordion = ({
                 onValueChange={handleReorderToggle}
                 trackColor={{ false: colors.outline, true: `${colors.primary}80` }}
                 thumbColor={allowItemReordering ? colors.primary : colors.outlineVariant}
+                ios_backgroundColor={colors.outline}
+              />
+            </View>
+
+            {/* Divider */}
+            <View className="h-1px mb-4" style={{ backgroundColor: colors.outlineVariant }} />
+
+            {/* Top Section Tab Navigation Row */}
+            <View className="flex-row items-center justify-between mb-6">
+              <View className="pr-8 flex-1">
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>Top section tab navigation</Text>
+                <Text className="text-base text-tertiary">Show horizontal section tabs at the top of the itinerary</Text>
+              </View>
+              <Switch
+                value={showSectionTabNavigation}
+                onValueChange={handleSectionTabNavToggle}
+                trackColor={{ false: colors.outline, true: `${colors.primary}80` }}
+                thumbColor={showSectionTabNavigation ? colors.primary : colors.outlineVariant}
                 ios_backgroundColor={colors.outline}
               />
             </View>
