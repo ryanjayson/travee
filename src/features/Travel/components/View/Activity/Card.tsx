@@ -483,7 +483,7 @@ const ActivityItemCard = ({
             >
               <ActivityIcon
                 type={itineraryEventActivity.type!}
-                size={viewMode === 'narrow' ? 16 : 20}
+                size={viewMode === 'narrow' ? 14 : 19}
                 isViewModeNarrow={viewMode === 'narrow'}
               />
             </TouchableOpacity>

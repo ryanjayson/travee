@@ -329,7 +329,7 @@ const CreateTripModal = ({
             {/* Status Rows */}
             <View style={{ gap: 16, marginBottom: 24 }}>
               {/* Upcoming */}
-              <View style={{ flexDirection: "row", gap: 12 }}>
+              <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
                 <View style={{ width: 80, height: 28, borderRadius: 6, backgroundColor: "#E0F2FE", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#7DD3FC" }}>
                   <Text style={{ fontSize: 12, fontWeight: "bold", color: "#0369A1" }}>Upcoming</Text>
                 </View>
@@ -339,7 +339,7 @@ const CreateTripModal = ({
               </View>
 
               {/* Ongoing */}
-              <View style={{ flexDirection: "row", gap: 12 }}>
+              <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
                 <View style={{ width: 80, height: 28, borderRadius: 6, backgroundColor: "#ECFDF5", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#A7F3D0" }}>
                   <Text style={{ fontSize: 12, fontWeight: "bold", color: "#047857" }}>On going</Text>
                 </View>
@@ -349,7 +349,7 @@ const CreateTripModal = ({
               </View>
 
               {/* Past */}
-              <View style={{ flexDirection: "row", gap: 12 }}>
+              <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
                 <View style={{ width: 80, height: 28, borderRadius: 6, backgroundColor: "#F3F4F6", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#E5E7EB" }}>
                   <Text style={{ fontSize: 12, fontWeight: "bold", color: "#4B5563" }}>Past</Text>
                 </View>

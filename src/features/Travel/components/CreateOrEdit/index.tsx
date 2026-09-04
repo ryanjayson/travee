@@ -412,7 +412,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                 onPress={handleOpenDestinationSelect}
                 disabled={isSaving}
                 activeOpacity={0.7}
-                className="flex-row items-center gap-1 py-1 px-3 rounded-lg bg-primary/10 border border-primary/30"
+                className="flex-row items-center gap-1 py-1 px-3 rounded-lg bg-primary/10 border border-primary/30 "
                 accessibilityRole="button"
                 accessibilityLabel="Add another destination"
               >
@@ -481,7 +481,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   }}
                   style={{
                     marginTop: 4,
-                    height: 56,
+                    height: 64,
                   }}
                   contentStyle={{
                     backgroundColor: "transparent",

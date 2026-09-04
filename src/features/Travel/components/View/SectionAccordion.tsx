@@ -161,7 +161,6 @@ const DraggableSectionItem = ({
   const shiftAnim = useRef(new Animated.Value(0)).current;
   const lastTargetShift = useRef(0);
   const { openActivityModal } = useTravelContext();
-  const { colors } = useTheme();
 
   useEffect(() => {
     if (!masterDragState.isDragging || masterDragState.dragIndex === null) {
@@ -278,11 +277,11 @@ const DraggableSectionItem = ({
                       <MaterialIcons name="drag-handle" size={24} color={isSectionActive ? "#183B7A" : "#999"} />
                     </View>
                   )}
-                  <View className="flex-row ">
+                  <View className="flex-row">
                     {expanded ? (
                       <View className={`${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`}>
-                        <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
-                        <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
+                        <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
+                        <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
                       </View>
                     ) : null}
 
@@ -295,12 +294,12 @@ const DraggableSectionItem = ({
                       ) : null}
                     </Text>
 
-                    {expanded ? (
+                    {/* {expanded ? (
                       <>
-                        <View className={`absolute -bottom-sm bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
-                        <View className={`absolute -bottom-xl bg-[#ccc] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
+                        <View className={`absolute -bottom-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
+                        <View className={`absolute -bottom-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
                       </>
-                    ) : null}
+                    ) : null} */}
                   </View>
                 </View>
               )}
@@ -340,14 +339,14 @@ const DraggableSectionItem = ({
                           y1="2.5"
                           x2="2.5"
                           y2="100%"
-                          stroke="#ccc"
+                          stroke="#e4e2e2"
                           strokeWidth="5"
                           strokeDasharray="0, 10"
                           strokeLinecap="round"
                         />
                       </Svg>
                     </View>
-                    <Text className="text-base text-tertiary px-2 ml-7xl pb-1">
+                    <Text className="text-base text-tertiary/80 px-2 ml-8xl pb-0">
                       {section.description}
                     </Text>
                   </View>
@@ -358,29 +357,33 @@ const DraggableSectionItem = ({
                   </>
                 ) : (
                   <>
-                    <View className=" flex-1 items-center justify-center my-8 ml-7xl">
-                      <Text className="text-lg text-tertiary/50 text-center">
-                        No activities yet.
-                      </Text>
-                      <View className="text-center tracking-wide flex-row align-center gap-1">
+                    <View className=" flex-1 items-center justify-center my-8 ml-7xl gap-1">
+                      <Icon name="add-circle-outline" size={28} color={"#D1D5DB"} />
 
-                        <Text className="text-md text-tertiary/50 text-base">
-                          {allowItemReordering ? "Drag and drop here or tap " : "Add now by tapping"}
+                      <Text className="text-lg font-semibold text-secondary text-center">
+                        No Activities Yet
+                      </Text>
+                      <View className="text-center tracking-wide flex-row align-center ">
+                        <Text className="text-md font-normal text-tertiary/60 text-center leading-[28px]">
+                          You haven't added any activities yet in this section.
+                          {allowItemReordering ? " Create, or drag & drop activity here " : " Create one now"}
                         </Text>
-                        <TouchableOpacity
-                          onPress={() => openActivityModal(null, section.id || undefined, section.travelId)}
-                          accessibilityRole="button"
-                          activeOpacity={0.7}
-                          className="flex-row items-center"
-                        >
-                          <Icon name="add" size={16} color={"#0EA5E9"} />
-                          <Text
-                            className="font-medium text-base underline text-primary"
-                          >
-                            Add activity
-                          </Text>
-                        </TouchableOpacity>
+
                       </View>
+
+                      <TouchableOpacity
+                        onPress={() => openActivityModal(null, section.id || undefined, section.travelId)}
+                        accessibilityRole="button"
+                        activeOpacity={0.7}
+                        className="flex-row items-center bg-primary/10 px-2.5 py-1.5 rounded-lg gap-2 mt-md"
+                      >
+                        <Icon name="add" size={16} color={"#0EA5E9"} />
+                        <Text
+                          className="font-medium text-base text-primary"
+                        >
+                          Add Activity
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   </>
                 )}
@@ -395,7 +398,7 @@ const DraggableSectionItem = ({
                         y1="2.5"
                         x2="2.5"
                         y2="100%"
-                        stroke="#ccc"
+                        stroke="#e4e2e2"
                         strokeWidth="5"
                         strokeDasharray="0, 10"
                         strokeLinecap="round"
@@ -1333,7 +1336,7 @@ const SectionAccordion = ({
                             y1="2.5"
                             x2="2.5"
                             y2="100%"
-                            stroke="#ccc"
+                            stroke="#e4e2e2"
                             strokeWidth="5"
                             strokeDasharray="0, 10"
                             strokeLinecap="round"
@@ -1402,10 +1405,10 @@ const SectionAccordion = ({
                     onLayout={(e) => {
                       if (section.id) sectionPositions.current[section.id] = e.nativeEvent.layout.y;
                     }}
-                    style={{ marginTop: index === 1 ? 14 : 0 }}>
+                    style={{ marginTop: index === 1 ? 6 : 0 }}>
                     <View className={`absolute top-9px h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
-                      <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
-                      <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
+                      <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
+                      <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
                     </View>
 
                     <FadeInView
@@ -1466,8 +1469,8 @@ const SectionAccordion = ({
 
                     <View style={{ marginBottom: viewMode === "narrow" && subSectionsLength > 0 && index === subSectionsLength ? 16 : 0 }}>
                       <View className={`absolute top-9px h-full w-md  py-lg z-1 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
-                        <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
-                        <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full`} />
+                        <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
+                        <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
                       </View>
                     </View>
                   </View>
@@ -1484,8 +1487,8 @@ const SectionAccordion = ({
                 className="flex-1 z-10 px-2 w-4xl h-4xl rounded-full"
               >
                 <View className={`${viewMode === 'narrow' ? 'hidden' : 'left-9px'}`}>
-                  <View className={`absolute -top-xl bg-[#ccc] w-[5px] h-[5px] rounded-full `} />
-                  <View className={`absolute -top-sm bg-[#ccc] w-[5px] h-[5px] rounded-full `} />
+                  <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full `} />
+                  <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full `} />
                 </View>
                 <Ionicons name="flag" size={20} color="#F97066" />
               </View>

@@ -80,15 +80,15 @@ const Accordion: FC<AccordionProps> = ({
 
   const arrowAngle = animationController.interpolate({
     inputRange: [0, 1],
-    outputRange: ["0deg", "180deg"], 
+    outputRange: ["0deg", "180deg"],
   });
 
   useEffect(() => {
     Animated.timing(animationController, {
       duration: 300,
       toValue: expanded ? 1 : 0,
-      easing: Easing.bezier(0.4, 0.0, 0.2, 1), 
-      useNativeDriver: true, 
+      easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+      useNativeDriver: true,
     }).start();
   }, [expanded, animationController]);
 
@@ -107,7 +107,7 @@ const Accordion: FC<AccordionProps> = ({
       className="bg-white my-1.5 rounded-[20px] border border-[#e0e0e0]"
     >
 
-       {onPressMore && (
+      {onPressMore && (
         <TouchableOpacity
           onPress={onPressMore}
           className="absolute right-[85px] top-5 z-10"
@@ -137,19 +137,19 @@ const Accordion: FC<AccordionProps> = ({
           headerStyle,
           hasShadowOrElevation
             ? {
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                borderBottomLeftRadius: expanded ? 0 : 20,
-                borderBottomRightRadius: expanded ? 0 : 20,
-              }
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              borderBottomLeftRadius: expanded ? 0 : 20,
+              borderBottomRightRadius: expanded ? 0 : 20,
+            }
             : {},
         ]}
-        className={`flex-row justify-between items-center z-2 my-18px px-3 bg-[#f9f9f9] pr-[74px] ${expanded ? "pb-1" : ""}`}
+        className={`flex-row justify-between items-center z-2 mt-18px px-3 pr-[74px] bg-[#f9f9f9]  ${expanded ? "mb-sm" : "mb-18px"}`}
         activeOpacity={disabled ? 1 : 0.8}
         accessibilityRole="button"
       >
         {typeof title === "string" ? (
-          <Text style={titleStyle} 
+          <Text style={titleStyle}
             className="text-lg font-semibold text-[#333] "
             numberOfLines={expanded ? 10 : 1}
           >{title}</Text>
@@ -166,7 +166,6 @@ const Accordion: FC<AccordionProps> = ({
         )}
       </TouchableOpacity>
 
-     
 
       {expanded && (
         <View
@@ -184,14 +183,14 @@ const Accordion: FC<AccordionProps> = ({
       {/* <View className={`absolute h-full w-2px z-1 border-l border-dashed border-[#ccc] left-4xl`}></View> */}
 
       <Modal
-        animationType="slide" 
+        animationType="slide"
         visible={fullscreen}
         transparent={false}
-        onRequestClose={() => setFullscreen(false)} 
+        onRequestClose={() => setFullscreen(false)}
       >
 
 
-        <View style={[headerStyle, {paddingTop: insets.top}]} className="flex-row justify-between items-center py-0 px-3 bg-[#f9f9f9]">
+        <View style={[headerStyle, { paddingTop: insets.top }]} className="flex-row justify-between items-center py-0 px-3 bg-[#f9f9f9]">
           {typeof title === "string" ? (
             <Text style={titleStyle} className="text-xl font-semibold text-[#333]">{title}</Text>
           ) : typeof title === "function" ? (

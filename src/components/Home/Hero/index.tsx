@@ -498,7 +498,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                 >
                   <Ionicons name="briefcase" size={20} color="#263F69" />
                 </TouchableOpacity>
-                <Text className="text-sm font-bold text-secondary mt-1">View Trip</Text>
+                <Text className="text-sm font-bold text-tertiary  mt-1">View Trip</Text>
               </View>
 
               <View className="items-center">
@@ -512,7 +512,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                 >
                   <Ionicons name="walk" size={22} color="#263F69" />
                 </TouchableOpacity>
-                <Text className="text-sm font-bold text-secondary mt-1">Add Activity</Text>
+                <Text className="text-sm font-bold text-tertiary mt-1">Add Activity</Text>
 
               </View>
 
@@ -560,7 +560,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                 >
                   <Ionicons name="list" size={20} color="#263F69" />
                 </TouchableOpacity>
-                <Text className="text-sm font-bold text-secondary mt-1">View Itinerary</Text>
+                <Text className="text-sm font-bold text-tertiary mt-1">View Itinerary</Text>
               </View>
 
               {/* <TouchableOpacity className='items-center opacity-50' disabled={true} >
