@@ -138,30 +138,31 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
       >
-        <View className="flex-1 items-center justify-center h-[300px] px-8">
-          <Icon name="playlist-add-check" size={46} color="#D1D5DB" />
-          <Text className="text-2xl text-tertiary/50 text-center">
-            No checklist yet.
-          </Text>
 
-          <View className="text-center tracking-wide flex-row align-center gap-1 ">
+        <View className="flex-1 py-8 gap-4 justify-center items-center">
+          <View className="items-center">
+            <Icon name="playlist-add-check" size={46} color={"#D1D5DB"} />
+            <Text className="text-xl font-medium text-secondary text-center mb-sm">
+              No Checklist Yet
+            </Text>
+            <Text className="text-lg font-normal text-tertiary/60 text-center px-4xl leading-[28px]">
+              Start by adding to-do items to your checklist.
+            </Text>
+          </View>
+          <View className="justify-center items-center gap-3 flex-row">
             <TouchableOpacity
               onPress={() => openChecklistModal(null, allActivities, travelId)}
               accessibilityRole="button"
               activeOpacity={0.7}
-              className="flex-row items-center"
+              className="flex-row items-center bg-primary/10 px-2.5 py-1.5 rounded-lg gap-2"
             >
-              {/* <Icon name="add" size={16} color={colors.primary} /> */}
+              <Icon name="add" size={16} color={"#0EA5E9"} />
               <Text
-                style={{ color: colors.primary }}
-                className="font-medium text-base underline"
+                className="font-medium text-base text-primary"
               >
-                Add to-do item
+                Add To-Do Item
               </Text>
             </TouchableOpacity>
-            <Text className="text-base text-tertiary">
-              now to your trip
-            </Text>
           </View>
         </View>
       </ScrollView>

@@ -228,7 +228,7 @@ const ContextLookupModal = ({
                 {...dragPanResponder.panHandlers}
                 className="w-full items-center py-4 bg-white rounded-t-[30px]"
               >
-                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+                <View className="w-10 h-1 bg-gray-300 rounded-full" />
               </View>
             )}
 
@@ -239,19 +239,19 @@ const ContextLookupModal = ({
               style={{ paddingTop: keyboardVisible ? 0 : 4 }}
             >
               <View className="flex-1 gap-1">
-                  <Text
-                    className="text-2xl font-semibold  text-primary"
-                  >
-                    To-do Category
-                  </Text>
-                  <Text
-                    className="text-base  text-tertiary"
-                  >
-                    Where does this to-do item belong?
-                  </Text>
-                </View>
+                <Text
+                  className="text-2xl font-semibold  text-primary"
+                >
+                  To-do Category
+                </Text>
+                <Text
+                  className="text-base  text-tertiary"
+                >
+                  Where does this to-do item belong?
+                </Text>
+              </View>
               <TouchableOpacity onPress={handleCancel}>
-                  <Icon name="clear" size={24} color={"#999"} />
+                <Icon name="clear" size={24} color={"#999"} />
               </TouchableOpacity>
             </View>
 

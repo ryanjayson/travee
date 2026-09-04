@@ -220,7 +220,7 @@ const ActivityLookupModal = ({
                 {...dragPanResponder.panHandlers}
                 className="w-full items-center py-4 bg-white rounded-t-[30px]"
               >
-                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+                <View className="w-10 h-1 bg-gray-300 rounded-full" />
               </View>
             )}
 
@@ -231,7 +231,7 @@ const ActivityLookupModal = ({
               style={{ paddingTop: keyboardVisible ? 0 : 4 }}
             >
               <View className="flex-row items-center gap-2">
-                <Text 
+                <Text
                   className="text-2xl font-bold"
                   style={{ color: colors.primary || "#263F69" }}
                 >

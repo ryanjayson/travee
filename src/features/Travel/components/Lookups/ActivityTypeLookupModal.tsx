@@ -247,7 +247,7 @@ const ActivityTypeLookupModal = ({
             {/* Header */}
             <View
               {...(!keyboardVisible && dragPanResponder.panHandlers)}
-              className="flex-row justify-between items-center px-6 pb-5 border-b border-gray-200"
+              className="flex-row justify-between items-center px-6 pb-5 border-b border-gray-100"
               style={{ paddingTop: keyboardVisible ? 0 : 4 }}
             >
               <View className="flex-col items-start gap-1">
@@ -268,7 +268,7 @@ const ActivityTypeLookupModal = ({
             </View>
 
             {/* Search Input */}
-            <View className="px-6 py-4 border-b border-gray-200">
+            {/* <View className="px-6 py-4 border-b border-gray-200">
               <View className="flex-row items-center bg-[#F5F6FA] rounded-2xl px-3 h-12">
                 <Icon name="search" size={22} color="#999" style={{ marginRight: 8 }} />
                 <TextInput
@@ -294,7 +294,7 @@ const ActivityTypeLookupModal = ({
                   </TouchableOpacity>
                 )}
               </View>
-            </View>
+            </View> */}
 
             {/* Scrollable list */}
             <View className="flex-1">

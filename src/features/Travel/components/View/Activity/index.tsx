@@ -597,7 +597,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
           >
             {/* Drag Handle */}
             <View className="w-full items-center pt-3 pb-2 bg-transparent rounded-t-[32px]">
-              {canSnap && <View className="w-12 h-1.5 bg-gray-300 rounded-full" />}
+              {canSnap && <View className="w-10 h-1 bg-gray-300 rounded-full" />}
             </View>
 
             {sectionName && (

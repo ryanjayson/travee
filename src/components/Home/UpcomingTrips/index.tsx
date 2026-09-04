@@ -4,6 +4,7 @@ import { Dimensions, FlatList, Text, View, TouchableOpacity, Image } from 'react
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Travel } from '../../../features/Travel/types/TravelDto';
+import DestinationsBottomSheet from '../../../features/Travel/components/DestinationsBottomSheet';
 import { tripIcons } from '../../TripIcon';
 import { TripType } from '../../../types/enums';
 import { getDestinationZoom } from '../../../utils/mapUtils';
@@ -83,6 +84,9 @@ interface UpcomingTripsProps {
 }
 
 const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }: UpcomingTripsProps) => {
+  const [selectedDestinationsTrip, setSelectedDestinationsTrip] = useState<Travel | null>(null);
+  const [showDestinationsSheet, setShowDestinationsSheet] = useState(false);
+
   const cardWidth = upcomingTrips.length === 1 ? SCREEN_WIDTH - 40 : SCREEN_WIDTH * 0.8;
 
   const textShadow = {
@@ -137,9 +141,12 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
       <View className="flex-row items-center justify-between px-6 mb-4">
         <Text className="text-xl font-semibold text-secondary">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
-          <Text className="text-md text-secondary/50 font-medium">
-            {upcomingTrips.length} Trip{upcomingTrips.length > 1 ? 's' : ''}
-          </Text>
+          <TouchableOpacity className="flex-row items-center gap-1 align-center ">
+            <Text className='text-secondary/70 font-medium'>
+              {upcomingTrips.length} Trip{upcomingTrips.length > 1 ? 's' : ''}
+              <Ionicons name="chevron-forward" size={14} color="#999" style={{ opacity: 0.5 }} />
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -147,64 +154,95 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
         <Text className="text-gray-500 text-sm px-5">Loading...</Text>
       ) : upcomingTrips.length > 0 ? (
         <View className="w-full px-4 gap-4">
-          {upcomingTrips.map((item) => (
-            <TouchableOpacity
-              key={String(item.id)}
-              activeOpacity={0.7}
-              onPress={() => onPressTrip?.(item)}
-              className="w-full rounded-4xl overflow-hidden bg-white mb-3"
-              style={{ backgroundColor: getBgColor(item.type), height: 155 }}
-              accessibilityRole="button"
-              accessibilityLabel={`View trip ${item.title}`}
-            >
-              {/* <Image
-                source={{ uri: getDestinationImage(item.destination, item.destinationData) }}
-                style={{ position: "absolute", right: 20, bottom: 20, borderRadius: 12 }}
-                resizeMode="cover"
-                width={140}
-                height={80}
-              /> */}
-              {/* <LinearGradient
-                colors={["rgba(0, 0, 0, 0.85)", "rgba(0, 0, 0, 0.15)"]}
-                start={{ x: 0.1, y: 0 }}
-                end={{ x: 0.9, y: 1 }}
-                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-              /> */}
-              <View className="p-5 flex-1 justify-between">
-                {/* Title + destination */}
-                <View className="pr-8">
-                  <Text className="text-2xl font-bold mb-1 text-secondary " numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  <View className="flex-row items-center gap-1">
-                    <Ionicons name="location-outline" size={16} color="#344054" style={{ opacity: 0.6 }} />
-                    <Text className="text-lg text-secondary/60 " numberOfLines={1}>
-                      {(item.tripDestinations && item.tripDestinations.length > 0)
-                        ? item.tripDestinations.map((d: any) => d.destination).filter(Boolean).join(" | ")
-                        : (item.destination || 'Destination TBD')}
-                    </Text>
-                  </View>
-                </View>
+          {upcomingTrips.map((item) => {
+            const validDestinations = (item.tripDestinations && item.tripDestinations.length > 0)
+              ? item.tripDestinations.map((d: any) => d.destination).filter(Boolean)
+              : (item.destination ? item.destination.split(" | ").map((s: string) => s.trim()).filter(Boolean) : []);
 
-                {/* Date + duration */}
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-row items-center gap-1.5">
-                    <Ionicons name="calendar-outline" size={18} color="#344054" style={{ opacity: 0.6 }} />
-                    <Text className="text-[13px] font-semibold text-secondary/60" >
-                      {item.startOrDepartureDate ? formatDate(item.startOrDepartureDate) : 'Date TBD'}
+            const isMultiple = validDestinations.length > 1;
+
+            const destinationLabel = isMultiple
+              ? `${validDestinations.length} destinations`
+              : validDestinations.length === 1
+                ? (item.destinationData?.country === validDestinations[0]
+                  ? validDestinations[0]
+                  : item.destinationData?.country
+                    ? `${validDestinations[0]}, ${item.destinationData?.country}`
+                    : validDestinations[0])
+                : (item.destinationData?.country === item.destination
+                  ? item.destination
+                  : item.destination ? `${item.destination}, ${item.destinationData?.country}` : 'Destination TBD');
+
+            return (
+              <TouchableOpacity
+                key={String(item.id)}
+                activeOpacity={0.7}
+                onPress={() => onPressTrip?.(item)}
+                className="w-full rounded-4xl overflow-hidden bg-white"
+                style={{ backgroundColor: getBgColor(item.type), height: 155 }}
+                accessibilityRole="button"
+                accessibilityLabel={`View trip ${item.title}`}
+              >
+                {/* <Image
+                  source={{ uri: getDestinationImage(item.destination, item.destinationData) }}
+                  style={{ position: "absolute", right: 20, bottom: 20, borderRadius: 12 }}
+                  resizeMode="cover"
+                  width={140}
+                  height={80}
+                /> */}
+                {/* <LinearGradient
+                  colors={["rgba(0, 0, 0, 0.85)", "rgba(0, 0, 0, 0.15)"]}
+                  start={{ x: 0.1, y: 0 }}
+                  end={{ x: 0.9, y: 1 }}
+                  style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+                /> */}
+                <View className="p-5 flex-1 justify-between">
+                  {/* Title + destination */}
+                  <View className="pr-8">
+                    <Text className="text-2xl font-bold mb-1 text-secondary " numberOfLines={1}>
+                      {item.title}
                     </Text>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`View destinations for ${item.title}`}
+                      onPress={(e) => {
+                        e?.stopPropagation?.();
+                        setSelectedDestinationsTrip(item);
+                        setShowDestinationsSheet(true);
+                      }}
+                      className="flex-row items-center gap-1 py-0.5 self-start"
+                    >
+                      <Ionicons name="location-outline" size={16} color="#344054" style={{ opacity: 0.6 }} />
+                      <Text className="text-lg text-secondary/60 " numberOfLines={1}>
+                        {destinationLabel}
+                      </Text>
+                      {isMultiple && (
+                        <Ionicons name="chevron-down" size={14} color="#344054" style={{ opacity: 0.6 }} />
+                      )}
+                    </TouchableOpacity>
                   </View>
-                  {getDaysUntil(item.startOrDepartureDate) ? (
-                    <View className="bg-white/50 px-2.5 py-0.5 rounded-full items-center">
-                      <Text className="text-[12px] text-secondary" >
-                        {getDaysUntil(item.startOrDepartureDate)}
+
+                  {/* Date + duration */}
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-1.5">
+                      <Ionicons name="calendar-outline" size={18} color="#344054" style={{ opacity: 0.6 }} />
+                      <Text className="text-[13px] font-semibold text-secondary/60" >
+                        {item.startOrDepartureDate ? formatDate(item.startOrDepartureDate) : 'Date TBD'}
                       </Text>
                     </View>
-                  ) : null}
+                    {getDaysUntil(item.startOrDepartureDate) ? (
+                      <View className="bg-white/50 px-2.5 py-0.5 rounded-full items-center">
+                        <Text className="text-[12px] text-secondary" >
+                          {getDaysUntil(item.startOrDepartureDate)}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       ) : (
         <TouchableOpacity
@@ -227,6 +265,15 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
           </View>
         </TouchableOpacity>
       )}
+
+      <DestinationsBottomSheet
+        visible={showDestinationsSheet}
+        travel={selectedDestinationsTrip}
+        onClose={() => {
+          setShowDestinationsSheet(false);
+          setSelectedDestinationsTrip(null);
+        }}
+      />
     </View>
   );
 };

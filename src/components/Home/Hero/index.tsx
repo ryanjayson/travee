@@ -257,7 +257,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
         <View className="w-full">
           {ongoingTrip ? (
             <FadeInView type="down" delay={100} duration={450}>
-              <View className="py-2 mt-2 px-1">
+              <View className="mt-2 bg-primary rounded-4xl p-2xl">
                 <View className="flex-row items-center gap-2 mb-2 align-center justify-center bg-green-100 border border-green-100 rounded-full px-1 w-20">
                   <Animated.View
                     style={{ opacity: pulseAnim }}
@@ -266,7 +266,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                   <Text className="text-green-600 text-[8px] tracking-widest uppercase">On going</Text>
                 </View>
                 <Text
-                  className="text-accent font-semibold mb-3 tracking-normal"
+                  className="text-white font-semibold mb-3 tracking-normal"
                   style={{ fontSize: titleIsLong ? 42 : 46, lineHeight: titleIsLong ? 42 : 48 }}
                   numberOfLines={3}
                   onTextLayout={(e) => {
@@ -280,8 +280,8 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                 </Text>
 
                 <View className="flex-row items-center gap-1.5 mb-6">
-                  <Ionicons name="location-outline" size={18} color="#344054" />
-                  <Text className="text-secondary/70 text-xl " numberOfLines={1}>
+                  <Ionicons name="location-outline" size={18} color="#ffffff" />
+                  <Text className="text-white/90 text-xl " numberOfLines={1}>
                     {ongoingTrip.destination}
                   </Text>
                 </View>
@@ -307,14 +307,14 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                 <View className="flex-row items-center gap-4 mb-1 px-2">
 
                   <View className="flex-1 items-start mb-1">
-                    <Text className="text-secondary/70 text-[10px] uppercase">
+                    <Text className="text-white/70 text-[10px] uppercase">
                       Weather Forecast
                     </Text>
                     {weather.loading ? (
                       <>
                         <Ionicons name="cloud-outline" size={28} color="#263F69" />
-                        <Text className="text-secondary/70 text-sm">--</Text>
-                        <Text className="text-secondary/70 text-[10px] uppercase">Loading...</Text>
+                        <Text className="text-white/70 text-sm">--</Text>
+                        <Text className="text-white/70 text-[10px] uppercase">Loading...</Text>
                       </>
                     ) : weather.temp !== undefined ? (
                       <>
@@ -324,85 +324,85 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                             size={28}
                             color="#263F69"
                           />
-                          <Text className="text-secondary/80 text-3xl font-semibold ml-2">
+                          <Text className="text-white/80 text-3xl font-semibold ml-2">
                             {weather.temp}°
                           </Text>
-                          <Text className="text-secondary/80 text-sm font-semibold">
+                          <Text className="text-white/80 text-sm font-semibold">
                             C
                           </Text>
                         </View>
-                        <Text className="text-secondary/50 text-[10px] uppercase">
+                        <Text className="text-white/50 text-[10px] uppercase">
                           {getWeatherDescription(weather.code)}
                         </Text>
                       </>
                     ) : (
                       <>
-                        <Ionicons name="sunny-outline" size={28} color="#263F69" />
-                        <Text className="text-secondary/80 text-sm">N/A</Text>
-                        <Text className="text-secondary/50 text-[10px] uppercase">Unavailable</Text>
+                        <Ionicons name="sunny-outline" size={28} color="#ffffff" />
+                        <Text className="text-white/80 text-sm">N/A</Text>
+                        <Text className="text-white/50 text-[10px] uppercase">Unavailable</Text>
                       </>
                     )}
                   </View>
 
                   <View className="flex-1 items-center mb-1">
-                    <Text className="text-secondary/70 text-[10px] uppercase">
+                    <Text className="text-white/70 text-[10px] uppercase">
                       Planned
                     </Text>
                     {weather.loading ? (
                       <>
                         <Ionicons name="walk-outline" size={28} color="#263F69" />
-                        <Text className="text-secondary/80 text-sm">--</Text>
-                        <Text className="text-secondary/50 text-[10px] uppercase">Loading...</Text>
+                        <Text className="text-white/80 text-sm">--</Text>
+                        <Text className="text-white/50 text-[10px] uppercase">Loading...</Text>
                       </>
                     ) : weather.temp !== undefined ? (
                       <>
                         <View className="flex-row items-center">
                           <Ionicons name="walk-outline" size={28} color="#263F69" />
-                          <Text className="text-secondary/80 text-2xl font-semibold">
+                          <Text className="text-white/80 text-2xl font-semibold">
                             14
                           </Text>
                         </View>
-                        <Text className="text-secondary/50 text-[10px] uppercase">
+                        <Text className="text-white/50 text-[10px] uppercase">
                           activities
                         </Text>
                       </>
                     ) : (
                       <>
                         <Ionicons name="sunny-outline" size={28} color="#263F69" />
-                        <Text className="text-secondary/80 text-sm">N/A</Text>
-                        <Text className="text-secondary/50 text-[10px] uppercase">Unavailable</Text>
+                        <Text className="text-white/80 text-sm">N/A</Text>
+                        <Text className="text-white/50 text-[10px] uppercase">Unavailable</Text>
                       </>
                     )}
                   </View>
 
 
                   <View className="flex-1 items-center mb-1">
-                    <Text className="text-secondary/70 text-[10px] uppercase">
+                    <Text className="text-white/70 text-[10px] uppercase">
                       Checklist
                     </Text>
                     {weather.loading ? (
                       <>
                         <Ionicons name="list-outline" size={28} color="#263F69" />
-                        <Text className="text-secondary/80 text-sm">--</Text>
-                        <Text className="text-secondary/50 text-[10px] uppercase">Loading...</Text>
+                        <Text className="text-white/80 text-sm">--</Text>
+                        <Text className="text-white/50 text-[10px] uppercase">Loading...</Text>
                       </>
                     ) : weather.temp !== undefined ? (
                       <>
                         <View className="flex-row items-center">
                           <Ionicons name="list-outline" size={28} color="#263F69" />
-                          <Text className="text-secondary/80 text-2xl font-semibold">
+                          <Text className="text-white/80 text-2xl font-semibold">
                             100
                           </Text>
                         </View>
-                        <Text className="text-secondary/50 text-[10px] uppercase">
+                        <Text className="text-white/50 text-[10px] uppercase">
                           items
                         </Text>
                       </>
                     ) : (
                       <>
                         <Ionicons name="sunny-outline" size={28} color="rgba(255,255,255,0.65)" />
-                        <Text className="text-secondary/80 text-sm">N/A</Text>
-                        <Text className="text-secondary/50 text-[10px] uppercase">Unavailable</Text>
+                        <Text className="text-white/80 text-sm">N/A</Text>
+                        <Text className="text-white/50 text-[10px] uppercase">Unavailable</Text>
                       </>
                     )}
                   </View>
@@ -484,35 +484,36 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
       </View>
 
       {ongoingTrip && (
-        <View className="mx-5 my-3 py-4 bg-white rounded-4xl border border-gray-200">
+        <View className="mx-5 my-3 py-4 rounded-4x">
 
-          <Text className="text-xs uppercase font-semibold px-2xl text-secondary ">Quick Actions</Text>
+          <Text className="text-xs uppercase font-semibold px-xl text-secondary/80 ">Quick Actions</Text>
           <FadeInView type="up" delay={100} duration={450}>
             <View className="flex-row items-center justify-between py-2 pb-0 z-40 px-4xl">
 
               <View className="items-center">
                 <TouchableOpacity
                   // style={{ borderCurve: 'continuous' }}
-                  className='items-center justify-center w-5xl h-5xl rounded-full border bg-gray-modern-50 border-gray-100'
+                  className='items-center justify-center w-6xl h-6xl rounded-full border bg-gray-modern-50 border-gray-200'
                   onPress={() => setShowTravelViewModal(true)}
                 >
-                  <Ionicons name="briefcase" size={24} color="#263F69" />
+                  <Ionicons name="briefcase" size={20} color="#263F69" />
                 </TouchableOpacity>
-                <Text className="text-sm font-medium text-secondary mt-1">View Trip</Text>
+                <Text className="text-sm font-bold text-secondary mt-1">View Trip</Text>
               </View>
 
               <View className="items-center">
                 <TouchableOpacity
-                  className='items-center justify-center w-5xl h-5xl rounded-full border  bg-gray-modern-50 border-gray-100'
+                  className='items-center justify-center w-6xl h-6xl rounded-full border  bg-gray-modern-50 border-gray-200'
                   onPress={() => {
                     openActivityModal(null, undefined, ongoingTrip?.id);
                   }}
                   accessibilityRole="button"
                   accessibilityLabel="Add Activity"
                 >
-                  <Ionicons name="walk" size={28} color="#263F69" />
+                  <Ionicons name="walk" size={22} color="#263F69" />
                 </TouchableOpacity>
-                <Text className="text-sm font-medium text-secondary mt-1">Add Activity</Text>
+                <Text className="text-sm font-bold text-secondary mt-1">Add Activity</Text>
+
               </View>
 
               {/* <View className="items-center">
@@ -554,13 +555,12 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
 
               <View className="items-center">
                 <TouchableOpacity
-                  className='items-center justify-center w-5xl h-5xl rounded-full border  bg-gray-modern-50 border-gray-100'
+                  className='items-center justify-center w-6xl h-6xl rounded-full border  bg-gray-modern-50 border-gray-200'
                   onPress={() => setShowItineraryTab(true)}
                 >
-                  <Ionicons name="list" size={24} color="#263F69" />
+                  <Ionicons name="list" size={20} color="#263F69" />
                 </TouchableOpacity>
-                <Text className="text-sm font-medium text-secondary mt-1">Itinerary</Text>
-
+                <Text className="text-sm font-bold text-secondary mt-1">View Itinerary</Text>
               </View>
 
               {/* <TouchableOpacity className='items-center opacity-50' disabled={true} >
@@ -571,8 +571,6 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
           </FadeInView>
         </View>
       )}
-
-
 
     </View>
   )

@@ -182,7 +182,7 @@ const AboutBottomSheet: React.FC<AboutBottomSheetProps> = ({
             {...dragPanResponder.panHandlers}
             className="w-full items-center pt-3 pb-2 bg-white rounded-t-[30px]"
           >
-            <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            <View className="w-10 h-1 bg-gray-300 rounded-full" />
           </View>
 
           {/* Header */}

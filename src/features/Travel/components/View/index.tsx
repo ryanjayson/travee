@@ -657,7 +657,7 @@ const ViewTravel = ({
           accessibilityLabel="Drag up or down to expand or collapse trip details sheet"
         >
           <Animated.View
-            className="w-12 h-1.5 bg-gray-300 rounded-full"
+            className="w-10 h-1 bg-gray-300 rounded-full"
             style={{ opacity: handleOpacity }}
           />
         </Animated.View>

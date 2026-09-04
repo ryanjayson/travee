@@ -112,7 +112,7 @@ const PickerModal = ({
           className="bg-white rounded-t-3xl border-t border-[#E0E0E0] overflow-hidden"
         >
           <View {...dragPanResponder.panHandlers} className="w-full items-center pt-3 pb-2">
-            <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            <View className="w-10 h-1 bg-gray-300 rounded-full" />
           </View>
 
           <View className="flex-row justify-between items-center px-6 py-3 border-b border-[#F3F4F6]">

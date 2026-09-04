@@ -521,7 +521,7 @@ const ActivityModal = ({
                 {...dragPanResponder.panHandlers}
                 className="w-full items-center py-4 bg-white rounded-t-[30px]"
               >
-                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+                <View className="w-10 h-1 bg-gray-300 rounded-full" />
               </View> */}
 
               <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 0 }}>

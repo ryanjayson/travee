@@ -149,7 +149,7 @@ export const DestinationsBottomSheet: React.FC<DestinationsBottomSheetProps> = (
           </View>
 
           {/* Header */}
-          <View className="flex-row justify-between items-center px-6 pt-2 pb-4 bg-white border-b border-gray-100">
+          <View className="flex-row justify-between items-center px-6 pt-2 pb-4 bg-white ">
             <View className="flex-1 pr-4">
               <Text className="text-2xl font-bold text-secondary">
                 Destinations

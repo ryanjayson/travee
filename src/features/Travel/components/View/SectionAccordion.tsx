@@ -1244,28 +1244,32 @@ const SectionAccordion = ({
       >
 
         {sections.length === 0 || (sections.length === 1 && sections[0].isDefaultSection && sections[0].itineraryActivity.length === 0) ? (
-          <View className="flex-1 items-center justify-center py-8 gap-1">
-            <Icon name="add" size={46} color={"#D1D5DB"} />
-
-            <Text className="text-2xl text-tertiary/50 text-center">
-              No planned activities yet.
-            </Text>
-            <View className="text-center tracking-wide flex-row align-center gap-1 ">
+          <View className="flex-1 py-8 gap-4 justify-center items-center">
+            <View className="items-center">
+              <Icon name="add-circle-outline" size={46} color={"#D1D5DB"} />
+              <Text className="text-xl font-medium text-secondary text-center mb-sm">
+                No Plans Yet
+              </Text>
+              <Text className="text-lg font-normal text-tertiary/60 text-center px-4xl leading-[28px]">
+                Start by adding an activity or create a section to organize your itinerary.
+              </Text>
+            </View>
+            <View className="justify-center items-center gap-3 flex-row">
               <TouchableOpacity
                 onPress={() => openActivityModal(null, undefined, travelId)}
                 accessibilityRole="button"
                 activeOpacity={0.7}
-                className="flex-row items-center"
+                className="flex-row items-center bg-primary/10 px-2.5 py-1.5 rounded-lg gap-2"
               >
                 <Icon name="add" size={16} color={"#0EA5E9"} />
                 <Text
-                  className="font-medium text-base underline text-primary"
+                  className="font-medium text-base text-primary"
                 >
-                  Add activity
+                  Add Activity
                 </Text>
               </TouchableOpacity>
-              <Text className="text-base text-tertiary">
-                now, or
+              <Text className="text-base text-tertiary/60">
+                or
               </Text>
               <TouchableOpacity
                 onPress={() => setIsAddSectionVisible(true)}
@@ -1277,14 +1281,11 @@ const SectionAccordion = ({
                 <Text
                   className="font-medium text-base underline  text-primary"
                 >
-                  Create section
+                  Create Section
                 </Text>
               </TouchableOpacity>
-              <Text className="text-base text-tertiary">
-                to organize itinerary.
-              </Text>
-            </View>
 
+            </View>
           </View>
         ) : (
           <View className={`flex-1 p-3 ${!hasAtleastOneActivityDate && sections.filter((section) => !section.isDefaultSection).length === 0 ? "-ml-4xl" : ""}`}>

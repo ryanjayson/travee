@@ -165,21 +165,21 @@ const ExpenseModal = ({
   });
 
   return (
-    <Modal 
-      visible={visible} 
-      transparent 
+    <Modal
+      visible={visible}
+      transparent
       animationType="none"
       onRequestClose={handleCancel}
     >
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <Animated.View 
-          className="flex-1 justify-end" 
-          style={{ 
+        <Animated.View
+          className="flex-1 justify-end"
+          style={{
             backgroundColor: "rgba(0,0,0,0.5)",
-            opacity: backdropOpacity 
+            opacity: backdropOpacity
           }}
         >
           <Animated.View
@@ -199,20 +199,20 @@ const ExpenseModal = ({
             ]}
           >
             <StatusBar style="dark" />
-            
+
             {/* Drag Handle Area */}
             {!keyboardVisible && (
-              <View 
+              <View
                 {...dragPanResponder.panHandlers}
                 className="w-full items-center py-4 bg-white rounded-t-[30px]"
               >
-                <View className="w-12 h-1.5 bg-gray-300 rounded-full" />
+                <View className="w-10 h-1 bg-gray-300 rounded-full" />
               </View>
             )}
 
-            <View 
-            {...(!keyboardVisible && dragPanResponder.panHandlers)}
-            className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
+            <View
+              {...(!keyboardVisible && dragPanResponder.panHandlers)}
+              className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 4 }}>
               <View className="flex-row items-center gap-2">
                 <Text className="text-2xl text-gray-700 font-medium">
                   {itineraryExpense?.id ? "Edit Expense" : "Add Expense"}
