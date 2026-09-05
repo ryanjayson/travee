@@ -13,6 +13,7 @@ interface FlightTabProps {
   setShowFlightDatePickerFor: any;
   formatFlightDateTime: any;
   handleFlightSelect: (flightData: any, setFieldValue: any) => void;
+  onOpenAirportLookup?: (mode: "departure" | "arrival") => void;
   showArrivalPrefillNotice?: boolean;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
@@ -28,6 +29,7 @@ export default function FlightTab({
   setShowFlightDatePickerFor,
   formatFlightDateTime,
   handleFlightSelect,
+  onOpenAirportLookup,
   showArrivalPrefillNotice = false,
   noPadding = false,
   fieldRefs,
@@ -38,45 +40,35 @@ export default function FlightTab({
   return (
     <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-5">
-        <Icon name="local-airport" size={20} color="#000" />
+        <Icon name="local-airport" size={30} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">
           Flight Details
         </Text>
       </View>
 
-      <TouchableOpacity
-        onPress={() => {
-          openFlightModal(
-            (flightData: any) => {
-              handleFlightSelect(flightData, setFieldValue);
-            },
-            tripStartDate || values.startDate || values.flightDetails?.departureDate
-          );
-        }}
-        className="mb-10 mt-3 p-4 rounded-2xl border border-dashed bg-blue-50/50 flex-row items-center gap-3 active:bg-blue-50"
-        style={{ borderColor: colors.primary }}
-        accessibilityRole="button"
-        accessibilityLabel="Search airport and fill flight details"
-      >
-        <Icon name="local-airport" size={26} color={colors.primary} />
-        <View className="flex-1">
-          <Text className="text-lg font-semibold text-gray-800">
-            Search for Airport
-          </Text>
-          <Text className="text-base text-gray-500 mt-0.5">
-            Lookup airports worldwide to populate.
-          </Text>
-        </View>
-        <Icon name="search" size={20} color={colors.primary} />
-      </TouchableOpacity>
 
       {/* Departure Airport */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureAirport"] = el; }} className="mb-5 flex-row">
         <FloatingLabelInput
           label="Departure Airport"
           value={values.flightDetails?.departureAirport || ""}
-          onChangeText={handleChange("flightDetails.departureAirport")}
-          onBlur={handleBlur("flightDetails.departureAirport")}
+          editable={false}
+          onPress={() => onOpenAirportLookup?.("departure")}
+          right={
+            values.flightDetails?.departureAirport ? (
+              <TextInput.Icon
+                icon="close"
+                color="#999"
+                onPress={() => setFieldValue("flightDetails.departureAirport", "")}
+              />
+            ) : (
+              <TextInput.Icon
+                icon="airplane-takeoff"
+                color="#999"
+                onPress={() => onOpenAirportLookup?.("departure")}
+              />
+            )
+          }
         />
       </View>
 
@@ -110,8 +102,23 @@ export default function FlightTab({
         <FloatingLabelInput
           label="Arrival Airport"
           value={values.flightDetails?.arrivalAirport || ""}
-          onChangeText={handleChange("flightDetails.arrivalAirport")}
-          onBlur={handleBlur("flightDetails.arrivalAirport")}
+          editable={false}
+          onPress={() => onOpenAirportLookup?.("arrival")}
+          right={
+            values.flightDetails?.arrivalAirport ? (
+              <TextInput.Icon
+                icon="close"
+                color="#999"
+                onPress={() => setFieldValue("flightDetails.arrivalAirport", "")}
+              />
+            ) : (
+              <TextInput.Icon
+                icon="airplane-landing"
+                color="#999"
+                onPress={() => onOpenAirportLookup?.("arrival")}
+              />
+            )
+          }
         />
       </View>
 

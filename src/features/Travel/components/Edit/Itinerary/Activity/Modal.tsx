@@ -37,6 +37,7 @@ interface ActivityModalProps {
   itineraryActivity: ItineraryActivity | null;
   itinerarySectionId?: string;
   travelId?: string;
+  initialType?: ActivityType;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -47,6 +48,7 @@ const ActivityModal = ({
   itineraryActivity: propItineraryActivity,
   itinerarySectionId,
   travelId,
+  initialType,
 }: ActivityModalProps) => {
   const [currentActivity, setCurrentActivity] = useState<ItineraryActivity | null>(propItineraryActivity);
   const [isAddMode, setIsAddMode] = useState(!propItineraryActivity?.id);
@@ -591,6 +593,7 @@ const ActivityModal = ({
 
               <View className="flex-1">
                 <EditActivity
+                  initialType={initialType}
                   itinerarySectionId={itinerarySectionId}
                   itineraryActivity={extractedData ? { ...latestActivity, ...extractedData } as any : latestActivity}
                   travelId={travelId}

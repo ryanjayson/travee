@@ -3,12 +3,13 @@ import { FAB, Portal, useTheme } from 'react-native-paper';
 import { BackHandler, TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons as Icon } from '@expo/vector-icons';
+import { ActivityType } from '../../../../types/enums';
 
 interface TravelActionFABProps {
   onAddNote: () => void;
   onAddChecklist: () => void;
   onAddExpense: () => void;
-  onAddActivity: () => void;
+  onAddActivity: (type?: ActivityType) => void;
   onAddSection: () => void;
   currentTab?: string;
   open?: boolean;
@@ -76,13 +77,18 @@ const TravelActionFAB = ({
         labelTextColor: 'white',
         style: {
           elevation: 0,
-          borderRadius: 50,
+          borderRadius: 20,
           padding: 6,
           backgroundColor: '#0EA5E9',
           marginRight: -6,
           marginBottom: 10
         },
         color: 'white',
+        accessibilityHint: 'Add Section',
+        labelStyle: {
+          fontWeight: 'bold' as const,
+          fontSize: 18
+        },
         onPress: onAddSection,
       },
       // {
@@ -108,13 +114,20 @@ const TravelActionFAB = ({
         labelTextColor: 'white',
         style: {
           elevation: 0,
-          borderRadius: 50,
+          borderRadius: 20,
           padding: 6,
           backgroundColor: '#0EA5E9',
           marginRight: -6,
           marginBottom: 10
         },
         color: 'white',
+        wrapperStyle: {
+          paddingBottom: 20,
+        },
+        labelStyle: {
+          fontWeight: 'bold' as const,
+          fontSize: 18
+        },
         onPress: onAddChecklist,
       },
       // {
@@ -133,22 +146,114 @@ const TravelActionFAB = ({
       //   color: 'white',
       //   onPress: onAddExpense,
       // },
+
+
+
+
+
       {
-        id: 'activity',
-        icon: 'calendar-plus',
-        label: 'Add Activity',
+        id: 'activity-transit',
+        icon: 'train',
+        label: 'Add Transit',
         labelTextColor: 'white',
         style: {
           elevation: 0,
           borderRadius: 50,
-          padding: 6,
-          backgroundColor: '#0EA5E9',
+          padding: 1,
+          backgroundColor: '#02899a',
+          marginRight: -6,
+          marginBottom: 0
+        },
+        color: 'white',
+        onPress: () => onAddActivity(ActivityType.transit),
+      },
+
+      {
+        id: 'activity-rental',
+        icon: 'car',
+        label: 'Add Rental',
+        labelTextColor: 'white',
+        style: {
+          elevation: 0,
+          borderRadius: 50,
+          padding: 1,
+          backgroundColor: '#384690',
+          marginRight: -6,
+          marginBottom: 0
+        },
+        color: 'white',
+        onPress: () => onAddActivity(ActivityType.rideRental),
+      },
+
+      {
+        id: 'activity-tour',
+        icon: 'hiking',
+        label: 'Add Tour',
+        labelTextColor: 'white',
+        style: {
+          elevation: 0,
+          borderRadius: 50,
+          padding: 1,
+          backgroundColor: '#429862',
           marginRight: -6,
           marginBottom: 10
         },
         color: 'white',
-        onPress: onAddActivity,
+        onPress: () => onAddActivity(ActivityType.tour),
       },
+
+      {
+        id: 'activity-stay',
+        icon: 'bed',
+        label: 'Add Stay',
+        labelTextColor: 'white',
+        style: {
+          elevation: 0,
+          borderRadius: 50,
+          padding: 1,
+          backgroundColor: '#a659ee',
+          marginRight: -6,
+          marginBottom: 0
+        },
+        color: 'white',
+        onPress: () => onAddActivity(ActivityType.stay),
+      },
+
+
+      {
+        id: 'activity-flight',
+        icon: 'airplane',
+        label: 'Add Flight',
+        labelTextColor: 'white',
+        style: {
+          elevation: 0,
+          borderRadius: 50,
+          padding: 1,
+          backgroundColor: '#2196F3',
+          marginRight: -6,
+          marginBottom: 0
+        },
+        color: 'white',
+        onPress: () => onAddActivity(ActivityType.flight),
+      },
+
+      {
+        id: 'activity-plan',
+        icon: 'pin',
+        label: 'Add Plan',
+        labelTextColor: 'white',
+        style: {
+          elevation: 0,
+          borderRadius: 50,
+          padding: 1,
+          backgroundColor: '#c10003',
+          marginRight: -6,
+          marginBottom: 0
+        },
+        color: 'white',
+        onPress: () => onAddActivity(ActivityType.plan),
+      },
+
 
     ];
 

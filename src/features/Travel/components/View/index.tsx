@@ -780,7 +780,7 @@ const ViewTravel = ({
             travelId
           );
         }}
-        onAddActivity={() => openActivityModal(null, undefined, travelId)}
+        onAddActivity={(type) => openActivityModal(null, undefined, travelId, type)}
         onAddSection={() => setShowSectionModal(true)}
       />
 

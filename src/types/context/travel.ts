@@ -8,6 +8,7 @@ import {
   ItinerarySection,
 } from "../../features/Travel/types/TravelDto";
 import { MapboxPlace } from "../../features/Travel/components/MapboxDestinationSelector";
+import { ActivityType } from "../enums";
 
 export interface TravelPlanDetail {
   id: string;
@@ -62,6 +63,13 @@ export interface SectionModalState {
 export interface ActivityModalState {
   visible: boolean;
   itineraryActivity: ItineraryActivity | null;
+  itinerarySectionId?: string;
+  travelId?: string;
+  initialType?: ActivityType;
+}
+
+export interface ActivityTypeModalState {
+  visible: boolean;
   itinerarySectionId?: string;
   travelId?: string;
 }
@@ -132,9 +140,17 @@ export interface TravelContextType {
   openActivityModal: (
     itineraryActivity?: ItineraryActivity | null,
     itinerarySectionId?: string,
-    travelId?: string
+    travelId?: string,
+    initialType?: ActivityType
   ) => void;
   closeActivityModal: () => void;
+
+  activityTypeModal: ActivityTypeModalState;
+  openActivityTypeModal: (
+    itinerarySectionId?: string,
+    travelId?: string
+  ) => void;
+  closeActivityTypeModal: () => void;
 
   memberModal: MemberModalState;
   openMemberModal: (

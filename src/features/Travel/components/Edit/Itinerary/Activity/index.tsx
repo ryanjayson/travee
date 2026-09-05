@@ -38,6 +38,7 @@ import OsmPoiLookupModal from "../../../Lookups/OsmPoiLookupModal";
 import OsmMapPinModal, { PinnedLocation } from "../../../Lookups/OsmMapPinModal";
 import { MapboxPlace } from "../../../MapboxDestinationSelector";
 import MapboxDestinationSelectorModal from "../../../MapboxDestinationSelector/Modal";
+import AirportLookupModal, { Airport } from "../../../Lookups/AirportLookupModal";
 import DateTime from "./DateTime";
 import AccomodationTab from "./Tabs/AccomodationTab";
 import CafeRestaurantTab from "./Tabs/CafeRestaurantTab";
@@ -61,6 +62,7 @@ interface Place {
 
 interface EditActivityProps {
   itineraryActivity: ItineraryActivity | null;
+  initialType?: ActivityType;
   onClose: () => void;
   onOpenSectionModal: (sections: any[], currentId: string | undefined, onSelect: (id?: string) => void) => void;
   onOpenPrimaryTypeModal: (currentType: ActivityType, onSelect: (type: ActivityType) => void) => void;
@@ -381,6 +383,7 @@ const matchEntertainmentSubtype = (poi: any): string | null => {
 const EditActivity = ({
   itinerarySectionId,
   itineraryActivity: propItineraryActivity,
+  initialType,
   travelId: propTravelId,
   onClose,
   onScroll,
@@ -432,6 +435,19 @@ const EditActivity = ({
 
   const handleFlightSelect = (flightData: any, setFieldValue: any) => {
     const { departureAirport, arrivalAirport, departureDate } = flightData;
+
+    if (departureAirport?.coordinates) {
+      departureAirportCoordsRef.current = {
+        lat: departureAirport.coordinates.lat,
+        lon: departureAirport.coordinates.lon,
+      };
+    }
+    if (arrivalAirport?.coordinates) {
+      arrivalAirportCoordsRef.current = {
+        lat: arrivalAirport.coordinates.lat,
+        lon: arrivalAirport.coordinates.lon,
+      };
+    }
 
     // 1. Title: e.g. "Flight to Manila"
     const arrCity = arrivalAirport.type === "city"
@@ -542,6 +558,7 @@ const EditActivity = ({
 
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
+  const [showAirportLookupFor, setShowAirportLookupFor] = useState<"departure" | "arrival" | null>(null);
   const [isAllDay, setIsAllDay] = useState<boolean>(true);
   const [showTimePickerFor, setShowTimePickerFor] = useState<"startTime" | "endTime" | null>(null);
   const [showCalendarFor, setShowCalendarFor] = useState<"startDate" | "endDate" | null>(null);
@@ -575,6 +592,58 @@ const EditActivity = ({
   const [activeTabId, setActiveTabId] = useState<string>("details");
   const [showArrivalPrefillNotice, setShowArrivalPrefillNotice] = useState<boolean>(false);
   const prefillNoticeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const departureAirportCoordsRef = useRef<{ lat: number; lon: number } | null>(null);
+  const arrivalAirportCoordsRef = useRef<{ lat: number; lon: number } | null>(null);
+
+  const triggerArrivalPrefillNotice = useCallback(() => {
+    setShowArrivalPrefillNotice(true);
+    if (prefillNoticeTimerRef.current) {
+      clearTimeout(prefillNoticeTimerRef.current);
+    }
+    prefillNoticeTimerRef.current = setTimeout(() => {
+      setShowArrivalPrefillNotice(false);
+    }, 6000);
+  }, []);
+
+  const calculateEstimatedArrivalDate = useCallback(
+    (
+      depDate: Date | string | null,
+      coords1?: { lat: number; lon: number } | null,
+      coords2?: { lat: number; lon: number } | null,
+      currentDestCoords?: { latitude: number; longitude: number }
+    ) => {
+      if (!depDate) return null;
+      const parsedDepDate = depDate instanceof Date ? depDate : new Date(depDate);
+      if (isNaN(parsedDepDate.getTime()) || parsedDepDate.getTime() <= 0) return null;
+
+      const lat1 = coords1?.lat ?? departureAirportCoordsRef.current?.lat ?? currentDestCoords?.latitude;
+      const lon1 = coords1?.lon ?? departureAirportCoordsRef.current?.lon ?? currentDestCoords?.longitude;
+      const lat2 = coords2?.lat ?? arrivalAirportCoordsRef.current?.lat;
+      const lon2 = coords2?.lon ?? arrivalAirportCoordsRef.current?.lon;
+
+      if (lat1 !== undefined && lon1 !== undefined && lat2 !== undefined && lon2 !== undefined) {
+        const R = 6371; // km
+        const dLat = ((lat2 - lat1) * Math.PI) / 180;
+        const dLon = ((lon2 - lon1) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((lat1 * Math.PI) / 180) *
+          Math.cos((lat2 * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+
+        // Average commercial jet speed is ~800 km/h
+        // Add 30 minutes (0.5 hours) for taxi, takeoff, and landing
+        const durationHours = distance / 800 + 0.5;
+        return new Date(parsedDepDate.getTime() + durationHours * 60 * 60 * 1000);
+      }
+      // Fallback when coordinates are not available: add 2 hours
+      return new Date(parsedDepDate.getTime() + 2 * 60 * 60 * 1000);
+    },
+    []
+  );
 
   useEffect(() => {
     return () => {
@@ -610,7 +679,8 @@ const EditActivity = ({
     showRideRentalDatePickerFor !== null ||
     showHikeOrCampDatePickerFor !== null ||
     showPoiModal ||
-    showMapPinModal
+    showMapPinModal ||
+    showAirportLookupFor !== null
   );
 
   useEffect(() => {
@@ -1023,7 +1093,7 @@ const EditActivity = ({
     id: itineraryActivity?.id,
     title: itineraryActivity?.title || "",
     description: itineraryActivity?.description || "",
-    type: itineraryActivity?.type ?? ActivityType.plan,
+    type: itineraryActivity?.type ?? initialType ?? ActivityType.plan,
     sortOrder: itineraryActivity?.sortOrder || "",
     startDate: itineraryActivity?.startDate ? toLocalDateStr(itineraryActivity.startDate) : (currentSection?.startDate ? toLocalDateStr(currentSection.startDate) : null),
     startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? toLocalTimeStr(itineraryActivity.startDate) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
@@ -1234,6 +1304,7 @@ const EditActivity = ({
     travelId,
     travelPlan?.itinerarySection?.[0]?.id,
     currentSection?.startDate,
+    initialType,
   ]);
 
   return (
@@ -1369,6 +1440,7 @@ const EditActivity = ({
                     setShowFlightDatePickerFor={setShowFlightDatePickerFor}
                     formatFlightDateTime={formatFlightDateTime}
                     handleFlightSelect={handleFlightSelect}
+                    onOpenAirportLookup={(mode) => setShowAirportLookupFor(mode)}
                     showArrivalPrefillNotice={showArrivalPrefillNotice}
                     tripStartDate={travelPlan?.travel?.startOrDepartureDate}
                     noPadding={true}
@@ -1627,7 +1699,7 @@ const EditActivity = ({
                 )}
 
                 {/* Activity Details Accordion */}
-                <SimpleAccordion key="activity-details-accordion" title="Other Details" defaultExpanded={true}>
+                <SimpleAccordion key="activity-details-accordion" title="Additional Details" defaultExpanded={true}>
 
 
                   {/* Date & Time fields removed from main form and injected into specific tabs */}
@@ -2030,6 +2102,87 @@ const EditActivity = ({
               }}
             />
 
+            <AirportLookupModal
+              visible={showAirportLookupFor !== null}
+              mode={showAirportLookupFor || "departure"}
+              title={showAirportLookupFor === "departure" ? "Select Departure" : "Select Arrival"}
+              onClose={() => setShowAirportLookupFor(null)}
+              onSelect={(airport: Airport) => {
+                const airportDisplayName =
+                  airport.type === "city" && airport.main_airport_name
+                    ? airport.main_airport_name
+                    : airport.name;
+                const formatted = `${airportDisplayName} (${airport.code})`;
+
+                if (showAirportLookupFor === "departure") {
+                  setFieldValue("flightDetails.departureAirport", formatted);
+                  const depCoords = airport.coordinates
+                    ? { lat: airport.coordinates.lat, lon: airport.coordinates.lon }
+                    : null;
+                  if (depCoords) {
+                    departureAirportCoordsRef.current = depCoords;
+                    setFieldValue("destinationData", {
+                      id: airport.id,
+                      coordinates: {
+                        longitude: depCoords.lon,
+                        latitude: depCoords.lat,
+                      },
+                    });
+                  }
+                  const depCity = airport.type === "city" ? airport.name : airport.city_name;
+                  if (!values.destination) {
+                    setFieldValue("destination", `${depCity} (${airport.code})`);
+                  }
+                  const currentArrival = values.flightDetails?.arrivalAirport;
+                  if (currentArrival) {
+                    setFieldValue("description", `Flight from ${formatted} to ${currentArrival}`);
+                  }
+                  if (values.flightDetails?.departureDate) {
+                    const estimatedArrival = calculateEstimatedArrivalDate(
+                      values.flightDetails.departureDate,
+                      depCoords,
+                      arrivalAirportCoordsRef.current,
+                      values.destinationData?.coordinates
+                    );
+                    if (estimatedArrival) {
+                      setFieldValue("flightDetails.arrivalDate", estimatedArrival);
+                      triggerArrivalPrefillNotice();
+                    }
+                  }
+                } else if (showAirportLookupFor === "arrival") {
+                  setFieldValue("flightDetails.arrivalAirport", formatted);
+                  const arrCoords = airport.coordinates
+                    ? { lat: airport.coordinates.lat, lon: airport.coordinates.lon }
+                    : null;
+                  if (arrCoords) {
+                    arrivalAirportCoordsRef.current = arrCoords;
+                  }
+                  const arrCity = airport.type === "city" ? airport.name : airport.city_name;
+                  if (!values.title || values.title.toLowerCase() === "flight" || values.title.trim() === "") {
+                    setFieldValue("title", `Flight to ${arrCity}`);
+                  }
+                  const currentDeparture = values.flightDetails?.departureAirport;
+                  if (currentDeparture) {
+                    setFieldValue("description", `Flight from ${currentDeparture} to ${formatted}`);
+                  }
+                  if (values.flightDetails?.departureDate) {
+                    const estimatedArrival = calculateEstimatedArrivalDate(
+                      values.flightDetails.departureDate,
+                      departureAirportCoordsRef.current,
+                      arrCoords,
+                      values.destinationData?.coordinates
+                    );
+                    if (estimatedArrival) {
+                      setFieldValue("flightDetails.arrivalDate", estimatedArrival);
+                      triggerArrivalPrefillNotice();
+                    }
+                  }
+                }
+
+                setShowAirportLookupFor(null);
+              }}
+            />
+
             <Modal
               visible={showPoiModal}
               animationType="slide"
@@ -2305,8 +2458,23 @@ const EditActivity = ({
                 if (showFlightDatePickerFor) {
                   setFieldValue(`flightDetails.${showFlightDatePickerFor}`, date);
                   if (showFlightDatePickerFor === "departureDate") {
-                    if (values.flightDetails?.arrivalDate && new Date(values.flightDetails.arrivalDate).getTime() < date.getTime()) {
-                      setFieldValue("flightDetails.arrivalDate", date);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, "0");
+                    const day = String(date.getDate()).padStart(2, "0");
+                    setFieldValue("startDate", `${year}-${month}-${day}`);
+                    const hours = String(date.getHours()).padStart(2, "0");
+                    const minutes = String(date.getMinutes()).padStart(2, "0");
+                    setFieldValue("startTime", `${hours}:${minutes}`);
+
+                    const estimatedArrival = calculateEstimatedArrivalDate(
+                      date,
+                      departureAirportCoordsRef.current,
+                      arrivalAirportCoordsRef.current,
+                      values.destinationData?.coordinates
+                    );
+                    if (estimatedArrival) {
+                      setFieldValue("flightDetails.arrivalDate", estimatedArrival);
+                      triggerArrivalPrefillNotice();
                     }
                   }
                 }

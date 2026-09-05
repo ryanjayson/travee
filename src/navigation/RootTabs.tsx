@@ -17,6 +17,7 @@ import NoteModal from "../features/Travel/components/Forms/Note/Modal";
 import ChecklistModal from "../features/Travel/components/Forms/Checklist/Modal";
 import ChecklistGroupModal from "../features/Travel/components/Forms/Checklist/ChecklistGroupModal";
 import ActivityModal from "../features/Travel/components/Edit/Itinerary/Activity/Modal";
+import ActivityTypeLookupModal from "../features/Travel/components/Lookups/ActivityTypeLookupModal";
 import MemberModal from "../features/Travel/components/Forms/Member/Modal";
 import SectionModal from "../features/Travel/components/Edit/Itinerary/Section/Modal";
 import DescriptionModal from "../components/molecules/DescriptionInput/Modal";
@@ -86,7 +87,10 @@ function RootTabsComponent() {
     openChecklistGroupModal,
     closeChecklistGroupModal,
     activityModal,
+    openActivityModal,
     closeActivityModal,
+    activityTypeModal,
+    closeActivityTypeModal,
     memberModal,
     closeMemberModal,
     descriptionModal,
@@ -264,11 +268,24 @@ function RootTabsComponent() {
           travelId={checklistGroupModal.travelId}
           onClose={closeChecklistGroupModal}
         />
+        <ActivityTypeLookupModal
+          visible={activityTypeModal.visible}
+          onClose={closeActivityTypeModal}
+          onSelect={(type) => {
+            const itinerarySectionId = activityTypeModal.itinerarySectionId;
+            const travelId = activityTypeModal.travelId;
+            closeActivityTypeModal();
+            setTimeout(() => {
+              openActivityModal(null, itinerarySectionId, travelId, type);
+            }, 100);
+          }}
+        />
         <ActivityModal
           visible={activityModal.visible}
           itineraryActivity={activityModal.itineraryActivity}
           itinerarySectionId={activityModal.itinerarySectionId}
           travelId={activityModal.travelId}
+          initialType={activityModal.initialType}
           onClose={closeActivityModal}
         />
         <MemberModal

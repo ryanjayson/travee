@@ -375,7 +375,7 @@ const DraggableSectionItem = ({
                         onPress={() => openActivityModal(null, section.id || undefined, section.travelId)}
                         accessibilityRole="button"
                         activeOpacity={0.7}
-                        className="flex-row items-center bg-primary/10 px-2.5 py-1.5 rounded-lg gap-2 mt-md"
+                        className="flex-row items-center bg-primary/10 px-3 py-1.5 rounded-lg gap-2 mt-md"
                       >
                         <Icon name="add" size={16} color={"#0EA5E9"} />
                         <Text
@@ -1262,7 +1262,7 @@ const SectionAccordion = ({
                 onPress={() => openActivityModal(null, undefined, travelId)}
                 accessibilityRole="button"
                 activeOpacity={0.7}
-                className="flex-row items-center bg-primary/10 px-2.5 py-1.5 rounded-lg gap-2"
+                className="flex-row items-center bg-primary/10 px-3 py-1.5 rounded-lg gap-2"
               >
                 <Icon name="add" size={16} color={"#0EA5E9"} />
                 <Text

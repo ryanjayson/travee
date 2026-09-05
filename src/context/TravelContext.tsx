@@ -16,6 +16,7 @@ import {
   ChecklistModalState,
   ChecklistGroupModalState,
   ActivityModalState,
+  ActivityTypeModalState,
   MemberModalState,
   DescriptionModalState,
   DestinationModalState,
@@ -31,6 +32,7 @@ import {
   TripMember,
   ItinerarySection,
 } from "../features/Travel/types/TravelDto";
+import { ActivityType } from "../types/enums";
 
 const initialContextValue: TravelContextType = {
   expenseModal: {
@@ -68,6 +70,12 @@ const initialContextValue: TravelContextType = {
   },
   openActivityModal: () => {},
   closeActivityModal: () => {},
+
+  activityTypeModal: {
+    visible: false,
+  },
+  openActivityTypeModal: () => {},
+  closeActivityTypeModal: () => {},
 
   memberModal: {
     visible: false,
@@ -148,6 +156,10 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
   const [activityModal, setActivityModal] = useState<ActivityModalState>({
     visible: false,
     itineraryActivity: null,
+  });
+
+  const [activityTypeModal, setActivityTypeModal] = useState<ActivityTypeModalState>({
+    visible: false,
   });
 
   const [memberModal, setMemberModal] = useState<MemberModalState>({
@@ -262,18 +274,46 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     }));
   }, []);
 
+  const openActivityTypeModal = useCallback(
+    (itinerarySectionId?: string, travelId?: string) => {
+      setActivityTypeModal({
+        visible: true,
+        itinerarySectionId,
+        travelId,
+      });
+    },
+    []
+  );
+
+  const closeActivityTypeModal = useCallback(() => {
+    setActivityTypeModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
+
   const openActivityModal = useCallback(
     (
       itineraryActivity: ItineraryActivity | null = null,
       itinerarySectionId?: string,
-      travelId?: string
+      travelId?: string,
+      initialType?: ActivityType
     ) => {
-      setActivityModal({
-        visible: true,
-        itineraryActivity,
-        itinerarySectionId,
-        travelId,
-      });
+      if (itineraryActivity?.id || initialType !== undefined) {
+        setActivityModal({
+          visible: true,
+          itineraryActivity,
+          itinerarySectionId,
+          travelId,
+          initialType: initialType ?? itineraryActivity?.type,
+        });
+      } else {
+        setActivityTypeModal({
+          visible: true,
+          itinerarySectionId,
+          travelId,
+        });
+      }
     },
     []
   );
@@ -433,6 +473,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       activityModal,
       openActivityModal,
       closeActivityModal,
+      activityTypeModal,
+      openActivityTypeModal,
+      closeActivityTypeModal,
       memberModal,
       openMemberModal,
       closeMemberModal,
@@ -469,6 +512,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       activityModal,
       openActivityModal,
       closeActivityModal,
+      activityTypeModal,
+      openActivityTypeModal,
+      closeActivityTypeModal,
       memberModal,
       openMemberModal,
       closeMemberModal,
