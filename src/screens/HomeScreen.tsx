@@ -247,12 +247,12 @@ const HomeScreen = () => {
   const getIconForActivityType = (type?: number) => {
     const map: Record<number, string> = {
       [ActivityType.flight]: 'airplane',
-      [ActivityType.accomodation]: 'bed',
+      [ActivityType.stay]: 'bed',
       [ActivityType.cafeRestaurant]: 'restaurant',
       [ActivityType.nature]: 'leaf',
       [ActivityType.shopppingAndService]: 'cart',
       [ActivityType.entertainmentAndRecreation]: 'film',
-      // [ActivityType.transportation]: 'bus',
+      // [ActivityType.transit]: 'bus',
       // [ActivityType.walk]: 'walk',
       [ActivityType.sightseeing]: 'camera',
       [ActivityType.preparation]: 'construct',

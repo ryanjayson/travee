@@ -23,9 +23,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const ACTIVITY_TYPE_SUBTEXT: Record<string, string> = {
   flight: "Flights, layovers, and airport transits",
-  accomodation: "Hotels, resorts, and stays",
+  stay: "Hotels, resorts, and stays",
   cafeRestaurant: "Dining, cafes, bars, and local spots",
-  transportation: "Trains, buses, taxis, and transit",
+  transit: "Trains, buses, taxis, and transit",
   rideRental: "Car, scooter, and vehicle rentals",
   sightseeing: "Landmarks, tours, and attraction visits",
   shopppingAndService: "Shopping, spas, markets, and essentials",
@@ -195,7 +195,7 @@ const ActivityTypeLookupModal = ({
   );
 
   const noneItem = filteredTypes.find((t) => t.key === "none");
-  const commonKeys = ["flight", "cafeRestaurant", "accomodation"];
+  const commonKeys = ["flight", "cafeRestaurant", "stay"];
   const commonList = filteredTypes.filter((t) => commonKeys.includes(t.key));
   const otherList = filteredTypes.filter((t) => !commonKeys.includes(t.key) && t.key !== "none");
 

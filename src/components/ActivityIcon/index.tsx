@@ -24,8 +24,8 @@ interface ActivityIcon {
 const activityIcons: ActivityIcon[] = [
   {
     iconSet: IconSetProvider.ionic,
-    activityType: ActivityType.none,
-    name: ActivityType.none,
+    activityType: ActivityType.plan,
+    name: ActivityType.plan,
     iconName: "pin",
     color: "#c10003", // grey
   },
@@ -39,67 +39,67 @@ const activityIcons: ActivityIcon[] = [
   },
   {
     iconSet: IconSetProvider.material,
-    activityType: ActivityType.accomodation,
-    name: ActivityType.accomodation,
+    activityType: ActivityType.stay,
+    name: ActivityType.stay,
     iconName: "hotel",
     color: "#a659ee", // purple hsl(291)
   },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.cafeRestaurant,
+  //   name: ActivityType.cafeRestaurant,
+  //   iconName: "restaurant",
+  //   color: "#e03e3e", // deep-orange hsl(14)
+  // },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.nature,
+  //   name: ActivityType.nature,
+  //   iconName: "terrain",
+  //   color: "#165135", // green hsl(122)
+  // },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.shopppingAndService,
+  //   name: ActivityType.shopppingAndService,
+  //   iconName: "shopping-bag",
+  //   color: "#db2777", // pink hsl(340)
+  // },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.entertainmentAndRecreation,
+  //   name: ActivityType.entertainmentAndRecreation,
+  //   iconName: "local-play",
+  //   color: "#0891b2", // purple hsl(289)
+  // },
   {
     iconSet: IconSetProvider.material,
-    activityType: ActivityType.cafeRestaurant,
-    name: ActivityType.cafeRestaurant,
-    iconName: "restaurant",
-    color: "#e03e3e", // deep-orange hsl(14)
-  },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.nature,
-    name: ActivityType.nature,
-    iconName: "terrain",
-    color: "#165135", // green hsl(122)
-  },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.shopppingAndService,
-    name: ActivityType.shopppingAndService,
-    iconName: "shopping-bag",
-    color: "#db2777", // pink hsl(340)
-  },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.entertainmentAndRecreation,
-    name: ActivityType.entertainmentAndRecreation,
-    iconName: "local-play",
-    color: "#0891b2", // purple hsl(289)
-  },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.transportation,
-    name: ActivityType.transportation,
+    activityType: ActivityType.transit,
+    name: ActivityType.transit,
     iconName: "directions-bus",
     color: "#02899a", // cyan hsl(187)
   },
-  {
-    iconSet: IconSetProvider.ionic,
-    activityType: ActivityType.walk,
-    name: ActivityType.walk,
-    iconName: "walk",
-    color: "#8BC34A", // light-green hsl(88)
-  },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.sightseeing,
-    name: ActivityType.sightseeing,
-    iconName: "photo-camera",
-    color: "#f0a505", // orange hsl(36)
-  },
-  {
-    iconSet: IconSetProvider.material,
-    activityType: ActivityType.preparation,
-    name: ActivityType.preparation,
-    iconName: "build",
-    color: "#607D8B", // blue-grey hsl(200)
-  },
+  // {
+  //   iconSet: IconSetProvider.ionic,
+  //   activityType: ActivityType.walk,
+  //   name: ActivityType.walk,
+  //   iconName: "walk",
+  //   color: "#8BC34A", // light-green hsl(88)
+  // },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.sightseeing,
+  //   name: ActivityType.sightseeing,
+  //   iconName: "photo-camera",
+  //   color: "#f0a505", // orange hsl(36)
+  // },
+  // {
+  //   iconSet: IconSetProvider.material,
+  //   activityType: ActivityType.preparation,
+  //   name: ActivityType.preparation,
+  //   iconName: "build",
+  //   color: "#607D8B", // blue-grey hsl(200)
+  // },
   // {
   //   iconSet: IconSetProvider.material,
   //   activityType: ActivityType.rest,
@@ -109,8 +109,8 @@ const activityIcons: ActivityIcon[] = [
   // },
   {
     iconSet: IconSetProvider.material,
-    activityType: ActivityType.hikeOrCamp,
-    name: ActivityType.hikeOrCamp,
+    activityType: ActivityType.tour,
+    name: ActivityType.tour,
     iconName: "hiking",
     color: "#429862", // dark-green hsl(86)
   },
@@ -143,7 +143,7 @@ const getIcon = (type: number): ActivityIcon => {
   const selectedIcon = activityIcons.find((i) => i.activityType == type);
   return (
     selectedIcon ??
-    activityIcons.find((i) => i.activityType === ActivityType.none)!
+    activityIcons.find((i) => i.activityType === ActivityType.plan)!
   );
 };
 

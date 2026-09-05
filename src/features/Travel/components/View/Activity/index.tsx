@@ -44,7 +44,7 @@ const getActivityDetailData = (activity: ItineraryActivity | null) => {
   switch (activity.type) {
     case ActivityType.flight:
       return activity.flightDetails;
-    case ActivityType.accomodation:
+    case ActivityType.stay:
       return activity.accomodationDetails;
     case ActivityType.cafeRestaurant:
       return activity.cafeRestaurantDetails;
@@ -54,7 +54,7 @@ const getActivityDetailData = (activity: ItineraryActivity | null) => {
       return activity.shoppingDetails;
     case ActivityType.entertainmentAndRecreation:
       return activity.entertainmentDetails;
-    case ActivityType.transportation:
+    case ActivityType.transit:
       return activity.transportationDetails;
     // case ActivityType.walk:
     // return activity.walkDetails;
@@ -94,7 +94,7 @@ const hasActivityDetails = (activity?: ItineraryActivity | null) => {
   switch (activity.type) {
     case ActivityType.flight:
       return !!activity.flightDetails;
-    case ActivityType.accomodation:
+    case ActivityType.stay:
       return !!activity.accomodationDetails;
     case ActivityType.cafeRestaurant:
       return !!activity.cafeRestaurantDetails;

@@ -1275,7 +1275,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
     }
 
     // Save associated accomodation details
-    if (activityData.type === ActivityType.accomodation && activityData.accomodationDetails) {
+    if (activityData.type === ActivityType.stay && activityData.accomodationDetails) {
       const accomodationDetailsCollection = database.get<AccomodationDetails>("accomodation_details");
       const existingDetails = await accomodationDetailsCollection.query(
         Q.where("activity_id", activity.id)
@@ -1590,7 +1590,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
     }
 
     // Save associated transportation details
-    if (activityData.type === ActivityType.transportation && activityData.transportationDetails) {
+    if (activityData.type === ActivityType.transit && activityData.transportationDetails) {
       const transportationDetailsCollection = database.get<TransportationDetails>("transportation_details");
       const existingDetails = await transportationDetailsCollection.query(
         Q.where("activity_id", activity.id)
@@ -2262,7 +2262,7 @@ export const seedDemoTravelData = async (): Promise<void> => {
         notes: "Show booking confirmation at the front desk.",
         isOffline: true,
         sortOrder: "2",
-        type: ActivityType.accomodation,
+        type: ActivityType.stay,
         secondaryType: JSON.stringify([]),
         images: JSON.stringify([]),
         isDone: false,
@@ -2431,7 +2431,7 @@ export const seedDemoTravelData = async (): Promise<void> => {
         notes: "Double check all drawers and closets for belongings before leaving.",
         isOffline: true,
         sortOrder: "1",
-        type: ActivityType.accomodation,
+        type: ActivityType.stay,
         secondaryType: JSON.stringify([]),
         images: JSON.stringify([]),
         isDone: false,

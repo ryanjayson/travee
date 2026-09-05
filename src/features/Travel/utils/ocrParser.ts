@@ -44,17 +44,17 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
       keywords: ["flight", "airline", "airport", "boarding pass", "e-ticket", "pnr", "carrier", "gate", "terminal", "layover", "cabin", "seat", "flight number", "airplane", "airways", "airlines"]
     },
     hotel: {
-      type: ActivityType.accomodation,
+      type: ActivityType.stay,
       label: "Hotel",
       keywords: ["hotel", "motel", "resort", "inn", "suites", "accommodation", "check-in", "check-out", "booking.com", "expedia", "agoda", "reception", "breakfast", "night stay", "lodging"]
     },
     airbnb: {
-      type: ActivityType.accomodation,
+      type: ActivityType.stay,
       label: "Airbnb",
       keywords: ["airbnb", "homestay", "host", "guest house", "villa", "apartment stay", "stay details", "house rules", "shared room", "superhost"]
     },
     train: {
-      type: ActivityType.transportation,
+      type: ActivityType.transit,
       label: "Train",
       keywords: ["train", "railway", "rail", "eurostar", "amtrak", "shinkansen", "carriage", "platform", "track", "station", "express train", "jr pass", "tgv"]
     },
@@ -64,22 +64,22 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
       keywords: ["car rental", "car hire", "hertz", "avis", "enterprise", "sixt", "budget car", "rental agreement", "vehicle lease", "pick-up location", "drop-off", "driver license"]
     },
     taxi: {
-      type: ActivityType.transportation,
+      type: ActivityType.transit,
       label: "Taxi",
       keywords: ["taxi", "cab", "uber", "grab", "lyft", "ride-sharing", "metered fare", "taxi receipt", "driver details"]
     },
     ferry: {
-      type: ActivityType.transportation,
+      type: ActivityType.transit,
       label: "Ferry",
       keywords: ["ferry", "pier", "port", "boat", "ferry terminal", "ferry ticket", "catamaran", "hydrofoil", "seacat"]
     },
     bus: {
-      type: ActivityType.transportation,
+      type: ActivityType.transit,
       label: "Bus",
       keywords: ["bus", "coach", "greyhound", "flixbus", "bus station", "terminal bus", "bus ticket", "shuttle", "transit link"]
     },
     cruise: {
-      type: ActivityType.transportation,
+      type: ActivityType.transit,
       label: "Cruise",
       keywords: ["cruise", "ship", "cruise line", "royal caribbean", "carnival", "msc cruise", "cabin number", "deck number", "port of call", "cruise terminal", "boarding card"]
     },

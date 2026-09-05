@@ -19,7 +19,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
       <View className="p-2">
         <View className="">
           <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest mb-2">
-            Accommodation / Place to stay
+            Stay / Place to stay
           </Text>
           <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
             {data.accomodationName || "N/A"}

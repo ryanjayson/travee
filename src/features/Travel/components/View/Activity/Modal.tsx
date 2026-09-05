@@ -34,42 +34,42 @@ const screenHeight = Platform.OS === "android"
   ? Dimensions.get("screen").height
   : Dimensions.get("window").height;
 
-const is60PercentSnap = (type?: ActivityType) => {
-  if (type == null) return false;
-  return [
-    ActivityType.preparation,
-    ActivityType.shopppingAndService,
-    ActivityType.nature,
-    ActivityType.sightseeing,
-    // ActivityType.walk,
-    ActivityType.entertainmentAndRecreation,
-    ActivityType.cafeRestaurant,
-  ].includes(type);
-};
+// const is60PercentSnap = (type?: ActivityType) => {
+//   if (type == null) return false;
+//   return [
+//     ActivityType.preparation,
+//     // ActivityType.shopppingAndService,
+//     // ActivityType.nature,
+//     // ActivityType.sightseeing,
+//     // // ActivityType.walk,
+//     // ActivityType.entertainmentAndRecreation,
+//     // ActivityType.cafeRestaurant,
+//   ].includes(type);
+// };
 
 const hasActivityDetails = (activity?: ItineraryActivity | null) => {
   if (!activity) return false;
   switch (activity.type) {
     case ActivityType.flight:
       return !!activity.flightDetails;
-    case ActivityType.accomodation:
+    case ActivityType.stay:
       return !!activity.accomodationDetails;
-    case ActivityType.cafeRestaurant:
-      return !!activity.cafeRestaurantDetails;
-    case ActivityType.nature:
-      return !!activity.natureDetails;
-    case ActivityType.shopppingAndService:
-      return !!activity.shoppingDetails;
-    case ActivityType.entertainmentAndRecreation:
-      return !!activity.entertainmentDetails;
+    // case ActivityType.cafeRestaurant:
+    //   return !!activity.cafeRestaurantDetails;
+    // case ActivityType.nature:
+    //   return !!activity.natureDetails;
+    // case ActivityType.shopppingAndService:
+    //   return !!activity.shoppingDetails;
+    // case ActivityType.entertainmentAndRecreation:
+    //   return !!activity.entertainmentDetails;
     // case ActivityType.walk:
     //   return !!activity.walkDetails;
-    case ActivityType.sightseeing:
-      return !!activity.sightseeingDetails;
-    case ActivityType.preparation:
-      return !!activity.preparationDetails;
-    case ActivityType.hikeOrCamp:
-      return !!activity.hikeOrCampDetails;
+    // case ActivityType.sightseeing:
+    //   return !!activity.sightseeingDetails;
+    // case ActivityType.preparation:
+    //   return !!activity.preparationDetails;
+    // case ActivityType.hikeOrCamp:
+    //   return !!activity.hikeOrCampDetails;
     default:
       return false;
   }

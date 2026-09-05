@@ -44,7 +44,7 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
     switch (itineraryActivity.type) {
       case ActivityType.flight:
         return <FlightDetails data={itineraryActivity.flightDetails} />;
-      case ActivityType.accomodation:
+      case ActivityType.stay:
         return <AccomodationDetails data={itineraryActivity.accomodationDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.cafeRestaurant:
         return (
@@ -80,7 +80,7 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
         return <PreparationDetails data={itineraryActivity.preparationDetails} />;
       case ActivityType.hikeOrCamp:
         return <HikeOrCampDetails data={itineraryActivity.hikeOrCampDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.transportation:
+      case ActivityType.transit:
         return <TransportationDetails data={itineraryActivity.transportationDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.rideRental:
         return <RideRentalDetails data={itineraryActivity.rideRentalDetails} onFullScreenChange={onFullScreenChange} />;

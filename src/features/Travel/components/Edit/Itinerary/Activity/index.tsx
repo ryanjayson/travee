@@ -756,12 +756,12 @@ const EditActivity = ({
         finalStartDate = values.flightDetails?.departureDate
           ? new Date(values.flightDetails.departureDate)
           : undefined;
-      } else if (values.type === ActivityType.accomodation) {
+      } else if (values.type === ActivityType.stay) {
         finalStartDate = values.accomodationDetails?.checkinDateTime
           ? new Date(values.accomodationDetails.checkinDateTime)
           : undefined;
-      } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkinDateTime) {
-        finalStartDate = new Date(values.hikeOrCampDetails.checkinDateTime);
+        // } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkinDateTime) {
+        //   finalStartDate = new Date(values.hikeOrCampDetails.checkinDateTime);
       } else if (values.startDate) {
         finalStartDate = new Date(`${values.startDate}T${values.startTime}:00`);
       }
@@ -769,12 +769,12 @@ const EditActivity = ({
       let finalEndDate: Date | undefined = undefined;
       if (values.type === ActivityType.flight && values.flightDetails?.arrivalDate) {
         finalEndDate = new Date(values.flightDetails.arrivalDate);
-      } else if (values.type === ActivityType.accomodation) {
+      } else if (values.type === ActivityType.stay) {
         finalEndDate = values.accomodationDetails?.checkoutDateTime
           ? new Date(values.accomodationDetails.checkoutDateTime)
           : undefined;
-      } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkoutDateTime) {
-        finalEndDate = new Date(values.hikeOrCampDetails.checkoutDateTime);
+        // } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkoutDateTime) {
+        //   finalEndDate = new Date(values.hikeOrCampDetails.checkoutDateTime);
       } else if (values.endDate) {
         finalEndDate = new Date(`${values.endDate}T${values.endTime}:00`);
       }
@@ -867,7 +867,7 @@ const EditActivity = ({
             price: values.flightDetails.price ? Number(values.flightDetails.price) : null,
           }
           : null,
-        accomodationDetails: values.type === ActivityType.accomodation && values.accomodationDetails
+        accomodationDetails: values.type === ActivityType.stay && values.accomodationDetails
           ? {
             accomodationName: values.accomodationDetails.accomodationName,
             address: values.accomodationDetails.address || null,
@@ -887,59 +887,8 @@ const EditActivity = ({
             contactName: values.accomodationDetails.contactName || null,
           }
           : null,
-        cafeRestaurantDetails: values.type === ActivityType.cafeRestaurant && values.cafeRestaurantDetails
-          ? {
-            restaurantName: values.cafeRestaurantDetails.restaurantName,
-            address: values.cafeRestaurantDetails.address || null,
-            destinationAddressData: values.cafeRestaurantDetails.destinationAddressData ?? null,
-            cuisine: values.cafeRestaurantDetails.cuisine || null,
-            priceRange: values.cafeRestaurantDetails.priceRange || null,
-            reservationLink: values.cafeRestaurantDetails.reservationLink || null,
-            websiteAddress: values.cafeRestaurantDetails.websiteAddress || null,
-            contactNumber: values.cafeRestaurantDetails.contactNumber || null,
-          }
-          : null,
-        natureDetails: values.type === ActivityType.nature && values.natureDetails
-          ? {
-            spotName: values.natureDetails.spotName,
-            address: values.natureDetails.address || null,
-            destinationAddressData: values.natureDetails.destinationAddressData ?? null,
-            subType: values.natureDetails.subType || null,
-            entryFee: values.natureDetails.entryFee || null,
-            websiteAddress: values.natureDetails.websiteAddress || null,
-            contactName: values.natureDetails.contactName || null,
-            contactNumber: values.natureDetails.contactNumber || null,
-            emailAddress: values.natureDetails.emailAddress || null,
-          }
-          : null,
-        shoppingDetails: values.type === ActivityType.shopppingAndService && values.shoppingDetails
-          ? {
-            venueName: values.shoppingDetails.venueName,
-            address: values.shoppingDetails.address || null,
-            destinationAddressData: values.shoppingDetails.destinationAddressData ?? null,
-            subType: values.shoppingDetails.subType || null,
-            websiteAddress: values.shoppingDetails.websiteAddress || null,
-            bookingReferenceOrLink: values.shoppingDetails.bookingReferenceOrLink || null,
-            promoCodeOrLink: values.shoppingDetails.promoCodeOrLink || null,
-            contactNumber: values.shoppingDetails.contactNumber || null,
-            emailAddress: values.shoppingDetails.emailAddress || null,
-          }
-          : null,
-        entertainmentDetails: values.type === ActivityType.entertainmentAndRecreation && values.entertainmentDetails
-          ? {
-            venueName: values.entertainmentDetails.venueName,
-            address: values.entertainmentDetails.address || null,
-            destinationAddressData: values.entertainmentDetails.destinationAddressData ?? null,
-            subType: values.entertainmentDetails.subType || null,
-            websiteAddress: values.entertainmentDetails.websiteAddress || null,
-            ticketPrice: values.entertainmentDetails.ticketPrice || null,
-            bookingReference: values.entertainmentDetails.bookingReference || null,
-            contactName: values.entertainmentDetails.contactName || null,
-            contactNumber: values.entertainmentDetails.contactNumber || null,
-            emailAddress: values.entertainmentDetails.emailAddress || null,
-          }
-          : null,
-        transportationDetails: values.type === ActivityType.transportation && values.transportationDetails
+
+        transportationDetails: values.type === ActivityType.transit && values.transportationDetails
           ? {
             mode: values.transportationDetails.mode || null,
             operatorProvider: values.transportationDetails.operatorProvider || null,
@@ -960,83 +909,15 @@ const EditActivity = ({
             notes: values.transportationDetails.notes || null,
           }
           : null,
-        // walkDetails: values.type === ActivityType.walk && values.walkDetails
+        // preparationDetails: values.type === ActivityType.preparation && values.preparationDetails
         //   ? {
-        //     routeName: values.walkDetails.routeName || null,
-        //     estimatedDistanceKm: values.walkDetails.estimatedDistanceKm || null,
-        //     estimatedDuration: values.walkDetails.estimatedDuration || null,
+        //     taskLabel: values.preparationDetails.taskLabel || null,
+        //     deadlineDateTime: values.preparationDetails.deadlineDateTime
+        //       ? new Date(values.preparationDetails.deadlineDateTime)
+        //       : null,
+        //     priority: values.preparationDetails.priority || null,
+        //     notes: values.preparationDetails.notes || null,
         //   }
-        //   : null,
-        sightseeingDetails: values.type === ActivityType.sightseeing && values.sightseeingDetails
-          ? {
-            attractionName: values.sightseeingDetails.attractionName,
-            address: values.sightseeingDetails.address || null,
-            destinationAddressData: values.sightseeingDetails.destinationAddressData ?? null,
-            entryFee: values.sightseeingDetails.entryFee || null,
-            websiteAddress: values.sightseeingDetails.websiteAddress || null,
-            bookingReference: values.sightseeingDetails.bookingReference || null,
-            contactNumber: values.sightseeingDetails.contactNumber || null,
-            emailAddress: values.sightseeingDetails.emailAddress || null,
-          }
-          : null,
-        preparationDetails: values.type === ActivityType.preparation && values.preparationDetails
-          ? {
-            taskLabel: values.preparationDetails.taskLabel || null,
-            deadlineDateTime: values.preparationDetails.deadlineDateTime
-              ? new Date(values.preparationDetails.deadlineDateTime)
-              : null,
-            priority: values.preparationDetails.priority || null,
-            notes: values.preparationDetails.notes || null,
-          }
-          : null,
-        // restDetails: values.type === ActivityType.rest && values.restDetails
-        //   ? {
-        //       restLocationName: values.restDetails.restLocationName || null,
-        //       restLocationType: values.restDetails.restLocationType || null,
-        //     }
-        //   : null,
-        hikeOrCampDetails: values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails
-          ? {
-            trailOrSiteName: values.hikeOrCampDetails.trailOrSiteName,
-            address: values.hikeOrCampDetails.address || null,
-            destinationAddressData: values.hikeOrCampDetails.destinationAddressData ?? null,
-            subType: values.hikeOrCampDetails.subType || null,
-            estimatedDistanceKm: values.hikeOrCampDetails.estimatedDistanceKm || null,
-            campsiteName: values.hikeOrCampDetails.campsiteName || null,
-            permitRequired: values.hikeOrCampDetails.permitRequired ?? null,
-            contactPerson: values.hikeOrCampDetails.contactPerson || null,
-            contactNumber: values.hikeOrCampDetails.contactNumber || null,
-            emailAddress: values.hikeOrCampDetails.emailAddress || null,
-            websiteAddress: values.hikeOrCampDetails.websiteAddress || null,
-            reservationLink: values.hikeOrCampDetails.reservationLink || null,
-            checkinDateTime: values.hikeOrCampDetails.checkinDateTime
-              ? new Date(values.hikeOrCampDetails.checkinDateTime)
-              : null,
-            checkoutDateTime: values.hikeOrCampDetails.checkoutDateTime
-              ? new Date(values.hikeOrCampDetails.checkoutDateTime)
-              : null,
-          }
-          : null,
-        // motorcycleRideDetails: values.type === ActivityType.motorcycleRide && values.motorcycleRideDetails
-        //   ? {
-        //       routeName: values.motorcycleRideDetails.routeName || null,
-        //       startingPoint: values.motorcycleRideDetails.startingPoint || null,
-        //       endingPoint: values.motorcycleRideDetails.endingPoint || null,
-        //       estimatedDistanceKm: values.motorcycleRideDetails.estimatedDistanceKm || null,
-        //       roadType: values.motorcycleRideDetails.roadType || null,
-        //       bikeModel: values.motorcycleRideDetails.bikeModel || null,
-        //       fuelStops: values.motorcycleRideDetails.fuelStops || null,
-        //     }
-        //   : null,
-        // meetupDetails: values.type === ActivityType.meetup && values.meetupDetails
-        //   ? {
-        //       venueName: values.meetupDetails.venueName,
-        //       address: values.meetupDetails.address || null,
-        //       hostOrOrganizer: values.meetupDetails.hostOrOrganizer || null,
-        //       numberOfPeople: values.meetupDetails.numberOfPeople || null,
-        //       meetupType: values.meetupDetails.meetupType || null,
-        //       rsvpLink: values.meetupDetails.rsvpLink || null,
-        //     }
         //   : null,
         rideRentalDetails: values.type === ActivityType.rideRental && values.rideRentalDetails
           ? {
@@ -1142,7 +1023,7 @@ const EditActivity = ({
     id: itineraryActivity?.id,
     title: itineraryActivity?.title || "",
     description: itineraryActivity?.description || "",
-    type: itineraryActivity?.type ?? ActivityType.none,
+    type: itineraryActivity?.type ?? ActivityType.plan,
     sortOrder: itineraryActivity?.sortOrder || "",
     startDate: itineraryActivity?.startDate ? toLocalDateStr(itineraryActivity.startDate) : (currentSection?.startDate ? toLocalDateStr(currentSection.startDate) : null),
     startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? toLocalTimeStr(itineraryActivity.startDate) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
@@ -1172,10 +1053,10 @@ const EditActivity = ({
     accomodationDetails: {
       accomodationName: (itineraryActivity?.accomodationDetails?.accomodationName || "").trim() !== ""
         ? itineraryActivity.accomodationDetails.accomodationName
-        : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.title || "" : ""),
+        : (itineraryActivity?.type === ActivityType.stay ? itineraryActivity?.title || "" : ""),
       address: (itineraryActivity?.accomodationDetails?.address || "").trim() !== ""
         ? itineraryActivity.accomodationDetails.address
-        : (itineraryActivity?.type === ActivityType.accomodation ? itineraryActivity?.destination || "" : ""),
+        : (itineraryActivity?.type === ActivityType.stay ? itineraryActivity?.destination || "" : ""),
       destinationAddressData: itineraryActivity?.accomodationDetails?.destinationAddressData ?? null,
       subType: itineraryActivity?.accomodationDetails?.subType || null,
       checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime && new Date(itineraryActivity.accomodationDetails.checkinDateTime).getTime() > 0
@@ -1445,7 +1326,7 @@ const EditActivity = ({
                   )}
                 </View>
 
-                {values.type === ActivityType.none && (
+                {values.type === ActivityType.plan && (
                   <DateTime
                     startDate={values.startDate}
                     startTime={values.startTime}
@@ -1457,8 +1338,8 @@ const EditActivity = ({
                 )}
 
 
-                {/* Accomodation Details Accordion */}
-                {values.type === ActivityType.accomodation && (
+                {/* Stay Details Accordion */}
+                {values.type === ActivityType.stay && (
                   <AccomodationTab
                     values={values}
                     handleChange={handleChange}
@@ -1496,7 +1377,7 @@ const EditActivity = ({
                 )}
 
                 {/* Cafe / Restaurant Details */}
-                {values.type === ActivityType.cafeRestaurant && (
+                {/* {values.type === ActivityType.cafeRestaurant && (
                   <CafeRestaurantTab
                     values={values}
                     handleChange={handleChange}
@@ -1514,10 +1395,10 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
                 {/* Nature Details */}
-                {values.type === ActivityType.nature && (
+                {/* {values.type === ActivityType.nature && (
                   <NatureTab
                     values={values}
                     handleChange={handleChange}
@@ -1536,10 +1417,10 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
                 {/* Shopping & Service Details */}
-                {values.type === ActivityType.shopppingAndService && (
+                {/* {values.type === ActivityType.shopppingAndService && (
                   <ShoppingTab
                     values={values}
                     handleChange={handleChange}
@@ -1558,10 +1439,10 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
                 {/* Entertainment & Recreation Details */}
-                {values.type === ActivityType.entertainmentAndRecreation && (
+                {/* {values.type === ActivityType.entertainmentAndRecreation && (
                   <EntertainmentTab
                     values={values}
                     handleChange={handleChange}
@@ -1580,10 +1461,10 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
-                {/* Transportation Details */}
-                {values.type === ActivityType.transportation && (
+                {/* Transit Details */}
+                {values.type === ActivityType.transit && (
                   <TransportationTab
                     values={values}
                     handleChange={handleChange}
@@ -1615,7 +1496,7 @@ const EditActivity = ({
                 )} */}
 
                 {/* Sightseeing Details */}
-                {values.type === ActivityType.sightseeing && (
+                {/* {values.type === ActivityType.sightseeing && (
                   <SightseeingTab
                     values={values}
                     handleChange={handleChange}
@@ -1633,10 +1514,10 @@ const EditActivity = ({
                     onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
                     onClearTime={() => setValues({ ...values, startTime: "" })}
                   />
-                )}
+                )} */}
 
                 {/* Preparation Details */}
-                {values.type === ActivityType.preparation && (
+                {/* {values.type === ActivityType.preparation && (
                   <PreparationTab
                     values={values}
                     handleChange={handleChange}
@@ -1647,7 +1528,7 @@ const EditActivity = ({
                     noPadding={true}
                     fieldRefs={fieldRefs}
                   />
-                )}
+                )} */}
 
                 {/* Rest Details */}
                 {/* {values.type === ActivityType.rest && (
@@ -1666,7 +1547,7 @@ const EditActivity = ({
                 )} */}
 
                 {/* Hike or Camp Details */}
-                {values.type === ActivityType.hikeOrCamp && (
+                {/* {values.type === ActivityType.hikeOrCamp && (
                   <HikeOrCampTab
                     values={values}
                     handleChange={handleChange}
@@ -1684,7 +1565,7 @@ const EditActivity = ({
                     noPadding={true}
                     fieldRefs={fieldRefs}
                   />
-                )}
+                )} */}
 
                 {/* Motorcycle Ride Details */}
                 {/* {values.type === ActivityType.motorcycleRide && (

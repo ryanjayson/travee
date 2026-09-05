@@ -5,20 +5,21 @@ export enum IconSetProvider {
 }
 
 export enum ActivityType {
-  none = 0,
+  plan = 0,
   flight = 1,
-  accomodation = 3, // checkin and checkout
-  cafeRestaurant = 4, // food, eat, drink, snack, coffee, bar, lounge, pub
+  stay = 2, // checkin and checkout
+  transit = 3, // ride, bike, boat, bus, taxi, train, ferry
+  rideRental = 4, // RV, yatch, Motorbike, Motorcycle, car, bike
+  tour = 5,
+  // preparation = 6,
+  // cafeRestaurant = 4, // food, eat, drink, snack, coffee, bar, lounge, pub
   //more
-  transportation = 8, // ride, bike, boat, bus, taxi, train, ferry
-  rideRental = 16, // RV, yatch, Motorbike, Motorcycle, car, bike
-  sightseeing = 10,
-  shopppingAndService = 6, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
-  entertainmentAndRecreation = 7, //park, museum, gym, cinema, stadium, zoo, concert
-  nature = 5, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
+  // sightseeing = 10,
+  // shopppingAndService = 6, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
+  // entertainmentAndRecreation = 7, //park, museum, gym, cinema, stadium, zoo, concert
+  // nature = 5, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
   // walk = 9, TODO: reenable for the future, do not enable yet
-  hikeOrCamp = 13, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
-  preparation = 11,
+  // hikeOrCamp = 13, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
   // rest = 12,
   // motorcycleRide = 14, // motorbike 
   // meetup = 15,
@@ -96,32 +97,34 @@ export enum TripType {
 
 export function getActivityTypeLabel(type: ActivityType): string {
   switch (type) {
-    case ActivityType.none:
-      return "No type";
+    case ActivityType.plan:
+      return "Plan";
     case ActivityType.flight:
       return "Flight";
-    case ActivityType.accomodation:
-      return "Accommodation";
-    case ActivityType.cafeRestaurant:
-      return "Cafe/Restaurant";
-    case ActivityType.nature:
-      return "Nature";
-    case ActivityType.shopppingAndService:
-      return "Shopping";
-    case ActivityType.entertainmentAndRecreation:
-      return "Entertainment";
-    case ActivityType.walk:
-      return "Walk";
-    case ActivityType.sightseeing:
-      return "Sightseeing";
-    case ActivityType.preparation:
-      return "Preparation";
-    case ActivityType.hikeOrCamp:
-      return "Hike / Camp";
-    case ActivityType.transportation:
-      return "Transportation";
+    case ActivityType.stay:
+      return "Stay";
+    // case ActivityType.cafeRestaurant:
+    //   return "Cafe/Restaurant";
+    // case ActivityType.nature:
+    //   return "Nature";
+    // case ActivityType.shopppingAndService:
+    //   return "Shopping";
+    // case ActivityType.entertainmentAndRecreation:
+    //   return "Entertainment";
+    // case ActivityType.walk:
+    //   return "Walk";
+    // case ActivityType.sightseeing:
+    //   return "Sightseeing";
+    // case ActivityType.preparation:
+    //   return "Preparation";
+    // case ActivityType.hikeOrCamp:
+    //   return "Hike / Camp";
+    case ActivityType.transit:
+      return "Transit";
     case ActivityType.rideRental:
       return "Rental";
+      case ActivityType.tour:
+      return "Tour";
     default:
       return "Activity";
   }

@@ -48,7 +48,7 @@ export default function TransportationTab({
       <View className="flex-row gap-2 justify-start items-center mb-5">
         <Icon name="directions-bus" size={20} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">
-          Transportation Details
+          Transit Details
         </Text>
       </View>
 

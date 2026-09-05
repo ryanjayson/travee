@@ -33,7 +33,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
             <ActivityDetailCardAddress
               pickupAddress={data.pickupLocation}
               dropoffAddress={data.dropoffLocation}
-              title={data.operatorProvider || "Transportation Route"}
+              title={data.operatorProvider || "Transit Route"}
               onFullScreenChange={onFullScreenChange}
             />
           </View>

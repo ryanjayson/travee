@@ -60,7 +60,7 @@ export default function AccomodationTab({
       <View className="flex-row gap-2 justify-start items-center mb-5">
         <Icon name="hotel" size={20} color="#000" />
         <Text className="text-md font-bold tracking-wider uppercase">
-          Accommodation Details
+          Stay Details
         </Text>
       </View>
       {/* Accomodation Name */}
