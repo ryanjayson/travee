@@ -219,7 +219,7 @@ const TravelCatalog = () => {
         key={travel.id}
         index={index}
         className="rounded-4xl mb-4 shadow-sm mx-4 overflow-hidden "
-        style={{ backgroundColor: assignedColor + '30' }}
+        style={{ backgroundColor: assignedColor + '20' }}
       >
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
           <View className="px-4 rounded-4xl relative overflow-hidden">

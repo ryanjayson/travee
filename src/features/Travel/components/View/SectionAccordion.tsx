@@ -365,7 +365,7 @@ const DraggableSectionItem = ({
                       </Text>
                       <View className="text-center tracking-wide flex-row align-center ">
                         <Text className="text-md font-normal text-tertiary/60 text-center leading-[28px]">
-                          You haven't added any activities yet in this section.
+                          You have not added any activities to this section yet.
                           {allowItemReordering ? " Create, or drag & drop activity here " : " Create one now"}
                         </Text>
 
@@ -1302,6 +1302,7 @@ const SectionAccordion = ({
             )}
             {sections.map((section, index) => {
               const isDefaultSection = section.isDefaultSection;
+              const hasDefaultSectionWithActivity = sections.filter((section) => section.isDefaultSection && section.itineraryActivity?.length > 0).length > 0;
               if (isDefaultSection) {
                 if (!section.itineraryActivity || section.itineraryActivity.length === 0) {
                   return null;
@@ -1405,7 +1406,7 @@ const SectionAccordion = ({
                     onLayout={(e) => {
                       if (section.id) sectionPositions.current[section.id] = e.nativeEvent.layout.y;
                     }}
-                    style={{ marginTop: index === 1 ? 6 : 0 }}>
+                    style={{ marginTop: index === 1 ? hasDefaultSectionWithActivity ? 6 : 24 : 0 }}>
                     <View className={`absolute top-9px h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
                       <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
                       <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
@@ -1482,7 +1483,7 @@ const SectionAccordion = ({
               <View
                 style={{
                   marginLeft: viewMode === "narrow" ? 46 : 50,
-                  marginTop: viewMode === "narrow" ? 0 : 28,
+                  marginTop: viewMode === "narrow" ? 0 : 8,
                 }}
                 className="flex-1 z-10 px-2 w-4xl h-4xl rounded-full"
               >
