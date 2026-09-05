@@ -934,6 +934,7 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
         images: safeJsonParse(a.images, undefined),
         isDone: a.isDone,
         attachments: safeJsonParse(a.attachments, undefined),
+        customTags: safeJsonParse(a.customTags, a.customTags ? [a.customTags] : undefined),
         notesCount: notesCountMap.get(a.id) ?? 0,
         expensesCount: expensesCountMap.get(a.id) ?? 0,
         checklistCount: checklistCountMap.get(a.id) ?? 0,
@@ -1204,6 +1205,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           isDeleted: false,
           isDefaultSection: activityData.isDefaultSection,
           attachments: JSON.stringify(activityData.attachments || []),
+          customTags: activityData.customTags ? (Array.isArray(activityData.customTags) ? JSON.stringify(activityData.customTags) : String(activityData.customTags)) : null,
         });
       });
     } else {
@@ -1227,6 +1229,7 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           images: JSON.stringify(activityData.images),
           isDone: activityData.isDone || false,
           attachments: JSON.stringify(activityData.attachments || []),
+          customTags: activityData.customTags ? (Array.isArray(activityData.customTags) ? JSON.stringify(activityData.customTags) : String(activityData.customTags)) : null,
         });
       });
     }
@@ -1895,6 +1898,7 @@ export const fetchLocalItineraryActivity = async (id: string): Promise<any> => {
       images: safeJsonParse(a.images, undefined),
       isDone: a.isDone,
       attachments: safeJsonParse(a.attachments, undefined),
+      customTags: safeJsonParse(a.customTags, a.customTags ? [a.customTags] : undefined),
       notesCount,
       expensesCount,
       checklistCount,

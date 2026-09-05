@@ -88,9 +88,9 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
 
         if (end >= today) {
           let current = new Date(start);
-          const isOngoing = start <= today && end >= today;
-          const color = isOngoing ? "#E8F5E8" : "#E3F2FD";
-          const textColor = isOngoing ? "#2E7D32" : "#263F69";
+          const isTravelling = start <= today && end >= today;
+          const color = isTravelling ? "#E8F5E8" : "#E3F2FD";
+          const textColor = isTravelling ? "#2E7D32" : "#263F69";
 
           while (current <= end) {
             const dateStr = current.toISOString().split("T")[0];

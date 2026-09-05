@@ -338,10 +338,10 @@ const CreateTripModal = ({
                 </Text>
               </View>
 
-              {/* Ongoing */}
+              {/* Travelling */}
               <View style={{ flexDirection: "row", gap: 12, alignItems: "center" }}>
                 <View style={{ width: 80, height: 28, borderRadius: 6, backgroundColor: "#ECFDF5", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#A7F3D0" }}>
-                  <Text style={{ fontSize: 12, fontWeight: "bold", color: "#047857" }}>On going</Text>
+                  <Text style={{ fontSize: 12, fontWeight: "bold", color: "#047857" }}>Travelling</Text>
                 </View>
                 <Text style={{ flex: 1, fontSize: 13, color: "#374151", lineHeight: 18 }}>
                   Current date is between departure/start and arrival/end date.

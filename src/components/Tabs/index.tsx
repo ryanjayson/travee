@@ -83,10 +83,10 @@ const Tabs: FC<TabsProps> = ({
 
     if (tab.isVisible === false) return null;
     const isActive = tab.id === activeTabId && !tab.disabled;
-    const isOngoingWithActiveTrip = tab.id === "ongoing" && hasActionTripStatus;
+    const isOngoingWithActiveTrip = (tab.id === "ongoing" || tab.id === "travelling") && hasActionTripStatus;
 
     let displayTitle = tab.title;
-    if (type === "default" && tab.id === "ongoing") {
+    if (type === "default" && (tab.id === "ongoing" || tab.id === "travelling")) {
       displayTitle = tab.title.replace(/\s*\(\d+\)/, "");
     }
 

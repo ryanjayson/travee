@@ -78,7 +78,7 @@ const TravelDetail = ({ travelData, onBack }: TravelDetailPageProps) => {
 
     const startOrDepartureDate = new Date(travel.startOrDepartureDate);
     startOrDepartureDate.setHours(0, 0, 0, 0);
-    return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
+    return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Travelling;
   };
 
   const effectiveStatus = getEffectiveStatus(travelData);

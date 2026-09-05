@@ -26,7 +26,7 @@ import { useToast } from "../../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import { fetchLocalItineraryActivity } from "../../../../../../services/local/travelService";
-import { ActivityType, getActivityTypeLabel } from "../../../../../../types/enums";
+import { ActivityType, ActivityPlanType, getActivityTypeLabel } from "../../../../../../types/enums";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
 import { useDeleteActivityMutation, useUpdateActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
 import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItemMutation, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
@@ -52,6 +52,9 @@ import ShoppingTab from "./Tabs/ShoppingTab";
 import SightseeingTab from "./Tabs/SightseeingTab";
 import TransportationTab from "./Tabs/TransportationTab";
 import WalkTab from "./Tabs/WalkTab";
+import PlanTab from "./Tabs/PlanTab";
+import PlanDateModal from "./DateTime/PlanDateModal";
+import CustomTagsInput from "./CustomTagsInput";
 
 interface Place {
   id: string;
@@ -91,6 +94,7 @@ export interface ActivityFormValues {
   title: string;
   description: string;
   type?: ActivityType | number;
+  planType?: ActivityPlanType | null;
   sortOrder?: string;
   startDate: string | null;
   startTime: string;
@@ -98,6 +102,7 @@ export interface ActivityFormValues {
   endTime: string;
   destination: string;
   destinationData?: DestinationDto;
+  customTags?: string[] | null;
   images: Images[];
   attachments: Attachment[];
   flightDetails?: {
@@ -910,10 +915,12 @@ const EditActivity = ({
         description: values.description,
         sortOrder: finalSortOrder,
         type: values.type as ActivityType,
+        planType: values.type === ActivityType.plan ? (values.planType ?? null) : null,
         startDate: finalStartDate,
         endDate: finalEndDate,
         destination: values.destination,
         destinationData: values.destinationData,
+        customTags: values.customTags || [],
         images: values.images,
         isOffline: true,
         travelId: values.travelId,
@@ -1094,6 +1101,7 @@ const EditActivity = ({
     title: itineraryActivity?.title || "",
     description: itineraryActivity?.description || "",
     type: itineraryActivity?.type ?? initialType ?? ActivityType.plan,
+    planType: itineraryActivity?.planType ?? null,
     sortOrder: itineraryActivity?.sortOrder || "",
     startDate: itineraryActivity?.startDate ? toLocalDateStr(itineraryActivity.startDate) : (currentSection?.startDate ? toLocalDateStr(currentSection.startDate) : null),
     startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? toLocalTimeStr(itineraryActivity.startDate) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
@@ -1101,6 +1109,7 @@ const EditActivity = ({
     endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? toLocalTimeStr(itineraryActivity.endDate) : "09:00",
     destination: itineraryActivity?.destination || "",
     destinationData: itineraryActivity?.destinationData || undefined,
+    customTags: itineraryActivity?.customTags || [],
     images: itineraryActivity?.images || [],
     attachments: itineraryActivity?.attachments || [],
     flightDetails: {
@@ -1365,7 +1374,14 @@ const EditActivity = ({
               <View className="flex-1 px-5 mt-2">
                 {/* Title */}
                 <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
-                  <Text className="text-xs font-semibold tracking-wider uppercase">Title <Text className="text-red-500 text-lg">*</Text></Text>
+                  <View className="flex-row justify-between items-center mb-1">
+                    <Text className="text-xs font-semibold tracking-wider uppercase">
+                      Title <Text className="text-red-500 text-lg">*</Text>
+                    </Text>
+                    <Text className="text-xs" style={{ color: '#98A2B3' }}>
+                      {(values.title || "").length}/40
+                    </Text>
+                  </View>
                   <View className="relative justify-center">
                     <TextInput
                       mode="outlined"
@@ -1378,16 +1394,45 @@ const EditActivity = ({
                       activeOutlineColor="#263F69"
                       theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
                       outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                      style={{ marginTop: 6, height: 64 }}
-                      contentStyle={{ backgroundColor: "transparent", paddingRight: 60 }}
+                      style={{ marginTop: 2, height: 64 }}
+                      contentStyle={{
+                        backgroundColor: "transparent",
+                        paddingRight: values.type === ActivityType.plan
+                          ? (values.title ? 95 : 55)
+                          : 60,
+                      }}
                       maxLength={40}
                     />
-                    <Text
-                      className="absolute right-4 bottom-3 text-xs"
-                      style={{ color: '#98A2B3' }}
-                    >
-                      {(values.title || "").length}/40
-                    </Text>
+                    {values.type === ActivityType.plan ? (
+                      <View className="absolute right-3 flex-row items-center gap-1">
+                        {Boolean(values.title) && (
+                          <TouchableOpacity
+                            onPress={() => setFieldValue("title", "")}
+                            className="p-2"
+                            accessibilityRole="button"
+                            accessibilityLabel="Clear activity title"
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          >
+                            <Icon name="close" size={20} color="#98A2B3" />
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity
+                          onPress={() =>
+                            handleOpenMapPinModal(
+                              "title",
+                              values.title,
+                              values.destinationData?.coordinates
+                            )
+                          }
+                          className="w-10 h-10 rounded-full bg-[#F2F4F7] items-center justify-center"
+                          accessibilityRole="button"
+                          accessibilityLabel="Lookup location pin on map"
+                          activeOpacity={0.7}
+                        >
+                          <Icon name="pin-drop" size={22} color={colors.primary || "#263F69"} />
+                        </TouchableOpacity>
+                      </View>
+                    ) : null}
                   </View>
                   {(touched.title || submitCount > 0) && errors.title && (
                     <View className="flex flex-row items-center mt-1">
@@ -1397,14 +1442,29 @@ const EditActivity = ({
                   )}
                 </View>
 
+                {/* Plan Details */}
                 {values.type === ActivityType.plan && (
-                  <DateTime
-                    startDate={values.startDate}
-                    startTime={values.startTime}
+                  <PlanTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
                     onPressDate={() => setShowCalendarFor("startDate")}
                     onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setFieldValue("startDate", null)}
+                    onClearDate={() => {
+                      setFieldValue("startDate", null);
+                      setFieldValue("endDate", null);
+                    }}
                     onClearTime={() => setFieldValue("startTime", "")}
+                    onPressEndDate={() => setShowCalendarFor("endDate")}
+                    onPressEndTime={() => setShowTimePickerFor("endTime")}
+                    onClearEndDate={() => {
+                      setFieldValue("endDate", null);
+                      setFieldValue("endTime", "");
+                    }}
+                    onClearEndTime={() => setFieldValue("endTime", "")}
                   />
                 )}
 
@@ -1849,6 +1909,15 @@ const EditActivity = ({
                       placeholder="Activity details"
                       confirmLabel={`${values.description ? `Update` : 'Add'}`}
                       maxLength={500}
+                    />
+                  </View>
+
+                  {/* Custom Tags */}
+                  <View ref={(el) => { fieldRefs.current["customTags"] = el; }} className="mt-5">
+                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Custom Tags</Text>
+                    <CustomTagsInput
+                      tags={values.customTags}
+                      onChangeTags={(tags) => setFieldValue("customTags", tags)}
                     />
                   </View>
                 </SimpleAccordion>
@@ -2312,6 +2381,8 @@ const EditActivity = ({
                         longitude: poi.coordinates.longitude,
                       },
                     });
+                  } else if (poiTargetType === "plan" || poiTargetType === "title") {
+                    setFieldValue("title", poi.name);
                   }
 
                   // Auto-populate the activity's main destination and coordinates if they are empty
@@ -2342,7 +2413,24 @@ const EditActivity = ({
               country={travelPlan?.travel?.destinationData?.country}
               onSelect={(location: PinnedLocation) => {
                 if (mapPinTargetField) {
-                  setFieldValue(mapPinTargetField, location.address || location.name || "");
+                  const placeText = mapPinTargetField === "title"
+                    ? (location.name || location.address || "")
+                    : (location.address || location.name || "");
+                  setFieldValue(mapPinTargetField, placeText);
+                  if (mapPinTargetField === "title") {
+                    if (!values.destination) {
+                      setFieldValue("destination", placeText);
+                    }
+                    if (location.coordinates) {
+                      setFieldValue("destinationData", {
+                        id: (location as any).id || location.placeId || undefined,
+                        coordinates: {
+                          latitude: location.coordinates.latitude,
+                          longitude: location.coordinates.longitude,
+                        },
+                      });
+                    }
+                  }
                   if (mapPinTargetField === "shoppingDetails.address" && location.coordinates) {
                     setFieldValue("shoppingDetails.destinationAddressData", {
                       id: location.id || undefined,
@@ -2384,14 +2472,20 @@ const EditActivity = ({
               }}
             />
 
-            <ActivityCalendarModal
+            <PlanDateModal
               visible={showCalendarFor !== null}
-              showCalendarFor={showCalendarFor}
-              startDate={values.startDate}
-              endDate={values.endDate}
               onClose={handleCloseCalendar}
-              setFieldValue={setFieldValue}
+              initialStartDate={values.startDate}
+              initialEndDate={values.endDate}
               tripStartDate={travelPlan?.travel?.startOrDepartureDate}
+              onConfirm={(startDate, endDate) => {
+                setFieldValue("startDate", startDate);
+                setFieldValue("endDate", endDate);
+                if (endDate && !values.endTime) {
+                  setFieldValue("endTime", "18:00");
+                }
+                setShowCalendarFor(null);
+              }}
             />
 
             <DateTimePickerModal
@@ -2748,117 +2842,5 @@ const FormikErrorScroller = ({
   return null;
 };
 
-interface ActivityCalendarModalProps {
-  visible: boolean;
-  onClose: () => void;
-  showCalendarFor: "startDate" | "endDate" | null;
-  startDate: string | null;
-  endDate: string | null;
-  setFieldValue: (field: string, value: any, shouldValidate?: boolean) => void;
-  tripStartDate?: Date | string | null;
-}
-
-const ACTIVITY_CALENDAR_THEME = {
-  todayTextColor: "#263F69",
-  todayBackgroundColor: "#E3F2FD",
-  selectedDayBackgroundColor: "#263F69",
-  selectedDayTextColor: "#ffffff",
-  textDayFontWeight: "600",
-  textMonthFontWeight: "800",
-  textMonthFontSize: 18,
-};
-
-const formatDateToYYYYMMDD = (dateVal: any) => {
-  if (!dateVal) return null;
-  const d = new Date(dateVal);
-  if (isNaN(d.getTime())) return null;
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-};
-
-const ActivityCalendarModal: React.FC<ActivityCalendarModalProps> = React.memo(({
-  visible,
-  onClose,
-  showCalendarFor,
-  startDate,
-  endDate,
-  setFieldValue,
-  tripStartDate,
-}) => {
-  const { colors } = useTheme();
-
-  const initialDate = useMemo(() => {
-    const selectedDate = (showCalendarFor === "startDate" ? startDate : endDate);
-    if (selectedDate) return selectedDate;
-
-    const formattedTripStart = formatDateToYYYYMMDD(tripStartDate);
-    if (formattedTripStart) return formattedTripStart;
-
-    return formatDateToYYYYMMDD(new Date())!;
-  }, [showCalendarFor, startDate, endDate, tripStartDate]);
-
-  const markedDates = useMemo(() => {
-    return {
-      [initialDate]: {
-        selected: true,
-        selectedColor: "#263F69",
-      },
-    };
-  }, [initialDate]);
-
-  const handleDayPress = useCallback(
-    (day: any) => {
-      if (showCalendarFor) {
-        setFieldValue(showCalendarFor, day.dateString);
-      }
-      onClose();
-    },
-    [showCalendarFor, setFieldValue, onClose]
-  );
-
-  return (
-    <Modal
-      visible={visible}
-      transparent={false}
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View className="flex-1 bg-white pt-12">
-        <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
-          <TouchableOpacity
-            onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel="Close date selector"
-          >
-            <Icon name="close" size={28} color={colors.onSurface} />
-          </TouchableOpacity>
-          <Text className="text-xl font-bold">Select Date</Text>
-          <View className="w-10" />
-        </View>
-
-        <View className="flex-1">
-          <CalendarList
-            current={initialDate}
-            pastScrollRange={12}
-            futureScrollRange={24}
-            scrollEnabled={true}
-            horizontal={false}
-            showsVerticalScrollIndicator={true}
-            hideArrows={true}
-            onDayPress={handleDayPress}
-            markedDates={markedDates}
-            theme={ACTIVITY_CALENDAR_THEME}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={5}
-            windowSize={5}
-            initialNumToRender={4}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
-});
 
 

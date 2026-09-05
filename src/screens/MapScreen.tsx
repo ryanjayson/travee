@@ -43,7 +43,7 @@ export function ExploreScreen() {
         .filter((m) => {
           if (filter === "all") return true;
           if (filter === "visited") return m.status === TravelStatus.Past;
-          if (filter === "tovisit") return m.status === TravelStatus.Upcoming || m.status === TravelStatus.Ongoing;
+          if (filter === "tovisit") return m.status === TravelStatus.Upcoming || m.status === TravelStatus.Travelling;
           return true;
         });
     } else {
@@ -61,7 +61,7 @@ export function ExploreScreen() {
         .filter((m) => {
           if (filter === "all") return true;
           if (filter === "visited") return m.status === TravelStatus.Past;
-          if (filter === "tovisit") return m.status === TravelStatus.Upcoming || m.status === TravelStatus.Ongoing;
+          if (filter === "tovisit") return m.status === TravelStatus.Upcoming || m.status === TravelStatus.Travelling;
           return true;
         });
     }

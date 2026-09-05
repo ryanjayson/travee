@@ -23,6 +23,7 @@ export default class Activity extends Model {
   @text("images") images!: string | null;
   @field("is_done") isDone!: boolean;
   @text("attachments") attachments!: string | null;
+  @text("custom_tags") customTags!: string | null;
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
 }

@@ -7,7 +7,7 @@
  *  - Query ALL locally-stored "Upcoming" trips from WatermelonDB
  *  - For trips departing in exactly 3 days → schedule a local push notification
  *  - For trips departing in exactly 1 day  → schedule a local push notification
- *  - For trips whose departure day is TODAY → update status to Ongoing (2)
+ *  - For trips whose departure day is TODAY → update status to Travelling (2)
  *
  * De-duplication:
  *  Notification keys are stored in AsyncStorage so repeated calls (e.g. app
@@ -148,12 +148,12 @@ export async function runTripStatusCheck(queryClient: QueryClient): Promise<void
       )
       .fetch();
 
-    // Fetch all Ongoing trips from WatermelonDB
-    const ongoingTrips = await database
+    // Fetch all Travelling trips from WatermelonDB
+    const travellingTrips = await database
       .get<Travel>("travels")
       .query(
         Q.and(
-          Q.where("status", TravelStatus.Ongoing),
+          Q.where("status", TravelStatus.Travelling),
           Q.where("is_archived", Q.notEq(true))
         )
       )
@@ -196,15 +196,15 @@ export async function runTripStatusCheck(queryClient: QueryClient): Promise<void
         }
       }
 
-      // ── Departure day → set Ongoing ───────────────────────────────────────
+      // ── Departure day → set Travelling ───────────────────────────────────────
       if (daysUntil === 0) {
-        await updateTravelStatusLocally(trip.id, TravelStatus.Ongoing);
+        await updateTravelStatusLocally(trip.id, TravelStatus.Travelling);
         didMutate = true;
       }
     }
 
-    // ── Check if ongoing trips have ended → set Past ────────────────────────
-    for (const trip of ongoingTrips) {
+    // ── Check if travelling trips have ended → set Past ────────────────────────
+    for (const trip of travellingTrips) {
       if (!trip.endOrReturnDate) continue;
 
       const returnDate = new Date(trip.endOrReturnDate);
@@ -220,7 +220,7 @@ export async function runTripStatusCheck(queryClient: QueryClient): Promise<void
     if (notificationsEnabled) {
       const activeTripIds = [
         ...upcomingTrips.map((t) => t.id),
-        ...ongoingTrips.map((t) => t.id),
+        ...travellingTrips.map((t) => t.id),
       ];
 
       if (activeTripIds.length > 0) {

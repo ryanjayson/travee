@@ -8,7 +8,8 @@ import {
   Image, ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
+  StyleSheet,
 } from "react-native";
 import { Checkbox, TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
@@ -184,7 +185,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           if (end < today) return TravelStatus.Past;
           const start = new Date(values.startOrDepartureDate);
           start.setHours(0, 0, 0, 0);
-          return start > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
+          return start > today ? TravelStatus.Upcoming : TravelStatus.Travelling;
         })(),
       };
 
@@ -278,7 +279,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     endOrReturnDate.setHours(0, 0, 0, 0);
 
     if (endOrReturnDate < today) return TravelStatus.Past;
-    return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
+    return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Travelling;
   };
 
   const effectiveStatus = getEffectiveStatus();

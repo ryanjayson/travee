@@ -3,6 +3,17 @@ import { schemaMigrations, createTable, addColumns } from "@nozbe/watermelondb/S
 export default schemaMigrations({
   migrations: [
     {
+      toVersion: 4,
+      steps: [
+        addColumns({
+          table: "itinerary_activities",
+          columns: [
+            { name: "custom_tags", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
+    {
       toVersion: 3,
       steps: [
         addColumns({

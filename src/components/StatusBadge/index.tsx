@@ -12,8 +12,8 @@ export const getStatusConfig = (status: TravelStatus) => {
       return { label: "Draft", bg: "bg-[#E0E0E0]", text: "text-[#666]", border: "border-[#666]/50" };
     case TravelStatus.Upcoming:
       return { label: "Upcoming", bg: "bg-[#B9E6FE]/40", text: "text-[#263F69]", border: "border-[#263F69]/40" };
-    case TravelStatus.Ongoing:
-      return { label: "Ongoing", bg: "bg-success-100", text: "text-success-600", border: "border-success-200" };
+    case TravelStatus.Travelling:
+      return { label: "Travelling", bg: "bg-success-100", text: "text-success-600", border: "border-success-200" };
     case TravelStatus.Past:
       return { label: "Past", bg: "bg-[#fab00f]/90", text: "text-[#FFFFFF]", border: "border-[#f0a505]/50" };
     case TravelStatus.Archieved:
@@ -42,7 +42,7 @@ const StatusBadge = ({ status, containerClassName = "", textClassName = "" }: St
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (status === TravelStatus.Ongoing) {
+    if (status === TravelStatus.Travelling) {
       const pulse = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
@@ -64,7 +64,7 @@ const StatusBadge = ({ status, containerClassName = "", textClassName = "" }: St
 
   return (
     <View className={`px-1 rounded-md ${bg} ${containerClassName} flex-row items-center justify-center gap-1.5 border ${border} `}>
-      {status === TravelStatus.Ongoing && (
+      {status === TravelStatus.Travelling && (
         <Animated.View 
           style={{ opacity: pulseAnim }}
           className="w-2 h-2 rounded-full bg-success-500"

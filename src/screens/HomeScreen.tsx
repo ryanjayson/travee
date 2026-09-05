@@ -146,7 +146,7 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (!travels) return;
-    const trip = travels?.find(t => t.status === TravelStatus.Ongoing) ?? null;
+    const trip = travels?.find(t => t.status === TravelStatus.Travelling) ?? null;
     setCurrentOngoingTrip(trip);
   }, [travels]);
 
@@ -270,7 +270,7 @@ const HomeScreen = () => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return travels
       .filter(t => {
-        if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past, TravelStatus.Ongoing].includes(t.status as TravelStatus)) return false;
+        if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past, TravelStatus.Travelling].includes(t.status as TravelStatus)) return false;
         if (t.status === TravelStatus.Upcoming) return true;
         if (t.startOrDepartureDate) {
           const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);
@@ -321,6 +321,7 @@ const HomeScreen = () => {
         }
       >
         <Hero
+          travellingTrip={currentOngoingTrip}
           ongoingTrip={currentOngoingTrip}
           onOpenCreateTripModal={(tripData) => {
             setPrefilledTripData(tripData);

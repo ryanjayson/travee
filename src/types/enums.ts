@@ -25,6 +25,21 @@ export enum ActivityType {
   // meetup = 15,
 }
 
+export enum ActivityPlanType {
+  preparation = 1,
+  restaurant = 2,
+  cafeOrBar = 3, // food, eat, drink, snack, coffee, bar, lounge, pub
+  sightseeing = 4,
+  shoppingOrService = 5, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
+  entertainmentOrRecreation = 6, //park, museum, gym, cinema, stadium, zoo, concert
+  nature = 7, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
+  hikeOrCamp = 9, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
+  rest = 10,
+  motorcycleRide = 11, // motorbike 
+  meetup = 12,
+  walk = 8,
+}
+
 export enum StatusType {
   travel = 1,
   account = 2,
@@ -33,6 +48,7 @@ export enum StatusType {
 export enum TravelStatus {
   Draft = 0,
   Upcoming = 1,
+  Travelling = 2,
   Ongoing = 2,
   Past = 3,
   Archieved = 4,
@@ -127,6 +143,37 @@ export function getActivityTypeLabel(type: ActivityType): string {
       return "Tour";
     default:
       return "Activity";
+  }
+}
+
+export function getActivityPlanTypeLabel(type: ActivityPlanType): string {
+  switch (type) {
+    case ActivityPlanType.preparation:
+      return "Preparation";
+    case ActivityPlanType.restaurant:
+      return "Restaurant";
+    case ActivityPlanType.cafeOrBar:
+      return "Cafe / Bar";
+    case ActivityPlanType.sightseeing:
+      return "Sightseeing";
+    case ActivityPlanType.shoppingOrService:
+      return "Shopping & Service";
+    case ActivityPlanType.entertainmentOrRecreation:
+      return "Entertainment & Recreation";
+    case ActivityPlanType.nature:
+      return "Nature";
+    case ActivityPlanType.walk:
+      return "Walk";
+    case ActivityPlanType.hikeOrCamp:
+      return "Hike / Camp";
+    case ActivityPlanType.rest:
+      return "Rest";
+    case ActivityPlanType.motorcycleRide:
+      return "Motorcycle Ride";
+    case ActivityPlanType.meetup:
+      return "Meetup";
+    default:
+      return "Plan";
   }
 }
 

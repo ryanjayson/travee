@@ -195,7 +195,7 @@ const ExploreCityMap = ({ markers, defaultCountry = "Philippines", showMarkers =
                 ['get', 'status'],
                 3, '#34699A', // Past (Dark Blue)
                 1, '#78A2CC', // Upcoming (Light Blue)
-                2, '#78A2CC', // Ongoing (Light Blue)
+                2, '#78A2CC', // Travelling (Light Blue)
                 '#dc3545'
               ],
               'fill-opacity': 0.6

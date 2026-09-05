@@ -35,12 +35,13 @@ const TravelCatalog = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const [activeViewTab, setActiveViewTab] = useState<string>("list");
-  const [activeListTab, setActiveListTab] = useState<string>("ongoing");
+  const [activeListTab, setActiveListTab] = useState<string>("travelling");
 
   useEffect(() => {
     if (route.params?.initialTab) {
       setActiveViewTab("list");
-      setActiveListTab(route.params.initialTab);
+      const mappedTab = route.params.initialTab === "ongoing" ? "travelling" : route.params.initialTab;
+      setActiveListTab(mappedTab);
       navigation.setParams({ initialTab: undefined });
     }
   }, [route.params?.initialTab]);
@@ -227,15 +228,16 @@ const TravelCatalog = () => {
             <View className="flex-row justify-between items-start ">
               <View className="flex-row items-center gap-4 flex-1 mr-2">
                 {day && month && (
-                  <View className="flex-col gap-0 justify-center items-center border-r border-[#E0E0E0] pr-4">
-                    <Text className="text-3xl font-semibold text-accent">{day}</Text>
+                  <View className="flex-col gap-0 justify-center items-center border-r pr-4"
+                    style={{ borderColor: assignedColor + 10 }}>
+                    <Text className="text-2xl font-semibold text-accent">{day}</Text>
                     <Text className="text-base font-medium text-tertiary">{month}</Text>
                     {countdownLabel ? (
                       <Text className="text-[10px] font-medium text-tertiary/50 mt-2">{countdownLabel}</Text>
                     ) : null}
                   </View>
                 )}
-                {destinationCountry ? (
+                {/* {destinationCountry ? (
                   <View className={`w-[50px] h-[60px] justify-center items-center ${countdownLabel ? "" : "pl-2xl"}`}>
                     <CountryOutline
                       countryName={destinationCountry}
@@ -247,11 +249,10 @@ const TravelCatalog = () => {
                       hideShadows={true}
                     />
                   </View>
-                ) : null}
+                ) : null} */}
 
-                <View className="flex-1 gap-y-1 py-4"
-                  style={{ paddingLeft: travel.destination ? 12 : 0 }}>
-                  <Text className="text-xl leading-5 font-medium ">{travel.title}</Text>
+                <View className="flex-1 gap-y-1 py-4">
+                  <Text className="text-[22px] leading-5 font-medium ">{travel.title}</Text>
                   <View className="flex-row items-center gap-2">
                     <TouchableOpacity
                       activeOpacity={0.7}
@@ -315,7 +316,7 @@ const TravelCatalog = () => {
           />
         }
       >
-        {data && data.length === 1 && data[0].status === TravelStatus.Ongoing ? (
+        {data && data.length === 1 && data[0].status === TravelStatus.Travelling ? (
           <View key={data[0].id} className="rounded-[44px] mb-2 bg-white shadow-sm shadow-black/10 elevation-xl mx-4 overflow-hidden">
             <TouchableOpacity onPress={() => handleViewModeTravel(data[0])}>
               <View className="p-10 border border-success-500/50 rounded-[44px]">
@@ -394,7 +395,7 @@ const TravelCatalog = () => {
     const activeTrips = (travels || []).filter((trip) => {
       const status = getEffectiveStatus(trip);
       return (
-        status === TravelStatus.Ongoing ||
+        status === TravelStatus.Travelling ||
         status === TravelStatus.Upcoming ||
         status === TravelStatus.Draft ||
         status === TravelStatus.Past
@@ -403,8 +404,8 @@ const TravelCatalog = () => {
 
     const getStatusColors = (status: TravelStatus) => {
       switch (status) {
-        case TravelStatus.Ongoing:
-          return { bg: "#DCFAE6", text: "#079455", label: "Ongoing" };
+        case TravelStatus.Travelling:
+          return { bg: "#DCFAE6", text: "#079455", label: "Travelling" };
         case TravelStatus.Upcoming:
           return { bg: "rgba(185, 230, 254, 0.4)", text: "#0EA5E9", label: "Upcoming" };
         case TravelStatus.Draft:
@@ -421,7 +422,7 @@ const TravelCatalog = () => {
         <View className="flex-row items-center justify-between py-3 px-8 border-b border-gray-100 gap-x-4 gap-y-2 flex-wrap">
           <View className="flex-row items-center gap-1.5">
             <View className="w-5 h-5 rounded-full bg-[#DCFAE6] border border-[#079455]" />
-            <Text className="text-xs text-[#666]">Ongoing</Text>
+            <Text className="text-xs text-[#666]">Travelling</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
             <View className="w-5 h-5 rounded-full bg-[#B9E6FE]/40 border border-[#0EA5E9]/40" />
@@ -542,9 +543,9 @@ const TravelCatalog = () => {
 
   const listTabsData = [
     {
-      id: "ongoing",
-      title: `Ongoing (${getTravelsByStatus(TravelStatus.Ongoing).length})`,
-      content: renderContentForStatus(TravelStatus.Ongoing, "🌍", "No Ongoing Trip", "Your active trips will appear here!"),
+      id: "travelling",
+      title: `Travelling (${getTravelsByStatus(TravelStatus.Travelling).length})`,
+      content: renderContentForStatus(TravelStatus.Travelling, "🌍", "No Travelling Trips", "Your active trips will appear here!"),
     },
     {
       id: "upcoming",
@@ -581,7 +582,7 @@ const TravelCatalog = () => {
         onTabChange={setActiveListTab}
         type="default"
         expanded={true}
-        hasActionTripStatus={getTravelsByStatus(TravelStatus.Ongoing).length > 0}
+        hasActionTripStatus={getTravelsByStatus(TravelStatus.Travelling).length > 0}
       />
     </View>
   );

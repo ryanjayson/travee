@@ -102,7 +102,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           if (end < today) return TravelStatus.Past;
           const start = new Date(values.startOrDepartureDate);
           start.setHours(0, 0, 0, 0);
-          return start > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
+          return start > today ? TravelStatus.Upcoming : TravelStatus.Travelling;
         })(),
       };
 
@@ -157,7 +157,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
 
     const startOrDepartureDate = new Date(formik.values.startOrDepartureDate);
     startOrDepartureDate.setHours(0, 0, 0, 0);
-    return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Ongoing;
+    return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Travelling;
   };
 
   const effectiveStatus = getEffectiveStatus();
@@ -196,9 +196,9 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
 
         if (end >= today) {
           let current = new Date(start);
-          const isOngoing = start <= today && end >= today;
-          const color = isOngoing ? '#E3F2FD' : '#E8F5E8';
-          const textColor = isOngoing ? '#263F69' : '#2E7D32';
+          const isTravelling = start <= today && end >= today;
+          const color = isTravelling ? '#E3F2FD' : '#E8F5E8';
+          const textColor = isTravelling ? '#263F69' : '#2E7D32';
 
           while (current <= end) {
             const dateStr = current.toISOString().split('T')[0];

@@ -75,7 +75,7 @@ const ExploreCountryMap = ({ markers, defaultCountry = "Philippines", showMarker
       } else {
         const getPriority = (status?: number) => {
           if (status === 3) return 3; // Past / Visited
-          if (status === 2) return 2; // Ongoing
+          if (status === 2) return 2; // Travelling
           if (status === 1) return 1; // Upcoming
           return 0;
         };

@@ -56,14 +56,16 @@ export const fetchWeatherInfo = async (destination?: string, coords?: { latitude
 };
 
 interface HeroProps {
-  ongoingTrip: Travel | null;
+  travellingTrip?: Travel | null;
+  ongoingTrip?: Travel | null;
   onOpenCreateTripModal?: (tripData: any) => void;
   unreadNotifications?: number;
   onOpenNotifications?: () => void;
   onOpenProfile?: () => void;
 }
 
-const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onOpenNotifications, onOpenProfile }: HeroProps) => {
+const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onOpenNotifications, onOpenProfile }: HeroProps) => {
+  const ongoingTrip = travellingTrip !== undefined ? travellingTrip : (propOngoingTrip ?? null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const { openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
@@ -263,7 +265,7 @@ const Hero = ({ ongoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onO
                     style={{ opacity: pulseAnim }}
                     className="w-2 h-2 rounded-full bg-green-400"
                   />
-                  <Text className="text-green-600 text-[8px] tracking-widest uppercase">On going</Text>
+                  <Text className="text-green-600 text-[10px]">Travelling</Text>
                 </View>
                 <Text
                   className="text-white font-semibold mb-3 tracking-normal"

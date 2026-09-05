@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 3,
+  version: 4,
   tables: [
     tableSchema({
       name: "travels",
@@ -70,6 +70,7 @@ export const schema = appSchema({
         { name: "images", type: "string", isOptional: true }, // JSON string
         { name: "is_done", type: "boolean" },
         { name: "attachments", type: "string", isOptional: true }, // JSON string
+        { name: "custom_tags", type: "string", isOptional: true }, // JSON string array
         { name: "created_at", type: "number" },
         { name: "updated_at", type: "number" },
       ],
