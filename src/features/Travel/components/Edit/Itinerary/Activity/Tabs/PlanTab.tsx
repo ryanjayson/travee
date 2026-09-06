@@ -10,6 +10,7 @@ import AddFieldModal, {
   APPLICABLE_PLAN_FIELDS,
 } from "../../../../Lookups/AddFieldModal";
 import { ActivityPlanType } from "../../../../../../../types/enums";
+import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
 
 const PRIORITIES = ["High", "Medium", "Low"];
 
@@ -50,14 +51,33 @@ export default function PlanTab({
   const [showPlanTypeModal, setShowPlanTypeModal] = useState(false);
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
   const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([]);
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
+  const [selectedPriority, setSelectedPriority] = useState<string | null>(values?.priority || null);
+
+  const getFieldValue = (id: string) => {
+    if (id === "location" && values?.destination) {
+      return customFieldValues[id] !== undefined ? customFieldValues[id] : values.destination;
+    }
+    if (values?.[id] !== undefined) {
+      return customFieldValues[id] !== undefined ? customFieldValues[id] : String(values[id]);
+    }
+    return customFieldValues[id] || "";
+  };
+
+  const handleCustomFieldChange = (id: string, text: string) => {
+    setCustomFieldValues((prev) => ({ ...prev, [id]: text }));
+    if (id === "location" && setFieldValue) {
+      setFieldValue("destination", text);
+    }
+    if (setFieldValue) {
+      setFieldValue(id, text);
+    }
+  };
 
   const selectedPlanType = ACTIVITY_PLAN_TYPES.find(
     (p) => p.type === values.planType
   );
 
-  const handleRemoveField = (fieldId: string) => {
-    setSelectedFieldIds((prev) => prev.filter((id) => id !== fieldId));
-  };
 
   const handleApplyFields = (fieldIds: string[]) => {
     setSelectedFieldIds(fieldIds);
@@ -186,138 +206,163 @@ export default function PlanTab({
 
         return (
           <View key={fieldId} className="mb-5">
-            <View className="flex-row justify-between items-center mb-1.5">
-              <View className="flex-row items-center gap-1.5">
-                <Icon name={fieldMeta.iconName as any} size={16} color={colors.primary || "#263F69"} />
-                <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700">
-                  {fieldMeta.label}
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => handleRemoveField(fieldId)}
-                accessibilityRole="button"
-                accessibilityLabel={`Remove ${fieldMeta.label} field`}
-                className="p-1"
-              >
-                <Icon name="close" size={18} color="#98A2B3" />
-              </TouchableOpacity>
-            </View>
-
             {fieldId === "location" && (
-              <TextInput
-                mode="outlined"
-                placeholder="Search destination, city, or address..."
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                theme={{ colors: { onSurfaceVariant: "#98A2B3" } }}
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ height: 56 }}
-                left={<TextInput.Icon icon="map-marker-outline" color="#98A2B3" />}
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("location")}
+                onChangeText={(text) => handleCustomFieldChange("location", text)}
+                right={<TextInput.Icon icon="map-marker-outline" color="#98A2B3" />}
               />
             )}
 
-
             {fieldId === "website" && (
-              <TextInput
-                mode="outlined"
-                placeholder="https://example.com"
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("website")}
+                onChangeText={(text) => handleCustomFieldChange("website", text)}
                 keyboardType="url"
-                autoCapitalize="none"
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                theme={{ colors: { onSurfaceVariant: "#98A2B3" } }}
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ height: 56 }}
-                left={<TextInput.Icon icon="web" color="#98A2B3" />}
+                right={<TextInput.Icon icon="web" color="#98A2B3" />}
               />
             )}
 
             {fieldId === "budget" && (
-              <TextInput
-                mode="outlined"
-                placeholder="0.00"
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("budget")}
+                onChangeText={(text) => handleCustomFieldChange("budget", text)}
                 keyboardType="numeric"
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                theme={{ colors: { onSurfaceVariant: "#98A2B3" } }}
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ height: 56 }}
-                left={<TextInput.Icon icon="cash" color="#98A2B3" />}
+                right={<TextInput.Icon icon="cash" color="#98A2B3" />}
               />
             )}
 
             {fieldId === "bookingReference" && (
-              <TextInput
-                mode="outlined"
-                placeholder="e.g. BOOKING-98234"
-                autoCapitalize="characters"
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                theme={{ colors: { onSurfaceVariant: "#98A2B3" } }}
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ height: 56 }}
-                left={<TextInput.Icon icon="ticket-outline" color="#98A2B3" />}
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("bookingReference")}
+                onChangeText={(text) => handleCustomFieldChange("bookingReference", text)}
+                right={<TextInput.Icon icon="ticket-outline" color="#98A2B3" />}
+              />
+            )}
+
+            {fieldId === "contactName" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("contactName")}
+                onChangeText={(text) => handleCustomFieldChange("contactName", text)}
+                right={<TextInput.Icon icon="account-outline" color="#98A2B3" />}
+              />
+            )}
+
+            {fieldId === "contactNumber" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("contactNumber")}
+                onChangeText={(text) => handleCustomFieldChange("contactNumber", text)}
+                keyboardType="phone-pad"
+                right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
+              />
+            )}
+
+            {fieldId === "contactEmail" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("contactEmail")}
+                onChangeText={(text) => handleCustomFieldChange("contactEmail", text)}
+                keyboardType="email-address"
+                right={<TextInput.Icon icon="email-outline" color="#98A2B3" />}
               />
             )}
 
             {fieldId === "contact" && (
-              <TextInput
-                mode="outlined"
-                placeholder="Name, phone number, or email..."
-                outlineColor="#E0E0E0"
-                activeOutlineColor="#263F69"
-                theme={{ colors: { onSurfaceVariant: "#98A2B3" } }}
-                outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                style={{ height: 56 }}
-                left={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("contact")}
+                onChangeText={(text) => handleCustomFieldChange("contact", text)}
+                right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
               />
             )}
 
             {fieldId === "priority" && (
-              <View className="flex-row gap-2 mt-1">
-                {PRIORITIES.map((p) => {
-                  const pColor = p === "High" ? "#EF4444" : p === "Medium" ? "#F59E0B" : "#22C55E";
-                  return (
-                    <TouchableOpacity
-                      key={p}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Priority ${p}`}
-                      style={{
-                        borderRadius: 12,
-                        borderWidth: 1,
-                        paddingHorizontal: 16,
-                        paddingVertical: 10,
-                        borderColor: "#EAECF0",
-                        backgroundColor: "#FFF",
-                      }}
-                    >
-                      <Text style={{ fontSize: 13, fontWeight: "600", color: pColor }}>
-                        {p}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
+              <View>
+                <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
+                  {fieldMeta.label}
+                </Text>
+                <View className="flex-row gap-2 mt-1">
+                  {PRIORITIES.map((p) => {
+                    const pColor =
+                      p === "High"
+                        ? "#EF4444"
+                        : p === "Medium"
+                        ? "#F59E0B"
+                        : "#22C55E";
+                    const isSelected = selectedPriority === p;
+                    return (
+                      <TouchableOpacity
+                        key={p}
+                        onPress={() => {
+                          const nextVal = isSelected ? null : p;
+                          setSelectedPriority(nextVal);
+                          setFieldValue?.("priority", nextVal);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Priority ${p}`}
+                        style={{
+                          borderRadius: 12,
+                          borderWidth: 1,
+                          paddingHorizontal: 16,
+                          paddingVertical: 10,
+                          borderColor: isSelected ? pColor : "#EAECF0",
+                          backgroundColor: isSelected ? `${pColor}18` : "#FFF",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            fontWeight: isSelected ? "700" : "600",
+                            color: pColor,
+                          }}
+                        >
+                          {p}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
             )}
 
             {fieldId === "checklist" && (
-              <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
-                <Icon name="checklist" size={24} color="#98A2B3" />
-                <Text className="text-xs text-gray-500 mt-1">Checklist items can be added here</Text>
+              <View>
+                <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
+                  {fieldMeta.label}
+                </Text>
+                <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
+                  <Icon name="checklist" size={24} color="#98A2B3" />
+                  <Text className="text-xs text-gray-500 mt-1">
+                    Checklist items can be added here
+                  </Text>
+                </View>
               </View>
             )}
 
             {fieldId === "attachments" && (
-              <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
-                <Icon name="cloud-upload" size={24} color="#98A2B3" />
-                <Text className="text-xs text-gray-500 mt-1">Upload files, tickets, or photos</Text>
+              <View>
+                <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
+                  {fieldMeta.label}
+                </Text>
+                <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
+                  <Icon name="cloud-upload" size={24} color="#98A2B3" />
+                  <Text className="text-xs text-gray-500 mt-1">
+                    Upload files, tickets, or photos
+                  </Text>
+                </View>
               </View>
             )}
           </View>
         );
       })}
 
-      {/* Button below plan detail section: Title "Add Field" */}
+      {/* Button below plan detail section: Title "Add Field" / "Add or remove Field" */}
       <View className="mt-1 mb-6">
         <TouchableOpacity
           onPress={() => setShowAddFieldModal(true)}
@@ -330,7 +375,9 @@ export default function PlanTab({
           ]}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel="Add field"
+          accessibilityLabel={
+            selectedFieldIds.length > 0 ? "Add or remove Field" : "Add Field"
+          }
         >
           <View style={styles.addFieldContent}>
             <Icon name="add" size={20} color={colors.primary || "#263F69"} />
@@ -340,7 +387,9 @@ export default function PlanTab({
                 { color: colors.primary || "#263F69" },
               ]}
             >
-              Add Field
+              {selectedFieldIds.length > 0
+                ? "Add or remove Field"
+                : "Add Field"}
             </Text>
           </View>
         </TouchableOpacity>

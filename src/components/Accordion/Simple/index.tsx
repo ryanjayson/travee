@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, LayoutAnimation, StyleSheet } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { FadeInView } from "../../animations";
 
 export interface SimpleAccordionProps {
   title: string;
@@ -56,9 +57,11 @@ export const SimpleAccordion = ({
       </TouchableOpacity>
 
       {isExpanded && (
-        <View style={styles.content}>
-          {children}
-        </View>
+        <FadeInView type="up" delay={100} duration={450}>
+          <View style={styles.content}>
+            {children}
+          </View>
+        </FadeInView>
       )}
     </View>
   );

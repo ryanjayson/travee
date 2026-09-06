@@ -619,7 +619,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
               <View className="flex-row items-start justify-between">
                 <View className="flex-1">
                   <FadeInView key={`title-${id}`} type="up" delay={50} duration={350}>
-                    {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.none && (
+                    {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.plan && (
                       <View className={`flex-row items-center -mt-2 mb-2`}>
                         <View
                           style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + '20' }}

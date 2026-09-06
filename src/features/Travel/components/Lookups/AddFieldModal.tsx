@@ -1,24 +1,18 @@
-import { MaterialIcons as Icon } from "@expo/vector-icons";
-import React, { useRef, useState, useEffect } from "react";
-import { StatusBar } from "expo-status-bar";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
-  Keyboard,
-  KeyboardAvoidingView,
   Modal,
   PanResponder,
-  Platform,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
   View,
-  Text,
-  TextInput,
-  StyleSheet,
 } from "react-native";
 import { Button, Checkbox, useTheme } from "react-native-paper";
-import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 
 export interface ApplicableField {
   id: string;
@@ -52,22 +46,23 @@ export const APPLICABLE_PLAN_FIELDS: ApplicableField[] = [
   },
   {
     id: "contactName",
-    label: "Contact Details",
-    description: "Organizer name, phone number, or email address",
-    iconName: "contact-phone",
+    label: "Contact Name",
+    description: "Organizer or point of contact person",
+    iconName: "person",
     category: "Details",
   },
   {
     id: "contactNumber",
     label: "Contact Number",
-    description: "Organizer phone number",
-    iconName: "contact-phone",
+    description: "Organizer phone or mobile number",
+    iconName: "phone",
     category: "Details",
-  }, {
+  },
+  {
     id: "contactEmail",
     label: "Contact Email",
     description: "Organizer email address",
-    iconName: "contact-mail",
+    iconName: "email",
     category: "Details",
   },
   {
@@ -77,7 +72,6 @@ export const APPLICABLE_PLAN_FIELDS: ApplicableField[] = [
     iconName: "flag",
     category: "General",
   },
-
 ];
 
 interface AddFieldModalProps {
@@ -96,21 +90,17 @@ const AddFieldModal = ({
   onApply,
 }: AddFieldModalProps) => {
   const { colors } = useTheme();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [tempSelected, setTempSelected] = useState<string[]>(selectedFieldIds);
-  const [modalHeight] = useState(screenHeight * 0.85);
-  const { keyboardVisible } = useKeyboardVisible();
   const insets = useSafeAreaInsets();
+  const [tempSelected, setTempSelected] = useState<string[]>(selectedFieldIds);
 
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
   const dragStartDy = useRef(0);
 
-  // Sync selected state when modal opens
+  // Sync selected state and trigger slide-up spring animation on open
   useEffect(() => {
     if (visible) {
       setTempSelected(selectedFieldIds);
-      setSearchQuery("");
       isAtTop.current = true;
       translateY.setValue(screenHeight);
       Animated.spring(translateY, {
@@ -122,51 +112,28 @@ const AddFieldModal = ({
     }
   }, [visible, selectedFieldIds]);
 
-  const sheetPanResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        if (keyboardVisible) return false;
-        const { dx, dy } = gestureState;
-        if (isAtTop.current && dy > 8 && Math.abs(dy) > Math.abs(dx)) {
-          return true;
-        }
-        return false;
-      },
-      onPanResponderGrant: (evt, gestureState) => {
-        dragStartDy.current = gestureState.dy;
-      },
-      onPanResponderMove: (_, gestureState) => {
-        const currentDy = gestureState.dy - dragStartDy.current;
-        if (currentDy > 0) {
-          translateY.setValue(currentDy);
-        } else {
-          translateY.setValue(0);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        const currentDy = gestureState.dy - dragStartDy.current;
-        if (currentDy > 120 || gestureState.vy > 0.5) {
-          Animated.timing(translateY, {
-            toValue: screenHeight,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            onClose();
-          });
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            tension: 65,
-            friction: 11,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
+  const handleDismiss = useCallback(() => {
+    Animated.timing(translateY, {
+      toValue: screenHeight,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose();
+    });
+  }, [onClose, translateY]);
 
+  const handleToggle = (id: string) => {
+    setTempSelected((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleApply = () => {
+    onApply(tempSelected);
+    handleDismiss();
+  };
+
+  // Drag down gesture responder
   const dragPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -184,7 +151,7 @@ const AddFieldModal = ({
       },
       onPanResponderRelease: (_, gestureState) => {
         const currentDy = gestureState.dy - dragStartDy.current;
-        if (currentDy > 120 || gestureState.vy > 0.5) {
+        if (currentDy > 100 || gestureState.vy > 0.5) {
           Animated.timing(translateY, {
             toValue: screenHeight,
             duration: 200,
@@ -195,7 +162,7 @@ const AddFieldModal = ({
         } else {
           Animated.spring(translateY, {
             toValue: 0,
-            tension: 65,
+            tension: 70,
             friction: 11,
             useNativeDriver: true,
           }).start();
@@ -204,40 +171,7 @@ const AddFieldModal = ({
     })
   ).current;
 
-  const handleCancel = () => {
-    Keyboard.dismiss();
-    Animated.timing(translateY, {
-      toValue: screenHeight,
-      duration: 200,
-      useNativeDriver: true,
-    }).start(() => {
-      onClose();
-    });
-  };
-
-  const handleToggle = (fieldId: string) => {
-    setTempSelected((prev) =>
-      prev.includes(fieldId)
-        ? prev.filter((id) => id !== fieldId)
-        : [...prev, fieldId]
-    );
-  };
-
-  const handleApply = () => {
-    onApply(tempSelected);
-    handleCancel();
-  };
-
-  const filteredFields = APPLICABLE_PLAN_FIELDS.filter((item) => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      item.label.toLowerCase().includes(query) ||
-      item.description.toLowerCase().includes(query) ||
-      item.category.toLowerCase().includes(query)
-    );
-  });
-
+  // Background fade opacity interpolated from sheet position
   const backdropOpacity = translateY.interpolate({
     inputRange: [0, screenHeight],
     outputRange: [1, 0],
@@ -250,174 +184,267 @@ const AddFieldModal = ({
     <Modal
       visible={visible}
       transparent
-      statusBarTranslucent
       animationType="none"
-      onRequestClose={handleCancel}
+      onRequestClose={handleDismiss}
+      statusBarTranslucent
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
-        style={{ flex: 1 }}
+      <Animated.View
+        style={[
+          styles.backdropContainer,
+          { opacity: backdropOpacity },
+        ]}
       >
+        {/* Backdrop tap to close */}
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={handleDismiss}
+          style={StyleSheet.absoluteFill}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss add field bottom sheet"
+        />
+
+        {/* Bottom Sheet Card */}
         <Animated.View
-          className="flex-1 justify-end"
-          style={{
-            backgroundColor: "rgba(0,0,0,0.5)",
-            opacity: backdropOpacity,
-          }}
+          style={[
+            styles.sheetCard,
+            {
+              transform: [{ translateY }],
+              backgroundColor: colors.surface || "#FFFFFF",
+              maxHeight: screenHeight * 0.78,
+            },
+          ]}
         >
-          <Animated.View
-            {...sheetPanResponder.panHandlers}
-            className="rounded-t-[30px] bg-white overflow-hidden"
+          {/* Drag Handle Bar */}
+          <View {...dragPanResponder.panHandlers} style={styles.dragHandleContainer}>
+            <View
+              style={[
+                styles.dragHandleBar,
+                { backgroundColor: colors.outlineVariant || "#D0D5DD" },
+              ]}
+            />
+          </View>
+
+          {/* Header */}
+          <View
             style={[
-              { height: keyboardVisible ? "100%" : modalHeight },
+              styles.header,
+              { borderBottomColor: colors.outlineVariant || "#F2F4F7" },
+            ]}
+          >
+            <View style={styles.headerTitleContainer}>
+              <Text
+                style={[
+                  styles.title,
+                  { color: colors.primary || "#263F69" },
+                ]}
+              >
+                Add Field
+              </Text>
+              <Text
+                style={[
+                  styles.subtitle,
+                  { color: colors.onSurfaceVariant || "#667085" },
+                ]}
+              >
+                Select applicable fields to include in your plan
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={handleDismiss}
+              accessibilityRole="button"
+              accessibilityLabel="Close add field modal"
+              style={styles.closeBtn}
+              activeOpacity={0.7}
+            >
+              <Icon
+                name="clear"
+                size={24}
+                color={colors.onSurfaceVariant || "#98A2B3"}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Scrollable list of fields */}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.scrollContent}
+            onScroll={(e) => {
+              isAtTop.current = e.nativeEvent.contentOffset.y <= 0;
+            }}
+            scrollEventThrottle={16}
+          >
+            {APPLICABLE_PLAN_FIELDS.map((item) => {
+              const isChecked = tempSelected.includes(item.id);
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[
+                    styles.itemRow,
+                    {
+                      borderBottomColor: colors.outlineVariant || "#F2F4F7",
+                      backgroundColor: isChecked
+                        ? `${colors.primary || "#263F69"}0A`
+                        : "transparent",
+                    },
+                  ]}
+                  onPress={() => handleToggle(item.id)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${item.label}, ${isChecked ? "checked" : "unchecked"}`}
+                >
+                  {/* Icon badge */}
+                  <View
+                    style={[
+                      styles.fieldIconBadge,
+                      {
+                        backgroundColor: isChecked
+                          ? `${colors.primary || "#263F69"}18`
+                          : colors.surfaceVariant || "#F2F4F7",
+                        borderColor: isChecked
+                          ? `${colors.primary || "#263F69"}35`
+                          : colors.outlineVariant || "#E4E7EC",
+                      },
+                    ]}
+                  >
+                    <Icon
+                      name={item.iconName as any}
+                      size={22}
+                      color={
+                        isChecked
+                          ? colors.primary || "#263F69"
+                          : colors.onSurfaceVariant || "#667085"
+                      }
+                    />
+                  </View>
+
+                  {/* Label & Description */}
+                  <View style={styles.itemTextContainer}>
+                    <Text
+                      style={[
+                        styles.itemLabel,
+                        {
+                          color: colors.onSurface || "#101828",
+                        },
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.itemDescription,
+                        { color: colors.onSurfaceVariant || "#667085" },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.description}
+                    </Text>
+                  </View>
+
+                  {/* Checkbox */}
+                  <View pointerEvents="none">
+                    <Checkbox.Android
+                      status={isChecked ? "checked" : "unchecked"}
+                      color={colors.primary || "#263F69"}
+                      uncheckedColor={colors.outlineVariant || "#D0D5DD"}
+                    />
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          {/* Sticky Bottom Action Footer */}
+          <View
+            style={[
+              styles.footerContainer,
               {
-                paddingTop: keyboardVisible ? insets.top + 10 : 0,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -8 },
-                shadowOpacity: 0.12,
-                shadowRadius: 16,
-                elevation: 24,
-                transform: [{ translateY }],
+                backgroundColor: colors.surface || "#FFFFFF",
+                borderTopColor: colors.outlineVariant || "#F0F0F0",
+                paddingBottom: Math.max(insets.bottom, 16),
               },
             ]}
           >
-            <StatusBar style="dark" />
-
-            {/* Drag Handle */}
-            {!keyboardVisible && (
-              <View
-                {...dragPanResponder.panHandlers}
-                className="w-full items-center py-3 bg-white rounded-t-[30px]"
-              >
-                <View className="w-10 h-1 bg-gray-300 rounded-full" />
-              </View>
-            )}
-
-            {/* Header */}
-            <View
-              {...(!keyboardVisible && dragPanResponder.panHandlers)}
-              className="flex-row justify-between items-center px-6 pb-4 border-b border-gray-200"
-              style={{ paddingTop: keyboardVisible ? 0 : 2 }}
+            <Button
+              mode="contained"
+              onPress={handleApply}
+              style={styles.applyButton}
+              contentStyle={styles.applyButtonContent}
+              buttonColor={colors.primary || "#263F69"}
+              textColor={colors.onPrimary || "#FFFFFF"}
             >
-              <View className="flex-1 gap-1">
-                <Text
-                  className="text-2xl font-bold"
-                  style={{ color: colors.primary || "#263F69" }}
-                >
-                  Add Field
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  Select applicable fields to include in your plan
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={handleCancel}
-                accessibilityRole="button"
-                accessibilityLabel="Close add field modal"
-                className="p-1"
-              >
-                <Icon name="clear" size={24} color="#999" />
-              </TouchableOpacity>
-            </View>
-
-
-            {/* Scrollable list of fields */}
-            <View className="flex-1">
-              <ScrollView
-                onScroll={(e) => {
-                  const y = e.nativeEvent.contentOffset.y;
-                  isAtTop.current = y <= 0;
-                }}
-                scrollEventThrottle={16}
-                keyboardShouldPersistTaps="handled"
-              >
-                {filteredFields.map((item) => {
-                  const isChecked = tempSelected.includes(item.id);
-                  return (
-                    <TouchableOpacity
-                      key={item.id}
-                      className="px-6 py-3.5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
-                      onPress={() => handleToggle(item.id)}
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${item.label}, ${isChecked ? "checked" : "unchecked"}`}
-                    >
-                      {/* Icon badge */}
-                      <View
-                        style={[
-                          styles.fieldIconBadge,
-                          {
-                            backgroundColor: isChecked
-                              ? `${colors.primary || "#263F69"}14`
-                              : "#F2F4F7",
-                            borderColor: isChecked
-                              ? `${colors.primary || "#263F69"}30`
-                              : "#E4E7EC",
-                          },
-                        ]}
-                      >
-                        <Icon
-                          name={item.iconName as any}
-                          size={22}
-                          color={isChecked ? (colors.primary || "#263F69") : "#667085"}
-                        />
-                      </View>
-
-                      {/* Label & Description */}
-                      <View className="flex-1">
-                        <Text
-                          className="text-lg font-semibold"
-                          style={{
-                            color: isChecked ? "#101828" : "#344054",
-                          }}
-                        >
-                          {item.label}
-                        </Text>
-                        <Text
-                          className="text-sm text-gray-500 mt-0.5"
-                          numberOfLines={1}
-                        >
-                          {item.description}
-                        </Text>
-                      </View>
-
-                      {/* Checkbox */}
-                      <View pointerEvents="none">
-                        <Checkbox.Android
-                          status={isChecked ? "checked" : "unchecked"}
-                          color={colors.primary || "#263F69"}
-                          uncheckedColor="#D0D5DD"
-                        />
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </View>
-
-            {/* Bottom Action Footer */}
-            <View
-              className="px-6 py-4 border-t border-gray-100 bg-white"
-              style={{ paddingBottom: Math.max(insets.bottom, 16) }}
-            >
-              <Button
-                mode="contained"
-                onPress={handleApply}
-                style={{ borderRadius: 16 }}
-                contentStyle={{ height: 48 }}
-                buttonColor={colors.primary || "#263F69"}
-              >
-                Apply ({tempSelected.length} selected)
-              </Button>
-            </View>
-          </Animated.View>
+              Apply ({tempSelected.length} selected)
+            </Button>
+          </View>
         </Animated.View>
-      </KeyboardAvoidingView>
+      </Animated.View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  backdropContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  sheetCard: {
+    width: "100%",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 20,
+    overflow: "hidden",
+  },
+  dragHandleContainer: {
+    width: "100%",
+    alignItems: "center",
+    paddingTop: 10,
+    paddingBottom: 6,
+  },
+  dragHandleBar: {
+    width: 40,
+    height: 4.5,
+    borderRadius: 9999,
+  },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 4,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  headerTitleContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "700",
+  },
+  subtitle: {
+    fontSize: 13,
+  },
+  closeBtn: {
+    padding: 4,
+    marginLeft: 12,
+  },
+  scrollContent: {
+    paddingBottom: 24,
+  },
+  itemRow: {
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
   fieldIconBadge: {
     width: 42,
     height: 42,
@@ -425,6 +452,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+  },
+  itemTextContainer: {
+    flex: 1,
+  },
+  itemLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  itemDescription: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  footerContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  applyButton: {
+    borderRadius: 16,
+  },
+  applyButtonContent: {
+    height: 48,
   },
 });
 

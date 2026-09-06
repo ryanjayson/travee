@@ -20,6 +20,7 @@ import { ActivityType, getActivityTypeLabel } from "../../../../types/enums";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FadeInView } from "../../../../components/animations";
 
 const ACTIVITY_TYPE_SUBTEXT: Record<string, string> = {
   flight: "Flights, layovers, and airport transits",
@@ -277,31 +278,33 @@ const ActivityTypeLookupModal = ({
                 scrollEventThrottle={16}
                 keyboardShouldPersistTaps="always"
               >
-                {types.map(({ key, typeValue, displayName }) => (
-                  <TouchableOpacity
-                    key={key}
-                    className="p-6 flex-row items-center gap-4 active:bg-gray-100 mb-2"
-                    onPress={() => handleSelect(typeValue)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Select activity type ${displayName}`}
-                  >
-                    <ActivityIcon type={typeValue} size={24} />
-                    <View className="flex-1 ">
-                      <Text className="text-2xl text-white capitalize font-medium tracking-wide">
-                        {displayName}
-                      </Text>
-                      {ACTIVITY_TYPE_SUBTEXT[key] ? (
-                        <Text style={{ fontSize: 14, color: "#fff", marginTop: 0, opacity: 0.6, letterSpacing: 0.2 }}>
-                          {ACTIVITY_TYPE_SUBTEXT[key]}
+                <FadeInView type="up" delay={50} duration={350}>
+                  {types.map(({ key, typeValue, displayName }) => (
+                    <TouchableOpacity
+                      key={key}
+                      className="p-6 flex-row items-center gap-4 active:bg-gray-100 mb-2"
+                      onPress={() => handleSelect(typeValue)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Select activity type ${displayName}`}
+                    >
+                      <ActivityIcon type={typeValue} size={24} />
+                      <View className="flex-1 ">
+                        <Text className="text-2xl text-white capitalize font-medium tracking-wide">
+                          {displayName}
                         </Text>
-                      ) : null}
+                        {ACTIVITY_TYPE_SUBTEXT[key] ? (
+                          <Text style={{ fontSize: 14, color: "#fff", marginTop: 0, opacity: 0.6, letterSpacing: 0.2 }}>
+                            {ACTIVITY_TYPE_SUBTEXT[key]}
+                          </Text>
+                        ) : null}
 
-                    </View>
+                      </View>
 
-                    <Icon name="chevron-right" size={28} color={"#fff"} opacity={0.2} />
+                      <Icon name="chevron-right" size={28} color={"#fff"} opacity={0.2} />
 
-                  </TouchableOpacity>
-                ))}
+                    </TouchableOpacity>
+                  ))}
+                </FadeInView>
               </ScrollView>
             </View>
           </Animated.View>

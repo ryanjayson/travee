@@ -1248,47 +1248,49 @@ const SectionAccordion = ({
 
         {sections.length === 0 || (sections.length === 1 && sections[0].isDefaultSection && sections[0].itineraryActivity.length === 0) ? (
           <View className="flex-1 py-8 gap-4 justify-center items-center">
-            <View className="items-center">
-              <Icon name="add-circle-outline" size={46} color={"#D1D5DB"} />
-              <Text className="text-xl font-medium text-secondary text-center mb-sm">
-                No Plans Yet
-              </Text>
-              <Text className="text-lg font-normal text-tertiary/60 text-center px-4xl leading-[28px]">
-                Start by adding an activity or create a section to organize your itinerary.
-              </Text>
-            </View>
-            <View className="justify-center items-center gap-3 flex-row">
-              <TouchableOpacity
-                onPress={() => openActivityModal(null, undefined, travelId)}
-                accessibilityRole="button"
-                activeOpacity={0.7}
-                className="flex-row items-center bg-primary/10 px-3 py-1.5 rounded-lg gap-2"
-              >
-                <Icon name="add" size={16} color={"#0EA5E9"} />
-                <Text
-                  className="font-medium text-base text-primary"
-                >
-                  Add Activity
+            <FadeInView type="up" delay={50} duration={350}>
+              <View className="items-center">
+                <Icon name="add-circle-outline" size={46} color={"#D1D5DB"} />
+                <Text className="text-xl font-medium text-secondary text-center mb-sm">
+                  No Plans Yet
                 </Text>
-              </TouchableOpacity>
-              <Text className="text-base text-tertiary/60">
-                or
-              </Text>
-              <TouchableOpacity
-                onPress={() => setIsAddSectionVisible(true)}
-                accessibilityRole="button"
-                activeOpacity={0.7}
-                className="flex-row items-center"
-              >
-                {/* <Icon name="add" size={16} color={colors.primary} /> */}
-                <Text
-                  className="font-medium text-base underline  text-primary"
-                >
-                  Create Section
+                <Text className="text-lg font-normal text-tertiary/60 text-center px-4xl leading-[28px]">
+                  Start by adding an activity or create a section to organize your itinerary.
                 </Text>
-              </TouchableOpacity>
+              </View>
+              <View className="justify-center items-center gap-3 flex-row">
+                <TouchableOpacity
+                  onPress={() => openActivityModal(null, undefined, travelId)}
+                  accessibilityRole="button"
+                  activeOpacity={0.7}
+                  className="flex-row items-center bg-primary/10 px-3 py-1.5 rounded-lg gap-2"
+                >
+                  <Icon name="add" size={16} color={"#0EA5E9"} />
+                  <Text
+                    className="font-medium text-base text-primary"
+                  >
+                    Add Activity
+                  </Text>
+                </TouchableOpacity>
+                <Text className="text-base text-tertiary/60">
+                  or
+                </Text>
+                <TouchableOpacity
+                  onPress={() => setIsAddSectionVisible(true)}
+                  accessibilityRole="button"
+                  activeOpacity={0.7}
+                  className="flex-row items-center"
+                >
+                  {/* <Icon name="add" size={16} color={colors.primary} /> */}
+                  <Text
+                    className="font-medium text-base underline  text-primary"
+                  >
+                    Create Section
+                  </Text>
+                </TouchableOpacity>
 
-            </View>
+              </View>
+            </FadeInView>
           </View>
         ) : (
           <View className={`flex-1 p-3 ${!hasAtleastOneActivityDate && sections.filter((section) => !section.isDefaultSection).length === 0 ? "-ml-4xl" : ""}`}>

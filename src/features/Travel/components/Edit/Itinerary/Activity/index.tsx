@@ -55,6 +55,7 @@ import WalkTab from "./Tabs/WalkTab";
 import PlanTab from "./Tabs/PlanTab";
 import PlanDateModal from "./DateTime/PlanDateModal";
 import CustomTagsInput from "./CustomTagsInput";
+import { FadeInView } from "../../../../../../components/animations";
 
 interface Place {
   id: string;
@@ -1371,145 +1372,146 @@ const EditActivity = ({
             id: "details",
             title: "Details",
             content: (
-              <View className="flex-1 px-5 mt-2">
-                {/* Title */}
-                <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
-                  <View className="flex-row justify-between items-center mb-1">
-                    <Text className="text-xs font-semibold tracking-wider uppercase">
-                      Title <Text className="text-red-500 text-lg">*</Text>
-                    </Text>
-                    <Text className="text-xs" style={{ color: '#98A2B3' }}>
-                      {(values.title || "").length}/40
-                    </Text>
-                  </View>
-                  <View className="relative justify-center">
-                    <TextInput
-                      mode="outlined"
-                      placeholder="e.g. Museum Visit"
-                      value={values.title}
-                      onChangeText={handleChange("title")}
-                      onBlur={handleBlur("title")}
-                      error={(touched.title || submitCount > 0) && Boolean(errors.title)}
-                      outlineColor="#E0E0E0"
-                      activeOutlineColor="#263F69"
-                      theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
-                      outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                      style={{ marginTop: 2, height: 64 }}
-                      contentStyle={{
-                        backgroundColor: "transparent",
-                        paddingRight: values.type === ActivityType.plan
-                          ? (values.title ? 95 : 55)
-                          : 60,
-                      }}
-                      maxLength={40}
-                    />
-                    {values.type === ActivityType.plan ? (
-                      <View className="absolute right-3 flex-row items-center gap-1">
-                        {Boolean(values.title) && (
-                          <TouchableOpacity
-                            onPress={() => setFieldValue("title", "")}
-                            className="p-2"
-                            accessibilityRole="button"
-                            accessibilityLabel="Clear activity title"
-                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                          >
-                            <Icon name="close" size={20} color="#98A2B3" />
-                          </TouchableOpacity>
-                        )}
-                        <TouchableOpacity
-                          onPress={() =>
-                            handleOpenMapPinModal(
-                              "title",
-                              values.title,
-                              values.destinationData?.coordinates
-                            )
-                          }
-                          className="w-10 h-10 rounded-full bg-[#F2F4F7] items-center justify-center"
-                          accessibilityRole="button"
-                          accessibilityLabel="Lookup location pin on map"
-                          activeOpacity={0.7}
-                        >
-                          <Icon name="pin-drop" size={22} color={colors.primary || "#263F69"} />
-                        </TouchableOpacity>
-                      </View>
-                    ) : null}
-                  </View>
-                  {(touched.title || submitCount > 0) && errors.title && (
-                    <View className="flex flex-row items-center mt-1">
-                      <Icon name="info-outline" size={14} color="#fb2c36" />
-                      <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
+              <FadeInView type="up" delay={50} duration={350}>
+                <View className="flex-1 px-5 mt-2">
+                  {/* Title */}
+                  <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
+                    <View className="flex-row justify-between items-center mb-1">
+                      <Text className="text-xs font-semibold tracking-wider uppercase">
+                        Title <Text className="text-red-500 text-lg">*</Text>
+                      </Text>
+                      <Text className="text-xs" style={{ color: '#98A2B3' }}>
+                        {(values.title || "").length}/40
+                      </Text>
                     </View>
+                    <View className="relative justify-center">
+                      <TextInput
+                        mode="outlined"
+                        placeholder="e.g. Museum Visit"
+                        value={values.title}
+                        onChangeText={handleChange("title")}
+                        onBlur={handleBlur("title")}
+                        error={(touched.title || submitCount > 0) && Boolean(errors.title)}
+                        outlineColor="#E0E0E0"
+                        activeOutlineColor="#263F69"
+                        theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
+                        outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                        style={{ marginTop: 2, height: 64 }}
+                        contentStyle={{
+                          backgroundColor: "transparent",
+                          paddingRight: values.type === ActivityType.plan
+                            ? (values.title ? 95 : 55)
+                            : 60,
+                        }}
+                        maxLength={40}
+                      />
+                      {values.type === ActivityType.plan ? (
+                        <View className="absolute right-3 flex-row items-center gap-1">
+                          {Boolean(values.title) && (
+                            <TouchableOpacity
+                              onPress={() => setFieldValue("title", "")}
+                              className="p-2"
+                              accessibilityRole="button"
+                              accessibilityLabel="Clear activity title"
+                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            >
+                              <Icon name="close" size={20} color="#98A2B3" />
+                            </TouchableOpacity>
+                          )}
+                          <TouchableOpacity
+                            onPress={() =>
+                              handleOpenMapPinModal(
+                                "title",
+                                values.title,
+                                values.destinationData?.coordinates
+                              )
+                            }
+                            className="w-10 h-10 rounded-full bg-[#F2F4F7] items-center justify-center"
+                            accessibilityRole="button"
+                            accessibilityLabel="Lookup location pin on map"
+                            activeOpacity={0.7}
+                          >
+                            <Icon name="pin-drop" size={22} color={colors.primary || "#263F69"} />
+                          </TouchableOpacity>
+                        </View>
+                      ) : null}
+                    </View>
+                    {(touched.title || submitCount > 0) && errors.title && (
+                      <View className="flex flex-row items-center mt-1">
+                        <Icon name="info-outline" size={14} color="#fb2c36" />
+                        <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Plan Details */}
+                  {values.type === ActivityType.plan && (
+                    <PlanTab
+                      values={values}
+                      handleChange={handleChange}
+                      handleBlur={handleBlur}
+                      setFieldValue={setFieldValue}
+                      noPadding={true}
+                      fieldRefs={fieldRefs}
+                      onPressDate={() => setShowCalendarFor("startDate")}
+                      onPressTime={() => setShowTimePickerFor("startTime")}
+                      onClearDate={() => {
+                        setFieldValue("startDate", null);
+                        setFieldValue("endDate", null);
+                      }}
+                      onClearTime={() => setFieldValue("startTime", "")}
+                      onPressEndDate={() => setShowCalendarFor("endDate")}
+                      onPressEndTime={() => setShowTimePickerFor("endTime")}
+                      onClearEndDate={() => {
+                        setFieldValue("endDate", null);
+                        setFieldValue("endTime", "");
+                      }}
+                      onClearEndTime={() => setFieldValue("endTime", "")}
+                    />
                   )}
-                </View>
-
-                {/* Plan Details */}
-                {values.type === ActivityType.plan && (
-                  <PlanTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => {
-                      setFieldValue("startDate", null);
-                      setFieldValue("endDate", null);
-                    }}
-                    onClearTime={() => setFieldValue("startTime", "")}
-                    onPressEndDate={() => setShowCalendarFor("endDate")}
-                    onPressEndTime={() => setShowTimePickerFor("endTime")}
-                    onClearEndDate={() => {
-                      setFieldValue("endDate", null);
-                      setFieldValue("endTime", "");
-                    }}
-                    onClearEndTime={() => setFieldValue("endTime", "")}
-                  />
-                )}
 
 
-                {/* Stay Details Accordion */}
-                {values.type === ActivityType.stay && (
-                  <AccomodationTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    colors={colors}
-                    setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
-                    formatAccomodationDateTime={formatFlightDateTime}
-                    onOpenPoiModal={(category) => {
-                      setPoiTargetType("accommodation");
-                      setPoiModalInitialCategory(category);
-                      setShowPoiModal(true);
-                    }}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                  />
-                )}
+                  {/* Stay Details Accordion */}
+                  {values.type === ActivityType.stay && (
+                    <AccomodationTab
+                      values={values}
+                      handleChange={handleChange}
+                      handleBlur={handleBlur}
+                      setFieldValue={setFieldValue}
+                      colors={colors}
+                      setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
+                      formatAccomodationDateTime={formatFlightDateTime}
+                      onOpenPoiModal={(category) => {
+                        setPoiTargetType("accommodation");
+                        setPoiModalInitialCategory(category);
+                        setShowPoiModal(true);
+                      }}
+                      noPadding={true}
+                      fieldRefs={fieldRefs}
+                    />
+                  )}
 
-                {/* Flight Details Accordion */}
-                {values.type === ActivityType.flight && (
-                  <FlightTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    openFlightModal={openFlightModal}
-                    setShowFlightDatePickerFor={setShowFlightDatePickerFor}
-                    formatFlightDateTime={formatFlightDateTime}
-                    handleFlightSelect={handleFlightSelect}
-                    onOpenAirportLookup={(mode) => setShowAirportLookupFor(mode)}
-                    showArrivalPrefillNotice={showArrivalPrefillNotice}
-                    tripStartDate={travelPlan?.travel?.startOrDepartureDate}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                  />
-                )}
+                  {/* Flight Details Accordion */}
+                  {values.type === ActivityType.flight && (
+                    <FlightTab
+                      values={values}
+                      handleChange={handleChange}
+                      handleBlur={handleBlur}
+                      setFieldValue={setFieldValue}
+                      openFlightModal={openFlightModal}
+                      setShowFlightDatePickerFor={setShowFlightDatePickerFor}
+                      formatFlightDateTime={formatFlightDateTime}
+                      handleFlightSelect={handleFlightSelect}
+                      onOpenAirportLookup={(mode) => setShowAirportLookupFor(mode)}
+                      showArrivalPrefillNotice={showArrivalPrefillNotice}
+                      tripStartDate={travelPlan?.travel?.startOrDepartureDate}
+                      noPadding={true}
+                      fieldRefs={fieldRefs}
+                    />
+                  )}
 
-                {/* Cafe / Restaurant Details */}
-                {/* {values.type === ActivityType.cafeRestaurant && (
+                  {/* Cafe / Restaurant Details */}
+                  {/* {values.type === ActivityType.cafeRestaurant && (
                   <CafeRestaurantTab
                     values={values}
                     handleChange={handleChange}
@@ -1529,8 +1531,8 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Nature Details */}
-                {/* {values.type === ActivityType.nature && (
+                  {/* Nature Details */}
+                  {/* {values.type === ActivityType.nature && (
                   <NatureTab
                     values={values}
                     handleChange={handleChange}
@@ -1551,8 +1553,8 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Shopping & Service Details */}
-                {/* {values.type === ActivityType.shopppingAndService && (
+                  {/* Shopping & Service Details */}
+                  {/* {values.type === ActivityType.shopppingAndService && (
                   <ShoppingTab
                     values={values}
                     handleChange={handleChange}
@@ -1573,8 +1575,8 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Entertainment & Recreation Details */}
-                {/* {values.type === ActivityType.entertainmentAndRecreation && (
+                  {/* Entertainment & Recreation Details */}
+                  {/* {values.type === ActivityType.entertainmentAndRecreation && (
                   <EntertainmentTab
                     values={values}
                     handleChange={handleChange}
@@ -1595,24 +1597,24 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Transit Details */}
-                {values.type === ActivityType.transit && (
-                  <TransportationTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    colors={colors}
-                    setShowTransportationDatePickerFor={setShowTransportationDatePickerFor}
-                    formatTransportationDateTime={formatFlightDateTime}
-                    onOpenMapPinModal={handleOpenMapPinModal}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                  />
-                )}
+                  {/* Transit Details */}
+                  {values.type === ActivityType.transit && (
+                    <TransportationTab
+                      values={values}
+                      handleChange={handleChange}
+                      handleBlur={handleBlur}
+                      setFieldValue={setFieldValue}
+                      colors={colors}
+                      setShowTransportationDatePickerFor={setShowTransportationDatePickerFor}
+                      formatTransportationDateTime={formatFlightDateTime}
+                      onOpenMapPinModal={handleOpenMapPinModal}
+                      noPadding={true}
+                      fieldRefs={fieldRefs}
+                    />
+                  )}
 
-                {/* Walk Details */}
-                {/* {values.type === ActivityType.walk && (
+                  {/* Walk Details */}
+                  {/* {values.type === ActivityType.walk && (
                   <WalkTab
                     values={values}
                     handleChange={handleChange}
@@ -1627,8 +1629,8 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Sightseeing Details */}
-                {/* {values.type === ActivityType.sightseeing && (
+                  {/* Sightseeing Details */}
+                  {/* {values.type === ActivityType.sightseeing && (
                   <SightseeingTab
                     values={values}
                     handleChange={handleChange}
@@ -1648,8 +1650,8 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Preparation Details */}
-                {/* {values.type === ActivityType.preparation && (
+                  {/* Preparation Details */}
+                  {/* {values.type === ActivityType.preparation && (
                   <PreparationTab
                     values={values}
                     handleChange={handleChange}
@@ -1662,8 +1664,8 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Rest Details */}
-                {/* {values.type === ActivityType.rest && (
+                  {/* Rest Details */}
+                  {/* {values.type === ActivityType.rest && (
                   <RestTab
                     values={values}
                     handleChange={handleChange}
@@ -1678,8 +1680,8 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Hike or Camp Details */}
-                {/* {values.type === ActivityType.hikeOrCamp && (
+                  {/* Hike or Camp Details */}
+                  {/* {values.type === ActivityType.hikeOrCamp && (
                   <HikeOrCampTab
                     values={values}
                     handleChange={handleChange}
@@ -1699,8 +1701,8 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Motorcycle Ride Details */}
-                {/* {values.type === ActivityType.motorcycleRide && (
+                  {/* Motorcycle Ride Details */}
+                  {/* {values.type === ActivityType.motorcycleRide && (
                   <MotorcycleRideTab
                     values={values}
                     handleChange={handleChange}
@@ -1715,8 +1717,8 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Meetup Details */}
-                {/* {values.type === ActivityType.meetup && (
+                  {/* Meetup Details */}
+                  {/* {values.type === ActivityType.meetup && (
                   <MeetupTab
                     values={values}
                     handleChange={handleChange}
@@ -1736,36 +1738,36 @@ const EditActivity = ({
                   />
                 )} */}
 
-                {/* Ride Rental Details */}
-                {values.type === ActivityType.rideRental && (
-                  <RideRentalTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    colors={colors}
-                    onOpenPoiModal={(category) => {
-                      setPoiTargetType("rideRental");
-                      setPoiModalInitialCategory(category);
-                      setShowPoiModal(true);
-                    }}
-                    onOpenMapPinModal={handleOpenMapPinModal}
-                    formatDateTime={formatFlightDateTime}
-                    onOpenRentalStartPicker={() => setShowRideRentalDatePickerFor("rentalStartDateTime")}
-                    onOpenRentalEndPicker={() => setShowRideRentalDatePickerFor("rentalEndDateTime")}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                  />
-                )}
+                  {/* Ride Rental Details */}
+                  {values.type === ActivityType.rideRental && (
+                    <RideRentalTab
+                      values={values}
+                      handleChange={handleChange}
+                      handleBlur={handleBlur}
+                      setFieldValue={setFieldValue}
+                      colors={colors}
+                      onOpenPoiModal={(category) => {
+                        setPoiTargetType("rideRental");
+                        setPoiModalInitialCategory(category);
+                        setShowPoiModal(true);
+                      }}
+                      onOpenMapPinModal={handleOpenMapPinModal}
+                      formatDateTime={formatFlightDateTime}
+                      onOpenRentalStartPicker={() => setShowRideRentalDatePickerFor("rentalStartDateTime")}
+                      onOpenRentalEndPicker={() => setShowRideRentalDatePickerFor("rentalEndDateTime")}
+                      noPadding={true}
+                      fieldRefs={fieldRefs}
+                    />
+                  )}
 
-                {/* Activity Details Accordion */}
-                <SimpleAccordion key="activity-details-accordion" title="Additional Details" defaultExpanded={true}>
+                  {/* Activity Details Accordion */}
+                  <SimpleAccordion key="activity-details-accordion" title="Additional Details" defaultExpanded={true}>
 
 
-                  {/* Date & Time fields removed from main form and injected into specific tabs */}
+                    {/* Date & Time fields removed from main form and injected into specific tabs */}
 
-                  {/* Location */}
-                  {/* <View ref={(el) => { fieldRefs.current["destination"] = el; }} className="mb-5">
+                    {/* Location */}
+                    {/* <View ref={(el) => { fieldRefs.current["destination"] = el; }} className="mb-5">
                     <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Location</Text>
                     {values.destinationData ? (() => {
                       const { longitude, latitude } = values.destinationData.coordinates;
@@ -1812,117 +1814,118 @@ const EditActivity = ({
                   </View> */}
 
 
-                  {/* Activity Type */}
-                  <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5 ">
-                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
-                    {(() => {
-                      const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
-                      return (
+                    {/* Activity Type */}
+                    <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5 ">
+                      <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
+                      {(() => {
+                        const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
+                        return (
+                          <TouchableOpacity
+                            onPress={() => {
+                              onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
+                                setFieldValue("type", type);
+                                setActiveTabId("details");
+                                scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                                if (type === ActivityType.flight) {
+                                  const defaultFlightDate = travelPlan?.travel?.startOrDepartureDate || values.startDate || values.flightDetails?.departureDate || currentSection?.startDate;
+                                  openFlightModal(
+                                    (flightData: any) => {
+                                      handleFlightSelect(flightData, setFieldValue);
+                                    },
+                                    defaultFlightDate
+                                  );
+                                }
+                              });
+                            }}
+                            disabled={isTypeDisabled}
+                            accessibilityRole="button"
+                            accessibilityState={{ disabled: isTypeDisabled }}
+                            className={`flex-row items-center justify-between border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 gap-3 ${isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
+                              }`}
+                          >
+                            {values.type != null ? (
+                              <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
+                            ) : (
+                              <Icon name="style" size={24} color={"#B3B3B3"} />
+                            )}
+                            <Text className="text-base flex-1 text-gray-800 font-medium capitalize">
+                              {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
+                            </Text>
+                            <Icon name="keyboard-arrow-down" size={24} color="#999" />
+
+                          </TouchableOpacity>
+                        );
+                      })()}
+                    </View>
+
+
+                    {/* Itinerary Section */}
+                    <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-5">
+                      <Text className="text-md font-semibold tracking-wider uppercase mb-1">Section</Text>
+                      <Text className={`text-md text-gray-500`}>
+                        Select the Section to add this activity.
+                      </Text>
+                      <View className="flex-row items-center gap-2 mt-1">
                         <TouchableOpacity
                           onPress={() => {
-                            onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
-                              setFieldValue("type", type);
-                              setActiveTabId("details");
-                              scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                              if (type === ActivityType.flight) {
-                                const defaultFlightDate = travelPlan?.travel?.startOrDepartureDate || values.startDate || values.flightDetails?.departureDate || currentSection?.startDate;
-                                openFlightModal(
-                                  (flightData: any) => {
-                                    handleFlightSelect(flightData, setFieldValue);
-                                  },
-                                  defaultFlightDate
-                                );
+                            onOpenSectionModal(sections, values.sectionId, (id) => {
+                              setFieldValue("sectionId", id);
+                              const section = sections.find(s => s.id === id);
+                              if (section && section.startDate) {
+                                setFieldValue("startDate", toLocalDateStr(section.startDate));
+                                if (!values.startTime) {
+                                  setFieldValue("startTime", `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`);
+                                }
                               }
                             });
                           }}
-                          disabled={isTypeDisabled}
+                          className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 flex-1 flex-row items-center gap-3"
                           accessibilityRole="button"
-                          accessibilityState={{ disabled: isTypeDisabled }}
-                          className={`flex-row items-center justify-between border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 gap-3 ${isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
-                            }`}
+                          accessibilityLabel="Select itinerary section"
                         >
-                          {values.type != null ? (
-                            <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
-                          ) : (
-                            <Icon name="style" size={24} color={"#B3B3B3"} />
-                          )}
-                          <Text className="text-base flex-1 text-gray-800 font-medium capitalize">
-                            {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
+                          <Icon name="folder" size={24} color="#263F69" />
+                          <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
+                            {selectedSectionName || "Select Section"}
                           </Text>
                           <Icon name="keyboard-arrow-down" size={24} color="#999" />
-
                         </TouchableOpacity>
-                      );
-                    })()}
-                  </View>
 
-
-                  {/* Itinerary Section */}
-                  <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-5">
-                    <Text className="text-md font-semibold tracking-wider uppercase mb-1">Section</Text>
-                    <Text className={`text-md text-gray-500`}>
-                      Select the Section to add this activity.
-                    </Text>
-                    <View className="flex-row items-center gap-2 mt-1">
-                      <TouchableOpacity
-                        onPress={() => {
-                          onOpenSectionModal(sections, values.sectionId, (id) => {
-                            setFieldValue("sectionId", id);
-                            const section = sections.find(s => s.id === id);
-                            if (section && section.startDate) {
-                              setFieldValue("startDate", toLocalDateStr(section.startDate));
-                              if (!values.startTime) {
-                                setFieldValue("startTime", `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`);
-                              }
-                            }
-                          });
-                        }}
-                        className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 flex-1 flex-row items-center gap-3"
-                        accessibilityRole="button"
-                        accessibilityLabel="Select itinerary section"
-                      >
-                        <Icon name="folder" size={24} color="#263F69" />
-                        <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
-                          {selectedSectionName || "Select Section"}
-                        </Text>
-                        <Icon name="keyboard-arrow-down" size={24} color="#999" />
-                      </TouchableOpacity>
-
-                      <TouchableOpacity
-                        onPress={handleAddNewSection}
-                        className="w-6xl h-7xl rounded-full items-center justify-center animate-fade-in"
-                        accessibilityRole="button"
-                        accessibilityLabel="Add new section"
-                      >
-                        <Icon name="add" size={28} color="#263F69" />
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={handleAddNewSection}
+                          className="w-6xl h-7xl rounded-full items-center justify-center animate-fade-in"
+                          accessibilityRole="button"
+                          accessibilityLabel="Add new section"
+                        >
+                          <Icon name="add" size={28} color="#263F69" />
+                        </TouchableOpacity>
+                      </View>
                     </View>
-                  </View>
 
-                  {/* Description */}
-                  <View ref={(el) => { fieldRefs.current["description"] = el; }} className="">
-                    <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
-                    <DescriptionInput
-                      value={values.description}
-                      onChange={(text) => setFieldValue("description", text)}
-                      label="Description"
-                      placeholder="Activity details"
-                      confirmLabel={`${values.description ? `Update` : 'Add'}`}
-                      maxLength={500}
-                    />
-                  </View>
+                    {/* Description */}
+                    <View ref={(el) => { fieldRefs.current["description"] = el; }} className="">
+                      <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
+                      <DescriptionInput
+                        value={values.description}
+                        onChange={(text) => setFieldValue("description", text)}
+                        label="Description"
+                        placeholder="Activity details"
+                        confirmLabel={`${values.description ? `Update` : 'Add'}`}
+                        maxLength={500}
+                      />
+                    </View>
 
-                  {/* Custom Tags */}
-                  <View ref={(el) => { fieldRefs.current["customTags"] = el; }} className="mt-5">
-                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Custom Tags</Text>
-                    <CustomTagsInput
-                      tags={values.customTags}
-                      onChangeTags={(tags) => setFieldValue("customTags", tags)}
-                    />
-                  </View>
-                </SimpleAccordion>
+                    {/* Custom Tags */}
+                    <View ref={(el) => { fieldRefs.current["customTags"] = el; }} className="mt-5">
+                      <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Custom Tags</Text>
+                      <CustomTagsInput
+                        tags={values.customTags}
+                        onChangeTags={(tags) => setFieldValue("customTags", tags)}
+                      />
+                    </View>
+                  </SimpleAccordion>
 
-              </View>
+                </View>
+              </FadeInView>
             ),
           },
           {
