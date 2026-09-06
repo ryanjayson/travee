@@ -46,24 +46,8 @@ const getActivityDetailData = (activity: ItineraryActivity | null) => {
       return activity.flightDetails;
     case ActivityType.stay:
       return activity.accomodationDetails;
-    case ActivityType.cafeRestaurant:
-      return activity.cafeRestaurantDetails;
-    case ActivityType.nature:
-      return activity.natureDetails;
-    case ActivityType.shopppingAndService:
-      return activity.shoppingDetails;
-    case ActivityType.entertainmentAndRecreation:
-      return activity.entertainmentDetails;
     case ActivityType.transit:
       return activity.transportationDetails;
-    // case ActivityType.walk:
-    // return activity.walkDetails;
-    case ActivityType.sightseeing:
-      return activity.sightseeingDetails;
-    case ActivityType.preparation:
-      return activity.preparationDetails;
-    case ActivityType.hikeOrCamp:
-      return activity.hikeOrCampDetails;
     case ActivityType.rideRental:
       return activity.rideRentalDetails;
     default:
@@ -76,19 +60,6 @@ const getActivityDetailData = (activity: ItineraryActivity | null) => {
   }
 };
 
-const is60PercentSnap = (type?: ActivityType) => {
-  if (type == null) return false;
-  return [
-    ActivityType.preparation,
-    ActivityType.shopppingAndService,
-    ActivityType.nature,
-    ActivityType.sightseeing,
-    // ActivityType.walk,
-    ActivityType.entertainmentAndRecreation,
-    ActivityType.cafeRestaurant,
-  ].includes(type);
-};
-
 const hasActivityDetails = (activity?: ItineraryActivity | null) => {
   if (!activity) return false;
   switch (activity.type) {
@@ -96,22 +67,6 @@ const hasActivityDetails = (activity?: ItineraryActivity | null) => {
       return !!activity.flightDetails;
     case ActivityType.stay:
       return !!activity.accomodationDetails;
-    case ActivityType.cafeRestaurant:
-      return !!activity.cafeRestaurantDetails;
-    case ActivityType.nature:
-      return !!activity.natureDetails;
-    case ActivityType.shopppingAndService:
-      return !!activity.shoppingDetails;
-    case ActivityType.entertainmentAndRecreation:
-      return !!activity.entertainmentDetails;
-    // case ActivityType.walk:
-    //   return !!activity.walkDetails;
-    case ActivityType.sightseeing:
-      return !!activity.sightseeingDetails;
-    case ActivityType.preparation:
-      return !!activity.preparationDetails;
-    case ActivityType.hikeOrCamp:
-      return !!activity.hikeOrCampDetails;
     default:
       return false;
   }
@@ -286,7 +241,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
 
   const initialDetailData = getActivityDetailData(itineraryActivity);
   const initialHasDetails = hasActivityData(initialDetailData);
-  const initialSnapPoint = (itineraryActivity?.type === ActivityType.none || !initialHasDetails) ? SNAP_90 : SNAP_MIN;
+  const initialSnapPoint = (itineraryActivity?.type === ActivityType.plan || !initialHasDetails) ? SNAP_90 : SNAP_MIN;
 
   const snappedY = useRef(initialSnapPoint);
   const dragStartY = useRef(0);
@@ -299,7 +254,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   // Dynamically update snap configurations once itineraryActivity loads
   React.useEffect(() => {
     if (itineraryActivity) {
-      const isNoType = itineraryActivity.type === ActivityType.none;
+      const isNoType = itineraryActivity.type === ActivityType.plan;
       const detailData = getActivityDetailData(itineraryActivity);
       const hasDetails = hasActivityData(detailData);
 
@@ -323,7 +278,7 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
 
   const detailData = getActivityDetailData(itineraryActivity);
   const hasDetails = hasActivityData(detailData);
-  const canSnap = itineraryActivity?.type !== ActivityType.none && hasDetails;
+  const canSnap = itineraryActivity?.type !== ActivityType.plan && hasDetails;
   const canSnapRef = useRef(canSnap);
   canSnapRef.current = canSnap;
 

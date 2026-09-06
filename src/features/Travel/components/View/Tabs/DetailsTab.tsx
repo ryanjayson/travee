@@ -69,7 +69,7 @@ const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: stri
   const radius = 35;
   const strokeWidth = 12;
   const circumference = 2 * Math.PI * radius;
-  
+
   let accumulatedPercent = 0;
 
   return (
@@ -112,7 +112,7 @@ const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: stri
       <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" }}>
         <Text style={{ fontSize: 9, fontWeight: "bold", color: "#888888" }} className="uppercase tracking-wider">Total</Text>
         <Text style={{ fontSize: 13, fontWeight: "bold", color: "#1A1A1A" }} numberOfLines={1}>
-          ${total >= 1000 ? `${(total/1000).toFixed(1)}k` : Math.round(total)}
+          ${total >= 1000 ? `${(total / 1000).toFixed(1)}k` : Math.round(total)}
         </Text>
       </View>
     </View>
@@ -148,12 +148,12 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
   const activityTypeBreakdown = useMemo(() => {
     const map: Record<number, number> = {};
     allActivities.forEach((a) => {
-      const type = a.type ?? ActivityType.none;
+      const type = a.type ?? ActivityType.plan;
       map[type] = (map[type] || 0) + 1;
     });
     return Object.entries(map)
       .map(([type, count]) => ({ type: Number(type), count }))
-      .filter((e) => e.type !== ActivityType.none)
+      .filter((e) => e.type !== ActivityType.plan)
       .sort((a, b) => b.count - a.count);
   }, [allActivities]);
 
@@ -239,64 +239,64 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
               <View className="flex-1 gap-2">
                 <Text className="text-xs font-bold uppercase tracking-wide">About this trip</Text>
 
-                 {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
-                <View className="flex-row items-center gap-2">
-                  <TripIcon type={travelPlan.travel.type} size={34} showIconOnly/>
+                {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
+                  <View className="flex-row items-center gap-2">
+                    <TripIcon type={travelPlan.travel.type} size={34} showIconOnly />
                     <Text className="text-base font-bold text-[#1A1A1A] capitalize">
                       {String(TripType[travelPlan.travel.type]).replace(/([A-Z])/g, " $1").trim()}
                     </Text>
-                </View>
-                 )}
+                  </View>
+                )}
 
-              <View>
-              <Text 
-                 className="text-base leading-6 text-tertiary"
-                 numberOfLines={isDescriptionExpanded ? undefined : 3}
-                 onTextLayout={(e) => {
-                   if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
-                     setShowMoreButton(true);
-                   }
-                }}
-              >
-                {travelPlan.travel.description || null}
-              </Text>
-              
-              {travelPlan.travel.description && showMoreButton && (
-                <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
-                  <Text className="text-sm font-black text-[#555] mt-1 underline">
-                    {isDescriptionExpanded ? "Show less" : "Show more"}
+                <View>
+                  <Text
+                    className="text-base leading-6 text-tertiary"
+                    numberOfLines={isDescriptionExpanded ? undefined : 3}
+                    onTextLayout={(e) => {
+                      if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
+                        setShowMoreButton(true);
+                      }
+                    }}
+                  >
+                    {travelPlan.travel.description || null}
                   </Text>
-                </TouchableOpacity>
-              )}
+
+                  {travelPlan.travel.description && showMoreButton && (
+                    <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+                      <Text className="text-sm font-black text-[#555] mt-1 underline">
+                        {isDescriptionExpanded ? "Show less" : "Show more"}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             </View>
-          </View>
-        </FadeInView>
+          </FadeInView>
         )}
-        
+
 
         {travelPlan.travel.notes ? (
           <FadeInView type="up" delay={300} duration={400}>
             <View className="px-4">
-                <Text 
-                   className="text-md text-tertiary leading-6"
-                   numberOfLines={isNoteDescriptionExpanded ? undefined : 2}
-                   onTextLayout={(e) => {
-                     if (!showNoteMoreButton && e.nativeEvent.lines.length >= 3) {
-                       setShowNoteMoreButton(true);
-                     }
-                  }}
-                >
-                  {travelPlan.travel.notes || null}
-                </Text>
-                
-                {travelPlan.travel.notes && showNoteMoreButton && (
-                  <TouchableOpacity onPress={() => setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)}>
-                    <Text className="text-sm font-medium text-[#555] mt-1 underline">
-                      {isNoteDescriptionExpanded ? "Show less" : "Show more"}
-                    </Text>
-                  </TouchableOpacity>
-                )}
+              <Text
+                className="text-md text-tertiary leading-6"
+                numberOfLines={isNoteDescriptionExpanded ? undefined : 2}
+                onTextLayout={(e) => {
+                  if (!showNoteMoreButton && e.nativeEvent.lines.length >= 3) {
+                    setShowNoteMoreButton(true);
+                  }
+                }}
+              >
+                {travelPlan.travel.notes || null}
+              </Text>
+
+              {travelPlan.travel.notes && showNoteMoreButton && (
+                <TouchableOpacity onPress={() => setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)}>
+                  <Text className="text-sm font-medium text-[#555] mt-1 underline">
+                    {isNoteDescriptionExpanded ? "Show less" : "Show more"}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </FadeInView>
         ) : null}
@@ -327,8 +327,8 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
                   <View key={entry.category} className="flex-row items-center justify-between">
                     <View className="flex-row items-center gap-2 flex-1">
                       {/* Dot icon with category color */}
-                      <View 
-                        className="w-3 h-3 rounded-full" 
+                      <View
+                        className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: entry.color }}
                       />
                       <Text className="text-sm font-semibold text-gray-700 capitalize flex-1" numberOfLines={1}>

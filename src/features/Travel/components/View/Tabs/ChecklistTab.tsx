@@ -150,7 +150,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                 Start by adding to-do items to your checklist.
               </Text>
             </View>
-            <View className="justify-center items-center gap-3 flex-row">
+            <View className="justify-center items-center gap-3 flex-row mt-lg">
               <TouchableOpacity
                 onPress={() => openChecklistModal(null, allActivities, travelId)}
                 accessibilityRole="button"
@@ -293,7 +293,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                 className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
               >
                 <ActivityIcon
-                  type={(activity.type ?? ActivityType.none) as ActivityType}
+                  type={(activity.type ?? ActivityType.plan) as ActivityType}
                   size={24}
                   showIconOnly
                 />

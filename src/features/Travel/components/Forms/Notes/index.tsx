@@ -149,7 +149,7 @@ const EditActivity = ({
         id: itineraryActivity?.id,
         title: itineraryActivity?.title || "",
         description: itineraryActivity?.description || "",
-        type: itineraryActivity?.type ?? ActivityType.none,
+        type: itineraryActivity?.type ?? ActivityType.plan,
         sortOrder: itineraryActivity?.sortOrder || "",
         startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : null,
         startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : "08:00",

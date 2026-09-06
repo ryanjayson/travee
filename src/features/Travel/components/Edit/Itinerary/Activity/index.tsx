@@ -294,7 +294,7 @@ const FormInitHandler = ({
   scrollViewRef?: React.RefObject<ScrollView>;
 }) => {
   useEffect(() => {
-    if (!itineraryActivity?.id && values.type === ActivityType.none) {
+    if (!itineraryActivity?.id && values.type === ActivityType.plan) {
       const timer = setTimeout(() => {
         onOpenPrimaryTypeModal(values.type, (type: any) => {
           setFieldValue("type", type);
@@ -1818,7 +1818,7 @@ const EditActivity = ({
                     <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5 ">
                       <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
                       {(() => {
-                        const isTypeDisabled = !!values.id && values.type !== ActivityType.none;
+                        const isTypeDisabled = !!values.id && values.type !== ActivityType.plan;
                         return (
                           <TouchableOpacity
                             onPress={() => {

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -8,20 +10,18 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
 import Icon from "react-native-vector-icons/MaterialIcons";
+import { FadeInView, StaggerItem } from "../../../components/animations";
 import StatusBadge from "../../../components/StatusBadge";
 import Tabs from "../../../components/Tabs/index";
-import { TravelStatus, TripType } from "../../../types/enums";
-import { Ionicons } from "@expo/vector-icons";
+import { tripIcons } from "../../../components/TripIcon";
+import { TravelStatus } from "../../../types/enums";
 import DestinationsBottomSheet from "../components/DestinationsBottomSheet";
+import CountryOutline from "../components/ShareOverlay/CountryOutline";
 import ViewTravelModal from "../components/View/Modal";
 import { useTravels } from "../hooks/useTravel";
 import { Travel } from "../types/TravelDto";
-import TripIcon, { tripIcons } from "../../../components/TripIcon";
-import CountryOutline from "../components/ShareOverlay/CountryOutline";
-import { FadeInView, StaggerItem } from "../../../components/animations";
 
 const TravelCatalog = () => {
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
@@ -220,7 +220,7 @@ const TravelCatalog = () => {
         key={travel.id}
         index={index}
         className="rounded-4xl mb-4 shadow-sm mx-4 overflow-hidden "
-        style={{ backgroundColor: assignedColor + '20' }}
+        style={{ backgroundColor: assignedColor + '40' }}
       >
         <TouchableOpacity onPress={() => handleViewModeTravel(travel)}>
           <View className="px-4 rounded-4xl relative overflow-hidden">
@@ -438,105 +438,110 @@ const TravelCatalog = () => {
           </View>
         </View>
 
-        <Calendar
-          style={{}}
-          enableSwipeMonths={true}
-          theme={{
-            monthTextColor: '#0EA5E9',
-            textMonthFontWeight: '600',
-            textMonthFontSize: 20,
-            textSectionTitleColor: '#666666',
-            todayTextColor: '#0EA5E9',
-            arrowColor: '#0EA5E9',
-            "stylesheet.calendar.main": {
-              monthView: {
-                flex: 1,
+        <FadeInView type="right" duration={200} delay={500}>
+          <Calendar
+            style={{}}
+            enableSwipeMonths={true}
+            theme={{
+              monthTextColor: '#0EA5E9',
+              textMonthFontWeight: '600',
+              textMonthFontSize: 20,
+              textSectionTitleColor: '#666666',
+              todayTextColor: '#0EA5E9',
+              arrowColor: '#0EA5E9',
+              "stylesheet.calendar.main": {
+                monthView: {
+                  flex: 1,
+                },
+                week: {
+                  marginTop: 0,
+                  marginBottom: 0,
+                  flexDirection: 'row',
+                  justifyContent: 'space-around',
+                  borderBottomWidth: 1,
+                  borderBottomColor: '#f0f0f0',
+                  height: 88,
+                },
               },
-              week: {
-                marginTop: 0,
-                marginBottom: 0,
-                flexDirection: 'row',
-                justifyContent: 'space-around',
-                borderBottomWidth: 1,
-                borderBottomColor: '#f0f0f0',
-                height: 88,
-              },
-            },
-          }}
-          renderArrow={(direction: string) => (
-            <View className="bg-gray-50 rounded-full w-14 h-14 items-center justify-center">
-              <Icon
-                name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
-                size={28}
-                color="#0EA5E9"
-              />
-            </View>
-          )}
-          dayComponent={({ date, state }: any) => {
-            const dayStr = date.dateString;
-            const tripsOnDay = activeTrips.filter((trip) => {
-              if (!trip.startOrDepartureDate) return false;
-              const startStr = new Date(trip.startOrDepartureDate).toISOString().split('T')[0];
-              const endStr = trip.endOrReturnDate
-                ? new Date(trip.endOrReturnDate).toISOString().split('T')[0]
-                : startStr;
-              return dayStr >= startStr && dayStr <= endStr;
-            });
-
-            return (
-              <View style={{ borderRadius: 6, margin: 4, backgroundColor: "#f2f4f7", height: 80, flex: 1, width: '90%', padding: 4, paddingTop: 4 }}>
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontSize: 12,
-                    fontWeight: state === 'today' ? 'bold' : 'normal',
-                    color: state === 'disabled' ? '#d9e1e8' : state === 'today' ? '#0EA5E9' : '#2d4150',
-                    marginBottom: 2,
-                  }}
-                >
-                  {date.day}
-                </Text>
-                <View style={{ gap: 2 }}>
-                  {tripsOnDay.map((trip) => {
-                    const status = getEffectiveStatus(trip);
-                    const { bg: bgColor, text: textColor } = getStatusColors(status);
-                    const startStr = new Date(trip.startOrDepartureDate!).toISOString().split('T')[0];
-                    const endStr = new Date(trip.endOrReturnDate!).toISOString().split('T')[0];
-                    const isStart = dayStr === startStr;
-                    const isEnd = dayStr === endStr;
-
-                    return (
-                      <TouchableOpacity
-                        key={trip.id}
-                        activeOpacity={0.7}
-                        onPress={() => {
-                          handleViewModeTravel(trip);
-                        }}
-                        style={{
-                          backgroundColor: bgColor,
-                          paddingVertical: 2,
-                          paddingHorizontal: 4,
-                          borderRadius: 3,
-                          borderWidth: status === TravelStatus.Past ? 0 : 0.5,
-                          borderColor: textColor,
-                          opacity: state === 'disabled' || !isStart && !isEnd ? 0.50 : 1,
-                        }}
-                      >
-                        <Text
-                          style={{ color: textColor, fontSize: 10, fontWeight: '600' }}
-                          numberOfLines={1}
-                          ellipsizeMode="tail"
-                        >
-                          {trip.title}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
+            }}
+            renderArrow={(direction: string) => (
+              <View className="bg-gray-50 rounded-full w-14 h-14 items-center justify-center">
+                <Icon
+                  name={direction === 'left' ? 'chevron-left' : 'chevron-right'}
+                  size={28}
+                  color="#0EA5E9"
+                />
               </View>
-            );
-          }}
-        />
+            )}
+            dayComponent={({ date, state }: any) => {
+              const dayStr = date.dateString;
+              const tripsOnDay = activeTrips.filter((trip) => {
+                if (!trip.startOrDepartureDate) return false;
+                const startStr = new Date(trip.startOrDepartureDate).toISOString().split('T')[0];
+                const endStr = trip.endOrReturnDate
+                  ? new Date(trip.endOrReturnDate).toISOString().split('T')[0]
+                  : startStr;
+                return dayStr >= startStr && dayStr <= endStr;
+              });
+
+              return (
+                <View style={{ borderRadius: 6, margin: 4, backgroundColor: "#f2f4f7", height: 80, flex: 1, width: '90%', padding: 4, paddingTop: 4 }}>
+                  <Text
+                    style={{
+                      textAlign: 'center',
+                      fontSize: 12,
+                      fontWeight: state === 'today' ? 'bold' : 'normal',
+                      color: state === 'disabled' ? '#d9e1e8' : state === 'today' ? '#0EA5E9' : '#2d4150',
+                      marginBottom: 2,
+                    }}
+                  >
+                    {date.day}
+                  </Text>
+                  <View style={{ gap: 2 }}>
+                    {tripsOnDay.map((trip, index) => {
+                      const status = getEffectiveStatus(trip);
+                      const { bg: bgColor, text: textColor } = getStatusColors(status);
+                      const startStr = new Date(trip.startOrDepartureDate!).toISOString().split('T')[0];
+                      const endStr = new Date(trip.endOrReturnDate!).toISOString().split('T')[0];
+                      const isStart = dayStr === startStr;
+                      const isEnd = dayStr === endStr;
+
+                      return (
+                        <StaggerItem key={trip.id} index={index}>
+                          <TouchableOpacity
+                            key={trip.id}
+                            activeOpacity={0.7}
+                            onPress={() => {
+                              handleViewModeTravel(trip);
+                            }}
+                            style={{
+                              backgroundColor: bgColor,
+                              paddingVertical: 2,
+                              paddingHorizontal: 4,
+                              borderRadius: 3,
+                              borderWidth: status === TravelStatus.Past ? 0 : 0.5,
+                              borderColor: textColor,
+                              opacity: state === 'disabled' || !isStart && !isEnd ? 0.50 : 1,
+                            }}
+                          >
+                            <Text
+                              style={{ color: textColor, fontSize: 10, fontWeight: '600' }}
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                            >
+                              {trip.title}
+                            </Text>
+                          </TouchableOpacity>
+                        </StaggerItem>
+                      );
+                    })}
+                  </View>
+                </View>
+              );
+            }}
+          />
+
+        </FadeInView>
       </View>
     );
   };

@@ -117,6 +117,7 @@ export const DestinationsBottomSheet: React.FC<DestinationsBottomSheetProps> = (
       onRequestClose={handleDismiss}
     >
       <Animated.View
+        {...dragPanResponder.panHandlers}
         style={{
           flex: 1,
           justifyContent: "flex-end",
@@ -142,7 +143,6 @@ export const DestinationsBottomSheet: React.FC<DestinationsBottomSheetProps> = (
         >
           {/* Drag Handle Area */}
           <View
-            {...dragPanResponder.panHandlers}
             className="w-full items-center pt-3 pb-2 bg-white rounded-t-[30px]"
           >
             <View className="w-10 h-1 bg-gray-300 rounded-full" />

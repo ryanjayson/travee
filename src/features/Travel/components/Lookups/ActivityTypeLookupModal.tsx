@@ -278,7 +278,7 @@ const ActivityTypeLookupModal = ({
                 scrollEventThrottle={16}
                 keyboardShouldPersistTaps="always"
               >
-                <FadeInView type="up" delay={50} duration={350}>
+                <FadeInView type="up" delay={200} duration={500}>
                   {types.map(({ key, typeValue, displayName }) => (
                     <TouchableOpacity
                       key={key}

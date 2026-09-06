@@ -11,6 +11,7 @@ import AddFieldModal, {
 } from "../../../../Lookups/AddFieldModal";
 import { ActivityPlanType } from "../../../../../../../types/enums";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import { FadeInView } from "../../../../../../../components/animations";
 
 const PRIORITIES = ["High", "Medium", "Low"];
 
@@ -206,158 +207,161 @@ export default function PlanTab({
 
         return (
           <View key={fieldId} className="mb-5">
-            {fieldId === "location" && (
-              <FloatingLabelInput
-                label={fieldMeta.label}
-                value={getFieldValue("location")}
-                onChangeText={(text) => handleCustomFieldChange("location", text)}
-                right={<TextInput.Icon icon="map-marker-outline" color="#98A2B3" />}
-              />
-            )}
+            <FadeInView type="zoom" delay={200} duration={500} >
 
-            {fieldId === "website" && (
-              <FloatingLabelInput
-                label={fieldMeta.label}
-                value={getFieldValue("website")}
-                onChangeText={(text) => handleCustomFieldChange("website", text)}
-                keyboardType="url"
-                right={<TextInput.Icon icon="web" color="#98A2B3" />}
-              />
-            )}
+              {fieldId === "location" && (
+                <FloatingLabelInput
+                  label={fieldMeta.label}
+                  value={getFieldValue("location")}
+                  onChangeText={(text) => handleCustomFieldChange("location", text)}
+                  right={<TextInput.Icon icon="map-marker-outline" color="#98A2B3" />}
+                />
+              )}
 
-            {fieldId === "budget" && (
-              <FloatingLabelInput
-                label={fieldMeta.label}
-                value={getFieldValue("budget")}
-                onChangeText={(text) => handleCustomFieldChange("budget", text)}
-                keyboardType="numeric"
-                right={<TextInput.Icon icon="cash" color="#98A2B3" />}
-              />
-            )}
+              {fieldId === "website" && (
+                <FloatingLabelInput
+                  label={fieldMeta.label}
+                  value={getFieldValue("website")}
+                  onChangeText={(text) => handleCustomFieldChange("website", text)}
+                  keyboardType="url"
+                  right={<TextInput.Icon icon="web" color="#98A2B3" />}
+                />
+              )}
 
-            {fieldId === "bookingReference" && (
-              <FloatingLabelInput
-                label={fieldMeta.label}
-                value={getFieldValue("bookingReference")}
-                onChangeText={(text) => handleCustomFieldChange("bookingReference", text)}
-                right={<TextInput.Icon icon="ticket-outline" color="#98A2B3" />}
-              />
-            )}
+              {fieldId === "budget" && (
+                <FloatingLabelInput
+                  label={fieldMeta.label}
+                  value={getFieldValue("budget")}
+                  onChangeText={(text) => handleCustomFieldChange("budget", text)}
+                  keyboardType="numeric"
+                  right={<TextInput.Icon icon="cash" color="#98A2B3" />}
+                />
+              )}
 
-            {fieldId === "contactName" && (
-              <FloatingLabelInput
-                label={fieldMeta.label}
-                value={getFieldValue("contactName")}
-                onChangeText={(text) => handleCustomFieldChange("contactName", text)}
-                right={<TextInput.Icon icon="account-outline" color="#98A2B3" />}
-              />
-            )}
+              {fieldId === "bookingReference" && (
+                <FloatingLabelInput
+                  label={fieldMeta.label}
+                  value={getFieldValue("bookingReference")}
+                  onChangeText={(text) => handleCustomFieldChange("bookingReference", text)}
+                  right={<TextInput.Icon icon="ticket-outline" color="#98A2B3" />}
+                />
+              )}
 
-            {fieldId === "contactNumber" && (
-              <FloatingLabelInput
-                label={fieldMeta.label}
-                value={getFieldValue("contactNumber")}
-                onChangeText={(text) => handleCustomFieldChange("contactNumber", text)}
-                keyboardType="phone-pad"
-                right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
-              />
-            )}
+              {fieldId === "contactName" && (
+                <FloatingLabelInput
+                  label={fieldMeta.label}
+                  value={getFieldValue("contactName")}
+                  onChangeText={(text) => handleCustomFieldChange("contactName", text)}
+                  right={<TextInput.Icon icon="account-outline" color="#98A2B3" />}
+                />
+              )}
 
-            {fieldId === "contactEmail" && (
-              <FloatingLabelInput
-                label={fieldMeta.label}
-                value={getFieldValue("contactEmail")}
-                onChangeText={(text) => handleCustomFieldChange("contactEmail", text)}
-                keyboardType="email-address"
-                right={<TextInput.Icon icon="email-outline" color="#98A2B3" />}
-              />
-            )}
+              {fieldId === "contactNumber" && (
+                <FloatingLabelInput
+                  label={fieldMeta.label}
+                  value={getFieldValue("contactNumber")}
+                  onChangeText={(text) => handleCustomFieldChange("contactNumber", text)}
+                  keyboardType="phone-pad"
+                  right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
+                />
+              )}
 
-            {fieldId === "contact" && (
-              <FloatingLabelInput
-                label={fieldMeta.label}
-                value={getFieldValue("contact")}
-                onChangeText={(text) => handleCustomFieldChange("contact", text)}
-                right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
-              />
-            )}
+              {fieldId === "contactEmail" && (
+                <FloatingLabelInput
+                  label={fieldMeta.label}
+                  value={getFieldValue("contactEmail")}
+                  onChangeText={(text) => handleCustomFieldChange("contactEmail", text)}
+                  keyboardType="email-address"
+                  right={<TextInput.Icon icon="email-outline" color="#98A2B3" />}
+                />
+              )}
 
-            {fieldId === "priority" && (
-              <View>
-                <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
-                  {fieldMeta.label}
-                </Text>
-                <View className="flex-row gap-2 mt-1">
-                  {PRIORITIES.map((p) => {
-                    const pColor =
-                      p === "High"
-                        ? "#EF4444"
-                        : p === "Medium"
-                        ? "#F59E0B"
-                        : "#22C55E";
-                    const isSelected = selectedPriority === p;
-                    return (
-                      <TouchableOpacity
-                        key={p}
-                        onPress={() => {
-                          const nextVal = isSelected ? null : p;
-                          setSelectedPriority(nextVal);
-                          setFieldValue?.("priority", nextVal);
-                        }}
-                        accessibilityRole="button"
-                        accessibilityLabel={`Priority ${p}`}
-                        style={{
-                          borderRadius: 12,
-                          borderWidth: 1,
-                          paddingHorizontal: 16,
-                          paddingVertical: 10,
-                          borderColor: isSelected ? pColor : "#EAECF0",
-                          backgroundColor: isSelected ? `${pColor}18` : "#FFF",
-                        }}
-                      >
-                        <Text
+              {fieldId === "contact" && (
+                <FloatingLabelInput
+                  label={fieldMeta.label}
+                  value={getFieldValue("contact")}
+                  onChangeText={(text) => handleCustomFieldChange("contact", text)}
+                  right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
+                />
+              )}
+
+              {fieldId === "priority" && (
+                <View>
+                  <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
+                    {fieldMeta.label}
+                  </Text>
+                  <View className="flex-row gap-2 mt-1">
+                    {PRIORITIES.map((p) => {
+                      const pColor =
+                        p === "High"
+                          ? "#EF4444"
+                          : p === "Medium"
+                            ? "#F59E0B"
+                            : "#22C55E";
+                      const isSelected = selectedPriority === p;
+                      return (
+                        <TouchableOpacity
+                          key={p}
+                          onPress={() => {
+                            const nextVal = isSelected ? null : p;
+                            setSelectedPriority(nextVal);
+                            setFieldValue?.("priority", nextVal);
+                          }}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Priority ${p}`}
                           style={{
-                            fontSize: 13,
-                            fontWeight: isSelected ? "700" : "600",
-                            color: pColor,
+                            borderRadius: 12,
+                            borderWidth: 1,
+                            paddingHorizontal: 16,
+                            paddingVertical: 10,
+                            borderColor: isSelected ? pColor : "#EAECF0",
+                            backgroundColor: isSelected ? `${pColor}18` : "#FFF",
                           }}
                         >
-                          {p}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
+                          <Text
+                            style={{
+                              fontSize: 13,
+                              fontWeight: isSelected ? "700" : "600",
+                              color: pColor,
+                            }}
+                          >
+                            {p}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
 
-            {fieldId === "checklist" && (
-              <View>
-                <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
-                  {fieldMeta.label}
-                </Text>
-                <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
-                  <Icon name="checklist" size={24} color="#98A2B3" />
-                  <Text className="text-xs text-gray-500 mt-1">
-                    Checklist items can be added here
+              {fieldId === "checklist" && (
+                <View>
+                  <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
+                    {fieldMeta.label}
                   </Text>
+                  <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
+                    <Icon name="checklist" size={24} color="#98A2B3" />
+                    <Text className="text-xs text-gray-500 mt-1">
+                      Checklist items can be added here
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
 
-            {fieldId === "attachments" && (
-              <View>
-                <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
-                  {fieldMeta.label}
-                </Text>
-                <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
-                  <Icon name="cloud-upload" size={24} color="#98A2B3" />
-                  <Text className="text-xs text-gray-500 mt-1">
-                    Upload files, tickets, or photos
+              {fieldId === "attachments" && (
+                <View>
+                  <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
+                    {fieldMeta.label}
                   </Text>
+                  <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
+                    <Icon name="cloud-upload" size={24} color="#98A2B3" />
+                    <Text className="text-xs text-gray-500 mt-1">
+                      Upload files, tickets, or photos
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
+            </FadeInView>
           </View>
         );
       })}

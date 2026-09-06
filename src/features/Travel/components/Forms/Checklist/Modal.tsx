@@ -96,7 +96,7 @@ const ChecklistModal = ({
         id: a.id!,
         label: a.title!,
         type: "activity",
-        activityType: (a.type ?? ActivityType.none) as ActivityType,
+        activityType: (a.type ?? ActivityType.plan) as ActivityType,
       }));
     return [...groupOpts, ...activityOpts];
   }, [groups, activities]);
@@ -123,7 +123,7 @@ const ChecklistModal = ({
             id: matchingActivity.id!,
             label: matchingActivity.title || "Activity",
             type: "activity",
-            activityType: (matchingActivity.type ?? ActivityType.none) as ActivityType,
+            activityType: (matchingActivity.type ?? ActivityType.plan) as ActivityType,
           };
           if (selectedContext?.id !== newContext.id || selectedContext?.type !== newContext.type) {
             setSelectedContext(newContext);
@@ -145,7 +145,7 @@ const ChecklistModal = ({
             id: currentAct.id!,
             label: currentAct.title || "Activity",
             type: "activity",
-            activityType: (currentAct.type ?? ActivityType.none) as ActivityType,
+            activityType: (currentAct.type ?? ActivityType.plan) as ActivityType,
           });
         } else {
           setSelectedContext(null);

@@ -5,7 +5,7 @@ import { Animated, Dimensions, Easing, LayoutAnimation, Modal, PanResponder, Pre
 import { useTheme } from "react-native-paper";
 import Svg, { Line } from "react-native-svg";
 import Accordion from "../../../../components/Accordion";
-import { FadeInView } from "../../../../components/animations";
+import { FadeInView, StaggerItem } from "../../../../components/animations";
 import { useToast } from "../../../../context/ToastContext";
 import { useTravelContext } from "../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../hooks/useLexicographicSort";
@@ -1258,7 +1258,7 @@ const SectionAccordion = ({
                   Start by adding an activity or create a section to organize your itinerary.
                 </Text>
               </View>
-              <View className="justify-center items-center gap-3 flex-row">
+              <View className="justify-center items-center gap-3 flex-row mt-lg">
                 <TouchableOpacity
                   onPress={() => openActivityModal(null, undefined, travelId)}
                   accessibilityRole="button"
@@ -1414,8 +1414,7 @@ const SectionAccordion = ({
                       <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
                     </View>
 
-                    <FadeInView
-                      type="right" delay={50} duration={250}>
+                    <StaggerItem index={mapIndex}>
                       <DraggableSectionItem
                         key={section.id}
                         section={section}
@@ -1448,27 +1447,27 @@ const SectionAccordion = ({
                           }
                         }}
                       />
-                      {/* //TODO: Hide this feat for now */}
-                      {false && index === sections.length - 1 && (
-                        <TouchableOpacity
-                          // onPress={() => {
-                          //   setModalVisible(true);
-                          //   const defaultSection = sections.find(
-                          //     (section) => section.isDefaultSection == true,
-                          //   );
-                          //   setCurrentSectionId(defaultSection?.id || null);
-                          // }}
+                    </StaggerItem>
+                    {/* //TODO: Hide this feat for now */}
+                    {false && index === sections.length - 1 && (
+                      <TouchableOpacity
+                        // onPress={() => {
+                        //   setModalVisible(true);
+                        //   const defaultSection = sections.find(
+                        //     (section) => section.isDefaultSection == true,
+                        //   );
+                        //   setCurrentSectionId(defaultSection?.id || null);
+                        // }}
 
-                          className="flex-row"
-                        >
-                          <Icon name="add" size={16} color={"#263F69"} />
-                          <Text className="font-medium text-base text-primary underline">
-                            Add section
-                          </Text>
-                        </TouchableOpacity>
-                      )}
+                        className="flex-row"
+                      >
+                        <Icon name="add" size={16} color={"#263F69"} />
+                        <Text className="font-medium text-base text-primary underline">
+                          Add section
+                        </Text>
+                      </TouchableOpacity>
+                    )}
 
-                    </FadeInView>
 
                     <View style={{ marginBottom: viewMode === "narrow" && subSectionsLength > 0 && index === subSectionsLength ? 16 : 0 }}>
                       <View className={`absolute top-9px h-full w-md  py-lg z-1 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>

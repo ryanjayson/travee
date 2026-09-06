@@ -315,7 +315,7 @@ const ContextLookupModal = ({
                         <Icon name="folder" size={28} color="#263F69" />
                       ) : (
                         <ActivityIcon
-                          type={(option.activityType ?? ActivityType.none) as ActivityType}
+                          type={(option.activityType ?? ActivityType.plan) as ActivityType}
                           size={28}
                           color="#263F69"
                           showIconOnly

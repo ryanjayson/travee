@@ -84,7 +84,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
         id: a.id!,
         label: a.title,
         type: "activity",
-        activityType: (a.type ?? ActivityType.none) as ActivityType,
+        activityType: (a.type ?? ActivityType.plan) as ActivityType,
       }));
     return [...groupOpts, ...activityOpts];
   }, [groups, activities]);
@@ -158,9 +158,8 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
       <TouchableOpacity
         accessibilityRole="button"
         onPress={() => handleToggle(item)}
-        className={`w-6 h-6 rounded-full border-2 items-center justify-center mt-0.5 shrink-0 ${
-          item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
-        }`}
+        className={`w-6 h-6 rounded-full border-2 items-center justify-center mt-0.5 shrink-0 ${item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
+          }`}
       >
         {item.isDone && <Icon name="check" size={14} color="#FFF" />}
       </TouchableOpacity>
@@ -171,9 +170,8 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
         className="flex-1"
       >
         <Text
-          className={`text-base font-medium ${
-            item.isDone ? "line-through text-gray-400" : "text-[#1A1A1A]"
-          }`}
+          className={`text-base font-medium ${item.isDone ? "line-through text-gray-400" : "text-[#1A1A1A]"
+            }`}
         >
           {item.title}
         </Text>
@@ -227,7 +225,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
         <View className="flex-1 mb-4">
           <Text className="text-xl font-semibold ">Trip Checklist</Text>
           <Text className="text-base font-normal text-gray-400 mb-5">
-          Your trip prep, simplified. Keep track of everything you need for a smooth and stress-free journey.
+            Your trip prep, simplified. Keep track of everything you need for a smooth and stress-free journey.
           </Text>
 
           <View className="flex-row items-center gap-2">
@@ -256,7 +254,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
               <Icon name="folder" size={20} color="#263F69" />
             ) : selectedContext?.type === "activity" ? (
               <ActivityIcon
-                type={(selectedContext.activityType ?? ActivityType.none) as ActivityType}
+                type={(selectedContext.activityType ?? ActivityType.plan) as ActivityType}
                 size={20}
                 color="#263F69"
               />
@@ -311,7 +309,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
                         <Icon name="folder" size={20} color="#263F69" />
                       ) : (
                         <ActivityIcon
-                          type={(option.activityType ?? ActivityType.none) as ActivityType}
+                          type={(option.activityType ?? ActivityType.plan) as ActivityType}
                           size={20}
                           color="#666"
                         />
@@ -367,9 +365,8 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
             accessibilityRole="button"
             onPress={handleAddItem}
             disabled={!newItemTitle.trim() || saveItemMutation.isPending}
-            className={`flex-row items-center justify-center gap-2 py-3 rounded-xl ${
-              newItemTitle.trim() ? "bg-[#263F69]" : "bg-gray-200"
-            }`}
+            className={`flex-row items-center justify-center gap-2 py-3 rounded-xl ${newItemTitle.trim() ? "bg-[#263F69]" : "bg-gray-200"
+              }`}
           >
             {saveItemMutation.isPending ? (
               <ActivityIndicator size="small" color="#FFF" />
@@ -420,7 +417,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
             <View key={`activity-${activity.id}`} className="mb-5">
               <View className="flex-row items-center gap-2 mb-2">
                 <ActivityIcon
-                  type={(activity.type ?? ActivityType.none) as ActivityType}
+                  type={(activity.type ?? ActivityType.plan) as ActivityType}
                   size={18}
                   color="#666"
                 />

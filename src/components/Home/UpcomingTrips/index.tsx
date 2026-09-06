@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
-import { Dimensions, FlatList, Text, View, TouchableOpacity, Image } from 'react-native';
+import { Dimensions, FlatList, Text, View, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { useTheme } from 'react-native-paper';
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { LinearGradient } from 'expo-linear-gradient';
 import { Travel } from '../../../features/Travel/types/TravelDto';
@@ -8,6 +10,7 @@ import DestinationsBottomSheet from '../../../features/Travel/components/Destina
 import { tripIcons } from '../../TripIcon';
 import { TripType } from '../../../types/enums';
 import { getDestinationZoom } from '../../../utils/mapUtils';
+import { FadeInView, StaggerItem } from '../../animations';
 
 const getDestinationImage = (destination?: string, destinationData?: any) => {
   if (!destination) {
@@ -84,8 +87,16 @@ interface UpcomingTripsProps {
 }
 
 const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }: UpcomingTripsProps) => {
+  const navigation = useNavigation<any>();
+  const { colors } = useTheme();
   const [selectedDestinationsTrip, setSelectedDestinationsTrip] = useState<Travel | null>(null);
   const [showDestinationsSheet, setShowDestinationsSheet] = useState(false);
+
+  const displayedTrips = upcomingTrips.slice(0, 5);
+
+  const handleGoToUpcomingCatalog = () => {
+    navigation.navigate("Trips", { initialTab: "upcoming" });
+  };
 
   const cardWidth = upcomingTrips.length === 1 ? SCREEN_WIDTH - 40 : SCREEN_WIDTH * 0.8;
 
@@ -141,7 +152,12 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
       <View className="flex-row items-center justify-between px-6 mb-4">
         <Text className="text-xl font-semibold text-secondary">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
-          <TouchableOpacity className="flex-row items-center gap-1 align-center ">
+          <TouchableOpacity
+            className="flex-row items-center gap-1 align-center"
+            accessibilityRole="button"
+            accessibilityLabel={`View all ${upcomingTrips.length} upcoming trips in catalog`}
+            onPress={handleGoToUpcomingCatalog}
+          >
             <Text className='text-secondary/70 font-medium'>
               {upcomingTrips.length} Trip{upcomingTrips.length > 1 ? 's' : ''}
               <Ionicons name="chevron-forward" size={14} color="#999" style={{ opacity: 0.5 }} />
@@ -154,7 +170,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
         <Text className="text-gray-500 text-sm px-5">Loading...</Text>
       ) : upcomingTrips.length > 0 ? (
         <View className="w-full px-4 gap-4">
-          {upcomingTrips.map((item) => {
+          {displayedTrips.map((item, index) => {
             const validDestinations = (item.tripDestinations && item.tripDestinations.length > 0)
               ? item.tripDestinations.map((d: any) => d.destination).filter(Boolean)
               : (item.destination ? item.destination.split(" | ").map((s: string) => s.trim()).filter(Boolean) : []);
@@ -174,96 +190,143 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
                   : item.destination ? `${item.destination}, ${item.destinationData?.country}` : 'Destination TBD');
 
             return (
-              <TouchableOpacity
-                key={String(item.id)}
-                activeOpacity={0.7}
-                onPress={() => onPressTrip?.(item)}
-                className="w-full rounded-4xl overflow-hidden bg-white"
-                style={{ backgroundColor: getBgColor(item.type), height: 155 }}
-                accessibilityRole="button"
-                accessibilityLabel={`View trip ${item.title}`}
-              >
-                {/* <Image
+              <StaggerItem key={String(item.id)} index={index}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => onPressTrip?.(item)}
+                  className="w-full rounded-4xl overflow-hidden bg-white"
+                  style={{ backgroundColor: getBgColor(item.type), height: 155 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`View trip ${item.title}`}
+                >
+                  {/* <Image
                   source={{ uri: getDestinationImage(item.destination, item.destinationData) }}
                   style={{ position: "absolute", right: 20, bottom: 20, borderRadius: 12 }}
                   resizeMode="cover"
                   width={140}
                   height={80}
                 /> */}
-                {/* <LinearGradient
+                  {/* <LinearGradient
                   colors={["rgba(0, 0, 0, 0.85)", "rgba(0, 0, 0, 0.15)"]}
                   start={{ x: 0.1, y: 0 }}
                   end={{ x: 0.9, y: 1 }}
                   style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
                 /> */}
-                <View className="p-5 flex-1 justify-between">
-                  {/* Title + destination */}
-                  <View className="pr-8">
-                    <Text className="text-2xl font-bold mb-1 text-secondary " numberOfLines={1}>
-                      {item.title}
-                    </Text>
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={`View destinations for ${item.title}`}
-                      onPress={(e) => {
-                        e?.stopPropagation?.();
-                        setSelectedDestinationsTrip(item);
-                        setShowDestinationsSheet(true);
-                      }}
-                      className="flex-row items-center gap-1 py-0.5 self-start"
-                    >
-                      <Ionicons name="location-outline" size={16} color="#344054" style={{ opacity: 0.6 }} />
-                      <Text className="text-lg text-secondary/60 " numberOfLines={1}>
-                        {destinationLabel}
+                  <View className="p-5 flex-1 justify-between">
+                    {/* Title + destination */}
+                    <View className="pr-8">
+                      <Text className="text-2xl font-bold mb-1 text-secondary " numberOfLines={1}>
+                        {item.title}
                       </Text>
-                      {isMultiple && (
-                        <Ionicons name="chevron-down" size={14} color="#344054" style={{ opacity: 0.6 }} />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Date + duration */}
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-row items-center gap-1.5">
-                      <Ionicons name="calendar-outline" size={18} color="#344054" style={{ opacity: 0.6 }} />
-                      <Text className="text-[13px] font-semibold text-secondary/60" >
-                        {item.startOrDepartureDate ? formatDate(item.startOrDepartureDate) : 'Date TBD'}
-                      </Text>
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={`View destinations for ${item.title}`}
+                        onPress={(e) => {
+                          e?.stopPropagation?.();
+                          setSelectedDestinationsTrip(item);
+                          setShowDestinationsSheet(true);
+                        }}
+                        className="flex-row items-center gap-1 py-0.5 self-start"
+                      >
+                        <Ionicons name="location-outline" size={16} color="#344054" style={{ opacity: 0.6 }} />
+                        <Text className="text-lg text-secondary/60 " numberOfLines={1}>
+                          {destinationLabel}
+                        </Text>
+                        {isMultiple && (
+                          <Ionicons name="chevron-down" size={14} color="#344054" style={{ opacity: 0.6 }} />
+                        )}
+                      </TouchableOpacity>
                     </View>
-                    {getDaysUntil(item.startOrDepartureDate) ? (
-                      <View className="bg-white/50 px-2.5 py-0.5 rounded-full items-center">
-                        <Text className="text-[12px] text-secondary" >
-                          {getDaysUntil(item.startOrDepartureDate)}
+
+                    {/* Date + duration */}
+                    <View className="flex-row items-center justify-between">
+                      <View className="flex-row items-center gap-1.5">
+                        <Ionicons name="calendar-outline" size={18} color="#344054" style={{ opacity: 0.6 }} />
+                        <Text className="text-[13px] font-semibold text-secondary/60" >
+                          {item.startOrDepartureDate ? formatDate(item.startOrDepartureDate) : 'Date TBD'}
                         </Text>
                       </View>
-                    ) : null}
+                      {getDaysUntil(item.startOrDepartureDate) ? (
+                        <View className="bg-white/50 px-2.5 py-0.5 rounded-full items-center">
+                          <Text className="text-[12px] text-secondary" >
+                            {getDaysUntil(item.startOrDepartureDate)}
+                          </Text>
+                        </View>
+                      ) : null}
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
+                </TouchableOpacity>
+              </StaggerItem>
             );
           })}
+
+          {upcomingTrips.length > 5 && (
+            <TouchableOpacity
+              onPress={handleGoToUpcomingCatalog}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Show more upcoming trips in catalog"
+              style={[
+                styles.showMoreButton,
+                {
+                  borderColor: colors.outlineVariant || '#EAECF0',
+                },
+              ]}
+            >
+              <View style={styles.showMoreContent}>
+                <Text style={[styles.showMoreLabel, { color: colors.primary }]}>
+                  Show more upcoming trips
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={colors.primary}
+                />
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
-        <TouchableOpacity
-          onPress={onAddTripPress}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Add a new trip"
-          className="mx-5 h-[130px] align-middle justify-center rounded-2xl p-6 items-center border-2 border-dashed border-gray-300"
-        >
-          <Ionicons name="briefcase-outline" size={32} color="#d1d5db" />
-          <Text className="text-lg text-tertiary font-medium mt-2">No upcoming trips</Text>
-          <View className='flex-row gap-1'>
+        <View className="flex-1 gap-4 justify-center items-center">
+          <TouchableOpacity
+            onPress={onAddTripPress}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Add a new trip"
+            className="mx-5 h-110 align-middle justify-center rounded-2xl p-6 items-center border-2 border-dashed border-gray-300 "
+          >
+            <FadeInView type="up" delay={50} duration={350}>
+              <View className="items-center">
+                <Ionicons name="briefcase-outline" size={42} color="#d1d5db" />
 
-            <Text className="text-base text-accent/80  text-center underline font-semibold">
-              Add trip
-            </Text>
-            <Text className="text-base text-tertiary/80 text-center ">
-              and start planning your next adventure!
-            </Text>
-          </View>
-        </TouchableOpacity>
+                <Text className="text-2xl font-medium text-secondary text-center mb-sm">
+                  No upcoming trips
+                </Text>
+                <Text className="text-lg font-normal text-tertiary/60 text-center px-3xl leading-[28px]">
+                  You haven't planned any trips yet. Create one to get started.
+                </Text>
+              </View>
+            </FadeInView>
+            <View className="justify-center items-center gap-3 flex-row mt-lg">
+              <TouchableOpacity
+                onPress={onAddTripPress}
+                accessibilityRole="button"
+                activeOpacity={0.7}
+                className="flex-row items-center bg-primary/10 px-4 py-2 rounded-full gap-2"
+              >
+                <Ionicons name="add" size={16} color={"#0EA5E9"} />
+                <Text
+                  className="font-medium text-base text-primary"
+                >
+                  Plan Your First Trip
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+
       )}
 
       <DestinationsBottomSheet
@@ -277,5 +340,27 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  showMoreButton: {
+    width: '100%',
+    paddingVertical: 4,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  showMoreContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  showMoreLabel: {
+    fontWeight: '600',
+    fontSize: 14,
+  },
+});
 
 export default UpcomingTrips;

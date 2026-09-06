@@ -21,7 +21,7 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
   let endDate: string | null = null;
   let endTime: string | null = null;
   let destination = "";
-  let resolvedType = ActivityType.none;
+  let resolvedType = ActivityType.plan;
   
   // Heuristic 1: Detect Initial Title/Merchant from first lines
   const ignorePatterns = /^(booking|reservation|confirmation|ref|pnr|date|time|ticket|pass|order|receipt|tax|invoice|welcome|hello|dear|hi|your|trip|travel)/i;
@@ -83,20 +83,10 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
       label: "Cruise",
       keywords: ["cruise", "ship", "cruise line", "royal caribbean", "carnival", "msc cruise", "cabin number", "deck number", "port of call", "cruise terminal", "boarding card"]
     },
-    attraction: {
-      type: ActivityType.sightseeing,
-      label: "Attraction",
-      keywords: ["attraction", "admission", "ticket", "museum", "entry pass", "theme park", "disneyland", "universal studios", "aquarium", "zoo", "exhibition", "booking receipt"]
-    },
-    groupTour: {
-      type: ActivityType.sightseeing,
-      label: "Group Tour",
-      keywords: ["group tour", "guided tour", "day tour", "excursion", "tour guide", "sightseeing tour", "klook tour", "viator", "tripadvisor tour", "tour itinerary"]
-    }
   };
 
   let bestCategory = {
-    type: ActivityType.none,
+    type: ActivityType.plan,
     label: "Activity",
     score: 0
   };
@@ -379,7 +369,7 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
     startDate: startDate ? new Date(`${startDate}T${startTime || "00:00"}:00`) : undefined,
     endDate: endDate ? new Date(`${endDate}T${endTime || "00:00"}:00`) : undefined,
     destination: destination.trim(),
-    type: resolvedType !== ActivityType.none ? resolvedType : undefined,
+    type: resolvedType !== ActivityType.plan ? resolvedType : undefined,
   };
 };
 

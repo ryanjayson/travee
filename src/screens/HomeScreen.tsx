@@ -248,19 +248,6 @@ const HomeScreen = () => {
     const map: Record<number, string> = {
       [ActivityType.flight]: 'airplane',
       [ActivityType.stay]: 'bed',
-      [ActivityType.cafeRestaurant]: 'restaurant',
-      [ActivityType.nature]: 'leaf',
-      [ActivityType.shopppingAndService]: 'cart',
-      [ActivityType.entertainmentAndRecreation]: 'film',
-      // [ActivityType.transit]: 'bus',
-      // [ActivityType.walk]: 'walk',
-      [ActivityType.sightseeing]: 'camera',
-      [ActivityType.preparation]: 'construct',
-      // [ActivityType.rest]: 'bed',
-      [ActivityType.hikeOrCamp]: 'compass',
-      // [ActivityType.motorcycleRide]: 'bicycle',
-      // [ActivityType.meetup]: 'people',
-      // [ActivityType.rideRental]: 'car',
     };
     return (map[type ?? 0] ?? 'location') as any;
   };
@@ -338,18 +325,16 @@ const HomeScreen = () => {
             marginTop: currentOngoingTrip ? 12 : 16,
           }}
         >
-          <FadeInView type="up" delay={100} duration={450} style={{ width: '100%' }}>
-            <UpcomingTrips
-              upcomingTrips={upcomingTrips}
-              isLoading={isLoading}
-              onPressTrip={handlePressTrip}
-              onAddTripPress={() => {
-                setPrefilledTripData(null);
-                setShowCreateModal(true);
-              }}
-            />
-          </FadeInView>
 
+          <UpcomingTrips
+            upcomingTrips={upcomingTrips}
+            isLoading={isLoading}
+            onPressTrip={handlePressTrip}
+            onAddTripPress={() => {
+              setPrefilledTripData(null);
+              setShowCreateModal(true);
+            }}
+          />
           {/* TODO: Add this section in future releases */}
           {/* <View className="justify-between mb-3 px-1">
             <FadeInView type="fade" delay={150} duration={350}>
