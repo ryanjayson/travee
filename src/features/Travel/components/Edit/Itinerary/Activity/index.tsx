@@ -5,7 +5,7 @@ import { Formik, useFormikContext } from "formik";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert, Image,
-  Keyboard, Modal,
+  Keyboard, LayoutAnimation, Modal,
   ScrollView,
   StatusBar,
   Text,
@@ -36,6 +36,7 @@ import { Attachment, DestinationDto, Images, ItineraryActivity } from "../../../
 import { MapboxPoi } from "../../../Lookups/PoiLookupModal";
 import OsmPoiLookupModal from "../../../Lookups/OsmPoiLookupModal";
 import OsmMapPinModal, { PinnedLocation } from "../../../Lookups/OsmMapPinModal";
+import { GoogleMapSearchModal, GooglePlaceLocation } from "../../../GoogleMapSearchBox";
 import { MapboxPlace } from "../../../MapboxDestinationSelector";
 import MapboxDestinationSelectorModal from "../../../MapboxDestinationSelector/Modal";
 import AirportLookupModal, { Airport } from "../../../Lookups/AirportLookupModal";
@@ -56,6 +57,7 @@ import PlanTab from "./Tabs/PlanTab";
 import PlanDateModal from "./DateTime/PlanDateModal";
 import CustomTagsInput from "./CustomTagsInput";
 import { FadeInView } from "../../../../../../components/animations";
+import { safeJsonParse } from "../../../../../../utils/safeJsonParse";
 
 interface Place {
   id: string;
@@ -538,9 +540,11 @@ const EditActivity = ({
   const [poiModalInitialCategory, setPoiModalInitialCategory] = useState<"accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp">("accommodation");
   const [poiTargetType, setPoiTargetType] = useState<string>("accommodation");
   const [showMapPinModal, setShowMapPinModal] = useState<boolean>(false);
+  const [showGoogleSearchModal, setShowGoogleSearchModal] = useState<boolean>(false);
   const [mapPinTargetField, setMapPinTargetField] = useState<string>("rideRentalDetails.pickupLocation");
   const [mapPinInitialValue, setMapPinInitialValue] = useState<string>("");
   const [mapPinInitialCoordinates, setMapPinInitialCoordinates] = useState<any>(null);
+  const [isDestinationExpanded, setIsDestinationExpanded] = useState<boolean>(true);
 
   const handleOpenMapPinModal = (targetField: string, initialText?: string, initialCoords?: any) => {
     setMapPinTargetField(targetField);
@@ -642,6 +646,7 @@ const EditActivity = ({
     showHikeOrCampDatePickerFor !== null ||
     showPoiModal ||
     showMapPinModal ||
+    showGoogleSearchModal ||
     showAirportLookupFor !== null
   );
 
@@ -1275,7 +1280,7 @@ const EditActivity = ({
 
   return (
     <Formik<ActivityFormValues>
-      key={itineraryActivity?.id ? `${itineraryActivity.id}-${itineraryActivity.type}-${itineraryActivity.updatedAt || ''}` : "new-activity"}
+      key={itineraryActivity?.id ? `${itineraryActivity.id}-${itineraryActivity.type}-${itineraryActivity.updatedAt || ''}` : `new-activity-${itineraryActivity?.title || ''}-${itineraryActivity?.destination || ''}-${itineraryActivity?.type || ''}`}
       enableReinitialize={true}
       initialValues={memoizedInitialValues}
       validationSchema={TravelSchema}
@@ -1334,7 +1339,7 @@ const EditActivity = ({
                   <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
                     <View className="flex-row justify-between items-center mb-1">
                       <Text className="text-xs font-semibold tracking-wider uppercase">
-                        Title <Text className="text-red-500 text-lg">*</Text>
+                        {values.type === ActivityType.plan ? "Plan Title" : "Activity Title"} <Text className="text-red-500 text-lg">*</Text>
                       </Text>
                       <Text className="text-xs" style={{ color: '#98A2B3' }}>
                         {(values.title || "").length}/40
@@ -1375,16 +1380,10 @@ const EditActivity = ({
                             </TouchableOpacity>
                           )}
                           <TouchableOpacity
-                            onPress={() =>
-                              handleOpenMapPinModal(
-                                "title",
-                                values.title,
-                                values.destinationData?.coordinates
-                              )
-                            }
+                            onPress={() => setShowGoogleSearchModal(true)}
                             className="w-10 h-10 rounded-full bg-[#F2F4F7] items-center justify-center"
                             accessibilityRole="button"
-                            accessibilityLabel="Lookup location pin on map"
+                            accessibilityLabel="Lookup location on Google map"
                             activeOpacity={0.7}
                           >
                             <Icon name="pin-drop" size={22} color={colors.primary || "#263F69"} />
@@ -1400,6 +1399,194 @@ const EditActivity = ({
                     )}
                   </View>
 
+                  {/* Readonly Destination / Address / Coordinates / Data Section */}
+                  {(() => {
+                    const rawDestData =
+                      values.destinationData ??
+                      (values as any).destination_data ??
+                      (values as any).destination_date;
+                    const destData =
+                      typeof rawDestData === "string"
+                        ? safeJsonParse<any>(rawDestData, null)
+                        : rawDestData;
+                    const destinationAddress =
+                      values.destination || destData?.address || (values as any).address || "";
+                    const placeTitle =
+                      destData?.name ||
+                      destData?.placeName ||
+                      destData?.title ||
+                      (destData && values.title ? values.title : "");
+
+                    const lat = destData?.coordinates?.latitude ?? destData?.latitude;
+                    const lng = destData?.coordinates?.longitude ?? destData?.longitude;
+                    const hasCoordinates =
+                      typeof lat === "number" &&
+                      typeof lng === "number" &&
+                      !isNaN(lat) &&
+                      !isNaN(lng);
+
+                    const shouldShow = Boolean(
+                      placeTitle || destinationAddress || destData || values.type === ActivityType.plan
+                    );
+                    if (!shouldShow) return null;
+
+                    const hasContent = Boolean(
+                      placeTitle || destinationAddress || hasCoordinates || destData
+                    );
+
+                    return (
+                      <View className="mb-6 p-4 rounded-2xl bg-primary/10">
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                            setIsDestinationExpanded((prev) => !prev);
+                          }}
+                          className="flex-row items-center justify-between"
+                          accessibilityRole="button"
+                          accessibilityLabel="Toggle Destination Details"
+                        >
+                          <View className="flex-row items-center flex-1 mr-2">
+                            <Icon name="place" size={16} color={colors.primary || "#263F69"} />
+                            <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 ml-1.5">
+                              Destination Details
+                            </Text>
+                            {!isDestinationExpanded && (placeTitle || destinationAddress) ? (
+                              <Text
+                                className="text-xs text-gray-500 ml-2 flex-1 font-normal"
+                                numberOfLines={1}
+                              >
+                                • {placeTitle || destinationAddress}
+                              </Text>
+                            ) : null}
+                          </View>
+                          <Icon
+                            name={isDestinationExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+                            size={20}
+                            color="#263F69"
+                          />
+                        </TouchableOpacity>
+
+                        {isDestinationExpanded && (
+                          <View className="mt-3">
+                            {hasContent ? (
+                              <>
+                                {/* Place Title */}
+                                {Boolean(placeTitle) && (
+                                  <View className="mb-3">
+                                    <Text className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                      Place Title
+                                    </Text>
+                                    <View className="flex-row items-start">
+                                      <Icon
+                                        name="business"
+                                        size={16}
+                                        color={colors.primary || "#263F69"}
+                                        style={{ marginTop: 2 }}
+                                      />
+                                      <Text className="text-sm font-semibold text-gray-900 ml-1.5 flex-1 leading-5">
+                                        {placeTitle}
+                                      </Text>
+                                    </View>
+                                  </View>
+                                )}
+
+                                {/* Address */}
+                                {(!placeTitle ||
+                                  destinationAddress.trim().toLowerCase() !==
+                                  placeTitle.trim().toLowerCase()) && (
+                                    <View className="mb-3">
+                                      <Text className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                        Address
+                                      </Text>
+                                      <View className="flex-row items-start">
+                                        <Icon
+                                          name="location-on"
+                                          size={16}
+                                          color="#D92D20"
+                                          style={{ marginTop: 2 }}
+                                        />
+                                        <Text className="text-sm font-medium text-gray-900 ml-1.5 flex-1 leading-5">
+                                          {destinationAddress || "No address provided"}
+                                        </Text>
+                                      </View>
+                                    </View>
+                                  )}
+
+                                {/* Coordinates */}
+                                <View className="mb-3 bg-white p-3 rounded-xl border border-gray-100">
+                                  <Text className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+                                    Coordinates
+                                  </Text>
+                                  <View className="flex-row items-center justify-between">
+                                    <View className="flex-1">
+                                      <Text className="text-[10px] text-gray-400 uppercase">Latitude</Text>
+                                      <Text className="text-xs font-semibold text-gray-800 font-mono mt-0.5">
+                                        {typeof lat === "number" ? lat.toFixed(6) : "—"}
+                                      </Text>
+                                    </View>
+                                    <View className="h-6 w-[1px] bg-gray-200 mx-2" />
+                                    <View className="flex-1">
+                                      <Text className="text-[10px] text-gray-400 uppercase">Longitude</Text>
+                                      <Text className="text-xs font-semibold text-gray-800 font-mono mt-0.5">
+                                        {typeof lng === "number" ? lng.toFixed(6) : "—"}
+                                      </Text>
+                                    </View>
+                                  </View>
+                                </View>
+
+                                {/* Destination Data / City, Region, Country */}
+                                {(destData?.city ||
+                                  destData?.regionOrState ||
+                                  destData?.country ||
+                                  destData?.id) && (
+                                    <View className="mt-0.5">
+                                      <Text className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+                                        Destination Data
+                                      </Text>
+                                      <View className="flex-row flex-wrap gap-1.5">
+                                        {Boolean(destData?.city) && (
+                                          <View className="bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100 flex-row items-center">
+                                            <Icon name="apartment" size={13} color="#155EEF" />
+                                            <Text className="text-xs font-medium text-blue-700 ml-1">
+                                              {destData.city}
+                                            </Text>
+                                          </View>
+                                        )}
+                                        {Boolean(destData?.regionOrState) && (
+                                          <View className="bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-100 flex-row items-center">
+                                            <Icon name="map" size={13} color="#7A5AF8" />
+                                            <Text className="text-xs font-medium text-purple-700 ml-1">
+                                              {destData.regionOrState}
+                                            </Text>
+                                          </View>
+                                        )}
+                                        {Boolean(destData?.country) && (
+                                          <View className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 flex-row items-center">
+                                            <Icon name="public" size={13} color="#039855" />
+                                            <Text className="text-xs font-medium text-emerald-700 ml-1">
+                                              {destData.country}
+                                            </Text>
+                                          </View>
+                                        )}
+                                      </View>
+                                    </View>
+                                  )}
+                              </>
+                            ) : (
+                              <View className="flex-row items-center py-2 px-1">
+                                <Icon name="location-off" size={18} color="#98A2B3" />
+                                <Text className="text-xs text-gray-500 ml-2">
+                                  No destination or coordinates selected. Tap the pin icon above to set location.
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })()}
+
                   {/* Plan Details */}
                   {values.type === ActivityType.plan && (
                     <PlanTab
@@ -1409,6 +1596,7 @@ const EditActivity = ({
                       setFieldValue={setFieldValue}
                       noPadding={true}
                       fieldRefs={fieldRefs}
+                      onPressLocationMap={() => setShowGoogleSearchModal(true)}
                       onPressDate={() => setShowCalendarFor("startDate")}
                       onPressTime={() => setShowTimePickerFor("startTime")}
                       onClearDate={() => {
@@ -2372,7 +2560,7 @@ const EditActivity = ({
                   }
                   if (mapPinTargetField === "shoppingDetails.address" && location.coordinates) {
                     setFieldValue("shoppingDetails.destinationAddressData", {
-                      id: location.id || undefined,
+                      id: (location as any).id || location.placeId || undefined,
                       coordinates: {
                         latitude: location.coordinates.latitude,
                         longitude: location.coordinates.longitude,
@@ -2381,7 +2569,7 @@ const EditActivity = ({
                   }
                   if (mapPinTargetField === "natureDetails.address" && location.coordinates) {
                     setFieldValue("natureDetails.destinationAddressData", {
-                      id: location.id || undefined,
+                      id: (location as any).id || location.placeId || undefined,
                       coordinates: {
                         latitude: location.coordinates.latitude,
                         longitude: location.coordinates.longitude,
@@ -2390,7 +2578,7 @@ const EditActivity = ({
                   }
                   if (mapPinTargetField === "entertainmentDetails.address" && location.coordinates) {
                     setFieldValue("entertainmentDetails.destinationAddressData", {
-                      id: location.id || undefined,
+                      id: (location as any).id || location.placeId || undefined,
                       coordinates: {
                         latitude: location.coordinates.latitude,
                         longitude: location.coordinates.longitude,
@@ -2399,7 +2587,7 @@ const EditActivity = ({
                   }
                   if (mapPinTargetField === "hikeOrCampDetails.address" && location.coordinates) {
                     setFieldValue("hikeOrCampDetails.destinationAddressData", {
-                      id: location.id || undefined,
+                      id: (location as any).id || location.placeId || undefined,
                       coordinates: {
                         latitude: location.coordinates.latitude,
                         longitude: location.coordinates.longitude,
@@ -2408,6 +2596,43 @@ const EditActivity = ({
                   }
                 }
                 setShowMapPinModal(false);
+              }}
+            />
+
+            <GoogleMapSearchModal
+              visible={showGoogleSearchModal}
+              onClose={() => setShowGoogleSearchModal(false)}
+              initialValue={values.title}
+              initialCoordinates={values.destinationData?.coordinates}
+              destinations={
+                travelPlan?.travel?.tripDestinations && travelPlan.travel.tripDestinations.length > 0
+                  ? travelPlan.travel.tripDestinations
+                  : travelPlan?.travel?.destination
+                    ? [{ destination: travelPlan.travel.destination, destinationData: travelPlan.travel.destinationData }]
+                    : []
+              }
+              destination={travelPlan?.travel?.destination || travelPlan?.travel?.destinationData?.city || travelPlan?.travel?.destinationData?.country || ""}
+              destinationCoordinates={travelPlan?.travel?.destinationData?.coordinates}
+              country={travelPlan?.travel?.destinationData?.country}
+              onSelect={(location: GooglePlaceLocation) => {
+                const placeName = location.name || location.address || "";
+                if (!values.title || values.title.trim() === "") {
+                  setFieldValue("title", placeName);
+                }
+                const destAddress = location.address || placeName;
+                setFieldValue("destination", destAddress);
+                if (location.coordinates) {
+                  setFieldValue("destinationData", {
+                    id: location.placeId || undefined,
+                    name: location.name || undefined,
+                    city: location.secondaryText || undefined,
+                    coordinates: {
+                      latitude: location.coordinates.latitude,
+                      longitude: location.coordinates.longitude,
+                    },
+                  });
+                }
+                setShowGoogleSearchModal(false);
               }}
             />
 

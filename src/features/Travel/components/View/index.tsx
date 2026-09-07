@@ -21,7 +21,7 @@ import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
 import TripIcon from "../../../../components/TripIcon";
 import { useTravelContext } from "../../../../context/TravelContext";
-import { TripType } from "../../../../types/enums";
+import { TripType, ActivityType } from "../../../../types/enums";
 import { TravelPlan } from "../../../Travel/types/TravelDto";
 import SectionModal from "../Edit/Itinerary/Section/Modal";
 import MapViewer from "../MapViewer";
@@ -108,6 +108,7 @@ const ViewTravel = ({
     openNoteModal,
     openChecklistModal,
     openActivityModal,
+    openGoogleSearchModal,
     activeTripViewTab: activeTabId,
     setActiveTripViewTab: setActiveTabId,
   } = useTravelContext();
@@ -781,7 +782,28 @@ const ViewTravel = ({
             travelId
           );
         }}
-        onAddActivity={(type) => openActivityModal(null, undefined, travelId, type)}
+        onAddActivity={(type) => {
+          if (type === ActivityType.plan) {
+            const allTripDestinations =
+              travelPlan?.travel?.tripDestinations && travelPlan.travel.tripDestinations.length > 0
+                ? travelPlan.travel.tripDestinations
+                : travelPlan?.travel?.destination
+                ? [{ destination: travelPlan.travel.destination, destinationData: travelPlan.travel.destinationData }]
+                : [];
+
+            openGoogleSearchModal(
+              undefined,
+              travelId,
+              travelPlan?.travel?.destination,
+              travelPlan?.travel?.destinationData?.coordinates,
+              countryName,
+              undefined,
+              allTripDestinations
+            );
+          } else {
+            openActivityModal(null, undefined, travelId, type);
+          }
+        }}
         onAddSection={() => setShowSectionModal(true)}
       />
 

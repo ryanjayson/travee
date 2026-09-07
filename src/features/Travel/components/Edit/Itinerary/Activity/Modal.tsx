@@ -66,11 +66,12 @@ const ActivityModal = ({
   }, [isAddMode, travelPlan, currentActivity?.id]);
 
   const latestActivity = isAddMode
-    ? null
+    ? (currentActivity || propItineraryActivity)
     : (fetchedDbActivity || dbActivity || currentActivity || propItineraryActivity);
 
   useEffect(() => {
     if (visible) {
+      setCurrentActivity(propItineraryActivity);
       setIsAddMode(!propItineraryActivity?.id);
       if (propItineraryActivity?.id) {
         refetchActivity();
@@ -593,6 +594,7 @@ const ActivityModal = ({
 
               <View className="flex-1">
                 <EditActivity
+                  key={propItineraryActivity ? `${propItineraryActivity.id || 'new'}-${propItineraryActivity.title || ''}-${propItineraryActivity.destination || ''}` : "new-activity"}
                   initialType={initialType}
                   itinerarySectionId={itinerarySectionId}
                   itineraryActivity={extractedData ? { ...latestActivity, ...extractedData } as any : latestActivity}

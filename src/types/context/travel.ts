@@ -8,7 +8,19 @@ import {
   ItinerarySection,
 } from "../../features/Travel/types/TravelDto";
 import { MapboxPlace } from "../../features/Travel/components/MapboxDestinationSelector";
+import { GooglePlaceLocation } from "../../components/GoogleMapSearchBox";
 import { ActivityType } from "../enums";
+
+export interface GoogleSearchModalState {
+  visible: boolean;
+  itinerarySectionId?: string;
+  travelId?: string;
+  destination?: string;
+  destinations?: any[];
+  destinationCoordinates?: { latitude: number; longitude: number };
+  country?: string;
+  onSelect?: (location: GooglePlaceLocation) => void;
+}
 
 export interface TravelPlanDetail {
   id: string;
@@ -189,6 +201,18 @@ export interface TravelContextType {
     defaultDate?: Date | string | null
   ) => void;
   closeFlightModal: () => void;
+
+  googleSearchModal: GoogleSearchModalState;
+  openGoogleSearchModal: (
+    itinerarySectionId?: string,
+    travelId?: string,
+    destination?: string,
+    destinationCoordinates?: { latitude: number; longitude: number },
+    country?: string,
+    onSelect?: (location: GooglePlaceLocation) => void,
+    destinations?: any[]
+  ) => void;
+  closeGoogleSearchModal: () => void;
 
   sectionModal: SectionModalState;
   openSectionModal: (

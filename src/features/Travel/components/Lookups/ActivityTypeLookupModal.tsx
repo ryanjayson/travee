@@ -249,7 +249,7 @@ const ActivityTypeLookupModal = ({
             <View
               {...(!keyboardVisible && dragPanResponder.panHandlers)}
               className="flex-row justify-between items-center px-7 pb-5 "
-              style={{ paddingTop: keyboardVisible ? 0 : 4 }}
+              style={{ paddingTop: 60 }}
             >
               <View className="flex-col items-start gap-1">
                 <Text

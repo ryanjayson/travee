@@ -30,6 +30,7 @@ interface PlanTabProps {
   onPressEndTime?: () => void;
   onClearEndDate?: () => void;
   onClearEndTime?: () => void;
+  onPressLocationMap?: () => void;
 }
 
 export default function PlanTab({
@@ -47,19 +48,33 @@ export default function PlanTab({
   onPressEndTime,
   onClearEndDate,
   onClearEndTime,
+  onPressLocationMap,
 }: PlanTabProps) {
   const { colors } = useTheme();
   const [showPlanTypeModal, setShowPlanTypeModal] = useState(false);
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
-  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>([]);
+  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(() => {
+    const initial: string[] = [];
+    if (values?.website) initial.push("website");
+    if (values?.budget) initial.push("budget");
+    if (values?.bookingReference) initial.push("bookingReference");
+    if (values?.contactName) initial.push("contactName");
+    if (values?.contactNumber) initial.push("contactNumber");
+    if (values?.contactEmail) initial.push("contactEmail");
+    if (values?.contact) initial.push("contact");
+    if (values?.priority) initial.push("priority");
+    return initial;
+  });
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
   const [selectedPriority, setSelectedPriority] = useState<string | null>(values?.priority || null);
 
   const getFieldValue = (id: string) => {
-    if (id === "location" && values?.destination) {
-      return customFieldValues[id] !== undefined ? customFieldValues[id] : values.destination;
+    if (id === "location") {
+      return values?.destination !== undefined && values?.destination !== null
+        ? values.destination
+        : customFieldValues[id] || "";
     }
-    if (values?.[id] !== undefined) {
+    if (values?.[id] !== undefined && values?.[id] !== null) {
       return customFieldValues[id] !== undefined ? customFieldValues[id] : String(values[id]);
     }
     return customFieldValues[id] || "";
@@ -69,8 +84,7 @@ export default function PlanTab({
     setCustomFieldValues((prev) => ({ ...prev, [id]: text }));
     if (id === "location" && setFieldValue) {
       setFieldValue("destination", text);
-    }
-    if (setFieldValue) {
+    } else if (setFieldValue) {
       setFieldValue(id, text);
     }
   };
@@ -200,7 +214,13 @@ export default function PlanTab({
                   label={fieldMeta.label}
                   value={getFieldValue("location")}
                   onChangeText={(text) => handleCustomFieldChange("location", text)}
-                  right={<TextInput.Icon icon="map-marker-outline" color="#98A2B3" />}
+                  right={
+                    <TextInput.Icon
+                      icon="map-marker-outline"
+                      color="#98A2B3"
+                      onPress={onPressLocationMap}
+                    />
+                  }
                 />
               )}
 

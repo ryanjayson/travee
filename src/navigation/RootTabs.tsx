@@ -23,6 +23,9 @@ import SectionModal from "../features/Travel/components/Edit/Itinerary/Section/M
 import DescriptionModal from "../components/molecules/DescriptionInput/Modal";
 import MapboxDestinationSelectorModal from "../features/Travel/components/MapboxDestinationSelector/Modal";
 import FlightModal from "../features/Travel/components/Forms/Flight/FlightModal";
+import { GoogleMapSearchModal } from "../components/GoogleMapSearchBox";
+import { ActivityType } from "../types/enums";
+import { useTravelPlan } from "../features/Travel/hooks/useTravel";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
@@ -101,8 +104,19 @@ function RootTabsComponent() {
     closeFlightModal,
     sectionModal,
     closeSectionModal,
+    googleSearchModal,
+    openGoogleSearchModal,
+    closeGoogleSearchModal,
   } = useTravelContext();
   const insets = useSafeAreaInsets();
+  const { data: searchTravelPlan } = useTravelPlan(googleSearchModal.travelId || "");
+  const searchDestinations =
+    googleSearchModal.destinations ||
+    (searchTravelPlan?.travel?.tripDestinations && searchTravelPlan.travel.tripDestinations.length > 0
+      ? searchTravelPlan.travel.tripDestinations
+      : searchTravelPlan?.travel?.destination
+      ? [{ destination: searchTravelPlan.travel.destination, destinationData: searchTravelPlan.travel.destinationData }]
+      : undefined);
 
   return (
     <>
@@ -276,7 +290,68 @@ function RootTabsComponent() {
             const travelId = activityTypeModal.travelId;
             closeActivityTypeModal();
             setTimeout(() => {
-              openActivityModal(null, itinerarySectionId, travelId, type);
+              if (type === ActivityType.plan) {
+                openGoogleSearchModal(itinerarySectionId, travelId);
+              } else {
+                openActivityModal(null, itinerarySectionId, travelId, type);
+              }
+            }, 100);
+          }}
+        />
+        <GoogleMapSearchModal
+          visible={googleSearchModal.visible}
+          destination={googleSearchModal.destination || searchTravelPlan?.travel?.destination}
+          destinations={searchDestinations}
+          destinationCoordinates={googleSearchModal.destinationCoordinates || searchTravelPlan?.travel?.destinationData?.coordinates}
+          country={googleSearchModal.country || searchTravelPlan?.travel?.destinationData?.country}
+          onClose={closeGoogleSearchModal}
+          onManualEntry={() => {
+            const itinerarySectionId = googleSearchModal.itinerarySectionId;
+            const travelId = googleSearchModal.travelId;
+            closeGoogleSearchModal();
+            setTimeout(() => {
+              openActivityModal(
+                {
+                  id: "",
+                  title: "",
+                  destination: "",
+                  type: ActivityType.plan,
+                  sectionId: itinerarySectionId || "",
+                } as any,
+                itinerarySectionId,
+                travelId,
+                ActivityType.plan
+              );
+            }, 100);
+          }}
+          onSelect={(location) => {
+            if (googleSearchModal.onSelect) {
+              googleSearchModal.onSelect(location);
+              closeGoogleSearchModal();
+              return;
+            }
+            const itinerarySectionId = googleSearchModal.itinerarySectionId;
+            const travelId = googleSearchModal.travelId;
+            closeGoogleSearchModal();
+            setTimeout(() => {
+              openActivityModal(
+                {
+                  id: "",
+                  title: location.name,
+                  destination: location.address || location.name,
+                  type: ActivityType.plan,
+                  sectionId: itinerarySectionId || "",
+                  destinationData: {
+                    id: location.placeId || "",
+                    name: location.name || undefined,
+                    city: location.secondaryText || undefined,
+                    coordinates: location.coordinates,
+                  },
+                } as any,
+                itinerarySectionId,
+                travelId,
+                ActivityType.plan
+              );
             }, 100);
           }}
         />

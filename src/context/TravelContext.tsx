@@ -22,7 +22,9 @@ import {
   DestinationModalState,
   FlightModalState,
   SectionModalState,
+  GoogleSearchModalState,
 } from "../types/context/travel";
+import { GooglePlaceLocation } from "../components/GoogleMapSearchBox";
 import { MapboxPlace } from "../features/Travel/components/MapboxDestinationSelector";
 import {
   ItineraryExpense,
@@ -114,6 +116,12 @@ const initialContextValue: TravelContextType = {
   openSectionModal: () => {},
   closeSectionModal: () => {},
 
+  googleSearchModal: {
+    visible: false,
+  },
+  openGoogleSearchModal: () => {},
+  closeGoogleSearchModal: () => {},
+
   activeTripViewTab: "details",
   setActiveTripViewTab: () => {},
 
@@ -188,6 +196,41 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
     visible: false,
     itinerarySection: null,
   });
+
+  const [googleSearchModal, setGoogleSearchModal] = useState<GoogleSearchModalState>({
+    visible: false,
+  });
+
+  const openGoogleSearchModal = useCallback(
+    (
+      itinerarySectionId?: string,
+      travelId?: string,
+      destination?: string,
+      destinationCoordinates?: { latitude: number; longitude: number },
+      country?: string,
+      onSelect?: (location: GooglePlaceLocation) => void,
+      destinations?: any[]
+    ) => {
+      setGoogleSearchModal({
+        visible: true,
+        itinerarySectionId,
+        travelId,
+        destination,
+        destinations,
+        destinationCoordinates,
+        country,
+        onSelect,
+      });
+    },
+    []
+  );
+
+  const closeGoogleSearchModal = useCallback(() => {
+    setGoogleSearchModal((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, []);
 
   const openExpenseModal = useCallback(
     (
@@ -299,13 +342,15 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       travelId?: string,
       initialType?: ActivityType
     ) => {
-      if (itineraryActivity?.id || initialType !== undefined) {
+      if (!itineraryActivity && initialType === ActivityType.plan) {
+        openGoogleSearchModal(itinerarySectionId, travelId);
+      } else if (itineraryActivity || initialType !== undefined) {
         setActivityModal({
           visible: true,
           itineraryActivity,
           itinerarySectionId,
           travelId,
-          initialType: initialType ?? itineraryActivity?.type,
+          initialType: initialType ?? itineraryActivity?.type ?? ActivityType.plan,
         });
       } else {
         setActivityTypeModal({
@@ -315,7 +360,7 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
         });
       }
     },
-    []
+    [openGoogleSearchModal]
   );
 
   const closeActivityModal = useCallback(() => {
@@ -491,6 +536,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       sectionModal,
       openSectionModal,
       closeSectionModal,
+      googleSearchModal,
+      openGoogleSearchModal,
+      closeGoogleSearchModal,
       activeTripViewTab,
       setActiveTripViewTab,
       refetchTravelPlan,
@@ -530,6 +578,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       sectionModal,
       openSectionModal,
       closeSectionModal,
+      googleSearchModal,
+      openGoogleSearchModal,
+      closeGoogleSearchModal,
       activeTripViewTab,
       setActiveTripViewTab,
       refetchTravelPlan,

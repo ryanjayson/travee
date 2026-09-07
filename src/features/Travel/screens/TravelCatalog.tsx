@@ -252,7 +252,7 @@ const TravelCatalog = () => {
                 ) : null} */}
 
                 <View className="flex-1 gap-y-1 py-4">
-                  <Text className="text-[22px] leading-5 font-medium ">{travel.title}</Text>
+                  <Text className="text-2xl text-secondary leading-5 font-semibold ">{travel.title}</Text>
                   <View className="flex-row items-center gap-2">
                     <TouchableOpacity
                       activeOpacity={0.7}
@@ -263,9 +263,9 @@ const TravelCatalog = () => {
                         setSelectedDestinationsTravel(travel);
                         setShowDestinationsSheet(true);
                       }}
-                      className="flex-row items-center gap-1 py-0.5"
+                      className="flex-row items-center gap-1 "
                     >
-                      <Text className="text-base text-[#999]">{destinationLabel || "No destination"}</Text>
+                      <Text className="text-base text-secondary/80 ">{destinationLabel || "No destination"}</Text>
                       {validDestinations.length > 1 && (
                         <Ionicons name="chevron-down" size={14} color="#999" />
                       )}

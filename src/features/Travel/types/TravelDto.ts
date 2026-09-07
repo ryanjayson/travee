@@ -435,6 +435,7 @@ export interface CreateTravelData {
 
 export interface DestinationDto {
   id: string;
+  name?: string;
   city?: string;
   regionOrState?: string;
   country?: string;

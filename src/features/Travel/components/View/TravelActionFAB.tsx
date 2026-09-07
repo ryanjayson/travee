@@ -252,6 +252,9 @@ const TravelActionFAB = ({
         },
         color: 'white',
         onPress: () => onAddActivity(ActivityType.plan),
+        wrapperStyle: {
+          marginTop: 24,
+        },
       },
 
 
