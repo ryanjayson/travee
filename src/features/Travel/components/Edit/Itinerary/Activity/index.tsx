@@ -272,50 +272,6 @@ export interface ActivityFormValues {
   } | null;
 }
 
-const FormInitHandler = ({
-  values,
-  setFieldValue,
-  itineraryActivity,
-  onOpenPrimaryTypeModal,
-  openFlightModal,
-  handleFlightSelect,
-  tripStartDate,
-  currentSectionStartDate,
-  scrollViewRef,
-}: {
-  values: any;
-  setFieldValue: any;
-  itineraryActivity: any;
-  onOpenPrimaryTypeModal: any;
-  openFlightModal: any;
-  handleFlightSelect: any;
-  tripStartDate?: Date | string | null;
-  currentSectionStartDate?: Date | string | null;
-  scrollViewRef?: React.RefObject<ScrollView>;
-}) => {
-  useEffect(() => {
-    if (!itineraryActivity?.id && values.type === ActivityType.plan) {
-      const timer = setTimeout(() => {
-        onOpenPrimaryTypeModal(values.type, (type: any) => {
-          setFieldValue("type", type);
-          scrollViewRef?.current?.scrollTo({ y: 0, animated: true });
-          if (type === ActivityType.flight) {
-            const defaultFlightDate = tripStartDate || values.startDate || values.flightDetails?.departureDate || currentSectionStartDate;
-            openFlightModal(
-              (flightData: any) => {
-                handleFlightSelect(flightData, setFieldValue);
-              },
-              defaultFlightDate
-            );
-          }
-        });
-      }, 350);
-      return () => clearTimeout(timer);
-    }
-  }, [itineraryActivity?.id, values.type, tripStartDate, currentSectionStartDate]);
-
-  return null;
-};
 
 const NATURE_SUBTYPES = [
   "Beach", "Mountain", "Lake", "River", "Waterfall", "Forest", "Jungle", "Cave", "Desert", "Canyon", "Volcano",
@@ -1761,7 +1717,7 @@ const EditActivity = ({
                   )}
 
                   {/* Activity Details Accordion */}
-                  <SimpleAccordion key="activity-details-accordion" title="Additional Details" defaultExpanded={true}>
+                  <SimpleAccordion key="activity-details-accordion" title="Additional Details" defaultExpanded={false}>
 
 
                     {/* Date & Time fields removed from main form and injected into specific tabs */}
@@ -1826,15 +1782,6 @@ const EditActivity = ({
                                 setFieldValue("type", type);
                                 setActiveTabId("details");
                                 scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                                if (type === ActivityType.flight) {
-                                  const defaultFlightDate = travelPlan?.travel?.startOrDepartureDate || values.startDate || values.flightDetails?.departureDate || currentSection?.startDate;
-                                  openFlightModal(
-                                    (flightData: any) => {
-                                      handleFlightSelect(flightData, setFieldValue);
-                                    },
-                                    defaultFlightDate
-                                  );
-                                }
                               });
                             }}
                             disabled={isTypeDisabled}
@@ -2129,17 +2076,6 @@ const EditActivity = ({
               setActiveTabId={setActiveTabId}
             />
             <FormikDirtyListener onDirtyChange={onDirtyChange} />
-            <FormInitHandler
-              values={values}
-              setFieldValue={setFieldValue}
-              itineraryActivity={itineraryActivity}
-              onOpenPrimaryTypeModal={onOpenPrimaryTypeModal}
-              openFlightModal={openFlightModal}
-              handleFlightSelect={handleFlightSelect}
-              tripStartDate={travelPlan?.travel?.startOrDepartureDate}
-              currentSectionStartDate={currentSection?.startDate}
-              scrollViewRef={scrollViewRef}
-            />
 
             <View className="flex-1 py-3 ">
               <Tabs

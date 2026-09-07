@@ -92,7 +92,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
   const [selectedDestinationsTrip, setSelectedDestinationsTrip] = useState<Travel | null>(null);
   const [showDestinationsSheet, setShowDestinationsSheet] = useState(false);
 
-  const displayedTrips = upcomingTrips.slice(0, 5);
+  const displayedTrips = upcomingTrips.slice(0, 3);
 
   const handleGoToUpcomingCatalog = () => {
     navigation.navigate("Trips", { initialTab: "upcoming" });
@@ -261,7 +261,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
             );
           })}
 
-          {upcomingTrips.length > 5 && (
+          {upcomingTrips.length > 3 && (
             <TouchableOpacity
               onPress={handleGoToUpcomingCatalog}
               activeOpacity={0.7}

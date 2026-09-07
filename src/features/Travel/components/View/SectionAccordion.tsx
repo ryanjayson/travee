@@ -1200,7 +1200,7 @@ const SectionAccordion = ({
                     />
                   ) : (
                     <Text
-                      className={`text-base font-bold ${isSelected ? "text-accent font-bold" : "text-secondary/30"
+                      className={`text-base tracking-wide font-bold ${isSelected ? "text-accent font-bold" : "text-secondary/30"
                         }`}
                     >
                       {section.title}

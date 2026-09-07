@@ -12,6 +12,7 @@ export interface FloatingLabelInputProps {
   editable?: boolean;
   placeholder?: string;
   right?: React.ReactNode;
+  left?: React.ReactNode;
   onPress?: () => void;
   contentStyle?: StyleProp<TextStyle>;
   multiline?: boolean;
@@ -28,6 +29,7 @@ export default function FloatingLabelInput({
   editable = true,
   placeholder,
   right,
+  left,
   onPress,
   contentStyle,
   multiline,
@@ -111,6 +113,7 @@ export default function FloatingLabelInput({
         style={multiline ? undefined : { height: 64 }}
         contentStyle={[{ backgroundColor: "transparent", paddingTop: multiline ? 8 : 16 }, contentStyle]}
         right={right}
+        left={left}
       />
       {onPress && (
         <TouchableOpacity

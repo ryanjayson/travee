@@ -5,7 +5,6 @@ import {
   Modal,
   PanResponder,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -97,9 +96,12 @@ const AddFieldModal = ({
   const isAtTop = useRef(true);
   const dragStartDy = useRef(0);
 
-  // Sync selected state and trigger slide-up spring animation on open
+  const isClosingRef = useRef(false);
+
+  // Sync selected state and trigger slide-up spring animation only on modal open
   useEffect(() => {
     if (visible) {
+      isClosingRef.current = false;
       setTempSelected(selectedFieldIds);
       isAtTop.current = true;
       translateY.setValue(screenHeight);
@@ -110,14 +112,17 @@ const AddFieldModal = ({
         useNativeDriver: true,
       }).start();
     }
-  }, [visible, selectedFieldIds]);
+  }, [visible]);
 
   const handleDismiss = useCallback(() => {
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
     Animated.timing(translateY, {
       toValue: screenHeight,
       duration: 200,
       useNativeDriver: true,
     }).start(() => {
+      isClosingRef.current = false;
       onClose();
     });
   }, [onClose, translateY]);
@@ -129,8 +134,17 @@ const AddFieldModal = ({
   };
 
   const handleApply = () => {
-    onApply(tempSelected);
-    handleDismiss();
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
+    Animated.timing(translateY, {
+      toValue: screenHeight,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      isClosingRef.current = false;
+      onApply(tempSelected);
+      onClose();
+    });
   };
 
   // Drag down gesture responder
@@ -152,11 +166,14 @@ const AddFieldModal = ({
       onPanResponderRelease: (_, gestureState) => {
         const currentDy = gestureState.dy - dragStartDy.current;
         if (currentDy > 100 || gestureState.vy > 0.5) {
+          if (isClosingRef.current) return;
+          isClosingRef.current = true;
           Animated.timing(translateY, {
             toValue: screenHeight,
             duration: 200,
             useNativeDriver: true,
           }).start(() => {
+            isClosingRef.current = false;
             onClose();
           });
         } else {
@@ -189,24 +206,23 @@ const AddFieldModal = ({
       statusBarTranslucent
     >
       <Animated.View
-        style={[
-          styles.backdropContainer,
-          { opacity: backdropOpacity },
-        ]}
+        {...dragPanResponder.panHandlers}
+        className="flex-1 justify-end"
+        style={{ opacity: backdropOpacity, backgroundColor: "rgba(0,0,0,0.5)", }}
       >
         {/* Backdrop tap to close */}
         <TouchableOpacity
           activeOpacity={1}
           onPress={handleDismiss}
-          style={StyleSheet.absoluteFill}
+          className="absolute inset-0"
           accessibilityRole="button"
           accessibilityLabel="Dismiss add field bottom sheet"
         />
 
         {/* Bottom Sheet Card */}
         <Animated.View
+          className="w-full rounded-t-[28px] overflow-hidden shadow-2xl"
           style={[
-            styles.sheetCard,
             {
               transform: [{ translateY }],
               backgroundColor: colors.surface || "#FFFFFF",
@@ -215,60 +231,49 @@ const AddFieldModal = ({
           ]}
         >
           {/* Drag Handle Bar */}
-          <View {...dragPanResponder.panHandlers} style={styles.dragHandleContainer}>
+          <View className="w-full items-center pt-2.5 pb-1.5">
             <View
-              style={[
-                styles.dragHandleBar,
-                { backgroundColor: colors.outlineVariant || "#D0D5DD" },
-              ]}
+              className="w-10 h-1 rounded-full"
+              style={{ backgroundColor: colors.outlineVariant || "#D0D5DD" }}
             />
           </View>
 
           {/* Header */}
           <View
-            style={[
-              styles.header,
-              { borderBottomColor: colors.outlineVariant || "#F2F4F7" },
-            ]}
+            className="px-6 pt-1 pb-3.5 border-b flex-row justify-between items-start"
+            style={{ borderBottomColor: colors.outlineVariant || "#F2F4F7" }}
           >
-            <View style={styles.headerTitleContainer}>
-              <Text
-                style={[
-                  styles.title,
-                  { color: colors.primary || "#263F69" },
-                ]}
-              >
-                Add Field
-              </Text>
-              <Text
-                style={[
-                  styles.subtitle,
-                  { color: colors.onSurfaceVariant || "#667085" },
-                ]}
-              >
+            <View className="flex-1">
+              <View className="flex-row items-center">
+                <TouchableOpacity
+                  onPress={handleDismiss}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close add field modal"
+                  className="mr-1"
+                  activeOpacity={0.7}
+                >
+                  <Icon
+                    name="chevron-left"
+                    size={28}
+                    color={"#999"}
+                  />
+                </TouchableOpacity>
+                <Text className="text-2xl font-semibold text-accent">
+                  Add Field
+                </Text>
+              </View>
+
+              <Text className="text-tertiary text-base mt-1">
                 Select applicable fields to include in your plan
               </Text>
             </View>
-            <TouchableOpacity
-              onPress={handleDismiss}
-              accessibilityRole="button"
-              accessibilityLabel="Close add field modal"
-              style={styles.closeBtn}
-              activeOpacity={0.7}
-            >
-              <Icon
-                name="clear"
-                size={24}
-                color={colors.onSurfaceVariant || "#98A2B3"}
-              />
-            </TouchableOpacity>
           </View>
 
           {/* Scrollable list of fields */}
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={{ paddingBottom: 24 }}
             onScroll={(e) => {
               isAtTop.current = e.nativeEvent.contentOffset.y <= 0;
             }}
@@ -279,15 +284,13 @@ const AddFieldModal = ({
               return (
                 <TouchableOpacity
                   key={item.id}
-                  style={[
-                    styles.itemRow,
-                    {
-                      borderBottomColor: colors.outlineVariant || "#F2F4F7",
-                      backgroundColor: isChecked
-                        ? `${colors.primary || "#263F69"}0A`
-                        : "transparent",
-                    },
-                  ]}
+                  className="px-6 py-3.5 border-b flex-row items-center gap-4"
+                  style={{
+                    borderBottomColor: colors.outlineVariant || "#F2F4F7",
+                    backgroundColor: isChecked
+                      ? `${colors.primary || "#263F69"}0A`
+                      : "transparent",
+                  }}
                   onPress={() => handleToggle(item.id)}
                   activeOpacity={0.7}
                   accessibilityRole="button"
@@ -295,17 +298,15 @@ const AddFieldModal = ({
                 >
                   {/* Icon badge */}
                   <View
-                    style={[
-                      styles.fieldIconBadge,
-                      {
-                        backgroundColor: isChecked
-                          ? `${colors.primary || "#263F69"}18`
-                          : colors.surfaceVariant || "#F2F4F7",
-                        borderColor: isChecked
-                          ? `${colors.primary || "#263F69"}35`
-                          : colors.outlineVariant || "#E4E7EC",
-                      },
-                    ]}
+                    className="w-[42px] h-[42px] rounded-full border items-center justify-center"
+                    style={{
+                      backgroundColor: isChecked
+                        ? `${colors.primary || "#263F69"}18`
+                        : colors.surfaceVariant || "#F2F4F7",
+                      borderColor: isChecked
+                        ? `${colors.primary || "#263F69"}35`
+                        : colors.outlineVariant || "#E4E7EC",
+                    }}
                   >
                     <Icon
                       name={item.iconName as any}
@@ -319,22 +320,18 @@ const AddFieldModal = ({
                   </View>
 
                   {/* Label & Description */}
-                  <View style={styles.itemTextContainer}>
+                  <View className="flex-1">
                     <Text
-                      style={[
-                        styles.itemLabel,
-                        {
-                          color: colors.onSurface || "#101828",
-                        },
-                      ]}
+                      className="text-base font-semibold"
+                      style={{
+                        color: colors.onSurface || "#101828",
+                      }}
                     >
                       {item.label}
                     </Text>
                     <Text
-                      style={[
-                        styles.itemDescription,
-                        { color: colors.onSurfaceVariant || "#667085" },
-                      ]}
+                      className="text-[13px] mt-0.5"
+                      style={{ color: colors.onSurfaceVariant || "#667085" }}
                       numberOfLines={1}
                     >
                       {item.description}
@@ -356,20 +353,18 @@ const AddFieldModal = ({
 
           {/* Sticky Bottom Action Footer */}
           <View
-            style={[
-              styles.footerContainer,
-              {
-                backgroundColor: colors.surface || "#FFFFFF",
-                borderTopColor: colors.outlineVariant || "#F0F0F0",
-                paddingBottom: Math.max(insets.bottom, 16),
-              },
-            ]}
+            className="px-6 pt-3 border-t"
+            style={{
+              backgroundColor: colors.surface || "#FFFFFF",
+              borderTopColor: colors.outlineVariant || "#F0F0F0",
+              paddingBottom: Math.max(insets.bottom, 16),
+            }}
           >
             <Button
               mode="contained"
               onPress={handleApply}
-              style={styles.applyButton}
-              contentStyle={styles.applyButtonContent}
+              className="rounded-2xl"
+              contentStyle={{ height: 48 }}
               buttonColor={colors.primary || "#263F69"}
               textColor={colors.onPrimary || "#FFFFFF"}
             >
@@ -381,100 +376,5 @@ const AddFieldModal = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  backdropContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  sheetCard: {
-    width: "100%",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 20,
-    overflow: "hidden",
-  },
-  dragHandleContainer: {
-    width: "100%",
-    alignItems: "center",
-    paddingTop: 10,
-    paddingBottom: 6,
-  },
-  dragHandleBar: {
-    width: 40,
-    height: 4.5,
-    borderRadius: 9999,
-  },
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 4,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  headerTitleContainer: {
-    flex: 1,
-    gap: 4,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  subtitle: {
-    fontSize: 13,
-  },
-  closeBtn: {
-    padding: 4,
-    marginLeft: 12,
-  },
-  scrollContent: {
-    paddingBottom: 24,
-  },
-  itemRow: {
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-  },
-  fieldIconBadge: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  itemTextContainer: {
-    flex: 1,
-  },
-  itemLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  itemDescription: {
-    fontSize: 13,
-    marginTop: 2,
-  },
-  footerContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    borderTopWidth: 1,
-  },
-  applyButton: {
-    borderRadius: 16,
-  },
-  applyButtonContent: {
-    height: 48,
-  },
-});
 
 export default AddFieldModal;

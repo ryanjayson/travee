@@ -1,6 +1,6 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, LayoutAnimation } from "react-native";
 import { useTheme, TextInput } from "react-native-paper";
 import DateTime from "../DateTime";
 import ActivityPlanTypeLookupModal, {
@@ -81,6 +81,7 @@ export default function PlanTab({
 
 
   const handleApplyFields = (fieldIds: string[]) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSelectedFieldIds(fieldIds);
   };
 
@@ -102,19 +103,16 @@ export default function PlanTab({
         className="mb-5"
       >
         <Text className="text-xs font-semibold tracking-wider uppercase mb-1.5">
-          Plan Type
+          Type of Plan
         </Text>
         <TouchableOpacity
           onPress={() => setShowPlanTypeModal(true)}
-          style={[
-            styles.selectorButton,
-            {
-              borderColor: selectedPlanType
-                ? `${selectedPlanType.color}40`
-                : "#E0E0E0",
-              backgroundColor: "#FFFFFF",
-            },
-          ]}
+          className="border rounded-[16px] px-4 py-3 min-h-[64px] justify-center bg-white"
+          style={{
+            borderColor: selectedPlanType
+              ? `${selectedPlanType.color}40`
+              : "#E0E0E0",
+          }}
           activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel={
@@ -123,43 +121,31 @@ export default function PlanTab({
               : "Select plan type"
           }
         >
-          <View style={styles.selectorContent}>
+          <View className="flex-row items-center gap-3">
             {/* Color-assigned icon badge */}
             <View
-              style={[
-                styles.iconBadge,
-                {
-                  backgroundColor: selectedPlanType
-                    ? `${selectedPlanType.color}18`
-                    : "#F2F4F7",
-                  borderColor: selectedPlanType
-                    ? `${selectedPlanType.color}35`
-                    : "#E4E7EC",
-                },
-              ]}
+              style={{
+                borderColor: selectedPlanType
+                  ? `${selectedPlanType.color}35`
+                  : "#E4E7EC",
+              }}
             >
               <Icon
-                name={(selectedPlanType?.iconName || "category") as any}
-                size={20}
+                name={(selectedPlanType?.iconName || "lightbulb") as any}
+                size={28}
                 color={selectedPlanType ? selectedPlanType.color : "#98A2B3"}
               />
             </View>
 
             {/* Label and description */}
-            <View style={styles.textContainer}>
+            <View className="flex-1 justify-center">
               <Text
-                style={[
-                  styles.label,
-                  {
-                    color: selectedPlanType ? "#1D2939" : "#98A2B3",
-                    fontWeight: selectedPlanType ? "600" : "400",
-                  },
-                ]}
+                className={`text-lg ${selectedPlanType ? "text-[#1D2939] font-semibold" : "text-[#98A2B3] font-normal"}`}
               >
                 {selectedPlanType ? selectedPlanType.label : "Select Plan Type"}
               </Text>
               {selectedPlanType?.subtext && (
-                <Text style={styles.subtext} numberOfLines={1}>
+                <Text className="text-sm text-[#667085] -mt-1" numberOfLines={1}>
                   {selectedPlanType.subtext}
                 </Text>
               )}
@@ -169,7 +155,7 @@ export default function PlanTab({
             {selectedPlanType && (
               <TouchableOpacity
                 onPress={() => setFieldValue?.("planType", null)}
-                style={styles.clearButton}
+                className="p-1"
                 accessibilityRole="button"
                 accessibilityLabel="Clear plan type selection"
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -206,7 +192,7 @@ export default function PlanTab({
         if (!fieldMeta) return null;
 
         return (
-          <View key={fieldId} className="mb-5">
+          <View key={fieldId} className="mb-5 flex-1">
             <FadeInView type="zoom" delay={200} duration={500} >
 
               {fieldId === "location" && (
@@ -370,26 +356,22 @@ export default function PlanTab({
       <View className="mt-1 mb-6">
         <TouchableOpacity
           onPress={() => setShowAddFieldModal(true)}
-          style={[
-            styles.addFieldButton,
-            {
-              borderColor: colors.primary || "#263F69",
-              backgroundColor: `${colors.primary || "#263F69"}08`,
-            },
-          ]}
+          className="border-[1.5px] border-dashed rounded-[16px] py-3.5 px-5 items-center justify-center"
+          style={{
+            borderColor: colors.primary + "50" || "#263F69",
+            backgroundColor: `${colors.primary || "#263F69"}08`,
+          }}
           activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel={
             selectedFieldIds.length > 0 ? "Add or remove Field" : "Add Field"
           }
         >
-          <View style={styles.addFieldContent}>
+          <View className="flex-row items-center justify-center gap-2">
             <Icon name="add" size={20} color={colors.primary || "#263F69"} />
             <Text
-              style={[
-                styles.addFieldLabel,
-                { color: colors.primary || "#263F69" },
-              ]}
+              className="text-[15px] font-semibold tracking-[0.3px]"
+              style={{ color: colors.primary || "#263F69" }}
             >
               {selectedFieldIds.length > 0
                 ? "Add or remove Field"
@@ -419,62 +401,3 @@ export default function PlanTab({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  selectorButton: {
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    minHeight: 64,
-    justifyContent: "center",
-  },
-  selectorContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  iconBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  textContainer: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  label: {
-    fontSize: 16,
-  },
-  subtext: {
-    fontSize: 12,
-    color: "#667085",
-    marginTop: 2,
-  },
-  clearButton: {
-    padding: 4,
-  },
-  addFieldButton: {
-    borderWidth: 1.5,
-    borderStyle: "dashed",
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  addFieldContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  addFieldLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-    letterSpacing: 0.3,
-  },
-});

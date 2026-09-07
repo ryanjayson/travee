@@ -289,8 +289,8 @@ const HomeScreen = () => {
       <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
       <LinearGradient
         colors={["#dbeaff", "#F2F4F7", "#F2F4F7", "#F2F4F7", "#F2F4F7", "#F2F4F7", "#F2F4F7"]}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.1, y: 1 }}
+        start={{ x: 0, y: 0.05 }}
+        end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />

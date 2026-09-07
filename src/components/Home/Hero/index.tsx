@@ -412,7 +412,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
               </View>
             </FadeInView>
           ) : (
-            <View>
+            <View className='mb-xl'>
               <Text
                 className="text-secondary text-[36px] font-extrabold mt-3xl"
               >

@@ -340,53 +340,34 @@ const ActivityPlanTypeLookupModal = ({
               className="flex-row justify-between items-center px-6 pb-4 border-b border-gray-200"
               style={{ paddingTop: keyboardVisible ? 0 : 2 }}
             >
-              <View className="flex-1 gap-1">
-                <Text
-                  className="text-2xl font-bold"
-                  style={{ color: colors.primary || "#263F69" }}
-                >
-                  Plan Type
-                </Text>
-                <Text className="text-sm text-gray-500">
-                  Select type of plan
+
+
+              <View className="flex-1">
+                <View className="flex-row items-center">
+                  <TouchableOpacity
+                    onPress={handleCancel}
+                    accessibilityRole="button"
+                    accessibilityLabel="Close add field modal"
+                    className="mr-1"
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name="chevron-left"
+                      size={28}
+                      color={"#999"}
+                    />
+                  </TouchableOpacity>
+                  <Text className="text-2xl font-semibold text-accent">
+                    Plan Type
+                  </Text>
+                </View>
+
+                <Text className="text-tertiary text-base leading-4">
+                  Select type best describe this Plan
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={handleCancel}
-                accessibilityRole="button"
-                accessibilityLabel="Close plan type modal"
-                className="p-1"
-              >
-                <Icon name="clear" size={24} color="#999" />
-              </TouchableOpacity>
             </View>
 
-            {/* Search Input */}
-            <View className="px-6 py-3 border-b border-gray-100">
-              <View className="flex-row items-center bg-[#F5F6FA] rounded-2xl px-3 h-12">
-                <Icon name="search" size={22} color="#999" style={{ marginRight: 8 }} />
-                <TextInput
-                  className="flex-1 text-base text-[#101828] py-0"
-                  placeholder="Search plan type"
-                  placeholderTextColor="#999"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="search"
-                />
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => setSearchQuery("")}
-                    style={{ padding: 4 }}
-                    accessibilityRole="button"
-                    accessibilityLabel="Clear search text"
-                  >
-                    <Icon name="close" size={20} color="#999" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
 
             {/* Scrollable list */}
             <View className="flex-1">
@@ -403,34 +384,23 @@ const ActivityPlanTypeLookupModal = ({
                   return (
                     <TouchableOpacity
                       key={item.key}
-                      className="px-6 py-3.5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
+                      className="px-6 py-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
                       onPress={() => handleSelect(item.type)}
                       accessibilityRole="button"
                       accessibilityLabel={`Select plan type ${item.label}`}
                     >
                       {/* Color-assigned icon badge */}
-                      <View
-                        style={{
-                          width: 44,
-                          height: 44,
-                          borderRadius: 22,
-                          backgroundColor: `${item.color}18`,
-                          borderColor: `${item.color}35`,
-                          borderWidth: 1,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Icon name={item.iconName as any} size={22} color={item.color} />
+                      <View>
+                        <Icon name={item.iconName as any} size={26} color={item.color} />
                       </View>
 
                       <View className="flex-1">
-                        <Text className="text-base font-semibold text-gray-900">
+                        <Text className="text-xl font-semibold text-secondary/80">
                           {item.label}
                         </Text>
                         {item.subtext ? (
                           <Text
-                            className="text-xs text-gray-500 mt-0.5"
+                            className="text-base text-tertiary mt-0.5"
                             numberOfLines={1}
                           >
                             {item.subtext}

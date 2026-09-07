@@ -41,14 +41,14 @@ export default function DateTime({
   const currentSectionId = formik?.values?.sectionId || "";
   const selectedSection = travelPlan?.itinerarySection?.find((s: any) => s.id === currentSectionId);
   const isSectionDateSet = !!selectedSection?.startDate;
-  
+
   const finalAllowedClear = allowedClear && !isSectionDateSet;
 
   return (
     <View className="mb-5">
       <Text className="text-base font-semibold tracking-wider uppercase">Date & Time</Text>
-      <Text className={`text-base text-gray-500`}>
-       Activities with a set date and time are sorted based on their scheduled date and time and cannot be reordered.
+      <Text className={`text-base text-tertiary`}>
+        Plans with date and time are sorted based on their scheduled and cannot be reordered.
       </Text>
 
       {/* Start Date & Time Label (when date range is present) */}
@@ -60,12 +60,12 @@ export default function DateTime({
 
       <View className={`flex-row items-center gap-4 ${endDate ? "mt-0" : "mt-2"}`}>
         <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={onPressDate}
             className={`flex-1 flex-row items-center p-5 gap-2 ${!finalAllowedClear ? "opacity-30" : ""}`}
             accessibilityRole="button"
             accessibilityLabel="Select date"
-            disabled={!finalAllowedClear}  
+            disabled={!finalAllowedClear}
           >
             <Icon name="calendar-today" size={24} color="#98A2B3" />
             <Text className={`text-lg  ${startDate ? "text-gray-800" : "text-[#98A2B3]"}`}>
@@ -73,7 +73,7 @@ export default function DateTime({
             </Text>
           </TouchableOpacity>
           {startDate && finalAllowedClear && (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={onClearDate}
               className="pr-4 py-3"
               accessibilityRole="button"
@@ -84,7 +84,7 @@ export default function DateTime({
           )}
         </View>
         <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={onPressTime}
             className={`flex-1 flex-row items-center p-5 gap-2 ${!finalAllowedClear ? "opacity-30" : ""}`}
             accessibilityRole="button"
@@ -97,7 +97,7 @@ export default function DateTime({
             </Text>
           </TouchableOpacity>
           {startTime !== "" && finalAllowedClear && (
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={onClearTime}
               className="pr-4 py-3"
               accessibilityRole="button"
@@ -117,7 +117,7 @@ export default function DateTime({
           </Text>
           <View className="flex-row items-center gap-4">
             <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={onPressEndDate || onPressDate}
                 className="flex-1 flex-row items-center p-5 gap-2"
                 accessibilityRole="button"
@@ -129,7 +129,7 @@ export default function DateTime({
                 </Text>
               </TouchableOpacity>
               {onClearEndDate && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={onClearEndDate}
                   className="pr-4 py-3"
                   accessibilityRole="button"
@@ -140,7 +140,7 @@ export default function DateTime({
               )}
             </View>
             <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={onPressEndTime}
                 className={`flex-1 flex-row items-center p-5 gap-2 ${!onPressEndTime ? "opacity-30" : ""}`}
                 accessibilityRole="button"
@@ -153,7 +153,7 @@ export default function DateTime({
                 </Text>
               </TouchableOpacity>
               {endTime !== "" && onClearEndTime && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={onClearEndTime}
                   className="pr-4 py-3"
                   accessibilityRole="button"
