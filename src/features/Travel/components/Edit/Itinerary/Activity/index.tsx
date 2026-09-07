@@ -544,7 +544,7 @@ const EditActivity = ({
   const [mapPinTargetField, setMapPinTargetField] = useState<string>("rideRentalDetails.pickupLocation");
   const [mapPinInitialValue, setMapPinInitialValue] = useState<string>("");
   const [mapPinInitialCoordinates, setMapPinInitialCoordinates] = useState<any>(null);
-  const [isDestinationExpanded, setIsDestinationExpanded] = useState<boolean>(true);
+  const [isDestinationExpanded, setIsDestinationExpanded] = useState<boolean>(false);
 
   const handleOpenMapPinModal = (targetField: string, initialText?: string, initialCoords?: any) => {
     setMapPinTargetField(targetField);

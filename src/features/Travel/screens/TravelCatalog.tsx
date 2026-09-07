@@ -233,7 +233,7 @@ const TravelCatalog = () => {
                     <Text className="text-2xl font-semibold text-accent">{day}</Text>
                     <Text className="text-base font-medium text-tertiary">{month}</Text>
                     {countdownLabel ? (
-                      <Text className="text-[10px] font-medium text-tertiary/50 mt-2">{countdownLabel}</Text>
+                      <Text className="text-[10px] font-medium text-tertiary/80 mt-2">{countdownLabel}</Text>
                     ) : null}
                   </View>
                 )}
@@ -252,7 +252,7 @@ const TravelCatalog = () => {
                 ) : null} */}
 
                 <View className="flex-1 gap-y-1 py-4">
-                  <Text className="text-2xl text-secondary leading-5 font-semibold ">{travel.title}</Text>
+                  <Text className="text-2xl text-secondary/90 leading-5 font-semibold ">{travel.title}</Text>
                   <View className="flex-row items-center gap-2">
                     <TouchableOpacity
                       activeOpacity={0.7}
@@ -265,7 +265,7 @@ const TravelCatalog = () => {
                       }}
                       className="flex-row items-center gap-1 "
                     >
-                      <Text className="text-base text-secondary/80 ">{destinationLabel || "No destination"}</Text>
+                      <Text className="text-base text-secondary/70 ">{destinationLabel || "No destination"}</Text>
                       {validDestinations.length > 1 && (
                         <Ionicons name="chevron-down" size={14} color="#999" />
                       )}
@@ -278,10 +278,10 @@ const TravelCatalog = () => {
                     // style={{ backgroundColor: assignedColor + '10' }}
                     className="flex-row gap-2 mt-sm p-0 rounded-full items-center justify-center"
                   >
-                    <Icon name="calendar-month" size={18} color={"#999999"} />
+                    <Icon name="calendar-month" size={18} color={"#344054"} style={{ opacity: 0.6 }} />
 
                     <View className="flex-1  ">
-                      <Text className="text-sm text-[#999]">
+                      <Text className="text-sm text-secondary/70">
                         {dateRange} {duration ? ` • ${duration}` : ""}
                       </Text>
                     </View>

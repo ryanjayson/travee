@@ -1551,6 +1551,7 @@ const SectionAccordion = ({
 
           {/* Bottom Sheet Container */}
           <Animated.View
+            {...settingsDragPanResponder.panHandlers}
             className="w-full px-6 pb-8"
             style={{
               backgroundColor: colors.surface,
@@ -1566,7 +1567,7 @@ const SectionAccordion = ({
           >
             {/* Drag Handle Area */}
             <View
-              {...settingsDragPanResponder.panHandlers}
+
               className="w-full items-center py-4 rounded-t-[28px]"
               style={{ backgroundColor: colors.surface }}
             >

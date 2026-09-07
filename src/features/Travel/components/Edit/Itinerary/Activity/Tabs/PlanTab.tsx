@@ -109,12 +109,29 @@ export default function PlanTab({
         </Text>
       </View>
 
+      {/* Date & Time Section */}
+      <DateTime
+        startDate={values.startDate}
+        startTime={values.startTime}
+        endDate={values.endDate}
+        endTime={values.endTime}
+        onPressDate={onPressDate}
+        onPressTime={onPressTime}
+        onClearDate={onClearDate}
+        onClearTime={onClearTime}
+        onPressEndDate={onPressEndDate}
+        onPressEndTime={onPressEndTime}
+        onClearEndDate={onClearEndDate}
+        onClearEndTime={onClearEndTime}
+      />
+
+
       {/* Plan Type Selector Field */}
       <View
         ref={(el) => {
           if (fieldRefs) fieldRefs.current["planType"] = el;
         }}
-        className="mb-5"
+        className="mb-5 mt-4"
       >
         <Text className="text-xs font-semibold tracking-wider uppercase mb-1.5">
           Type of Plan
@@ -183,22 +200,6 @@ export default function PlanTab({
           </View>
         </TouchableOpacity>
       </View>
-
-      {/* Date & Time Section */}
-      <DateTime
-        startDate={values.startDate}
-        startTime={values.startTime}
-        endDate={values.endDate}
-        endTime={values.endTime}
-        onPressDate={onPressDate}
-        onPressTime={onPressTime}
-        onClearDate={onClearDate}
-        onClearTime={onClearTime}
-        onPressEndDate={onPressEndDate}
-        onPressEndTime={onPressEndTime}
-        onClearEndDate={onClearEndDate}
-        onClearEndTime={onClearEndTime}
-      />
 
       {/* Dynamically Added Fields UI (UI Focus) */}
       {selectedFieldIds.map((fieldId) => {

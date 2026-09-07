@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dimensions,
   RefreshControl,
@@ -15,7 +15,7 @@ import {
   Platform
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useScrollToTop } from '@react-navigation/native';
 import { useAllActivities } from '../features/Travel/hooks/useActivity';
 import { useTravels } from '../features/Travel/hooks/useTravel';
 import { Travel } from '../features/Travel/types/TravelDto';
@@ -65,6 +65,8 @@ const COUNTRY_CODES: Record<string, string> = {
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
+  const scrollViewRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollViewRef);
   const [refreshing, setRefreshing] = useState(false);
   const { data: travels, isLoading, isError, error, refetch } = useTravels();
   const { data: allActivities } = useAllActivities();
@@ -153,6 +155,7 @@ const HomeScreen = () => {
   useFocusEffect(
     React.useCallback(() => {
       refetch();
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
 
       const onBackPress = () => {
         // If modals are open, close the modal first
@@ -295,6 +298,7 @@ const HomeScreen = () => {
         pointerEvents="none"
       />
       <ScrollView
+        ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ flexGrow: 1, paddingBottom: insets.bottom + 120 }}
         className="flex-1"
