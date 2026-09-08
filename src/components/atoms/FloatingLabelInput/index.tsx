@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, TouchableOpacity, Animated, StyleProp, TextStyle, KeyboardTypeOptions } from "react-native";
+import { View, TouchableOpacity, Animated, StyleProp, TextStyle, ViewStyle, KeyboardTypeOptions } from "react-native";
 import { TextInput } from "react-native-paper";
 
 export interface FloatingLabelInputProps {
-  label: string;
+  label: React.ReactNode;
   value: string;
   onChangeText?: (text: string) => void;
   onBlur?: (e: any) => void;
   onFocus?: () => void;
   keyboardType?: KeyboardTypeOptions;
   editable?: boolean;
+  disabled?: boolean;
+  error?: boolean;
+  maxLength?: number;
   placeholder?: string;
   right?: React.ReactNode;
   left?: React.ReactNode;
@@ -17,6 +20,9 @@ export interface FloatingLabelInputProps {
   contentStyle?: StyleProp<TextStyle>;
   multiline?: boolean;
   numberOfLines?: number;
+  outlineStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<TextStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 export default function FloatingLabelInput({
@@ -27,6 +33,9 @@ export default function FloatingLabelInput({
   onFocus,
   keyboardType = "default",
   editable = true,
+  disabled = false,
+  error = false,
+  maxLength,
   placeholder,
   right,
   left,
@@ -34,6 +43,9 @@ export default function FloatingLabelInput({
   contentStyle,
   multiline,
   numberOfLines,
+  outlineStyle,
+  style,
+  containerStyle,
 }: FloatingLabelInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [labelWidth, setLabelWidth] = useState(0);
@@ -79,7 +91,7 @@ export default function FloatingLabelInput({
   };
 
   return (
-    <View className="relative flex-1">
+    <View className="relative flex-1" style={containerStyle}>
       <Animated.Text
         style={animatedLabelStyle}
         pointerEvents="none"
@@ -91,11 +103,14 @@ export default function FloatingLabelInput({
       </Animated.Text>
       <TextInput
         mode="outlined"
-        placeholder={placeholder}
+        placeholder={isFocused ? placeholder : undefined}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
-        editable={editable}
+        editable={editable && !disabled}
+        disabled={disabled}
+        error={error}
+        maxLength={maxLength}
         multiline={multiline}
         numberOfLines={numberOfLines}
         onFocus={() => {
@@ -109,8 +124,8 @@ export default function FloatingLabelInput({
         outlineColor="#E0E0E0"
         activeOutlineColor="#263F69"
         theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
-        outlineStyle={{ borderWidth: 1, backgroundColor: "#FFF", borderRadius: 16 }}
-        style={multiline ? undefined : { height: 64 }}
+        outlineStyle={outlineStyle || { borderWidth: 1, backgroundColor: "#FFF", borderRadius: 16 }}
+        style={style || (multiline ? undefined : { height: 64 })}
         contentStyle={[{ backgroundColor: "transparent", paddingTop: multiline ? 8 : 16 }, contentStyle]}
         right={right}
         left={left}
@@ -120,7 +135,7 @@ export default function FloatingLabelInput({
           onPress={onPress}
           style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: right ? 50 : 0, zIndex: 20 }}
           accessibilityRole="button"
-          accessibilityLabel={`Open selector for ${label}`}
+          accessibilityLabel={typeof label === "string" ? `Open selector for ${label}` : "Open selector"}
         />
       )}
     </View>

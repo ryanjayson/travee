@@ -13,6 +13,7 @@ import {
 import { Checkbox, TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
 import TouchButton from "../../../../components/atoms/TouchButton";
+import FloatingLabelInput from "../../../../components/atoms/FloatingLabelInput";
 import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 import TripIcon from "../../../../components/TripIcon";
 import { TravelStatus, TripType, getTripTypeLabel } from "../../../../types/enums";
@@ -113,8 +114,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       .min(2, "Trip title is too short, make it more descriptive")
       .max(40, "Trip title must be at most 40 characters"),
     tripDestinations: Yup.array()
-      .min(1, "At least one destination is required")
-      .max(5, "Maximum of 5 destinations allowed")
+      .min(1, "Add your destination")
+      .max(3, "Maximum of 3 destinations allowed")
       .required("Destination is required"),
   });
 
@@ -290,23 +291,60 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
   const getTripTypeName = (type: TripType) => {
     if (type === undefined || type === null || type === TripType.none) return "";
-    return String(TripType[type]).replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    return getTripTypeLabel(type) || String(TripType[type]).replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
   };
 
   const formatDepartureDate = (date: Date | null | undefined) => {
     if (!date) return "";
     const d = new Date(date);
+    if (isNaN(d.getTime())) return "";
+    const day = String(d.getDate()).padStart(2, '0');
     const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${month}/${year}`;
+    const year = String(d.getFullYear()).slice(-2);
+    return `${day}.${month}.${year}`;
   };
 
+  const primaryDest =
+    (formik.values.tripDestinations && formik.values.tripDestinations[0]?.destination) ||
+    formik.values.destination ||
+    "";
+  const cityName = getCityOnly(primaryDest);
   const tripTypeName = getTripTypeName(formik.values.type);
-  const cityName = getCityOnly(formik.values.destination);
   const dateStr = formatDepartureDate(formik.values.startOrDepartureDate);
 
-  const hasAllThree = !!cityName && !!formik.values.startOrDepartureDate && formik.values.type !== TripType.none;
-  const suggestion = hasAllThree ? `${tripTypeName} in ${cityName} - ${dateStr}` : "";
+  // Progressive suggestion format:
+  // 1. Destination + Type + Date: [Event name] in [Destination name] [DD.MM.YY]
+  // 2. Destination + Type:        [Event name] in [Destination name]
+  // 3. Destination + Date:        [Destination name] Trip [DD.MM.YY]
+  // 4. Destination only:          [Destination name] Trip
+  let suggestion = "";
+  if (cityName) {
+    if (tripTypeName && dateStr) {
+      suggestion = `${tripTypeName} in ${cityName} [${dateStr}]`;
+    } else if (tripTypeName) {
+      suggestion = `${tripTypeName} in ${cityName}`;
+    } else if (dateStr) {
+      suggestion = `${cityName} Trip [${dateStr}]`;
+    } else {
+      suggestion = `${cityName} Trip`;
+    }
+  }
+
+  const prevSuggestionRef = useRef<string>("");
+
+  useEffect(() => {
+    if (suggestion && suggestion !== prevSuggestionRef.current) {
+      const isTitleEmpty = !formik.values.title || formik.values.title.trim() === "";
+      const wasPreviousSuggestion = formik.values.title === prevSuggestionRef.current;
+
+      prevSuggestionRef.current = suggestion;
+
+      if ((isTitleEmpty || wasPreviousSuggestion) && formik.values.title !== suggestion) {
+        formik.setFieldValue("title", suggestion);
+        setSuggestionApplied(true);
+      }
+    }
+  }, [suggestion, formik.values.title]);
 
   return (
     <View className="flex-1 bg-gray-100 overflow-hidden">
@@ -334,21 +372,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             </Text>
             {formik.values.tripDestinations && formik.values.tripDestinations.length > 0 && (
               <Text className="text-xs text-secondary/60 font-medium mb-md">
-                {formik.values.tripDestinations.length}/5
+                {formik.values.tripDestinations.length}/3
               </Text>
             )}
           </View>
-          {/* Validation error */}
-          {formik.touched.tripDestinations && formik.errors.tripDestinations && (
-            <View className="flex flex-row items-center mt-1">
-              <Icon name="info-outline" size={14} color="#fb2c36" />
-              <Text className="text-red-500 text-xs ml-1">
-                {typeof formik.errors.tripDestinations === "string"
-                  ? (formik.errors.tripDestinations as string)
-                  : "At least one destination is required"}
-              </Text>
-            </View>
-          )}
+
 
           {/* Search Box with Predictions Listed Below */}
           <TripDestinationSearchBox
@@ -363,6 +391,18 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             }
             disabled={isSaving || Boolean(formik.values.tripDestinations && formik.values.tripDestinations.length >= 5)}
           />
+
+          {/* Validation error */}
+          {formik.touched.tripDestinations && formik.errors.tripDestinations && (
+            <View className="flex flex-row items-center mt-1">
+              <Icon name="info-outline" size={14} color="#fb2c36" />
+              <Text className="text-red-500 text-xs ml-1">
+                {typeof formik.errors.tripDestinations === "string"
+                  ? (formik.errors.tripDestinations as string)
+                  : "At least one destination is required"}
+              </Text>
+            </View>
+          )}
 
           {/* Selected Destination Tags */}
           {formik.values.tripDestinations && formik.values.tripDestinations.length > 0 && (
@@ -548,9 +588,9 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           </View>
         )}
 
-        <View className="mb-6">
+        <View className="mb-8">
           <View className="flex-row items-center justify-between">
-            <Text className="text-lg text-secondary/80 font-semibold">Purpose</Text>
+            <Text className="text-lg text-secondary/80 font-semibold mb-1">Purpose</Text>
             {formik.values.type != null && formik.values.type !== TripType.none && (
               <TouchableOpacity
                 onPress={() => formik.setFieldValue("type", TripType.none)}
@@ -685,62 +725,47 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           </View>
         )} */}
 
-        <View className="mb-5">
-          <Text className="text-xs font-semibold tracking-wider uppercase">Title <Text className="text-red-500 text-lg">*</Text></Text>
-          <View className="relative justify-center">
-            <TextInput
-              mode="outlined"
+        <View className="mb-4 flex-1">
+          <Text className="text-lg text-secondary/80 font-semibold mb-1">Describe your trip</Text>
+          <Text className="text-base text-tertiary mb-3">
+            You may give your trip a custom name and describe it to help you stay organized.
+          </Text>
+
+          {/* <Text className="text-xs font-semibold tracking-wider uppercase">Title <Text className="text-red-500 text-lg">*</Text></Text> */}
+          <View className="relative justify-center flex-1">
+            <FloatingLabelInput
+              label="Title *"
               placeholder={`e.g. ${currentWord}`}
               value={formik.values.title}
               onChangeText={formik.handleChange("title")}
               onBlur={formik.handleBlur("title")}
               error={formik.touched.title && Boolean(formik.errors.title)}
               disabled={isSaving}
-              outlineColor="#E0E0E0"
-              activeOutlineColor="#263F69"
-              theme={{
-                colors: {
-                  onSurfaceVariant: '#98A2B3',
-                },
-              }}
-              outlineStyle={{
-                borderWidth: 1,
-                backgroundColor: "#FFFFFF",
-                borderRadius: 16,
-              }}
-              style={{
-                marginTop: 6,
-                height: 64,
-              }}
-              contentStyle={{
-                backgroundColor: "transparent",
-                paddingRight: 60,
-              }}
               maxLength={40}
+              contentStyle={{
+                paddingRight: formik.values.title ? 80 : 55,
+              }}
+              right={
+                formik.values.title ? (
+                  <TextInput.Icon
+                    icon="close"
+                    color="#98A2B3"
+                    size={20}
+                    onPress={() => formik.setFieldValue("title", "")}
+                    accessibilityLabel="Clear title"
+                    forceTextInputFocus={false}
+                  />
+                ) : null
+              }
             />
             <Text
-              className="absolute right-4 bottom-3 text-xs"
+              className={`absolute ${formik.values.title ? "right-6" : "right-6"} bottom-2 text-xs`}
+              pointerEvents="none"
               style={{ color: '#98A2B3' }}
             >
               {(formik.values.title || "").length}/40
             </Text>
           </View>
-          {!tripData?.id && suggestion && !suggestionApplied ? (
-            <TouchableOpacity
-              onPress={() => {
-                formik.setFieldValue("title", suggestion);
-                setSuggestionApplied(true);
-              }}
-              className="mt-2.5 ml-1"
-              accessibilityRole="button"
-              accessibilityLabel={`Apply suggested title: ${suggestion}`}
-              activeOpacity={0.7}
-            >
-              <Text className="text-xs font-medium" style={{ color: colors.primary }}>
-                Suggested: <Text className="underline">{suggestion}</Text>
-              </Text>
-            </TouchableOpacity>
-          ) : null}
 
           {formik.touched.title && formik.errors.title && (
             <View className="flex flex-row items-center mt-1">
@@ -751,7 +776,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         </View>
 
 
-        <View className="mb-5">
+        <View className="mb-6">
           {/* <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text> */}
           <DescriptionInput
             value={formik.values.description}

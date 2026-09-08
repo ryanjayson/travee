@@ -198,7 +198,7 @@ export const TripStatusBottomSheet: React.FC<TripStatusBottomSheetProps> = ({
                   <View className="w-24 mr-3 items-start justify-center">
                     <StatusBadge
                       status={item.status}
-                      containerClassName="px-2.5 py-1"
+                      containerClassName="px-2.5 py-0"
                       textClassName="text-[10px]"
                     />
                   </View>

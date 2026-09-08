@@ -70,7 +70,7 @@ const DescriptionInput = ({
             numberOfLines={4}
             outlineColor="#E0E0E0"
             activeOutlineColor="#263F69"
-            theme={{ colors: { onSurfaceVariant: "#888" } }}
+            theme={{ colors: { onSurfaceVariant: "#98A2B3" } }}
             outlineStyle={{
               borderWidth: 1,
               backgroundColor: "#FFFFFF",
