@@ -6,6 +6,7 @@ type TouchButtonProps = {
   buttonText: string;
   disabled?: boolean;
   className?: string;
+  labelClassName?: string;
   icon?: string | any;
   onPress: () => void;
 };
@@ -13,6 +14,7 @@ type TouchButtonProps = {
 const TouchButton: React.FC<TouchButtonProps> = ({
   buttonText,
   className,
+  labelClassName,
   icon,
   disabled,
   onPress,
@@ -26,7 +28,7 @@ const TouchButton: React.FC<TouchButtonProps> = ({
       accessibilityState={{ disabled: disabled }}
     >
       {icon && <Icon name={icon} size={24} color="white" />}
-      <Text className="text-white font-semibold text-lg tracking-wide">{buttonText}</Text>
+      <Text className={`text-white font-semibold text-lg tracking-wide ${labelClassName ?? ""}`}>{buttonText}</Text>
     </TouchableOpacity>
   );
 };

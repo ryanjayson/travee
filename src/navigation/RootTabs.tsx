@@ -115,8 +115,8 @@ function RootTabsComponent() {
     (searchTravelPlan?.travel?.tripDestinations && searchTravelPlan.travel.tripDestinations.length > 0
       ? searchTravelPlan.travel.tripDestinations
       : searchTravelPlan?.travel?.destination
-      ? [{ destination: searchTravelPlan.travel.destination, destinationData: searchTravelPlan.travel.destinationData }]
-      : undefined);
+        ? [{ destination: searchTravelPlan.travel.destination, destinationData: searchTravelPlan.travel.destinationData }]
+        : undefined);
 
   return (
     <>
@@ -146,16 +146,16 @@ function RootTabsComponent() {
                 >
                   <Ionicons
                     name={iconName as any}
-                    size={isAddTab ? 32 : 28}
+                    size={isAddTab ? 34 : 28}
                     color={focused ? "#0EA5E9" : color}
                     style={{
                       backgroundColor: isAddTab ? '#0EA5E9' : 'transparent',
-                      width: isAddTab ? 60 : 28,
-                      height: isAddTab ? 60 : 28,
+                      width: isAddTab ? 70 : 28,
+                      height: isAddTab ? 70 : 28,
                       justifyContent: 'center',
                       alignItems: 'center',
-                      borderRadius: isAddTab ? 30 : 15,
-                      padding: isAddTab ? 14 : 0,
+                      borderRadius: isAddTab ? 35 : 15,
+                      padding: isAddTab ? 18 : 0,
                       color: isAddTab ? '#fff' : '#0EA5E9',
                     }}
                   />
@@ -168,10 +168,10 @@ function RootTabsComponent() {
               position: 'absolute',
               marginLeft: "50%",
               transform: [{ translateX: -125 }],
-              bottom: insets.bottom + 20,
+              bottom: insets.bottom + 10,
               width: 250,
-              height: 70,
-              borderRadius: 35,
+              height: 78,
+              borderRadius: 39,
               backgroundColor: '#fff',
               borderTopWidth: 0,
               elevation: 10,

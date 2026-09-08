@@ -203,7 +203,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
       <View
         className="w-full px-5"
         style={{
-          paddingTop: Math.max(insets.top + 8, 48),
+          paddingTop: Math.max(insets.top + 20, 48),
           borderBottomLeftRadius: ongoingTrip ? 30 : 0,
           borderBottomRightRadius: ongoingTrip ? 30 : 0,
         }}
@@ -490,31 +490,33 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
 
           <Text className="text-xs uppercase font-semibold px-xl text-secondary/80 ">Quick Actions</Text>
           <FadeInView type="up" delay={100} duration={450}>
-            <View className="flex-row items-center justify-between py-2 pb-0 z-40 px-4xl">
+            <View className="flex-row items-center justify-evenly py-2 pb-0 z-40">
 
-              <View className="items-center">
+              <View className="flex-1 items-center">
                 <TouchableOpacity
                   // style={{ borderCurve: 'continuous' }}
-                  className='items-center justify-center w-6xl h-6xl rounded-full border bg-gray-modern-50 border-gray-200'
+                  className='items-center justify-center w-7xl h-7xl rounded-full bg-primary/20'
                   onPress={() => setShowTravelViewModal(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel="View Trip"
                 >
                   <Ionicons name="briefcase" size={20} color="#263F69" />
                 </TouchableOpacity>
-                <Text className="text-sm font-bold text-tertiary  mt-1">View Trip</Text>
+                <Text className="text-sm font-bold text-secondary/90  mt-1 text-center">View Trip</Text>
               </View>
 
-              <View className="items-center">
+              <View className="flex-1 items-center">
                 <TouchableOpacity
-                  className='items-center justify-center w-6xl h-6xl rounded-full border  bg-gray-modern-50 border-gray-200'
+                  className='items-center justify-center w-7xl h-7xl rounded-full bg-primary/20'
                   onPress={() => {
                     openActivityModal(null, undefined, ongoingTrip?.id);
                   }}
                   accessibilityRole="button"
                   accessibilityLabel="Add Activity"
                 >
-                  <Ionicons name="walk" size={22} color="#263F69" />
+                  <Ionicons name="bulb" size={22} color="#263F69" />
                 </TouchableOpacity>
-                <Text className="text-sm font-bold text-tertiary mt-1">Add Activity</Text>
+                <Text className="text-sm font-bold text-secondary/90 mt-1 text-center">Add Activity</Text>
 
               </View>
 
@@ -555,14 +557,16 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
               <Text className="text-primary text-xs mt-2">Add Note</Text>
             </View> */}
 
-              <View className="items-center">
+              <View className="flex-1 items-center">
                 <TouchableOpacity
-                  className='items-center justify-center w-6xl h-6xl rounded-full border  bg-gray-modern-50 border-gray-200'
+                  className='items-center justify-center w-7xl h-7xl rounded-full bg-primary/20'
                   onPress={() => setShowItineraryTab(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel="View Itinerary"
                 >
                   <Ionicons name="list" size={20} color="#263F69" />
                 </TouchableOpacity>
-                <Text className="text-sm font-bold text-tertiary mt-1">View Itinerary</Text>
+                <Text className="text-sm font-bold text-secondary/90  mt-1 text-center">View Itinerary</Text>
               </View>
 
               {/* <TouchableOpacity className='items-center opacity-50' disabled={true} >

@@ -16,7 +16,7 @@ import {
   TextInput,
 } from "react-native";
 import { useTheme } from "react-native-paper";
-import { TripType } from "../../../../types/enums";
+import { TripType, getTripTypeLabel } from "../../../../types/enums";
 import TripIcon from "../../../../components/TripIcon";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,7 +37,6 @@ const TripTypeLookupModal = ({
   onSelect,
 }: TripTypeLookupModalProps) => {
   const { colors } = useTheme();
-  const [searchQuery, setSearchQuery] = useState("");
   const { keyboardVisible } = useKeyboardVisible();
   const insets = useSafeAreaInsets();
 
@@ -93,7 +92,6 @@ const TripTypeLookupModal = ({
             useNativeDriver: true,
           }).start(() => {
             onClose();
-            setSearchQuery("");
           });
         } else {
           Animated.spring(translateY, {
@@ -133,7 +131,6 @@ const TripTypeLookupModal = ({
             useNativeDriver: true,
           }).start(() => {
             onClose();
-            setSearchQuery("");
           });
         } else {
           Animated.spring(translateY, {
@@ -155,7 +152,6 @@ const TripTypeLookupModal = ({
       useNativeDriver: true,
     }).start(() => {
       onClose();
-      setSearchQuery("");
     });
   };
 
@@ -165,16 +161,12 @@ const TripTypeLookupModal = ({
   };
 
   const types = Object.keys(TripType)
-    .filter((key) => isNaN(Number(key)))
+    .filter((key) => isNaN(Number(key)) && key !== "none")
     .map((key) => {
       const typeValue = TripType[key as keyof typeof TripType];
-      const displayName = key.replace(/([A-Z])/g, " $1").trim();
+      const displayName = getTripTypeLabel(typeValue);
       return { key, typeValue, displayName };
     });
-
-  const filteredTypes = types.filter((t) =>
-    t.displayName.toLowerCase().includes(searchQuery.toLowerCase()) && t.typeValue !== TripType.none
-  );
 
   const backdropOpacity = translateY.interpolate({
     inputRange: [0, screenHeight],
@@ -234,43 +226,13 @@ const TripTypeLookupModal = ({
                 <Text
                   className="text-base  text-tertiary"
                 >
-                 What best describes your trip
+                  What best describes your trip
                 </Text>
               </View>
               <TouchableOpacity onPress={handleCancel} accessibilityRole="button" accessibilityLabel="Close selection modal">
                 <Icon name="clear" size={24} color={"#999"} />
               </TouchableOpacity>
             </View>
-
-            {/* Search Input */}
-            <View className="px-6 py-4 border-b border-gray-200">
-              <View className="flex-row items-center bg-[#F5F6FA] rounded-2xl px-3 h-12">
-                <Icon name="search" size={22} color="#999" style={{ marginRight: 8 }} />
-                <TextInput
-                  className="flex-1 text-base text-[#101828] py-0"
-                  placeholder="Search trip type"
-                  placeholderTextColor="#999"
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="search"
-                />
-                {searchQuery.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setSearchQuery("");
-                    }}
-                    style={{ padding: 4 }}
-                    accessibilityRole="button"
-                    accessibilityLabel="Clear search text"
-                  >
-                    <Icon name="close" size={20} color="#999" />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-
 
 
             {/* Scrollable list */}
@@ -283,7 +245,7 @@ const TripTypeLookupModal = ({
                 scrollEventThrottle={16}
                 keyboardShouldPersistTaps="handled"
               >
-                {filteredTypes.map(({ key, typeValue, displayName }) => (
+                {types.map(({ key, typeValue, displayName }) => (
                   <TouchableOpacity
                     key={key}
                     className="p-6 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"

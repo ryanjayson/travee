@@ -9,20 +9,18 @@ import {
   Text,
   TouchableOpacity,
   View,
-  StyleSheet,
 } from "react-native";
 import { Checkbox, TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 import TripIcon from "../../../../components/TripIcon";
-import { useTravelContext } from "../../../../context/TravelContext";
-import { TravelStatus, TripType } from "../../../../types/enums";
+import { TravelStatus, TripType, getTripTypeLabel } from "../../../../types/enums";
 import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
 import { DestinationDto, Travel, TripDestinationDto } from "../../types/TravelDto";
 import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
-import { MapboxPlace } from "../MapboxDestinationSelector";
 import TravelDateModal from "./TravelDateModal";
+import TripDestinationSearchBox, { TripDestinationSearchBoxRef } from "./TripDestinationSearchBox";
 import { getDestinationZoom } from "../../../../utils/mapUtils";
 
 export interface CreateOrEditProps {
@@ -46,6 +44,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
   const navigation = useNavigation<any>();
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
   const scrollViewRef = useRef<ScrollView>(null);
+  const destinationSearchRef = useRef<TripDestinationSearchBoxRef>(null);
 
   useImperativeHandle(ref, () => ({
     submit: () => {
@@ -54,44 +53,24 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     isSaving,
     isValid: formik.isValid,
   }));
-  const { openDestinationModal } = useTravelContext();
 
-  const handleOpenDestinationSelect = () => {
-    openDestinationModal("", (place: MapboxPlace, isAddMore?: boolean) => {
-      const newDest: TripDestinationDto = {
-        destination: place.name,
-        destinationData: {
-          id: place.id,
-          city: place.city,
-          regionOrState: place.regionOrState,
-          country: place.country,
-          coordinates: {
-            longitude: place.coordinates.longitude,
-            latitude: place.coordinates.latitude,
-          },
-        } as DestinationDto,
-      };
-
-      formik.setValues((prevValues) => {
-        const currentList: TripDestinationDto[] = prevValues.tripDestinations || [];
-        const isDuplicate = currentList.some(
-          (d) => d.destination.trim().toLowerCase() === place.name.trim().toLowerCase()
-        );
-
-        const nextList = isDuplicate ? currentList : [...currentList, newDest];
-        return {
-          ...prevValues,
-          tripDestinations: nextList,
-          destination: nextList.length > 0 ? nextList[0].destination : prevValues.destination,
-          destinationData: nextList.length > 0 ? nextList[0].destinationData : prevValues.destinationData,
-        };
-      });
-
-      if (mode === "create" && !isAddMore) {
-        setTimeout(() => {
-          setShowStartDatePicker(true);
-        }, 300);
+  const handleSelectDestination = (newDest: TripDestinationDto) => {
+    formik.setValues((prevValues) => {
+      const currentList: TripDestinationDto[] = prevValues.tripDestinations || [];
+      if (currentList.length >= 5) {
+        return prevValues;
       }
+      const isDuplicate = currentList.some(
+        (d) => d.destination.trim().toLowerCase() === newDest.destination.trim().toLowerCase()
+      );
+
+      const nextList = isDuplicate ? currentList : [...currentList, newDest].slice(0, 5);
+      return {
+        ...prevValues,
+        tripDestinations: nextList,
+        destination: nextList.length > 0 ? nextList[0].destination : prevValues.destination,
+        destinationData: nextList.length > 0 ? nextList[0].destinationData : prevValues.destinationData,
+      };
     });
   };
 
@@ -124,7 +103,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     .filter((key) => isNaN(Number(key)) && key !== "none")
     .map((key) => {
       const typeVal = TripType[key as keyof typeof TripType];
-      const displayName = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, " $1");
+      const displayName = getTripTypeLabel(typeVal);
       return { id: String(typeVal), label: displayName, selected: false };
     });
 
@@ -135,6 +114,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       .max(40, "Trip title must be at most 40 characters"),
     tripDestinations: Yup.array()
       .min(1, "At least one destination is required")
+      .max(5, "Maximum of 5 destinations allowed")
       .required("Destination is required"),
   });
 
@@ -248,8 +228,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     return () => clearInterval(interval);
   }, []);
 
-  const formattedStartDate = formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toLocaleDateString() : "";
-  const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
   const { data: travels } = useTravels();
 
   const isDayTour = useMemo(() => {
@@ -261,6 +239,21 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     const endDate = new Date(end);
     return startDate.toDateString() === endDate.toDateString();
   }, [formik.values.startOrDepartureDate, formik.values.endOrReturnDate]);
+
+  const formattedStartDate = formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toLocaleDateString() : "";
+  const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
+
+  const formattedTripDates = useMemo(() => {
+    const start = formik.values.startOrDepartureDate;
+    const end = formik.values.endOrReturnDate;
+    if (!start) return "";
+    const startStr = (start instanceof Date ? start : new Date(start)).toLocaleDateString();
+    if (end && !isDayTour) {
+      const endStr = (end instanceof Date ? end : new Date(end)).toLocaleDateString();
+      return `${startStr} - ${endStr}`;
+    }
+    return startStr;
+  }, [formik.values.startOrDepartureDate, formik.values.endOrReturnDate, isDayTour]);
 
   const getEffectiveStatus = (): TravelStatus => {
     if (tripData && (tripData.status === TravelStatus.Past ||
@@ -289,12 +282,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       onStatusChange(effectiveStatus);
     }
   }, [effectiveStatus, onStatusChange]);
-
-  React.useEffect(() => {
-    if (mode === "create") {
-      handleOpenDestinationSelect();
-    }
-  }, [mode]);
 
   const getCityOnly = (destination?: string): string => {
     if (!destination) return "";
@@ -330,11 +317,371 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         contentContainerStyle={{ paddingBottom: 10 }}
         onScroll={onScroll}
         scrollEventThrottle={16}
+        keyboardShouldPersistTaps="handled"
       >
         {/* 
         {error && (
           <View className="bg-[#FFEBEE] rounded-lg p-3 mb-4 border border-[#FFCDD2]">
             <Text className="text-[#D32F2F] text-sm">{error}</Text>
+          </View>
+        )} */}
+
+
+        <View className="mb-8" style={{ zIndex: 100 }}>
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-xl text-secondary/80 font-semibold mb-md">
+              Where to go? <Text className="text-red-500 text-lg">*</Text>
+            </Text>
+            {formik.values.tripDestinations && formik.values.tripDestinations.length > 0 && (
+              <Text className="text-xs text-secondary/60 font-medium mb-md">
+                {formik.values.tripDestinations.length}/5
+              </Text>
+            )}
+          </View>
+          {/* Validation error */}
+          {formik.touched.tripDestinations && formik.errors.tripDestinations && (
+            <View className="flex flex-row items-center mt-1">
+              <Icon name="info-outline" size={14} color="#fb2c36" />
+              <Text className="text-red-500 text-xs ml-1">
+                {typeof formik.errors.tripDestinations === "string"
+                  ? (formik.errors.tripDestinations as string)
+                  : "At least one destination is required"}
+              </Text>
+            </View>
+          )}
+
+          {/* Search Box with Predictions Listed Below */}
+          <TripDestinationSearchBox
+            ref={destinationSearchRef}
+            onSelect={handleSelectDestination}
+            placeholder={
+              formik.values.tripDestinations && formik.values.tripDestinations.length >= 5
+                ? "Maximum of 5 destinations reached"
+                : formik.values.tripDestinations && formik.values.tripDestinations.length > 0
+                  ? "Add another destination..."
+                  : "Search place, city, or country"
+            }
+            disabled={isSaving || Boolean(formik.values.tripDestinations && formik.values.tripDestinations.length >= 5)}
+          />
+
+          {/* Selected Destination Tags */}
+          {formik.values.tripDestinations && formik.values.tripDestinations.length > 0 && (
+            <View className="flex-row flex-wrap gap-2 mb-3 mt-3">
+              {formik.values.tripDestinations.map((item: TripDestinationDto, index: number) => (
+                <View
+                  key={`${item.destination}-${index}`}
+                  className="flex-row items-center bg-white border border-[#E0E0E0] rounded-full py-1 pl-2 pr-1 shadow-xs"
+                >
+                  <Icon name="place" size={15} color={colors.error} style={{ marginRight: 4, opacity: 0.4 }} />
+                  <Text className="text-sm font-semibold text-secondary mr-2" numberOfLines={1}>
+                    {item.destination}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => handleRemoveDestination(index)}
+                    disabled={isSaving}
+                    activeOpacity={0.7}
+                    className="w-5 h-5 rounded-full bg-gray-300/70 items-center justify-center"
+                    accessibilityRole="button"
+                    accessibilityLabel={`Remove ${item.destination}`}
+                  >
+                    <Icon name="close" size={12} color="#475467" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Multi-destination Map Preview */}
+          {(() => {
+            const validDestinations = (formik.values.tripDestinations || []).filter(
+              (d: TripDestinationDto) =>
+                d.destinationData?.coordinates &&
+                (d.destinationData.coordinates.latitude !== 0 || d.destinationData.coordinates.longitude !== 0)
+            );
+
+            if (validDestinations.length === 0) return null;
+
+            let mapUrl: string;
+            if (validDestinations.length === 1) {
+              const destObj = validDestinations[0];
+              const { longitude, latitude } = destObj.destinationData!.coordinates;
+              const zoom = getDestinationZoom(destObj.destination, destObj.destinationData);
+              mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+F04438(${longitude},${latitude})/${longitude},${latitude},${zoom},0/600x260?access_token=${MAPBOX_ACCESS_TOKEN}`;
+            } else {
+              const pins = validDestinations
+                .slice(0, 5)
+                .map((d: TripDestinationDto) => {
+                  const c = d.destinationData!.coordinates;
+                  return `pin-s+F04438(${c.longitude},${c.latitude})`;
+                })
+                .join(",");
+              mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pins}/auto/600x260?padding=40,40,40,40&access_token=${MAPBOX_ACCESS_TOKEN}`;
+            }
+
+            return (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={() => destinationSearchRef.current?.focus()}
+                disabled={isSaving}
+                className=""
+                accessibilityRole="button"
+                accessibilityLabel="Focus trip destination search"
+              >
+                <View className="rounded-2xl overflow-hidden shadow-xs border border-[#EAECF0]">
+                  <Image
+                    source={{ uri: mapUrl }}
+                    style={{ width: "100%", height: 140, borderRadius: 16 }}
+                    resizeMode="cover"
+                  />
+                  <View
+                    className="absolute bottom-2 left-2 px-3 py-1 rounded-xl flex-row items-center"
+                    style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+                  >
+                    <Icon name="location-on" size={14} color="#FFF" />
+                    <Text className="text-white text-xs ml-1 font-medium">
+                      {validDestinations.length === 1
+                        ? validDestinations[0].destination
+                        : `${validDestinations.length} destinations`}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })()}
+        </View>
+
+        <View className="">
+          <View className="flex-row items-center justify-between mb-1">
+            <Text className="text-xl text-secondary/80 font-semibold mb-md">
+              Travel Dates
+            </Text>
+
+            {isDayTour && (
+              <View className="bg-blue-50 border border-accent/80 rounded-full px-2 mr-2 opacity-50">
+                <Text className="text-accent text-[10px] font-bold uppercase tracking-wider">Day Trip</Text>
+              </View>
+            )}
+          </View>
+          <View className="relative mt-sm mb-2">
+            <TextInput
+              mode="outlined"
+              placeholder="Depart Date → Return Date"
+              value={formattedTripDates}
+              editable={false}
+              left={<TextInput.Icon icon="calendar" color="#999" />}
+              right={formik.values.startOrDepartureDate ? (
+                <TextInput.Icon
+                  icon="close"
+                  onPress={() => {
+                    formik.setFieldValue("startOrDepartureDate", null);
+                    formik.setFieldValue("endOrReturnDate", null);
+                  }}
+                />
+              ) : null}
+              outlineColor="#E0E0E0"
+              activeOutlineColor="#263F69"
+              theme={{
+                colors: {
+                  onSurfaceVariant: '#98A2B3',
+                },
+              }}
+              outlineStyle={{
+                borderWidth: 1,
+                backgroundColor: "#FFFFFF",
+                borderRadius: 16,
+              }}
+              style={{
+                height: 64,
+                marginTop: -6,
+              }}
+              contentStyle={{
+                backgroundColor: "transparent",
+              }}
+            />
+            <TouchableOpacity
+              style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
+              onPress={() => {
+                setShowStartDatePicker(true);
+              }}
+              activeOpacity={0.6}
+              accessibilityRole="button"
+              accessibilityLabel="Open calendar range selector"
+            />
+          </View>
+          <TravelDateModal
+            visible={showStartDatePicker}
+            onClose={() => setShowStartDatePicker(false)}
+            initialStartDate={formik.values.startOrDepartureDate}
+            initialEndDate={formik.values.endOrReturnDate}
+            tripData={tripData}
+            mode={mode}
+            onConfirm={(startDate, endDate) => {
+              formik.setFieldValue("startOrDepartureDate", startDate);
+              formik.setFieldValue("endOrReturnDate", endDate);
+              setShowStartDatePicker(false);
+            }}
+          />
+        </View>
+
+        {!tripData && (
+          <View className="flex-row items-start mb-6 mr-5"
+            style={{ opacity: !formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 0.5 : 1 }}>
+            <Checkbox
+              status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
+              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+              color="#263F69"
+            />
+            <TouchableOpacity
+              activeOpacity={0.7}
+              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+            >
+              <Text className={`mt-2 text-lg text-gray-700`}>
+                Generate sections
+              </Text>
+
+              <Text className={`text-base text-gray-400 leading-3xl pr-2xl`}>
+                Automatically create sections for each day based on your travel dates.
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View className="mb-6">
+          <View className="flex-row items-center justify-between">
+            <Text className="text-lg text-secondary/80 font-semibold">Purpose</Text>
+            {formik.values.type != null && formik.values.type !== TripType.none && (
+              <TouchableOpacity
+                onPress={() => formik.setFieldValue("type", TripType.none)}
+                accessibilityRole="button"
+                accessibilityLabel="Clear travel type"
+                className="py-1 px-2.5 rounded-lg bg-gray-100"
+                activeOpacity={0.7}
+              >
+                <Text className="text-sm text-gray-500 font-semibold underline">Clear</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <Text className="text-base text-tertiary mb-3">
+            Type helps organize activities and recommendations.
+          </Text>
+
+          {/* 6 Selectable Cards in 2 Rows (3 per row) */}
+          {(() => {
+            const commonCardsRow1 = [
+              { type: TripType.vacation, label: "Vacation" },
+              { type: TripType.business, label: "Business" },
+              { type: TripType.event, label: "Event" },
+            ];
+
+            const commonCardsRow2 = [
+              { type: TripType.roadtrip, label: "Road Trip" },
+              { type: TripType.weekendGetaway, label: "Weekend Getaway" },
+            ];
+
+            const isOtherSelected =
+              formik.values.type != null &&
+              formik.values.type !== TripType.none &&
+              ![TripType.vacation, TripType.business, TripType.event, TripType.roadtrip, TripType.weekendGetaway].includes(
+                formik.values.type
+              );
+
+            const renderCard = (item: { type: TripType; label: string }) => {
+              const isSelected = formik.values.type === item.type;
+              return (
+                <TouchableOpacity
+                  key={item.type}
+                  onPress={() => {
+                    formik.setFieldValue("type", isSelected ? TripType.none : item.type);
+                  }}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${item.label} trip type`}
+                  className="flex-1 min-h-[96px] py-3 px-1.5 rounded-2xl items-center justify-center border"
+                  style={[
+                    {
+                      borderColor: isSelected ? colors.primary : "#E5E7EB",
+                      backgroundColor: isSelected ? `${colors.primary}12` : "#FFFFFF",
+                    },
+                  ]}
+                >
+                  <View className="items-center justify-center">
+                    <TripIcon type={item.type} size={30} showIconOnly={true} />
+                    <Text
+                      numberOfLines={2}
+                      className="text-xs font-semibold text-center mt-2 opacity-70"
+                      style={{ color: isSelected ? "#344054" : "#374151" }}
+                    >
+                      {item.label}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            };
+
+            return (
+              <View className="w-full">
+                {/* Row 1: Vacation, Business, Event */}
+                <View className="flex-row gap-2.5 mb-2.5">
+                  {commonCardsRow1.map(renderCard)}
+                </View>
+
+                {/* Row 2: Road Trip, Weekend Getaway, See More */}
+                <View className="flex-row gap-2.5">
+                  {commonCardsRow2.map(renderCard)}
+
+                  {/* Card 6: See More Type */}
+                  <TouchableOpacity
+                    onPress={() => setShowTripTypeModal(true)}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="See more trip types"
+                    className="flex-1 min-h-[96px] py-3 px-1.5 rounded-2xl items-center justify-center border"
+                    style={[
+                      {
+                        borderColor: isOtherSelected ? colors.primary : "#E5E7EB",
+                        backgroundColor: isOtherSelected ? `${colors.primary}12` : "#FFFFFF",
+                      },
+                    ]}
+                  >
+                    <View className="items-center justify-center">
+                      {isOtherSelected ? (
+                        <TripIcon type={formik.values.type} size={22} showIconOnly={true} />
+                      ) : (
+                        <View
+                          className="rounded-full p-1.5"
+                        >
+                          <Icon name="grid-view" size={22} color={colors.primary} />
+                        </View>
+                      )}
+                      <Text
+                        numberOfLines={2}
+                        className="text-xs font-semibold text-center mt-2 opacity-80"
+                        style={{ color: isOtherSelected ? "#344054" : "#374151" }}
+                      >
+                        {isOtherSelected ? getTripTypeLabel(formik.values.type) : "See More"}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          })()}
+        </View>
+
+        <TripTypeLookupModal
+          visible={showTripTypeModal}
+          onClose={() => setShowTripTypeModal(false)}
+          selectedType={formik.values.type}
+          onSelect={(type) => {
+            formik.setFieldValue("type", type);
+          }}
+        />
+
+        {/* {mode === "edit" && (
+          <View className="mb-5 z-10">
+            <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
           </View>
         )} */}
 
@@ -403,381 +750,9 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           )}
         </View>
 
-        <View className="mb-5">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-xs font-semibold tracking-wider uppercase">
-              Trip Destinations <Text className="text-red-500 text-lg">*</Text>
-            </Text>
-            {formik.values.tripDestinations && formik.values.tripDestinations.length > 0 && (
-              <TouchableOpacity
-                onPress={handleOpenDestinationSelect}
-                disabled={isSaving}
-                activeOpacity={0.7}
-                className="flex-row items-center gap-1 py-1 px-3 rounded-lg bg-primary/10 border border-primary/30 "
-                accessibilityRole="button"
-                accessibilityLabel="Add another destination"
-              >
-                <Icon name="add-location-alt" size={14} color={colors.primary} />
-                <Text style={{ color: colors.primary }} className="text-xs font-bold">
-                  Add more Destination
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Selected Destination Tags */}
-          {formik.values.tripDestinations && formik.values.tripDestinations.length > 0 ? (
-            <View className="flex-row flex-wrap gap-2 mb-2">
-              {formik.values.tripDestinations.map((item: TripDestinationDto, index: number) => (
-                <View
-                  key={`${item.destination}-${index}`}
-                  className="flex-row items-center bg-white border border-[#E0E0E0] rounded-full py-2 pl-3 pr-2 shadow-xs"
-                >
-                  <Icon name="place" size={15} color={colors.primary} style={{ marginRight: 4 }} />
-                  <Text className="text-sm font-semibold text-[#101828] mr-2" numberOfLines={1}>
-                    {item.destination}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={() => handleRemoveDestination(index)}
-                    disabled={isSaving}
-                    activeOpacity={0.7}
-                    className="w-5 h-5 rounded-full bg-gray-300/70 items-center justify-center"
-                    accessibilityRole="button"
-                    accessibilityLabel={`Remove ${item.destination}`}
-                  >
-                    <Icon name="close" size={12} color="#475467" />
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          ) : (
-            /* Empty state: Search input button */
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={handleOpenDestinationSelect}
-              disabled={isSaving}
-              accessibilityRole="button"
-              accessibilityLabel="Select trip destination"
-            >
-              <View pointerEvents="none">
-                <TextInput
-                  mode="outlined"
-                  className="h-7xl"
-                  placeholder="Search place or country"
-                  value=""
-                  editable={false}
-                  error={formik.touched.tripDestinations && Boolean(formik.errors.tripDestinations)}
-                  outlineColor="#E0E0E0"
-                  activeOutlineColor="#263F69"
-                  left={<TextInput.Icon icon="map-marker" color="#999" />}
-                  theme={{
-                    colors: {
-                      onSurfaceVariant: "#98A2B3",
-                    },
-                  }}
-                  outlineStyle={{
-                    borderWidth: 1,
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: 16,
-                  }}
-                  style={{
-                    marginTop: 4,
-                    height: 64,
-                  }}
-                  contentStyle={{
-                    backgroundColor: "transparent",
-                  }}
-                />
-              </View>
-            </TouchableOpacity>
-          )}
-
-          {/* Validation error */}
-          {formik.touched.tripDestinations && formik.errors.tripDestinations && (
-            <View className="flex flex-row items-center mt-1">
-              <Icon name="info-outline" size={14} color="#fb2c36" />
-              <Text className="text-red-500 text-xs ml-1">
-                {typeof formik.errors.tripDestinations === "string"
-                  ? (formik.errors.tripDestinations as string)
-                  : "At least one destination is required"}
-              </Text>
-            </View>
-          )}
-
-          {/* Multi-destination Map Preview */}
-          {(() => {
-            const validDestinations = (formik.values.tripDestinations || []).filter(
-              (d: TripDestinationDto) =>
-                d.destinationData?.coordinates &&
-                (d.destinationData.coordinates.latitude !== 0 || d.destinationData.coordinates.longitude !== 0)
-            );
-
-            if (validDestinations.length === 0) return null;
-
-            let mapUrl: string;
-            if (validDestinations.length === 1) {
-              const destObj = validDestinations[0];
-              const { longitude, latitude } = destObj.destinationData!.coordinates;
-              const zoom = getDestinationZoom(destObj.destination, destObj.destinationData);
-              mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},${zoom},0/600x260?access_token=${MAPBOX_ACCESS_TOKEN}`;
-            } else {
-              const pins = validDestinations
-                .slice(0, 5)
-                .map((d: TripDestinationDto) => {
-                  const c = d.destinationData!.coordinates;
-                  return `pin-s+263F69(${c.longitude},${c.latitude})`;
-                })
-                .join(",");
-              mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pins}/auto/600x260?padding=40,40,40,40&access_token=${MAPBOX_ACCESS_TOKEN}`;
-            }
-
-            return (
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={handleOpenDestinationSelect}
-                disabled={isSaving}
-                className="mt-2"
-                accessibilityRole="button"
-                accessibilityLabel="Add or view trip destinations on map"
-              >
-                <View className="rounded-2xl overflow-hidden shadow-xs border border-[#EAECF0]">
-                  <Image
-                    source={{ uri: mapUrl }}
-                    style={{ width: "100%", height: 140, borderRadius: 16 }}
-                    resizeMode="cover"
-                  />
-                  <View
-                    className="absolute bottom-2 left-2 px-3 py-1 rounded-xl flex-row items-center"
-                    style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
-                  >
-                    <Icon name="location-on" size={14} color="#FFF" />
-                    <Text className="text-white text-xs ml-1 font-medium">
-                      {validDestinations.length === 1
-                        ? validDestinations[0].destination
-                        : `${validDestinations.length} destinations`}
-                    </Text>
-                  </View>
-                  <View
-                    className="absolute top-2 right-2 px-2.5 py-1 rounded-full flex-row items-center gap-1"
-                    style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
-                  >
-                    <Icon name="add" size={12} color="#FFF" />
-                    <Text className="text-white text-[10px] font-semibold">Tap to add</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })()}
-        </View>
-
-
-        <View className="mb-3">
-          <View className="flex-row items-center justify-between mb-1">
-            <Text className="text-xs font-semibold tracking-wider uppercase">Travel dates</Text>
-            {isDayTour && (
-              <View className="bg-blue-50 border border-accent/80 rounded-full px-2 mr-2 opacity-50">
-                <Text className="text-accent text-[10px] font-bold uppercase tracking-wider">Day Trip</Text>
-              </View>
-            )}
-          </View>
-          <View className="flex-row mb-2 gap-1 -mt-3px items-center">
-            <View className="flex-1">
-              <View className="relative mt-sm">
-                <TextInput
-                  mode="outlined"
-                  label={`${!formik.values.startOrDepartureDate ? "Departure" : ""}`}
-                  value={formattedStartDate}
-                  editable={false}
-                  left={<TextInput.Icon icon="calendar" color="#999" />}
-                  right={formik.values.startOrDepartureDate ? <TextInput.Icon icon="close" onPress={() => {
-                    formik.setFieldValue("startOrDepartureDate", null);
-                    formik.setFieldValue("endOrReturnDate", null);
-                  }} /> : null}
-                  outlineColor="#E0E0E0"
-                  activeOutlineColor="#263F69"
-                  theme={{
-                    colors: {
-                      onSurfaceVariant: '#98A2B3',
-                    },
-                  }}
-                  outlineStyle={{
-                    borderWidth: 1,
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: 16,
-                  }}
-                  style={{
-                    height: 64,
-                    marginTop: formik.values.startOrDepartureDate ? 0 : -6,
-                  }}
-                  contentStyle={{
-                    backgroundColor: "transparent",
-                  }}
-                />
-                <TouchableOpacity
-                  style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
-                  onPress={() => {
-                    setShowStartDatePicker(true);
-                  }}
-                  activeOpacity={0.6}
-                  accessibilityRole="button"
-                  accessibilityLabel="Open calendar range selector"
-                />
-              </View>
-              <TravelDateModal
-                visible={showStartDatePicker}
-                onClose={() => setShowStartDatePicker(false)}
-                initialStartDate={formik.values.startOrDepartureDate}
-                initialEndDate={formik.values.endOrReturnDate}
-                tripData={tripData}
-                mode={mode}
-                onConfirm={(startDate, endDate) => {
-                  formik.setFieldValue("startOrDepartureDate", startDate);
-                  formik.setFieldValue("endOrReturnDate", endDate);
-                  setShowStartDatePicker(false);
-                  if (mode === "create" && !formik.values.type) {
-                    setTimeout(() => {
-                      setShowTripTypeModal(true);
-                    }, 300);
-                  }
-                }}
-              />
-            </View>
-            {!isDayTour && (
-              <>
-                <Icon name="arrow-forward" size={24} color="#999" className="mt-sm" />
-                <View className="flex-1">
-                  <View className="relative mt-sm">
-                    <TextInput
-                      mode="outlined"
-                      label={`${!formik.values.endOrReturnDate ? "Return" : ""}`}
-                      value={formattedEndDate}
-                      editable={false}
-                      left={<TextInput.Icon icon="calendar" color="#999" />}
-                      right={formik.values.endOrReturnDate ? <TextInput.Icon icon="close" onPress={() => formik.setFieldValue("endOrReturnDate", null)} /> : null}
-                      outlineColor="#E0E0E0"
-                      activeOutlineColor="#263F69"
-                      theme={{
-                        colors: {
-                          onSurfaceVariant: '#98A2B3',
-                        },
-                      }}
-                      outlineStyle={{
-                        borderWidth: 1,
-                        backgroundColor: "#FFFFFF",
-                        borderRadius: 16,
-                      }}
-                      style={{
-                        height: 64,
-                        marginTop: formik.values.endOrReturnDate ? 0 : -6,
-                      }}
-                      contentStyle={{
-                        backgroundColor: "transparent",
-                      }}
-                    />
-                    <TouchableOpacity
-                      style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 50, zIndex: 20 }}
-                      onPress={() => {
-                        setShowStartDatePicker(true);
-                      }}
-                      activeOpacity={0.6}
-                      accessibilityRole="button"
-                      accessibilityLabel="Open calendar range selector"
-                    />
-                  </View>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-
-        {!tripData && (
-          <View className="flex-row items-start mb-6 mr-5"
-            style={{ opacity: !formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 0.5 : 1 }}>
-            <Checkbox
-              status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
-              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
-              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-              color="#263F69"
-            />
-            <TouchableOpacity
-              activeOpacity={0.7}
-              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
-            >
-              <Text className={`mt-1 text-lg text-gray-700`}>
-                Generate sections
-              </Text>
-
-              <Text className={`text-base text-gray-400`}>
-                When checked it will create itinerary sections based on dates. Travel dates should be set to create.
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
 
         <View className="mb-5">
-          <Text className="text-xs font-semibold tracking-wider uppercase">Trip Type</Text>
-          <Text className={`text-md text-gray-400`}>
-            Type helps organize activities and recommendations.
-          </Text>
-          <View className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white mt-1 flex-row items-center justify-between">
-            <TouchableOpacity
-              onPress={() => setShowTripTypeModal(true)}
-              className="flex-1 flex-row items-center gap-3 px-4 py-4"
-              accessibilityRole="button"
-              activeOpacity={0.7}
-            >
-              {formik.values.type != null && formik.values.type !== TripType.none ? (
-                <TripIcon type={formik.values.type} size={24} showIconOnly={true} />
-              ) : (
-                <Icon name="style" size={24} color={"#B3B3B3"} />
-              )}
-              {formik.values.type != null && formik.values.type !== TripType.none
-                ? (
-                  <Text className="text-lg text-[#000000] capitalize">
-                    {String(TripType[formik.values.type]).replace(/([A-Z])/g, ' $1').trim()}
-                  </Text>
-                )
-                : (
-                  <Text className="text-lg text-[#98A2B3]">
-                    Select travel purpose
-                  </Text>
-                )}
-            </TouchableOpacity>
-            {formik.values.type != null && formik.values.type !== TripType.none && (
-              <TouchableOpacity
-                onPress={() => formik.setFieldValue("type", TripType.none)}
-                accessibilityRole="button"
-                accessibilityLabel="Clear travel type"
-                className="pr-4 py-4 pl-2 justify-center items-center"
-                activeOpacity={0.7}
-              >
-                <Icon name="close" size={20} color={colors.onSurfaceVariant} />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        <TripTypeLookupModal
-          visible={showTripTypeModal}
-          onClose={() => setShowTripTypeModal(false)}
-          selectedType={formik.values.type}
-          onSelect={(type) => {
-            formik.setFieldValue("type", type);
-          }}
-        />
-
-        {/* {mode === "edit" && (
-          <View className="mb-5 z-10">
-            <CheckboxGroup initialOptions={destinationTypeOptions} title="Type of Destination" />
-          </View>
-        )} */}
-
-
-
-        <View className="mb-5">
-          <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
+          {/* <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text> */}
           <DescriptionInput
             value={formik.values.description}
             onChange={(text) => formik.setFieldValue("description", text)}
@@ -821,24 +796,24 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                 disabled={isSaving}
               />
             </View>
-
-
           </>
         )}
 
-      </ScrollView>
-
-      {!hideSubmitButton && (
         <View className="mb-8 mt-2 mx-4 bg-red-50">
           <TouchButton
-            buttonText={isSaving ? "Saving..." : mode === "create" ? "Create trip" : "Update Changes"}
+            buttonText={isSaving ? "Saving..." : mode === "create" ? "Create Trip" : "Update Changes"}
             icon={mode === "create" ? "add" : ""}
             onPress={() => formik.handleSubmit()}
             disabled={!formik.values.title.trim() || isSaving}
             className="h-7xl p-6"
+            labelClassName="text-xl"
           />
         </View>
-      )}
+      </ScrollView>
+      {/* 
+      {!hideSubmitButton && (
+       
+      )} */}
     </View>
   );
 });

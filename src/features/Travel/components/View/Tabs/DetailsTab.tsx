@@ -4,7 +4,7 @@ import { ScrollView, TouchableOpacity, View, Text } from "react-native";
 import { useTheme } from "react-native-paper";
 import Svg, { Circle, G } from "react-native-svg";
 import ActivityIcon from "../../../../../components/ActivityIcon";
-import { ActivityType, ExpenseCategory, TripType, getActivityTypeLabel } from "../../../../../types/enums";
+import { ActivityType, ExpenseCategory, TripType, getActivityTypeLabel, getTripTypeLabel } from "../../../../../types/enums";
 import TripIcon from "../../../../../components/TripIcon";
 import { TravelPlan } from "../../../../Travel/types/TravelDto";
 import { useChecklistGroups, useChecklistItems } from "../../../hooks/useChecklist";
@@ -242,8 +242,8 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
                 {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
                   <View className="flex-row items-center gap-2">
                     <TripIcon type={travelPlan.travel.type} size={34} showIconOnly />
-                    <Text className="text-base font-bold text-[#1A1A1A] capitalize">
-                      {String(TripType[travelPlan.travel.type]).replace(/([A-Z])/g, " $1").trim()}
+                    <Text className="text-base font-bold text-[#1A1A1A]">
+                      {getTripTypeLabel(travelPlan.travel.type)}
                     </Text>
                   </View>
                 )}

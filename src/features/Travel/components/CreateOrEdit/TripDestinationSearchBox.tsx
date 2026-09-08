@@ -4,44 +4,29 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
+  ScrollView,
   ActivityIndicator,
   Keyboard,
-  Platform,
-  LayoutAnimation,
 } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 // @ts-ignore
-import { GOOGLE_MAPS_API_KEY as ENV_GOOGLE_KEY, MAPBOX_ACCESS_TOKEN as ENV_MAPBOX_TOKEN } from "@env";
+import { GOOGLE_MAPS_API_KEY as ENV_GOOGLE_KEY } from "@env";
 import { DestinationDto, TripDestinationDto } from "../../types/TravelDto";
-import { StaggerItem } from "../../../../components/animations";
 
-// Default Fallback Keys & Endpoints
+// Google Maps API Key
 const DEFAULT_GOOGLE_KEY =
   ENV_GOOGLE_KEY ||
   process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ||
   process.env.GOOGLE_MAPS_API_KEY ||
   "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao";
 
-const MAPBOX_ACCESS_TOKEN =
-  ENV_MAPBOX_TOKEN ||
-  process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ||
-  process.env.MAPBOX_ACCESS_TOKEN ||
-  "";
-
-// Google Places API (New) endpoints
+// Google Maps Endpoints (New & Legacy)
 const GOOGLE_NEW_AUTOCOMPLETE_URL = "https://places.googleapis.com/v1/places:autocomplete";
+const GOOGLE_NEW_SEARCH_TEXT_URL = "https://places.googleapis.com/v1/places:searchText";
 const GOOGLE_NEW_DETAILS_BASE_URL = "https://places.googleapis.com/v1/places";
-
-// Legacy Google Places endpoints (fallback)
 const GOOGLE_LEGACY_AUTOCOMPLETE_URL = "https://maps.googleapis.com/maps/api/place/autocomplete/json";
 const GOOGLE_LEGACY_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json";
-
-// Mapbox & OSM fallback endpoints
-const MAPBOX_SEARCHBOX_URL = "https://api.mapbox.com/search/searchbox/v1/forward";
-const NOMINATIM_SEARCH_URL = "https://nominatim.openstreetmap.org/search";
-const NOMINATIM_USER_AGENT = "Travee-App/1.0 (contact@travee.app)";
 
 export interface DestinationSearchResultItem {
   id: string;
@@ -50,11 +35,17 @@ export interface DestinationSearchResultItem {
   secondaryText?: string;
   fullAddress: string;
   types?: string[];
-  source: "google_new" | "google" | "mapbox" | "osm";
+  source: "google_new" | "google_text" | "google_legacy";
   coordinates?: {
     latitude: number;
     longitude: number;
   };
+  country?: string;
+}
+
+export interface TripDestinationSearchBoxRef {
+  focus: () => void;
+  clear: () => void;
 }
 
 export interface TripDestinationSearchBoxProps {
@@ -90,10 +81,7 @@ const getPlaceTypeIcon = (types?: string[]): keyof typeof Icon.glyphMap => {
   ) {
     return "location-city";
   }
-  if (
-    typeStr.includes("airport") ||
-    typeStr.includes("flight")
-  ) {
+  if (typeStr.includes("airport") || typeStr.includes("flight")) {
     return "flight";
   }
   if (
@@ -108,13 +96,25 @@ const getPlaceTypeIcon = (types?: string[]): keyof typeof Icon.glyphMap => {
   return "place";
 };
 
-export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> = ({
+export const TripDestinationSearchBox = React.forwardRef<
+  TripDestinationSearchBoxRef,
+  TripDestinationSearchBoxProps
+>(({
   onSelect,
   placeholder = "Search place, city, or country",
   disabled = false,
-}) => {
+}, ref) => {
   const { colors } = useTheme();
   const inputRef = useRef<TextInput>(null);
+
+  React.useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    },
+    clear: () => {
+      handleClear();
+    },
+  }));
 
   const [query, setQuery] = useState<string>("");
   const [predictions, setPredictions] = useState<DestinationSearchResultItem[]>([]);
@@ -136,78 +136,118 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
     };
   }, []);
 
-  // Mapbox and OSM Fallback Search
-  const fetchFallbackPredictions = async (
+  // 1. Google Places API (New) Autocomplete
+  const searchGooglePlacesNew = async (
     searchText: string,
     signal: AbortSignal
   ): Promise<DestinationSearchResultItem[]> => {
-    // 1. Try Mapbox SearchBox API
-    if (MAPBOX_ACCESS_TOKEN) {
-      try {
-        const mbUrl = `${MAPBOX_SEARCHBOX_URL}?q=${encodeURIComponent(
-          searchText
-        )}&access_token=${MAPBOX_ACCESS_TOKEN}&types=country,region,place,locality&limit=6&language=en`;
-
-        const res = await fetch(mbUrl, { signal });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.features && data.features.length > 0) {
-            return data.features.map((f: any) => {
-              const props = f.properties || {};
-              const geom = f.geometry || {};
-              const lng = Array.isArray(geom.coordinates)
-                ? geom.coordinates[0]
-                : props.coordinates?.longitude ?? 0;
-              const lat = Array.isArray(geom.coordinates)
-                ? geom.coordinates[1]
-                : props.coordinates?.latitude ?? 0;
-
-              return {
-                id: props.mapbox_id || f.id || Math.random().toString(),
-                placeId: props.mapbox_id || f.id,
-                name: props.name || f.text || props.full_address?.split(",")[0] || "Location",
-                secondaryText: props.place_formatted || props.full_address,
-                fullAddress: props.full_address || props.place_formatted || props.name || "",
-                types: props.feature_type ? [props.feature_type] : ["geocode"],
-                source: "mapbox" as const,
-                coordinates: { latitude: lat, longitude: lng },
-              };
-            });
-          }
-        }
-      } catch (err: any) {
-        if (err?.name === "AbortError") throw err;
-      }
-    }
-
-    // 2. Try Nominatim (OSM) Fallback
+    if (!activeApiKey) return [];
     try {
-      const osmUrl = `${NOMINATIM_SEARCH_URL}?q=${encodeURIComponent(
-        searchText
-      )}&format=json&addressdetails=1&limit=6&accept-language=en`;
+      const bodyPayload = {
+        input: searchText,
+        sessionToken: sessionTokenRef.current,
+      };
 
-      const res = await fetch(osmUrl, {
-        headers: { "User-Agent": NOMINATIM_USER_AGENT, Accept: "application/json" },
+      const res = await fetch(GOOGLE_NEW_AUTOCOMPLETE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": activeApiKey,
+          "X-Goog-FieldMask": "suggestions.placePrediction",
+        },
+        body: JSON.stringify(bodyPayload),
         signal,
       });
+
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          return data.map((item: any) => {
-            const lat = parseFloat(item.lat);
-            const lng = parseFloat(item.lon);
-            const name = item.name || item.display_name.split(",")[0];
-            const secondary = item.display_name.split(",").slice(1).join(",").trim();
+        if (data.suggestions && data.suggestions.length > 0) {
+          return data.suggestions
+            .filter((s: any) => s.placePrediction)
+            .map((s: any) => {
+              const p = s.placePrediction;
+              const name =
+                p.structuredFormat?.mainText?.text ||
+                p.text?.text?.split(",")[0] ||
+                "Location";
+              const secondary =
+                p.structuredFormat?.secondaryText?.text ||
+                p.text?.text?.split(",").slice(1).join(",").trim() ||
+                "";
+              return {
+                id: p.placeId || Math.random().toString(),
+                placeId: p.placeId,
+                name,
+                secondaryText: secondary,
+                fullAddress: p.text?.text || name,
+                types: p.types || [],
+                source: "google_new" as const,
+              };
+            });
+        }
+      }
+    } catch (err: any) {
+      if (err?.name === "AbortError") throw err;
+    }
+    return [];
+  };
+
+  // 2. Google Places API (New) Text Search - provides immediate coordinates and rich details
+  const searchGooglePlacesText = async (
+    searchText: string,
+    signal: AbortSignal
+  ): Promise<DestinationSearchResultItem[]> => {
+    if (!activeApiKey) return [];
+    try {
+      const bodyPayload = {
+        textQuery: searchText,
+        pageSize: 10,
+      };
+
+      const res = await fetch(GOOGLE_NEW_SEARCH_TEXT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": activeApiKey,
+          "X-Goog-FieldMask":
+            "places.id,places.displayName,places.formattedAddress,places.location,places.addressComponents,places.types",
+        },
+        body: JSON.stringify(bodyPayload),
+        signal,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.places && data.places.length > 0) {
+          return data.places.map((p: any) => {
+            let country = "";
+            if (Array.isArray(p.addressComponents)) {
+              p.addressComponents.forEach((c: any) => {
+                if (c.types?.includes("country")) {
+                  country = c.longText || c.shortText || "";
+                }
+              });
+            }
+
+            const name =
+              p.displayName?.text || p.formattedAddress?.split(",")[0] || "Location";
+            const secondary = p.formattedAddress?.split(",").slice(1).join(",").trim() || "";
 
             return {
-              id: String(item.place_id),
-              placeId: String(item.place_id),
+              id: p.id || Math.random().toString(),
+              placeId: p.id,
               name,
-              secondaryText: secondary || item.display_name,
-              fullAddress: item.display_name,
-              types: [item.type, item.class].filter(Boolean),
-              source: "osm" as const,
-              coordinates: { latitude: lat, longitude: lng },
+              secondaryText: secondary,
+              fullAddress: p.formattedAddress || name,
+              types: p.types || [],
+              source: "google_text" as const,
+              coordinates: p.location
+                ? {
+                  latitude: p.location.latitude,
+                  longitude: p.location.longitude,
+                }
+                : undefined,
+              country,
             };
           });
         }
@@ -215,11 +255,42 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
     } catch (err: any) {
       if (err?.name === "AbortError") throw err;
     }
-
     return [];
   };
 
-  // Autocomplete search implementation
+  // 3. Legacy Google Places Autocomplete fallback
+  const searchGooglePlacesLegacy = async (
+    searchText: string,
+    signal: AbortSignal
+  ): Promise<DestinationSearchResultItem[]> => {
+    if (!activeApiKey) return [];
+    try {
+      const url = `${GOOGLE_LEGACY_AUTOCOMPLETE_URL}?input=${encodeURIComponent(
+        searchText
+      )}&key=${activeApiKey}&sessiontoken=${sessionTokenRef.current}&language=en`;
+
+      const response = await fetch(url, { signal });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === "OK" && data.predictions) {
+          return data.predictions.map((p: any) => ({
+            id: p.place_id,
+            placeId: p.place_id,
+            name: p.structured_formatting?.main_text || p.description.split(",")[0],
+            secondaryText: p.structured_formatting?.secondary_text,
+            fullAddress: p.description,
+            types: p.types,
+            source: "google_legacy" as const,
+          }));
+        }
+      }
+    } catch (err: any) {
+      if (err?.name === "AbortError") throw err;
+    }
+    return [];
+  };
+
+  // Autocomplete search using Google Maps API (Max 10 results)
   const performSearch = useCallback(
     async (searchText: string) => {
       const clean = searchText.trim();
@@ -237,97 +308,62 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
 
       setIsLoading(true);
 
-      // --- 1. Try Google Places API (New) ---
-      if (activeApiKey) {
-        try {
-          const bodyPayload: any = {
-            input: clean,
-            sessionToken: sessionTokenRef.current,
-            includedPrimaryTypes: ["locality", "country", "administrative_area_level_1", "administrative_area_level_2"],
-          };
-
-          const newRes = await fetch(GOOGLE_NEW_AUTOCOMPLETE_URL, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Goog-Api-Key": activeApiKey,
-              "X-Goog-FieldMask": "suggestions.placePrediction",
-            },
-            body: JSON.stringify(bodyPayload),
-            signal: controller.signal,
-          });
-
-          if (newRes.ok) {
-            const data = await newRes.json();
-            if (data.suggestions && data.suggestions.length > 0) {
-              const parsed: DestinationSearchResultItem[] = data.suggestions
-                .filter((s: any) => s.placePrediction)
-                .map((s: any) => {
-                  const p = s.placePrediction;
-                  const name =
-                    p.structuredFormat?.mainText?.text ||
-                    p.text?.text?.split(",")[0] ||
-                    "Location";
-                  const secondary =
-                    p.structuredFormat?.secondaryText?.text ||
-                    p.text?.text?.split(",").slice(1).join(",").trim() ||
-                    "";
-                  return {
-                    id: p.placeId || Math.random().toString(),
-                    placeId: p.placeId,
-                    name,
-                    secondaryText: secondary,
-                    fullAddress: p.text?.text || name,
-                    types: p.types || [],
-                    source: "google_new" as const,
-                  };
-                });
-              setPredictions(parsed);
-              setIsExpanded(true);
-              setIsLoading(false);
-              return;
-            }
-          }
-        } catch (err: any) {
-          if (err?.name === "AbortError") return;
-        }
-      }
-
-      // --- 2. Try Legacy Google Places Autocomplete API (type: (regions) or geocode) ---
-      if (activeApiKey) {
-        try {
-          const url = `${GOOGLE_LEGACY_AUTOCOMPLETE_URL}?input=${encodeURIComponent(
-            clean
-          )}&key=${activeApiKey}&sessiontoken=${sessionTokenRef.current}&types=(regions)&language=en`;
-
-          const response = await fetch(url, { signal: controller.signal });
-          if (response.ok) {
-            const data = await response.json();
-            if (data.status === "OK" && data.predictions) {
-              const parsed: DestinationSearchResultItem[] = data.predictions.map((p: any) => ({
-                id: p.place_id,
-                placeId: p.place_id,
-                name: p.structured_formatting?.main_text || p.description.split(",")[0],
-                secondaryText: p.structured_formatting?.secondary_text,
-                fullAddress: p.description,
-                types: p.types,
-                source: "google" as const,
-              }));
-              setPredictions(parsed);
-              setIsExpanded(true);
-              setIsLoading(false);
-              return;
-            }
-          }
-        } catch (err: any) {
-          if (err?.name === "AbortError") return;
-        }
-      }
-
-      // --- 3. Fallback to Mapbox & OSM ---
       try {
-        const fallbackResults = await fetchFallbackPredictions(clean, controller.signal);
-        setPredictions(fallbackResults);
+        // Step 1: Run Google Places Autocomplete (New) and Google Places Text Search (New) in parallel
+        // Autocomplete provides fast prefix predictions (up to 5)
+        // Text Search with pageSize: 10 provides full matches and direct coordinates (up to 10)
+        const [autocompleteResults, textResults] = await Promise.all([
+          searchGooglePlacesNew(clean, controller.signal).catch(() => [] as DestinationSearchResultItem[]),
+          searchGooglePlacesText(clean, controller.signal).catch(() => [] as DestinationSearchResultItem[]),
+        ]);
+
+        const combined: DestinationSearchResultItem[] = [];
+        const seenIds = new Set<string>();
+        const seenNames = new Set<string>();
+
+        // Add Autocomplete results first, augmenting with coordinates from Text Search if matched
+        for (const item of autocompleteResults) {
+          const key = item.placeId || item.id;
+          const nameKey = item.name.toLowerCase().trim();
+          if (!seenIds.has(key) && !seenNames.has(nameKey)) {
+            seenIds.add(key);
+            seenNames.add(nameKey);
+            const matchingText = textResults.find(
+              (t) => (t.placeId && t.placeId === item.placeId) || t.name.toLowerCase().trim() === nameKey
+            );
+            combined.push(matchingText ? { ...item, ...matchingText } : item);
+          }
+        }
+
+        // Add remaining Text Search results up to 10
+        for (const item of textResults) {
+          const key = item.placeId || item.id;
+          const nameKey = item.name.toLowerCase().trim();
+          if (!seenIds.has(key) && !seenNames.has(nameKey)) {
+            seenIds.add(key);
+            seenNames.add(nameKey);
+            combined.push(item);
+          }
+          if (combined.length >= 10) break;
+        }
+
+        if (combined.length > 0) {
+          setPredictions(combined.slice(0, 10));
+          setIsExpanded(true);
+          setIsLoading(false);
+          return;
+        }
+
+        // Step 2: Try Legacy Google Places Autocomplete fallback (up to 10)
+        const legacyResults = await searchGooglePlacesLegacy(clean, controller.signal);
+        if (legacyResults.length > 0) {
+          setPredictions(legacyResults.slice(0, 10));
+          setIsExpanded(true);
+          setIsLoading(false);
+          return;
+        }
+
+        setPredictions([]);
         setIsExpanded(true);
       } catch (err: any) {
         if (err?.name === "AbortError") return;
@@ -359,12 +395,12 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
     }, 320);
   };
 
-  // Convert resolved details to TripDestinationDto
+  // Convert selected Google Maps result to TripDestinationDto
   const handleSelectPrediction = async (item: DestinationSearchResultItem) => {
     setIsSelectingId(item.id);
 
     try {
-      // 1. If coordinates already available
+      // 1. If coordinates already resolved from Google Places Text Search
       if (
         item.coordinates &&
         typeof item.coordinates.latitude === "number" &&
@@ -375,7 +411,7 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
           destinationData: {
             id: item.placeId,
             city: item.name,
-            country: item.secondaryText?.split(",").pop()?.trim() || "",
+            country: item.country || item.secondaryText?.split(",").pop()?.trim() || "",
             coordinates: {
               latitude: item.coordinates.latitude,
               longitude: item.coordinates.longitude,
@@ -386,15 +422,14 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
         setQuery("");
         setPredictions([]);
         setIsExpanded(false);
-        inputRef.current?.blur();
-        Keyboard.dismiss();
         sessionTokenRef.current = generateSessionToken();
         onSelect(destinationDto);
+        inputRef.current?.focus();
         return;
       }
 
-      // 2. Google Places API (New) Details Request
-      if (activeApiKey && (item.source === "google_new" || item.source === "google")) {
+      // 2. Fetch details from Google Places API (New) Details
+      if (activeApiKey) {
         try {
           const newDetailsUrl = `${GOOGLE_NEW_DETAILS_BASE_URL}/${encodeURIComponent(
             item.placeId
@@ -404,7 +439,7 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
               "Content-Type": "application/json",
               "X-Goog-Api-Key": activeApiKey,
               "X-Goog-FieldMask": "id,displayName,formattedAddress,location,addressComponents",
-              "sessionToken": sessionTokenRef.current,
+              sessionToken: sessionTokenRef.current,
             },
           });
 
@@ -441,10 +476,9 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
               setQuery("");
               setPredictions([]);
               setIsExpanded(false);
-              inputRef.current?.blur();
-              Keyboard.dismiss();
               sessionTokenRef.current = generateSessionToken();
               onSelect(destinationDto);
+              inputRef.current?.focus();
               return;
             }
           }
@@ -453,83 +487,60 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
         }
       }
 
-      // 3. Legacy Google Places Details Request
+      // 3. Fetch details from Legacy Google Places Details
       if (activeApiKey) {
-        const detailsUrl = `${GOOGLE_LEGACY_DETAILS_URL}?place_id=${encodeURIComponent(
-          item.placeId
-        )}&fields=place_id,name,formatted_address,geometry,address_components&key=${activeApiKey}&sessiontoken=${sessionTokenRef.current}`;
+        try {
+          const detailsUrl = `${GOOGLE_LEGACY_DETAILS_URL}?place_id=${encodeURIComponent(
+            item.placeId
+          )}&fields=place_id,name,formatted_address,geometry,address_components&key=${activeApiKey}&sessiontoken=${sessionTokenRef.current}`;
 
-        const response = await fetch(detailsUrl);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.status === "OK" && data.result?.geometry?.location) {
-            const res = data.result;
-            let country = "";
-            let city = res.name || item.name;
+          const response = await fetch(detailsUrl);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.status === "OK" && data.result?.geometry?.location) {
+              const res = data.result;
+              let country = "";
+              let city = res.name || item.name;
 
-            if (Array.isArray(res.address_components)) {
-              res.address_components.forEach((c: any) => {
-                if (c.types?.includes("country")) {
-                  country = c.long_name || c.short_name || "";
-                }
-                if (c.types?.includes("locality")) {
-                  city = c.long_name || c.short_name || city;
-                }
-              });
+              if (Array.isArray(res.address_components)) {
+                res.address_components.forEach((c: any) => {
+                  if (c.types?.includes("country")) {
+                    country = c.long_name || c.short_name || "";
+                  }
+                  if (c.types?.includes("locality")) {
+                    city = c.long_name || c.short_name || city;
+                  }
+                });
+              }
+
+              const destinationDto: TripDestinationDto = {
+                destination: res.name || item.name,
+                destinationData: {
+                  id: res.place_id || item.placeId,
+                  city: city,
+                  country: country || item.secondaryText?.split(",").pop()?.trim() || "",
+                  coordinates: {
+                    latitude: res.geometry.location.lat,
+                    longitude: res.geometry.location.lng,
+                  },
+                } as DestinationDto,
+              };
+
+              setQuery("");
+              setPredictions([]);
+              setIsExpanded(false);
+              sessionTokenRef.current = generateSessionToken();
+              onSelect(destinationDto);
+              inputRef.current?.focus();
+              return;
             }
-
-            const destinationDto: TripDestinationDto = {
-              destination: res.name || item.name,
-              destinationData: {
-                id: res.place_id || item.placeId,
-                city: city,
-                country: country || item.secondaryText?.split(",").pop()?.trim() || "",
-                coordinates: {
-                  latitude: res.geometry.location.lat,
-                  longitude: res.geometry.location.lng,
-                },
-              } as DestinationDto,
-            };
-
-            setQuery("");
-            setPredictions([]);
-            setIsExpanded(false);
-            inputRef.current?.blur();
-            Keyboard.dismiss();
-            sessionTokenRef.current = generateSessionToken();
-            onSelect(destinationDto);
-            return;
           }
+        } catch {
+          // Fall through
         }
       }
 
-      // 4. Fallback geocode
-      const fallbackResults = await fetchFallbackPredictions(
-        item.fullAddress || item.name,
-        new AbortController().signal
-      );
-      if (fallbackResults.length > 0 && fallbackResults[0].coordinates) {
-        const topFallback = fallbackResults[0];
-        const destinationDto: TripDestinationDto = {
-          destination: item.name,
-          destinationData: {
-            id: item.placeId,
-            city: item.name,
-            country: item.secondaryText?.split(",").pop()?.trim() || "",
-            coordinates: topFallback.coordinates!,
-          } as DestinationDto,
-        };
-        setQuery("");
-        setPredictions([]);
-        setIsExpanded(false);
-        inputRef.current?.blur();
-        Keyboard.dismiss();
-        sessionTokenRef.current = generateSessionToken();
-        onSelect(destinationDto);
-        return;
-      }
-
-      // Basic fallback without coords
+      // 4. Default fallback with placeId
       const fallbackDestination: TripDestinationDto = {
         destination: item.name,
         destinationData: {
@@ -542,10 +553,9 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
       setQuery("");
       setPredictions([]);
       setIsExpanded(false);
-      inputRef.current?.blur();
-      Keyboard.dismiss();
       sessionTokenRef.current = generateSessionToken();
       onSelect(fallbackDestination);
+      inputRef.current?.focus();
     } catch (err) {
       console.warn("[TripDestinationSearchBox] Selection resolution error:", err);
     } finally {
@@ -566,9 +576,9 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
   };
 
   return (
-    <View className="w-full relative z-30">
+    <View className="w-full relative z-30" style={{ zIndex: 100 }}>
       {/* Search Bar Input */}
-      <View className="flex-row items-center h-14 px-3.5 bg-white rounded-2xl border border-gray-200 shadow-xs">
+      <View className="flex-row items-center h-19 px-3.5 bg-white rounded-2xl border-2 border-primary/20 ">
         <Icon name="search" size={20} color={colors.primary} style={{ marginRight: 8 }} />
         <TextInput
           ref={inputRef}
@@ -585,7 +595,7 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
           autoCorrect={false}
           returnKeyType="search"
           onSubmitEditing={() => performSearch(query)}
-          className="flex-1 text-[15px] py-0 text-gray-900"
+          className="flex-1 text-lg py-0 text-gray-900 font-semibold"
           style={{ color: "#101828" }}
         />
         {isLoading && (
@@ -608,42 +618,45 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
 
       {/* Results List Rendered Below the SearchBox */}
       {isExpanded && query.trim().length >= 2 && (
-        <View className="mt-2 bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden max-h-72">
+        <View
+          className="absolute top-20 left-0 right-0 bg-white rounded-2xl "
+          style={{ elevation: 12, zIndex: 999 }}
+        >
           {predictions.length > 0 ? (
-            <FlatList
-              data={predictions}
-              keyExtractor={(item) => `${item.source}-${item.id}`}
-              keyboardShouldPersistTaps="handled"
+            <ScrollView
+              nestedScrollEnabled={true}
+              keyboardShouldPersistTaps="always"
               showsVerticalScrollIndicator={true}
-              renderItem={({ item, index }) => {
+            >
+              {predictions.map((item, index) => {
                 const isSelected = isSelectingId === item.id;
                 const iconName = getPlaceTypeIcon(item.types);
 
                 return (
-                  <TouchableOpacity
-                    onPress={() => handleSelectPrediction(item)}
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Select destination ${item.name}`}
-                    className="py-3 px-3"
-                  >
-                    <StaggerItem index={index}>
+                  <React.Fragment key={`${item.source}-${item.id}`}>
+                    {index > 0 && <View className="h-[1px] bg-gray-100 ml-[44px]" />}
+                    <TouchableOpacity
+                      onPress={() => handleSelectPrediction(item)}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Select destination ${item.name}`}
+                      className="py-3 px-3"
+                    >
                       <View className="flex-row items-center">
                         <View
                           className="w-8 h-8 rounded-xl items-center justify-center mr-2.5"
-                          style={{ backgroundColor: `${colors.primary}12` }}
+                          style={{ backgroundColor: `${colors.primary}10` }}
                         >
                           <Icon name={iconName} size={16} color={colors.primary} />
                         </View>
 
                         <View className="flex-1 mr-2">
                           <Text
-                            className="text-sm font-semibold text-gray-900 leading-4"
-                            numberOfLines={1}
+                            className="text-[18px] font-semibold text-gray-900 leading-4"
                           >
                             {item.name}
                           </Text>
-                          <Text className="text-xs text-gray-500 leading-4 mt-0.5" numberOfLines={1}>
+                          <Text className="text-sm text-gray-500 leading-5 mt-1 " >
                             {item.secondaryText || item.fullAddress}
                           </Text>
                         </View>
@@ -651,19 +664,18 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
                         {isSelected ? (
                           <ActivityIndicator size="small" color={colors.primary} />
                         ) : (
-                          <Icon name="add" size={18} color={colors.primary} />
+                          <Icon name="add" size={20} color={colors.primary} style={{ marginRight: 6 }} />
                         )}
                       </View>
-                    </StaggerItem>
-                  </TouchableOpacity>
+                    </TouchableOpacity>
+                  </React.Fragment>
                 );
-              }}
-              ItemSeparatorComponent={() => <View className="h-[1px] bg-gray-100 ml-[44px]" />}
-            />
+              })}
+            </ScrollView>
           ) : isLoading ? (
             <View className="items-center justify-center py-6">
               <ActivityIndicator size="small" color={colors.primary} />
-              <Text className="text-xs text-gray-500 mt-2 font-medium">Searching destinations...</Text>
+              <Text className="text-base text-gray-500 mt-2 font-medium">Searching Google Maps...</Text>
             </View>
           ) : (
             <View className="items-center justify-center py-6 px-4">
@@ -678,6 +690,6 @@ export const TripDestinationSearchBox: React.FC<TripDestinationSearchBoxProps> =
       )}
     </View>
   );
-};
+});
 
 export default TripDestinationSearchBox;

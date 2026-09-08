@@ -87,28 +87,115 @@ export enum ExpenseCategory {
 }
 
 export enum TripType {
+  vacation = 1,
+  weekendGetaway = 2,
+  roadtrip = 3,
+  beach = 4,
+  staycation = 5,
+  family = 6,
+  solo = 7,
+  honeymoon = 8,
+  backpacking = 9,
+  adventure = 10,
+  foodTrip = 11,
+  cultural = 12,
+  hike = 13,
+  camp = 14,
+  business = 15,
+  cruise = 16,
+  wellness = 17,
+  shopping = 18,
+  festival = 19,
+  concert = 20,
+  photography = 21,
+  diving = 22,
+  winterSports = 23,
+  pilgrimage = 24,
+  event = 25,
+  conference = 26,
+  motorcycleRide = 27,
+  motoCamping = 28,
+  marathon = 29,
+  workshop = 30,
+  forum = 31,
+  symposium = 32,
+  colloquium = 33,
   none = 0,
-  vacation = 13,
-  roadtrip = 15,
-  staycation = 21,
-  family = 17,
-  solo = 16,
-  backpacking = 18,
-  business = 14,
-  hike = 3,
-  camp = 2,
-  event = 4,
-  concert = 5,
-  shopping = 8,
-  cruise = 22,
-  ride = 1,
-  marathon = 6,
-  workshop = 10,
-  forum = 9,
-  symposium = 11,
-  colloquium = 12,
-  motorcycleRide = 19,
-  motoCamping = 20,
+}
+
+export function getTripTypeLabel(type?: TripType | null): string {
+  if (type == null) return "";
+  switch (type) {
+    case TripType.vacation:
+      return "Vacation";
+    case TripType.weekendGetaway:
+      return "Weekend Getaway";
+    case TripType.roadtrip:
+      return "Road Trip";
+    case TripType.beach:
+      return "Beach";
+    case TripType.staycation:
+      return "Staycation";
+    case TripType.family:
+      return "Family";
+    case TripType.solo:
+      return "Solo";
+    case TripType.honeymoon:
+      return "Honeymoon";
+    case TripType.backpacking:
+      return "Backpacking";
+    case TripType.adventure:
+      return "Adventure";
+    case TripType.foodTrip:
+      return "Food Trip";
+    case TripType.cultural:
+      return "Cultural";
+    case TripType.hike:
+      return "Hike";
+    case TripType.camp:
+      return "Camp";
+    case TripType.business:
+      return "Business";
+    case TripType.cruise:
+      return "Cruise";
+    case TripType.wellness:
+      return "Wellness";
+    case TripType.shopping:
+      return "Shopping";
+    case TripType.festival:
+      return "Festival";
+    case TripType.concert:
+      return "Concert";
+    case TripType.photography:
+      return "Photography";
+    case TripType.diving:
+      return "Diving";
+    case TripType.winterSports:
+      return "Winter Sports";
+    case TripType.pilgrimage:
+      return "Pilgrimage";
+    case TripType.event:
+      return "Event";
+    case TripType.conference:
+      return "Conference";
+    case TripType.motorcycleRide:
+      return "Motorcycle Ride";
+    case TripType.motoCamping:
+      return "Moto Camping";
+    case TripType.marathon:
+      return "Marathon";
+    case TripType.workshop:
+      return "Workshop";
+    case TripType.forum:
+      return "Forum";
+    case TripType.symposium:
+      return "Symposium";
+    case TripType.colloquium:
+      return "Colloquium";
+    case TripType.none:
+    default:
+      return "";
+  }
 }
 
 export function getActivityTypeLabel(type: ActivityType): string {

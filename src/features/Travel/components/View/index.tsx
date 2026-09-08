@@ -788,8 +788,8 @@ const ViewTravel = ({
               travelPlan?.travel?.tripDestinations && travelPlan.travel.tripDestinations.length > 0
                 ? travelPlan.travel.tripDestinations
                 : travelPlan?.travel?.destination
-                ? [{ destination: travelPlan.travel.destination, destinationData: travelPlan.travel.destinationData }]
-                : [];
+                  ? [{ destination: travelPlan.travel.destination, destinationData: travelPlan.travel.destinationData }]
+                  : [];
 
             openGoogleSearchModal(
               undefined,
