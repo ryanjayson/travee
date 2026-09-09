@@ -233,7 +233,7 @@ const ActivityTypeLookupModal = ({
             style={[
               { height: "100%" },
               {
-                paddingTop: insets.top + 30,
+                paddingTop: insets.top + 40,
                 // shadowColor: "#000",
                 // shadowOffset: { width: 0, height: -8 },
                 // shadowOpacity: 0.12,
@@ -244,14 +244,19 @@ const ActivityTypeLookupModal = ({
             ]}
           >
             <StatusBar style="dark" />
+            <View className="flex-row items-center justify-end px-7">
+              <TouchableOpacity onPress={handleCancel}>
+                <Icon name="clear" size={28} color={"#fff"} opacity={0.6} />
+              </TouchableOpacity>
+            </View>
 
             {/* Header */}
             <View
               {...(!keyboardVisible && dragPanResponder.panHandlers)}
               className="flex-row justify-between items-center px-7 pb-5 "
-              style={{ paddingTop: 60 }}
+              style={{ paddingTop: 0 }}
             >
-              <View className="flex-col items-start gap-1">
+              <View className="flex-col items-start gap-1 pt-2xl">
                 <Text
                   className="text-4xl  text-primary "
                 >
@@ -263,9 +268,7 @@ const ActivityTypeLookupModal = ({
                   Select type of activity
                 </Text>
               </View>
-              <TouchableOpacity onPress={handleCancel}>
-                <Icon name="clear" size={28} color={"#fff"} opacity={0.6} />
-              </TouchableOpacity>
+
             </View>
 
             {/* Scrollable list */}

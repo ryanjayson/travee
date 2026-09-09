@@ -520,7 +520,6 @@ const ViewTravel = ({
       title: "Details",
       applyFadeAnimation: false,
       content: (
-
         <DetailsTab
           travelPlan={travelPlan}
           onTabChange={setActiveTabId}
