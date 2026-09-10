@@ -56,19 +56,31 @@ export default function DateTime({
 
   const defaultTitle = effectiveActivityType === ActivityType.stay
     ? "Check-In Date & Time"
-    : "Date & Time";
+    : effectiveActivityType === ActivityType.transit
+      ? "Departure & Arrival Date & Time"
+      : effectiveActivityType === ActivityType.rideRental
+        ? "Rental Period"
+        : "Date & Time";
 
-  const defaultDescription = effectiveActivityType === ActivityType.stay
+  const defaultDescription = (effectiveActivityType === ActivityType.stay || effectiveActivityType === ActivityType.transit || effectiveActivityType === ActivityType.rideRental)
     ? null
     : "Plans with date and time are sorted based on their scheduled and cannot be reordered.";
 
   const startDateLabel = effectiveActivityType === ActivityType.stay
     ? "Check-In Date & Time"
-    : "Start Date & Time";
+    : effectiveActivityType === ActivityType.transit
+      ? "Departure Date & Time"
+      : effectiveActivityType === ActivityType.rideRental
+        ? "Pick-Up Date & Time"
+        : "Start Date & Time";
 
   const endDateLabel = effectiveActivityType === ActivityType.stay
     ? "Check-Out Date & Time"
-    : "End Date & Time";
+    : effectiveActivityType === ActivityType.transit
+      ? "Arrival Date & Time"
+      : effectiveActivityType === ActivityType.rideRental
+        ? "Drop-Off Date & Time"
+        : "End Date & Time";
 
   return (
     <View className="mb-5">

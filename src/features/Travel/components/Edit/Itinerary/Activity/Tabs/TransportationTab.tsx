@@ -3,9 +3,28 @@ import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
+import DateTime from "../DateTime";
+import { ActivityType } from "../../../../../../../types/enums";
+import { activityIcons } from "../../../../../../../components/ActivityIcon";
 
-const TRANSPORT_MODES = [
-  "Train", "Bus", "Ferry", "Subway", "Taxi", "Rideshare", "Car", "Shuttle", "Boat", "Tram", "Cable Car",
+export interface TransitModeItem {
+  label: string;
+  icon: keyof typeof Icon.glyphMap;
+}
+
+const TRANSIT_MODES: TransitModeItem[] = [
+  { label: "Train", icon: "train" },
+  { label: "Bus", icon: "directions-bus" },
+  { label: "Subway", icon: "subway" },
+  { label: "Ferry", icon: "directions-boat" },
+  { label: "Taxi", icon: "local-taxi" },
+  { label: "Rideshare", icon: "directions-car" },
+  { label: "Car", icon: "drive-eta" },
+  { label: "Shuttle", icon: "airport-shuttle" },
+  { label: "Boat", icon: "sailing" },
+  { label: "Tram", icon: "tram" },
+  { label: "Cable Car", icon: "cable" },
+  { label: "Bike", icon: "pedal-bike" },
 ];
 
 interface TransportationTabProps {
@@ -18,8 +37,19 @@ interface TransportationTabProps {
   formatTransportationDateTime?: (dateVal: any) => string;
   onOpenPoiModal?: (category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => void;
   onOpenMapPinModal?: (field: string, initialValue?: string) => void;
+  onOpenGoogleSearch?: (target: "operatorProvider" | "pickupLocation" | "dropoffLocation") => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+
+  // DateTime handlers
+  onPressDate?: () => void;
+  onPressTime?: () => void;
+  onClearDate?: () => void;
+  onClearTime?: () => void;
+  onPressEndDate?: () => void;
+  onPressEndTime?: () => void;
+  onClearEndDate?: () => void;
+  onClearEndTime?: () => void;
 }
 
 const FloatingLabelInput = (props: any) => (
@@ -36,12 +66,26 @@ export default function TransportationTab({
   formatTransportationDateTime,
   onOpenPoiModal,
   onOpenMapPinModal,
+  onOpenGoogleSearch,
   noPadding = false,
   fieldRefs,
+
+  onPressDate,
+  onPressTime,
+  onClearDate,
+  onClearTime,
+  onPressEndDate,
+  onPressEndTime,
+  onClearEndDate,
+  onClearEndTime,
 }: TransportationTabProps) {
   const paperTheme = useTheme();
   const colors = propColors || paperTheme.colors;
   const currentMode = values.transportationDetails?.mode || null;
+  const activityColor =
+    activityIcons.find(
+      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === ActivityType.transit
+    )?.color || colors.primary || "#02899a";
 
   return (
     <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
@@ -52,155 +96,174 @@ export default function TransportationTab({
         </Text>
       </View>
 
+      {/* Pickup & Drop-off Location */}
+      <Text className="text-lg text-secondary/80 font-semibold mb-3 px-sm">
+        Pickup & Drop-off Location
+      </Text>
 
+      {/* Pickup / Departure Location */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.pickupLocation"] = el; }} className="flex-row">
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={values.transportationDetails?.pickupLocation ? `Pickup location: ${values.transportationDetails.pickupLocation}` : "Select pickup location"}
+          activeOpacity={0.7}
+          onPress={() => onOpenGoogleSearch?.("pickupLocation")}
+          className="bg-white border  px-4 py-4 rounded-t-3xl w-full border-b-0"
+          style={{ borderColor: activityColor }}
+        >
+          <View className="flex-row gap-2 items-center">
+            <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
+              <Icon name="departure-board" size={26} color={values.transportationDetails?.pickupLocation ? activityColor : "#98A2B3"} />
+              <Text
+                className={`text-xs font-bold tracking-wider mt-1 ${values.transportationDetails?.pickupLocation ? "text-secondary/70" : "text-secondary/40"}`}
+              >
+                DEPART
+              </Text>
+            </View>
 
-      {/* Operator / Provider */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.operatorProvider"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Operator / Provider"
-          value={values.transportationDetails?.operatorProvider || ""}
-          onChangeText={handleChange("transportationDetails.operatorProvider")}
-          onBlur={handleBlur("transportationDetails.operatorProvider")}
-        />
+            <View className="flex-1 justify-center gap-0 px-sm pr-14">
+              <Text className="text-lg text-secondary/80">From</Text>
+              <Text
+                className={`text-2xl font-semibold ${values.transportationDetails?.pickupLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {values.transportationDetails?.pickupLocation || "Select departure location"}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
       </View>
 
-      <View className="flex-row gap-2 justify-start items-center mb-2">
-        <Text className="text-xs font-bold tracking-wider uppercase">
-          Pickup - drop-off Location
-        </Text>
-      </View>
-      {/* Pickup Location */}
-      <View className="mb-5">
-        <View className="flex-row items-center gap-2" ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.pickupLocation"] = el; }}>
-          <FloatingLabelInput
-            label="Pickup / Departure"
-            value={values.transportationDetails?.pickupLocation || ""}
-            onChangeText={handleChange("transportationDetails.pickupLocation")}
-            onBlur={handleBlur("transportationDetails.pickupLocation")}
-          />
+      <View className="flex-1">
+        <View className="flex-row gap-4">
+          <View className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4" pointerEvents="box-none">
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Swap pickup and drop-off locations"
+              activeOpacity={0.8}
+              onPress={() => {
+                const currentPick = values.transportationDetails?.pickupLocation || "";
+                const currentDrop = values.transportationDetails?.dropoffLocation || "";
+                setFieldValue("transportationDetails.pickupLocation", currentDrop);
+                setFieldValue("transportationDetails.dropoffLocation", currentPick);
+              }}
+              className="w-14 h-14 rounded-full p-3 items-center justify-center"
+              style={{ backgroundColor: activityColor }}
+            >
+              <Icon name="swap-vert" size={24} color={"#fff"} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Drop-off / Arrival Location */}
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.dropoffLocation"] = el; }} className="mb-5 flex-row">
           <TouchableOpacity
-            onPress={() => {
-              onOpenMapPinModal?.(
-                "transportationDetails.pickupLocation",
-                values.transportationDetails?.pickupLocation
-              );
-            }}
-            className="w-12 h-12 rounded-full items-center justify-center"
             accessibilityRole="button"
-            accessibilityLabel="Pin pickup location on map"
+            accessibilityLabel={values.transportationDetails?.dropoffLocation ? `Drop-off location: ${values.transportationDetails.dropoffLocation}` : "Select drop-off location"}
+            activeOpacity={0.7}
+            onPress={() => onOpenGoogleSearch?.("dropoffLocation")}
+            className="bg-white border px-4 py-4 rounded-b-3xl w-full"
+            style={{ borderColor: activityColor }}
+
           >
-            <Icon name="pin-drop" size={28} color={colors.primary} />
+            <View className="flex-row gap-2 items-center">
+              <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
+                <Icon name="place" size={26} color={values.transportationDetails?.dropoffLocation ? activityColor : "#98A2B3"} />
+                <Text
+                  className={`text-xs font-bold tracking-wider mt-1 ${values.transportationDetails?.dropoffLocation ? "text-secondary/70" : "text-secondary/40"}`}
+                >
+                  ARRIVE
+                </Text>
+              </View>
+
+              <View className="flex-1 justify-center gap-0 px-sm pr-14">
+                <Text className="text-lg text-secondary/80">To</Text>
+                <Text
+                  className={`text-2xl font-semibold ${values.transportationDetails?.dropoffLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {values.transportationDetails?.dropoffLocation || "Select arrival location"}
+                </Text>
+              </View>
+            </View>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Drop-off Location */}
+
+      {/* Date & Time Section */}
+      <DateTime
+        activityType={ActivityType.transit}
+        title="Departure & Arrival Date & Time"
+        startDate={values.startDate}
+        startTime={values.startTime}
+        endDate={values.endDate}
+        endTime={values.endTime}
+        onPressDate={onPressDate || (() => { })}
+        onPressTime={onPressTime || (() => { })}
+        onClearDate={onClearDate || (() => { })}
+        onClearTime={onClearTime || (() => { })}
+        onPressEndDate={onPressEndDate}
+        onPressEndTime={onPressEndTime}
+        onClearEndDate={onClearEndDate}
+        onClearEndTime={onClearEndTime}
+      />
+
+      {/* Transit Mode Cards */}
       <View className="mb-5">
-        <View className="flex-row items-center gap-2" ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.dropoffLocation"] = el; }}>
-          <FloatingLabelInput
-            label="Drop-off / Arrival"
-            value={values.transportationDetails?.dropoffLocation || ""}
-            onChangeText={handleChange("transportationDetails.dropoffLocation")}
-            onBlur={handleBlur("transportationDetails.dropoffLocation")}
-          />
-          <TouchableOpacity
-            onPress={() => {
-              onOpenMapPinModal?.(
-                "transportationDetails.dropoffLocation",
-                values.transportationDetails?.dropoffLocation
-              );
-            }}
-            className="w-12 h-12 rounded-full items-center justify-center"
-            accessibilityRole="button"
-            accessibilityLabel="Pin drop-off location on map"
-          >
-            <Icon name="pin-drop" size={28} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-
-      {/* Departure / Arrival Date & Time */}
-      <View className="flex-row gap-2 justify-start items-center mb-2">
-        <Text className="text-xs font-bold tracking-wider uppercase">
-          Departure / Arrival Date & Time
+        <Text className="text-lg text-secondary/80 font-semibold mb-2">
+          Transit Mode
         </Text>
-      </View>
-      <View className="flex-row justify-center items-center mb-5">
-        {/* Departure Date & Time */}
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.departureDateTime"] = el; }} className="flex-1 gap-4">
-          <FloatingLabelInput
-            label="Departure"
-            value={
-              values.transportationDetails?.departureDateTime && formatTransportationDateTime
-                ? formatTransportationDateTime(values.transportationDetails.departureDateTime)
-                : ""
-            }
-            editable={false}
-            right={
-              values.transportationDetails?.departureDateTime ? (
-                <TextInput.Icon
-                  icon="close"
-                  color="#999"
-                  onPress={() => setFieldValue("transportationDetails.departureDateTime", null)}
-                />
-              ) : (
-                <TextInput.Icon icon="calendar" color="#999" />
-              )
-            }
-            onPress={() => setShowTransportationDatePickerFor?.("departureDateTime")}
-          />
-        </View>
-        <Icon name="arrow-forward" size={16} color="#999" className="mt-sm mx-1" />
-        {/* Arrival Date & Time */}
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.arrivalDateTime"] = el; }} className="flex-1 gap-4">
-          <FloatingLabelInput
-            label="Arrival"
-            value={
-              values.transportationDetails?.arrivalDateTime && formatTransportationDateTime
-                ? formatTransportationDateTime(values.transportationDetails.arrivalDateTime)
-                : ""
-            }
-            editable={false}
-            right={
-              values.transportationDetails?.arrivalDateTime ? (
-                <TextInput.Icon
-                  icon="close"
-                  color="#999"
-                  onPress={() => setFieldValue("transportationDetails.arrivalDateTime", null)}
-                />
-              ) : (
-                <TextInput.Icon icon="calendar" color="#999" />
-              )
-            }
-            onPress={() => setShowTransportationDatePickerFor?.("arrivalDateTime")}
-          />
-        </View>
-      </View>
-
-      {/* Transportation Mode Chips */}
-      <View className="mb-5">
-        <Text className="text-xs font-bold tracking-wider uppercase mb-2">Transit Mode</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-2">
-            {TRANSPORT_MODES.map((tag) => {
-              const isActive = currentMode === tag;
+          <View className="flex-row gap-2.5 py-1">
+            {TRANSIT_MODES.map((item) => {
+              const isSelected = currentMode === item.label;
               return (
                 <TouchableOpacity
-                  key={tag}
+                  key={item.label}
                   accessibilityRole="button"
-                  onPress={() => setFieldValue("transportationDetails.mode", isActive ? null : tag)}
+                  accessibilityLabel={`Select ${item.label} mode`}
+                  onPress={() => setFieldValue("transportationDetails.mode", isSelected ? null : item.label)}
+                  activeOpacity={0.7}
                   style={{
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
-                    borderColor: isActive ? colors.primary : "#EAECF0",
-                    backgroundColor: isActive ? `${colors.primary}15` : "#FFF",
+                    width: 88,
+                    height: 94,
+                    borderRadius: 16,
+                    borderWidth: 1.5,
+                    borderColor: isSelected ? activityColor : "#E4E7EC",
+                    backgroundColor: isSelected ? `${activityColor}12` : "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 10,
+                    paddingHorizontal: 6,
                   }}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: isActive ? "600" : "500", color: isActive ? colors.primary : "#475467" }}>
-                    {tag}
+                  <View
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Icon
+                      name={item.icon}
+                      size={24}
+                      color={isSelected ? activityColor : "#475467"}
+                    />
+                  </View>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: isSelected ? "700" : "500",
+                      color: isSelected ? activityColor : "#344054",
+                    }}
+                  >
+                    {item.label}
                   </Text>
                 </TouchableOpacity>
               );
@@ -208,6 +271,7 @@ export default function TransportationTab({
           </View>
         </ScrollView>
       </View>
+
 
       {/* Seat / Coach / Vehicle Number & Booking Reference */}
       <View className="mb-5">
@@ -218,9 +282,6 @@ export default function TransportationTab({
             onChangeText={handleChange("transportationDetails.seatOrVehicleNumber")}
             onBlur={handleBlur("transportationDetails.seatOrVehicleNumber")}
           />
-        </View>
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.bookingReference"] = el; }} style={{ flex: 1 }}>
-
         </View>
       </View>
 

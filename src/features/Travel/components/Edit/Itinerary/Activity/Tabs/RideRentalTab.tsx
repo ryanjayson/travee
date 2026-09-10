@@ -3,10 +3,24 @@ import React from "react";
 import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
+import DateTime from "../DateTime";
+import { ActivityType } from "../../../../../../../types/enums";
 
-type PoiCategory = "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp";
+export interface VehicleTypeItem {
+  label: string;
+  icon: keyof typeof Icon.glyphMap;
+}
 
-const VEHICLE_TYPES = ["Car", "Motorbike", "Motorcycle", "Scooter", "Bicycle", "RV / Camper", "Yacht", "Boat"];
+const VEHICLE_TYPES: VehicleTypeItem[] = [
+  { label: "Car", icon: "directions-car" },
+  { label: "Motorbike", icon: "two-wheeler" },
+  { label: "Motorcycle", icon: "motorcycle" },
+  { label: "Scooter", icon: "moped" },
+  { label: "Bicycle", icon: "pedal-bike" },
+  { label: "RV / Camper", icon: "rv-hookup" },
+  { label: "Yacht", icon: "sailing" },
+  { label: "Boat", icon: "directions-boat" },
+];
 
 interface RideRentalTabProps {
   values: any;
@@ -14,13 +28,21 @@ interface RideRentalTabProps {
   handleBlur: any;
   setFieldValue: any;
   colors?: any;
-  onOpenPoiModal?: (category: PoiCategory) => void;
+  onOpenPoiModal?: (category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => void;
   onOpenMapPinModal?: (field: string, initialValue?: string) => void;
-  formatDateTime?: (val: any) => string;
-  onOpenRentalStartPicker?: () => void;
-  onOpenRentalEndPicker?: () => void;
+  onOpenGoogleSearch?: (target: "providerName" | "pickupLocation" | "dropoffLocation") => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+
+  // DateTime handlers
+  onPressDate?: () => void;
+  onPressTime?: () => void;
+  onClearDate?: () => void;
+  onClearTime?: () => void;
+  onPressEndDate?: () => void;
+  onPressEndTime?: () => void;
+  onClearEndDate?: () => void;
+  onClearEndTime?: () => void;
 }
 
 const FloatingLabelInput = (props: any) => (
@@ -35,11 +57,18 @@ export default function RideRentalTab({
   colors: propColors,
   onOpenPoiModal,
   onOpenMapPinModal,
-  formatDateTime,
-  onOpenRentalStartPicker,
-  onOpenRentalEndPicker,
+  onOpenGoogleSearch,
   noPadding = false,
   fieldRefs,
+
+  onPressDate,
+  onPressTime,
+  onClearDate,
+  onClearTime,
+  onPressEndDate,
+  onPressEndTime,
+  onClearEndDate,
+  onClearEndTime,
 }: RideRentalTabProps) {
   const paperTheme = useTheme();
   const colors = propColors || paperTheme.colors;
@@ -54,116 +83,200 @@ export default function RideRentalTab({
         </Text>
       </View>
 
-      {/* Provider Name — searchable */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.providerName"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Rental Provider"
-          value={values.rideRentalDetails?.providerName || ""}
-          onChangeText={handleChange("rideRentalDetails.providerName")}
-          onBlur={handleBlur("rideRentalDetails.providerName")}
-          right={
-            onOpenPoiModal ? (
-              <TextInput.Icon
-                style={{ backgroundColor: "#F2F4F7" }}
-                icon="map-marker-radius-outline"
-                color="#263f69"
-                onPress={() => onOpenPoiModal("shopppingAndService")}
-              />
-            ) : null
-          }
-        />
+      {/* Pick-up & Drop-off Location */}
+      <Text className="text-lg text-secondary/80 font-semibold mb-3 px-sm">
+        Pick-up & Drop-off Location
+      </Text>
+
+      {/* Pick-up Location */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.pickupLocation"] = el; }} className="flex-row">
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={values.rideRentalDetails?.pickupLocation ? `Pick-up location: ${values.rideRentalDetails.pickupLocation}` : "Select pick-up location"}
+          activeOpacity={0.7}
+          onPress={() => onOpenGoogleSearch?.("pickupLocation")}
+          className="bg-white border border-primary/60 px-4 py-4 rounded-t-3xl w-full border-b-0"
+        >
+          <View className="flex-row gap-2 items-center">
+            <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
+              <Icon name="car-rental" size={26} color={values.rideRentalDetails?.pickupLocation ? "#0EA5E9" : "#98A2B3"} />
+              <Text
+                className={`text-xs font-bold tracking-wider mt-1 ${values.rideRentalDetails?.pickupLocation ? "text-secondary/70" : "text-secondary/40"}`}
+              >
+                PICKUP
+              </Text>
+            </View>
+
+            <View className="flex-1 justify-center gap-0 px-sm pr-14">
+              <Text className="text-lg text-secondary/80">From</Text>
+              <Text
+                className={`text-2xl font-semibold ${values.rideRentalDetails?.pickupLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {values.rideRentalDetails?.pickupLocation || "Select pick-up location"}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
       </View>
 
-
-      {/* Pickup & Drop-off */}
-      <View className="mb-5">
-        <View className="flex-row items-center gap-2" ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.pickupLocation"] = el; }}>
-          <FloatingLabelInput
-            label="Pickup Location"
-            value={values.rideRentalDetails?.pickupLocation || ""}
-            onChangeText={handleChange("rideRentalDetails.pickupLocation")}
-            onBlur={handleBlur("rideRentalDetails.pickupLocation")}
-          />
-          <TouchableOpacity
-            onPress={() => {
-              onOpenMapPinModal?.(
-                "rideRentalDetails.pickupLocation",
-                values.rideRentalDetails?.pickupLocation
-              );
-            }}
-            className="w-12 h-12 rounded-full items-center justify-center"
-            accessibilityRole="button"
-            accessibilityLabel="Pin pickup location on map"
-          >
-            <Icon name="pin-drop" size={28} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View className="mb-5">
-        <View className="flex-row items-center gap-2" ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.dropoffLocation"] = el; }}>
-          <FloatingLabelInput
-            label="Drop-off Location"
-            value={values.rideRentalDetails?.dropoffLocation || ""}
-            onChangeText={handleChange("rideRentalDetails.dropoffLocation")}
-            onBlur={handleBlur("rideRentalDetails.dropoffLocation")}
-          />
-
-          <TouchableOpacity
-            onPress={() => {
-              onOpenMapPinModal?.(
-                "rideRentalDetails.dropoffLocation",
-                values.rideRentalDetails?.dropoffLocation
-              );
-            }}
-            className="w-12 h-12 rounded-full items-center justify-center"
-            accessibilityRole="button"
-            accessibilityLabel="Pin drop-off location on map"
-          >
-            <Icon name="pin-drop" size={28} color={colors.primary} />
-          </TouchableOpacity>
+      <View className="flex-1">
+        <View className="flex-row gap-4">
+          <View className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4" pointerEvents="box-none">
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Swap pick-up and drop-off locations"
+              activeOpacity={0.8}
+              onPress={() => {
+                const currentPick = values.rideRentalDetails?.pickupLocation || "";
+                const currentDrop = values.rideRentalDetails?.dropoffLocation || "";
+                setFieldValue("rideRentalDetails.pickupLocation", currentDrop);
+                setFieldValue("rideRentalDetails.dropoffLocation", currentPick);
+              }}
+              className="border-2 border-primary/60 bg-primary w-14 h-14 rounded-full p-3 items-center justify-center"
+            >
+              <Icon name="swap-vert" size={24} color={"#ffffff"} />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View className=" items-start justify-start"
-          style={{ opacity: values?.rideRentalDetails?.address ? 1 : 0.3 }}>
+        {/* Drop-off Location */}
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.dropoffLocation"] = el; }} className="mb-2 flex-row">
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={values.rideRentalDetails?.dropoffLocation ? `Drop-off location: ${values.rideRentalDetails.dropoffLocation}` : "Select drop-off location"}
+            activeOpacity={0.7}
+            onPress={() => onOpenGoogleSearch?.("dropoffLocation")}
+            className="bg-white border border-primary/60 px-4 py-4 rounded-b-3xl w-full"
+          >
+            <View className="flex-row gap-2 items-center">
+              <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
+                <Icon name="place" size={26} color={values.rideRentalDetails?.dropoffLocation ? "#0EA5E9" : "#98A2B3"} />
+                <Text
+                  className={`text-xs font-bold tracking-wider mt-1 ${values.rideRentalDetails?.dropoffLocation ? "text-secondary/70" : "text-secondary/40"}`}
+                >
+                  RETURN
+                </Text>
+              </View>
+
+              <View className="flex-1 justify-center gap-0 px-sm pr-14">
+                <Text className="text-lg text-secondary/80">{values.rideRentalDetails?.dropoffLocation || "Select drop-off location"}</Text>
+                <Text
+                  className={`text-2xl font-semibold ${values.rideRentalDetails?.dropoffLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {values.rideRentalDetails?.dropoffLocation || "Select drop-off location"}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View
+          className="items-start justify-start mb-5 px-sm"
+          style={{ opacity: values?.rideRentalDetails?.pickupLocation ? 1 : 0.4 }}
+        >
           <TouchableOpacity
             onPress={() => {
-              setFieldValue("rideRentalDetails.dropoffLocation", values.rideRentalDetails?.pickupLocation || "");
+              if (values.rideRentalDetails?.pickupLocation) {
+                setFieldValue(
+                  "rideRentalDetails.dropoffLocation",
+                  values.rideRentalDetails.pickupLocation
+                );
+              }
             }}
             accessibilityRole="button"
-            accessibilityLabel=" Same with Pickup Address"
+            accessibilityLabel="Same with Pickup Location"
           >
             <Text style={{ color: colors.primary }} className="text-sm underline">
-              Same with Pickup Address
+              Same with Pickup Location
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
 
-      {/* Vehicle type tags */}
+      {/* 6. Rental Period (DateTime) */}
+      <DateTime
+        activityType={ActivityType.rideRental}
+        title="Rental Period"
+        startDate={values.startDate}
+        startTime={values.startTime}
+        endDate={values.endDate}
+        endTime={values.endTime}
+        onPressDate={onPressDate || (() => { })}
+        onPressTime={onPressTime || (() => { })}
+        onClearDate={onClearDate || (() => { })}
+        onClearTime={onClearTime || (() => { })}
+        onPressEndDate={onPressEndDate}
+        onPressEndTime={onPressEndTime}
+        onClearEndDate={onClearEndDate}
+        onClearEndTime={onClearEndTime}
+      />
+
+      {/* 4. Vehicle Type Cards */}
       <View className="mb-5">
-        <Text className="text-xs font-bold tracking-wider uppercase mb-2">Vehicle Type</Text>
+        <Text className="text-lg text-secondary/80 font-semibold mb-2">
+          Vehicle Type
+        </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-2">
-            {VEHICLE_TYPES.map((tag) => {
-              const isActive = currentVehicle === tag;
+          <View className="flex-row gap-2.5 py-1">
+            {VEHICLE_TYPES.map((item) => {
+              const isSelected = currentVehicle === item.label;
               return (
                 <TouchableOpacity
-                  key={tag}
+                  key={item.label}
                   accessibilityRole="button"
-                  onPress={() => setFieldValue("rideRentalDetails.vehicleType", isActive ? null : tag)}
+                  accessibilityLabel={`Select ${item.label} vehicle type`}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    setFieldValue(
+                      "rideRentalDetails.vehicleType",
+                      isSelected ? null : item.label
+                    )
+                  }
                   style={{
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
-                    borderColor: isActive ? colors.primary : "#EAECF0",
-                    backgroundColor: isActive ? `${colors.primary}15` : "#FFF",
+                    minWidth: 84,
+                    height: 94,
+                    borderRadius: 16,
+                    borderWidth: 1.5,
+                    borderColor: isSelected ? colors.primary : "#E4E7EC",
+                    backgroundColor: isSelected ? `${colors.primary}12` : "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 10,
+                    paddingHorizontal: 8,
                   }}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: isActive ? "600" : "500", color: isActive ? colors.primary : "#475467" }}>
-                    {tag}
+                  <View
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      backgroundColor: isSelected ? `${colors.primary}22` : "#F2F4F7",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 6,
+                    }}
+                  >
+                    <Icon
+                      name={item.icon}
+                      size={24}
+                      color={isSelected ? colors.primary : "#475467"}
+                    />
+                  </View>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: isSelected ? "700" : "500",
+                      color: isSelected ? colors.primary : "#344054",
+                      textAlign: "center",
+                    }}
+                  >
+                    {item.label}
                   </Text>
                 </TouchableOpacity>
               );
@@ -172,7 +285,7 @@ export default function RideRentalTab({
         </ScrollView>
       </View>
 
-      {/* Vehicle Model / Details */}
+      {/* 5. Vehicle Model / Details */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.vehicleModel"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Vehicle Model / Make"
@@ -182,45 +295,7 @@ export default function RideRentalTab({
         />
       </View>
 
-      {/* Rental Period (Start & End Date/Time) */}
-      <View className="flex-row gap-2 justify-start items-center mb-2">
-        <Text className="text-xs font-bold tracking-wider uppercase">Rental Period</Text>
-      </View>
-      <View className="flex-row items-center mb-10">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.rentalStartDateTime"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Start"
-            value={values.rideRentalDetails?.rentalStartDateTime && formatDateTime ? formatDateTime(values.rideRentalDetails.rentalStartDateTime) : ""}
-            editable={false}
-            onPress={onOpenRentalStartPicker}
-            right={
-              values.rideRentalDetails?.rentalStartDateTime ? (
-                <TextInput.Icon icon="close" color="#999" onPress={() => setFieldValue("rideRentalDetails.rentalStartDateTime", null)} />
-              ) : (
-                <TextInput.Icon icon="calendar" color="#999" onPress={onOpenRentalStartPicker} />
-              )
-            }
-          />
-        </View>
-        <Icon name="arrow-forward" size={16} color="#999" style={{ marginHorizontal: 4 }} />
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.rentalEndDateTime"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="End"
-            value={values.rideRentalDetails?.rentalEndDateTime && formatDateTime ? formatDateTime(values.rideRentalDetails.rentalEndDateTime) : ""}
-            editable={false}
-            onPress={onOpenRentalEndPicker}
-            right={
-              values.rideRentalDetails?.rentalEndDateTime ? (
-                <TextInput.Icon icon="close" color="#999" onPress={() => setFieldValue("rideRentalDetails.rentalEndDateTime", null)} />
-              ) : (
-                <TextInput.Icon icon="calendar" color="#999" onPress={onOpenRentalEndPicker} />
-              )
-            }
-          />
-        </View>
-      </View>
-
-      {/* Booking Reference & Booking Status */}
+      {/* 7. Booking Reference */}
       <View className="flex-row gap-4 mb-5">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingReference"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
@@ -230,27 +305,10 @@ export default function RideRentalTab({
             onBlur={handleBlur("rideRentalDetails.bookingReference")}
           />
         </View>
-        {/* <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Booking Status"
-            value={values.rideRentalDetails?.bookingStatus || ""}
-            onChangeText={handleChange("rideRentalDetails.bookingStatus")}
-            onBlur={handleBlur("rideRentalDetails.bookingStatus")}
-          />
-        </View> */}
       </View>
 
-      {/* Price & Website Link */}
+      {/* 8. Website Link */}
       <View className="flex-row gap-4 mb-5">
-        {/* <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.price"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Price"
-            value={values.rideRentalDetails?.price || ""}
-            onChangeText={handleChange("rideRentalDetails.price")}
-            onBlur={handleBlur("rideRentalDetails.price")}
-            keyboardType="numeric"
-          />
-        </View> */}
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.websiteAddress"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Website / Link"
@@ -294,6 +352,7 @@ export default function RideRentalTab({
         </View>
       </View>
 
+      {/* 9. Contact */}
       <View className="flex-row gap-2 justify-start items-center mb-2">
         <Text className="text-xs font-bold tracking-wider uppercase">
           Contact

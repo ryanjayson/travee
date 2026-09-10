@@ -6,20 +6,25 @@ import FloatingLabelInputAtom from "../../../../../../../components/atoms/Floati
 import DateTime from "../DateTime";
 import { ActivityType } from "../../../../../../../types/enums";
 
-const ACCOMMODATION_SUBTYPES = [
-  "Hotel",
-  "Resort",
-  "Hostel",
-  "Apartment",
-  "Villa",
-  "Airbnb",
-  "Guesthouse",
-  "Motel",
-  "Cabin",
-  "Glamping",
-  "Homestay",
-  "Bed & Breakfast",
-  "Other",
+export interface AccommodationTypeItem {
+  label: string;
+  icon: keyof typeof Icon.glyphMap;
+}
+
+const ACCOMMODATION_SUBTYPES: AccommodationTypeItem[] = [
+  { label: "Hotel", icon: "hotel" },
+  { label: "Resort", icon: "beach-access" },
+  { label: "Hostel", icon: "single-bed" },
+  { label: "Apartment", icon: "apartment" },
+  { label: "Villa", icon: "villa" },
+  { label: "Airbnb", icon: "home-work" },
+  { label: "Guesthouse", icon: "night-shelter" },
+  { label: "Motel", icon: "local-hotel" },
+  { label: "Cabin", icon: "cabin" },
+  { label: "Glamping", icon: "holiday-village" },
+  { label: "Homestay", icon: "house" },
+  { label: "Bed & Breakfast", icon: "free-breakfast" },
+  { label: "Other", icon: "more-horiz" },
 ];
 
 interface AccomodationTabProps {
@@ -157,35 +162,65 @@ export default function AccomodationTab({
 
       {/* Accommodation Type (Sub-type) */}
       <View className="mb-5">
-        <Text className="text-xs font-bold tracking-wider uppercase mb-2">
-          Type
+        <Text className="text-lg text-secondary/80 font-semibold mb-2">
+          Stay Type
         </Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-2">
-            {ACCOMMODATION_SUBTYPES.map((tag) => {
-              const isActive = currentSubType === tag;
+          <View className="flex-row gap-2.5 py-1">
+            {ACCOMMODATION_SUBTYPES.map((item) => {
+              const isSelected = currentSubType === item.label;
               return (
                 <TouchableOpacity
-                  key={tag}
+                  key={item.label}
                   accessibilityRole="button"
-                  onPress={() => setFieldValue("accomodationDetails.subType", isActive ? null : tag)}
+                  accessibilityLabel={`Select ${item.label} stay type`}
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    setFieldValue(
+                      "accomodationDetails.subType",
+                      isSelected ? null : item.label
+                    )
+                  }
                   style={{
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
-                    borderColor: isActive ? colors.primary : "#EAECF0",
-                    backgroundColor: isActive ? `${colors.primary}15` : "#FFF",
+                    minWidth: 84,
+                    height: 94,
+                    borderRadius: 16,
+                    borderWidth: 1.5,
+                    borderColor: isSelected ? colors.primary : "#E4E7EC",
+                    backgroundColor: isSelected ? `${colors.primary}12` : "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 10,
+                    paddingHorizontal: 8,
                   }}
                 >
-                  <Text
+                  <View
                     style={{
-                      fontSize: 13,
-                      fontWeight: isActive ? "600" : "500",
-                      color: isActive ? colors.primary : "#475467",
+                      width: 44,
+                      height: 44,
+                      borderRadius: 12,
+                      backgroundColor: isSelected ? `${colors.primary}22` : "#F2F4F7",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 6,
                     }}
                   >
-                    {tag}
+                    <Icon
+                      name={item.icon}
+                      size={24}
+                      color={isSelected ? colors.primary : "#475467"}
+                    />
+                  </View>
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: isSelected ? "700" : "500",
+                      color: isSelected ? colors.primary : "#344054",
+                      textAlign: "center",
+                    }}
+                  >
+                    {item.label}
                   </Text>
                 </TouchableOpacity>
               );

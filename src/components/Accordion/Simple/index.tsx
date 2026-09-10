@@ -45,7 +45,7 @@ export const SimpleAccordion = ({
         accessibilityLabel={`${title} section`}
       >
         <View className="flex-row gap-2 justify-start items-center border-l-3 border-primary pl-4">
-          <Icon name="info-outline" size={26} color={"#344054"} />
+          <Icon name="settings" size={26} color={"#344054"} />
           <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
             {title}
           </Text>
