@@ -22,6 +22,10 @@ export interface GoogleMapSearchBoxProps {
   onManualEntry?: () => void;
   /** Title shown in bottom sheet header */
   title?: string;
+  /** Description or subtitle shown in header */
+  description?: string;
+  /** Description text alias */
+  descriptionText?: string;
   /** Subtitle or destination name */
   destination?: string;
   /** List of trip destinations for multi-destination support */
@@ -89,6 +93,9 @@ export interface GoogleMapSearchModalProps {
   onSelect: (location: GooglePlaceLocation) => void;
   onManualEntry?: () => void;
   title?: string;
+  description?: string;
+  descriptionText?: string;
+  placeholder?: string;
   initialValue?: string;
   initialCoordinates?: {
     latitude: number;

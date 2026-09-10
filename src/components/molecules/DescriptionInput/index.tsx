@@ -76,7 +76,7 @@ const DescriptionInput = ({
               backgroundColor: "#FFFFFF",
               borderRadius: 16,
             }}
-            style={{ marginTop: 6, height: 100, fontSize: 16 }}
+            style={{ marginTop: 6, height: 130, fontSize: 16 }}
             textAlignVertical="top"
             contentStyle={{ backgroundColor: "transparent" }}
             right={

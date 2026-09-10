@@ -794,11 +794,11 @@ const EditActivity = ({
           ? new Date(values.flightDetails.departureDate)
           : undefined;
       } else if (values.type === ActivityType.stay) {
-        finalStartDate = values.accomodationDetails?.checkinDateTime
-          ? new Date(values.accomodationDetails.checkinDateTime)
-          : undefined;
-        // } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkinDateTime) {
-        //   finalStartDate = new Date(values.hikeOrCampDetails.checkinDateTime);
+        finalStartDate = values.startDate
+          ? new Date(`${values.startDate}T${values.startTime || "00:00"}:00`)
+          : (values.accomodationDetails?.checkinDateTime
+            ? new Date(values.accomodationDetails.checkinDateTime)
+            : undefined);
       } else if (values.startDate) {
         finalStartDate = new Date(`${values.startDate}T${values.startTime}:00`);
       }
@@ -807,11 +807,11 @@ const EditActivity = ({
       if (values.type === ActivityType.flight && values.flightDetails?.arrivalDate) {
         finalEndDate = new Date(values.flightDetails.arrivalDate);
       } else if (values.type === ActivityType.stay) {
-        finalEndDate = values.accomodationDetails?.checkoutDateTime
-          ? new Date(values.accomodationDetails.checkoutDateTime)
-          : undefined;
-        // } else if (values.type === ActivityType.hikeOrCamp && values.hikeOrCampDetails?.checkoutDateTime) {
-        //   finalEndDate = new Date(values.hikeOrCampDetails.checkoutDateTime);
+        finalEndDate = values.endDate
+          ? new Date(`${values.endDate}T${values.endTime || "00:00"}:00`)
+          : (values.accomodationDetails?.checkoutDateTime
+            ? new Date(values.accomodationDetails.checkoutDateTime)
+            : undefined);
       } else if (values.endDate) {
         finalEndDate = new Date(`${values.endDate}T${values.endTime}:00`);
       }
@@ -912,12 +912,16 @@ const EditActivity = ({
             address: values.accomodationDetails.address || null,
             destinationAddressData: values.accomodationDetails.destinationAddressData ?? null,
             subType: values.accomodationDetails.subType || null,
-            checkinDateTime: values.accomodationDetails.checkinDateTime && new Date(values.accomodationDetails.checkinDateTime).getTime() > 0
-              ? new Date(values.accomodationDetails.checkinDateTime)
-              : null,
-            checkoutDateTime: values.accomodationDetails.checkoutDateTime && new Date(values.accomodationDetails.checkoutDateTime).getTime() > 0
-              ? new Date(values.accomodationDetails.checkoutDateTime)
-              : null,
+            checkinDateTime: finalStartDate
+              ? finalStartDate
+              : (values.accomodationDetails.checkinDateTime && new Date(values.accomodationDetails.checkinDateTime).getTime() > 0
+                ? new Date(values.accomodationDetails.checkinDateTime)
+                : null),
+            checkoutDateTime: finalEndDate
+              ? finalEndDate
+              : (values.accomodationDetails.checkoutDateTime && new Date(values.accomodationDetails.checkoutDateTime).getTime() > 0
+                ? new Date(values.accomodationDetails.checkoutDateTime)
+                : null),
             websiteAddress: values.accomodationDetails.websiteAddress || null,
             bookingReference: values.accomodationDetails.bookingReference || null,
             bookingStatus: values.accomodationDetails.bookingStatus || null,
@@ -1065,10 +1069,26 @@ const EditActivity = ({
     type: itineraryActivity?.type ?? initialType ?? ActivityType.plan,
     planType: itineraryActivity?.planType ?? null,
     sortOrder: itineraryActivity?.sortOrder || "",
-    startDate: itineraryActivity?.startDate ? toLocalDateStr(itineraryActivity.startDate) : (currentSection?.startDate ? toLocalDateStr(currentSection.startDate) : null),
-    startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? toLocalTimeStr(itineraryActivity.startDate) : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : ""),
-    endDate: itineraryActivity?.endDate ? toLocalDateStr(itineraryActivity.endDate) : null,
-    endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T') ? toLocalTimeStr(itineraryActivity.endDate) : "09:00",
+    startDate: itineraryActivity?.startDate
+      ? toLocalDateStr(itineraryActivity.startDate)
+      : (itineraryActivity?.accomodationDetails?.checkinDateTime
+        ? toLocalDateStr(itineraryActivity.accomodationDetails.checkinDateTime)
+        : (currentSection?.startDate ? toLocalDateStr(currentSection.startDate) : null)),
+    startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T')
+      ? toLocalTimeStr(itineraryActivity.startDate)
+      : (itineraryActivity?.accomodationDetails?.checkinDateTime && String(itineraryActivity.accomodationDetails.checkinDateTime).includes('T')
+        ? toLocalTimeStr(itineraryActivity.accomodationDetails.checkinDateTime)
+        : (currentSection?.startDate ? `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}` : "")),
+    endDate: itineraryActivity?.endDate
+      ? toLocalDateStr(itineraryActivity.endDate)
+      : (itineraryActivity?.accomodationDetails?.checkoutDateTime
+        ? toLocalDateStr(itineraryActivity.accomodationDetails.checkoutDateTime)
+        : null),
+    endTime: itineraryActivity?.endDate && String(itineraryActivity.endDate).includes('T')
+      ? toLocalTimeStr(itineraryActivity.endDate)
+      : (itineraryActivity?.accomodationDetails?.checkoutDateTime && String(itineraryActivity.accomodationDetails.checkoutDateTime).includes('T')
+        ? toLocalTimeStr(itineraryActivity.accomodationDetails.checkoutDateTime)
+        : "09:00"),
     destination: itineraryActivity?.destination || "",
     destinationData: itineraryActivity?.destinationData || undefined,
     customTags: itineraryActivity?.customTags || [],
@@ -1338,9 +1358,10 @@ const EditActivity = ({
                   {/* Title */}
                   <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
                     <View className="flex-row justify-between items-center mb-1">
-                      <Text className="text-xs font-semibold tracking-wider uppercase">
-                        {values.type === ActivityType.plan ? "Plan Title" : "Activity Title"} <Text className="text-red-500 text-lg">*</Text>
+                      <Text className="text-lg text-secondary/80 font-semibold">
+                        {values.type === ActivityType.plan ? "Plan Name" : values.type === ActivityType.stay ? "Stay or Accomodation Name" : "Activity Name"} <Text className="text-red-500 text-lg">*</Text>
                       </Text>
+
                       <Text className="text-xs" style={{ color: '#98A2B3' }}>
                         {(values.title || "").length}/40
                       </Text>
@@ -1348,9 +1369,14 @@ const EditActivity = ({
                     <View className="relative justify-center">
                       <TextInput
                         mode="outlined"
-                        placeholder="e.g. Museum Visit"
+                        placeholder={values.type === ActivityType.stay ? "e.g. Grand Hotel" : "e.g. Museum Visit"}
                         value={values.title}
-                        onChangeText={handleChange("title")}
+                        onChangeText={(text) => {
+                          handleChange("title")(text);
+                          if (values.type === ActivityType.stay && (!values.accomodationDetails?.accomodationName || values.accomodationDetails.accomodationName === values.title)) {
+                            setFieldValue("accomodationDetails.accomodationName", text);
+                          }
+                        }}
                         onBlur={handleBlur("title")}
                         error={(touched.title || submitCount > 0) && Boolean(errors.title)}
                         outlineColor="#E0E0E0"
@@ -1360,17 +1386,22 @@ const EditActivity = ({
                         style={{ marginTop: 2, height: 64 }}
                         contentStyle={{
                           backgroundColor: "transparent",
-                          paddingRight: values.type === ActivityType.plan
+                          paddingRight: (values.type === ActivityType.plan || values.type === ActivityType.stay)
                             ? (values.title ? 95 : 55)
-                            : 60,
+                            : 16,
                         }}
                         maxLength={40}
                       />
-                      {values.type === ActivityType.plan ? (
+                      {(values.type === ActivityType.plan || values.type === ActivityType.stay) ? (
                         <View className="absolute right-3 flex-row items-center gap-1">
                           {Boolean(values.title) && (
                             <TouchableOpacity
-                              onPress={() => setFieldValue("title", "")}
+                              onPress={() => {
+                                setFieldValue("title", "");
+                                if (values.type === ActivityType.stay && values.accomodationDetails?.accomodationName === values.title) {
+                                  setFieldValue("accomodationDetails.accomodationName", "");
+                                }
+                              }}
                               className="p-2"
                               accessibilityRole="button"
                               accessibilityLabel="Clear activity title"
@@ -1426,7 +1457,7 @@ const EditActivity = ({
                       !isNaN(lng);
 
                     const shouldShow = Boolean(
-                      placeTitle || destinationAddress || destData || values.type === ActivityType.plan
+                      (placeTitle || destinationAddress || destData) && values.type === ActivityType.plan || values.type === ActivityType.stay
                     );
                     if (!shouldShow) return null;
 
@@ -1435,7 +1466,7 @@ const EditActivity = ({
                     );
 
                     return (
-                      <View className="mb-6 p-4 rounded-2xl bg-primary/10">
+                      <View className="mb-8 p-4 rounded-2xl bg-primary/10">
                         <TouchableOpacity
                           activeOpacity={0.7}
                           onPress={() => {
@@ -1447,8 +1478,8 @@ const EditActivity = ({
                           accessibilityLabel="Toggle Destination Details"
                         >
                           <View className="flex-row items-center flex-1 mr-2">
-                            <Icon name="place" size={16} color={colors.primary || "#263F69"} />
-                            <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 ml-1.5">
+                            <Icon name="place" size={16} color={colors.primary} />
+                            <Text className="text-lg   text-secondary ml-1.5">
                               Destination Details
                             </Text>
                             {!isDestinationExpanded && (placeTitle || destinationAddress) ? (
@@ -1632,6 +1663,34 @@ const EditActivity = ({
                       }}
                       noPadding={true}
                       fieldRefs={fieldRefs}
+                      onPressLocationMap={() => setShowGoogleSearchModal(true)}
+                      onPressDate={() => setShowCalendarFor("startDate")}
+                      onPressTime={() => setShowTimePickerFor("startTime")}
+                      onClearDate={() => {
+                        setFieldValue("startDate", null);
+                        setFieldValue("endDate", null);
+                        setFieldValue("accomodationDetails.checkinDateTime", null);
+                        setFieldValue("accomodationDetails.checkoutDateTime", null);
+                      }}
+                      onClearTime={() => {
+                        setFieldValue("startTime", "");
+                        if (values.startDate) {
+                          setFieldValue("accomodationDetails.checkinDateTime", new Date(`${values.startDate}T00:00:00`));
+                        }
+                      }}
+                      onPressEndDate={() => setShowCalendarFor("endDate")}
+                      onPressEndTime={() => setShowTimePickerFor("endTime")}
+                      onClearEndDate={() => {
+                        setFieldValue("endDate", null);
+                        setFieldValue("endTime", "");
+                        setFieldValue("accomodationDetails.checkoutDateTime", null);
+                      }}
+                      onClearEndTime={() => {
+                        setFieldValue("endTime", "");
+                        if (values.endDate) {
+                          setFieldValue("accomodationDetails.checkoutDateTime", new Date(`${values.endDate}T00:00:00`));
+                        }
+                      }}
                     />
                   )}
 
@@ -1959,8 +2018,10 @@ const EditActivity = ({
 
 
                     {/* Activity Type */}
-                    <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-5 ">
-                      <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Activity Type</Text>
+                    <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-8">
+                      <Text className="text-lg text-secondary/80 font-semibold mb-1">
+                        Activity Type
+                      </Text>
                       {(() => {
                         const isTypeDisabled = !!values.id && values.type !== ActivityType.plan;
                         return (
@@ -1995,11 +2056,15 @@ const EditActivity = ({
 
 
                     {/* Itinerary Section */}
-                    <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-5">
-                      <Text className="text-md font-semibold tracking-wider uppercase mb-1">Section</Text>
-                      <Text className={`text-md text-gray-500`}>
+                    <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-8">
+                      <Text className="text-lg text-secondary/80 font-semibold uppercase mb-1">
+                        Section
+                      </Text>
+
+                      <Text className={`text-base text-tertiary mb-1`}>
                         Select the Section to add this activity.
                       </Text>
+
                       <View className="flex-row items-center gap-2 mt-1">
                         <TouchableOpacity
                           onPress={() => {
@@ -2027,11 +2092,11 @@ const EditActivity = ({
 
                         <TouchableOpacity
                           onPress={handleAddNewSection}
-                          className="w-6xl h-7xl rounded-full items-center justify-center animate-fade-in"
+                          className="w-6xl h-6xl rounded-xl items-center justify-center animate-fade-in bg-primary/10"
                           accessibilityRole="button"
                           accessibilityLabel="Add new section"
                         >
-                          <Icon name="add" size={28} color="#263F69" />
+                          <Icon name="add" size={28} color="#0EA5E9" />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -2050,13 +2115,13 @@ const EditActivity = ({
                     </View>
 
                     {/* Custom Tags */}
-                    <View ref={(el) => { fieldRefs.current["customTags"] = el; }} className="mt-5">
+                    {/* <View ref={(el) => { fieldRefs.current["customTags"] = el; }} className="mt-5">
                       <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Custom Tags</Text>
                       <CustomTagsInput
                         tags={values.customTags}
                         onChangeTags={(tags) => setFieldValue("customTags", tags)}
                       />
-                    </View>
+                    </View> */}
                   </SimpleAccordion>
 
                 </View>
@@ -2602,6 +2667,13 @@ const EditActivity = ({
             <GoogleMapSearchModal
               visible={showGoogleSearchModal}
               onClose={() => setShowGoogleSearchModal(false)}
+              title={values.type === ActivityType.stay ? "Search Your Stay" : "Search Places"}
+              description={
+                values.type === ActivityType.stay
+                  ? "Search for hotel, resort, or accommodation"
+                  : (travelPlan?.travel?.destination ? `Near ${travelPlan.travel.destination}` : undefined)
+              }
+              // placeholder={values.type === ActivityType.stay ? "Search stay, hotel, resort..." : "Search here"}
               initialValue={values.title}
               initialCoordinates={values.destinationData?.coordinates}
               destinations={
@@ -2616,11 +2688,13 @@ const EditActivity = ({
               country={travelPlan?.travel?.destinationData?.country}
               onSelect={(location: GooglePlaceLocation) => {
                 const placeName = location.name || location.address || "";
-                if (!values.title || values.title.trim() === "") {
-                  setFieldValue("title", placeName);
-                }
+                setFieldValue("title", placeName);
                 const destAddress = location.address || placeName;
                 setFieldValue("destination", destAddress);
+                if (values.type === ActivityType.stay) {
+                  setFieldValue("accomodationDetails.accomodationName", placeName);
+                  setFieldValue("accomodationDetails.address", destAddress);
+                }
                 if (location.coordinates) {
                   setFieldValue("destinationData", {
                     id: location.placeId || undefined,
@@ -2647,6 +2721,24 @@ const EditActivity = ({
                 setFieldValue("endDate", endDate);
                 if (endDate && !values.endTime) {
                   setFieldValue("endTime", "18:00");
+                }
+                if (values.type === ActivityType.stay) {
+                  if (startDate) {
+                    setFieldValue("accomodationDetails.checkinDateTime", new Date(`${startDate}T${values.startTime || "15:00"}:00`));
+                    if (!values.startTime) {
+                      setFieldValue("startTime", "15:00");
+                    }
+                  } else {
+                    setFieldValue("accomodationDetails.checkinDateTime", null);
+                  }
+                  if (endDate) {
+                    setFieldValue("accomodationDetails.checkoutDateTime", new Date(`${endDate}T${values.endTime || "11:00"}:00`));
+                    if (!values.endTime) {
+                      setFieldValue("endTime", "11:00");
+                    }
+                  } else {
+                    setFieldValue("accomodationDetails.checkoutDateTime", null);
+                  }
                 }
                 setShowCalendarFor(null);
               }}
@@ -2680,9 +2772,23 @@ const EditActivity = ({
                 const minutes = String(date.getMinutes()).padStart(2, '0');
                 const timeString = `${hours}:${minutes}`;
                 if (showTimePickerFor === "startTime") {
-                  setValues({ ...values, startTime: timeString } as any);
+                  const updated: any = { ...values, startTime: timeString };
+                  if (values.type === ActivityType.stay && values.startDate) {
+                    updated.accomodationDetails = {
+                      ...values.accomodationDetails,
+                      checkinDateTime: new Date(`${values.startDate}T${timeString}:00`),
+                    };
+                  }
+                  setValues(updated);
                 } else {
-                  setValues({ ...values, endTime: timeString } as any);
+                  const updated: any = { ...values, endTime: timeString };
+                  if (values.type === ActivityType.stay && values.endDate) {
+                    updated.accomodationDetails = {
+                      ...values.accomodationDetails,
+                      checkoutDateTime: new Date(`${values.endDate}T${timeString}:00`),
+                    };
+                  }
+                  setValues(updated);
                 }
                 setShowTimePickerFor(null);
               }}

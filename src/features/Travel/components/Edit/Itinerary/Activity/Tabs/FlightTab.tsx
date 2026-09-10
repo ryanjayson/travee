@@ -3,6 +3,7 @@ import React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import { parseAirport } from "../../../../../../../utils";
 
 interface FlightTabProps {
   values: any;
@@ -37,40 +38,112 @@ export default function FlightTab({
 }: FlightTabProps) {
   const { colors } = useTheme();
 
+  const departureAirport = values.flightDetails?.departureAirport;
+  const arrivalAirport = values.flightDetails?.arrivalAirport;
+  const depParsed = parseAirport(departureAirport);
+  const arrParsed = parseAirport(arrivalAirport);
+
   return (
-    <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
-      <View className="flex-row gap-2 justify-start items-center mb-5">
-        <Icon name="local-airport" size={30} color="#000" />
-        <Text className="text-md font-bold tracking-wider uppercase">
+    <View className={`flex-1  pt-2 ${noPadding ? "" : "px-5"}`}>
+      <View className="flex-row gap-2 justify-start items-center mb-6 border-l-3 border-primary pl-4">
+        <Icon name="local-airport" size={24} color={"#344054"} />
+        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
           Flight Details
         </Text>
       </View>
 
-
+      <Text className="text-lg text-secondary/80 font-semibold mb-3 px-sm">
+        Departure & Arrival Airport
+      </Text>
       {/* Departure Airport */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureAirport"] = el; }} className="mb-5 flex-row">
-        <FloatingLabelInput
-          label="Departure Airport"
-          value={values.flightDetails?.departureAirport || ""}
-          editable={false}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureAirport"] = el; }} className=" flex-row">
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={departureAirport ? `Departure airport: ${departureAirport}` : "Select departure airport"}
+          activeOpacity={0.7}
           onPress={() => onOpenAirportLookup?.("departure")}
-          right={
-            values.flightDetails?.departureAirport ? (
-              <TextInput.Icon
-                icon="close"
-                color="#999"
-                onPress={() => setFieldValue("flightDetails.departureAirport", "")}
-              />
-            ) : (
-              <TextInput.Icon
-                icon="airplane-takeoff"
-                color="#999"
-                onPress={() => onOpenAirportLookup?.("departure")}
-              />
-            )
-          }
-        />
+          className="bg-white border border-primary/60 px-4 py-4 rounded-t-3xl w-full border-b-0"
+        >
+          <View className="flex-row gap-2 items-center">
+            <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
+              <Icon name="flight-takeoff" size={24} color={depParsed.code ? "#0EA5E9" : "#98A2B3"} />
+              <Text
+                className={`text-2xl font-semibold ${depParsed.code ? "text-secondary/60" : "text-secondary/40"}`}
+              >
+                {depParsed.code || "---"}
+              </Text>
+            </View>
+
+            <View className="flex-1 justify-center gap-0 px-sm pr-14">
+              <Text className="text-lg text-secondary/80 ">From</Text>
+              <Text
+                className={`text-2xl font-semibold ${depParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {depParsed.name || "Select departure airport"}
+              </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
       </View>
+
+      <View className="flex-1">
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureDate"] = el; }} className="flex-row gap-4 ">
+          <View className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4" pointerEvents="box-none">
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Swap departure and arrival airports"
+              activeOpacity={0.8}
+              onPress={() => {
+                const currentDep = values.flightDetails?.departureAirport || "";
+                const currentArr = values.flightDetails?.arrivalAirport || "";
+                setFieldValue("flightDetails.departureAirport", currentArr);
+                setFieldValue("flightDetails.arrivalAirport", currentDep);
+              }}
+              className="border-2 border-primary/60 bg-primary w-14 h-14 rounded-full p-3 items-center justify-center"
+            >
+              <Icon name="swap-vert" size={24} color={"#ffffff"} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+
+        {/* Arrival Airport */}
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalAirport"] = el; }} className="mb-5 flex-row">
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={arrivalAirport ? `Arrival airport: ${arrivalAirport}` : "Select arrival airport"}
+            activeOpacity={0.7}
+            onPress={() => onOpenAirportLookup?.("arrival")}
+            className="bg-white border border-primary/60 px-4 py-4 rounded-b-3xl w-full"
+          >
+            <View className="flex-row gap-2 items-center">
+              <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
+                <Icon name="flight-land" size={24} color={arrParsed.code ? "#0EA5E9" : "#98A2B3"} />
+                <Text
+                  className={`text-2xl font-semibold ${arrParsed.code ? "text-secondary/60" : "text-secondary/40"}`}
+                >
+                  {arrParsed.code || "---"}
+                </Text>
+              </View>
+
+              <View className="flex-1 justify-center gap-0 px-sm pr-14">
+                <Text className="text-lg text-secondary/80 ">To</Text>
+                <Text
+                  className={`text-2xl font-semibold ${arrParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {arrParsed.name || "Select arrival airport"}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+
+        </View>
+      </View>
+
 
       {/* Departure Date & Time */}
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureDate"] = el; }} className="flex-row gap-4 mb-5">
@@ -90,35 +163,6 @@ export default function FlightTab({
             )
           }
           onPress={() => setShowFlightDatePickerFor("departureDate")}
-        />
-      </View>
-
-      <View className="items-center justify-center mb-5">
-        <Icon name="arrow-downward" size={24} color={colors.primary} />
-      </View>
-
-      {/* Arrival Airport */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalAirport"] = el; }} className="mb-5 flex-row">
-        <FloatingLabelInput
-          label="Arrival Airport"
-          value={values.flightDetails?.arrivalAirport || ""}
-          editable={false}
-          onPress={() => onOpenAirportLookup?.("arrival")}
-          right={
-            values.flightDetails?.arrivalAirport ? (
-              <TextInput.Icon
-                icon="close"
-                color="#999"
-                onPress={() => setFieldValue("flightDetails.arrivalAirport", "")}
-              />
-            ) : (
-              <TextInput.Icon
-                icon="airplane-landing"
-                color="#999"
-                onPress={() => onOpenAirportLookup?.("arrival")}
-              />
-            )
-          }
         />
       </View>
 
@@ -151,7 +195,20 @@ export default function FlightTab({
         </Text>
       </View>
 
+      <Text className="text-lg text-secondary/80 font-semibold mb-3 px-sm flex-1">
+        Booking Information
+      </Text>
+
       {/* Flight Number & Airline */}
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.airline"] = el; }} className="flex-row gap-4 mb-6">
+        <FloatingLabelInput
+          label="Airline"
+          value={values.flightDetails?.airline || ""}
+          onChangeText={handleChange("flightDetails.airline")}
+          onBlur={handleBlur("flightDetails.airline")}
+        />
+      </View>
+
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.flightNumber"] = el; }} className="flex-row gap-4 mb-6">
         <FloatingLabelInput
           label="Flight Number"
@@ -159,14 +216,7 @@ export default function FlightTab({
           onChangeText={handleChange("flightDetails.flightNumber")}
           onBlur={handleBlur("flightDetails.flightNumber")}
         />
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.airline"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Airline"
-            value={values.flightDetails?.airline || ""}
-            onChangeText={handleChange("flightDetails.airline")}
-            onBlur={handleBlur("flightDetails.airline")}
-          />
-        </View>
+
       </View>
 
       {/* Gate & Terminal */}
@@ -205,16 +255,6 @@ export default function FlightTab({
         </View>
       </View>
 
-      {/* Price */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.price"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Price"
-          keyboardType="numeric"
-          value={values.flightDetails?.price != null ? String(values.flightDetails.price) : ""}
-          onChangeText={handleChange("flightDetails.price")}
-          onBlur={handleBlur("flightDetails.price")}
-        />
-      </View>
     </View>
   );
 }

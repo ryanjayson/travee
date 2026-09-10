@@ -3,6 +3,8 @@ import React from "react";
 import { View, TouchableOpacity, Text, Linking, ScrollView } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
+import DateTime from "../DateTime";
+import { ActivityType } from "../../../../../../../types/enums";
 
 const ACCOMMODATION_SUBTYPES = [
   "Hotel",
@@ -31,6 +33,16 @@ interface AccomodationTabProps {
   onOpenPoiModal: (category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
+
+  onPressDate: () => void;
+  onPressTime: () => void;
+  onClearDate: () => void;
+  onClearTime: () => void;
+  onPressEndDate?: () => void;
+  onPressEndTime?: () => void;
+  onClearEndDate?: () => void;
+  onClearEndTime?: () => void;
+  onPressLocationMap?: () => void;
 }
 
 const FloatingLabelInput = (props: any) => (
@@ -50,6 +62,16 @@ export default function AccomodationTab({
   onOpenPoiModal,
   noPadding = false,
   fieldRefs,
+
+  onPressDate,
+  onPressTime,
+  onClearDate,
+  onClearTime,
+  onPressEndDate,
+  onPressEndTime,
+  onClearEndDate,
+  onClearEndTime,
+  onPressLocationMap,
 }: AccomodationTabProps) {
   const { colors: themeColors } = useTheme();
   const colors = propColors || themeColors;
@@ -57,48 +79,39 @@ export default function AccomodationTab({
 
   return (
     <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
-      <View className="flex-row gap-2 justify-start items-center mb-5">
-        <Icon name="hotel" size={30} color="#000" />
-        <Text className="text-md font-bold tracking-wider uppercase">
+      <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
+        <Icon name="hotel" size={24} color={"#344054"} />
+        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
           Stay Details
         </Text>
       </View>
-      {/* Accomodation Name */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.accomodationName"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Accomodation Name"
-          value={values.accomodationDetails?.accomodationName || ""}
-          onChangeText={handleChange("accomodationDetails.accomodationName")}
-          onBlur={handleBlur("accomodationDetails.accomodationName")}
-          right={
-            <TextInput.Icon
-              style={{ backgroundColor: "#F2F4F7" }}
-              icon="map-marker-radius-outline"
-              color="#263f69"
-              onPress={() => onOpenPoiModal("accommodation")}
-            />
-          }
-        />
-      </View>
-
-      {/* Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.address"] = el; }} className="mb-5">
-        <FloatingLabelInput
-          label="Address"
-          value={values.accomodationDetails?.address || ""}
-          onChangeText={handleChange("accomodationDetails.address")}
-          onBlur={handleBlur("accomodationDetails.address")}
-        />
-      </View>
 
 
-      <View className="flex-row gap-2 justify-start items-center mb-2">
+      {/* Date & Time Section */}
+      <DateTime
+        activityType={ActivityType.stay}
+        title="Check-In Date & Time"
+        startDate={values.startDate}
+        startTime={values.startTime}
+        endDate={values.endDate}
+        endTime={values.endTime}
+        onPressDate={onPressDate}
+        onPressTime={onPressTime}
+        onClearDate={onClearDate}
+        onClearTime={onClearTime}
+        onPressEndDate={onPressEndDate}
+        onPressEndTime={onPressEndTime}
+        onClearEndDate={onClearEndDate}
+        onClearEndTime={onClearEndTime}
+      />
+
+
+      {/* <View className="flex-row gap-2 justify-start items-center mb-2">
         <Text className="text-xs font-bold tracking-wider uppercase">
           Check-in/out date & time
         </Text>
       </View>
       <View className="flex-row justify-center items-center mb-5">
-        {/* Check-in Date & Time */}
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkinDateTime"] = el; }} className="flex-1 gap-4 ">
           <FloatingLabelInput
             label="Check-in"
@@ -120,7 +133,6 @@ export default function AccomodationTab({
           />
         </View>
         <Icon name="arrow-forward" size={16} color="#999" className="mt-sm" />
-        {/* Check-out Date & Time */}
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkoutDateTime"] = el; }} className="flex-1 gap-4">
           <FloatingLabelInput
             label="Check-out"
@@ -141,7 +153,7 @@ export default function AccomodationTab({
             onPress={() => setShowAccomodationDatePickerFor("checkoutDateTime")}
           />
         </View>
-      </View>
+      </View> */}
 
       {/* Accommodation Type (Sub-type) */}
       <View className="mb-5">

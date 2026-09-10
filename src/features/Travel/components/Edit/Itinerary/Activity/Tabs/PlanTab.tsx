@@ -102,11 +102,12 @@ export default function PlanTab({
   return (
     <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
       {/* Header */}
-      <View className="flex-row gap-2 justify-start items-center mb-5">
-        <Icon name="event-note" size={30} color={colors.onSurface || "#000"} />
-        <Text className="text-md font-bold tracking-wider uppercase">
+      <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
+        <Icon name="event-note" size={26} color={"#344054"} />
+        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
           Plan Details
         </Text>
+
       </View>
 
       {/* Date & Time Section */}
@@ -133,9 +134,10 @@ export default function PlanTab({
         }}
         className="mb-5 mt-4"
       >
-        <Text className="text-xs font-semibold tracking-wider uppercase mb-1.5">
+        <Text className="text-lg text-secondary/80 font-semibold mb-2">
           Type of Plan
         </Text>
+
         <TouchableOpacity
           onPress={() => setShowPlanTypeModal(true)}
           className="border rounded-[16px] px-4 py-3 min-h-[64px] justify-center bg-white"

@@ -1283,7 +1283,7 @@ const SectionAccordion = ({
                 >
                   {/* <Icon name="add" size={16} color={colors.primary} /> */}
                   <Text
-                    className="font-medium text-base underline  text-primary"
+                    className="font-normal text-base   text-primary"
                   >
                     Create Section
                   </Text>

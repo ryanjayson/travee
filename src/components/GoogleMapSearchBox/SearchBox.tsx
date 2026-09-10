@@ -194,9 +194,11 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
   onClose,
   onManualEntry,
   title,
+  description,
+  descriptionText,
   destination,
   destinations,
-  placeholder = "Search places",
+  placeholder = "Search here",
   initialValue = "",
   onClear,
   apiKey,
@@ -899,10 +901,14 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
             {...(panResponder?.panHandlers || {})}
             className="flex-1 mr-3"
           >
-            <Text className="text-xl font-bold text-accent" numberOfLines={1}>
+            <Text className="text-xl font-semibold text-accent" numberOfLines={1}>
               {title || "Search Spot or Location"}
             </Text>
-            {activeDestinations.length === 0 && destination ? (
+            {description || descriptionText ? (
+              <Text className="text-md text-tertiary" numberOfLines={2}>
+                {description || descriptionText}
+              </Text>
+            ) : activeDestinations.length === 0 && destination ? (
               <Text className="text-md text-tertiary" numberOfLines={1}>
                 Near {destination}
               </Text>
@@ -1062,11 +1068,10 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
                           <View className="flex-1 mr-2">
                             <Text
                               className="text-[15px] font-bold text-gray-900 leading-5"
-                              numberOfLines={1}
                             >
                               {item.name}
                             </Text>
-                            <Text className="text-sm text-tertiary leading-4 mt-0.5" numberOfLines={1}>
+                            <Text className="text-sm text-tertiary leading-4 mt-0.5" >
                               {item.secondaryText || item.fullAddress}
                             </Text>
                           </View>
@@ -1126,7 +1131,7 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
               autoCorrect={false}
               returnKeyType="search"
               onSubmitEditing={() => performSearch(query)}
-              className="flex-1 text-[18px] py-0 text-gray-900"
+              className="flex-1 text-[18px] py-0 text-secondary font-semibold"
               style={[{ color: colors.onSurface || "#101828" }, inputStyle]}
             />
             {isLoading && (

@@ -30,7 +30,10 @@ export const GoogleMapSearchModal: React.FC<GoogleMapSearchModalProps> = ({
   onClose,
   onSelect,
   onManualEntry,
-  title = "Search Spot or Location",
+  title = "Search Places",
+  description,
+  descriptionText,
+  placeholder,
   initialValue = "",
   initialCoordinates,
   destination = "",
@@ -194,6 +197,8 @@ export const GoogleMapSearchModal: React.FC<GoogleMapSearchModalProps> = ({
           <GoogleMapSearchBox
             mode="bottomsheet"
             title={title}
+            description={description || descriptionText}
+            placeholder={placeholder}
             destination={destination}
             destinations={destinations}
             country={country}

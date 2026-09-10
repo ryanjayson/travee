@@ -23,10 +23,10 @@ interface ActivityIcon {
 
 const activityIcons: ActivityIcon[] = [
   {
-    iconSet: IconSetProvider.ionic,
+    iconSet: IconSetProvider.material,
     activityType: ActivityType.plan,
     name: ActivityType.plan,
-    iconName: "pin",
+    iconName: "lightbulb",
     color: "#c10003", // grey
   },
 

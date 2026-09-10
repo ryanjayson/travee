@@ -500,7 +500,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                   accessibilityRole="button"
                   accessibilityLabel="View Trip"
                 >
-                  <Ionicons name="briefcase" size={20} color="#263F69" />
+                  <Ionicons name="briefcase" size={20} color="#0EA5E9" />
                 </TouchableOpacity>
                 <Text className="text-sm font-bold text-secondary/90  mt-1 text-center">View Trip</Text>
               </View>
@@ -514,7 +514,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                   accessibilityRole="button"
                   accessibilityLabel="Add Activity"
                 >
-                  <Ionicons name="bulb" size={22} color="#263F69" />
+                  <Ionicons name="bulb" size={22} color="#0EA5E9" />
                 </TouchableOpacity>
                 <Text className="text-sm font-bold text-secondary/90 mt-1 text-center">Add Activity</Text>
 
@@ -564,7 +564,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                   accessibilityRole="button"
                   accessibilityLabel="View Itinerary"
                 >
-                  <Ionicons name="list" size={20} color="#263F69" />
+                  <Ionicons name="list" size={20} color="#0EA5E9" />
                 </TouchableOpacity>
                 <Text className="text-sm font-bold text-secondary/90  mt-1 text-center">View Itinerary</Text>
               </View>
