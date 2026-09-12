@@ -89,8 +89,8 @@ export default function TransportationTab({
 
   return (
     <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
-      <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
-        <Icon name="directions-bus" size={26} color={"#344054"} />
+      <View className="flex-row gap-2 justify-start items-center mb-6 border-l-3 border-primary pl-4">
+        <Icon name="directions-bus" size={26} color={"#34405480"} />
         <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
           Transit Details
         </Text>
@@ -109,10 +109,10 @@ export default function TransportationTab({
           activeOpacity={0.7}
           onPress={() => onOpenGoogleSearch?.("pickupLocation")}
           className="bg-white border  px-4 py-4 rounded-t-3xl w-full border-b-0"
-          style={{ borderColor: activityColor }}
+          style={{ borderColor: activityColor + "50" }}
         >
           <View className="flex-row gap-2 items-center">
-            <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
+            <View className="border-r border-secondary/10 items-center min-w-[56px]">
               <Icon name="departure-board" size={26} color={values.transportationDetails?.pickupLocation ? activityColor : "#98A2B3"} />
               <Text
                 className={`text-xs font-bold tracking-wider mt-1 ${values.transportationDetails?.pickupLocation ? "text-secondary/70" : "text-secondary/40"}`}
@@ -122,14 +122,20 @@ export default function TransportationTab({
             </View>
 
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
-              <Text className="text-lg text-secondary/80">From</Text>
+              <Text className="text-sm text-secondary/80">From</Text>
               <Text
-                className={`text-2xl font-semibold ${values.transportationDetails?.pickupLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
-                numberOfLines={1}
-                ellipsizeMode="tail"
+                className={`text-2xl font-semibold leading-10px ${values.transportationDetails?.pickupLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
               >
                 {values.transportationDetails?.pickupLocation || "Select departure location"}
               </Text>
+
+              {values.transportationDetails?.pickupLocation && (
+                <Text
+                  className={`text-lg leading-xl ${values.transportationDetails?.pickupLocation ? "text-secondary/50" : "text-secondary/40 font-normal text-lg"}`}
+                >
+                  {values.transportationDetails?.pickupLocation || "Select departure location"}
+                </Text>
+              )}
             </View>
           </View>
         </TouchableOpacity>
@@ -148,10 +154,10 @@ export default function TransportationTab({
                 setFieldValue("transportationDetails.pickupLocation", currentDrop);
                 setFieldValue("transportationDetails.dropoffLocation", currentPick);
               }}
-              className="w-14 h-14 rounded-full p-3 items-center justify-center"
-              style={{ backgroundColor: activityColor }}
+              className="w-14 h-14 rounded-full p-3 items-center border-2 justify-center"
+              style={{ borderColor: activityColor + "50", backgroundColor: "#fff" }}
             >
-              <Icon name="swap-vert" size={24} color={"#fff"} />
+              <Icon name="swap-calls" size={24} color={activityColor} />
             </TouchableOpacity>
           </View>
         </View>
@@ -164,7 +170,7 @@ export default function TransportationTab({
             activeOpacity={0.7}
             onPress={() => onOpenGoogleSearch?.("dropoffLocation")}
             className="bg-white border px-4 py-4 rounded-b-3xl w-full"
-            style={{ borderColor: activityColor }}
+            style={{ borderColor: activityColor + "50" }}
 
           >
             <View className="flex-row gap-2 items-center">
@@ -177,7 +183,25 @@ export default function TransportationTab({
                 </Text>
               </View>
 
-              <View className="flex-1 justify-center gap-0 px-sm pr-14">
+              <View className="flex-1 justify-center gap-0 px-sm ">
+                <Text className="text-sm text-secondary/80">To</Text>
+                <Text
+                  className={`text-2xl font-semibold leading-10px ${values.transportationDetails?.dropoffLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                >
+                  {values.transportationDetails?.dropoffLocation || "Select arrival location"}
+                </Text>
+
+                {values.transportationDetails?.dropoffLocation && (
+                  <Text
+                    className={`text-lg leading-xl ${values.transportationDetails?.dropoffLocation ? "text-secondary/50" : "text-secondary/40 font-normal text-lg"}`}
+                  >
+                    {values.transportationDetails?.dropoffLocation}
+                  </Text>
+                )}
+              </View>
+
+
+              {/* <View className="flex-1 justify-center gap-0 px-sm pr-14">
                 <Text className="text-lg text-secondary/80">To</Text>
                 <Text
                   className={`text-2xl font-semibold ${values.transportationDetails?.dropoffLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
@@ -186,7 +210,7 @@ export default function TransportationTab({
                 >
                   {values.transportationDetails?.dropoffLocation || "Select arrival location"}
                 </Text>
-              </View>
+              </View> */}
             </View>
           </TouchableOpacity>
         </View>
@@ -212,10 +236,16 @@ export default function TransportationTab({
       />
 
       {/* Transit Mode Cards */}
-      <View className="mb-5">
-        <Text className="text-lg text-secondary/80 font-semibold mb-2">
-          Transit Mode
+      <View className="mb-5 mt-3">
+        <Text className="text-lg text-secondary/80 font-semibold mb-2 px-xs">
+          Booking Details
         </Text>
+
+        <View className="flex-row gap-2 justify-start items-center mb-2 px-xs">
+          <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
+            Transit Mode
+          </Text>
+        </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row gap-2.5 py-1">
             {TRANSIT_MODES.map((item) => {
@@ -274,7 +304,7 @@ export default function TransportationTab({
 
 
       {/* Seat / Coach / Vehicle Number & Booking Reference */}
-      <View className="mb-5">
+      <View className="mb-5 flex-1">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.seatOrVehicleNumber"] = el; }} style={{ flex: 1 }}>
           <FloatingLabelInput
             label="Seat / Coach / Vehicle #"
@@ -286,28 +316,18 @@ export default function TransportationTab({
       </View>
 
       {/* Booking Status & Price */}
-      <View className="flex-row gap-4 mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Booking Reference"
-            value={values.transportationDetails?.bookingReference || ""}
-            onChangeText={handleChange("transportationDetails.bookingReference")}
-            onBlur={handleBlur("transportationDetails.bookingReference")}
-          />
-        </View>
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.price"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Price"
-            value={values.transportationDetails?.price || ""}
-            onChangeText={handleChange("transportationDetails.price")}
-            onBlur={handleBlur("transportationDetails.price")}
-            keyboardType="numeric"
-          />
-        </View>
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.bookingStatus"] = el; }} className="mb-5 flex-1">
+        <FloatingLabelInput
+          label="Booking Reference"
+          value={values.transportationDetails?.bookingReference || ""}
+          onChangeText={handleChange("transportationDetails.bookingReference")}
+          onBlur={handleBlur("transportationDetails.bookingReference")}
+        />
       </View>
 
+
       {/* Website Address / Ticket Link */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.websiteAddress"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.websiteAddress"] = el; }} className="mb-5 flex-1">
         <FloatingLabelInput
           label="Website Address / Ticket Link"
           value={values.transportationDetails?.websiteAddress || ""}
@@ -350,7 +370,7 @@ export default function TransportationTab({
       </View>
 
       {/* Contact Number */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.contactNumber"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.contactNumber"] = el; }} className="mb-8 flex-1">
         <FloatingLabelInput
           label="Contact Number"
           value={values.transportationDetails?.contactNumber || ""}

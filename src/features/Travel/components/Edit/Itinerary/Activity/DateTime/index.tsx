@@ -84,7 +84,7 @@ export default function DateTime({
 
   return (
     <View className="mb-5">
-      <Text className="text-lg text-secondary/80 font-semibold mb-1">
+      <Text className="text-lg text-secondary/80 font-semibold mb-1 px-xs">
         {title || defaultTitle}
       </Text>
 
@@ -161,62 +161,64 @@ export default function DateTime({
       </View>
 
       {/* Additional Row for End Date & Time when date is a range */}
-      {endDate ? (
-        <View className="mt-3">
-          <Text className="text-xs font-semibold text-gray-500 uppercase mb-1">
-            {endDateLabel}
-          </Text>
-          <View className="flex-row items-center gap-4">
-            <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
-              <TouchableOpacity
-                onPress={onPressEndDate || onPressDate}
-                className="flex-1 flex-row items-center p-5 gap-2"
-                accessibilityRole="button"
-                accessibilityLabel="Select end date"
-              >
-                <Icon name="calendar-today" size={24} color="#98A2B3" />
-                <Text className={`text-lg ${endDate ? "text-gray-800" : "text-[#98A2B3]"}`}>
-                  {String(endDate)}
-                </Text>
-              </TouchableOpacity>
-              {onClearEndDate && (
+      {
+        endDate ? (
+          <View className="mt-3">
+            <Text className="text-xs font-semibold text-gray-500 uppercase mb-1">
+              {endDateLabel}
+            </Text>
+            <View className="flex-row items-center gap-4">
+              <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
                 <TouchableOpacity
-                  onPress={onClearEndDate}
-                  className="pr-4 py-3"
+                  onPress={onPressEndDate || onPressDate}
+                  className="flex-1 flex-row items-center p-5 gap-2"
                   accessibilityRole="button"
-                  accessibilityLabel="Clear end date"
+                  accessibilityLabel="Select end date"
                 >
-                  <Icon name="close" size={22} color="#98A2B3" />
+                  <Icon name="calendar-today" size={24} color="#98A2B3" />
+                  <Text className={`text-lg ${endDate ? "text-gray-800" : "text-[#98A2B3]"}`}>
+                    {String(endDate)}
+                  </Text>
                 </TouchableOpacity>
-              )}
-            </View>
-            <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
-              <TouchableOpacity
-                onPress={onPressEndTime}
-                className={`flex-1 flex-row items-center p-5 gap-2 ${!onPressEndTime ? "opacity-30" : ""}`}
-                accessibilityRole="button"
-                accessibilityLabel="Select end time"
-                disabled={!onPressEndTime}
-              >
-                <Icon name="access-time" size={24} color="#98A2B3" />
-                <Text className={`text-lg ${endTime ? "text-gray-800" : "text-[#98A2B3]"}`}>
-                  {endTime ? String(endTime) : "Time"}
-                </Text>
-              </TouchableOpacity>
-              {endTime !== "" && onClearEndTime && (
+                {onClearEndDate && (
+                  <TouchableOpacity
+                    onPress={onClearEndDate}
+                    className="pr-4 py-3"
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear end date"
+                  >
+                    <Icon name="close" size={22} color="#98A2B3" />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
                 <TouchableOpacity
-                  onPress={onClearEndTime}
-                  className="pr-4 py-3"
+                  onPress={onPressEndTime}
+                  className={`flex-1 flex-row items-center p-5 gap-2 ${!onPressEndTime ? "opacity-30" : ""}`}
                   accessibilityRole="button"
-                  accessibilityLabel="Clear end time"
+                  accessibilityLabel="Select end time"
+                  disabled={!onPressEndTime}
                 >
-                  <Icon name="close" size={22} color="#999" />
+                  <Icon name="access-time" size={24} color="#98A2B3" />
+                  <Text className={`text-lg ${endTime ? "text-gray-800" : "text-[#98A2B3]"}`}>
+                    {endTime ? String(endTime) : "Time"}
+                  </Text>
                 </TouchableOpacity>
-              )}
+                {endTime !== "" && onClearEndTime && (
+                  <TouchableOpacity
+                    onPress={onClearEndTime}
+                    className="pr-4 py-3"
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear end time"
+                  >
+                    <Icon name="close" size={22} color="#999" />
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           </View>
-        </View>
-      ) : null}
-    </View>
+        ) : null
+      }
+    </View >
   );
 }

@@ -5,6 +5,7 @@ import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
 import DateTime from "../DateTime";
 import { ActivityType } from "../../../../../../../types/enums";
+import { activityIcons } from "../../../../../../../components/ActivityIcon";
 
 export interface VehicleTypeItem {
   label: string;
@@ -73,6 +74,10 @@ export default function RideRentalTab({
   const paperTheme = useTheme();
   const colors = propColors || paperTheme.colors;
   const currentVehicle = values.rideRentalDetails?.vehicleType || null;
+  const activityColor =
+    activityIcons.find(
+      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === ActivityType.rideRental
+    )?.color || colors.primary || "#02899a";
 
   return (
     <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
@@ -95,7 +100,9 @@ export default function RideRentalTab({
           accessibilityLabel={values.rideRentalDetails?.pickupLocation ? `Pick-up location: ${values.rideRentalDetails.pickupLocation}` : "Select pick-up location"}
           activeOpacity={0.7}
           onPress={() => onOpenGoogleSearch?.("pickupLocation")}
-          className="bg-white border border-primary/60 px-4 py-4 rounded-t-3xl w-full border-b-0"
+          className="bg-white border px-4 py-4 rounded-t-3xl w-full border-b-0"
+          style={{ borderColor: activityColor + "60" }}
+
         >
           <View className="flex-row gap-2 items-center">
             <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
@@ -103,12 +110,12 @@ export default function RideRentalTab({
               <Text
                 className={`text-xs font-bold tracking-wider mt-1 ${values.rideRentalDetails?.pickupLocation ? "text-secondary/70" : "text-secondary/40"}`}
               >
-                PICKUP
+                PICK-UP
               </Text>
             </View>
 
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
-              <Text className="text-lg text-secondary/80">From</Text>
+              {/* <Text className="text-lg text-secondary/80">Ride Pick-up</Text> */}
               <Text
                 className={`text-2xl font-semibold ${values.rideRentalDetails?.pickupLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
                 numberOfLines={1}
@@ -134,9 +141,10 @@ export default function RideRentalTab({
                 setFieldValue("rideRentalDetails.pickupLocation", currentDrop);
                 setFieldValue("rideRentalDetails.dropoffLocation", currentPick);
               }}
-              className="border-2 border-primary/60 bg-primary w-14 h-14 rounded-full p-3 items-center justify-center"
+              className="w-14 h-14 rounded-full p-3 items-center border-2 justify-center"
+              style={{ borderColor: activityColor + "50", backgroundColor: "#fff" }}
             >
-              <Icon name="swap-vert" size={24} color={"#ffffff"} />
+              <Icon name="arrow-downward" size={24} color={activityColor} />
             </TouchableOpacity>
           </View>
         </View>
@@ -148,7 +156,9 @@ export default function RideRentalTab({
             accessibilityLabel={values.rideRentalDetails?.dropoffLocation ? `Drop-off location: ${values.rideRentalDetails.dropoffLocation}` : "Select drop-off location"}
             activeOpacity={0.7}
             onPress={() => onOpenGoogleSearch?.("dropoffLocation")}
-            className="bg-white border border-primary/60 px-4 py-4 rounded-b-3xl w-full"
+            className="bg-white border  px-4 py-4 rounded-b-3xl w-full"
+            style={{ borderColor: activityColor + "60" }}
+
           >
             <View className="flex-row gap-2 items-center">
               <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
@@ -161,7 +171,7 @@ export default function RideRentalTab({
               </View>
 
               <View className="flex-1 justify-center gap-0 px-sm pr-14">
-                <Text className="text-lg text-secondary/80">{values.rideRentalDetails?.dropoffLocation || "Select drop-off location"}</Text>
+                {/* <Text className="text-lg text-secondary/80">Ride Drop-off</Text> */}
                 <Text
                   className={`text-2xl font-semibold ${values.rideRentalDetails?.dropoffLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
                   numberOfLines={1}
@@ -217,10 +227,18 @@ export default function RideRentalTab({
       />
 
       {/* 4. Vehicle Type Cards */}
-      <View className="mb-5">
-        <Text className="text-lg text-secondary/80 font-semibold mb-2">
-          Vehicle Type
+      <View className="mb-3 flex-1">
+        <Text className="text-lg text-secondary/80 font-semibold mb-2 px-xs">
+          Booking Details
         </Text>
+
+
+        <View className="flex-row gap-2 justify-start items-center mb-2 px-xs">
+          <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
+            Vehicle Type
+          </Text>
+        </View>
+
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row gap-2.5 py-1">
             {VEHICLE_TYPES.map((item) => {
@@ -242,8 +260,8 @@ export default function RideRentalTab({
                     height: 94,
                     borderRadius: 16,
                     borderWidth: 1.5,
-                    borderColor: isSelected ? colors.primary : "#E4E7EC",
-                    backgroundColor: isSelected ? `${colors.primary}12` : "#FFFFFF",
+                    borderColor: isSelected ? `${activityColor}50` : "#E4E7EC",
+                    backgroundColor: isSelected ? `${activityColor}12` : "#FFFFFF",
                     alignItems: "center",
                     justifyContent: "center",
                     paddingVertical: 10,
@@ -255,16 +273,15 @@ export default function RideRentalTab({
                       width: 44,
                       height: 44,
                       borderRadius: 12,
-                      backgroundColor: isSelected ? `${colors.primary}22` : "#F2F4F7",
                       alignItems: "center",
                       justifyContent: "center",
-                      marginBottom: 6,
                     }}
                   >
                     <Icon
                       name={item.icon}
                       size={24}
-                      color={isSelected ? colors.primary : "#475467"}
+                      color={isSelected ? activityColor : "#475467"}
+
                     />
                   </View>
                   <Text
@@ -272,8 +289,7 @@ export default function RideRentalTab({
                     style={{
                       fontSize: 12,
                       fontWeight: isSelected ? "700" : "500",
-                      color: isSelected ? colors.primary : "#344054",
-                      textAlign: "center",
+                      color: isSelected ? activityColor : "#344054",
                     }}
                   >
                     {item.label}
@@ -286,7 +302,7 @@ export default function RideRentalTab({
       </View>
 
       {/* 5. Vehicle Model / Details */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.vehicleModel"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.vehicleModel"] = el; }} className="mb-5 flex-1">
         <FloatingLabelInput
           label="Vehicle Model / Make"
           value={values.rideRentalDetails?.vehicleModel || ""}
@@ -296,71 +312,68 @@ export default function RideRentalTab({
       </View>
 
       {/* 7. Booking Reference */}
-      <View className="flex-row gap-4 mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingReference"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Booking Reference"
-            value={values.rideRentalDetails?.bookingReference || ""}
-            onChangeText={handleChange("rideRentalDetails.bookingReference")}
-            onBlur={handleBlur("rideRentalDetails.bookingReference")}
-          />
-        </View>
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingReference"] = el; }} className="mb-5 flex-1">
+        <FloatingLabelInput
+          label="Booking Reference"
+          value={values.rideRentalDetails?.bookingReference || ""}
+          onChangeText={handleChange("rideRentalDetails.bookingReference")}
+          onBlur={handleBlur("rideRentalDetails.bookingReference")}
+        />
       </View>
 
       {/* 8. Website Link */}
-      <View className="flex-row gap-4 mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.websiteAddress"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Website / Link"
-            value={values.rideRentalDetails?.websiteAddress || ""}
-            onChangeText={handleChange("rideRentalDetails.websiteAddress")}
-            onBlur={handleBlur("rideRentalDetails.websiteAddress")}
-            contentStyle={{ textDecorationLine: "underline" }}
-            right={
-              values.rideRentalDetails?.websiteAddress ? (
-                <TextInput.Icon
-                  icon={() => (
-                    <Text
-                      style={{
-                        color: colors?.primary || "#263F69",
-                        textDecorationLine: "underline",
-                        fontWeight: "bold",
-                        fontSize: 14,
-                        marginTop: 2,
-                        opacity: 0.8,
-                      }}
-                    >
-                      open
-                    </Text>
-                  )}
-                  style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
-                  onPress={() => {
-                    let url = values.rideRentalDetails.websiteAddress;
-                    if (url) {
-                      if (!/^https?:\/\//i.test(url)) {
-                        url = "https://" + url;
-                      }
-                      Linking.openURL(url).catch((err) =>
-                        console.error("Failed to open URL", err)
-                      );
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.websiteAddress"] = el; }} className="mb-5 flex-1">
+        <FloatingLabelInput
+          label="Website / Link"
+          value={values.rideRentalDetails?.websiteAddress || ""}
+          onChangeText={handleChange("rideRentalDetails.websiteAddress")}
+          onBlur={handleBlur("rideRentalDetails.websiteAddress")}
+          contentStyle={{ textDecorationLine: "underline" }}
+          right={
+            values.rideRentalDetails?.websiteAddress ? (
+              <TextInput.Icon
+                icon={() => (
+                  <Text
+                    style={{
+                      color: colors?.primary || "#263F69",
+                      textDecorationLine: "underline",
+                      fontWeight: "bold",
+                      fontSize: 14,
+                      marginTop: 2,
+                      opacity: 0.8,
+                    }}
+                  >
+                    open
+                  </Text>
+                )}
+                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                onPress={() => {
+                  let url = values.rideRentalDetails.websiteAddress;
+                  if (url) {
+                    if (!/^https?:\/\//i.test(url)) {
+                      url = "https://" + url;
                     }
-                  }}
-                />
-              ) : null
-            }
-          />
-        </View>
+                    Linking.openURL(url).catch((err) =>
+                      console.error("Failed to open URL", err)
+                    );
+                  }
+                }}
+              />
+            ) : null
+          }
+        />
       </View>
 
       {/* 9. Contact */}
-      <View className="flex-row gap-2 justify-start items-center mb-2">
-        <Text className="text-xs font-bold tracking-wider uppercase">
-          Contact
+      <View className="flex-row gap-2 justify-start items-center mb-2 px-sm">
+        <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
+          Contact Info
         </Text>
       </View>
 
+
       {/* Contact Name */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactName"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactName"] = el; }} className="mb-5 flex-1">
         <FloatingLabelInput
           label="Contact Name"
           value={values.rideRentalDetails?.contactName || ""}
@@ -370,26 +383,24 @@ export default function RideRentalTab({
       </View>
 
       {/* Contact Number & Email Address */}
-      <View className="flex-row gap-4 mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactNumber"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Contact Number"
-            value={values.rideRentalDetails?.contactNumber || ""}
-            onChangeText={handleChange("rideRentalDetails.contactNumber")}
-            onBlur={handleBlur("rideRentalDetails.contactNumber")}
-            keyboardType="phone-pad"
-          />
-        </View>
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.emailAddress"] = el; }} style={{ flex: 1 }}>
-          <FloatingLabelInput
-            label="Email Address"
-            value={values.rideRentalDetails?.emailAddress || ""}
-            onChangeText={handleChange("rideRentalDetails.emailAddress")}
-            onBlur={handleBlur("rideRentalDetails.emailAddress")}
-            keyboardType="email-address"
-          />
-        </View>
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactNumber"] = el; }} className="mb-5 flex-1">
+        <FloatingLabelInput
+          label="Contact Number"
+          value={values.rideRentalDetails?.contactNumber || ""}
+          onChangeText={handleChange("rideRentalDetails.contactNumber")}
+          onBlur={handleBlur("rideRentalDetails.contactNumber")}
+          keyboardType="phone-pad"
+        />
       </View>
-    </View>
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.emailAddress"] = el; }} className="mb-5 flex-1">
+        <FloatingLabelInput
+          label="Email Address"
+          value={values.rideRentalDetails?.emailAddress || ""}
+          onChangeText={handleChange("rideRentalDetails.emailAddress")}
+          onBlur={handleBlur("rideRentalDetails.emailAddress")}
+          keyboardType="email-address"
+        />
+      </View>
+    </View >
   );
 }

@@ -5,6 +5,7 @@ import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
 import DateTime from "../DateTime";
 import { ActivityType } from "../../../../../../../types/enums";
+import { activityIcons } from "../../../../../../../components/ActivityIcon";
 
 export interface AccommodationTypeItem {
   label: string;
@@ -81,11 +82,15 @@ export default function AccomodationTab({
   const { colors: themeColors } = useTheme();
   const colors = propColors || themeColors;
   const currentSubType = values.accomodationDetails?.subType || null;
+  const activityColor =
+    activityIcons.find(
+      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === ActivityType.stay
+    )?.color || colors.primary || "#02899a";
 
   return (
     <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
-        <Icon name="hotel" size={24} color={"#344054"} />
+        <Icon name="hotel" size={24} color={"#34405480"} />
         <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
           Stay Details
         </Text>
@@ -161,10 +166,15 @@ export default function AccomodationTab({
       </View> */}
 
       {/* Accommodation Type (Sub-type) */}
-      <View className="mb-5">
-        <Text className="text-lg text-secondary/80 font-semibold mb-2">
-          Stay Type
+      <View className="mb-5 flex-1">
+        <Text className="text-lg text-secondary/80 font-semibold mb-2 px-xs">
+          Booking Details
         </Text>
+        <View className="flex-row gap-2 justify-start items-center mb-2 px-xs">
+          <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
+            Accommodation Type
+          </Text>
+        </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View className="flex-row gap-2.5 py-1">
             {ACCOMMODATION_SUBTYPES.map((item) => {
@@ -186,8 +196,8 @@ export default function AccomodationTab({
                     height: 94,
                     borderRadius: 16,
                     borderWidth: 1.5,
-                    borderColor: isSelected ? colors.primary : "#E4E7EC",
-                    backgroundColor: isSelected ? `${colors.primary}12` : "#FFFFFF",
+                    borderColor: isSelected ? `${activityColor}50` : "#E4E7EC",
+                    backgroundColor: isSelected ? `${activityColor}12` : "#FFFFFF",
                     alignItems: "center",
                     justifyContent: "center",
                     paddingVertical: 10,
@@ -199,16 +209,15 @@ export default function AccomodationTab({
                       width: 44,
                       height: 44,
                       borderRadius: 12,
-                      backgroundColor: isSelected ? `${colors.primary}22` : "#F2F4F7",
                       alignItems: "center",
                       justifyContent: "center",
-                      marginBottom: 6,
                     }}
                   >
                     <Icon
                       name={item.icon}
                       size={24}
-                      color={isSelected ? colors.primary : "#475467"}
+                      color={isSelected ? activityColor : "#475467"}
+
                     />
                   </View>
                   <Text
@@ -216,7 +225,7 @@ export default function AccomodationTab({
                     style={{
                       fontSize: 12,
                       fontWeight: isSelected ? "700" : "500",
-                      color: isSelected ? colors.primary : "#344054",
+                      color: isSelected ? activityColor : "#344054",
                       textAlign: "center",
                     }}
                   >
@@ -231,7 +240,7 @@ export default function AccomodationTab({
 
 
       {/* Website Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.websiteAddress"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.websiteAddress"] = el; }} className="mb-5 flex-1">
         <FloatingLabelInput
           label="Website Address"
           value={values.accomodationDetails?.websiteAddress || ""}
@@ -291,14 +300,14 @@ export default function AccomodationTab({
         </View> */}
       </View>
 
-      <View className="flex-row gap-2 justify-start items-center mb-2">
-        <Text className="text-xs font-bold tracking-wider uppercase">
-          Contact
+      <View className="flex-row gap-2 justify-start items-center mb-2 px-xs">
+        <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
+          Contact info
         </Text>
       </View>
 
       {/* Contact Name */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.contactName"] = el; }} className="mb-5">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.contactName"] = el; }} className="mb-5 flex-1">
         <FloatingLabelInput
           label="Contact Name"
           value={values.accomodationDetails?.contactName || ""}

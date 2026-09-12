@@ -1,4 +1,4 @@
-import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { Formik, useFormikContext } from "formik";
@@ -56,6 +56,7 @@ import WalkTab from "./Tabs/WalkTab";
 import PlanTab from "./Tabs/PlanTab";
 import PlanDateModal from "./DateTime/PlanDateModal";
 import CustomTagsInput from "./CustomTagsInput";
+import DestinationDetailsBottomSheet from "./DestinationDetailsBottomSheet";
 import { FadeInView } from "../../../../../../components/animations";
 import { safeJsonParse } from "../../../../../../utils/safeJsonParse";
 
@@ -545,7 +546,7 @@ const EditActivity = ({
   const [mapPinTargetField, setMapPinTargetField] = useState<string>("rideRentalDetails.pickupLocation");
   const [mapPinInitialValue, setMapPinInitialValue] = useState<string>("");
   const [mapPinInitialCoordinates, setMapPinInitialCoordinates] = useState<any>(null);
-  const [isDestinationExpanded, setIsDestinationExpanded] = useState<boolean>(false);
+  const [showDestinationSheet, setShowDestinationSheet] = useState<boolean>(false);
 
   const handleOpenMapPinModal = (targetField: string, initialText?: string, initialCoords?: any) => {
     setMapPinTargetField(targetField);
@@ -648,7 +649,8 @@ const EditActivity = ({
     showPoiModal ||
     showMapPinModal ||
     showGoogleSearchModal ||
-    showAirportLookupFor !== null
+    showAirportLookupFor !== null ||
+    showDestinationSheet
   );
 
   useEffect(() => {
@@ -1372,6 +1374,34 @@ const EditActivity = ({
           ? (selectedSection.isDefaultSection ? "[Ungroup]" : selectedSection.title || "")
           : (values.sectionId ? createdSections[values.sectionId] || "" : "");
         const activityColor = activityIcons.find((icon) => icon.activityType === values.type || icon.name === values.type)?.color || colors.primary || "#263F69";
+        const rawDestData =
+          values.destinationData ??
+          (values as any).destination_data ??
+          (values as any).destination_date;
+        const destData =
+          typeof rawDestData === "string"
+            ? safeJsonParse<any>(rawDestData, null)
+            : rawDestData;
+        const destinationAddress =
+          values.destination || destData?.address || (values as any).address || "";
+        const placeTitle =
+          destData?.name ||
+          destData?.placeName ||
+          destData?.title ||
+          (destData && values.title ? values.title : "");
+        const destCoords =
+          values.destinationData?.coordinates ||
+          destData?.coordinates ||
+          (typeof destData?.latitude === "number" && typeof destData?.longitude === "number"
+            ? { latitude: destData.latitude, longitude: destData.longitude }
+            : undefined);
+        const hasLocation = Boolean(placeTitle || destinationAddress || destData);
+        const shouldShowDestinationButton =
+          hasLocation ||
+          values.type === ActivityType.plan ||
+          values.type === ActivityType.stay ||
+          values.type === ActivityType.rideRental ||
+          values.type === ActivityType.transit;
 
         const handleAddNewSection = () => {
           openSectionModal(null, travelId, (newSection) => {
@@ -1402,7 +1432,7 @@ const EditActivity = ({
               <FadeInView type="up" delay={50} duration={350}>
                 <View className="flex-1 px-5 mt-2">
                   {/* Title */}
-                  <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mb-5">
+                  <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mt-lg mb-8">
                     <View className="flex-row justify-between items-center mb-1">
                       <Text className="text-lg text-secondary/80 font-semibold">
                         {values.type === ActivityType.plan ? "Plan Name" : values.type === ActivityType.stay ? "Stay or Accomodation Name" : values.type === ActivityType.transit ? "Transit Name" : values.type === ActivityType.rideRental ? "Rental Name" : "Activity Name"} <Text className="text-red-500 text-lg">*</Text>
@@ -1486,199 +1516,40 @@ const EditActivity = ({
                         <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
                       </View>
                     )}
-                  </View>
 
-                  {/* Readonly Destination / Address / Coordinates / Data Section */}
-                  {(() => {
-                    const rawDestData =
-                      values.destinationData ??
-                      (values as any).destination_data ??
-                      (values as any).destination_date;
-                    const destData =
-                      typeof rawDestData === "string"
-                        ? safeJsonParse<any>(rawDestData, null)
-                        : rawDestData;
-                    const destinationAddress =
-                      values.destination || destData?.address || (values as any).address || "";
-                    const placeTitle =
-                      destData?.name ||
-                      destData?.placeName ||
-                      destData?.title ||
-                      (destData && values.title ? values.title : "");
+                    {/* <Text className="text-sm text-tertiary p-sm">
+                      You may give your Plan a custom name to help you stay organized.
+                    </Text> */}
 
-                    const lat = destData?.coordinates?.latitude ?? destData?.latitude;
-                    const lng = destData?.coordinates?.longitude ?? destData?.longitude;
-                    const hasCoordinates =
-                      typeof lat === "number" &&
-                      typeof lng === "number" &&
-                      !isNaN(lat) &&
-                      !isNaN(lng);
-
-                    const shouldShow = Boolean(
-                      (placeTitle || destinationAddress || destData) &&
-                      values.type === ActivityType.plan
-                      || values.type === ActivityType.stay
-                      || values.type === ActivityType.rideRental
-                      || values.type === ActivityType.transit
-                    );
-                    if (!shouldShow) return null;
-
-                    const hasContent = Boolean(
-                      placeTitle || destinationAddress || hasCoordinates || destData
-                    );
-
-                    return (
-                      <View className="mb-8 p-4 rounded-2xl bg-primary/10">
-                        <TouchableOpacity
-                          activeOpacity={0.7}
-                          onPress={() => {
-                            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                            setIsDestinationExpanded((prev) => !prev);
-                          }}
-                          className="flex-row items-center justify-between"
-                          accessibilityRole="button"
-                          accessibilityLabel="Toggle Destination Details"
+                    {/* Tertiary Button for Destination Details */}
+                    {shouldShowDestinationButton && (placeTitle || destinationAddress) && (
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={
+                          hasLocation
+                            ? `View destination details: ${placeTitle || destinationAddress}`
+                            : "View destination details"
+                        }
+                        onPress={() => setShowDestinationSheet(true)}
+                        className="flex-row items-center self-start mt-2.5 py-1 px-1 gap-1.5 opacity-60"
+                      >
+                        <Ionicons name="location-outline" size={17} color={activityColor} />
+                        <Text className="text-base font-semibold text-secondary/80">
+                          Place Details |
+                        </Text>
+                        <Text
+                          className={`text-base  max-w-[200px] ${hasLocation ? "text-secondary/80" : "text-secondary/50"
+                            }`}
+                          ellipsizeMode="tail"
+                          numberOfLines={1}
                         >
-                          <View className="flex-row items-center flex-1 mr-2">
-                            <Icon name="place" size={16} color={colors.primary} />
-                            <Text className="text-lg   text-secondary ml-1.5">
-                              Destination Details
-                            </Text>
-                            {!isDestinationExpanded && (placeTitle || destinationAddress) ? (
-                              <Text
-                                className="text-xs text-gray-500 ml-2 flex-1 font-normal"
-                                numberOfLines={1}
-                              >
-                                • {placeTitle || destinationAddress}
-                              </Text>
-                            ) : null}
-                          </View>
-                          <Icon
-                            name={isDestinationExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-                            size={20}
-                            color="#263F69"
-                          />
-                        </TouchableOpacity>
-
-                        {isDestinationExpanded && (
-                          <View className="mt-3">
-                            {hasContent ? (
-                              <>
-                                {/* Place Title */}
-                                {Boolean(placeTitle) && (
-                                  <View className="mb-3">
-                                    <Text className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                      Place Title
-                                    </Text>
-                                    <View className="flex-row items-start">
-                                      <Icon
-                                        name="business"
-                                        size={16}
-                                        color={colors.primary || "#263F69"}
-                                        style={{ marginTop: 2 }}
-                                      />
-                                      <Text className="text-sm font-semibold text-gray-900 ml-1.5 flex-1 leading-5">
-                                        {placeTitle}
-                                      </Text>
-                                    </View>
-                                  </View>
-                                )}
-
-                                {/* Address */}
-                                {(!placeTitle ||
-                                  destinationAddress.trim().toLowerCase() !==
-                                  placeTitle.trim().toLowerCase()) && (
-                                    <View className="mb-3">
-                                      <Text className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                                        Address
-                                      </Text>
-                                      <View className="flex-row items-start">
-                                        <Icon
-                                          name="location-on"
-                                          size={16}
-                                          color="#D92D20"
-                                          style={{ marginTop: 2 }}
-                                        />
-                                        <Text className="text-sm font-medium text-gray-900 ml-1.5 flex-1 leading-5">
-                                          {destinationAddress || "No address provided"}
-                                        </Text>
-                                      </View>
-                                    </View>
-                                  )}
-
-                                {/* Coordinates */}
-                                <View className="mb-3 bg-white p-3 rounded-xl border border-gray-100">
-                                  <Text className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
-                                    Coordinates
-                                  </Text>
-                                  <View className="flex-row items-center justify-between">
-                                    <View className="flex-1">
-                                      <Text className="text-[10px] text-gray-400 uppercase">Latitude</Text>
-                                      <Text className="text-xs font-semibold text-gray-800 font-mono mt-0.5">
-                                        {typeof lat === "number" ? lat.toFixed(6) : "—"}
-                                      </Text>
-                                    </View>
-                                    <View className="h-6 w-[1px] bg-gray-200 mx-2" />
-                                    <View className="flex-1">
-                                      <Text className="text-[10px] text-gray-400 uppercase">Longitude</Text>
-                                      <Text className="text-xs font-semibold text-gray-800 font-mono mt-0.5">
-                                        {typeof lng === "number" ? lng.toFixed(6) : "—"}
-                                      </Text>
-                                    </View>
-                                  </View>
-                                </View>
-
-                                {/* Destination Data / City, Region, Country */}
-                                {(destData?.city ||
-                                  destData?.regionOrState ||
-                                  destData?.country ||
-                                  destData?.id) && (
-                                    <View className="mt-0.5">
-                                      <Text className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
-                                        Destination Data
-                                      </Text>
-                                      <View className="flex-row flex-wrap gap-1.5">
-                                        {Boolean(destData?.city) && (
-                                          <View className="bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100 flex-row items-center">
-                                            <Icon name="apartment" size={13} color="#155EEF" />
-                                            <Text className="text-xs font-medium text-blue-700 ml-1">
-                                              {destData.city}
-                                            </Text>
-                                          </View>
-                                        )}
-                                        {Boolean(destData?.regionOrState) && (
-                                          <View className="bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-100 flex-row items-center">
-                                            <Icon name="map" size={13} color="#7A5AF8" />
-                                            <Text className="text-xs font-medium text-purple-700 ml-1">
-                                              {destData.regionOrState}
-                                            </Text>
-                                          </View>
-                                        )}
-                                        {Boolean(destData?.country) && (
-                                          <View className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 flex-row items-center">
-                                            <Icon name="public" size={13} color="#039855" />
-                                            <Text className="text-xs font-medium text-emerald-700 ml-1">
-                                              {destData.country}
-                                            </Text>
-                                          </View>
-                                        )}
-                                      </View>
-                                    </View>
-                                  )}
-                              </>
-                            ) : (
-                              <View className="flex-row items-center py-2 px-1">
-                                <Icon name="location-off" size={18} color="#98A2B3" />
-                                <Text className="text-xs text-gray-500 ml-2">
-                                  No destination or coordinates selected. Tap the pin icon above to set location.
-                                </Text>
-                              </View>
-                            )}
-                          </View>
-                        )}
-                      </View>
-                    );
-                  })()}
+                          {placeTitle || destinationAddress || ""}
+                        </Text>
+                        <Ionicons name="chevron-forward" size={15} color="#98A2B3" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
 
                   {/* Plan Details */}
                   {values.type === ActivityType.plan && (
@@ -2128,8 +1999,8 @@ const EditActivity = ({
 
 
                     {/* Activity Type */}
-                    <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-8">
-                      <Text className="text-lg text-secondary/80 font-semibold mb-1">
+                    <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-6">
+                      <Text className="text-lg text-secondary/80 font-semibold mb-3">
                         Activity Type
                       </Text>
                       {(() => {
@@ -2166,12 +2037,12 @@ const EditActivity = ({
 
 
                     {/* Itinerary Section */}
-                    <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-8">
-                      <Text className="text-lg text-secondary/80 font-semibold uppercase mb-1">
+                    <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-6">
+                      <Text className="text-xl text-secondary/80 font-semibold ">
                         Section
                       </Text>
 
-                      <Text className={`text-base text-tertiary mb-1`}>
+                      <Text className={`text-base text-tertiary mb-2`}>
                         Select the Section to add this activity.
                       </Text>
 
@@ -2213,7 +2084,11 @@ const EditActivity = ({
 
                     {/* Description */}
                     <View ref={(el) => { fieldRefs.current["description"] = el; }} className="">
-                      <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text>
+                      <View className="flex-row gap-2 justify-start items-center px-xs">
+                        <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
+                          Description
+                        </Text>
+                      </View>
                       <DescriptionInput
                         value={values.description}
                         onChange={(text) => setFieldValue("description", text)}
@@ -2772,6 +2647,17 @@ const EditActivity = ({
                 }
                 setShowMapPinModal(false);
               }}
+            />
+
+            <DestinationDetailsBottomSheet
+              visible={showDestinationSheet}
+              onClose={() => setShowDestinationSheet(false)}
+              placeTitle={placeTitle}
+              destinationAddress={destinationAddress}
+              destData={destData}
+              coordinates={destCoords}
+              activityColor={activityColor}
+              onOpenSearch={() => handleOpenGoogleSearch("title")}
             />
 
             <GoogleMapSearchModal
