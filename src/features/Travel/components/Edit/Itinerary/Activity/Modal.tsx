@@ -580,12 +580,12 @@ const ActivityModal = ({
                           </Text>
                         </>
                       ) : (
-                        <>
-                          <Icon name="check" size={26} color={colors.primary} />
-                          <Text className="text-xl font-medium" style={{ color: colors.primary }}>
+                        <View className="flex-row items-center gap-1.5 bg-primary/10 py-1.5 px-3 rounded-full">
+                          <Icon name="check" size={20} color={colors.primary} />
+                          <Text className="text-lg font-medium" style={{ color: colors.primary }}>
                             {latestActivity?.id ? "Save" : "Add"}
                           </Text>
-                        </>
+                        </View>
                       )}
                     </View>
                   </TouchableOpacity>

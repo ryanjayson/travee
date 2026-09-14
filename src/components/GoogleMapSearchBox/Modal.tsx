@@ -69,9 +69,12 @@ export const GoogleMapSearchModal: React.FC<GoogleMapSearchModalProps> = ({
     };
   }, []);
 
+  const [sessionKey, setSessionKey] = useState<number>(0);
+
   // Animate in when visible becomes true
   useEffect(() => {
     if (visible) {
+      setSessionKey((k) => k + 1);
       translateY.setValue(screenHeight);
       Animated.spring(translateY, {
         toValue: 0,
@@ -195,6 +198,7 @@ export const GoogleMapSearchModal: React.FC<GoogleMapSearchModalProps> = ({
           className="w-full justify-end"
         >
           <GoogleMapSearchBox
+            key={`searchbox-${sessionKey}`}
             mode="bottomsheet"
             title={title}
             description={description || descriptionText}

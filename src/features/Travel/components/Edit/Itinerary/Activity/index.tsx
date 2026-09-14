@@ -136,137 +136,29 @@ export interface ActivityFormValues {
     emailAddress?: string | null;
     contactName?: string | null;
   } | null;
-  cafeRestaurantDetails?: {
-    restaurantName: string;
-    address?: string | null;
-    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
-    cuisine?: string | null;
-    priceRange?: string | null;
-    reservationLink?: string | null;
-    websiteAddress?: string | null;
-    contactNumber?: string | null;
-  } | null;
-  natureDetails?: {
-    spotName: string;
-    address?: string | null;
-    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
-    subType?: string | null;
-    entryFee?: string | null;
-    websiteAddress?: string | null;
-    contactName?: string | null;
-    contactNumber?: string | null;
-    emailAddress?: string | null;
-  } | null;
-  shoppingDetails?: {
-    venueName: string;
-    address?: string | null;
-    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
-    subType?: string | null;
-    websiteAddress?: string | null;
-    bookingReferenceOrLink?: string | null;
-    promoCodeOrLink?: string | null;
-    contactNumber?: string | null;
-    emailAddress?: string | null;
-  } | null;
-  entertainmentDetails?: {
-    venueName: string;
-    address?: string | null;
-    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
-    subType?: string | null;
-    websiteAddress?: string | null;
-    ticketPrice?: string | null;
-    bookingReference?: string | null;
-    contactName?: string | null;
-    contactNumber?: string | null;
-    emailAddress?: string | null;
-  } | null;
   transportationDetails?: {
     mode?: string | null;
     operatorProvider?: string | null;
-    pickupLocation?: string | null;
-    dropoffLocation?: string | null;
+    pickupLocation?: DestinationDto | null;
+    dropoffLocation?: DestinationDto | null;
     departureDateTime?: Date | string | null;
     arrivalDateTime?: Date | string | null;
     seatOrVehicleNumber?: string | null;
     bookingReference?: string | null;
     bookingStatus?: string | null;
-    price?: string | null;
     websiteAddress?: string | null;
     contactNumber?: string | null;
     notes?: string | null;
-  } | null;
-  walkDetails?: {
-    routeName?: string | null;
-    estimatedDistanceKm?: string | null;
-    estimatedDuration?: string | null;
-  } | null;
-  sightseeingDetails?: {
-    attractionName: string;
-    address?: string | null;
-    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
-    entryFee?: string | null;
-    websiteAddress?: string | null;
-    bookingReference?: string | null;
-    contactNumber?: string | null;
-    emailAddress?: string | null;
-  } | null;
-  preparationDetails?: {
-    taskLabel?: string | null;
-    deadlineDateTime?: Date | string | null;
-    priority?: string | null;
-    notes?: string | null;
-  } | null;
-  restDetails?: {
-    restLocationName?: string | null;
-    restLocationType?: string | null;
-  } | null;
-  hikeOrCampDetails?: {
-    trailOrSiteName: string;
-    address?: string | null;
-    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
-    subType?: string | null;
-    estimatedDistanceKm?: string | null;
-    campsiteName?: string | null;
-    permitRequired?: boolean | null;
-    contactPerson?: string | null;
-    contactNumber?: string | null;
-    emailAddress?: string | null;
-    websiteAddress?: string | null;
-    reservationLink?: string | null;
-    checkinDateTime?: Date | string | null;
-    checkoutDateTime?: Date | string | null;
-  } | null;
-  motorcycleRideDetails?: {
-    routeName?: string | null;
-    startingPoint?: string | null;
-    endingPoint?: string | null;
-    estimatedDistanceKm?: string | null;
-    roadType?: string | null;
-    bikeModel?: string | null;
-    fuelStops?: string | null;
-  } | null;
-  meetupDetails?: {
-    venueName: string;
-    address?: string | null;
-    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
-    hostOrOrganizer?: string | null;
-    numberOfPeople?: string | null;
-    meetupType?: string | null;
-    rsvpLink?: string | null;
   } | null;
   rideRentalDetails?: {
-    providerName?: string | null;
-    address?: string | null;
-    destinationAddressData?: import('../../../../types/TravelDto').DestinationDto | null;
     vehicleType?: string | null;
     vehicleModel?: string | null;
-    pickupLocation?: string | null;
-    dropoffLocation?: string | null;
+    pickupLocation?: DestinationDto | null;
+    dropoffLocation?: DestinationDto | null;
     rentalStartDateTime?: Date | string | null;
     rentalEndDateTime?: Date | string | null;
     bookingReference?: string | null;
     bookingStatus?: string | null;
-    price?: string | null;
     websiteAddress?: string | null;
     contactName?: string | null;
     contactNumber?: string | null;
@@ -643,9 +535,7 @@ const EditActivity = ({
     showFlightDatePickerFor !== null ||
     showAccomodationDatePickerFor !== null ||
     showTransportationDatePickerFor !== null ||
-    showPreparationDeadlinePicker ||
     showRideRentalDatePickerFor !== null ||
-    showHikeOrCampDatePickerFor !== null ||
     showPoiModal ||
     showMapPinModal ||
     showGoogleSearchModal ||
@@ -962,8 +852,16 @@ const EditActivity = ({
           ? {
             mode: values.transportationDetails.mode || null,
             operatorProvider: values.transportationDetails.operatorProvider || null,
-            pickupLocation: values.transportationDetails.pickupLocation || null,
-            dropoffLocation: values.transportationDetails.dropoffLocation || null,
+            pickupLocation: values.transportationDetails.pickupLocation
+              ? (typeof values.transportationDetails.pickupLocation === "string"
+                ? values.transportationDetails.pickupLocation
+                : values.transportationDetails.pickupLocation.name || values.transportationDetails.pickupLocation.city || "")
+              : null,
+            dropoffLocation: values.transportationDetails.dropoffLocation
+              ? (typeof values.transportationDetails.dropoffLocation === "string"
+                ? values.transportationDetails.dropoffLocation
+                : values.transportationDetails.dropoffLocation.name || values.transportationDetails.dropoffLocation.city || "")
+              : null,
             departureDateTime: finalStartDate
               ? finalStartDate
               : (values.transportationDetails.departureDateTime && new Date(values.transportationDetails.departureDateTime).getTime() > 0
@@ -977,31 +875,26 @@ const EditActivity = ({
             seatOrVehicleNumber: values.transportationDetails.seatOrVehicleNumber || null,
             bookingReference: values.transportationDetails.bookingReference || null,
             bookingStatus: values.transportationDetails.bookingStatus || null,
-            price: values.transportationDetails.price || null,
             websiteAddress: values.transportationDetails.websiteAddress || null,
             contactNumber: values.transportationDetails.contactNumber || null,
             notes: values.transportationDetails.notes || null,
           }
           : null,
-        // preparationDetails: values.type === ActivityType.preparation && values.preparationDetails
-        //   ? {
-        //     taskLabel: values.preparationDetails.taskLabel || null,
-        //     deadlineDateTime: values.preparationDetails.deadlineDateTime
-        //       ? new Date(values.preparationDetails.deadlineDateTime)
-        //       : null,
-        //     priority: values.preparationDetails.priority || null,
-        //     notes: values.preparationDetails.notes || null,
-        //   }
-        //   : null,
         rideRentalDetails: values.type === ActivityType.rideRental && values.rideRentalDetails
           ? {
-            providerName: values.rideRentalDetails.providerName,
-            address: values.rideRentalDetails.address || null,
-            destinationAddressData: values.rideRentalDetails.destinationAddressData ?? null,
+            providerName: values.title || "",
             vehicleType: values.rideRentalDetails.vehicleType || null,
             vehicleModel: values.rideRentalDetails.vehicleModel || null,
-            pickupLocation: values.rideRentalDetails.pickupLocation || null,
-            dropoffLocation: values.rideRentalDetails.dropoffLocation || null,
+            pickupLocation: values.rideRentalDetails.pickupLocation
+              ? (typeof values.rideRentalDetails.pickupLocation === "string"
+                ? values.rideRentalDetails.pickupLocation
+                : values.rideRentalDetails.pickupLocation.name || values.rideRentalDetails.pickupLocation.city || "")
+              : null,
+            dropoffLocation: values.rideRentalDetails.dropoffLocation
+              ? (typeof values.rideRentalDetails.dropoffLocation === "string"
+                ? values.rideRentalDetails.dropoffLocation
+                : values.rideRentalDetails.dropoffLocation.name || values.rideRentalDetails.dropoffLocation.city || "")
+              : null,
             rentalStartDateTime: finalStartDate || (values.rideRentalDetails.rentalStartDateTime
               ? new Date(values.rideRentalDetails.rentalStartDateTime)
               : null),
@@ -1010,7 +903,6 @@ const EditActivity = ({
               : null),
             bookingReference: values.rideRentalDetails.bookingReference || null,
             bookingStatus: values.rideRentalDetails.bookingStatus || null,
-            price: values.rideRentalDetails.price || null,
             websiteAddress: values.rideRentalDetails.websiteAddress || null,
             contactName: values.rideRentalDetails.contactName || null,
             contactNumber: values.rideRentalDetails.contactNumber || null,
@@ -1180,55 +1072,29 @@ const EditActivity = ({
       emailAddress: itineraryActivity?.accomodationDetails?.emailAddress || "",
       contactName: itineraryActivity?.accomodationDetails?.contactName || "",
     },
-    cafeRestaurantDetails: {
-      restaurantName: itineraryActivity?.cafeRestaurantDetails?.restaurantName || "",
-      address: itineraryActivity?.cafeRestaurantDetails?.address || "",
-      destinationAddressData: itineraryActivity?.cafeRestaurantDetails?.destinationAddressData ?? null,
-      cuisine: itineraryActivity?.cafeRestaurantDetails?.cuisine || "",
-      priceRange: itineraryActivity?.cafeRestaurantDetails?.priceRange || "",
-      reservationLink: itineraryActivity?.cafeRestaurantDetails?.reservationLink || "",
-      websiteAddress: itineraryActivity?.cafeRestaurantDetails?.websiteAddress || "",
-      contactNumber: itineraryActivity?.cafeRestaurantDetails?.contactNumber || "",
-    },
-    natureDetails: {
-      spotName: itineraryActivity?.natureDetails?.spotName || "",
-      address: itineraryActivity?.natureDetails?.address || "",
-      destinationAddressData: itineraryActivity?.natureDetails?.destinationAddressData ?? null,
-      subType: itineraryActivity?.natureDetails?.subType || null,
-      entryFee: itineraryActivity?.natureDetails?.entryFee || "",
-      websiteAddress: itineraryActivity?.natureDetails?.websiteAddress || "",
-      contactName: itineraryActivity?.natureDetails?.contactName || "",
-      contactNumber: itineraryActivity?.natureDetails?.contactNumber || "",
-      emailAddress: itineraryActivity?.natureDetails?.emailAddress || "",
-    },
-    shoppingDetails: {
-      venueName: itineraryActivity?.shoppingDetails?.venueName || "",
-      address: itineraryActivity?.shoppingDetails?.address || "",
-      destinationAddressData: itineraryActivity?.shoppingDetails?.destinationAddressData ?? null,
-      subType: itineraryActivity?.shoppingDetails?.subType || null,
-      websiteAddress: itineraryActivity?.shoppingDetails?.websiteAddress || "",
-      bookingReferenceOrLink: itineraryActivity?.shoppingDetails?.bookingReferenceOrLink || "",
-      promoCodeOrLink: itineraryActivity?.shoppingDetails?.promoCodeOrLink || "",
-      contactNumber: itineraryActivity?.shoppingDetails?.contactNumber || "",
-      emailAddress: itineraryActivity?.shoppingDetails?.emailAddress || "",
-    },
-    entertainmentDetails: {
-      venueName: itineraryActivity?.entertainmentDetails?.venueName || "",
-      address: itineraryActivity?.entertainmentDetails?.address || "",
-      destinationAddressData: itineraryActivity?.entertainmentDetails?.destinationAddressData ?? null,
-      subType: itineraryActivity?.entertainmentDetails?.subType || null,
-      websiteAddress: itineraryActivity?.entertainmentDetails?.websiteAddress || "",
-      ticketPrice: itineraryActivity?.entertainmentDetails?.ticketPrice || "",
-      bookingReference: itineraryActivity?.entertainmentDetails?.bookingReference || "",
-      contactName: itineraryActivity?.entertainmentDetails?.contactName || "",
-      contactNumber: itineraryActivity?.entertainmentDetails?.contactNumber || "",
-      emailAddress: itineraryActivity?.entertainmentDetails?.emailAddress || "",
-    },
     transportationDetails: {
       mode: itineraryActivity?.transportationDetails?.mode || null,
       operatorProvider: itineraryActivity?.transportationDetails?.operatorProvider || "",
-      pickupLocation: itineraryActivity?.transportationDetails?.pickupLocation || "",
-      dropoffLocation: itineraryActivity?.transportationDetails?.dropoffLocation || "",
+      pickupLocation: (itineraryActivity?.transportationDetails?.pickupLocation && typeof itineraryActivity.transportationDetails.pickupLocation === "object")
+        ? itineraryActivity.transportationDetails.pickupLocation as DestinationDto
+        : itineraryActivity?.transportationDetails?.pickupLocation
+          ? {
+            id: "",
+            name: String(itineraryActivity.transportationDetails.pickupLocation),
+            city: String(itineraryActivity.transportationDetails.pickupLocation),
+            coordinates: { latitude: 0, longitude: 0 },
+          }
+          : null,
+      dropoffLocation: (itineraryActivity?.transportationDetails?.dropoffLocation && typeof itineraryActivity.transportationDetails.dropoffLocation === "object")
+        ? itineraryActivity.transportationDetails.dropoffLocation as DestinationDto
+        : itineraryActivity?.transportationDetails?.dropoffLocation
+          ? {
+            id: "",
+            name: String(itineraryActivity.transportationDetails.dropoffLocation),
+            city: String(itineraryActivity.transportationDetails.dropoffLocation),
+            coordinates: { latitude: 0, longitude: 0 },
+          }
+          : null,
       departureDateTime: itineraryActivity?.transportationDetails?.departureDateTime
         ? new Date(itineraryActivity.transportationDetails.departureDateTime)
         : null,
@@ -1238,84 +1104,33 @@ const EditActivity = ({
       seatOrVehicleNumber: itineraryActivity?.transportationDetails?.seatOrVehicleNumber || "",
       bookingReference: itineraryActivity?.transportationDetails?.bookingReference || "",
       bookingStatus: itineraryActivity?.transportationDetails?.bookingStatus || "",
-      price: itineraryActivity?.transportationDetails?.price || "",
       websiteAddress: itineraryActivity?.transportationDetails?.websiteAddress || "",
       contactNumber: itineraryActivity?.transportationDetails?.contactNumber || "",
       notes: itineraryActivity?.transportationDetails?.notes || "",
     },
-    walkDetails: {
-      routeName: itineraryActivity?.walkDetails?.routeName || "",
-      estimatedDistanceKm: itineraryActivity?.walkDetails?.estimatedDistanceKm || "",
-      estimatedDuration: itineraryActivity?.walkDetails?.estimatedDuration || "",
-    },
-    sightseeingDetails: {
-      attractionName: itineraryActivity?.sightseeingDetails?.attractionName || "",
-      address: itineraryActivity?.sightseeingDetails?.address || "",
-      destinationAddressData: itineraryActivity?.sightseeingDetails?.destinationAddressData ?? null,
-      entryFee: itineraryActivity?.sightseeingDetails?.entryFee || "",
-      websiteAddress: itineraryActivity?.sightseeingDetails?.websiteAddress || "",
-      bookingReference: itineraryActivity?.sightseeingDetails?.bookingReference || "",
-      contactNumber: itineraryActivity?.sightseeingDetails?.contactNumber || "",
-      emailAddress: itineraryActivity?.sightseeingDetails?.emailAddress || "",
-    },
-    preparationDetails: {
-      taskLabel: itineraryActivity?.preparationDetails?.taskLabel || "",
-      deadlineDateTime: itineraryActivity?.preparationDetails?.deadlineDateTime
-        ? new Date(itineraryActivity.preparationDetails.deadlineDateTime)
-        : null,
-      priority: itineraryActivity?.preparationDetails?.priority || null,
-      notes: itineraryActivity?.preparationDetails?.notes || "",
-    },
-    restDetails: {
-      restLocationName: itineraryActivity?.restDetails?.restLocationName || "",
-      restLocationType: itineraryActivity?.restDetails?.restLocationType || null,
-    },
-    hikeOrCampDetails: {
-      trailOrSiteName: itineraryActivity?.hikeOrCampDetails?.trailOrSiteName || "",
-      address: itineraryActivity?.hikeOrCampDetails?.address || "",
-      destinationAddressData: itineraryActivity?.hikeOrCampDetails?.destinationAddressData ?? null,
-      subType: itineraryActivity?.hikeOrCampDetails?.subType || null,
-      estimatedDistanceKm: itineraryActivity?.hikeOrCampDetails?.estimatedDistanceKm || "",
-      campsiteName: itineraryActivity?.hikeOrCampDetails?.campsiteName || "",
-      permitRequired: itineraryActivity?.hikeOrCampDetails?.permitRequired ?? false,
-      contactPerson: itineraryActivity?.hikeOrCampDetails?.contactPerson || "",
-      contactNumber: itineraryActivity?.hikeOrCampDetails?.contactNumber || "",
-      emailAddress: itineraryActivity?.hikeOrCampDetails?.emailAddress || "",
-      websiteAddress: itineraryActivity?.hikeOrCampDetails?.websiteAddress || "",
-      reservationLink: itineraryActivity?.hikeOrCampDetails?.reservationLink || "",
-      checkinDateTime: itineraryActivity?.hikeOrCampDetails?.checkinDateTime
-        ? new Date(itineraryActivity.hikeOrCampDetails.checkinDateTime)
-        : null,
-      checkoutDateTime: itineraryActivity?.hikeOrCampDetails?.checkoutDateTime
-        ? new Date(itineraryActivity.hikeOrCampDetails.checkoutDateTime)
-        : null,
-    },
-    motorcycleRideDetails: {
-      routeName: itineraryActivity?.motorcycleRideDetails?.routeName || "",
-      startingPoint: itineraryActivity?.motorcycleRideDetails?.startingPoint || "",
-      endingPoint: itineraryActivity?.motorcycleRideDetails?.endingPoint || "",
-      estimatedDistanceKm: itineraryActivity?.motorcycleRideDetails?.estimatedDistanceKm || "",
-      roadType: itineraryActivity?.motorcycleRideDetails?.roadType || "",
-      bikeModel: itineraryActivity?.motorcycleRideDetails?.bikeModel || "",
-      fuelStops: itineraryActivity?.motorcycleRideDetails?.fuelStops || "",
-    },
-    meetupDetails: {
-      venueName: itineraryActivity?.meetupDetails?.venueName || "",
-      address: itineraryActivity?.meetupDetails?.address || "",
-      destinationAddressData: itineraryActivity?.meetupDetails?.destinationAddressData ?? null,
-      hostOrOrganizer: itineraryActivity?.meetupDetails?.hostOrOrganizer || "",
-      numberOfPeople: itineraryActivity?.meetupDetails?.numberOfPeople || "",
-      meetupType: itineraryActivity?.meetupDetails?.meetupType || null,
-      rsvpLink: itineraryActivity?.meetupDetails?.rsvpLink || "",
-    },
     rideRentalDetails: {
-      providerName: itineraryActivity?.rideRentalDetails?.providerName || "",
-      address: itineraryActivity?.rideRentalDetails?.address || "",
-      destinationAddressData: itineraryActivity?.rideRentalDetails?.destinationAddressData ?? null,
       vehicleType: itineraryActivity?.rideRentalDetails?.vehicleType || null,
       vehicleModel: itineraryActivity?.rideRentalDetails?.vehicleModel || "",
-      pickupLocation: itineraryActivity?.rideRentalDetails?.pickupLocation || "",
-      dropoffLocation: itineraryActivity?.rideRentalDetails?.dropoffLocation || "",
+      pickupLocation: (itineraryActivity?.rideRentalDetails?.pickupLocation && typeof itineraryActivity.rideRentalDetails.pickupLocation === "object")
+        ? itineraryActivity.rideRentalDetails.pickupLocation as DestinationDto
+        : itineraryActivity?.rideRentalDetails?.pickupLocation
+          ? {
+            id: "",
+            name: String(itineraryActivity.rideRentalDetails.pickupLocation),
+            city: String(itineraryActivity.rideRentalDetails.pickupLocation),
+            coordinates: { latitude: 0, longitude: 0 },
+          }
+          : null,
+      dropoffLocation: (itineraryActivity?.rideRentalDetails?.dropoffLocation && typeof itineraryActivity.rideRentalDetails.dropoffLocation === "object")
+        ? itineraryActivity.rideRentalDetails.dropoffLocation as DestinationDto
+        : itineraryActivity?.rideRentalDetails?.dropoffLocation
+          ? {
+            id: "",
+            name: String(itineraryActivity.rideRentalDetails.dropoffLocation),
+            city: String(itineraryActivity.rideRentalDetails.dropoffLocation),
+            coordinates: { latitude: 0, longitude: 0 },
+          }
+          : null,
       rentalStartDateTime: itineraryActivity?.rideRentalDetails?.rentalStartDateTime
         ? new Date(itineraryActivity.rideRentalDetails.rentalStartDateTime)
         : null,
@@ -1324,7 +1139,6 @@ const EditActivity = ({
         : null,
       bookingReference: itineraryActivity?.rideRentalDetails?.bookingReference || "",
       bookingStatus: itineraryActivity?.rideRentalDetails?.bookingStatus || "",
-      price: itineraryActivity?.rideRentalDetails?.price || "",
       websiteAddress: itineraryActivity?.rideRentalDetails?.websiteAddress || "",
       contactName: itineraryActivity?.rideRentalDetails?.contactName || "",
       contactNumber: itineraryActivity?.rideRentalDetails?.contactNumber || "",
@@ -1452,12 +1266,6 @@ const EditActivity = ({
                           if (values.type === ActivityType.stay && (!values.accomodationDetails?.accomodationName || values.accomodationDetails.accomodationName === values.title)) {
                             setFieldValue("accomodationDetails.accomodationName", text);
                           }
-                          if (values.type === ActivityType.rideRental && (!values.rideRentalDetails?.providerName || values.rideRentalDetails.providerName === values.title)) {
-                            setFieldValue("rideRentalDetails.providerName", text);
-                          }
-                          if (values.type === ActivityType.transit && (!values.transportationDetails?.pickupLocation || values.transportationDetails.pickupLocation === values.title)) {
-                            setFieldValue("transportationDetails.pickupLocation", text);
-                          }
                         }}
                         onBlur={handleBlur("title")}
                         error={(touched.title || submitCount > 0) && Boolean(errors.title)}
@@ -1482,12 +1290,6 @@ const EditActivity = ({
                                 setFieldValue("title", "");
                                 if (values.type === ActivityType.stay && values.accomodationDetails?.accomodationName === values.title) {
                                   setFieldValue("accomodationDetails.accomodationName", "");
-                                }
-                                if (values.type === ActivityType.rideRental && values.rideRentalDetails?.providerName === values.title) {
-                                  setFieldValue("rideRentalDetails.providerName", "");
-                                }
-                                if (values.type === ActivityType.transit && values.transportationDetails?.pickupLocation === values.title) {
-                                  setFieldValue("transportationDetails.pickupLocation", "");
                                 }
                               }}
                               className="p-2"
@@ -2691,7 +2493,7 @@ const EditActivity = ({
                         ? "Search drop-off station, branch, or address"
                         : values.type === ActivityType.stay
                           ? "Search for hotel, resort, or accommodation"
-                          : (travelPlan?.travel?.destination ? `Near ${travelPlan.travel.destination}` : undefined)
+                          : undefined
               }
               placeholder={
                 googleSearchTarget === "operatorProvider"
@@ -2710,15 +2512,15 @@ const EditActivity = ({
                 googleSearchTarget === "operatorProvider"
                   ? (values.transportationDetails?.operatorProvider || "")
                   : googleSearchTarget === "providerName"
-                    ? (values.rideRentalDetails?.providerName || "")
+                    ? (values.title || "")
                     : googleSearchTarget === "pickupLocation"
                       ? (values.type === ActivityType.rideRental
-                        ? (values.rideRentalDetails?.pickupLocation || "")
-                        : (values.transportationDetails?.pickupLocation || ""))
+                        ? (values.rideRentalDetails?.pickupLocation?.name || values.rideRentalDetails?.pickupLocation?.city || "")
+                        : (values.transportationDetails?.pickupLocation?.name || values.transportationDetails?.pickupLocation?.city || ""))
                       : googleSearchTarget === "dropoffLocation"
                         ? (values.type === ActivityType.rideRental
-                          ? (values.rideRentalDetails?.dropoffLocation || "")
-                          : (values.transportationDetails?.dropoffLocation || ""))
+                          ? (values.rideRentalDetails?.dropoffLocation?.name || values.rideRentalDetails?.dropoffLocation?.city || "")
+                          : (values.transportationDetails?.dropoffLocation?.name || values.transportationDetails?.dropoffLocation?.city || ""))
                         : values.title
               }
               initialCoordinates={values.destinationData?.coordinates}
@@ -2735,13 +2537,25 @@ const EditActivity = ({
               onSelect={(location: GooglePlaceLocation) => {
                 const placeName = location.name || location.address || "";
                 const destAddress = location.address || placeName;
+                const destLocation: DestinationDto = {
+                  id: location.placeId || "",
+                  name: location.name || location.address || "",
+                  city: location.secondaryText || location.address || "",
+                  coordinates: {
+                    latitude: location.coordinates?.latitude || 0,
+                    longitude: location.coordinates?.longitude || 0,
+                  },
+                };
 
                 if (googleSearchTarget === "operatorProvider") {
                   setFieldValue("transportationDetails.operatorProvider", placeName);
                 } else if (googleSearchTarget === "providerName") {
-                  setFieldValue("rideRentalDetails.providerName", placeName);
+                  setFieldValue("title", placeName);
+                  setFieldValue("destination", destAddress);
+                  setFieldValue("rideRentalDetails.pickupLocation", destLocation);
+                  setFieldValue("rideRentalDetails.dropoffLocation", destLocation);
                   if (location.coordinates) {
-                    setFieldValue("rideRentalDetails.destinationAddressData", {
+                    setFieldValue("destinationData", {
                       id: location.placeId || undefined,
                       name: location.name || undefined,
                       city: location.secondaryText || undefined,
@@ -2753,15 +2567,15 @@ const EditActivity = ({
                   }
                 } else if (googleSearchTarget === "pickupLocation") {
                   if (values.type === ActivityType.rideRental) {
-                    setFieldValue("rideRentalDetails.pickupLocation", destAddress);
+                    setFieldValue("rideRentalDetails.pickupLocation", destLocation);
                   } else {
-                    setFieldValue("transportationDetails.pickupLocation", destAddress);
+                    setFieldValue("transportationDetails.pickupLocation", destLocation);
                   }
                 } else if (googleSearchTarget === "dropoffLocation") {
                   if (values.type === ActivityType.rideRental) {
-                    setFieldValue("rideRentalDetails.dropoffLocation", destAddress);
+                    setFieldValue("rideRentalDetails.dropoffLocation", destLocation);
                   } else {
-                    setFieldValue("transportationDetails.dropoffLocation", destAddress);
+                    setFieldValue("transportationDetails.dropoffLocation", destLocation);
                   }
                 } else {
                   setFieldValue("title", placeName);
@@ -2771,23 +2585,11 @@ const EditActivity = ({
                     setFieldValue("accomodationDetails.address", destAddress);
                   }
                   if (values.type === ActivityType.rideRental) {
-                    setFieldValue("rideRentalDetails.providerName", placeName);
-                    setFieldValue("rideRentalDetails.pickupLocation", destAddress);
-                    setFieldValue("rideRentalDetails.dropoffLocation", destAddress);
-                    if (location.coordinates) {
-                      setFieldValue("rideRentalDetails.destinationAddressData", {
-                        id: location.placeId || undefined,
-                        name: location.name || undefined,
-                        city: location.secondaryText || undefined,
-                        coordinates: {
-                          latitude: location.coordinates.latitude,
-                          longitude: location.coordinates.longitude,
-                        },
-                      });
-                    }
+                    setFieldValue("rideRentalDetails.pickupLocation", destLocation);
+                    setFieldValue("rideRentalDetails.dropoffLocation", destLocation);
                   }
                   if (values.type === ActivityType.transit) {
-                    setFieldValue("transportationDetails.pickupLocation", destAddress);
+                    setFieldValue("transportationDetails.pickupLocation", destLocation);
                   }
                   if (location.coordinates) {
                     setFieldValue("destinationData", {
@@ -3091,23 +2893,6 @@ const EditActivity = ({
               onCancel={() => setShowTransportationDatePickerFor(null)}
             />
 
-            {/* Preparation Deadline Picker */}
-            <DateTimePickerModal
-              isVisible={showPreparationDeadlinePicker}
-              mode="datetime"
-              date={(() => {
-                const v = values.preparationDetails?.deadlineDateTime;
-                if (v) { const d = new Date(v); return isNaN(d.getTime()) ? new Date() : d; }
-                const fallbackDate = values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
-                if (fallbackDate) { const d = new Date(fallbackDate); if (!isNaN(d.getTime())) return d; }
-                return new Date();
-              })()}
-              onConfirm={(date) => {
-                setFieldValue("preparationDetails.deadlineDateTime", date);
-                setShowPreparationDeadlinePicker(false);
-              }}
-              onCancel={() => setShowPreparationDeadlinePicker(false)}
-            />
 
             {/* Ride Rental Date Pickers */}
             <DateTimePickerModal
@@ -3145,41 +2930,6 @@ const EditActivity = ({
               onCancel={() => setShowRideRentalDatePickerFor(null)}
             />
 
-            {/* Hike Or Camp Date Pickers */}
-            <DateTimePickerModal
-              isVisible={showHikeOrCampDatePickerFor !== null}
-              mode="datetime"
-              minimumDate={(() => {
-                if (showHikeOrCampDatePickerFor === "checkoutDateTime" && values.hikeOrCampDetails?.checkinDateTime) {
-                  const d = new Date(values.hikeOrCampDetails.checkinDateTime);
-                  if (!isNaN(d.getTime())) return d;
-                }
-                return undefined;
-              })()}
-              date={(() => {
-                const targetVal = showHikeOrCampDatePickerFor && values.hikeOrCampDetails?.[showHikeOrCampDatePickerFor];
-                if (targetVal) { const d = new Date(targetVal); if (!isNaN(d.getTime())) return d; }
-                if (showHikeOrCampDatePickerFor === "checkoutDateTime") {
-                  const checkinVal = values.hikeOrCampDetails?.checkinDateTime;
-                  if (checkinVal) { const d = new Date(checkinVal); if (!isNaN(d.getTime())) return d; }
-                }
-                const fallbackDate = values.startDate || currentSection?.startDate || travelPlan?.travel?.startOrDepartureDate;
-                if (fallbackDate) { const d = new Date(fallbackDate); if (!isNaN(d.getTime())) return d; }
-                return new Date();
-              })()}
-              onConfirm={(date) => {
-                if (showHikeOrCampDatePickerFor === "checkinDateTime") {
-                  setFieldValue("hikeOrCampDetails.checkinDateTime", date);
-                  if (values.hikeOrCampDetails?.checkoutDateTime && new Date(values.hikeOrCampDetails.checkoutDateTime).getTime() < date.getTime()) {
-                    setFieldValue("hikeOrCampDetails.checkoutDateTime", date);
-                  }
-                } else if (showHikeOrCampDatePickerFor === "checkoutDateTime") {
-                  setFieldValue("hikeOrCampDetails.checkoutDateTime", date);
-                }
-                setShowHikeOrCampDatePickerFor(null);
-              }}
-              onCancel={() => setShowHikeOrCampDatePickerFor(null)}
-            />
           </View>
         );
       }}

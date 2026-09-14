@@ -56,6 +56,18 @@ const FloatingLabelInput = (props: any) => (
   <FloatingLabelInputAtom {...props} />
 );
 
+const getLocationTitle = (loc?: any): string => {
+  if (!loc) return "";
+  if (typeof loc === "string") return loc;
+  return loc.name || loc.city || "";
+};
+
+const getLocationSubtitle = (loc?: any): string => {
+  if (!loc) return "";
+  if (typeof loc === "string") return "";
+  return loc.city && loc.city !== loc.name ? loc.city : loc.country || "";
+};
+
 export default function TransportationTab({
   values,
   handleChange,
@@ -87,6 +99,11 @@ export default function TransportationTab({
       (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === ActivityType.transit
     )?.color || colors.primary || "#02899a";
 
+  const pickupTitle = getLocationTitle(values.transportationDetails?.pickupLocation);
+  const pickupSubtitle = getLocationSubtitle(values.transportationDetails?.pickupLocation);
+  const dropoffTitle = getLocationTitle(values.transportationDetails?.dropoffLocation);
+  const dropoffSubtitle = getLocationSubtitle(values.transportationDetails?.dropoffLocation);
+
   return (
     <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-6 border-l-3 border-primary pl-4">
@@ -105,7 +122,7 @@ export default function TransportationTab({
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.pickupLocation"] = el; }} className="flex-row">
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel={values.transportationDetails?.pickupLocation ? `Pickup location: ${values.transportationDetails.pickupLocation}` : "Select pickup location"}
+          accessibilityLabel={pickupTitle ? `Pickup location: ${pickupTitle}` : "Select pickup location"}
           activeOpacity={0.7}
           onPress={() => onOpenGoogleSearch?.("pickupLocation")}
           className="bg-white border  px-4 py-4 rounded-t-3xl w-full border-b-0"
@@ -113,9 +130,9 @@ export default function TransportationTab({
         >
           <View className="flex-row gap-2 items-center">
             <View className="border-r border-secondary/10 items-center min-w-[56px]">
-              <Icon name="departure-board" size={26} color={values.transportationDetails?.pickupLocation ? activityColor : "#98A2B3"} />
+              <Icon name="departure-board" size={26} color={pickupTitle ? activityColor : "#98A2B3"} />
               <Text
-                className={`text-xs font-bold tracking-wider mt-1 ${values.transportationDetails?.pickupLocation ? "text-secondary/70" : "text-secondary/40"}`}
+                className={`text-xs font-bold tracking-wider mt-1 ${pickupTitle ? "text-secondary/70" : "text-secondary/40"}`}
               >
                 DEPART
               </Text>
@@ -124,16 +141,16 @@ export default function TransportationTab({
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
               <Text className="text-sm text-secondary/80">From</Text>
               <Text
-                className={`text-2xl font-semibold leading-10px ${values.transportationDetails?.pickupLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                className={`text-2xl font-semibold leading-10px ${pickupTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
               >
-                {values.transportationDetails?.pickupLocation || "Select departure location"}
+                {pickupTitle || "Select departure location"}
               </Text>
 
-              {values.transportationDetails?.pickupLocation && (
+              {Boolean(pickupSubtitle) && (
                 <Text
-                  className={`text-lg leading-xl ${values.transportationDetails?.pickupLocation ? "text-secondary/50" : "text-secondary/40 font-normal text-lg"}`}
+                  className="text-lg leading-xl text-secondary/50"
                 >
-                  {values.transportationDetails?.pickupLocation || "Select departure location"}
+                  {pickupSubtitle}
                 </Text>
               )}
             </View>
@@ -149,8 +166,8 @@ export default function TransportationTab({
               accessibilityLabel="Swap pickup and drop-off locations"
               activeOpacity={0.8}
               onPress={() => {
-                const currentPick = values.transportationDetails?.pickupLocation || "";
-                const currentDrop = values.transportationDetails?.dropoffLocation || "";
+                const currentPick = values.transportationDetails?.pickupLocation || null;
+                const currentDrop = values.transportationDetails?.dropoffLocation || null;
                 setFieldValue("transportationDetails.pickupLocation", currentDrop);
                 setFieldValue("transportationDetails.dropoffLocation", currentPick);
               }}
@@ -166,18 +183,17 @@ export default function TransportationTab({
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.dropoffLocation"] = el; }} className="mb-5 flex-row">
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel={values.transportationDetails?.dropoffLocation ? `Drop-off location: ${values.transportationDetails.dropoffLocation}` : "Select drop-off location"}
+            accessibilityLabel={dropoffTitle ? `Drop-off location: ${dropoffTitle}` : "Select drop-off location"}
             activeOpacity={0.7}
             onPress={() => onOpenGoogleSearch?.("dropoffLocation")}
             className="bg-white border px-4 py-4 rounded-b-3xl w-full"
             style={{ borderColor: activityColor + "50" }}
-
           >
             <View className="flex-row gap-2 items-center">
               <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
-                <Icon name="place" size={26} color={values.transportationDetails?.dropoffLocation ? activityColor : "#98A2B3"} />
+                <Icon name="place" size={26} color={dropoffTitle ? activityColor : "#98A2B3"} />
                 <Text
-                  className={`text-xs font-bold tracking-wider mt-1 ${values.transportationDetails?.dropoffLocation ? "text-secondary/70" : "text-secondary/40"}`}
+                  className={`text-xs font-bold tracking-wider mt-1 ${dropoffTitle ? "text-secondary/70" : "text-secondary/40"}`}
                 >
                   ARRIVE
                 </Text>
@@ -186,16 +202,16 @@ export default function TransportationTab({
               <View className="flex-1 justify-center gap-0 px-sm ">
                 <Text className="text-sm text-secondary/80">To</Text>
                 <Text
-                  className={`text-2xl font-semibold leading-10px ${values.transportationDetails?.dropoffLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                  className={`text-2xl font-semibold leading-10px ${dropoffTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
                 >
-                  {values.transportationDetails?.dropoffLocation || "Select arrival location"}
+                  {dropoffTitle || "Select arrival location"}
                 </Text>
 
-                {values.transportationDetails?.dropoffLocation && (
+                {Boolean(dropoffSubtitle) && (
                   <Text
-                    className={`text-lg leading-xl ${values.transportationDetails?.dropoffLocation ? "text-secondary/50" : "text-secondary/40 font-normal text-lg"}`}
+                    className="text-lg leading-xl text-secondary/50"
                   >
-                    {values.transportationDetails?.dropoffLocation}
+                    {dropoffSubtitle}
                   </Text>
                 )}
               </View>

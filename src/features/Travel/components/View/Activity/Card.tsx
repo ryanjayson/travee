@@ -14,7 +14,7 @@ import { FadeInView } from "../../../../../components/animations";
 import { useConfirm } from "../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../context/TravelContext";
-import { getActivityTypeLabel } from "../../../../../types/enums";
+import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { ChecklistItem, ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import MapViewer from "../../MapViewer";
@@ -535,7 +535,7 @@ const ActivityItemCard = ({
               {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
                 <View
                   style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }}
-                  className="items-end rounded-xs px-2 py-0.5"
+                  className="items-end rounded-xs px-2 py-0.5 flex-row"
                 >
                   <Text
                     // style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }}
@@ -543,7 +543,19 @@ const ActivityItemCard = ({
                     className="text-[8px] tracking-wider uppercase font-extrabold text-gray/60 "
                   >
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
+
                   </Text>
+                  {itineraryEventActivity.type == ActivityType.plan && (
+                    <Text
+                      style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
+                      className="text-[8px]  font-semibold  text-gray/60 px-xxs"
+                    >
+                      | Sightseeing
+                      {itineraryEventActivity.planType}
+
+                    </Text>
+                  )}
+
                 </View>
               )}
               {/* {itineraryEventActivity.startDate ? (
@@ -704,8 +716,12 @@ const ActivityItemCard = ({
                 )}
 
                 {itineraryEventActivity.isDone ?
-                  (<Icon name="check" size={24} color="#0c6134" />)
-                  : (<Icon name="check-box-outline-blank" size={24} color="#D0D5DD" />)}
+                  (<Icon name="radio-button-checked" size={24} color="#0c6134" style={{ opacity: 0.5 }} />)
+                  : (<Icon name="radio-button-unchecked" size={24} color="#D0D5DD" />)}
+
+                {/* <View className="h-6 w-6 border-2 border-dashed border-gray-400 rounded-full">
+
+                </View> */}
               </TouchableOpacity>
             </View>
           </FadeInView>

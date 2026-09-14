@@ -50,6 +50,18 @@ const FloatingLabelInput = (props: any) => (
   <FloatingLabelInputAtom {...props} />
 );
 
+const getLocationTitle = (loc?: any): string => {
+  if (!loc) return "";
+  if (typeof loc === "string") return loc;
+  return loc.name || loc.city || "";
+};
+
+const getLocationSubtitle = (loc?: any): string => {
+  if (!loc) return "";
+  if (typeof loc === "string") return "";
+  return loc.city && loc.city !== loc.name ? loc.city : loc.country || "";
+};
+
 export default function RideRentalTab({
   values,
   handleChange,
@@ -79,10 +91,15 @@ export default function RideRentalTab({
       (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === ActivityType.rideRental
     )?.color || colors.primary || "#02899a";
 
+  const pickupTitle = getLocationTitle(values.rideRentalDetails?.pickupLocation);
+  const pickupSubtitle = getLocationSubtitle(values.rideRentalDetails?.pickupLocation);
+  const dropoffTitle = getLocationTitle(values.rideRentalDetails?.dropoffLocation);
+  const dropoffSubtitle = getLocationSubtitle(values.rideRentalDetails?.dropoffLocation);
+
   return (
     <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
-        <Icon name="directions-car" size={26} color={"#344054"} />
+        <Icon name="directions-car" size={26} color={"#34405480"} />
         <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
           Rental Details
         </Text>
@@ -97,32 +114,38 @@ export default function RideRentalTab({
       <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.pickupLocation"] = el; }} className="flex-row">
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel={values.rideRentalDetails?.pickupLocation ? `Pick-up location: ${values.rideRentalDetails.pickupLocation}` : "Select pick-up location"}
+          accessibilityLabel={pickupTitle ? `Pick-up location: ${pickupTitle}` : "Select pick-up location"}
           activeOpacity={0.7}
           onPress={() => onOpenGoogleSearch?.("pickupLocation")}
           className="bg-white border px-4 py-4 rounded-t-3xl w-full border-b-0"
           style={{ borderColor: activityColor + "60" }}
-
         >
           <View className="flex-row gap-2 items-center">
             <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
-              <Icon name="car-rental" size={26} color={values.rideRentalDetails?.pickupLocation ? "#0EA5E9" : "#98A2B3"} />
+              <Icon name="car-rental" size={26} color={pickupTitle ? activityColor : "#98A2B3"} />
               <Text
-                className={`text-xs font-bold tracking-wider mt-1 ${values.rideRentalDetails?.pickupLocation ? "text-secondary/70" : "text-secondary/40"}`}
+                className={`text-xs font-bold tracking-wider mt-1 ${pickupTitle ? "text-secondary/70" : "text-secondary/40"}`}
               >
                 PICK-UP
               </Text>
             </View>
 
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
-              {/* <Text className="text-lg text-secondary/80">Ride Pick-up</Text> */}
               <Text
-                className={`text-2xl font-semibold ${values.rideRentalDetails?.pickupLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                className={`text-2xl font-semibold leading-10px ${pickupTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {values.rideRentalDetails?.pickupLocation || "Select pick-up location"}
+                {pickupTitle || "Select pick-up location"}
               </Text>
+              {Boolean(pickupSubtitle) && (
+                <Text
+                  className="text-lg leading-xl text-secondary/50"
+                  numberOfLines={1}
+                >
+                  {pickupSubtitle}
+                </Text>
+              )}
             </View>
           </View>
         </TouchableOpacity>
@@ -136,8 +159,8 @@ export default function RideRentalTab({
               accessibilityLabel="Swap pick-up and drop-off locations"
               activeOpacity={0.8}
               onPress={() => {
-                const currentPick = values.rideRentalDetails?.pickupLocation || "";
-                const currentDrop = values.rideRentalDetails?.dropoffLocation || "";
+                const currentPick = values.rideRentalDetails?.pickupLocation || null;
+                const currentDrop = values.rideRentalDetails?.dropoffLocation || null;
                 setFieldValue("rideRentalDetails.pickupLocation", currentDrop);
                 setFieldValue("rideRentalDetails.dropoffLocation", currentPick);
               }}
@@ -153,32 +176,38 @@ export default function RideRentalTab({
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.dropoffLocation"] = el; }} className="mb-2 flex-row">
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel={values.rideRentalDetails?.dropoffLocation ? `Drop-off location: ${values.rideRentalDetails.dropoffLocation}` : "Select drop-off location"}
+            accessibilityLabel={dropoffTitle ? `Drop-off location: ${dropoffTitle}` : "Select drop-off location"}
             activeOpacity={0.7}
             onPress={() => onOpenGoogleSearch?.("dropoffLocation")}
             className="bg-white border  px-4 py-4 rounded-b-3xl w-full"
             style={{ borderColor: activityColor + "60" }}
-
           >
             <View className="flex-row gap-2 items-center">
               <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
-                <Icon name="place" size={26} color={values.rideRentalDetails?.dropoffLocation ? "#0EA5E9" : "#98A2B3"} />
+                <Icon name="place" size={26} color={dropoffTitle ? activityColor : "#98A2B3"} />
                 <Text
-                  className={`text-xs font-bold tracking-wider mt-1 ${values.rideRentalDetails?.dropoffLocation ? "text-secondary/70" : "text-secondary/40"}`}
+                  className={`text-xs font-bold tracking-wider mt-1 ${dropoffTitle ? "text-secondary/70" : "text-secondary/40"}`}
                 >
                   RETURN
                 </Text>
               </View>
 
               <View className="flex-1 justify-center gap-0 px-sm pr-14">
-                {/* <Text className="text-lg text-secondary/80">Ride Drop-off</Text> */}
                 <Text
-                  className={`text-2xl font-semibold ${values.rideRentalDetails?.dropoffLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                  className={`text-2xl font-semibold leading-10px ${dropoffTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
-                  {values.rideRentalDetails?.dropoffLocation || "Select drop-off location"}
+                  {dropoffTitle || "Select drop-off location"}
                 </Text>
+                {Boolean(dropoffSubtitle) && (
+                  <Text
+                    className="text-lg leading-xl text-secondary/50"
+                    numberOfLines={1}
+                  >
+                    {dropoffSubtitle}
+                  </Text>
+                )}
               </View>
             </View>
           </TouchableOpacity>

@@ -229,10 +229,34 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
   const activeDestinationsRef = useRef<DestinationBadgeItem[]>(activeDestinations);
   activeDestinationsRef.current = activeDestinations;
 
+  // Track if user explicitly cleared or removed destinations
+  const userClearedDestinationsRef = useRef<boolean>(false);
+  const prevDestinationsKeyRef = useRef<string>(
+    normalizeDestinations(destinations, destination)
+      .map((d) => d.name.toLowerCase())
+      .sort()
+      .join("|")
+  );
+
   // Sync activeDestinations if destinations prop changes
   useEffect(() => {
     const normalized = normalizeDestinations(destinations, destination);
-    setActiveDestinations(normalized);
+    const newKey = normalized.map((d) => d.name.toLowerCase()).sort().join("|");
+
+    // If destination prop key changed from what we originally received (e.g., completely new destination prop passed)
+    if (newKey !== prevDestinationsKeyRef.current) {
+      prevDestinationsKeyRef.current = newKey;
+      userClearedDestinationsRef.current = false;
+      setActiveDestinations(normalized);
+      activeDestinationsRef.current = normalized;
+      return;
+    }
+
+    // If the props represent the same destinations, but user cleared them:
+    // DO NOT re-add default destination!
+    if (userClearedDestinationsRef.current) {
+      return;
+    }
   }, [destinations, destination]);
 
   const [query, setQuery] = useState<string>(initialValue);
@@ -320,12 +344,12 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
   const fetchFallbackPredictions = async (
     searchText: string,
     signal: AbortSignal,
-    customProximity?: { latitude: number; longitude: number },
-    customCountry?: string
+    customProximity?: { latitude: number; longitude: number } | null,
+    customCountry?: string | null
   ): Promise<SearchPredictionItem[]> => {
-    const targetCountry = customCountry || country;
-    const targetProximity = customProximity || proximity;
-    const validCountry = getValidMapboxCountryCode(targetCountry);
+    const targetCountry = customCountry === null ? undefined : (customCountry || country);
+    const targetProximity = customProximity === null ? undefined : (customProximity || proximity);
+    const validCountry = targetCountry ? getValidMapboxCountryCode(targetCountry) : undefined;
 
     // 1. Try Mapbox SearchBox API
     if (MAPBOX_ACCESS_TOKEN) {
@@ -420,10 +444,13 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
   // Helper to query single search context (Google New -> Google Legacy -> Fallback)
   const searchSingleScope = async (
     searchText: string,
-    targetProximity?: { latitude: number; longitude: number },
-    targetCountry?: string,
+    targetProximity?: { latitude: number; longitude: number } | null,
+    targetCountry?: string | null,
     signal?: AbortSignal
   ): Promise<SearchPredictionItem[]> => {
+    const effCountry = targetCountry === null ? undefined : (targetCountry || country);
+    const effProx = targetProximity === null ? undefined : (targetProximity || proximity);
+
     // 1. Try Google Places API (New)
     if (activeApiKey && signal) {
       try {
@@ -431,11 +458,9 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
           input: searchText,
           sessionToken: sessionTokenRef.current,
         };
-        const effCountry = targetCountry || country;
         if (effCountry) {
           bodyPayload.includedRegionCodes = [effCountry.toUpperCase()];
         }
-        const effProx = targetProximity || proximity;
         if (effProx && (effProx.latitude !== 0 || effProx.longitude !== 0)) {
           bodyPayload.locationBias = {
             circle: {
@@ -497,9 +522,7 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
         let url = `${GOOGLE_LEGACY_AUTOCOMPLETE_URL}?input=${encodeURIComponent(
           searchText
         )}&key=${activeApiKey}&sessiontoken=${sessionTokenRef.current}&language=en`;
-        const effCountry = targetCountry || country;
         if (effCountry) url += `&components=country:${encodeURIComponent(effCountry.toLowerCase())}`;
-        const effProx = targetProximity || proximity;
         if (effProx && (effProx.latitude !== 0 || effProx.longitude !== 0)) {
           url += `&location=${effProx.latitude},${effProx.longitude}&radius=50000`;
         }
@@ -557,11 +580,15 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
         if (currentActiveDests.length > 1) {
           const searches = currentActiveDests.map((dest) => {
             const queryWithDest = dest.coordinates ? clean : `${clean} ${dest.name}`;
-            return searchSingleScope(queryWithDest, dest.coordinates, dest.country, controller.signal)
-              .catch((err) => {
-                if (err?.name === "AbortError") throw err;
-                return [] as SearchPredictionItem[];
-              });
+            return searchSingleScope(
+              queryWithDest,
+              dest.coordinates || null,
+              dest.country || null,
+              controller.signal
+            ).catch((err) => {
+              if (err?.name === "AbortError") throw err;
+              return [] as SearchPredictionItem[];
+            });
           });
 
           const resultsArray = await Promise.all(searches);
@@ -595,8 +622,8 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
           const queryWithDest = singleDest.coordinates ? clean : `${clean} ${singleDest.name}`;
           const results = await searchSingleScope(
             queryWithDest,
-            singleDest.coordinates,
-            singleDest.country,
+            singleDest.coordinates || null,
+            singleDest.country || country || null,
             controller.signal
           );
           setPredictions(results);
@@ -604,8 +631,8 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
           return;
         }
 
-        // Case C: No active destinations (badges cleared or none provided) -> Global/unbiased search
-        const globalResults = await searchSingleScope(clean, proximity, country, controller.signal);
+        // Case C: No active destinations (badges cleared or none provided) -> Global/unbiased search anywhere, remove proximity and country bias
+        const globalResults = await searchSingleScope(clean, null, null, controller.signal);
         setPredictions(globalResults);
         setIsExpanded(true);
       } catch (err: any) {
@@ -624,7 +651,10 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
     setActiveDestinations((prev) => {
       const next = prev.filter((d) => d.id !== id);
       activeDestinationsRef.current = next;
-      // Re-trigger search immediately with the remaining active destinations
+      if (next.length === 0) {
+        userClearedDestinationsRef.current = true;
+      }
+      // Re-trigger search immediately with the remaining active destinations (or global if 0)
       if (query.trim().length >= 2) {
         setTimeout(() => {
           performSearch(query);
@@ -634,6 +664,26 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
     });
 
     // If keyboard is currently open, keep the text input focused so the keyboard stays visible
+    if (isKeyboardVisible) {
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    }
+  };
+
+  // Handle clearing all active destination badges
+  const handleClearAllDestinations = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    userClearedDestinationsRef.current = true;
+    activeDestinationsRef.current = [];
+    setActiveDestinations([]);
+    // Re-trigger search immediately anywhere worldwide
+    if (query.trim().length >= 2) {
+      setTimeout(() => {
+        performSearch(query);
+      }, 50);
+    }
+
     if (isKeyboardVisible) {
       requestAnimationFrame(() => {
         inputRef.current?.focus();
@@ -908,11 +958,15 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
               <Text className="text-md text-tertiary" numberOfLines={2}>
                 {description || descriptionText}
               </Text>
-            ) : activeDestinations.length === 0 && destination ? (
+            ) : activeDestinations.length > 0 ? (
               <Text className="text-md text-tertiary" numberOfLines={1}>
-                Near {destination}
+                Searching near {activeDestinations.map((d) => d.name).join(", ")}
               </Text>
-            ) : null}
+            ) : (
+              <Text className="text-md text-tertiary" numberOfLines={1}>
+                Searching worldwide
+              </Text>
+            )}
           </View>
 
           <View className="flex-row items-center gap-2">
@@ -947,7 +1001,7 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
         </View>
 
         {/* Clearable Active Destination Badges */}
-        {activeDestinations.length > 0 && (
+        {activeDestinations.length > 0 ? (
           <View className="px-5 pb-4">
             <ScrollView
               horizontal
@@ -978,9 +1032,31 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
                   </TouchableOpacity>
                 </View>
               ))}
+              {activeDestinations.length > 1 && (
+                <TouchableOpacity
+                  onPress={handleClearAllDestinations}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="Clear all destination filters"
+                  className="px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 ml-1"
+                >
+                  <Text className="text-xs text-gray-500 font-medium">Clear all</Text>
+                </TouchableOpacity>
+              )}
             </ScrollView>
           </View>
-        )}
+        ) : userClearedDestinationsRef.current ? (
+          <View className="px-5 pb-3">
+            <View className="flex-row items-center">
+              <View className="flex-row items-center px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50">
+                <Icon name="public" size={13} color="#667085" style={{ marginRight: 4 }} />
+                <Text className="text-xs text-secondary/70 font-medium">
+                  Worldwide (no proximity filter)
+                </Text>
+              </View>
+            </View>
+          </View>
+        ) : null}
 
         {/* Selected Spot Preview Card (When spot is picked, shown above search box) */}
         {selectedSpot && (
@@ -1209,7 +1285,7 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
       )}
 
       {/* Active Destination Badges in Floating Mode */}
-      {activeDestinations.length > 0 && !selectedSpot && (
+      {activeDestinations.length > 0 && !selectedSpot ? (
         <View className="mb-2 px-1">
           <ScrollView
             horizontal
@@ -1241,9 +1317,29 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
                 </TouchableOpacity>
               </View>
             ))}
+            {activeDestinations.length > 1 && (
+              <TouchableOpacity
+                onPress={handleClearAllDestinations}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Clear all destination filters"
+                className="px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 ml-1"
+              >
+                <Text className="text-xs text-gray-500 font-medium">Clear all</Text>
+              </TouchableOpacity>
+            )}
           </ScrollView>
         </View>
-      )}
+      ) : userClearedDestinationsRef.current && !selectedSpot ? (
+        <View className="mb-2 px-1 flex-row items-center">
+          <View className="flex-row items-center px-2.5 py-1 rounded-full bg-white border border-gray-200 shadow-sm">
+            <Icon name="public" size={13} color="#667085" style={{ marginRight: 4 }} />
+            <Text className="text-xs text-secondary/70 font-medium">
+              Worldwide (no proximity filter)
+            </Text>
+          </View>
+        </View>
+      ) : null}
 
       {/* Predictions List (Expands ABOVE search box) */}
       {(((isTyping && isExpanded && !selectedSpot) || (predictions.length > 0 && isExpanded))) && (
