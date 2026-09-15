@@ -84,7 +84,7 @@ interface EditActivityProps {
   onDirtyChange?: (isDirty: boolean) => void;
 }
 
-const TravelSchema = Yup.object().shape({
+export const TravelSchema = Yup.object().shape({
   title: Yup.string()
     .required("Activity title is required")
     .min(3, "Activity title is too short, make it more descriptive")

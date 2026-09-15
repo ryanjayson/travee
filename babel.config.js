@@ -3,7 +3,7 @@ module.exports = function (api) {
   return {
     presets: [
       "babel-preset-expo",
-      "nativewind/babel",
+      ...(process.env.NODE_ENV === "test" ? [] : ["nativewind/babel"]),
     ],
     plugins: [
       ["@babel/plugin-proposal-decorators", { legacy: true }],
