@@ -826,10 +826,10 @@ const EditActivity = ({
           ? {
             departureAirport: values.flightDetails.departureAirport,
             arrivalAirport: values.flightDetails.arrivalAirport,
-            departureDate: values.flightDetails.departureDate
+            departureDate: values.flightDetails.departureDate && new Date(values.flightDetails.departureDate).getTime() > 0
               ? new Date(values.flightDetails.departureDate)
               : null,
-            arrivalDate: values.flightDetails.arrivalDate
+            arrivalDate: values.flightDetails.arrivalDate && new Date(values.flightDetails.arrivalDate).getTime() > 0
               ? new Date(values.flightDetails.arrivalDate)
               : null,
             flightNumber: values.flightDetails.flightNumber || null,
@@ -838,14 +838,14 @@ const EditActivity = ({
             terminal: values.flightDetails.terminal || null,
             seatNumber: values.flightDetails.seatNumber || null,
             bookingReference: values.flightDetails.bookingReference || null,
-            price: values.flightDetails.price ? Number(values.flightDetails.price) : null,
+            price: values.flightDetails.price != null && values.flightDetails.price !== "" ? Number(values.flightDetails.price) : null,
           }
           : null,
         accomodationDetails: values.type === ActivityType.stay && values.accomodationDetails
           ? {
-            accomodationName: values.accomodationDetails.accomodationName,
-            address: values.accomodationDetails.address || null,
-            destinationAddressData: values.accomodationDetails.destinationAddressData ?? null,
+            accomodationName: values.accomodationDetails.accomodationName || values.title || "",
+            address: values.accomodationDetails.address || values.destination || null,
+            destinationAddressData: values.accomodationDetails.destinationAddressData ?? (values.destinationData || null),
             subType: values.accomodationDetails.subType || null,
             checkinDateTime: finalStartDate
               ? finalStartDate
@@ -913,10 +913,10 @@ const EditActivity = ({
                 ? values.rideRentalDetails.dropoffLocation
                 : values.rideRentalDetails.dropoffLocation.name || values.rideRentalDetails.dropoffLocation.city || "")
               : null,
-            rentalStartDateTime: finalStartDate || (values.rideRentalDetails.rentalStartDateTime
+            rentalStartDateTime: finalStartDate || (values.rideRentalDetails.rentalStartDateTime && new Date(values.rideRentalDetails.rentalStartDateTime).getTime() > 0
               ? new Date(values.rideRentalDetails.rentalStartDateTime)
               : null),
-            rentalEndDateTime: finalEndDate || (values.rideRentalDetails.rentalEndDateTime
+            rentalEndDateTime: finalEndDate || (values.rideRentalDetails.rentalEndDateTime && new Date(values.rideRentalDetails.rentalEndDateTime).getTime() > 0
               ? new Date(values.rideRentalDetails.rentalEndDateTime)
               : null),
             bookingReference: values.rideRentalDetails.bookingReference || null,
@@ -1184,6 +1184,10 @@ const EditActivity = ({
     itineraryActivity?.contactNumber,
     itineraryActivity?.contactEmail,
     itineraryActivity?.priority,
+    itineraryActivity?.flightDetails,
+    itineraryActivity?.accomodationDetails,
+    itineraryActivity?.transportationDetails,
+    itineraryActivity?.rideRentalDetails,
     itineraryActivity,
     itinerarySectionId,
     travelId,
@@ -2604,11 +2608,39 @@ const EditActivity = ({
                   } else {
                     setFieldValue("transportationDetails.pickupLocation", destLocation);
                   }
+                  if (!values.destination && destAddress) {
+                    setFieldValue("destination", destAddress);
+                    if (location.coordinates) {
+                      setFieldValue("destinationData", {
+                        id: location.placeId || undefined,
+                        name: location.name || undefined,
+                        city: location.secondaryText || undefined,
+                        coordinates: {
+                          latitude: location.coordinates.latitude,
+                          longitude: location.coordinates.longitude,
+                        },
+                      });
+                    }
+                  }
                 } else if (googleSearchTarget === "dropoffLocation") {
                   if (values.type === ActivityType.rideRental) {
                     setFieldValue("rideRentalDetails.dropoffLocation", destLocation);
                   } else {
                     setFieldValue("transportationDetails.dropoffLocation", destLocation);
+                  }
+                  if (!values.destination && destAddress) {
+                    setFieldValue("destination", destAddress);
+                    if (location.coordinates) {
+                      setFieldValue("destinationData", {
+                        id: location.placeId || undefined,
+                        name: location.name || undefined,
+                        city: location.secondaryText || undefined,
+                        coordinates: {
+                          latitude: location.coordinates.latitude,
+                          longitude: location.coordinates.longitude,
+                        },
+                      });
+                    }
                   }
                 } else if (googleSearchTarget === "location") {
                   setFieldValue("destination", destAddress);
