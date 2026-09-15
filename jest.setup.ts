@@ -190,6 +190,22 @@ try {
   });
 }
 
+// 13. Mock TravelContext
+jest.mock("@/context/TravelContext", () => {
+  return {
+    TravelProvider: ({ children }: any) => children,
+    useTravelContext: jest.fn(() => ({
+      openFlightModal: jest.fn(),
+      openDescriptionModal: jest.fn(),
+      openSectionModal: jest.fn(),
+      closeSectionModal: jest.fn(),
+      openChecklistModal: jest.fn(),
+      setActiveTripViewTab: jest.fn(),
+      refetchTravelPlan: jest.fn(),
+    })),
+  };
+});
+
 // 9. Silence console warnings/errors for clean test output
 const originalWarn = console.warn;
 console.warn = (...args: any[]) => {
@@ -203,3 +219,4 @@ console.warn = (...args: any[]) => {
   }
   originalWarn(...args);
 };
+
