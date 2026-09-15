@@ -379,6 +379,12 @@ export interface ItineraryActivity {
   meetupDetails?: MeetupDetailsDto | null;
   rideRentalDetails?: RideRentalDetailsDto | null;
   customTags?: string[] | null;
+  website?: string | null;
+  bookingReference?: string | null;
+  contactName?: string | null;
+  contactNumber?: string | null;
+  contactEmail?: string | null;
+  priority?: string | null;
 }
 
 export interface Attachment {

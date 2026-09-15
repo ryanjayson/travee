@@ -24,6 +24,13 @@ export default class Activity extends Model {
   @field("is_done") isDone!: boolean;
   @text("attachments") attachments!: string | null;
   @text("custom_tags") customTags!: string | null;
+  @field("plan_type") planType!: number | null;
+  @text("website") website!: string | null;
+  @text("booking_reference") bookingReference!: string | null;
+  @text("contact_name") contactName!: string | null;
+  @text("contact_number") contactNumber!: string | null;
+  @text("contact_email") contactEmail!: string | null;
+  @text("priority") priority!: string | null;
   @readonly @date("created_at") createdAt!: Date;
   @readonly @date("updated_at") updatedAt!: Date;
 }

@@ -107,6 +107,13 @@ export interface ActivityFormValues {
   destination: string;
   destinationData?: DestinationDto;
   customTags?: string[] | null;
+  budget?: string;
+  website?: string;
+  bookingReference?: string;
+  contactName?: string;
+  contactNumber?: string;
+  contactEmail?: string;
+  priority?: string | null;
   images: Images[];
   attachments: Attachment[];
   flightDetails?: {
@@ -428,10 +435,10 @@ const EditActivity = ({
   const [showMapPinModal, setShowMapPinModal] = useState<boolean>(false);
   const [showGoogleSearchModal, setShowGoogleSearchModal] = useState<boolean>(false);
   const [googleSearchTarget, setGoogleSearchTarget] = useState<
-    "title" | "operatorProvider" | "providerName" | "pickupLocation" | "dropoffLocation"
+    "title" | "operatorProvider" | "providerName" | "pickupLocation" | "dropoffLocation" | "location"
   >("title");
 
-  const handleOpenGoogleSearch = useCallback((target: "title" | "operatorProvider" | "providerName" | "pickupLocation" | "dropoffLocation" = "title") => {
+  const handleOpenGoogleSearch = useCallback((target: "title" | "operatorProvider" | "providerName" | "pickupLocation" | "dropoffLocation" | "location" = "title") => {
     setGoogleSearchTarget(target);
     setShowGoogleSearchModal(true);
   }, []);
@@ -705,7 +712,9 @@ const EditActivity = ({
             ? new Date(values.rideRentalDetails.rentalStartDateTime)
             : undefined);
       } else if (values.startDate) {
-        finalStartDate = new Date(`${values.startDate}T${values.startTime}:00`);
+        const timePart = values.startTime && values.startTime.trim() ? values.startTime : "00:00";
+        finalStartDate = new Date(`${values.startDate}T${timePart}:00`);
+        if (isNaN(finalStartDate.getTime())) finalStartDate = undefined;
       }
 
       let finalEndDate: Date | undefined = undefined;
@@ -730,7 +739,9 @@ const EditActivity = ({
             ? new Date(values.rideRentalDetails.rentalEndDateTime)
             : undefined);
       } else if (values.endDate) {
-        finalEndDate = new Date(`${values.endDate}T${values.endTime}:00`);
+        const timePart = values.endTime && values.endTime.trim() ? values.endTime : "00:00";
+        finalEndDate = new Date(`${values.endDate}T${timePart}:00`);
+        if (isNaN(finalEndDate.getTime())) finalEndDate = undefined;
       }
 
       let finalSortOrder = values.sortOrder || "";
@@ -795,6 +806,13 @@ const EditActivity = ({
         sortOrder: finalSortOrder,
         type: values.type as ActivityType,
         planType: values.type === ActivityType.plan ? (values.planType ?? null) : null,
+        website: values.type === ActivityType.plan ? (values.website || null) : null,
+        bookingReference: values.type === ActivityType.plan ? (values.bookingReference || null) : null,
+        contactName: values.type === ActivityType.plan ? (values.contactName || null) : null,
+        contactNumber: values.type === ActivityType.plan ? (values.contactNumber || null) : null,
+        contactEmail: values.type === ActivityType.plan ? (values.contactEmail || null) : null,
+        priority: values.type === ActivityType.plan ? (values.priority || null) : null,
+        budget: values.budget || undefined,
         startDate: finalStartDate,
         endDate: finalEndDate,
         destination: values.destination,
@@ -1031,6 +1049,13 @@ const EditActivity = ({
     destination: itineraryActivity?.destination || "",
     destinationData: itineraryActivity?.destinationData || undefined,
     customTags: itineraryActivity?.customTags || [],
+    budget: itineraryActivity?.budget || "",
+    website: itineraryActivity?.website || "",
+    bookingReference: itineraryActivity?.bookingReference || "",
+    contactName: itineraryActivity?.contactName || "",
+    contactNumber: itineraryActivity?.contactNumber || "",
+    contactEmail: itineraryActivity?.contactEmail || "",
+    priority: itineraryActivity?.priority || null,
     images: itineraryActivity?.images || [],
     attachments: itineraryActivity?.attachments || [],
     flightDetails: {
@@ -1151,6 +1176,14 @@ const EditActivity = ({
     itineraryActivity?.id,
     itineraryActivity?.updatedAt,
     itineraryActivity?.type,
+    itineraryActivity?.planType,
+    itineraryActivity?.budget,
+    itineraryActivity?.website,
+    itineraryActivity?.bookingReference,
+    itineraryActivity?.contactName,
+    itineraryActivity?.contactNumber,
+    itineraryActivity?.contactEmail,
+    itineraryActivity?.priority,
     itineraryActivity,
     itinerarySectionId,
     travelId,
@@ -1362,7 +1395,7 @@ const EditActivity = ({
                       setFieldValue={setFieldValue}
                       noPadding={true}
                       fieldRefs={fieldRefs}
-                      onPressLocationMap={() => setShowGoogleSearchModal(true)}
+                      onPressLocationMap={() => handleOpenGoogleSearch("location")}
                       onPressDate={() => setShowCalendarFor("startDate")}
                       onPressTime={() => setShowTimePickerFor("startTime")}
                       onClearDate={() => {
@@ -2576,6 +2609,19 @@ const EditActivity = ({
                     setFieldValue("rideRentalDetails.dropoffLocation", destLocation);
                   } else {
                     setFieldValue("transportationDetails.dropoffLocation", destLocation);
+                  }
+                } else if (googleSearchTarget === "location") {
+                  setFieldValue("destination", destAddress);
+                  if (location.coordinates) {
+                    setFieldValue("destinationData", {
+                      id: location.placeId || undefined,
+                      name: location.name || undefined,
+                      city: location.secondaryText || undefined,
+                      coordinates: {
+                        latitude: location.coordinates.latitude,
+                        longitude: location.coordinates.longitude,
+                      },
+                    });
                   }
                 } else {
                   setFieldValue("title", placeName);

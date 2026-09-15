@@ -30,6 +30,13 @@ export const APPLICABLE_PLAN_FIELDS: ApplicableField[] = [
     category: "General",
   },
   {
+    id: "budget",
+    label: "Budget / Cost",
+    description: "Estimated or allocated budget for this plan",
+    iconName: "attach-money",
+    category: "Details",
+  },
+  {
     id: "website",
     label: "Website / URL",
     description: "Official website, booking link, or info guide",

@@ -3,6 +3,23 @@ import { schemaMigrations, createTable, addColumns } from "@nozbe/watermelondb/S
 export default schemaMigrations({
   migrations: [
     {
+      toVersion: 5,
+      steps: [
+        addColumns({
+          table: "itinerary_activities",
+          columns: [
+            { name: "plan_type", type: "number", isOptional: true },
+            { name: "website", type: "string", isOptional: true },
+            { name: "booking_reference", type: "string", isOptional: true },
+            { name: "contact_name", type: "string", isOptional: true },
+            { name: "contact_number", type: "string", isOptional: true },
+            { name: "contact_email", type: "string", isOptional: true },
+            { name: "priority", type: "string", isOptional: true },
+          ],
+        }),
+      ],
+    },
+    {
       toVersion: 4,
       steps: [
         addColumns({

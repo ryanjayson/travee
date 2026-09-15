@@ -1,5 +1,5 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, LayoutAnimation } from "react-native";
 import { useTheme, TextInput } from "react-native-paper";
 import DateTime from "../DateTime";
@@ -14,6 +14,19 @@ import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLa
 import { FadeInView } from "../../../../../../../components/animations";
 
 const PRIORITIES = ["High", "Medium", "Low"];
+
+const computeActiveFieldIds = (vals: any): string[] => {
+  const ids: string[] = [];
+  if (vals?.destination) ids.push("location");
+  if (vals?.budget) ids.push("budget");
+  if (vals?.website) ids.push("website");
+  if (vals?.bookingReference) ids.push("bookingReference");
+  if (vals?.contactName) ids.push("contactName");
+  if (vals?.contactNumber) ids.push("contactNumber");
+  if (vals?.contactEmail) ids.push("contactEmail");
+  if (vals?.priority) ids.push("priority");
+  return ids;
+};
 
 interface PlanTabProps {
   values: any;
@@ -53,39 +66,47 @@ export default function PlanTab({
   const { colors } = useTheme();
   const [showPlanTypeModal, setShowPlanTypeModal] = useState(false);
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
-  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(() => {
-    const initial: string[] = [];
-    if (values?.website) initial.push("website");
-    if (values?.budget) initial.push("budget");
-    if (values?.bookingReference) initial.push("bookingReference");
-    if (values?.contactName) initial.push("contactName");
-    if (values?.contactNumber) initial.push("contactNumber");
-    if (values?.contactEmail) initial.push("contactEmail");
-    if (values?.contact) initial.push("contact");
-    if (values?.priority) initial.push("priority");
-    return initial;
-  });
-  const [customFieldValues, setCustomFieldValues] = useState<Record<string, string>>({});
-  const [selectedPriority, setSelectedPriority] = useState<string | null>(values?.priority || null);
+  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(() =>
+    computeActiveFieldIds(values)
+  );
+
+  // Sync selectedFieldIds whenever values change (e.g. re-initialized or updated externally)
+  useEffect(() => {
+    setSelectedFieldIds((prev) => {
+      const activeIds = computeActiveFieldIds(values);
+      const combined = Array.from(new Set([...prev, ...activeIds]));
+      if (combined.length !== prev.length || combined.some((id, idx) => id !== prev[idx])) {
+        return combined;
+      }
+      return prev;
+    });
+  }, [
+    values?.destination,
+    values?.budget,
+    values?.website,
+    values?.bookingReference,
+    values?.contactName,
+    values?.contactNumber,
+    values?.contactEmail,
+    values?.priority,
+  ]);
+
+  const selectedPriority = values?.priority || null;
 
   const getFieldValue = (id: string) => {
     if (id === "location") {
       return values?.destination !== undefined && values?.destination !== null
-        ? values.destination
-        : customFieldValues[id] || "";
+        ? String(values.destination)
+        : "";
     }
-    if (values?.[id] !== undefined && values?.[id] !== null) {
-      return customFieldValues[id] !== undefined ? customFieldValues[id] : String(values[id]);
-    }
-    return customFieldValues[id] || "";
+    return values?.[id] !== undefined && values?.[id] !== null ? String(values[id]) : "";
   };
 
   const handleCustomFieldChange = (id: string, text: string) => {
-    setCustomFieldValues((prev) => ({ ...prev, [id]: text }));
-    if (id === "location" && setFieldValue) {
-      setFieldValue("destination", text);
-    } else if (setFieldValue) {
-      setFieldValue(id, text);
+    if (id === "location") {
+      setFieldValue?.("destination", text);
+    } else {
+      setFieldValue?.(id, text);
     }
   };
 
@@ -93,9 +114,21 @@ export default function PlanTab({
     (p) => p.type === values.planType
   );
 
-
   const handleApplyFields = (fieldIds: string[]) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    // Clear Formik values for any fields that were deselected
+    selectedFieldIds.forEach((id) => {
+      if (!fieldIds.includes(id)) {
+        if (id === "location") {
+          setFieldValue?.("destination", "");
+          setFieldValue?.("destinationData", undefined);
+        } else if (id === "priority") {
+          setFieldValue?.("priority", null);
+        } else {
+          setFieldValue?.(id, "");
+        }
+      }
+    });
     setSelectedFieldIds(fieldIds);
   };
 
@@ -313,7 +346,6 @@ export default function PlanTab({
                           key={p}
                           onPress={() => {
                             const nextVal = isSelected ? null : p;
-                            setSelectedPriority(nextVal);
                             setFieldValue?.("priority", nextVal);
                           }}
                           accessibilityRole="button"
