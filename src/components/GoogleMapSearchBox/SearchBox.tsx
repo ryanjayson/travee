@@ -939,8 +939,8 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
       >
         {/* Top Drag Handle Bar */}
         <View
-          {...(panResponder?.panHandlers || {})}
-          className="w-full items-center pt-3 pb-1.5 bg-white"
+          {...(panResponder?.panHandlers)}
+          className="w-full items-center pt-3 pb-3 bg-white"
         >
           <View className="w-10 h-1 bg-gray-300 rounded-full" />
         </View>
@@ -948,25 +948,21 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
         {/* Header Row */}
         <View className="flex-row items-center justify-between px-5 pt-1 pb-2 bg-white">
           <View
-            {...(panResponder?.panHandlers || {})}
+            {...(panResponder?.panHandlers)}
             className="flex-1 mr-3"
           >
-            <Text className="text-xl font-semibold text-accent" numberOfLines={1}>
+            <Text className="text-2xl font-semibold text-accent" numberOfLines={1}>
               {title || "Search Spot or Location"}
             </Text>
             {description || descriptionText ? (
               <Text className="text-md text-tertiary" numberOfLines={2}>
                 {description || descriptionText}
               </Text>
-            ) : activeDestinations.length > 0 ? (
-              <Text className="text-md text-tertiary" numberOfLines={1}>
-                Searching near {activeDestinations.map((d) => d.name).join(", ")}
+            ) : activeDestinations.length == 0 ? (
+              < Text className="text-md text-tertiary" numberOfLines={1}>
+                Search anywhere
               </Text>
-            ) : (
-              <Text className="text-md text-tertiary" numberOfLines={1}>
-                Searching worldwide
-              </Text>
-            )}
+            ) : null}
           </View>
 
           <View className="flex-row items-center gap-2">
@@ -1001,194 +997,217 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
         </View>
 
         {/* Clearable Active Destination Badges */}
-        {activeDestinations.length > 0 ? (
-          <View className="px-5 pb-4">
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyboardShouldPersistTaps="always"
-              contentContainerStyle={{ alignItems: "center", gap: 4 }}
+        {
+          activeDestinations.length > 0 ? (
+            <View
+              {...(panResponder?.panHandlers)}
+              className="px-5 pb-4 "
             >
-              {activeDestinations.map((dest) => (
-                <View
-                  key={dest.id}
-                  className="flex-row items-center pl-2.5 pr-1.5 py-1 rounded-full border border-gray-200"
-                >
-                  <Icon name="place" size={13} color={"#263F69"} style={{ marginRight: 4, opacity: 0.6 }} />
-                  <Text
-                    className="text-xs font-semibold mr-1 text-accent"
-                    numberOfLines={1}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                keyboardShouldPersistTaps="always"
+                contentContainerStyle={{ alignItems: "center", gap: 4 }}
+              >
+                <Text className="text-md text-tertiary py-1">
+                  Search near
+                </Text>
+                {activeDestinations.map((dest) => (
+                  <View
+                    key={dest.id}
+                    className="flex-row items-center pl-2.5 pr-1.5 py-1 rounded-full border border-gray-200"
                   >
-                    {dest.name}
-                  </Text>
+                    <Icon name="place" size={13} color={"#263F69"} style={{ marginRight: 4, opacity: 0.6 }} />
+                    <Text
+                      className="text-xs font-semibold mr-1 text-accent"
+                      numberOfLines={1}
+                    >
+                      {dest.name}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => handleRemoveDestination(dest.id)}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remove ${dest.name} filter`}
+                      className="w-4 h-4 rounded-full items-center justify-center bg-gray-200"
+                    >
+                      <Icon name="close" size={10} color="#475467" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                {activeDestinations.length > 1 && (
                   <TouchableOpacity
-                    onPress={() => handleRemoveDestination(dest.id)}
+                    onPress={handleClearAllDestinations}
                     activeOpacity={0.7}
                     accessibilityRole="button"
-                    accessibilityLabel={`Remove ${dest.name} filter`}
-                    className="w-4 h-4 rounded-full items-center justify-center bg-gray-200"
+                    accessibilityLabel="Clear all destination filters"
+                    className="px-2.5 py-1 ml-1"
                   >
-                    <Icon name="close" size={10} color="#475467" />
+                    <Text className="text-xs text-gray-500 font-medium underline">Clear all</Text>
                   </TouchableOpacity>
-                </View>
-              ))}
-              {activeDestinations.length > 1 && (
-                <TouchableOpacity
-                  onPress={handleClearAllDestinations}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel="Clear all destination filters"
-                  className="px-2.5 py-1 rounded-full bg-gray-100 border border-gray-200 ml-1"
-                >
-                  <Text className="text-xs text-gray-500 font-medium">Clear all</Text>
-                </TouchableOpacity>
-              )}
-            </ScrollView>
-          </View>
-        ) : userClearedDestinationsRef.current ? (
-          <View className="px-5 pb-3">
-            <View className="flex-row items-center">
+                )}
+              </ScrollView>
+            </View>
+          ) : userClearedDestinationsRef.current ? (
+            <View className="px-5 pb-3">
+              {/* <View className="flex-row items-center">
               <View className="flex-row items-center px-2.5 py-1 rounded-full border border-gray-200 bg-gray-50">
                 <Icon name="public" size={13} color="#667085" style={{ marginRight: 4 }} />
                 <Text className="text-xs text-secondary/70 font-medium">
                   Worldwide (no proximity filter)
                 </Text>
               </View>
+            </View> */}
             </View>
-          </View>
-        ) : null}
+          ) : null
+        }
 
         {/* Selected Spot Preview Card (When spot is picked, shown above search box) */}
-        {selectedSpot && (
-          <View className="px-4 mb-3">
-            <View
-              className="rounded-2xl p-3.5 border border-gray-200 bg-gray-50"
-              style={{ borderColor: `${colors.primary}30` }}
-            >
-              <View className="flex-row items-center mb-3">
-                <View
-                  className="w-10 h-10 rounded-xl items-center justify-center mr-3"
-                  style={{ backgroundColor: `${colors.primary}15` }}
-                >
-                  <Icon name="place" size={22} color={colors.primary} />
-                </View>
-
-                <View className="flex-1">
-                  <Text
-                    className="text-[15px] font-bold text-gray-900"
-                    numberOfLines={1}
-                  >
-                    {selectedSpot.name}
-                  </Text>
-                  <Text className="text-xs text-gray-500 mt-0.5" numberOfLines={1}>
-                    {selectedSpot.address}
-                  </Text>
-                </View>
-              </View>
-
-              <TouchableOpacity
-                onPress={() => onSelect(selectedSpot)}
-                activeOpacity={0.8}
-                className="rounded-xl py-3 items-center justify-center"
-                style={{ backgroundColor: colors.primary }}
-                accessibilityRole="button"
-                accessibilityLabel="Confirm this spot for plan"
+        {
+          selectedSpot && (
+            <View className="px-4 mb-3">
+              <View
+                className="rounded-2xl p-3.5 border border-gray-200 bg-gray-50"
+                style={{ borderColor: `${colors.primary}30` }}
               >
-                <View className="flex-row items-center">
-                  <Icon name="check" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
-                  <Text className="text-white text-sm font-bold">Select This Spot</Text>
+                <View className="flex-row items-center mb-3">
+                  <View
+                    className="w-10 h-10 rounded-xl items-center justify-center mr-3"
+                    style={{ backgroundColor: `${colors.primary}15` }}
+                  >
+                    <Icon name="place" size={22} color={colors.primary} />
+                  </View>
+
+                  <View className="flex-1">
+                    <Text
+                      className="text-[15px] font-bold text-gray-900"
+                      numberOfLines={1}
+                    >
+                      {selectedSpot.name}
+                    </Text>
+                    <Text className="text-xs text-gray-500 mt-0.5" numberOfLines={1}>
+                      {selectedSpot.address}
+                    </Text>
+                  </View>
                 </View>
-              </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => onSelect(selectedSpot)}
+                  activeOpacity={0.8}
+                  className="rounded-xl py-3 items-center justify-center"
+                  style={{ backgroundColor: colors.primary }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Confirm this spot for plan"
+                >
+                  <View className="flex-row items-center">
+                    <Icon name="check" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                    <Text className="text-white text-sm font-bold">Select This Spot</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        )}
+          )
+        }
 
         {/* Predictions / Results Section (Expands ABOVE the search box) */}
-        {((isTyping || predictions.length > 0) && !selectedSpot) && (
-          <View
-            style={{
-              minHeight: isTyping ? 200 : undefined,
-              maxHeight: maxResultsHeight,
-            }}
-            className="px-4 mb-2"
-          >
-            {predictions.length > 0 ? (
-              <FlatList
-                data={predictions}
-                keyExtractor={(item) => `${item.source}-${item.id}`}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={true}
-                contentContainerStyle={{ minHeight: isTyping ? 200 : undefined }}
-                renderItem={({ item, index }) => {
-                  const isSelected = isSelectingId === item.id;
-                  const iconName = getPlaceTypeIcon(item.types);
+        {
+          ((isTyping || predictions.length > 0) && !selectedSpot) && (
+            <View
+              style={{
+                minHeight: isTyping ? 200 : undefined,
+                maxHeight: maxResultsHeight,
+              }}
+              className="px-4 mb-2"
+            >
+              {predictions.length > 0 ? (
+                <FlatList
+                  {...(panResponder?.panHandlers)}
+                  data={predictions}
+                  keyExtractor={(item) => `${item.source}-${item.id}`}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={true}
+                  contentContainerStyle={{ minHeight: isTyping ? 200 : undefined }}
+                  renderItem={({ item, index }) => {
+                    const isSelected = isSelectingId === item.id;
+                    const iconName = getPlaceTypeIcon(item.types);
 
-                  return (
-                    <TouchableOpacity
-                      onPress={() => handleSelectPrediction(item)}
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Select location ${item.name}`}
-                      className="py-3 px-2 rounded-xl"
-                    >
-                      <StaggerItem index={index}>
+                    return (
+                      <TouchableOpacity
+                        onPress={() => handleSelectPrediction(item)}
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Select location ${item.name}`}
+                        className="py-3 px-2 rounded-xl"
+                      >
+                        <StaggerItem index={index}>
 
-                        <View className="flex-row items-center">
-                          <View
-                            className="w-9 h-9 rounded-xl items-center justify-center mr-3"
-                            style={{ backgroundColor: `${colors.primary}12` }}
-                          >
-                            <Icon name={iconName} size={18} color={colors.primary} />
-                          </View>
-
-                          <View className="flex-1 mr-2">
-                            <Text
-                              className="text-[15px] font-bold text-gray-900 leading-5"
+                          <View className="flex-row items-center">
+                            <View
+                              className="w-9 h-9 rounded-xl items-center justify-center mr-3"
+                              style={{ backgroundColor: `${colors.primary}12` }}
                             >
-                              {item.name}
-                            </Text>
-                            <Text className="text-sm text-tertiary leading-4 mt-0.5" >
-                              {item.secondaryText || item.fullAddress}
-                            </Text>
+                              <Icon name={iconName} size={18} color={colors.primary} />
+                            </View>
+
+                            <View className="flex-1 mr-2">
+                              <Text
+                                className="text-[15px] font-bold text-gray-900 leading-5"
+                              >
+                                {item.name}
+                              </Text>
+                              <Text className="text-sm text-tertiary leading-4 mt-0.5" >
+                                {item.secondaryText || item.fullAddress}
+                              </Text>
+                            </View>
+
+                            {isSelected ? (
+                              <ActivityIndicator size="small" color={colors.primary} />
+                            ) : (
+                              <Icon name="chevron-right" size={18} color="#98A2B3" />
+                            )}
                           </View>
+                        </StaggerItem>
 
-                          {isSelected ? (
-                            <ActivityIndicator size="small" color={colors.primary} />
-                          ) : (
-                            <Icon name="chevron-right" size={18} color="#98A2B3" />
-                          )}
-                        </View>
-                      </StaggerItem>
-
-                    </TouchableOpacity>
-                  );
-                }}
-                ItemSeparatorComponent={() => <View className="h-[1px] bg-gray-100 ml-[48px]" />}
-              />
-            ) : isLoading ? (
-              <View className="items-center justify-center py-8" style={{ minHeight: 200 }}>
-                <ActivityIndicator size="small" color={colors.primary} />
-                <Text className="text-xs text-gray-500 mt-2 font-medium">Searching locations...</Text>
-              </View>
-            ) : query.trim().length >= 2 ? (
-              <View className="items-center justify-center py-6 px-4" style={{ minHeight: 200 }}>
-                <Icon name="location-off" size={26} color="#98A2B3" style={{ marginBottom: 4 }} />
-                <Text className="text-sm font-semibold text-gray-700 mb-0.5">No locations found</Text>
-                <Text className="text-xs text-gray-500 text-center">
-                  Try searching with a different name or spelling
-                </Text>
-              </View>
-            ) : (
-              <View className="items-center justify-center py-6 px-4" style={{ minHeight: 200 }}>
-                <Icon name="search" size={24} color="#D0D5DD" style={{ marginBottom: 4 }} />
-                <Text className="text-xs text-gray-400">Type at least 2 characters to search</Text>
-              </View>
-            )}
-          </View>
-        )}
+                      </TouchableOpacity>
+                    );
+                  }}
+                  ItemSeparatorComponent={() => <View className="h-[1px] bg-gray-100 ml-[48px]" />}
+                />
+              ) : isLoading ? (
+                <View className="items-center justify-center py-8" style={{ minHeight: 200 }}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text className="text-xs text-gray-500 mt-2 font-medium">Searching locations...</Text>
+                </View>
+              ) : query.trim().length >= 2 ? (
+                <View
+                  {...(panResponder?.panHandlers || {})}
+                  className="items-center justify-center py-6 px-4"
+                  style={{ minHeight: 200 }}
+                >
+                  <Icon name="location-off" size={26} color="#98A2B3" style={{ marginBottom: 4 }} />
+                  <Text className="text-sm font-semibold text-gray-700 mb-0.5">No locations found</Text>
+                  <Text className="text-xs text-gray-500 text-center">
+                    Try searching with a different name or spelling
+                  </Text>
+                </View>
+              ) : (
+                <View
+                  {...(panResponder?.panHandlers || {})}
+                  className="items-center justify-center py-6 px-4"
+                  style={{ minHeight: 200 }}
+                >
+                  <Icon name="search" size={24} color="#D0D5DD" style={{ marginBottom: 4 }} />
+                  <Text className="text-xs text-gray-400">Type at least 2 characters to search</Text>
+                </View>
+              )}
+            </View>
+          )
+        }
 
         {/* Search Bar Input (Attached at bottom of sheet / top of keyboard) */}
-        <View className="px-4 mb-2xl">
+        <View
+          {...(panResponder?.panHandlers)}
+          className="px-4 mb-2xl">
           <View
             className="flex-row items-center h-[64px] px-3.5 bg-gray-100 rounded-full border border-gray-200"
             style={searchBarContainerStyle}
@@ -1232,7 +1251,7 @@ export const GoogleMapSearchBox: React.FC<GoogleMapSearchBoxProps> = ({
             )}
           </View>
         </View>
-      </View>
+      </View >
     );
   }
 

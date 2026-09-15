@@ -85,6 +85,11 @@ export const GoogleMapSearchModal: React.FC<GoogleMapSearchModalProps> = ({
     }
   }, [visible, translateY]);
 
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
   // Dismiss animation handler
   const handleDismiss = useCallback(() => {
     Keyboard.dismiss();
@@ -93,35 +98,40 @@ export const GoogleMapSearchModal: React.FC<GoogleMapSearchModalProps> = ({
       duration: 200,
       useNativeDriver: true,
     }).start(() => {
-      onClose();
+      onCloseRef.current();
     });
-  }, [onClose, translateY]);
+  }, [translateY]);
 
   // PanResponder to handle downward drag-to-dismiss gesture
   const dragPanResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
+      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only capture vertical downward drags
         return (
-          gestureState.dy > 6 &&
+          gestureState.dy > 4 &&
           Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
         );
       },
-      onPanResponderGrant: (_, gestureState) => {
-        dragStartDy.current = gestureState.dy;
+      onMoveShouldSetPanResponderCapture: (_, gestureState) => {
+        return (
+          gestureState.dy > 4 &&
+          Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
+        );
+      },
+      onPanResponderGrant: () => {
+        translateY.stopAnimation();
+        Keyboard.dismiss();
       },
       onPanResponderMove: (_, gestureState) => {
-        const currentDy = gestureState.dy - dragStartDy.current;
-        if (currentDy > 0) {
-          translateY.setValue(currentDy);
+        if (gestureState.dy > 0) {
+          translateY.setValue(gestureState.dy);
         } else {
           translateY.setValue(0);
         }
       },
       onPanResponderRelease: (_, gestureState) => {
-        const currentDy = gestureState.dy - dragStartDy.current;
-        if (currentDy > 100 || gestureState.vy > 0.5) {
+        if (gestureState.dy > 80 || gestureState.vy > 0.4) {
           handleDismiss();
         } else {
           Animated.spring(translateY, {
@@ -131,6 +141,14 @@ export const GoogleMapSearchModal: React.FC<GoogleMapSearchModalProps> = ({
             useNativeDriver: true,
           }).start();
         }
+      },
+      onPanResponderTerminate: () => {
+        Animated.spring(translateY, {
+          toValue: 0,
+          tension: 65,
+          friction: 11,
+          useNativeDriver: true,
+        }).start();
       },
     })
   ).current;
