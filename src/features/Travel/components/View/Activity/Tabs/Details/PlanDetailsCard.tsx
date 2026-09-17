@@ -2,59 +2,75 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { Text, View } from "react-native";
 import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateTimeUtils";
-import { TransportationDetailsDto } from "../../../../../types/TravelDto";
+import { ItineraryActivity } from "../../../../../types/TravelDto";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
+import { ACTIVITY_PLAN_TYPES } from "../../../../Lookups/ActivityPlanTypeLookupModal";
 
-interface TransportationDetailsCardProps {
-  data: TransportationDetailsDto;
+interface PlanDetailsCardProps {
+  activity?: ItineraryActivity | null;
+  data?: any;
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
-export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps> = ({
+export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
+  activity: rawActivity,
   data,
 }) => {
-  const formattedPrice = data.price
-    ? data.price.startsWith("₱") || data.price.startsWith("$")
-      ? data.price
-      : !isNaN(Number(data.price))
-      ? `₱${Number(data.price).toLocaleString()}`
-      : data.price
+  const activity = rawActivity || data;
+  if (!activity) return null;
+
+  const planTypeConfig = ACTIVITY_PLAN_TYPES.find(
+    (p) => p.type === activity.planType || p.key === activity.planType
+  );
+
+  const themeColor = planTypeConfig?.color || "#c10003";
+
+  const formattedBudget = activity.budget
+    ? activity.budget.startsWith("₱") || activity.budget.startsWith("$")
+      ? activity.budget
+      : !isNaN(Number(activity.budget))
+      ? `₱${Number(activity.budget).toLocaleString()}`
+      : activity.budget
     : null;
 
   const locationText =
-    data.pickupLocation && data.dropoffLocation && data.pickupLocation !== data.dropoffLocation
-      ? `${data.pickupLocation} → ${data.dropoffLocation}`
-      : data.pickupLocation || data.dropoffLocation || "";
+    activity.destination ||
+    activity.destinationData?.address ||
+    activity.destinationData?.name ||
+    "";
 
-  const hasTransitInfo = Boolean(
-    data.mode ||
-    data.seatOrVehicleNumber ||
-    data.bookingReference ||
-    data.bookingStatus ||
-    data.price ||
-    data.pickupLocation ||
-    data.dropoffLocation ||
-    data.websiteAddress
+  const hasPlanInfo = Boolean(
+    activity.bookingReference ||
+    activity.planType ||
+    activity.priority ||
+    activity.budget ||
+    locationText ||
+    activity.website
   );
 
   const hasContactInfo = Boolean(
-    data.contactNumber ||
-    (data as any).contactName ||
-    (data as any).emailAddress
+    activity.contactName ||
+    activity.contactNumber ||
+    activity.contactEmail
   );
+
+  const hasNotes = Boolean(activity.notes || activity.description);
 
   return (
     <View className="mt-4 overflow-hidden">
       {/* Main Details Body */}
       <FadeInView delay={180} duration={400}>
-        <View className="p-5 pb-0 bg-[#018091+30] rounded-t-3xl">
-          <View className="">
+        <View
+          className="p-5 pb-0 rounded-t-3xl"
+          style={{ backgroundColor: `${themeColor}26` }}
+        >
+          <View>
             <Text className="text-xs font-medium text-secondary/80 uppercase tracking-wide mb-1">
-              {data.mode ? `${data.mode.charAt(0).toUpperCase() + data.mode.slice(1)} Transit` : "Transportation"}
+              {planTypeConfig ? `${planTypeConfig.label} Plan` : "Plan"}
             </Text>
             <Text className="text-2xl leading-2xl font-semibold mb-1 text-secondary">
-              {data.operatorProvider || "N/A"}
+              {activity.destinationData?.name || activity.title || "Plan"}
             </Text>
 
             <Text className="text-lg font-semibold mb-1 text-secondary/40">
@@ -63,32 +79,35 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
           </View>
         </View>
 
-        <View className="flex-row items-center justify-between p-5 bg-[#018091+30] rounded-b-3xl">
+        <View
+          className="flex-row items-center justify-between p-5 rounded-b-3xl"
+          style={{ backgroundColor: `${themeColor}26` }}
+        >
           <View className="flex-1">
             <Text className="text-xs font-semibold text-secondary/500 uppercase tracking-widest mb-1">
-              Departure
+              Start
             </Text>
             <Text className="text-2xl font-semibold text-secondary/80">
-              {safeFormatTime(data.departureDateTime)}
+              {safeFormatTime(activity.startDate)}
             </Text>
             <Text className="text-base font-medium text-secondary/80 mt-0.5">
-              {safeFormatDate(data.departureDateTime)}
+              {safeFormatDate(activity.startDate)}
             </Text>
           </View>
 
           <View className="px-3 items-center justify-center">
-            <Icon name="arrow-forward" size={30} color={"#018091"} />
+            <Icon name="arrow-forward" size={30} color={themeColor} />
           </View>
 
           <View className="flex-1 items-end">
             <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1">
-              Arrival
+              End
             </Text>
             <Text className="text-2xl font-semibold text-secondary/80 text-right">
-              {data.arrivalDateTime ? safeFormatTime(data.arrivalDateTime) : "--:--"}
+              {activity.endDate ? safeFormatTime(activity.endDate) : "--:--"}
             </Text>
             <Text className="text-base font-medium text-secondary/80 mt-0.5 text-right">
-              {data.arrivalDateTime ? safeFormatDate(data.arrivalDateTime) : ""}
+              {activity.endDate ? safeFormatDate(activity.endDate) : ""}
             </Text>
           </View>
         </View>
@@ -97,70 +116,55 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
       <FadeInView delay={180} duration={400}>
         <View
           className="px-md my-lg"
-          style={{ display: hasTransitInfo ? "flex" : "none" }}
+          style={{ display: hasPlanInfo ? "flex" : "none" }}
         >
           <Text className="text-xl font-semibold text-secondary mt-lg">
-            Transit Info
+            Plan Info
           </Text>
           <View className="rounded-2xl flex-col gap-3 p-2">
             <Field
               label="Booking Ref"
-              value={data.bookingReference}
+              value={activity.bookingReference}
               icon="folder-open"
               showBorder={false}
               isCopyable={true}
-              borderColor="border-[#018091]"
+              borderColor={`border-[${themeColor}]`}
             />
             <Field
-              label="Transit Mode"
-              value={data.mode}
-              icon="commute"
+              label="Plan Type"
+              value={planTypeConfig?.label || (activity.planType ? String(activity.planType) : null)}
+              icon={(planTypeConfig?.iconName || "lightbulb") as any}
               showBorder={false}
-              borderColor="border-[#018091]"
+              borderColor={`border-[${themeColor}]`}
             />
             <Field
-              label="Seat / Vehicle #"
-              value={data.seatOrVehicleNumber}
-              icon="event-seat"
+              label="Priority"
+              value={activity.priority}
+              icon="flag"
               showBorder={false}
-              isCopyable={true}
-              borderColor="border-[#018091]"
+              borderColor={`border-[${themeColor}]`}
             />
             <Field
-              label="Booking Status"
-              value={data.bookingStatus}
-              icon="info-outline"
-              showBorder={false}
-              borderColor="border-[#018091]"
-            />
-            <Field
-              label="Price"
-              value={formattedPrice}
+              label="Budget"
+              value={formattedBudget}
               icon="attach-money"
               showBorder={false}
-              borderColor="border-[#018091]"
+              borderColor={`border-[${themeColor}]`}
             />
             <Field
-              label="Pick-up Location"
-              value={data.pickupLocation}
+              label="Location"
+              value={locationText}
               icon="place"
               showBorder={false}
-              borderColor="border-[#018091]"
-            />
-            <Field
-              label="Drop-off Location"
-              value={data.dropoffLocation}
-              icon="pin-drop"
-              showBorder={false}
-              borderColor="border-[#018091]"
+              borderColor={`border-[${themeColor}]`}
             />
             <Field
               label="Website"
-              value={data.websiteAddress}
+              value={activity.website}
               icon="link"
               showBorder={false}
               isLink={true}
-              borderColor="border-[#018091]"
+              borderColor={`border-[${themeColor}]`}
             />
           </View>
         </View>
@@ -177,38 +181,34 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
             Contact Info
           </Text>
           <View className="rounded-2xl flex-col gap-3 p-2 pb-1 pl-1">
-            {(data as any).contactName ? (
-              <Field
-                label="Contact Person"
-                value={(data as any).contactName}
-                icon="person"
-                showBorder={false}
-                borderColor="border-[#018091]"
-              />
-            ) : null}
+            <Field
+              label="Contact Person"
+              value={activity.contactName}
+              icon="person"
+              showBorder={false}
+              borderColor={`border-[${themeColor}]`}
+            />
             <Field
               label="Contact Number"
-              value={data.contactNumber}
+              value={activity.contactNumber}
               icon="phone"
               showBorder={false}
-              borderColor="border-[#018091]"
+              borderColor={`border-[${themeColor}]`}
               isCall
             />
-            {(data as any).emailAddress ? (
-              <Field
-                label="Email Address"
-                value={(data as any).emailAddress}
-                icon="email"
-                showBorder={false}
-                borderColor="border-[#018091]"
-                isEmail={true}
-              />
-            ) : null}
+            <Field
+              label="Email Address"
+              value={activity.contactEmail}
+              icon="email"
+              showBorder={false}
+              borderColor={`border-[${themeColor}]`}
+              isEmail={true}
+            />
           </View>
         </View>
       </FadeInView>
 
-      {data.notes ? (
+      {hasNotes ? (
         <FadeInView delay={180} duration={400}>
           <View className="px-md my-lg">
             <Text className="text-xl font-semibold text-secondary mt-lg">
@@ -216,7 +216,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
             </Text>
             <View className="rounded-2xl flex-col gap-3 p-2">
               <Text className="text-base text-secondary/60 leading-6">
-                {data.notes}
+                {activity.notes || activity.description}
               </Text>
             </View>
           </View>

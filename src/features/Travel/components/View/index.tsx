@@ -502,7 +502,7 @@ const ViewTravel = ({
         </Animated.View> */}
 
         {/* Trip Title & Summary */}
-        <View className="px-6 pb-3 bg-white flex-row justify-between items-start relative">
+        <View className="px-6 py-3 bg-white flex-row justify-between items-start relative">
           <Animated.View
             className="flex-1 mr-4"
             style={{
@@ -520,7 +520,7 @@ const ViewTravel = ({
                 {/* {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
                 <TripIcon type={travelPlan.travel.type} size={24} showIconOnly={true} /> 
               )} */}
-                <View className="absolute -top-md opacity-75">
+                <View className="absolute -top-sm opacity-75">
                   <StatusBadge type={1} status={travelPlan.travel.status!} />
                 </View>
 

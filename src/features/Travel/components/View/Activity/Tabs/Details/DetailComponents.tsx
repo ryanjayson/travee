@@ -15,9 +15,11 @@ import { PreparationDetailsCard } from "./PreparationDetailsCard";
 import { RestDetailsCard } from "./RestDetailsCard";
 import { MotorcycleRideDetailsCard } from "./MotorcycleRideDetailsCard";
 import { MeetupDetailsCard } from "./MeetupDetailsCard";
+import { PlanDetailsCard } from "./PlanDetailsCard";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 
 import {
+  ItineraryActivity,
   FlightDetailsDto,
   AccomodationDetailsDto,
   CafeRestaurantDetailsDto,
@@ -222,4 +224,18 @@ export const MeetupDetails = ({ data, onFullScreenChange }: { data?: MeetupDetai
 export const RideRentalDetails = ({ data, onFullScreenChange }: { data?: RideRentalDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!hasActivityData(data)) return <NoDetailsAdded />;
   return <RideRentalDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
+};
+
+export const PlanDetails = ({
+  data,
+  activity,
+  onFullScreenChange,
+}: {
+  data?: any;
+  activity?: ItineraryActivity | null;
+  onFullScreenChange?: (fullScreen: boolean) => void;
+}) => {
+  const planItem = activity || data;
+  if (!planItem) return <NoDetailsAdded />;
+  return <PlanDetailsCard activity={planItem} onFullScreenChange={onFullScreenChange} />;
 };

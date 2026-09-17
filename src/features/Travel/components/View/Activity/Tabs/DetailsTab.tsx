@@ -22,6 +22,7 @@ import {
   MotorcycleRideDetails,
   MeetupDetails,
   RideRentalDetails,
+  PlanDetails,
 } from "./Details/DetailComponents";
 
 interface DetailsTabProps {
@@ -86,8 +87,9 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
         return <RideRentalDetails data={itineraryActivity.rideRentalDetails} onFullScreenChange={onFullScreenChange} />;
       // case ActivityType.meetup:
       //   return <MeetupDetails data={itineraryActivity.meetupDetails} onFullScreenChange={onFullScreenChange} />;
+      case ActivityType.plan:
       default:
-        return <Text className="text-white p-4 text-center">No type-specific details available.</Text>;
+        return <PlanDetails activity={itineraryActivity} onFullScreenChange={onFullScreenChange} />;
     }
   };
 

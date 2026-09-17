@@ -62,14 +62,14 @@ export const getActivityCoordinates = (act: any): { latitude: number; longitude:
       typeof c.latitude === "number"
         ? c.latitude
         : typeof c.latitude === "string"
-        ? parseFloat(c.latitude)
-        : NaN;
+          ? parseFloat(c.latitude)
+          : NaN;
     const lng =
       typeof c.longitude === "number"
         ? c.longitude
         : typeof c.longitude === "string"
-        ? parseFloat(c.longitude)
-        : NaN;
+          ? parseFloat(c.longitude)
+          : NaN;
 
     if (!isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0)) {
       return { latitude: lat, longitude: lng };
@@ -476,12 +476,11 @@ export const TripDetailScreen = ({
                   accessibilityLabel="Back to Trip Details"
                   className="flex-row items-center"
                 >
-                  <View className="p-1">
+                  <View className="pr-1">
                     <Icon name="chevron-left" size={24} color={"#999"} />
                   </View>
                   <Text
-                    className="text-base font-semibold"
-                    style={{ color: "#999" }}
+                    className="text-base font-semibold text-tertiary/80"
                   >
                     Back to Trip
                   </Text>

@@ -227,84 +227,79 @@ const ViewItineraryActivity = ({
           </View>
         )}
 
-        {/* Activity header with edit button */}
-        <View className="px-5 pb-2 bg-white mt-2">
-          <View className="flex-row items-start justify-between">
-            <View className="flex-row">
+        {/* Activity header */}
+        <View className="px-5 pb-2 bg-white mt-2 w-full">
+          <FadeInView key={`title-${id}`} type="right" delay={50} duration={350} className="w-full">
+            {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.plan && (
+              <View className="flex-row items-center mb-2">
+                <View
+                  style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + "20" }}
+                  className="items-end rounded-xs px-2 py-0.5"
+                >
+                  <Text
+                    style={{ color: getActivityTypeDetails(itineraryActivity.type).color }}
+                    className="text-[8px] tracking-wider uppercase font-extrabold"
+                  >
+                    {getActivityTypeDetails(itineraryActivity.type).text}
+                  </Text>
+                </View>
+              </View>
+            )}
+            <Text className="text-4xl font-semibold" style={{ paddingBottom: description ? 2 : 0 }}>
+              {itineraryActivity?.title}
+            </Text>
 
-              <FadeInView key={`title-${id}`} type="right" delay={50} duration={350}>
-                {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.plan && (
-                  <View className="flex-row items-center -mt-2 mb-2">
-                    <View
-                      style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + "20" }}
-                      className="items-end rounded-xs px-2 py-0.5"
-                    >
-                      <Text
-                        style={{ color: getActivityTypeDetails(itineraryActivity.type).color }}
-                        className="text-[8px] tracking-wider uppercase font-extrabold"
-                      >
-                        {getActivityTypeDetails(itineraryActivity.type).text}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-                <Text className="text-xl font-semibold" style={{ paddingBottom: description ? 6 : 0 }}>
-                  {itineraryActivity?.title}
+            {description && (
+              <View className="w-full mt-1">
+                {/* Hidden text element for un-truncated line measurement */}
+                <Text
+                  style={{ position: "absolute", opacity: 0, zIndex: -1000, left: 0, right: 0 }}
+                  className="text-base text-[#999] leading-6"
+                  onTextLayout={(e) => {
+                    setShowMoreButton(e.nativeEvent.lines.length > 1);
+                  }}
+                >
+                  {description}
                 </Text>
-              </FadeInView>
 
-              {description && (
-                <FadeInView key={`desc-${id}`} type="right" delay={120} duration={350}>
-                  <View>
-                    {/* Hidden text element for un-truncated line measurement */}
+                {/* Visible description text with Show More / Show Less button on same line */}
+                {showMoreButton && !isDescriptionExpanded ? (
+                  <View className="flex-row items-center w-full">
                     <Text
-                      style={{ position: "absolute", opacity: 0, zIndex: -1000 }}
-                      className="text-base text-[#999] leading-6"
-                      onTextLayout={(e) => {
-                        setShowMoreButton(e.nativeEvent.lines.length > 1);
-                      }}
+                      className="flex-1 text-base text-[#999] leading-6"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
                     >
                       {description}
                     </Text>
-
-                    {/* Visible description text with Show More / Show Less button on same line */}
-                    {showMoreButton && !isDescriptionExpanded ? (
-                      <View className="flex-row items-center">
-                        <Text
-                          className="flex-1 text-base text-[#999] leading-6"
-                          numberOfLines={1}
-                        >
-                          {description}
-                        </Text>
-                        <TouchableOpacity
-                          onPress={() => setIsDescriptionExpanded(true)}
-                          accessibilityRole="button"
-                          className="ml-1"
-                        >
-                          <Text className="text-sm text-secondary font-medium underline">
-                            Show more
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    ) : (
-                      <Text className="text-base text-[#999] leading-6">
-                        {description}
-                        {showMoreButton && isDescriptionExpanded && (
-                          <Text
-                            onPress={() => setIsDescriptionExpanded(false)}
-                            accessibilityRole="button"
-                            className="text-sm text-secondary font-medium underline"
-                          >
-                            {" Show less"}
-                          </Text>
-                        )}
+                    <TouchableOpacity
+                      onPress={() => setIsDescriptionExpanded(true)}
+                      accessibilityRole="button"
+                      activeOpacity={0.7}
+                      className="ml-1 shrink-0"
+                    >
+                      <Text className="text-md text-tertiary font-semibold underline">
+                        Show more
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <Text className="text-base text-[#999] leading-6">
+                    {description}
+                    {showMoreButton && isDescriptionExpanded && (
+                      <Text
+                        onPress={() => setIsDescriptionExpanded(false)}
+                        accessibilityRole="button"
+                        className="text-md text-tertiary font-semibold underline"
+                      >
+                        {" Show less"}
                       </Text>
                     )}
-                  </View>
-                </FadeInView>
-              )}
-            </View>
-          </View>
+                  </Text>
+                )}
+              </View>
+            )}
+          </FadeInView>
         </View>
 
         {/* Tabs */}

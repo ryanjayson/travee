@@ -238,7 +238,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
           className="absolute left-[-12px] w-7 h-7 rounded-full bg-gray-25 border-2 border-gray-500"
           style={{
             transform: [{ translateX: 0 }],
-            backgroundColor: "#2196F3",
+            backgroundColor: "#EAECF0",
           }}
         />
         {/* Dashed Perforation Line */}
@@ -256,7 +256,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
         <View
           className="absolute right-[-12px] w-7 h-7 rounded-full border-2 border-gray-500"
           style={{
-            backgroundColor: "#2196F3",
+            backgroundColor: "#EAECF0",
           }}
         />
       </View>
