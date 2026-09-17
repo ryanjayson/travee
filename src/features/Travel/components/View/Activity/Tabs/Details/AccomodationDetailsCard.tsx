@@ -18,53 +18,53 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
       {/* Main Details Body */}
       <View className="p-2">
         <View className="">
-          <Text className="text-xs font-medium text-gray-200 uppercase tracking-widest mb-2">
+          <Text className="text-xs font-medium text-secondary/500 uppercase tracking-widest mb-2">
             Stay / Place to stay
           </Text>
-          <Text className="text-5xl font-semibold tracking-tight mb-1 text-white">
+          <Text className="text-3xl font-semibold tracking-tight mb-1 text-secondary">
             {data.accomodationName || "N/A"}
           </Text>
-          <ActivityDetailCardAddress
+          {/* <ActivityDetailCardAddress
             address={data.address}
             coordinates={data.destinationAddressData?.coordinates}
             title={data.accomodationName}
             onFullScreenChange={onFullScreenChange}
-          />
+          /> */}
         </View>
       </View>
 
       <View className="flex-row items-center justify-between pt-md pb-xl px-md ">
         <View className="flex-1">
-          <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+          <Text className="text-xs font-semibold text-secondary/500 uppercase tracking-widest mb-1">
             Check-in
           </Text>
-          <Text className="text-2xl font-semibold text-white/80">
+          <Text className="text-2xl font-semibold text-secondary/80">
             {safeFormatTime(data.checkinDateTime)}
           </Text>
-          <Text className="text-base font-medium text-white/80 mt-0.5">
+          <Text className="text-base font-medium text-secondary/80 mt-0.5">
             {safeFormatDate(data.checkinDateTime)}
           </Text>
         </View>
 
         <View className="px-3 items-center justify-center">
-          <Icon name="arrow-forward" size={18} color={"#FFFFFF"} />
+          <Icon name="arrow-forward" size={18} color={"#9c46ec"} />
         </View>
 
         <View className="flex-1 items-end">
-          <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+          <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1">
             Check-out
           </Text>
-          <Text className="text-2xl font-semibold text-white/80 text-right">
+          <Text className="text-2xl font-semibold text-secondary/80 text-right">
             {data.checkoutDateTime ? safeFormatTime(data.checkoutDateTime) : "--:--"}
           </Text>
-          <Text className="text-base font-medium text-white/80 mt-0.5 text-right">
+          <Text className="text-base font-medium text-secondary/80 mt-0.5 text-right">
             {data.checkoutDateTime ? safeFormatDate(data.checkoutDateTime) : ""}
           </Text>
         </View>
       </View>
       <View className="px-md"
         style={{ display: data.subType || data.bookingReference || data.websiteAddress ? "flex" : "none" }}>
-        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#9c46ec]">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#9c46ec+30]">
           <Field label="Booking Ref" value={data.bookingReference} icon="folder-open" showBorder={false} isCopyable={true} borderColor="border-[#9234ea]" />
           <Field label="Type" value={data.subType} icon="hotel" showBorder={false} borderColor="border-[#9234ea]" />
           <Field label="Website" value={data.websiteAddress} icon="link" showBorder={false} isLink={true} borderColor="border-[#9234ea]" />
@@ -74,7 +74,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
       <View className="px-md mt-sm"
         style={{ display: data.contactName || data.contactNumber || data.emailAddress ? "flex" : "none" }}
       >
-        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#9c46ec]">
+        <View className="rounded-2xl flex-col gap-3 p-5 pb-1 bg-[#9c46ec+30]">
           <Field label="Contact Person" value={data.contactName} icon="person" showBorder={false} borderColor="border-[#9234ea]" />
           <Field
             label="Contact Number"

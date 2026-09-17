@@ -20,6 +20,7 @@ import DraggableSectionContainer from "./DraggableSectionContainer";
 import SectionMenu from "./Section/Menu";
 import SectionModal from "./Section/Modal";
 import { useToast } from "../../../../../context/ToastContext";
+import { useTravelContext } from "../../../../../context/TravelContext";
 
 import { useLexicographicSort } from "../../../../../hooks/useLexicographicSort";
 import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../../services/local/travelService";
@@ -70,6 +71,7 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   const { generateSortOrder } = useLexicographicSort();
   const queryClient = useQueryClient();
   const { showToast } = useToast();
+  const { openActivityTypeModal } = useTravelContext();
 
   useImperativeHandle(ref, () => ({
     handleAddSection: handleMenuAddSection,
@@ -409,9 +411,13 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   };
 
   const handleMenuAddActivity = () => {
-    setCurrentSectionId(null);
-    setModalVisible(true);
     setMenuVisible(false);
+    if (openActivityTypeModal) {
+      openActivityTypeModal(undefined, travelId);
+    } else {
+      setCurrentSectionId(null);
+      setModalVisible(true);
+    }
   };
 
   const handleMenuAddSection = () => {
@@ -428,15 +434,16 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
   };
 
   const handleSectionMenuAddActivity = () => {
-    if (currentSectionForMenu) {
-      setCurrentSectionId(currentSectionForMenu.id ?? null);
-    } else {
-      setCurrentSectionId(
-        travelSections?.find((section) => section.isDefaultSection)?.id || null,
-      );
-    }
-    setModalVisible(true);
+    const targetSectionId =
+      currentSectionForMenu?.id ??
+      travelSections?.find((section) => section.isDefaultSection)?.id;
     setSectionMenuVisible(false);
+    if (openActivityTypeModal) {
+      openActivityTypeModal(targetSectionId || undefined, travelId);
+    } else {
+      setCurrentSectionId(targetSectionId ?? null);
+      setModalVisible(true);
+    }
   };
 
   const handleSectionMenuEditSection = (sectionId: string) => {
@@ -691,13 +698,18 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
 
           <TouchableOpacity
             onPress={() => {
-              setModalVisible(true);
               const defaultSection = sections.find(
                 (section) => section.isDefaultSection == true,
               );
-              setCurrentSectionId(defaultSection?.id || null);
+              if (openActivityTypeModal) {
+                openActivityTypeModal(defaultSection?.id || undefined, travelId);
+              } else {
+                setModalVisible(true);
+                setCurrentSectionId(defaultSection?.id || null);
+              }
             }}
-
+            accessibilityRole="button"
+            accessibilityLabel="Add Activity"
             className="bg-primary-light flex-row items-center border border-primary/50 justify-center gap-2 py-3 rounded-4xl"
           >
             <Icon name="add" size={16} color={"#263F69"} />
@@ -919,12 +931,16 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
 
                                   <TouchableOpacity
                                     onPress={() => {
-                                      setModalVisible(true);
-                                      const defaultSection = sections.find(
-                                        (section) => section.isDefaultSection == true,
-                                      );
-                                      setCurrentSectionId(defaultSection?.id || null);
+                                      const targetSectionId = section.id || (sections.find(s => s.isDefaultSection)?.id);
+                                      if (openActivityTypeModal) {
+                                        openActivityTypeModal(targetSectionId || undefined, travelId);
+                                      } else {
+                                        setModalVisible(true);
+                                        setCurrentSectionId(targetSectionId || null);
+                                      }
                                     }}
+                                    accessibilityRole="button"
+                                    accessibilityLabel="Add activity"
                                     className="justify-center flex-row">
                                     <Icon name="add" size={18} color={"#aaa"} />
                                     <Text className=" font-semibold flex items-center text-[#aaa]">
@@ -945,9 +961,15 @@ const EditTravelItinerary = forwardRef<EditTravelItineraryRef, EditTravelItinera
                           <TouchableOpacity
                             onPress={() => {
                               if (!section.id) return;
-                              setModalVisible(true);
-                              setCurrentSectionId(section.id);
+                              if (openActivityTypeModal) {
+                                openActivityTypeModal(section.id, travelId);
+                              } else {
+                                setModalVisible(true);
+                                setCurrentSectionId(section.id);
+                              }
                             }}
+                            accessibilityRole="button"
+                            accessibilityLabel="Add Activity"
                             className="mt-2 h-[44px] flex items-center justify-center flex-row"
                           >
                             <Icon name="add" size={20} color={"#263F69"} />

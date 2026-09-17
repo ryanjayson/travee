@@ -38,7 +38,7 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
 
   if (!itineraryActivity) return null;
 
-  const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity.type)?.color || "#9E9E9E";
+  // const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity.type)?.color || "#9E9E9E";
 
   const renderDetails = () => {
     switch (itineraryActivity.type) {
@@ -46,40 +46,40 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
         return <FlightDetails data={itineraryActivity.flightDetails} />;
       case ActivityType.stay:
         return <AccomodationDetails data={itineraryActivity.accomodationDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.cafeRestaurant:
-        return (
-          <CafeRestaurantDetails
-            data={itineraryActivity.cafeRestaurantDetails}
-            activityStartDate={itineraryActivity.startDate}
-            onFullScreenChange={onFullScreenChange}
-          />
-        );
-      case ActivityType.nature:
-        return (
-          <NatureDetails
-            data={itineraryActivity.natureDetails}
-            activityStartDate={itineraryActivity.startDate}
-            onFullScreenChange={onFullScreenChange}
-          />
-        );
-      case ActivityType.shopppingAndService:
-        return <ShoppingDetails data={itineraryActivity.shoppingDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.entertainmentAndRecreation:
-        return (
-          <EntertainmentDetails
-            data={itineraryActivity.entertainmentDetails}
-            activityStartDate={itineraryActivity.startDate}
-            onFullScreenChange={onFullScreenChange}
-          />
-        );
+      // case ActivityType.cafeRestaurant:
+      //   return (
+      //     <CafeRestaurantDetails
+      //       data={itineraryActivity.cafeRestaurantDetails}
+      //       activityStartDate={itineraryActivity.startDate}
+      //       onFullScreenChange={onFullScreenChange}
+      //     />
+      //   );
+      // case ActivityType.nature:
+      //   return (
+      //     <NatureDetails
+      //       data={itineraryActivity.natureDetails}
+      //       activityStartDate={itineraryActivity.startDate}
+      //       onFullScreenChange={onFullScreenChange}
+      //     />
+      //   );
+      // case ActivityType.shopppingAndService:
+      //   return <ShoppingDetails data={itineraryActivity.shoppingDetails} onFullScreenChange={onFullScreenChange} />;
+      // case ActivityType.entertainmentAndRecreation:
+      //   return (
+      //     <EntertainmentDetails
+      //       data={itineraryActivity.entertainmentDetails}
+      //       activityStartDate={itineraryActivity.startDate}
+      //       onFullScreenChange={onFullScreenChange}
+      //     />
+      //   );
       // case ActivityType.walk:
       //   return <WalkDetails data={itineraryActivity.walkDetails} />;
-      case ActivityType.sightseeing:
-        return <SightseeingDetails data={itineraryActivity.sightseeingDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.preparation:
-        return <PreparationDetails data={itineraryActivity.preparationDetails} />;
-      case ActivityType.hikeOrCamp:
-        return <HikeOrCampDetails data={itineraryActivity.hikeOrCampDetails} onFullScreenChange={onFullScreenChange} />;
+      // case ActivityType.sightseeing:
+      //   return <SightseeingDetails data={itineraryActivity.sightseeingDetails} onFullScreenChange={onFullScreenChange} />;
+      // case ActivityType.preparation:
+      //   return <PreparationDetails data={itineraryActivity.preparationDetails} />;
+      // case ActivityType.hikeOrCamp:
+      //   return <HikeOrCampDetails data={itineraryActivity.hikeOrCampDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.transit:
         return <TransportationDetails data={itineraryActivity.transportationDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.rideRental:
@@ -94,12 +94,9 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
   return (
     <View
       className="flex-1 "
-      style={{
-        backgroundColor: activityColor,
-      }}
     >
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }} className="flex-1">
-        <FadeInView key={`details-${itineraryActivity.id}`} type="down" delay={40} duration={300} className="px-3">
+        <FadeInView key={`details-${itineraryActivity.id}`} type="right" delay={40} duration={300} className="px-3">
           {renderDetails()}
         </FadeInView>
       </ScrollView>

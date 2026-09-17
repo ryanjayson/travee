@@ -20,6 +20,7 @@ import EditTravelItinerary, { EditTravelItineraryRef } from "../components/Edit/
 import FloatingAddButton from "../components/Edit/Itinerary/FloatingAddButton";
 import TripChecklist from "../components/Forms/TripChecklist";
 import TripMembers from "../components/Forms/TripMembers";
+import TravelModals from "../components/TravelModals";
 import { useTravelPlan } from "../hooks/useTravel";
 
 import { FadeInView } from "../../../components/animations";
@@ -342,6 +343,7 @@ const EditTravelPlan = () => {
           onAddActivity={handleAddActivity}
         />
       )}
+      <TravelModals travelPlan={travelPlan} />
     </View>
   );
 };

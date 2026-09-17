@@ -23,7 +23,6 @@ import TripIcon from "../../../../components/TripIcon";
 import { useTravelContext } from "../../../../context/TravelContext";
 import { TripType, ActivityType } from "../../../../types/enums";
 import { TravelPlan } from "../../../Travel/types/TravelDto";
-import SectionModal from "../Edit/Itinerary/Section/Modal";
 import MapViewer from "../MapViewer";
 import ShareTripModal from "../ShareOverlay/ShareTripModal";
 import DestinationsBottomSheet from "../DestinationsBottomSheet";
@@ -33,7 +32,8 @@ import ExpensesTab from "./Tabs/ExpensesTab";
 import ItineraryTab from "./Tabs/ItineraryTab";
 import MembersTab from "./Tabs/MembersTab";
 import NotesTab from "./Tabs/NotesTab";
-import TravelActionFAB from "./TravelActionFAB";
+import { FadeInView } from "../../../../components/animations";
+
 import { getDestinationZoom } from "../../../../utils/mapUtils";
 // @ts-ignore
 import { MAPBOX_ACCESS_TOKEN } from "@env";
@@ -72,7 +72,6 @@ const ViewTravel = ({
   onEditTrip,
 }: ViewTravelProps) => {
   const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
-  const [showSectionModal, setShowSectionModal] = useState<boolean>(false);
   const [localShowMap, localSetShowMap] = useState<boolean>(false);
   const [localShowShare, localSetShowShare] = useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -108,6 +107,7 @@ const ViewTravel = ({
     openNoteModal,
     openChecklistModal,
     openActivityModal,
+    openActivityTypeModal,
     openGoogleSearchModal,
     activeTripViewTab: activeTabId,
     setActiveTripViewTab: setActiveTabId,
@@ -367,152 +367,7 @@ const ViewTravel = ({
     return markers;
   };
 
-  const HeaderSection = () => {
-    const validDestCoords = (travelPlan.travel.tripDestinations || [])
-      .filter((d: any) => d.destinationData?.coordinates && (d.destinationData.coordinates.latitude !== 0 || d.destinationData.coordinates.longitude !== 0))
-      .map((d: any) => d.destinationData.coordinates);
 
-    const hasCoords = validDestCoords.length > 0 || Boolean(travelPlan.travel.destinationData?.coordinates);
-
-    let mapUrl = "";
-    if (validDestCoords.length > 1) {
-      const pins = validDestCoords
-        .slice(0, 5)
-        .map((c: any) => `pin-s+263F69(${c.longitude},${c.latitude})`)
-        .join(",");
-      mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pins}/auto/600x300?padding=50,50,50,50&access_token=${MAPBOX_ACCESS_TOKEN}`;
-    } else if (hasCoords) {
-      const coord = validDestCoords[0] || travelPlan.travel.destinationData?.coordinates;
-      const zoom = getDestinationZoom(travelPlan.travel.destination, travelPlan.travel.destinationData);
-      mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${coord.longitude},${coord.latitude})/${coord.longitude},${coord.latitude},${zoom},0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
-    }
-
-    const formattedDestinations = (travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0)
-      ? travelPlan.travel.tripDestinations.map((d: any) => d.destination).filter(Boolean).join(" | ")
-      : (travelPlan.travel.destination || "");
-
-    return (
-      <View>
-        <View className="flex-1">
-          <View className="flex-1 bg-white">
-            {hasCoords && mapUrl ? (
-              <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={() => {
-                  setShowDestinationOnlyMap(true);
-                  setMapVisible(true);
-                }}
-                className="w-full relative"
-              >
-                <Image
-                  source={{ uri: mapUrl }}
-                  className="w-full h-[200px]"
-                  style={{ resizeMode: "cover" }}
-                />
-                <LinearGradient
-                  colors={["rgba(0, 0, 0, 0.75)", "rgba(0, 0, 0, 0.5)"]}
-                  start={{ x: 0.1, y: 0 }}
-                  end={{ x: 0.7, y: 1 }}
-                  style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-                />
-              </TouchableOpacity>
-            ) : (
-              <View className="relative w-full h-[200px]">
-                <Image
-                  source={require("../../../../assets/images/japan.jpg")}
-                  className="w-full h-[200px]"
-                  style={{ resizeMode: "cover" }}
-                />
-                <LinearGradient
-                  colors={["rgba(0, 0, 0, 0.70)", "rgba(0, 0, 0, 0.30)"]}
-                  start={{ x: 0.1, y: 0 }}
-                  end={{ x: 0.7, y: 1 }}
-                  style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-                />
-              </View>
-            )}
-          </View>
-        </View>
-
-        <View className="flex-2 bg-white border-t border-gray-300 rounded-t-4xl -mt-7">
-          <View className="p-6">
-            <View className="flex-row justify-between items-start">
-              <View className="flex-row items-center gap-3 flex-1 mr-4">
-                {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
-                  <TripIcon type={travelPlan.travel.type} size={28} showIconOnly={true} />
-                )}
-                <Text className="text-4xl font-bold mb-2 flex-1" numberOfLines={2}>
-                  {travelPlan?.travel.title}
-                </Text>
-              </View>
-              <StatusBadge type={1} status={travelPlan.travel.status!} />
-            </View>
-            <View className="flex-row items-center flex-wrap bg-gray-50 rounded-lg p-2">
-              <View className="flex-row items-center my-1 pr-3 border-r border-[#DDD]">
-                <View className="flex-row items-center">
-                  <Icon name="calendar-month" size={28} color={"#858585"} />
-                  <View className="flex-col px-1">
-                    <Text className="text-xs text-tertiary leading-3">Trip Duration  {travelPlan.travel?.startOrDepartureDate && travelPlan.travel?.endOrReturnDate
-                      ? ` (${Math.ceil((new Date(travelPlan.travel.endOrReturnDate).getTime() - new Date(travelPlan.travel.startOrDepartureDate).getTime()) / (1000 * 60 * 60 * 24))} days)`
-                      : ""}</Text>
-                    <Text className="text-lg font-bold text-secondary line-clamp-1 leading-6">
-                      {travelPlan.travel?.startOrDepartureDate
-                        ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                        : ""}
-
-                      - {travelPlan.travel?.endOrReturnDate
-                        ? new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                        : ""}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-              <View className="flex-row items-center my-1 pl-3 flex-1">
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  className="flex-row items-center my-1 mr-2 flex-1"
-                  onPress={() => hasCoords && setMapVisible(true)}
-                >
-                  <Icon name="location-pin" size={24} color={"#B42318"} />
-
-                  {formattedDestinations ? (
-                    <Text className="text-[#183B7A] font-medium mx-1" numberOfLines={2} ellipsizeMode="tail">
-                      {formattedDestinations}
-                    </Text>
-                  ) : (
-                    <Text className="text-tertiary italic text-base mx-1" numberOfLines={1} ellipsizeMode="tail">
-                      Not set
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <View className="mt-2.5">
-              <Text
-                className="text-base text-tertiary leading-6"
-                numberOfLines={isDescriptionExpanded ? undefined : 3}
-                onTextLayout={(e) => {
-                  if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
-                    setShowMoreButton(true);
-                  }
-                }}
-              >
-                {travelPlan.travel.description || null}
-              </Text>
-              {showMoreButton && (
-                <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
-                  <Text className="text-secondary font-medium mt-1">
-                    {isDescriptionExpanded ? "Show less" : "Show more"}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-  };
 
   const tabData = [
     {
@@ -600,7 +455,7 @@ const ViewTravel = ({
   return (
     <Portal.Host>
       {/* Full-screen background interactive map */}
-      <Animated.View style={[StyleSheet.absoluteFill, { paddingBottom: mapPaddingBottom }]} className="absolute inset-0">
+      {/* <Animated.View style={[StyleSheet.absoluteFill, { paddingBottom: mapPaddingBottom }]} className="absolute inset-0">
         <MapViewer
           inline={true}
           visible={true}
@@ -620,33 +475,16 @@ const ViewTravel = ({
           }
           doneActivities={doneActivities}
         />
-      </Animated.View>
+      </Animated.View> */}
 
       {/* Floating Bottom Form Sheet */}
       <Animated.View
-        {...panResponder.panHandlers}
-        style={[
-          {
-            transform: [{ translateY }],
-            height: screenHeight - SNAP_MAX,
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "#FFFFFF",
-            borderTopLeftRadius: 32,
-            borderTopRightRadius: 32,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: -8 },
-            shadowOpacity: 0.12,
-            shadowRadius: 16,
-            elevation: 24,
-          },
-        ]}
+        className="flex-1"
+      // {...panResponder.panHandlers}
       >
 
         {/* Drag Handle Area */}
-        <Animated.View
+        {/* <Animated.View
           className="w-full items-center bg-white"
           style={{
             borderTopLeftRadius: 32,
@@ -661,7 +499,7 @@ const ViewTravel = ({
             className="w-10 h-1 bg-gray-300 rounded-full"
             style={{ opacity: handleOpacity }}
           />
-        </Animated.View>
+        </Animated.View> */}
 
         {/* Trip Title & Summary */}
         <View className="px-6 pb-3 bg-white flex-row justify-between items-start relative">
@@ -677,141 +515,88 @@ const ViewTravel = ({
               // })
             }}
           >
-
-            <View className="flex-row items-center gap-3">
-              {/* {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
+            <FadeInView type="right" delay={80} duration={200} >
+              <View className="flex-row items-center gap-3">
+                {/* {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
                 <TripIcon type={travelPlan.travel.type} size={24} showIconOnly={true} /> 
               )} */}
-              <View className="absolute -top-md opacity-75">
-                <StatusBadge type={1} status={travelPlan.travel.status!} />
+                <View className="absolute -top-md opacity-75">
+                  <StatusBadge type={1} status={travelPlan.travel.status!} />
+                </View>
+
+                <Text className="text-4xl mt-sm leading-relaxed font-semibold text-secondary flex-1" numberOfLines={currentSnap === SNAP_MIN ? 1 : undefined}>
+                  {travelPlan.travel.title}
+                </Text>
               </View>
-              <Text className="text-4xl mt-sm leading-relaxed font-semibold text-secondary flex-1" numberOfLines={currentSnap === SNAP_MIN ? 1 : undefined}>
-                {travelPlan.travel.title}
-              </Text>
-            </View>
-            <View className="flex-row items-center mt-2 flex-wrap">
-              {((travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0) || travelPlan.travel.destination) && (() => {
-                const validDestinations = (travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0)
-                  ? travelPlan.travel.tripDestinations.map((d: any) => d.destination).filter(Boolean)
-                  : (travelPlan.travel.destination ? travelPlan.travel.destination.split(" | ").map((s: string) => s.trim()).filter(Boolean) : []);
-                const isMultiple = validDestinations.length > 1;
-                const destinationText = isMultiple
-                  ? `${validDestinations.length} destinations`
-                  : (validDestinations[0] || travelPlan.travel.destination);
+            </FadeInView>
 
-                return (
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    accessibilityLabel={`View destinations (${destinationText})`}
-                    onPress={() => setShowDestinationsSheet(true)}
-                    className="flex-row items-center mr-3 my-0.5"
-                  >
-                    <Icon name="location-pin" size={18} color="#999" />
-                    <Text className="text-md font-medium text-tertiary ml-0.5" numberOfLines={1}>
-                      {destinationText}
+            <FadeInView type="right" delay={80} duration={300} >
+              <View className="flex-row items-center mt-2 flex-wrap">
+                {((travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0) || travelPlan.travel.destination) && (() => {
+                  const validDestinations = (travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0)
+                    ? travelPlan.travel.tripDestinations.map((d: any) => d.destination).filter(Boolean)
+                    : (travelPlan.travel.destination ? travelPlan.travel.destination.split(" | ").map((s: string) => s.trim()).filter(Boolean) : []);
+                  const isMultiple = validDestinations.length > 1;
+                  const destinationText = isMultiple
+                    ? `${validDestinations.length} destinations`
+                    : (validDestinations[0] || travelPlan.travel.destination);
+
+                  return (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`View destinations (${destinationText})`}
+                      onPress={() => setShowDestinationsSheet(true)}
+                      className="flex-row items-center mr-3 my-0.5"
+                    >
+                      <Icon name="location-pin" size={18} color="#999" />
+                      <Text className="text-md font-medium text-tertiary ml-0.5" numberOfLines={1}>
+                        {destinationText}
+                      </Text>
+                      {isMultiple && (
+                        <Ionicons name="chevron-down" size={14} color="#999" style={{ marginLeft: 3 }} />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })()}
+
+                {(travelPlan.travel.startOrDepartureDate || travelPlan.travel.endOrReturnDate) && (
+                  <>
+                    <Icon name="calendar-month" size={16} color="#999" />
+                    <Text className="text-md font-medium text-tertiary ml-0.5">
+                      {travelPlan.travel.startOrDepartureDate
+                        ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+                        : "- "}
+                      {travelPlan.travel.endOrReturnDate
+                        ? " - " + new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+                        : ""}
                     </Text>
-                    {isMultiple && (
-                      <Ionicons name="chevron-down" size={14} color="#999" style={{ marginLeft: 3 }} />
-                    )}
-                  </TouchableOpacity>
-                );
-              })()}
-
-              {(travelPlan.travel.startOrDepartureDate || travelPlan.travel.endOrReturnDate) && (
-                <>
-                  <Icon name="calendar-month" size={16} color="#999" />
-                  <Text className="text-md font-medium text-tertiary ml-0.5">
-                    {travelPlan.travel.startOrDepartureDate
-                      ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                      : "- "}
-                    {travelPlan.travel.endOrReturnDate
-                      ? " - " + new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                      : ""}
-                  </Text>
-                </>
-              )}
-            </View>
+                  </>
+                )}
+              </View>
+            </FadeInView>
 
           </Animated.View>
         </View>
 
         {/* Tabbed Content */}
         <Animated.View
-          className="flex-1 mb-4 "
-          style={{ paddingBottom: translateY }}
+          className="flex-1 mb-4"
         >
-          <Tabs
-            tabs={tabData}
-            initialActiveTabId="details"
-            activeTabId={activeTabId}
-            type="default"
-            onTabChange={setActiveTabId}
-            expanded={true}
-            wrapperStyle={`bg-white px-1 pb-2 ${activeTabId === 'itinerary' ? 'border-b border-[#e0e0e0]' : ''}`}
-          />
+          <FadeInView type="right" delay={80} duration={400} className="flex-1">
+            <Tabs
+              tabs={tabData}
+              initialActiveTabId="details"
+              activeTabId={activeTabId}
+              type="default"
+              onTabChange={setActiveTabId}
+              expanded={true}
+              wrapperStyle={`bg-white px-1 pb-2 ${activeTabId === 'itinerary' ? 'border-b border-[#e0e0e0]' : ''}`}
+            />
+          </FadeInView>
+
         </Animated.View>
       </Animated.View>
-      <TravelActionFAB
-        currentTab={activeTabId}
-        open={fabOpen}
-        setOpen={setFabOpen}
-        travelId={travelId}
-        isIncreasePosition={currentSnap === SNAP_MIN}
-        onEditTrip={onEditTrip}
-        onAddNote={() => {
-          openNoteModal(
-            null,
-            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
-            travelId
-          );
-        }}
-        onAddChecklist={() => {
-          openChecklistModal(
-            null,
-            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
-            travelId
-          );
-        }}
-        onAddExpense={() => {
-          openExpenseModal(
-            null,
-            undefined,
-            travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
-            travelId
-          );
-        }}
-        onAddActivity={(type) => {
-          if (type === ActivityType.plan) {
-            const allTripDestinations =
-              travelPlan?.travel?.tripDestinations && travelPlan.travel.tripDestinations.length > 0
-                ? travelPlan.travel.tripDestinations
-                : travelPlan?.travel?.destination
-                  ? [{ destination: travelPlan.travel.destination, destinationData: travelPlan.travel.destinationData }]
-                  : [];
-
-            openGoogleSearchModal(
-              undefined,
-              travelId,
-              travelPlan?.travel?.destination,
-              travelPlan?.travel?.destinationData?.coordinates,
-              countryName,
-              undefined,
-              allTripDestinations
-            );
-          } else {
-            openActivityModal(null, undefined, travelId, type);
-          }
-        }}
-        onAddSection={() => setShowSectionModal(true)}
-      />
-
-      <SectionModal
-        visible={showSectionModal}
-        onClose={() => setShowSectionModal(false)}
-        itinerarySection={null}
-        travelId={travelId}
-      />
 
       <ShareTripModal
         visible={isShareVisible}

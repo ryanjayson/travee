@@ -128,8 +128,7 @@ const HomeScreen = () => {
 
   const handlePressTrip = (trip: Travel) => {
     if (trip && trip.id) {
-      setSelectedTravelForModal(trip);
-      setShowTravelViewModal(true);
+      navigation.navigate("TravelDetail", { travelId: trip.id });
     }
   };
 

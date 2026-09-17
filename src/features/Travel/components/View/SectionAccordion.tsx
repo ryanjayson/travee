@@ -160,7 +160,7 @@ const DraggableSectionItem = ({
 }: DraggableSectionItemProps) => {
   const shiftAnim = useRef(new Animated.Value(0)).current;
   const lastTargetShift = useRef(0);
-  const { openActivityModal } = useTravelContext();
+  const { openActivityModal, openActivityTypeModal } = useTravelContext();
 
   useEffect(() => {
     if (!masterDragState.isDragging || masterDragState.dragIndex === null) {
@@ -372,7 +372,7 @@ const DraggableSectionItem = ({
                       </View>
 
                       <TouchableOpacity
-                        onPress={() => openActivityModal(null, section.id || undefined, section.travelId)}
+                        onPress={() => openActivityTypeModal(section.id || undefined, section.travelId)}
                         accessibilityRole="button"
                         activeOpacity={0.7}
                         className="flex-row items-center bg-primary/10 px-3 py-1.5 rounded-lg gap-2 mt-md"
@@ -425,7 +425,7 @@ const SectionAccordion = ({
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { colors } = useTheme();
-  const { openActivityModal } = useTravelContext();
+  const { openActivityModal, openActivityTypeModal, openViewActivity } = useTravelContext();
   const [isAddSectionVisible, setIsAddSectionVisible] = useState(false);
   const [selectedViewActivity, setSelectedViewActivity] = useState<{ id: string; travelId?: string } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -1260,7 +1260,7 @@ const SectionAccordion = ({
               </View>
               <View className="justify-center items-center gap-3 flex-row mt-lg">
                 <TouchableOpacity
-                  onPress={() => openActivityModal(null, undefined, travelId)}
+                  onPress={() => openActivityTypeModal(undefined, travelId)}
                   accessibilityRole="button"
                   activeOpacity={0.7}
                   className="flex-row items-center bg-primary/10 px-3 py-1.5 rounded-lg gap-2"
@@ -1381,7 +1381,11 @@ const SectionAccordion = ({
                               accessibilityLabel={`View activity ${eventActivity.title}`}
                               onPress={() => {
                                 if (eventActivity.id) {
-                                  setSelectedViewActivity({ id: eventActivity.id, travelId: section.travelId });
+                                  if (openViewActivity) {
+                                    openViewActivity(eventActivity.id);
+                                  } else {
+                                    setSelectedViewActivity({ id: eventActivity.id, travelId: section.travelId });
+                                  }
                                 }
                               }}
                               className="ml-5 py-2 flex-row gap-x-3 items-center"
@@ -1696,7 +1700,7 @@ const SectionAccordion = ({
       />
 
       {/* View Activity Modal */}
-      {selectedViewActivity && (
+      {!openViewActivity && selectedViewActivity && (
         <ViewActivityModal
           id={selectedViewActivity.id}
           travelId={selectedViewActivity.travelId}

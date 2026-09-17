@@ -4,6 +4,7 @@ import TouchButton from "../components/atoms/TouchButton";
 import { useAuth } from "../features/Auth/hooks/AuthContext";
 import TravelCatalog from "../features/Travel/screens/TravelCatalog";
 import EditTravelPlan from "../features/Travel/screens/EditTravelPlan";
+import TripDetailScreen from "../features/Travel/screens/TripDetailScreen";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { TravelProvider } from "../context/TravelContext";
 
@@ -58,6 +59,14 @@ export const EditTravelPlanScreen = () => {
   return (
     <TravelProvider>
       <EditTravelPlan />
+    </TravelProvider>
+  );
+};
+
+export const TravelDetailScreen = () => {
+  return (
+    <TravelProvider>
+      <TripDetailScreen />
     </TravelProvider>
   );
 };

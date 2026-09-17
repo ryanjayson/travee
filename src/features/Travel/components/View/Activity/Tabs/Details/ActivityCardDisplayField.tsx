@@ -126,12 +126,13 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
   return (
     <View className="flex-row items-start mb-3 gap-6">
       {icon ? (
-        <View className="border p-3 rounded-full border-white/30" style={{ alignItems: "center", justifyContent: "center" }}>
-          <Icon name={icon as any} size={24} color="#fffefe" />
+        <View className="border p-3 rounded-full border-secondary/30" style={{ alignItems: "center", justifyContent: "center" }}>
+          <Icon name={icon as any} size={24} color="#344054" />
         </View>
       ) : null}
       <View className={`flex-1 ${borderClass} ${showBorder ? "pb-3" : ""}`}>
-        <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-0.5">
+        <Text className="text-xs font-semibold text-sec
+        ondary uppercase tracking-widest mb-0.5">
           {label}
         </Text>
         {isInteractive ? (
@@ -145,7 +146,7 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
               className="text-lg font-medium"
               numberOfLines={isLink ? 1 : numberOfLines}
               style={{
-                color: "#ffffff",
+                color: "#344054",
                 textDecorationLine: isUnderlined ? "underline" : "none",
                 opacity: 0.8,
               }}
@@ -156,14 +157,14 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
               <Icon
                 name={actionIconName}
                 size={16}
-                color={actionColor}
+                color="#344054"
                 style={{ opacity: 0.6 }}
               />
             )}
           </TouchableOpacity>
         ) : (
           <Text
-            className="text-lg font-semibold text-white opacity-60"
+            className="text-lg font-semibold text-secondary opacity-60"
             numberOfLines={numberOfLines}
           >
             {value}

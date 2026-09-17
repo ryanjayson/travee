@@ -227,6 +227,10 @@ export interface TravelContextType {
 
   refetchTravelPlan: () => void;
   setRefetchTravelPlan: (fn: (() => void) | null) => void;
+
+  viewActivityId?: string | null;
+  openViewActivity?: (activityId: string) => void;
+  closeViewActivity?: () => void;
 }
 
 

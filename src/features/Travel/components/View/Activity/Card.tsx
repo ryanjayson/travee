@@ -80,6 +80,8 @@ const ActivityItemCard = ({
     openNoteModal,
     openChecklistModal,
     openActivityModal,
+    openActivityTypeModal,
+    openViewActivity,
   } = useTravelContext();
   const [isAddPressed, setIsAddPressed] = useState<boolean>(false);
   const updateMutation = useUpdateActivityMutation();
@@ -367,7 +369,11 @@ const ActivityItemCard = ({
   };
 
   const handleViewModeActivity = (id: string) => {
-    setShowActivityViewModal(true);
+    if (openViewActivity) {
+      openViewActivity(id);
+    } else {
+      setShowActivityViewModal(true);
+    }
   };
 
   if (plainMode) {
@@ -392,7 +398,7 @@ const ActivityItemCard = ({
           </Text>
         </TouchableOpacity>
 
-        {itineraryEventActivity.id ? (
+        {!openViewActivity && itineraryEventActivity.id ? (
           <ViewActivityModal
             id={itineraryEventActivity.id}
             travelId={itineraryEventActivity.travelId}
@@ -495,7 +501,7 @@ const ActivityItemCard = ({
           <TouchableHighlight
             underlayColor={"none"}
             className={`absolute h-6xl w-6xl bottom-[-30px] left-lg z-9999 `} //TODO: apply to last item for now, later show this to cards between
-            onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined, itineraryActivity.travelId)}
+            onPress={() => openActivityTypeModal(itineraryActivity.sectionId || undefined, itineraryActivity.travelId)}
             onShowUnderlay={() => setIsAddPressed(true)}
             onHideUnderlay={() => setIsAddPressed(false)}
             accessibilityRole="button"
@@ -736,12 +742,14 @@ const ActivityItemCard = ({
         </View>
       )}
 
-      <ViewActivityModal
-        id={itineraryEventActivity.id!}
-        travelId={itineraryEventActivity.travelId}
-        showModal={showActivityViewModal}
-        setShowModal={setShowActivityViewModal}
-      />
+      {!openViewActivity && itineraryEventActivity.id && (
+        <ViewActivityModal
+          id={itineraryEventActivity.id}
+          travelId={itineraryEventActivity.travelId}
+          showModal={showActivityViewModal}
+          setShowModal={setShowActivityViewModal}
+        />
+      )}
 
       {itineraryEventActivity.destinationData?.coordinates && (
         <MapViewer
