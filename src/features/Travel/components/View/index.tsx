@@ -1,29 +1,18 @@
-import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
-import { useQueryClient } from "@tanstack/react-query";
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
-  Image,
-  PanResponder,
-  StyleSheet,
+  Platform,
   Text,
   TouchableOpacity,
   View,
-  Platform
 } from "react-native";
-import {
-  Portal,
-} from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
+import { Portal } from "react-native-paper";
 import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
-import TripIcon from "../../../../components/TripIcon";
 import { useTravelContext } from "../../../../context/TravelContext";
-import { TripType, ActivityType } from "../../../../types/enums";
 import { TravelPlan } from "../../../Travel/types/TravelDto";
-import MapViewer from "../MapViewer";
 import ShareTripModal from "../ShareOverlay/ShareTripModal";
 import DestinationsBottomSheet from "../DestinationsBottomSheet";
 import ChecklistTab from "./Tabs/ChecklistTab";
@@ -34,14 +23,11 @@ import MembersTab from "./Tabs/MembersTab";
 import NotesTab from "./Tabs/NotesTab";
 import { FadeInView } from "../../../../components/animations";
 
-import { getDestinationZoom } from "../../../../utils/mapUtils";
-// @ts-ignore
-import { MAPBOX_ACCESS_TOKEN } from "@env";
-
 interface ViewTravelProps {
   travelPlan: TravelPlan;
-  onClose: () => void;
+  onClose?: () => void;
   expanded?: boolean;
+  currentSnap?: number;
   onExpandedChange?: (expanded: boolean) => void;
   onScrollY?: (y: number) => void;
   showMap?: boolean;
@@ -57,100 +43,71 @@ interface ViewTravelProps {
 
 const ViewTravel = ({
   travelPlan,
-  onClose,
   expanded,
+  currentSnap: propCurrentSnap,
   onExpandedChange,
-  onScrollY,
-  showMap = true,
-  setShowMap,
   showShare = false,
   setShowShare,
   onRefresh,
-  fabOpen,
-  setFabOpen,
   onRegisterCollapse,
-  onEditTrip,
 }: ViewTravelProps) => {
-  const [showActivityViewModal, setShowActivityViewModal] = useState<boolean>(false);
-  const [localShowMap, localSetShowMap] = useState<boolean>(false);
   const [localShowShare, localSetShowShare] = useState<boolean>(false);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const queryClient = useQueryClient();
+  const [showDestinationsSheet, setShowDestinationsSheet] = useState<boolean>(false);
+
   const travelId = travelPlan.travel.id;
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await Promise.all([
-        onRefresh ? onRefresh() : Promise.resolve(),
-        queryClient.invalidateQueries({ queryKey: ["itineraryExpenses", travelId] }),
-        queryClient.invalidateQueries({ queryKey: ["itineraryNotes", travelId] }),
-        queryClient.invalidateQueries({ queryKey: ["tripMembers", travelId] }),
-        queryClient.invalidateQueries({ queryKey: ["memberSplitBills", travelId] }),
-        queryClient.invalidateQueries({ queryKey: ["checklistGroups", travelId] }),
-        queryClient.invalidateQueries({ queryKey: ["checklistItems", travelId] }),
-      ]);
-    } catch (err) {
-      console.error("Failed to refresh travel plan:", err);
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const isMapVisible = setShowMap ? showMap : localShowMap;
-  const setMapVisible = setShowMap ? setShowMap : localSetShowMap;
-
   const isShareVisible = setShowShare ? showShare : localShowShare;
   const setShareVisible = setShowShare ? setShowShare : localSetShowShare;
+
   const {
     openExpenseModal,
     openNoteModal,
-    openChecklistModal,
-    openActivityModal,
-    openActivityTypeModal,
-    openGoogleSearchModal,
     activeTripViewTab: activeTabId,
     setActiveTripViewTab: setActiveTabId,
   } = useTravelContext();
-  const [showDestinationOnlyMap, setShowDestinationOnlyMap] = useState<boolean>(true);
-  const [showDestinationsSheet, setShowDestinationsSheet] = useState<boolean>(false);
 
-  // --- Draggable Bottom Sheet Snap Values ---
-  const insets = useSafeAreaInsets();
-  const screenHeight = Platform.OS === "android"
-    ? Dimensions.get("screen").height
-    : Dimensions.get("window").height;
-  const SNAP_MAX = 0;
-  const SNAP_MID = screenHeight * 0.20;
-  const SNAP_MIN = screenHeight - 124;
+  const screenHeight =
+    Platform.OS === "android"
+      ? Dimensions.get("screen").height
+      : Dimensions.get("window").height;
 
-  // Track the last-snapped position manually because Animated.Value.addListener
-  // does NOT fire reliably on Android when useNativeDriver: true.
+  // Snap points matching TripDetailScreen
+  const SNAP_EXPANDED = screenHeight * 0.10;
+  const SNAP_MAX = SNAP_EXPANDED;
+  const SNAP_MID = screenHeight * 0.40;
+  const SNAP_COLLAPSED = screenHeight - 125;
+  const SNAP_MIN = SNAP_COLLAPSED;
+
   const snappedY = useRef(SNAP_MID);
-  const dragStartY = useRef(0);
-
   const translateY = useRef(new Animated.Value(SNAP_MID)).current;
-  const mapPaddingBottom = translateY.interpolate({
-    inputRange: [SNAP_MAX, SNAP_MIN],
-    outputRange: [screenHeight * 0.8, 0],
-    extrapolate: "clamp",
-  });
-  const [currentSnap, setCurrentSnap] = useState(SNAP_MID);
+  const [localCurrentSnap, setLocalCurrentSnap] = useState(SNAP_MID);
+  const currentSnap = propCurrentSnap !== undefined ? propCurrentSnap : localCurrentSnap;
+  const isMinimized = currentSnap === SNAP_MIN || Math.abs(currentSnap - SNAP_MIN) < 2;
 
   const snapTo = (toValue: number) => {
     snappedY.current = toValue;
-    setCurrentSnap(toValue);
+    setLocalCurrentSnap(toValue);
     Animated.spring(translateY, {
       toValue,
       tension: 80,
       friction: 12,
-      useNativeDriver: false, // Set to false to allow smooth layout/padding animations
+      useNativeDriver: false,
     }).start(() => {
       onExpandedChange?.(toValue === SNAP_MAX);
     });
   };
 
   useEffect(() => {
+    if (propCurrentSnap !== undefined) {
+      snappedY.current = propCurrentSnap;
+      setLocalCurrentSnap(propCurrentSnap);
+      translateY.setValue(propCurrentSnap);
+    }
+  }, [propCurrentSnap]);
+
+  useEffect(() => {
+    if (propCurrentSnap !== undefined) {
+      return;
+    }
     if (expanded) {
       snapTo(SNAP_MAX);
       onExpandedChange?.(true);
@@ -158,7 +115,7 @@ const ViewTravel = ({
       snapTo(SNAP_MID);
       onExpandedChange?.(false);
     }
-  }, [expanded]);
+  }, [expanded, propCurrentSnap]);
 
   useEffect(() => {
     onRegisterCollapse?.(() => {
@@ -166,423 +123,266 @@ const ViewTravel = ({
     });
   }, [onRegisterCollapse]);
 
-  const headerPaddingTop = translateY.interpolate({
-    inputRange: [SNAP_MAX, SNAP_MID],
-    outputRange: [insets.top + 44, 12],
-    extrapolate: "clamp",
-  });
-
-  // Smoothly fade out the gray drag handle as the sheet approaches full screen height
-  const handleOpacity = translateY.interpolate({
-    inputRange: [SNAP_MAX, SNAP_MID],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
-
-  // Smoothly reveal the down icon as the sheet approaches full screen height
-  const downIconOpacity = translateY.interpolate({
-    inputRange: [SNAP_MAX, SNAP_MID],
-    outputRange: [1, 0],
-    extrapolate: "clamp",
-  });
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: (evt, gestureState) => {
-        const { locationX, locationY } = evt.nativeEvent;
-        // Check if the touch falls inside the collapse button's hit area
-        const isTouchOnCollapseButton = locationX < 60 && locationY > insets.top - 15 && locationY < insets.top + 50;
-        if (isTouchOnCollapseButton) {
-          return false;
-        }
-
-        const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
-        // Handle curved borders/shadows by allowing Y to be slightly above the sheet top (-30px)
-        const shouldSet = touchStartRelativeY > -30 && touchStartRelativeY < 120;
-        return shouldSet;
-      },
-      // Capture phase: intercept vertical gestures BEFORE child ScrollViews/TouchableOpacities consume them
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        const { locationX, locationY } = evt.nativeEvent;
-        const isTouchOnCollapseButton = locationX < 60 && locationY > insets.top - 15 && locationY < insets.top + 50;
-        if (isTouchOnCollapseButton) {
-          return false;
-        }
-
-        const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 8;
-        if (!isVertical) return false;
-
-        // Snapping/dragging ONLY allowed from Drag Handle & Trip Title areas (top 120px)
-        const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
-        if (touchStartRelativeY > -30 && touchStartRelativeY < 120) {
-          return true;
-        }
-
-        return false;
-      },
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        const { locationX, locationY } = evt.nativeEvent;
-        const isTouchOnCollapseButton = locationX < 60 && locationY > insets.top - 15 && locationY < insets.top + 50;
-        if (isTouchOnCollapseButton) {
-          return false;
-        }
-
-        const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 5;
-        if (!isVertical) return false;
-
-        const touchStartRelativeY = evt.nativeEvent.pageY - snappedY.current;
-        if (touchStartRelativeY > -30 && touchStartRelativeY < 120) {
-          return true;
-        }
-
-        return false;
-      },
-      // Prevent children from reclaiming the gesture once we've started dragging.
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: (evt, gestureState) => {
-        // console.log(`[PanResponder] onPanResponderGrant: snappedY=${snappedY.current}`);
-        dragStartY.current = snappedY.current;
-        translateY.setOffset(snappedY.current);
-        translateY.setValue(0);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        const nextY = dragStartY.current + gestureState.dy;
-        if (nextY >= SNAP_MAX && nextY <= SNAP_MIN) {
-          translateY.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        translateY.flattenOffset();
-        const nextY = dragStartY.current + gestureState.dy;
-        const velocityY = gestureState.vy;
-
-        let target = SNAP_MID;
-        if (velocityY < -0.5) {
-          target = nextY < SNAP_MID ? SNAP_MAX : SNAP_MID;
-        } else if (velocityY > 0.5) {
-          target = nextY > SNAP_MID ? SNAP_MIN : SNAP_MID;
-        } else {
-          const distMax = Math.abs(nextY - SNAP_MAX);
-          const distMid = Math.abs(nextY - SNAP_MID);
-          const distMin = Math.abs(nextY - SNAP_MIN);
-
-          const minDist = Math.min(distMax, distMid, distMin);
-          if (minDist === distMax) {
-            target = SNAP_MAX;
-          } else if (minDist === distMin) {
-            target = SNAP_MIN;
-          } else {
-            target = SNAP_MID;
-          }
-        }
-        // console.log(`[PanResponder] onPanResponderRelease: nextY=${nextY}, velocityY=${velocityY}, target=${target}`);
-        snapTo(target);
-      },
-    })
-  ).current;
-
-  useEffect(() => {
-    if (isMapVisible) {
-      setShowDestinationOnlyMap(false);
-    }
-  }, [isMapVisible]);
-
   /** Extract the country portion from a destination string like "Tokyo, Japan" */
-  const extractCountryName = (destination?: string): string => {
-    if (!destination) return '';
-    const parts = destination.split(',').map(p => p.trim());
+  const countryName = useMemo(() => {
+    const destination = travelPlan.travel.destination;
+    if (!destination) return "";
+    const parts = destination.split(",").map((p) => p.trim());
     return parts[parts.length - 1] || destination;
-  };
+  }, [travelPlan.travel.destination]);
 
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
-  const [showMoreButton, setShowMoreButton] = useState<boolean>(false);
-  const countryName = extractCountryName(travelPlan.travel.destination);
+  const allActivities = useMemo(() => {
+    return (travelPlan.itinerarySection ?? [])
+      .flatMap((s) => s.itineraryActivity ?? [])
+      .filter(
+        (a) =>
+          a.destinationData?.coordinates &&
+          a.destinationData.coordinates.latitude !== 0 &&
+          a.destinationData.coordinates.longitude !== 0
+      )
+      .map((a) => ({
+        id: a.id,
+        title: a.title || "Activity",
+        type: a.type,
+        latitude: a.destinationData!.coordinates.latitude,
+        longitude: a.destinationData!.coordinates.longitude,
+        sortOrder: a.sortOrder,
+      }));
+  }, [travelPlan.itinerarySection]);
 
-  const allActivities = (travelPlan.itinerarySection ?? [])
-    .flatMap(s => s.itineraryActivity ?? [])
-    .filter(a =>
-      a.destinationData?.coordinates &&
-      a.destinationData.coordinates.latitude !== 0 &&
-      a.destinationData.coordinates.longitude !== 0
-    )
-    .map(a => ({
-      id: a.id,
-      title: a.title || "Activity",
-      type: a.type,
-      latitude: a.destinationData!.coordinates.latitude,
-      longitude: a.destinationData!.coordinates.longitude,
-      sortOrder: a.sortOrder,
-    }));
+  const doneActivities = useMemo(() => {
+    return (travelPlan.itinerarySection ?? [])
+      .flatMap((s) => s.itineraryActivity ?? [])
+      .filter(
+        (a) =>
+          a.isDone &&
+          a.destinationData?.coordinates &&
+          a.destinationData.coordinates.latitude !== 0 &&
+          a.destinationData.coordinates.longitude !== 0
+      )
+      .map((a) => ({
+        lat: a.destinationData!.coordinates.latitude,
+        lng: a.destinationData!.coordinates.longitude,
+        type: a.type,
+      }));
+  }, [travelPlan.itinerarySection]);
 
-  const doneActivities = (travelPlan.itinerarySection ?? [])
-    .flatMap(s => s.itineraryActivity ?? [])
-    .filter(a =>
-      a.isDone &&
-      a.destinationData?.coordinates &&
-      a.destinationData.coordinates.latitude !== 0 &&
-      a.destinationData.coordinates.longitude !== 0
-    )
-    .map(a => ({
-      lat: a.destinationData!.coordinates.latitude,
-      lng: a.destinationData!.coordinates.longitude,
-      type: a.type,
-    }));
+  const destinationInfo = useMemo(() => {
+    const { tripDestinations, destination } = travelPlan.travel;
+    const validDestinations =
+      tripDestinations && tripDestinations.length > 0
+        ? tripDestinations.map((d: any) => d.destination).filter(Boolean)
+        : destination
+          ? destination
+            .split(" | ")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+          : [];
+    const hasDestinations = validDestinations.length > 0 || Boolean(destination);
+    const isMultiple = validDestinations.length > 1;
+    const destinationText = isMultiple
+      ? `${validDestinations.length} destinations`
+      : validDestinations[0] || destination || "";
 
-  const getAllMarkers = () => {
-    const markers: Array<{ id?: string; latitude: number; longitude: number; title: string; type?: number; sortOrder?: string; images?: Array<{ url: string }> }> = [];
-    if (travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0) {
-      travelPlan.travel.tripDestinations.forEach((d: any) => {
-        if (d.destinationData?.coordinates && (d.destinationData.coordinates.latitude !== 0 || d.destinationData.coordinates.longitude !== 0)) {
-          markers.push({
-            latitude: d.destinationData.coordinates.latitude,
-            longitude: d.destinationData.coordinates.longitude,
-            title: d.destination || "Trip Destination",
-          });
-        }
-      });
-    } else if (travelPlan.travel.destinationData?.coordinates) {
-      markers.push({
-        latitude: travelPlan.travel.destinationData.coordinates.latitude,
-        longitude: travelPlan.travel.destinationData.coordinates.longitude,
-        title: travelPlan.travel.destination || "Trip Destination",
-      });
-    }
+    return {
+      hasDestinations,
+      isMultiple,
+      destinationText,
+    };
+  }, [travelPlan.travel]);
 
-    !showDestinationOnlyMap && travelPlan.itinerarySection?.forEach((section) => {
-      section.itineraryActivity?.forEach((activity) => {
-        if (activity.destinationData?.coordinates && activity.destinationData.coordinates.latitude !== 0 && activity.destinationData.coordinates.longitude !== 0) {
-          markers.push({
-            id: activity.id,
-            latitude: activity.destinationData.coordinates.latitude,
-            longitude: activity.destinationData.coordinates.longitude,
-            title: activity.title || "Activity",
-            type: activity.type,
-            sortOrder: activity.sortOrder,
-            images: activity.images,
-          });
-        }
-      });
+  const formattedDates = useMemo(() => {
+    const { startOrDepartureDate, endOrReturnDate } = travelPlan.travel;
+    if (!startOrDepartureDate && !endOrReturnDate) return null;
+
+    const startText = startOrDepartureDate
+      ? new Date(startOrDepartureDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+      })
+      : "- ";
+
+    const endText = endOrReturnDate
+      ? ` - ${new Date(endOrReturnDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+      })}`
+      : "";
+
+    return `${startText}${endText}`;
+  }, [travelPlan.travel.startOrDepartureDate, travelPlan.travel.endOrReturnDate]);
+
+  const shareDateRange = useMemo(() => {
+    const { startOrDepartureDate, endOrReturnDate } = travelPlan.travel;
+    if (!startOrDepartureDate) return undefined;
+
+    const startStr = new Date(startOrDepartureDate).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
 
-    return markers;
-  };
+    const endStr = endOrReturnDate
+      ? ` → ${new Date(endOrReturnDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })}`
+      : "";
 
+    return `${startStr}${endStr}`;
+  }, [travelPlan.travel.startOrDepartureDate, travelPlan.travel.endOrReturnDate]);
 
+  const allActivitiesList = useMemo(
+    () => travelPlan.itinerarySection?.flatMap((s) => s.itineraryActivity || []) || [],
+    [travelPlan.itinerarySection]
+  );
 
-  const tabData = [
-    {
-      id: "details",
-      title: "Details",
-      applyFadeAnimation: false,
-      content: (
-        <DetailsTab
-          travelPlan={travelPlan}
-          onTabChange={setActiveTabId}
-        />
-      ),
-    },
-    {
-      id: "itinerary",
-      title: "Itinerary",
-      applyFadeAnimation: false,
-      content: (
-        <ItineraryTab
-          travelPlan={travelPlan}
-          onRefresh={onRefresh}
-          isMinimized={currentSnap === SNAP_MIN}
-        />
-      )
-    },
-    {
-      id: "expenses",
-      title: "Expenses",
-      isVisible: false,
-      content: (
-        <ExpensesTab
-          travelPlan={travelPlan}
-          onEditExpense={(expense) => {
-            openExpenseModal(
-              expense,
-              undefined,
-              travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
-              travelId
-            );
-          }}
-        />
-      ),
-    },
-    {
-      id: "checklist",
-      title: "Checklist",
-      applyFadeAnimation: false,
-      content: (
-        <ChecklistTab
-          travelPlan={travelPlan}
-          activities={travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
-        />
-      ),
-    },
-    {
-      id: "notes",
-      title: "Notes",
-      isVisible: false,
-      content: (
-        <NotesTab
-          travelPlan={travelPlan}
-          onEditNote={(note) => {
-            openNoteModal(
-              note,
-              travelPlan.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [],
-              travelId
-            );
-          }}
-        />
-      ),
-    },
-    {
-      id: "members",
-      title: "Members",
-      isVisible: false,
-      content: (
-        <MembersTab
-          travelPlan={travelPlan}
-        />
-      ),
-    },
-  ];
-
+  const tabData = useMemo(
+    () => [
+      {
+        id: "details",
+        title: "Details",
+        applyFadeAnimation: false,
+        content: (
+          <DetailsTab
+            travelPlan={travelPlan}
+            onTabChange={setActiveTabId}
+          />
+        ),
+      },
+      {
+        id: "itinerary",
+        title: "Itinerary",
+        applyFadeAnimation: false,
+        content: (
+          <ItineraryTab
+            travelPlan={travelPlan}
+            onRefresh={onRefresh}
+            isMinimized={isMinimized}
+          />
+        ),
+      },
+      {
+        id: "expenses",
+        title: "Expenses",
+        isVisible: false,
+        content: (
+          <ExpensesTab
+            travelPlan={travelPlan}
+            onEditExpense={(expense) => {
+              openExpenseModal(expense, undefined, allActivitiesList, travelId);
+            }}
+          />
+        ),
+      },
+      {
+        id: "checklist",
+        title: "Checklist",
+        applyFadeAnimation: false,
+        content: (
+          <ChecklistTab
+            travelPlan={travelPlan}
+            activities={allActivitiesList}
+          />
+        ),
+      },
+      {
+        id: "notes",
+        title: "Notes",
+        isVisible: false,
+        content: (
+          <NotesTab
+            travelPlan={travelPlan}
+            onEditNote={(note) => {
+              openNoteModal(note, allActivitiesList, travelId);
+            }}
+          />
+        ),
+      },
+      {
+        id: "members",
+        title: "Members",
+        isVisible: false,
+        content: <MembersTab travelPlan={travelPlan} />,
+      },
+    ],
+    [
+      travelPlan,
+      setActiveTabId,
+      onRefresh,
+      isMinimized,
+      openExpenseModal,
+      openNoteModal,
+      allActivitiesList,
+      travelId,
+    ]
+  );
 
   return (
     <Portal.Host>
-      {/* Full-screen background interactive map */}
-      {/* <Animated.View style={[StyleSheet.absoluteFill, { paddingBottom: mapPaddingBottom }]} className="absolute inset-0">
-        <MapViewer
-          inline={true}
-          visible={true}
-          onClose={onClose}
-          markers={getAllMarkers()}
-          title={travelPlan.travel.title || "Trip Map"}
-          zoom={showDestinationOnlyMap ? 1 : null}
-          destination={travelPlan.travel.destination}
-          countryName={countryName}
-          dateRange={
-            travelPlan.travel.startOrDepartureDate
-              ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${travelPlan.travel.endOrReturnDate
-                ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                : ''
-              }`
-              : undefined
-          }
-          doneActivities={doneActivities}
-        />
-      </Animated.View> */}
-
-      {/* Floating Bottom Form Sheet */}
-      <Animated.View
-        className="flex-1"
-      // {...panResponder.panHandlers}
-      >
-
-        {/* Drag Handle Area */}
-        {/* <Animated.View
-          className="w-full items-center bg-white"
-          style={{
-            borderTopLeftRadius: 32,
-            borderTopRightRadius: 32,
-            paddingTop: headerPaddingTop,
-            paddingBottom: 12,
-          }}
-          accessibilityRole="button"
-          accessibilityLabel="Drag up or down to expand or collapse trip details sheet"
-        >
-          <Animated.View
-            className="w-10 h-1 bg-gray-300 rounded-full"
-            style={{ opacity: handleOpacity }}
-          />
-        </Animated.View> */}
-
+      {/* Content Sheet */}
+      <Animated.View className="flex-1">
         {/* Trip Title & Summary */}
         <View className="px-6 py-3 bg-white flex-row justify-between items-start relative">
-          <Animated.View
-            className="flex-1 mr-4"
-            style={{
-              //   transform: [{ scaleY: expanded ? 0 : 0 }], 
-
-              // height: translateY.interpolate({
-              //   inputRange: [SNAP_MAX, SNAP_MID],
-              //   outputRange: [100, 40],
-              //   extrapolate: "clamp",
-              // })
-            }}
-          >
-            <FadeInView type="right" delay={80} duration={200} >
+          <Animated.View className="flex-1 mr-4">
+            <FadeInView type="right" delay={80} duration={200}>
               <View className="flex-row items-center gap-3">
-                {/* {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
-                <TripIcon type={travelPlan.travel.type} size={24} showIconOnly={true} /> 
-              )} */}
-                <View className="absolute -top-sm opacity-75">
-                  <StatusBadge type={1} status={travelPlan.travel.status!} />
-                </View>
+                {travelPlan.travel.status !== undefined && (
+                  <View className="absolute -top-sm opacity-75">
+                    <StatusBadge type={1} status={travelPlan.travel.status} />
+                  </View>
+                )}
 
-                <Text className="text-4xl mt-sm leading-relaxed font-semibold text-secondary flex-1" numberOfLines={currentSnap === SNAP_MIN ? 1 : undefined}>
+                <Text
+                  className={`${isMinimized ? "text-2xl pr-[80px] mt-lg!" : "text-4xl"} mt-sm leading-relaxed font-semibold text-secondary flex-1`}
+                  numberOfLines={isMinimized ? undefined : undefined}
+                >
                   {travelPlan.travel.title}
                 </Text>
               </View>
             </FadeInView>
 
-            <FadeInView type="right" delay={80} duration={300} >
-              <View className="flex-row items-center mt-2 flex-wrap">
-                {((travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0) || travelPlan.travel.destination) && (() => {
-                  const validDestinations = (travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0)
-                    ? travelPlan.travel.tripDestinations.map((d: any) => d.destination).filter(Boolean)
-                    : (travelPlan.travel.destination ? travelPlan.travel.destination.split(" | ").map((s: string) => s.trim()).filter(Boolean) : []);
-                  const isMultiple = validDestinations.length > 1;
-                  const destinationText = isMultiple
-                    ? `${validDestinations.length} destinations`
-                    : (validDestinations[0] || travelPlan.travel.destination);
+            <FadeInView type="right" delay={80} duration={300}>
+              <View className="flex-row items-center flex-wrap">
+                {destinationInfo.hasDestinations && (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`View destinations (${destinationInfo.destinationText})`}
+                    onPress={() => setShowDestinationsSheet(true)}
+                    className="flex-row items-center mr-3 my-0.5"
+                  >
+                    <Icon name="location-pin" size={18} color="#999" />
+                    <Text className="text-md font-medium text-tertiary ml-0.5" numberOfLines={1}>
+                      {destinationInfo.destinationText}
+                    </Text>
+                    {destinationInfo.isMultiple && (
+                      <Ionicons
+                        name="chevron-down"
+                        size={14}
+                        color="#999"
+                        style={{ marginLeft: 3 }}
+                      />
+                    )}
+                  </TouchableOpacity>
+                )}
 
-                  return (
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={`View destinations (${destinationText})`}
-                      onPress={() => setShowDestinationsSheet(true)}
-                      className="flex-row items-center mr-3 my-0.5"
-                    >
-                      <Icon name="location-pin" size={18} color="#999" />
-                      <Text className="text-md font-medium text-tertiary ml-0.5" numberOfLines={1}>
-                        {destinationText}
-                      </Text>
-                      {isMultiple && (
-                        <Ionicons name="chevron-down" size={14} color="#999" style={{ marginLeft: 3 }} />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })()}
-
-                {(travelPlan.travel.startOrDepartureDate || travelPlan.travel.endOrReturnDate) && (
-                  <>
+                {formattedDates && (
+                  <View className="flex-row items-center my-0.5">
                     <Icon name="calendar-month" size={16} color="#999" />
                     <Text className="text-md font-medium text-tertiary ml-0.5">
-                      {travelPlan.travel.startOrDepartureDate
-                        ? new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                        : "- "}
-                      {travelPlan.travel.endOrReturnDate
-                        ? " - " + new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-                        : ""}
+                      {formattedDates}
                     </Text>
-                  </>
+                  </View>
                 )}
               </View>
             </FadeInView>
-
           </Animated.View>
         </View>
 
         {/* Tabbed Content */}
-        <Animated.View
-          className="flex-1 mb-4"
-        >
+        <Animated.View className="flex-1 mb-4">
           <FadeInView type="right" delay={80} duration={400} className="flex-1">
             <Tabs
               tabs={tabData}
@@ -591,29 +391,22 @@ const ViewTravel = ({
               type="default"
               onTabChange={setActiveTabId}
               expanded={true}
-              wrapperStyle={`bg-white px-1 pb-2 ${activeTabId === 'itinerary' ? 'border-b border-[#e0e0e0]' : ''}`}
+              wrapperStyle={`bg-white px-1 pb-2 ${activeTabId === "itinerary" ? "border-b border-[#e0e0e0]" : ""
+                }`}
             />
           </FadeInView>
-
         </Animated.View>
       </Animated.View>
 
       <ShareTripModal
         visible={isShareVisible}
         onClose={() => setShareVisible(false)}
-        tripTitle={travelPlan.travel.title || 'My Trip'}
-        destination={travelPlan.travel.destination || ''}
+        tripTitle={travelPlan.travel.title || "My Trip"}
+        destination={travelPlan.travel.destination || ""}
         countryName={countryName}
         activities={allActivities}
         doneActivities={doneActivities}
-        dateRange={
-          travelPlan.travel.startOrDepartureDate
-            ? `${new Date(travelPlan.travel.startOrDepartureDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}${travelPlan.travel.endOrReturnDate
-              ? ` → ${new Date(travelPlan.travel.endOrReturnDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-              : ''
-            }`
-            : undefined
-        }
+        dateRange={shareDateRange}
       />
 
       <DestinationsBottomSheet

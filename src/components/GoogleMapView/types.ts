@@ -17,10 +17,12 @@ export type GoogleMapRouteMode =
   | "WALKING"
   | "TRANSIT"
   | "BICYCLING"
+  | "FLIGHT"
   | "driving"
   | "walking"
   | "transit"
-  | "bicycling";
+  | "bicycling"
+  | "flight";
 
 export interface GoogleMapViewProps {
   pins?: GoogleMapPin[];

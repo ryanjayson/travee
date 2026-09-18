@@ -14,7 +14,8 @@ import { FadeInView } from "../../../../../components/animations";
 import { useConfirm } from "../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../context/TravelContext";
-import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
+import { ActivityType, getActivityTypeLabel, ActivityPlanType, getActivityPlanTypeLabel } from "../../../../../types/enums";
+import { ACTIVITY_PLAN_TYPES } from "../../Lookups/ActivityPlanTypeLookupModal";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { ChecklistItem, ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import MapViewer from "../../MapViewer";
@@ -342,6 +343,18 @@ const ActivityItemCard = ({
     return { text, color };
   };
 
+  const getPlanTypeLabel = (planType?: ActivityPlanType | string | number | null): string => {
+    if (planType == null) return "";
+    const match = ACTIVITY_PLAN_TYPES.find(
+      (p) => p.type === planType || p.key === planType || String(p.type) === String(planType)
+    );
+    if (match) return match.label;
+    if (typeof planType === "number" || (!isNaN(Number(planType)) && typeof planType !== "boolean")) {
+      return getActivityPlanTypeLabel(Number(planType));
+    }
+    return String(planType);
+  };
+
   const handleToggleDone = async () => {
     const nextStatus = !itineraryEventActivity.isDone;
     const isConfirmed = await confirm({
@@ -551,14 +564,12 @@ const ActivityItemCard = ({
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
 
                   </Text>
-                  {itineraryEventActivity.type == ActivityType.plan && (
+                  {itineraryEventActivity.type == ActivityType.plan && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
                     <Text
                       style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                      className="text-[8px]  font-semibold  text-gray/60 px-xxs"
+                      className="text-[8px] font-semibold text-gray/60 px-xxs"
                     >
-                      | Sightseeing
-                      {itineraryEventActivity.planType}
-
+                      / {getPlanTypeLabel(itineraryEventActivity.planType)}
                     </Text>
                   )}
 

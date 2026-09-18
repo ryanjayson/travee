@@ -1,5 +1,5 @@
-import React from "react";
-import { ScrollView, View, Text, Dimensions } from "react-native";
+import React, { useRef, useState } from "react";
+import { ScrollView, View, Text, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { ItineraryActivity } from "../../../../types/TravelDto";
@@ -28,9 +28,38 @@ import {
 interface DetailsTabProps {
   itineraryActivity?: ItineraryActivity;
   onFullScreenChange?: (fullScreen: boolean) => void;
+  scrollEnabled?: boolean;
+  isMidSnap?: boolean;
+  isExpanded?: boolean;
+  onScrollAtTopChange?: (isAtTop: boolean) => void;
 }
 
-const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) => {
+const DetailsTab = ({
+  itineraryActivity,
+  onFullScreenChange,
+  scrollEnabled = true,
+  isMidSnap = false,
+  isExpanded = false,
+  onScrollAtTopChange,
+}: DetailsTabProps) => {
+  const [isAtTop, setIsAtTop] = useState(true);
+
+  // Lock ScrollView when bottom sheet snap is mid.
+  // Enable ScrollView when snap is expanded (so it can scroll up when content overflows).
+  const shouldScroll = isMidSnap ? false : isExpanded ? true : scrollEnabled;
+
+  React.useEffect(() => {
+    setIsAtTop(true);
+    onScrollAtTopChange?.(true);
+  }, [itineraryActivity?.id, isExpanded]);
+
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = e.nativeEvent.contentOffset.y;
+    const atTop = y <= 2;
+    setIsAtTop(atTop);
+    onScrollAtTopChange?.(atTop);
+  };
+
   const insets = useSafeAreaInsets();
   const { height: screenHeight } = Dimensions.get("window");
   const yOffset = insets.top + 60;
@@ -94,13 +123,21 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
   };
 
   return (
-    <View
-      className="flex-1 "
-    >
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }} className="flex-1">
-        <FadeInView key={`details-${itineraryActivity.id}`} type="right" delay={40} duration={300} className="px-3">
+    <View className="flex-1">
+      <ScrollView
+        showsVerticalScrollIndicator={shouldScroll}
+        scrollEnabled={shouldScroll}
+        bounces={false}
+        alwaysBounceVertical={false}
+        overScrollMode="never"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
+        className="flex-1"
+      >
+        <View className="px-3">
           {renderDetails()}
-        </FadeInView>
+        </View>
       </ScrollView>
     </View>
   );

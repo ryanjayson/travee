@@ -91,10 +91,10 @@ export const hasActivityData = (data: any): boolean => {
 };
 
 export const NoDetailsAdded = () => (
-  <View className="p-4 items-center justify-center flex-1 my-2">
-    <Text className="text-white text-center text-2xl font-bold mb-1">No details added</Text>
-    <Text className="text-white text-center text-base">
-      Tap edit button <Icon name="edit" size={14} color="#FFFFFF" /> to add information
+  <View className="p-8 items-center justify-center flex-1 my-4 bg-gray-50 rounded-2xl mx-2 border border-gray-100">
+    <Text className="text-gray-700 text-center text-xl font-bold mb-2">No details added</Text>
+    <Text className="text-gray-500 text-center text-sm">
+      Tap the edit button <Icon name="edit" size={16} color="#666" /> above to add information
     </Text>
   </View>
 );

@@ -461,6 +461,11 @@ export const GoogleMapView = ({
       const targetMode = (modeKey || currentRouteMode || '${normalizedRouteMode}').toUpperCase();
       console.log('[GoogleMapView] calculateRoadRoute start for ' + coords.length + ' points, mode: ' + targetMode);
 
+      if (targetMode === 'FLIGHT' || targetMode === 'AIR' || targetMode === 'GEODESIC') {
+        drawPolylinePath(coords);
+        return;
+      }
+
       // Priority 1: Google Routes API (Official Routes API v2 via API Key)
       fetchGoogleRoutesApi(coords, targetMode).then(function(googlePath) {
         if (reqId !== activeRouteRequestId) return;
@@ -512,8 +517,14 @@ export const GoogleMapView = ({
                 if (fullPath.length === 0 || p > 0) fullPath.push(seg[p]);
               }
             }
-            if (fullPath.length > 0) drawPolylinePath(fullPath);
-          }).catch(function() {});
+            if (fullPath.length > 0) {
+              drawPolylinePath(fullPath);
+            } else {
+              drawPolylinePath(coords);
+            }
+          }).catch(function() {
+            drawPolylinePath(coords);
+          });
           return;
         }
 
@@ -536,6 +547,8 @@ export const GoogleMapView = ({
             if (status === google.maps.DirectionsStatus.OK && response && response.routes && response.routes.length > 0) {
               const roadPath = extractRoutePath(response.routes[0]);
               if (roadPath.length > 0) drawPolylinePath(roadPath);
+            } else {
+              drawPolylinePath(coords);
             }
           });
         }

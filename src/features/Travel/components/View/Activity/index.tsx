@@ -22,7 +22,8 @@ import FilesTab from "./Tabs/FilesTab";
 import NotesTab from "./Tabs/NotesTab";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 
-import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
+import { ActivityType, getActivityTypeLabel, ActivityPlanType, getActivityPlanTypeLabel } from "../../../../../types/enums";
+import { ACTIVITY_PLAN_TYPES } from "../../Lookups/ActivityPlanTypeLookupModal";
 import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 
 interface ViewTripActivityProps {
@@ -33,6 +34,9 @@ interface ViewTripActivityProps {
   onSwipeRight?: () => void;
   hasNext?: boolean;
   hasPrev?: boolean;
+  isMidSnap?: boolean;
+  isExpanded?: boolean;
+  onScrollAtTopChange?: (isAtTop: boolean) => void;
 }
 
 const ViewItineraryActivity = ({
@@ -43,6 +47,9 @@ const ViewItineraryActivity = ({
   onSwipeRight: _onSwipeRight,
   hasNext: _hasNext = false,
   hasPrev: _hasPrev = false,
+  isMidSnap = false,
+  isExpanded = false,
+  onScrollAtTopChange,
 }: ViewTripActivityProps) => {
   const {
     data: itineraryActivity,
@@ -128,6 +135,21 @@ const ViewItineraryActivity = ({
     return { text, color };
   };
 
+  const getPlanTypeDetails = (planType: any) => {
+    if (planType == null) return { text: "None", color: "#9E9E9E" };
+    const match = ACTIVITY_PLAN_TYPES.find(
+      (p) => p.type === planType || p.key === planType || String(p.type) === String(planType)
+    );
+    if (match) {
+      return { text: match.label, color: match.color };
+    }
+    const label =
+      typeof planType === "number" || (!isNaN(Number(planType)) && typeof planType !== "boolean")
+        ? getActivityPlanTypeLabel(Number(planType))
+        : String(planType);
+    return { text: label, color: "#c10003" };
+  };
+
   const handleOpenAddNote = useCallback(() => {
     setFabOpen(false);
     openNoteModal(
@@ -155,7 +177,18 @@ const ViewItineraryActivity = ({
   );
 
   const tabData = [
-    { id: "details", title: "Details", content: <DetailsTab itineraryActivity={itineraryActivity} /> },
+    {
+      id: "details",
+      title: "Details",
+      content: (
+        <DetailsTab
+          itineraryActivity={itineraryActivity}
+          isMidSnap={isMidSnap}
+          isExpanded={isExpanded}
+          onScrollAtTopChange={onScrollAtTopChange}
+        />
+      ),
+    },
     {
       id: "expenses",
       isVisible: false,
@@ -219,23 +252,30 @@ const ViewItineraryActivity = ({
   return (
     <Provider>
       <Animated.View style={{ flex: 1, opacity: fadeAnim }} className="flex-1 bg-white">
-        {sectionName && (
-          <View className="px-5 pt-2">
-            <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              {sectionName}
-            </Text>
-          </View>
-        )}
+
 
         {/* Activity header */}
         <View className="px-5 pb-2 bg-white mt-2 w-full">
           <FadeInView key={`title-${id}`} type="right" delay={50} duration={350} className="w-full">
-            {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.plan && (
-              <View className="flex-row items-center mb-2">
+            {itineraryActivity?.type != null && (
+              <View className="flex-row items-center ">
+                {sectionName && (
+                  <View className="flex-row items-center ">
+                    <View className="bg-accent mr-0.5 px-2 py-0.5 rounded-xs">
+                      <Text className="text-[8px] tracking-wider font-semibold text-white">
+                        {sectionName}
+                      </Text>
+                    </View>
+                    <Text className="text-base text-tertiary/50 mx-0.5">
+                      /
+                    </Text>
+                  </View>
+                )}
                 <View
                   style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + "20" }}
-                  className="items-end rounded-xs px-2 py-0.5"
+                  className="items-end rounded-xs px-2 py-0.5 mr-0.5"
                 >
+
                   <Text
                     style={{ color: getActivityTypeDetails(itineraryActivity.type).color }}
                     className="text-[8px] tracking-wider uppercase font-extrabold"
@@ -243,6 +283,25 @@ const ViewItineraryActivity = ({
                     {getActivityTypeDetails(itineraryActivity.type).text}
                   </Text>
                 </View>
+
+                {itineraryActivity.type == ActivityType.plan && itineraryActivity.planType && (
+                  <View className="flex-row items-center ml-0.5">
+                    <Text className="text-base text-tertiary/50 mr-0.5">
+                      /
+                    </Text>
+                    <View
+                      style={{ backgroundColor: getPlanTypeDetails(itineraryActivity.planType).color + "20" }}
+                      className="items-end rounded-xs px-2 py-0.5 mr-0.5"
+                    >
+                      <Text
+                        style={{ color: getPlanTypeDetails(itineraryActivity.planType).color }}
+                        className="text-[8px] font-semibold"
+                      >
+                        {getPlanTypeDetails(itineraryActivity.planType).text}
+                      </Text>
+                    </View>
+                  </View>
+                )}
               </View>
             )}
             <Text className="text-4xl font-semibold" style={{ paddingBottom: description ? 2 : 0 }}>

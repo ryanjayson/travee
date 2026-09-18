@@ -19,3 +19,4 @@ export type Item = ReturnType<typeof mapIndexToData>;
 
 export * from "./dateTimeUtils";
 export * from "./airportUtils";
+export * from "./geocodeUtils";
