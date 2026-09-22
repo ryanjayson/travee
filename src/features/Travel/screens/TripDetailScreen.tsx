@@ -265,6 +265,11 @@ export const TripDetailScreen = ({
   const snappedY = useRef(SNAP_MID);
   const dragStartY = useRef(0);
   const translateY = useRef(new Animated.Value(SNAP_MID)).current;
+  const mapPaddingBottom = translateY.interpolate({
+    inputRange: [SNAP_EXPANDED, SNAP_MID, SNAP_COLLAPSED],
+    outputRange: [screenHeight - SNAP_EXPANDED - 20, screenHeight - SNAP_MID - 20, 0],
+    extrapolate: "clamp",
+  });
   const [currentSnap, setCurrentSnap] = useState(SNAP_MID);
 
   const snapTo = useCallback(
@@ -332,21 +337,37 @@ export const TripDetailScreen = ({
     PanResponder.create({
       onStartShouldSetPanResponder: (evt) => {
         const touchRelativeY = evt.nativeEvent.pageY - snappedY.current;
-        return touchRelativeY >= 0 && touchRelativeY <= 35;
+        // When collapsed, allow starting drag anywhere on the collapsed bar (up to 125px)
+        if (snappedY.current >= SNAP_COLLAPSED - 15) {
+          return touchRelativeY >= 0 && touchRelativeY <= 125;
+        }
+        return touchRelativeY >= 0 && touchRelativeY <= 40;
       },
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
         const touchRelativeY = evt.nativeEvent.pageY - snappedY.current;
-        if (touchRelativeY >= 0 && touchRelativeY <= 35) {
+
+        // Top drag handle area (40px) always captures vertical drags
+        if (touchRelativeY >= 0 && touchRelativeY <= 40) {
           return (
             Math.abs(gestureState.dy) > Math.abs(gestureState.dx) &&
             Math.abs(gestureState.dy) > 5
           );
         }
 
-        // When bottom sheet is at SNAP_EXPANDED and child ScrollView is at the top,
-        // downward drag snaps the bottom sheet down to mid or collapsed
+        // When collapsed, upward swipe anywhere on the collapsed bar captures
+        if (snappedY.current >= SNAP_COLLAPSED - 15) {
+          return (
+            touchRelativeY >= 0 &&
+            touchRelativeY <= 125 &&
+            gestureState.dy < -5 &&
+            Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
+          );
+        }
+
+        // When bottom sheet is at SNAP_EXPANDED or SNAP_MID and child ScrollView is at the top,
+        // downward drag snaps the bottom sheet down
         if (
-          snappedY.current <= SNAP_EXPANDED + 10 &&
+          snappedY.current <= SNAP_MID + 15 &&
           isScrollAtTopRef.current &&
           gestureState.dy > 8 &&
           Math.abs(gestureState.dy) > Math.abs(gestureState.dx)
@@ -383,19 +404,31 @@ export const TripDetailScreen = ({
         const velocity = gestureState.vy;
 
         let targetSnap = SNAP_MID;
-        if (velocity < -0.5) {
-          targetSnap = SNAP_EXPANDED;
-        } else if (velocity > 0.5) {
-          targetSnap = SNAP_COLLAPSED;
+        // Directional flick: snaps to MID in 1 scroll
+        if (velocity < -0.3) {
+          // Swiping up: if coming from collapsed / below MID, snap to MID; if already above MID, snap to EXPANDED
+          targetSnap = currentY < SNAP_MID ? SNAP_EXPANDED : SNAP_MID;
+        } else if (velocity > 0.3) {
+          // Swiping down: if coming from expanded / above MID, snap to MID; if already below MID, snap to COLLAPSED
+          targetSnap = currentY > SNAP_MID ? SNAP_COLLAPSED : SNAP_MID;
         } else {
-          const distExpanded = Math.abs(currentY - SNAP_EXPANDED);
-          const distMid = Math.abs(currentY - SNAP_MID);
-          const distCollapsed = Math.abs(currentY - SNAP_COLLAPSED);
-          const minDist = Math.min(distExpanded, distMid, distCollapsed);
+          // Dragging without flick velocity:
+          // If dragged up from collapsed by more than 40px, snap to MID
+          if (dragStartY.current >= SNAP_COLLAPSED - 15 && gestureState.dy < -40) {
+            targetSnap = currentY < SNAP_MID ? SNAP_EXPANDED : SNAP_MID;
+          } else if (dragStartY.current <= SNAP_EXPANDED + 15 && gestureState.dy > 40) {
+            // If dragged down from expanded by more than 40px, snap to MID
+            targetSnap = currentY > SNAP_MID ? SNAP_COLLAPSED : SNAP_MID;
+          } else {
+            const distExpanded = Math.abs(currentY - SNAP_EXPANDED);
+            const distMid = Math.abs(currentY - SNAP_MID);
+            const distCollapsed = Math.abs(currentY - SNAP_COLLAPSED);
+            const minDist = Math.min(distExpanded, distMid, distCollapsed);
 
-          if (minDist === distExpanded) targetSnap = SNAP_EXPANDED;
-          else if (minDist === distMid) targetSnap = SNAP_MID;
-          else targetSnap = SNAP_COLLAPSED;
+            if (minDist === distExpanded) targetSnap = SNAP_EXPANDED;
+            else if (minDist === distMid) targetSnap = SNAP_MID;
+            else targetSnap = SNAP_COLLAPSED;
+          }
         }
 
         snapTo(targetSnap);
@@ -890,7 +923,10 @@ export const TripDetailScreen = ({
       <StatusBar barStyle="dark-content" />
 
       {/* 1. Google Map in the background with pins */}
-      <View className="absolute inset-0">
+      <Animated.View
+        className="absolute inset-0"
+        style={{ paddingBottom: mapPaddingBottom }}
+      >
         <GoogleMapView
           pins={pins}
           initialCoordinates={initialCoordinates}
@@ -904,7 +940,7 @@ export const TripDetailScreen = ({
           connectByType={!activeActivityId}
           testID="trip-google-map"
         />
-      </View>
+      </Animated.View>
 
       {/* Floating Back Navigation Button */}
       <View className="absolute left-4 z-20" style={{ top: insets.top + 8 }}>
@@ -921,91 +957,101 @@ export const TripDetailScreen = ({
 
       <Animated.View
         {...panResponder.panHandlers}
-        className="rounded-t-[28px] bg-white shadow-2xl elevation-5 overflow-hidden"
         style={{
           position: "absolute",
           left: 0,
           right: 0,
           bottom: 0,
           top: translateY,
+          backgroundColor: "#FFFFFF",
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          shadowColor: "#000000",
+          shadowOffset: { width: 0, height: -6 },
+          shadowOpacity: 0.18,
+          shadowRadius: 16,
+          elevation: 24,
+          zIndex: 10,
         }}
       >
-        <View
-          className="w-full h-4 pt-2 items-center justify-center bg-transparent"
-          accessibilityRole="button"
-          accessibilityLabel="Drag bottom sheet up or down"
-        >
-          <View className="w-10 h-1 rounded-full bg-gray-300" />
-        </View>
-
-        {/* Bottom Sheet Content Container */}
-        <View className="flex-1 w-full" style={{ flex: 1 }}>
-          {/* Trip Overview: View/index called inside the bottom sheet container */}
+        <View className="flex-1 rounded-t-[28px] overflow-hidden bg-white">
           <View
-            className="flex-1 w-full"
-            style={{ flex: 1, display: activeActivityId ? "none" : "flex" }}
-            testID="trip-view-container"
+            className="w-full h-4 pt-2 items-center justify-center bg-transparent"
+            accessibilityRole="button"
+            accessibilityLabel="Drag bottom sheet up or down"
           >
-            <ViewTravel
-              travelPlan={travelPlan}
-              onClose={handleBack}
-              onRefresh={refetch}
-              expanded={currentSnap === SNAP_EXPANDED}
-              currentSnap={currentSnap}
-            />
+            <View className="w-10 h-1 rounded-full bg-gray-300" />
           </View>
 
-          {activeActivityId ? (
-            // Activity Details loaded inside container
-            <View className="flex-1 w-full" style={{ flex: 1 }} testID="activity-detail-container">
-              {/* Activity Sub-Header with Back to Trip Button */}
-              <View className="flex-row items-center justify-between px-4 bg-white">
-                <TouchableOpacity
-                  onPress={handleCloseActivity}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel="Back to Trip Details"
-                  className="flex-row items-center"
-                >
-                  <View className="pr-1">
-                    <Icon name="chevron-left" size={24} color={"#999"} style={{ opacity: 0.5 }} />
-                  </View>
-                  <Text className="text-sm font-semibold uppercase text-tertiary/50">
-                    Back to Trip
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    if (activeActivity) {
-                      openActivityModal(
-                        activeActivity,
-                        activeActivity.sectionId || undefined,
-                        travelPlan?.travel?.id
-                      );
-                    }
-                  }}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel="Edit activity"
-                  className="p-1.5 rounded-full"
-                >
-                  <Icon name="edit" size={20} color="#999" />
-                </TouchableOpacity>
-              </View>
-
-              {/* Activity Details View */}
-              <View className="flex-1 w-full" style={{ flex: 1 }}>
-                <Activity
-                  id={activeActivityId}
-                  onClose={handleCloseActivity}
-                  isMidSnap={currentSnap === SNAP_MID}
-                  isExpanded={currentSnap === SNAP_EXPANDED}
-                  onScrollAtTopChange={handleScrollAtTopChange}
-                />
-              </View>
+          {/* Bottom Sheet Content Container */}
+          <View className="flex-1 w-full" style={{ flex: 1 }}>
+            {/* Trip Overview: View/index called inside the bottom sheet container */}
+            <View
+              className="flex-1 w-full"
+              style={{ flex: 1, display: activeActivityId ? "none" : "flex" }}
+              testID="trip-view-container"
+            >
+              <ViewTravel
+                travelPlan={travelPlan}
+                onClose={handleBack}
+                onRefresh={refetch}
+                expanded={currentSnap === SNAP_EXPANDED}
+                currentSnap={currentSnap}
+              />
             </View>
-          ) : null}
+
+            {activeActivityId ? (
+              // Activity Details loaded inside container
+              <View className="flex-1 w-full" style={{ flex: 1 }} testID="activity-detail-container">
+                {/* Activity Sub-Header with Back to Trip Button */}
+                <View className="flex-row items-center justify-between px-4 bg-white">
+                  <TouchableOpacity
+                    onPress={handleCloseActivity}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="Back to Trip Details"
+                    className="flex-row items-center"
+                  >
+                    <View className="pr-1">
+                      <Icon name="chevron-left" size={24} color={"#999"} style={{ opacity: 0.5 }} />
+                    </View>
+                    <Text className="text-sm font-semibold uppercase text-tertiary/50">
+                      Back to Trip
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (activeActivity) {
+                        openActivityModal(
+                          activeActivity,
+                          activeActivity.sectionId || undefined,
+                          travelPlan?.travel?.id
+                        );
+                      }
+                    }}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="Edit activity"
+                    className="p-1.5 rounded-full"
+                  >
+                    <Icon name="edit" size={20} color="#999" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Activity Details View */}
+                <View className="flex-1 w-full" style={{ flex: 1 }}>
+                  <Activity
+                    id={activeActivityId}
+                    onClose={handleCloseActivity}
+                    isMidSnap={currentSnap === SNAP_MID}
+                    isExpanded={currentSnap === SNAP_EXPANDED}
+                    onScrollAtTopChange={handleScrollAtTopChange}
+                  />
+                </View>
+              </View>
+            ) : null}
+          </View>
         </View>
       </Animated.View>
 

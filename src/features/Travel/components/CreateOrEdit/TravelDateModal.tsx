@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Modal, TouchableOpacity, View, Text } from "react-native";
 import { CalendarList } from "react-native-calendars";
-import { useTheme } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import { TravelStatus } from "../../../../types/enums";

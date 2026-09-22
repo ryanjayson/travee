@@ -408,14 +408,10 @@ export default function PlanTab({
       })}
 
       {/* Button below plan detail section: Title "Add Field" / "Add or remove Field" */}
-      <View className="mt-1 mb-6">
+      <View className="mt-1 mb-12">
         <TouchableOpacity
           onPress={() => setShowAddFieldModal(true)}
-          className="border-[1.5px] border-dashed rounded-[16px] py-3.5 px-5 items-center justify-center"
-          style={{
-            borderColor: colors.primary + "50" || "#263F69",
-            backgroundColor: `${colors.primary || "#263F69"}08`,
-          }}
+          className="items-start justify-start"
           activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel={

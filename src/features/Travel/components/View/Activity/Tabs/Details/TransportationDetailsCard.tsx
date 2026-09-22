@@ -6,40 +6,24 @@ import { DestinationDto, TransportationDetailsDto } from "../../../../../types/T
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
 
-const resolveLocationObject = (loc?: string | DestinationDto | null): DestinationDto | null => {
-  if (!loc) return null;
-  if (typeof loc === "object") return loc;
-  if (typeof loc === "string" && loc.trim().startsWith("{")) {
-    try {
-      const parsed = JSON.parse(loc);
-      if (typeof parsed === "object" && parsed !== null) return parsed;
-    } catch {
-      return null;
-    }
-  }
-  return null;
-};
-
 const getLocationTitle = (loc?: string | DestinationDto | null): string => {
   if (!loc) return "";
-  const obj = resolveLocationObject(loc);
-  if (obj) {
-    return obj.name || obj.city || obj.address || "";
-  }
   if (typeof loc === "string") return loc;
-  return "";
+  return loc.name || loc.city || loc.address || "";
 };
 
 const getLocationSubtitle = (loc?: string | DestinationDto | null): string => {
   if (!loc) return "";
-  const obj = resolveLocationObject(loc);
-  if (obj) {
-    return (
-      obj.address ||
-      [obj.city, obj.regionOrState, obj.country].filter(Boolean).join(", ")
-    );
+  if (typeof loc === "string") return "";
+  if (loc.address && loc.address !== loc.name) {
+    return loc.address;
   }
-  return "";
+  const parts = [
+    loc.city && loc.city !== loc.name ? loc.city : null,
+    loc.regionOrState,
+    loc.country,
+  ].filter(Boolean);
+  return parts.join(", ");
 };
 
 interface TransportationDetailsCardProps {
@@ -110,7 +94,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
               Departure
             </Text>
             <Text className="text-xl font-semibold text-white">
-              {pickupTitle || "N/A"}
+              {pickupTitle}
             </Text>
             {pickupSubtitle ? (
               <Text className="text-base font-medium text-white/80 mt-0.5">

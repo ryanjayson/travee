@@ -255,8 +255,6 @@ const ViewItineraryActivity = ({
         {/* Activity header */}
         <View className="px-5 pb-2 bg-white mt-1 w-full">
           <FadeInView key={`title-${id}`} type="right" delay={50} duration={350} className="w-full">
-
-
             {itineraryActivity?.type != null && (
               <View className="flex-row items-center ">
                 {sectionName && (

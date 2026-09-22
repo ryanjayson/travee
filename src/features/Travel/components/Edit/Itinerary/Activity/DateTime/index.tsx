@@ -287,7 +287,7 @@ export default function DateTime({
           activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel="Add End date & time"
-          className="flex-row items-center self-start mt-3 py-1 px-xs gap-1.5"
+          className="flex-row items-center self-start mt-3 py-1  gap-1.5"
         >
           <Icon name="add" size={20} color={"#0EA5E9"} />
           <Text
