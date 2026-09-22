@@ -259,7 +259,7 @@ const HomeScreen = () => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return travels
       .filter(t => {
-        if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past, TravelStatus.Travelling].includes(t.status as TravelStatus)) return false;
+        if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past, TravelStatus.Travelling, TravelStatus.Draft].includes(t.status as TravelStatus)) return false;
         if (t.status === TravelStatus.Upcoming) return true;
         if (t.startOrDepartureDate) {
           const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);

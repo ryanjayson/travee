@@ -254,6 +254,23 @@ describe("TripDetailScreen", () => {
     expect(getByText("ViewTravel Content: Japan Vacation 2026")).toBeTruthy();
   });
 
+  it("renders activity pins and enables connectByType on the map in default trip view", () => {
+    (useTravelPlan as jest.Mock).mockReturnValue({
+      data: mockTravelPlan,
+      isLoading: false,
+      refetch: jest.fn(),
+    });
+
+    const { getByTestId } = render(
+      <TripDetailScreen travelId="trip-123" />
+    );
+
+    const webview = getByTestId("webview");
+    const html = webview.props.source.html;
+    expect(html).toContain("Visit Sensoji Temple");
+    expect(html).toContain("typeGroups[typeKey]");
+  });
+
   it("loads activity details inside container when an activity pin is pressed on the map", () => {
     (useTravelPlan as jest.Mock).mockReturnValue({
       data: mockTravelPlan,

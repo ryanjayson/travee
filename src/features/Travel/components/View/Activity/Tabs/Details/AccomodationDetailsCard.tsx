@@ -18,17 +18,17 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
     <View className="mt-4 overflow-hidden">
       {/* Main Details Body */}
       <FadeInView delay={180} duration={400}>
-        <View className="p-5 pb-0 bg-[#9c46ec+30] rounded-t-3xl">
+        <View className="p-5 pb-0 bg-[#9c46ec+99] rounded-t-3xl">
           <View className="">
-            <Text className="text-xs font-medium text-secondary/80 uppercase tracking-wide mb-1">
+            <Text className="text-xs font-medium text-white/70 uppercase tracking-wide mb-1">
               {data.subType ? `${data.subType} Name` : "Place to stay"}
             </Text>
-            <Text className="text-2xl leading-2xl font-semibold  mb-1 text-secondary">
+            <Text className="text-xl leading-2xl font-semibold  mb-1 text-white">
               {data.destinationAddressData.name || "N/A"}
             </Text>
 
-            <Text className="text-lg font-semibold mb-1 text-secondary/40">
-              {data.address || "N/A"}
+            <Text className=" text-white text-lg font-light">
+              {data.address}
             </Text>
 
             {/* <ActivityDetailCardAddress
@@ -40,31 +40,31 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
           </View>
         </View>
 
-        <View className="flex-row items-center justify-between p-5 bg-[#9c46ec+30] rounded-b-3xl">
+        <View className="flex-row items-center justify-between p-5 bg-[#9c46ec+99] rounded-b-3xl">
           <View className="flex-1">
-            <Text className="text-xs font-semibold text-secondary/500 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white/70 uppercase tracking-widest mb-1">
               Check-in
             </Text>
-            <Text className="text-2xl font-semibold text-secondary/80">
+            <Text className="text-2xl font-semibold text-white/80">
               {safeFormatTime(data.checkinDateTime)}
             </Text>
-            <Text className="text-base font-medium text-secondary/80 mt-0.5">
+            <Text className="text-base font-medium text-white/80 mt-0.5">
               {safeFormatDate(data.checkinDateTime)}
             </Text>
           </View>
 
           <View className="px-3 items-center justify-center">
-            <Icon name="arrow-forward" size={30} color={"#9c46ec"} />
+            <Icon name="chevron-right" size={38} color={"#FFFFFF"} style={{ opacity: .75 }} />
           </View>
 
           <View className="flex-1 items-end">
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white/70 uppercase tracking-widest mb-1">
               Check-out
             </Text>
-            <Text className="text-2xl font-semibold text-secondary/80 text-right">
+            <Text className="text-2xl font-semibold text-white/80 text-right">
               {data.checkoutDateTime ? safeFormatTime(data.checkoutDateTime) : "--:--"}
             </Text>
-            <Text className="text-base font-medium text-secondary/80 mt-0.5 text-right">
+            <Text className="text-base font-medium text-white/80 mt-0.5 text-right">
               {data.checkoutDateTime ? safeFormatDate(data.checkoutDateTime) : ""}
             </Text>
           </View>

@@ -54,5 +54,6 @@ export interface GoogleMapViewProps {
   connectorOpacity?: number;
   connectorDashed?: boolean;
   connectorGeodesic?: boolean;
+  connectByType?: boolean;
   testID?: string;
 }

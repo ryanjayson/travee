@@ -1,22 +1,27 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
 import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateTimeUtils";
 import { ItineraryActivity } from "../../../../../types/TravelDto";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
 import { ACTIVITY_PLAN_TYPES } from "../../../../Lookups/ActivityPlanTypeLookupModal";
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTravelContext } from "../../../../../../../context/TravelContext";
 
 interface PlanDetailsCardProps {
   activity?: ItineraryActivity | null;
   data?: any;
   onFullScreenChange?: (fullScreen: boolean) => void;
+  onEditActivity?: (activity: ItineraryActivity) => void;
 }
 
 export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
   activity: rawActivity,
   data,
+  onEditActivity,
 }) => {
+  const { openActivityModal } = useTravelContext();
   const activity = rawActivity || data;
   if (!activity) return null;
 
@@ -30,8 +35,8 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
     ? activity.budget.startsWith("₱") || activity.budget.startsWith("$")
       ? activity.budget
       : !isNaN(Number(activity.budget))
-      ? `₱${Number(activity.budget).toLocaleString()}`
-      : activity.budget
+        ? `₱${Number(activity.budget).toLocaleString()}`
+        : activity.budget
     : null;
 
   const locationText =
@@ -42,10 +47,9 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
 
   const hasPlanInfo = Boolean(
     activity.bookingReference ||
-    activity.planType ||
     activity.priority ||
     activity.budget ||
-    locationText ||
+    // locationText ||
     activity.website
   );
 
@@ -58,55 +62,85 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
   const hasNotes = Boolean(activity.notes || activity.description);
 
   return (
-    <View className="mt-4 overflow-hidden">
-      {/* Main Details Body */}
-      <FadeInView delay={180} duration={400}>
+    <View className="mt-4 px-2 overflow-hidden"
+    >
+      <FadeInView delay={180} duration={200}>
         <View
           className="p-5 pb-0 rounded-t-3xl"
-          style={{ backgroundColor: `${themeColor}26` }}
+          style={{ backgroundColor: `${themeColor}` }}
         >
           <View>
-            <Text className="text-xs font-medium text-secondary/80 uppercase tracking-wide mb-1">
-              {planTypeConfig ? `${planTypeConfig.label} Plan` : "Plan"}
-            </Text>
-            <Text className="text-2xl leading-2xl font-semibold mb-1 text-secondary">
-              {activity.destinationData?.name || activity.title || "Plan"}
-            </Text>
-
-            <Text className="text-lg font-semibold mb-1 text-secondary/40">
-              {locationText || "N/A"}
-            </Text>
+            <View className="flex-row items-start gap-2 w-full">
+              <View className="flex-col gap-2 flex-1">
+                {activity.destinationData?.name && activity.destinationData?.name != activity.title ?
+                  <View className="flex flex-col gap-3">
+                    <View className="flex flex-row gap-3 items-start flex-1">
+                      <View className="pt-0.5">
+                        <Icon name="location-on" size={34} color={"#FFFFFF"} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xl leading-xl font-semibold text-white">
+                          {activity.destinationData?.name}
+                        </Text>
+                        <Text className="text-white text-lg font-light">
+                          {locationText}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  :
+                  locationText && (
+                    <View className="flex flex-col flex-1">
+                      <Text className="text-xs font-semibold text-white/70 uppercase tracking-widest ">
+                        Address
+                      </Text>
+                      <Text className="mb-1 text-white text-xl font-light">
+                        {locationText}
+                      </Text>
+                    </View>
+                  )
+                }
+              </View>
+            </View>
           </View>
         </View>
 
         <View
           className="flex-row items-center justify-between p-5 rounded-b-3xl"
-          style={{ backgroundColor: `${themeColor}26` }}
+          style={{ backgroundColor: `${themeColor}` }}
         >
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-secondary/500 uppercase tracking-widest mb-1">
-              Start
+          <View className="flex-1"
+            style={{
+              display: activity.startDate ? "flex" : "none",
+            }}>
+            <Text className="text-xs font-semibold text-white/70 uppercase tracking-widest mb-1 ">
+              {activity.endDate ? "Start" : "Date"}
             </Text>
-            <Text className="text-2xl font-semibold text-secondary/80">
+            <Text className="text-2xl font-semibold text-white">
               {safeFormatTime(activity.startDate)}
             </Text>
-            <Text className="text-base font-medium text-secondary/80 mt-0.5">
+            <Text className="text-base font-medium text-white/70 mt-0.5">
               {safeFormatDate(activity.startDate)}
             </Text>
           </View>
 
-          <View className="px-3 items-center justify-center">
-            <Icon name="arrow-forward" size={30} color={themeColor} />
-          </View>
+          {activity.endDate && activity.startDate && (
+            <View className="px-3 items-center justify-center">
+              <Icon name="chevron-right" size={38} color={"#FFFFFF"} style={{ opacity: .75 }} />
+            </View>
+          )}
 
-          <View className="flex-1 items-end">
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1">
+          <View className="flex-1 items-end"
+            style={{
+              display: activity.endDate ? "flex" : "none",
+            }}>
+            <Text className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-1">
               End
             </Text>
-            <Text className="text-2xl font-semibold text-secondary/80 text-right">
+            <Text className="text-2xl font-semibold text-white text-right">
               {activity.endDate ? safeFormatTime(activity.endDate) : "--:--"}
             </Text>
-            <Text className="text-base font-medium text-secondary/80 mt-0.5 text-right">
+            <Text className="text-base font-medium text-white/80 mt-0.5 text-right">
               {activity.endDate ? safeFormatDate(activity.endDate) : ""}
             </Text>
           </View>
@@ -119,7 +153,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
           style={{ display: hasPlanInfo ? "flex" : "none" }}
         >
           <Text className="text-xl font-semibold text-secondary mt-lg">
-            Plan Info
+            {planTypeConfig ? `${planTypeConfig.label} Info` : "Plan Info"}
           </Text>
           <View className="rounded-2xl flex-col gap-3 p-2">
             <Field
@@ -128,13 +162,6 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
               icon="folder-open"
               showBorder={false}
               isCopyable={true}
-              borderColor={`border-[${themeColor}]`}
-            />
-            <Field
-              label="Plan Type"
-              value={planTypeConfig?.label || (activity.planType ? String(activity.planType) : null)}
-              icon={(planTypeConfig?.iconName || "lightbulb") as any}
-              showBorder={false}
               borderColor={`border-[${themeColor}]`}
             />
             <Field
@@ -151,13 +178,13 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
               showBorder={false}
               borderColor={`border-[${themeColor}]`}
             />
-            <Field
+            {/* <Field
               label="Location"
               value={locationText}
               icon="place"
               showBorder={false}
               borderColor={`border-[${themeColor}]`}
-            />
+            /> */}
             <Field
               label="Website"
               value={activity.website}
@@ -207,6 +234,39 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
           </View>
         </View>
       </FadeInView>
+
+      <FadeInView delay={180} duration={400}>
+        <TouchableOpacity
+          onPress={() => {
+            if (activity) {
+              if (onEditActivity) {
+                onEditActivity(activity);
+              } else {
+                openActivityModal(
+                  activity,
+                  activity.sectionId || undefined,
+                  activity.travelId || undefined,
+                  activity.type
+                );
+              }
+            }
+          }}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Edit or add more details"
+          className="flex-row items-center self-start mt-6 py-1 px-xs gap-1.5"
+        >
+          <Icon name="edit" size={20} color={"#0EA5E9"} />
+          <Text
+            className="text-base font-semibold"
+            style={{ color: "#0EA5E9" }}
+          >
+            Edit or Add more detail
+          </Text>
+        </TouchableOpacity>
+      </FadeInView>
+
+
 
       {hasNotes ? (
         <FadeInView delay={180} duration={400}>

@@ -116,12 +116,7 @@ const TravelCatalog = () => {
 
   const handleViewModeTravel = (travel: Travel) => {
     if (travel && travel.id) {
-      if (activeListTab === "upcoming") {
-        navigation.navigate("TravelDetail", { travelId: travel.id });
-        return;
-      }
-      setSelectedTravel(travel);
-      setShowTravelViewModal(true);
+      navigation.navigate("TravelDetail", { travelId: travel.id });
     }
   };
 

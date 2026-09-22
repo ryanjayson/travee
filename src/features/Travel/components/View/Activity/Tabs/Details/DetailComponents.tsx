@@ -230,12 +230,20 @@ export const PlanDetails = ({
   data,
   activity,
   onFullScreenChange,
+  onEditActivity,
 }: {
   data?: any;
   activity?: ItineraryActivity | null;
   onFullScreenChange?: (fullScreen: boolean) => void;
+  onEditActivity?: (activity: ItineraryActivity) => void;
 }) => {
   const planItem = activity || data;
   if (!planItem) return <NoDetailsAdded />;
-  return <PlanDetailsCard activity={planItem} onFullScreenChange={onFullScreenChange} />;
+  return (
+    <PlanDetailsCard
+      activity={planItem}
+      onFullScreenChange={onFullScreenChange}
+      onEditActivity={onEditActivity}
+    />
+  );
 };

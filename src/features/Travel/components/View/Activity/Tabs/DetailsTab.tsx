@@ -32,6 +32,7 @@ interface DetailsTabProps {
   isMidSnap?: boolean;
   isExpanded?: boolean;
   onScrollAtTopChange?: (isAtTop: boolean) => void;
+  onEditActivity?: (activity: ItineraryActivity) => void;
 }
 
 const DetailsTab = ({
@@ -41,17 +42,28 @@ const DetailsTab = ({
   isMidSnap = false,
   isExpanded = false,
   onScrollAtTopChange,
+  onEditActivity,
 }: DetailsTabProps) => {
   const [isAtTop, setIsAtTop] = useState(true);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Lock ScrollView when bottom sheet snap is mid.
   // Enable ScrollView when snap is expanded (so it can scroll up when content overflows).
   const shouldScroll = isMidSnap ? false : isExpanded ? true : scrollEnabled;
 
   React.useEffect(() => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     setIsAtTop(true);
     onScrollAtTopChange?.(true);
-  }, [itineraryActivity?.id, isExpanded]);
+  }, [itineraryActivity?.id, onScrollAtTopChange]);
+
+  React.useEffect(() => {
+    if (!isExpanded && !isMidSnap) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+      setIsAtTop(true);
+      onScrollAtTopChange?.(true);
+    }
+  }, [isExpanded, isMidSnap, onScrollAtTopChange]);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const y = e.nativeEvent.contentOffset.y;
@@ -118,13 +130,20 @@ const DetailsTab = ({
       //   return <MeetupDetails data={itineraryActivity.meetupDetails} onFullScreenChange={onFullScreenChange} />;
       case ActivityType.plan:
       default:
-        return <PlanDetails activity={itineraryActivity} onFullScreenChange={onFullScreenChange} />;
+        return (
+          <PlanDetails
+            activity={itineraryActivity}
+            onFullScreenChange={onFullScreenChange}
+            onEditActivity={onEditActivity}
+          />
+        );
     }
   };
 
   return (
     <View className="flex-1">
       <ScrollView
+        ref={scrollViewRef}
         showsVerticalScrollIndicator={shouldScroll}
         scrollEnabled={shouldScroll}
         bounces={false}

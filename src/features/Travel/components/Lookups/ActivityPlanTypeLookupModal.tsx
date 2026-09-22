@@ -63,17 +63,17 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     color: "#f0a505",
   },
   {
-    type: ActivityPlanType.shoppingOrService,
-    key: "shoppingOrService",
-    label: "Shopping & Service",
+    type: ActivityPlanType.shopping,
+    key: "shopping",
+    label: "Shopping",
     subtext: "Markets, stores, spas, banks, and essentials",
     iconName: "shopping-bag",
     color: "#db2777",
   },
   {
-    type: ActivityPlanType.entertainmentOrRecreation,
-    key: "entertainmentOrRecreation",
-    label: "Entertainment & Recreation",
+    type: ActivityPlanType.entertainment,
+    key: "entertainment",
+    label: "Entertainment",
     subtext: "Museums, parks, shows, cinema, and sports",
     iconName: "local-play",
     color: "#0891b2",
@@ -298,6 +298,7 @@ const ActivityPlanTypeLookupModal = ({
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
         style={{ flex: 1 }}
+
       >
         <Animated.View
           className="flex-1 justify-end"
@@ -306,6 +307,14 @@ const ActivityPlanTypeLookupModal = ({
             opacity: backdropOpacity,
           }}
         >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={handleCancel}
+            className="absolute inset-0"
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss plan type bottom sheet"
+          />
+
           <Animated.View
             {...sheetPanResponder.panHandlers}
             className="rounded-t-[30px] bg-white overflow-hidden"
@@ -337,14 +346,14 @@ const ActivityPlanTypeLookupModal = ({
             {/* Header */}
             <View
               {...(!keyboardVisible && dragPanResponder.panHandlers)}
-              className="flex-row justify-between items-center px-6 pb-4 border-b border-gray-200"
+              className="flex-row justify-between items-center px-6 pb-4"
               style={{ paddingTop: keyboardVisible ? 0 : 2 }}
             >
 
 
               <View className="flex-1">
-                <View className="flex-row items-center">
-                  <TouchableOpacity
+                <View className="flex-row items-center mb-1">
+                  {/* <TouchableOpacity
                     onPress={handleCancel}
                     accessibilityRole="button"
                     accessibilityLabel="Close add field modal"
@@ -356,7 +365,7 @@ const ActivityPlanTypeLookupModal = ({
                       size={28}
                       color={"#999"}
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                   <Text className="text-2xl font-semibold text-accent">
                     Plan Type
                   </Text>
@@ -384,7 +393,7 @@ const ActivityPlanTypeLookupModal = ({
                   return (
                     <TouchableOpacity
                       key={item.key}
-                      className="px-6 py-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
+                      className="px-6 py-5  flex-row items-center gap-4 active:bg-gray-50"
                       onPress={() => handleSelect(item.type)}
                       accessibilityRole="button"
                       accessibilityLabel={`Select plan type ${item.label}`}

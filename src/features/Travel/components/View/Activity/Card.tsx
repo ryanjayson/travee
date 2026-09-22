@@ -512,8 +512,8 @@ const ActivityItemCard = ({
 
         {(!isDragActive && !parentIsDragging && isLastItem) && viewMode === 'expanded' && (
           <TouchableHighlight
-            underlayColor={"none"}
-            className={`absolute h-6xl w-6xl bottom-[-30px] left-lg z-9999 `} //TODO: apply to last item for now, later show this to cards between
+            underlayColor={"red"}
+            className={`absolute bottom-[24px] left-lg z-9999`} //TODO: apply to last item for now, later show this to cards between
             onPress={() => openActivityTypeModal(itineraryActivity.sectionId || undefined, itineraryActivity.travelId)}
             onShowUnderlay={() => setIsAddPressed(true)}
             onHideUnderlay={() => setIsAddPressed(false)}
@@ -521,9 +521,9 @@ const ActivityItemCard = ({
             accessibilityLabel="Add activity"
           >
             <View
-              className={`${isAddPressed ? 'bg-[#183B7A] rounded-md' : ' rounded-md bg-white '} border-gray-300  left-[37px] absolute m-2 mt-2xl border px-1px z-9999`}
+              className={`${isAddPressed ? 'bg-[#183B7A] border-[#183B7A]' : '  bg-white border-gray-300 '} rounded-md  left-[37px] absolute m-2 mt-[26px] border px-1px z-9999`}
             >
-              <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`} />
+              <Icon name="add" size={20} color={`${isAddPressed ? '#183B7A' : '#999'}`} />
             </View>
           </TouchableHighlight>
         )}
@@ -553,13 +553,14 @@ const ActivityItemCard = ({
             <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
               {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
                 <View
-                  style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }}
-                  className="items-end rounded-xs px-2 py-0.5 flex-row"
+
+                  className="items-center flex-row"
                 >
                   <Text
                     // style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                    style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                    className="text-[8px] tracking-wider uppercase font-extrabold text-gray/60 "
+                    style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }}
+                    // style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
+                    className="text-[8px] rounded-xs px-2 py-0.5 tracking-wider uppercase font-extrabold text-gray/60 "
                   >
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
 
@@ -734,7 +735,7 @@ const ActivityItemCard = ({
 
                 {itineraryEventActivity.isDone ?
                   (<Icon name="radio-button-checked" size={24} color="#0c6134" style={{ opacity: 0.5 }} />)
-                  : (<Icon name="radio-button-unchecked" size={24} color="#D0D5DD" />)}
+                  : (<Icon name="radio-button-unchecked" size={24} color="#D0D5DD" style={{ opacity: 0.5 }} />)}
 
                 {/* <View className="h-6 w-6 border-2 border-dashed border-gray-400 rounded-full">
 

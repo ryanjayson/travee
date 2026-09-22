@@ -32,15 +32,17 @@ export interface CreateOrEditProps {
   hideSubmitButton?: boolean;
   onScroll?: (event: any) => void;
   onCreated?: (createdId: string) => void;
+  autoFocusSearch?: boolean;
 }
 
 export interface CreateOrEditRef {
   submit: () => void;
   isSaving: boolean;
   isValid: boolean;
+  focusSearch: () => void;
 }
 
-const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, onStatusChange, tripData, mode = "create", hideSubmitButton, onScroll, onCreated }, ref) => {
+const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, onStatusChange, tripData, mode = "create", hideSubmitButton, onScroll, onCreated, autoFocusSearch }, ref) => {
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
@@ -53,7 +55,19 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     },
     isSaving,
     isValid: formik.isValid,
+    focusSearch: () => {
+      destinationSearchRef.current?.focus();
+    },
   }));
+
+  useEffect(() => {
+    if (autoFocusSearch) {
+      const timer = setTimeout(() => {
+        destinationSearchRef.current?.focus();
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [autoFocusSearch]);
 
   const handleSelectDestination = (newDest: TripDestinationDto) => {
     formik.setValues((prevValues) => {
@@ -368,7 +382,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         <View className="mb-8" style={{ zIndex: 100 }}>
           <View className="flex-row items-center justify-between mb-2">
             <Text className="text-xl text-secondary/80 font-semibold mb-md">
-              Where to go? <Text className="text-red-500 text-lg">*</Text>
+              Where to? <Text className="text-red-500 text-lg">*</Text>
             </Text>
             {formik.values.tripDestinations && formik.values.tripDestinations.length > 0 && (
               <Text className="text-xs text-secondary/60 font-medium mb-md">
@@ -382,6 +396,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           <TripDestinationSearchBox
             ref={destinationSearchRef}
             onSelect={handleSelectDestination}
+            autoFocus={autoFocusSearch}
             placeholder={
               formik.values.tripDestinations && formik.values.tripDestinations.length >= 5
                 ? "Maximum of 5 destinations reached"
@@ -410,10 +425,10 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               {formik.values.tripDestinations.map((item: TripDestinationDto, index: number) => (
                 <View
                   key={`${item.destination}-${index}`}
-                  className="flex-row items-center bg-white border border-[#E0E0E0] rounded-full py-1 pl-2 pr-1 shadow-xs"
+                  className="flex-row items-center bg-primary/20 border border-accent/10 rounded-full py-2 pl-2 pr-1 shadow-xs"
                 >
-                  <Icon name="place" size={15} color={colors.error} style={{ marginRight: 4, opacity: 0.4 }} />
-                  <Text className="text-sm font-semibold text-secondary mr-2" numberOfLines={1}>
+                  <Icon name="place" size={15} color={colors.error} style={{ marginRight: 4, opacity: 0.8 }} />
+                  <Text className="text-base font-semibold text-accent mr-2" numberOfLines={1}>
                     {item.destination}
                   </Text>
                   <TouchableOpacity

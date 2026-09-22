@@ -64,8 +64,13 @@ const getLocationTitle = (loc?: any): string => {
 
 const getLocationSubtitle = (loc?: any): string => {
   if (!loc) return "";
-  if (typeof loc === "string") return "";
-  return loc.city && loc.city !== loc.name ? loc.city : loc.country || "";
+  const obj = typeof loc === "string" && loc.trim().startsWith("{")
+    ? (() => { try { return JSON.parse(loc); } catch { return null; } })()
+    : (typeof loc === "object" ? loc : null);
+  if (obj) {
+    return obj.address || [obj.city, obj.regionOrState, obj.country].filter(Boolean).join(", ");
+  }
+  return "";
 };
 
 export default function TransportationTab({
@@ -119,7 +124,7 @@ export default function TransportationTab({
       </Text>
 
       {/* Pickup / Departure Location */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.pickupLocation"] = el; }} className="flex-row">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.pickupLocation"] = el; }} className="flex-row relative">
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel={pickupTitle ? `Pickup location: ${pickupTitle}` : "Select pickup location"}
@@ -156,6 +161,26 @@ export default function TransportationTab({
             </View>
           </View>
         </TouchableOpacity>
+
+        {Boolean(pickupTitle) && (
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Clear departure location"
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            onPress={() => {
+              setFieldValue("transportationDetails.pickupLocation", null);
+              setFieldValue("destinationData", {
+                ...(values.destinationData || {}),
+                pickupCoordinates: null,
+                pickupLocation: null,
+              });
+            }}
+            className="absolute right-4 top-4 z-20 p-2 rounded-full items-center justify-center "
+          >
+            <Icon name="close" size={18} color="#667085" />
+          </TouchableOpacity>
+        )}
       </View>
 
       <View className="flex-1">
@@ -170,6 +195,20 @@ export default function TransportationTab({
                 const currentDrop = values.transportationDetails?.dropoffLocation || null;
                 setFieldValue("transportationDetails.pickupLocation", currentDrop);
                 setFieldValue("transportationDetails.dropoffLocation", currentPick);
+
+                const destData = (values.destinationData || {}) as any;
+                const pickLoc = destData?.pickupLocation || (typeof currentPick === "object" ? currentPick : null);
+                const dropLoc = destData?.dropoffLocation || (typeof currentDrop === "object" ? currentDrop : null);
+                const pickCoords = destData?.pickupCoordinates || (typeof currentPick === "object" ? currentPick?.coordinates : null);
+                const dropCoords = destData?.dropoffCoordinates || (typeof currentDrop === "object" ? currentDrop?.coordinates : null);
+
+                setFieldValue("destinationData", {
+                  ...destData,
+                  pickupCoordinates: dropCoords,
+                  dropoffCoordinates: pickCoords,
+                  pickupLocation: dropLoc,
+                  dropoffLocation: pickLoc,
+                });
               }}
               className="w-14 h-14 rounded-full p-3 items-center border-2 justify-center"
               style={{ borderColor: activityColor + "50", backgroundColor: "#fff" }}
@@ -180,7 +219,7 @@ export default function TransportationTab({
         </View>
 
         {/* Drop-off / Arrival Location */}
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.dropoffLocation"] = el; }} className="mb-5 flex-row">
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.dropoffLocation"] = el; }} className="mb-5 flex-row relative">
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel={dropoffTitle ? `Drop-off location: ${dropoffTitle}` : "Select drop-off location"}
@@ -199,7 +238,7 @@ export default function TransportationTab({
                 </Text>
               </View>
 
-              <View className="flex-1 justify-center gap-0 px-sm ">
+              <View className="flex-1 justify-center gap-0 px-sm pr-14">
                 <Text className="text-sm text-secondary/80">To</Text>
                 <Text
                   className={`text-2xl font-semibold leading-10px ${dropoffTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
@@ -215,20 +254,28 @@ export default function TransportationTab({
                   </Text>
                 )}
               </View>
-
-
-              {/* <View className="flex-1 justify-center gap-0 px-sm pr-14">
-                <Text className="text-lg text-secondary/80">To</Text>
-                <Text
-                  className={`text-2xl font-semibold ${values.transportationDetails?.dropoffLocation ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {values.transportationDetails?.dropoffLocation || "Select arrival location"}
-                </Text>
-              </View> */}
             </View>
           </TouchableOpacity>
+
+          {Boolean(dropoffTitle) && (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Clear arrival location"
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              onPress={() => {
+                setFieldValue("transportationDetails.dropoffLocation", null);
+                setFieldValue("destinationData", {
+                  ...(values.destinationData || {}),
+                  dropoffCoordinates: null,
+                  dropoffLocation: null,
+                });
+              }}
+              className="absolute right-4 bottom-4 z-20 p-2 rounded-full items-center justify-center "
+            >
+              <Icon name="close" size={18} color="#667085" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

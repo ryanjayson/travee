@@ -213,6 +213,7 @@ export const TripDetailScreen = ({
     openGoogleSearchModal,
     openSectionModal,
     activeTripViewTab,
+    showActivityPinsInTripMap = true,
   } = useTravelContext();
 
   const [localActivityId, setLocalActivityId] = useState<string | null>(null);
@@ -767,34 +768,46 @@ export const TripDetailScreen = ({
       });
     }
 
-    // 2. Activities pins (excluding flight, stay, rental, transit by default)
-    travelPlan.itinerarySection?.forEach((section) => {
-      section.itineraryActivity?.forEach((act) => {
-        if (EXCLUDED_DEFAULT_TYPES.includes(act.type as any)) {
-          return; // Skip flight, stay, rental, transit by default
-        }
-        const coords = getActivityCoordinates(act);
-        if (coords) {
-          defaultPins.push({
-            id: act.id,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            title: act.title || "Activity",
-            type: act.type,
-            color: getActivityPinColor(act.type),
-            sortOrder: act.sortOrder,
-          });
+    // 2. Activities pins (only when showActivityPinsInTripMap is enabled)
+    if (showActivityPinsInTripMap) {
+      travelPlan.itinerarySection?.forEach((section) => {
+        section.itineraryActivity?.forEach((act) => {
+          if (EXCLUDED_DEFAULT_TYPES.includes(act.type as any)) {
+            return; // Skip flight, stay, rental, transit by default
+          }
+          const coords = getActivityCoordinates(act);
+          if (coords) {
+            defaultPins.push({
+              id: act.id,
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+              title: act.title || "Activity",
+              type: act.type,
+              color: getActivityPinColor(act.type),
+              sortOrder: act.sortOrder,
+            });
+          }
+        });
+      });
+    }
+
+    const hasConnectablePins = showActivityPinsInTripMap && (() => {
+      const typeCounts: Record<string, number> = {};
+      defaultPins.forEach((p) => {
+        if (p.type !== undefined && p.type !== null) {
+          typeCounts[String(p.type)] = (typeCounts[String(p.type)] || 0) + 1;
         }
       });
-    });
+      return Object.values(typeCounts).some((c) => c > 1);
+    })();
 
     return {
       pins: defaultPins,
       effectiveConnectorColor: connectorColor,
       effectiveRouteMode: "DRIVING" as GoogleMapRouteMode,
-      effectiveShowConnectors: defaultPins.length > 1,
+      effectiveShowConnectors: Boolean(hasConnectablePins),
     };
-  }, [activeActivity, asyncFlightCoords, asyncTransitCoords, travelPlan, connectorColor]);
+  }, [activeActivity, asyncFlightCoords, asyncTransitCoords, travelPlan, connectorColor, showActivityPinsInTripMap]);
 
   // Find coordinates of currently active/opened activity if it has a location
   const selectedActivityCoords = useMemo(() => {
@@ -888,6 +901,7 @@ export const TripDetailScreen = ({
           showConnectors={effectiveShowConnectors}
           connectorColor={effectiveConnectorColor}
           routeMode={effectiveRouteMode}
+          connectByType={!activeActivityId}
           testID="trip-google-map"
         />
       </View>
@@ -926,6 +940,21 @@ export const TripDetailScreen = ({
 
         {/* Bottom Sheet Content Container */}
         <View className="flex-1 w-full" style={{ flex: 1 }}>
+          {/* Trip Overview: View/index called inside the bottom sheet container */}
+          <View
+            className="flex-1 w-full"
+            style={{ flex: 1, display: activeActivityId ? "none" : "flex" }}
+            testID="trip-view-container"
+          >
+            <ViewTravel
+              travelPlan={travelPlan}
+              onClose={handleBack}
+              onRefresh={refetch}
+              expanded={currentSnap === SNAP_EXPANDED}
+              currentSnap={currentSnap}
+            />
+          </View>
+
           {activeActivityId ? (
             // Activity Details loaded inside container
             <View className="flex-1 w-full" style={{ flex: 1 }} testID="activity-detail-container">
@@ -939,9 +968,9 @@ export const TripDetailScreen = ({
                   className="flex-row items-center"
                 >
                   <View className="pr-1">
-                    <Icon name="chevron-left" size={24} color={"#999"} />
+                    <Icon name="chevron-left" size={24} color={"#999"} style={{ opacity: 0.5 }} />
                   </View>
-                  <Text className="text-base font-semibold text-tertiary/80">
+                  <Text className="text-sm font-semibold uppercase text-tertiary/50">
                     Back to Trip
                   </Text>
                 </TouchableOpacity>
@@ -976,18 +1005,7 @@ export const TripDetailScreen = ({
                 />
               </View>
             </View>
-          ) : (
-            // Trip Overview: View/index called inside the bottom sheet container
-            <View className="flex-1 w-full" style={{ flex: 1 }} testID="trip-view-container">
-              <ViewTravel
-                travelPlan={travelPlan}
-                onClose={handleBack}
-                onRefresh={refetch}
-                expanded={currentSnap === SNAP_EXPANDED}
-                currentSnap={currentSnap}
-              />
-            </View>
-          )}
+          ) : null}
         </View>
       </Animated.View>
 
@@ -1010,10 +1028,11 @@ export const TripDetailScreen = ({
             openExpenseModal(null, undefined, allActivities, travelPlan.travel.id);
           }}
           onAddActivity={(type: any) => {
-            if (!type) {
-              openActivityTypeModal(undefined, travelPlan.travel.id);
-              return;
-            }
+            console.log(type)
+            // if (!type) {
+            //   openActivityTypeModal(undefined, travelPlan.travel.id);
+            //   return;
+            // }
             if (type === ActivityType.plan) {
               const allTripDestinations =
                 travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0

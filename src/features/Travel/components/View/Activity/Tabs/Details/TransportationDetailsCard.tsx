@@ -2,9 +2,45 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { Text, View } from "react-native";
 import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateTimeUtils";
-import { TransportationDetailsDto } from "../../../../../types/TravelDto";
+import { DestinationDto, TransportationDetailsDto } from "../../../../../types/TravelDto";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
+
+const resolveLocationObject = (loc?: string | DestinationDto | null): DestinationDto | null => {
+  if (!loc) return null;
+  if (typeof loc === "object") return loc;
+  if (typeof loc === "string" && loc.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(loc);
+      if (typeof parsed === "object" && parsed !== null) return parsed;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
+const getLocationTitle = (loc?: string | DestinationDto | null): string => {
+  if (!loc) return "";
+  const obj = resolveLocationObject(loc);
+  if (obj) {
+    return obj.name || obj.city || obj.address || "";
+  }
+  if (typeof loc === "string") return loc;
+  return "";
+};
+
+const getLocationSubtitle = (loc?: string | DestinationDto | null): string => {
+  if (!loc) return "";
+  const obj = resolveLocationObject(loc);
+  if (obj) {
+    return (
+      obj.address ||
+      [obj.city, obj.regionOrState, obj.country].filter(Boolean).join(", ")
+    );
+  }
+  return "";
+};
 
 interface TransportationDetailsCardProps {
   data: TransportationDetailsDto;
@@ -18,14 +54,19 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
     ? data.price.startsWith("₱") || data.price.startsWith("$")
       ? data.price
       : !isNaN(Number(data.price))
-      ? `₱${Number(data.price).toLocaleString()}`
-      : data.price
+        ? `₱${Number(data.price).toLocaleString()}`
+        : data.price
     : null;
 
+  const pickupTitle = getLocationTitle(data.pickupLocation);
+  const pickupSubtitle = getLocationSubtitle(data.pickupLocation);
+  const dropoffTitle = getLocationTitle(data.dropoffLocation);
+  const dropoffSubtitle = getLocationSubtitle(data.dropoffLocation);
+
   const locationText =
-    data.pickupLocation && data.dropoffLocation && data.pickupLocation !== data.dropoffLocation
-      ? `${data.pickupLocation} → ${data.dropoffLocation}`
-      : data.pickupLocation || data.dropoffLocation || "";
+    pickupTitle && dropoffTitle && pickupTitle !== dropoffTitle
+      ? `${pickupTitle} → ${dropoffTitle}`
+      : pickupTitle || dropoffTitle || "";
 
   const hasTransitInfo = Boolean(
     data.mode ||
@@ -33,8 +74,6 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
     data.bookingReference ||
     data.bookingStatus ||
     data.price ||
-    data.pickupLocation ||
-    data.dropoffLocation ||
     data.websiteAddress
   );
 
@@ -47,49 +86,71 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
   return (
     <View className="mt-4 overflow-hidden">
       {/* Main Details Body */}
-      <FadeInView delay={180} duration={400}>
-        <View className="p-5 pb-0 bg-[#018091+30] rounded-t-3xl">
+      <FadeInView delay={180} duration={400} className="bg-[#018091] rounded-3xl p-5">
+        <View className="">
           <View className="">
-            <Text className="text-xs font-medium text-secondary/80 uppercase tracking-wide mb-1">
+            {/* <Text className="text-xs font-medium text-secondary/80 uppercase tracking-wide mb-1">
               {data.mode ? `${data.mode.charAt(0).toUpperCase() + data.mode.slice(1)} Transit` : "Transportation"}
-            </Text>
-            <Text className="text-2xl leading-2xl font-semibold mb-1 text-secondary">
-              {data.operatorProvider || "N/A"}
-            </Text>
-
-            <Text className="text-lg font-semibold mb-1 text-secondary/40">
+            </Text> */}
+            {data.operatorProvider &&
+              <Text className="text-2xl leading-2xl font-semibold mb-1 text-white">
+                {data.operatorProvider}
+              </Text>
+            }
+            {/* 
+            <Text className="text-lg font-semibold mb-1 text-white/40">
               {locationText || "N/A"}
-            </Text>
+            </Text> */}
           </View>
         </View>
 
-        <View className="flex-row items-center justify-between p-5 bg-[#018091+30] rounded-b-3xl">
+        <View className="flex-row items-center justify-between">
           <View className="flex-1">
-            <Text className="text-xs font-semibold text-secondary/500 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-1">
               Departure
             </Text>
-            <Text className="text-2xl font-semibold text-secondary/80">
-              {safeFormatTime(data.departureDateTime)}
+            <Text className="text-xl font-semibold text-white">
+              {pickupTitle || "N/A"}
             </Text>
-            <Text className="text-base font-medium text-secondary/80 mt-0.5">
-              {safeFormatDate(data.departureDateTime)}
-            </Text>
+            {pickupSubtitle ? (
+              <Text className="text-base font-medium text-white/80 mt-0.5">
+                {pickupSubtitle}
+              </Text>
+            ) : null}
+            <View className="mt-2">
+              <Text className="text-2xl font-semibold text-white">
+                {safeFormatTime(data.departureDateTime)}
+              </Text>
+              <Text className="text-base font-medium text-white/80 mt-0.5">
+                {safeFormatDate(data.departureDateTime)}
+              </Text>
+            </View>
           </View>
 
-          <View className="px-3 items-center justify-center">
-            <Icon name="arrow-forward" size={30} color={"#018091"} />
+          <View className="items-center justify-center px-2">
+            <Icon name="chevron-right" size={38} color={"#FFFFFF"} style={{ opacity: 0.75 }} />
           </View>
 
           <View className="flex-1 items-end">
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-1">
               Arrival
             </Text>
-            <Text className="text-2xl font-semibold text-secondary/80 text-right">
-              {data.arrivalDateTime ? safeFormatTime(data.arrivalDateTime) : "--:--"}
+            <Text className="text-xl font-semibold text-white text-right">
+              {dropoffTitle || "N/A"}
             </Text>
-            <Text className="text-base font-medium text-secondary/80 mt-0.5 text-right">
-              {data.arrivalDateTime ? safeFormatDate(data.arrivalDateTime) : ""}
-            </Text>
+            {dropoffSubtitle ? (
+              <Text className="text-base font-medium text-white/80 mt-0.5 text-right">
+                {dropoffSubtitle}
+              </Text>
+            ) : null}
+            <View className="mt-2 items-end">
+              <Text className="text-2xl font-semibold text-white text-right">
+                {data.arrivalDateTime ? safeFormatTime(data.arrivalDateTime) : "--:--"}
+              </Text>
+              <Text className="text-base font-medium text-white/80 mt-0.5 text-right">
+                {data.arrivalDateTime ? safeFormatDate(data.arrivalDateTime) : ""}
+              </Text>
+            </View>
           </View>
         </View>
       </FadeInView>
@@ -137,20 +198,6 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
               label="Price"
               value={formattedPrice}
               icon="attach-money"
-              showBorder={false}
-              borderColor="border-[#018091]"
-            />
-            <Field
-              label="Pick-up Location"
-              value={data.pickupLocation}
-              icon="place"
-              showBorder={false}
-              borderColor="border-[#018091]"
-            />
-            <Field
-              label="Drop-off Location"
-              value={data.dropoffLocation}
-              icon="pin-drop"
               showBorder={false}
               borderColor="border-[#018091]"
             />

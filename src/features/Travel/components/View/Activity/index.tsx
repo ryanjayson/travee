@@ -199,7 +199,7 @@ const ViewItineraryActivity = ({
     {
       id: "checklist",
       title: "Checklists",
-      icon: "checklist",
+      // icon: "checklist",
       content: <ChecklistTab activityId={id} itineraryActivity={itineraryActivity} />,
     },
     {
@@ -212,7 +212,7 @@ const ViewItineraryActivity = ({
     {
       id: "files",
       title: "Files",
-      icon: "description",
+      // icon: "description",
       content: <FilesTab itineraryActivity={itineraryActivity} onImageViewerToggle={setIsImageViewerOpen} />,
     },
   ];
@@ -252,11 +252,11 @@ const ViewItineraryActivity = ({
   return (
     <Provider>
       <Animated.View style={{ flex: 1, opacity: fadeAnim }} className="flex-1 bg-white">
-
-
         {/* Activity header */}
-        <View className="px-5 pb-2 bg-white mt-2 w-full">
+        <View className="px-5 pb-2 bg-white mt-1 w-full">
           <FadeInView key={`title-${id}`} type="right" delay={50} duration={350} className="w-full">
+
+
             {itineraryActivity?.type != null && (
               <View className="flex-row items-center ">
                 {sectionName && (
@@ -304,7 +304,9 @@ const ViewItineraryActivity = ({
                 )}
               </View>
             )}
-            <Text className="text-4xl font-semibold" style={{ paddingBottom: description ? 2 : 0 }}>
+            <Text className="text-4xl font-semibold mt-1" style={{ paddingBottom: description ? 2 : 0 }}
+              numberOfLines={!isExpanded && !isMidSnap ? 1 : undefined}
+            >
               {itineraryActivity?.title}
             </Text>
 
@@ -362,7 +364,8 @@ const ViewItineraryActivity = ({
         </View>
 
         {/* Tabs */}
-        <View className="flex-1">
+        <View className="flex-1"
+          style={{ marginTop: !isMidSnap && !isExpanded ? 10 : 0 }}>
           <FadeInView key={`tabs-${id}`} type="right" delay={180} duration={400} style={{ flex: 1 }}>
             {renderContent()}
           </FadeInView>

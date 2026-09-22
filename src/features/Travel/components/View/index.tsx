@@ -8,13 +8,23 @@ import {
   View,
 } from "react-native";
 import { MaterialIcons as Icon, Ionicons } from "@expo/vector-icons";
-import { Portal } from "react-native-paper";
+import { Portal, useTheme } from "react-native-paper";
 import StatusBadge from "../../../../components/StatusBadge";
 import Tabs from "../../../../components/Tabs";
 import { useTravelContext } from "../../../../context/TravelContext";
+import { useConfirm } from "../../../../context/ConfirmContext";
+import { TravelMenuAction } from "../../../../types/enums";
 import { TravelPlan } from "../../../Travel/types/TravelDto";
 import ShareTripModal from "../ShareOverlay/ShareTripModal";
 import DestinationsBottomSheet from "../DestinationsBottomSheet";
+import TravelMenuNavigation from "../TravelMenuNavigation";
+import CreateTripModal from "../CreateOrEdit/Modal";
+import {
+  useArchiveTravel,
+  useCancelTravel,
+  useDeleteTravel,
+  useUnarchiveTravel,
+} from "../../hooks/useTravel";
 import ChecklistTab from "./Tabs/ChecklistTab";
 import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
@@ -43,6 +53,7 @@ interface ViewTravelProps {
 
 const ViewTravel = ({
   travelPlan,
+  onClose,
   expanded,
   currentSnap: propCurrentSnap,
   onExpandedChange,
@@ -50,9 +61,91 @@ const ViewTravel = ({
   setShowShare,
   onRefresh,
   onRegisterCollapse,
+  onEditTrip,
 }: ViewTravelProps) => {
+  const { colors } = useTheme();
+  const { confirm } = useConfirm();
   const [localShowShare, localSetShowShare] = useState<boolean>(false);
   const [showDestinationsSheet, setShowDestinationsSheet] = useState<boolean>(false);
+  const [showTravelNavigationModal, setShowTravelNavigationModal] = useState<boolean>(false);
+  const [showEditTripModal, setShowEditTripModal] = useState<boolean>(false);
+
+  const { mutate: deleteTravel } = useDeleteTravel();
+  const { mutate: cancelTravel } = useCancelTravel();
+  const { mutate: archiveTravel } = useArchiveTravel();
+  const { mutate: unarchiveTravel } = useUnarchiveTravel();
+
+  const handleSelectNavigationMenu = async (menuAction: TravelMenuAction) => {
+    const id = travelPlan?.travel?.id;
+
+    if (menuAction === TravelMenuAction.EditTravel) {
+      if (onEditTrip) {
+        onEditTrip();
+      } else {
+        setShowEditTripModal(true);
+      }
+    } else if (menuAction === TravelMenuAction.Cancel) {
+      const isConfirmed = await confirm({
+        title: "Cancel Trip",
+        message: "Are you sure you want to cancel this trip? This will mark it as cancelled.",
+        confirmText: "Cancel Trip",
+        cancelText: "No",
+        type: "danger",
+      });
+      if (isConfirmed && id != null) {
+        cancelTravel(String(id), {
+          onSuccess: () => {
+            onRefresh?.();
+          },
+        });
+      }
+    } else if (menuAction === TravelMenuAction.Delete) {
+      const isConfirmed = await confirm({
+        title: "Delete Trip",
+        message: "Are you sure you want to permanently delete this trip? This action cannot be undone.",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        type: "danger",
+      });
+      if (isConfirmed && id != null) {
+        deleteTravel(String(id), {
+          onSuccess: () => {
+            onClose?.();
+          },
+        });
+      }
+    } else if (menuAction === TravelMenuAction.Archive) {
+      const isConfirmed = await confirm({
+        title: "Archive Trip",
+        message: "Are you sure you want to archive this trip? It will be moved to the archive.",
+        confirmText: "Archive",
+        cancelText: "Cancel",
+        type: "warning",
+      });
+      if (isConfirmed && id != null) {
+        archiveTravel(String(id), {
+          onSuccess: () => {
+            onRefresh?.();
+          },
+        });
+      }
+    } else if (menuAction === TravelMenuAction.Unarchive) {
+      const isConfirmed = await confirm({
+        title: "Unarchive Trip",
+        message: "Are you sure you want to unarchive this trip?",
+        confirmText: "Unarchive",
+        cancelText: "Cancel",
+        type: "default",
+      });
+      if (isConfirmed && id != null) {
+        unarchiveTravel(String(id), {
+          onSuccess: () => {
+            onRefresh?.();
+          },
+        });
+      }
+    }
+  };
 
   const travelId = travelPlan.travel.id;
   const isShareVisible = setShowShare ? showShare : localShowShare;
@@ -327,7 +420,8 @@ const ViewTravel = ({
         <View className="px-6 py-3 bg-white flex-row justify-between items-start relative">
           <Animated.View className="flex-1 mr-4">
             <FadeInView type="right" delay={80} duration={200}>
-              <View className="flex-row items-center gap-3">
+              <View className="flex-row items-center gap-3"
+                style={{ paddingEnd: isMinimized ? 48 : 0 }}>
                 {travelPlan.travel.status !== undefined && (
                   <View className="absolute -top-sm opacity-75">
                     <StatusBadge type={1} status={travelPlan.travel.status} />
@@ -335,8 +429,8 @@ const ViewTravel = ({
                 )}
 
                 <Text
-                  className={`${isMinimized ? "text-2xl pr-[80px] mt-lg!" : "text-4xl"} mt-sm leading-relaxed font-semibold text-secondary flex-1`}
-                  numberOfLines={isMinimized ? undefined : undefined}
+                  className={`${isMinimized ? "text-2xl  mt-lg!" : "text-4xl"} mt-sm leading-relaxed font-semibold text-secondary flex-1`}
+                  numberOfLines={isMinimized ? 1 : undefined}
                 >
                   {travelPlan.travel.title}
                 </Text>
@@ -379,10 +473,25 @@ const ViewTravel = ({
               </View>
             </FadeInView>
           </Animated.View>
+
+          {/* Action buttons: Share & More Options */}
+          <View className={`flex-row items-center absolute top-sm right-lg ${isMinimized ? "hidden" : ""}`}>
+            <TouchableOpacity
+              style={{ padding: 6 }}
+              onPress={() => setShowTravelNavigationModal(true)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityRole="button"
+              accessibilityLabel="More options"
+            >
+              <Icon name="more-vert" size={22} color={"#999"} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Tabbed Content */}
-        <Animated.View className="flex-1 mb-4">
+        <Animated.View className="flex-1 mb-4"
+          style={{ marginTop: isMinimized ? 12 : 0 }}>
           <FadeInView type="right" delay={80} duration={400} className="flex-1">
             <Tabs
               tabs={tabData}
@@ -413,6 +522,23 @@ const ViewTravel = ({
         visible={showDestinationsSheet}
         travel={travelPlan.travel}
         onClose={() => setShowDestinationsSheet(false)}
+      />
+
+      <TravelMenuNavigation
+        showModal={showTravelNavigationModal}
+        setShowModal={setShowTravelNavigationModal}
+        onSelect={handleSelectNavigationMenu}
+        travel={travelPlan?.travel}
+      />
+
+      <CreateTripModal
+        showModal={showEditTripModal}
+        setShowModal={setShowEditTripModal}
+        tripData={travelPlan?.travel}
+        mode="edit"
+        onCreated={() => {
+          onRefresh?.();
+        }}
       />
     </Portal.Host>
   );

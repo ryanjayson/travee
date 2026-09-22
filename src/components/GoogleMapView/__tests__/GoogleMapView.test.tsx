@@ -239,4 +239,21 @@ describe("GoogleMapView Component", () => {
       <GoogleMapView pins={mockPins} showConnectors={true} connectorColor="#FF0000" />
     );
   });
+
+  it("groups connectors by activity type and applies custom pin colors when connectByType is true", () => {
+    const pinsWithTypes = [
+      { id: "1", latitude: 35.68, longitude: 139.76, type: 1, color: "#10B981" },
+      { id: "2", latitude: 35.69, longitude: 139.77, type: 1, color: "#10B981" },
+      { id: "3", latitude: 35.70, longitude: 139.78, type: 2, color: "#F59E0B" },
+      { id: "4", latitude: 35.71, longitude: 139.79, type: 2, color: "#F59E0B" },
+    ];
+    const { getByTestId } = render(
+      <GoogleMapView pins={pinsWithTypes} showConnectors={true} connectByType={true} />
+    );
+    const webview = getByTestId("webview");
+    const html = webview.props.source.html;
+
+    expect(html).toContain("typeGroups[typeKey]");
+    expect(html).toContain("calculateRoadRoute(group.coords, currentRouteMode, reqId, group.color)");
+  });
 });

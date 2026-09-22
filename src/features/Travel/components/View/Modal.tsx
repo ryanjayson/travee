@@ -52,14 +52,9 @@ const ViewTripModal = ({
   }, [expanded]);
 
   const progress = Math.min(Math.max(scrollYVal / 150, 0), 1);
-  const headerBg = `rgba(255, 255, 255, ${progress})`;
-  const headerBorder = `rgba(0, 0, 0, ${progress * 0.08})`;
-
-  const r = Math.round(255 - (255 - 137) * progress);
-  const g = Math.round(255 - (255 - 147) * progress);
-  const b = Math.round(255 - (255 - 158) * progress);
-  const baseColor = `rgb(${r}, ${g}, ${b})`;
-  const iconColor = baseColor;
+  const headerBg = "#ffffff";
+  const headerBorder = `rgba(0, 0, 0, ${Math.max(progress * 0.08, 0.06)})`;
+  const iconColor = "#344054";
 
   const titleOpacity = Math.min(Math.max((scrollYVal - 40) / 60, 0), 1);
 
@@ -221,9 +216,9 @@ const ViewTripModal = ({
       }}
     >
       <StatusBar style="dark" />
-      <View style={{ flex: 1 }}>
-        {/* Content Container filling the entire screen */}
-        <View style={StyleSheet.absoluteFill}>
+      <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+        {/* Content Container filling the entire screen with top inset padding */}
+        <View style={[StyleSheet.absoluteFill, { paddingTop: insets.top + 48, backgroundColor: "#ffffff" }]}>
           {travelPlan && (
             <ViewTravel
               travelPlan={travelPlan}

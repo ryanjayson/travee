@@ -30,8 +30,8 @@ export enum ActivityPlanType {
   restaurant = 2,
   cafeOrBar = 3, // food, eat, drink, snack, coffee, bar, lounge, pub
   sightseeing = 4,
-  shoppingOrService = 5, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
-  entertainmentOrRecreation = 6, //park, museum, gym, cinema, stadium, zoo, concert
+  shopping = 5, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
+  entertainment = 6, //park, museum, gym, cinema, stadium, zoo, concert
   nature = 7, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
   hikeOrCamp = 9, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
   rest = 10,
@@ -243,10 +243,10 @@ export function getActivityPlanTypeLabel(type: ActivityPlanType): string {
       return "Cafe / Bar";
     case ActivityPlanType.sightseeing:
       return "Sightseeing";
-    case ActivityPlanType.shoppingOrService:
-      return "Shopping & Service";
-    case ActivityPlanType.entertainmentOrRecreation:
-      return "Entertainment & Recreation";
+    case ActivityPlanType.shopping:
+      return "Shopping";
+    case ActivityPlanType.entertainment:
+      return "Entertainment";
     case ActivityPlanType.nature:
       return "Nature";
     case ActivityPlanType.walk:

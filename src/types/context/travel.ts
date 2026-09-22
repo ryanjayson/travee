@@ -231,6 +231,9 @@ export interface TravelContextType {
   viewActivityId?: string | null;
   openViewActivity?: (activityId: string) => void;
   closeViewActivity?: () => void;
+
+  showActivityPinsInTripMap?: boolean;
+  setShowActivityPinsInTripMap?: (val: boolean) => void;
 }
 
 

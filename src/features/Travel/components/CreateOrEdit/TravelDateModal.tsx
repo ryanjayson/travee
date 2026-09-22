@@ -37,7 +37,6 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
   mode = "create",
   onConfirm,
 }) => {
-  const { colors } = useTheme();
   const { data: travels } = useTravels();
 
   const [tempDepartureDate, setTempDepartureDate] = useState<Date | null>(null);

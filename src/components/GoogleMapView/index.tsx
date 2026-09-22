@@ -46,6 +46,7 @@ export const GoogleMapView = ({
   connectorOpacity = 0.8,
   connectorDashed = false,
   connectorGeodesic = true,
+  connectByType = false,
   testID = "google-map-view",
 }: GoogleMapViewProps) => {
   const webViewRef = useRef<WebView>(null);
@@ -118,6 +119,7 @@ export const GoogleMapView = ({
     let map;
     let markers = [];
     let connectorPolyline = null;
+    let connectorPolylines = [];
     let initialPins = ${pinsJson};
     let currentPins = initialPins;
     let currentRouteMode = '${normalizedRouteMode}';
@@ -170,9 +172,9 @@ export const GoogleMapView = ({
       }
     }
 
-    function drawPolylinePath(coords) {
+    function drawPolylinePath(coords, color) {
       if (!coords || coords.length < 2) return;
-      if (connectorPolyline) {
+      if (!${Boolean(connectByType)} && connectorPolyline) {
         connectorPolyline.setMap(null);
         connectorPolyline = null;
       }
@@ -188,7 +190,7 @@ export const GoogleMapView = ({
         return new google.maps.LatLng(pt.lat, pt.lng);
       });
 
-      connectorPolyline = new google.maps.Polyline({
+      const polyOptions = {
         path: pathLatLngs,
         geodesic: ${Boolean(connectorGeodesic)},
         strokeColor: currentConnectorColor,
@@ -200,13 +202,26 @@ export const GoogleMapView = ({
           repeat: '16px',
         }] : undefined,
         map: map,
-      });
+      };
+      if (color) {
+        polyOptions.strokeColor = color;
+      }
+
+      const poly = new google.maps.Polyline(polyOptions);
+      connectorPolyline = poly;
+      connectorPolylines.push(poly);
     }
 
     function removeConnectorPolyline() {
       if (connectorPolyline) {
         connectorPolyline.setMap(null);
         connectorPolyline = null;
+      }
+      if (connectorPolylines && connectorPolylines.length > 0) {
+        connectorPolylines.forEach(function(p) {
+          try { p.setMap(null); } catch (e) {}
+        });
+        connectorPolylines = [];
       }
     }
 
@@ -457,12 +472,12 @@ export const GoogleMapView = ({
       });
     }
 
-    function calculateRoadRoute(coords, modeKey, reqId) {
+    function calculateRoadRoute(coords, modeKey, reqId, color) {
       const targetMode = (modeKey || currentRouteMode || '${normalizedRouteMode}').toUpperCase();
       console.log('[GoogleMapView] calculateRoadRoute start for ' + coords.length + ' points, mode: ' + targetMode);
 
       if (targetMode === 'FLIGHT' || targetMode === 'AIR' || targetMode === 'GEODESIC') {
-        drawPolylinePath(coords);
+        drawPolylinePath(coords, color);
         return;
       }
 
@@ -471,7 +486,7 @@ export const GoogleMapView = ({
         if (reqId !== activeRouteRequestId) return;
         if (googlePath && googlePath.length > 0) {
           console.log('[GoogleMapView] Applying road path from Google Routes API! Points:', googlePath.length);
-          drawPolylinePath(googlePath);
+          drawPolylinePath(googlePath, color);
           return;
         }
         console.log('[GoogleMapView] Google Routes API returned no path, proceeding to OSRM...');
@@ -485,7 +500,7 @@ export const GoogleMapView = ({
         fetchOsrmRoute(coords, targetMode).then(function(osrmPath) {
           if (reqId !== activeRouteRequestId) return;
           if (osrmPath && osrmPath.length > 0) {
-            drawPolylinePath(osrmPath);
+            drawPolylinePath(osrmPath, color);
             return;
           }
           tryLegacyDirections();
@@ -518,12 +533,12 @@ export const GoogleMapView = ({
               }
             }
             if (fullPath.length > 0) {
-              drawPolylinePath(fullPath);
+              drawPolylinePath(fullPath, color);
             } else {
-              drawPolylinePath(coords);
+              drawPolylinePath(coords, color);
             }
           }).catch(function() {
-            drawPolylinePath(coords);
+            drawPolylinePath(coords, color);
           });
           return;
         }
@@ -546,9 +561,9 @@ export const GoogleMapView = ({
             if (reqId !== activeRouteRequestId) return;
             if (status === google.maps.DirectionsStatus.OK && response && response.routes && response.routes.length > 0) {
               const roadPath = extractRoutePath(response.routes[0]);
-              if (roadPath.length > 0) drawPolylinePath(roadPath);
+              if (roadPath.length > 0) drawPolylinePath(roadPath, color);
             } else {
-              drawPolylinePath(coords);
+              drawPolylinePath(coords, color);
             }
           });
         }
@@ -597,12 +612,40 @@ export const GoogleMapView = ({
         markers.push(marker);
       });
 
-      if (${Boolean(showConnectors)} && pathCoordinates.length > 1) {
-        const reqId = ++activeRouteRequestId;
-        try {
-          calculateRoadRoute(pathCoordinates, currentRouteMode, reqId);
-        } catch (err) {
-          console.warn('Error initiating road route calculation:', err);
+      if (${Boolean(showConnectors)}) {
+        if (${Boolean(connectByType)}) {
+          const typeGroups = {};
+          pinsList.forEach(function(pin) {
+            if (pin.type === undefined || pin.type === null || pin.type === '') return;
+            if (typeof pin.latitude !== 'number' || typeof pin.longitude !== 'number') return;
+            const typeKey = String(pin.type);
+            if (!typeGroups[typeKey]) {
+              typeGroups[typeKey] = {
+                color: pin.color || currentConnectorColor,
+                coords: [],
+              };
+            }
+            typeGroups[typeKey].coords.push({ lat: pin.latitude, lng: pin.longitude });
+          });
+
+          Object.keys(typeGroups).forEach(function(typeKey) {
+            const group = typeGroups[typeKey];
+            if (group.coords.length > 1) {
+              const reqId = ++activeRouteRequestId;
+              try {
+                calculateRoadRoute(group.coords, currentRouteMode, reqId, group.color);
+              } catch (err) {
+                console.warn('Error calculating route for type ' + typeKey + ':', err);
+              }
+            }
+          });
+        } else if (pathCoordinates.length > 1) {
+          const reqId = ++activeRouteRequestId;
+          try {
+            calculateRoadRoute(pathCoordinates, currentRouteMode, reqId, currentConnectorColor);
+          } catch (err) {
+            console.warn('Error initiating road route calculation:', err);
+          }
         }
       }
 
@@ -743,6 +786,7 @@ export const GoogleMapView = ({
     showBusinesses,
     customMapStyles,
     showConnectors,
+    connectByType,
     normalizedRouteMode,
     connectorColor,
     connectorWidth,

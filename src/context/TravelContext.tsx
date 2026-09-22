@@ -131,6 +131,9 @@ const initialContextValue: TravelContextType = {
   viewActivityId: null,
   openViewActivity: () => { },
   closeViewActivity: () => { },
+
+  showActivityPinsInTripMap: true,
+  setShowActivityPinsInTripMap: () => { },
 };
 
 // Create the typed Context
@@ -206,6 +209,7 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
   });
 
   const [viewActivityId, setViewActivityId] = useState<string | null>(null);
+  const [showActivityPinsInTripMap, setShowActivityPinsInTripMap] = useState<boolean>(true);
 
   const openViewActivity = useCallback((id: string) => {
     setViewActivityId(id);
@@ -560,6 +564,8 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       viewActivityId,
       openViewActivity,
       closeViewActivity,
+      showActivityPinsInTripMap,
+      setShowActivityPinsInTripMap,
     }),
     [
       expenseModal,
@@ -605,6 +611,8 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       viewActivityId,
       openViewActivity,
       closeViewActivity,
+      showActivityPinsInTripMap,
+      setShowActivityPinsInTripMap,
     ]
   );
 

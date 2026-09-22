@@ -416,6 +416,9 @@ const DraggableSectionItem = ({
   );
 };
 
+// Cache to persist expanded section IDs across bottom sheet / component transitions
+const sectionExpandedCache: Record<string, Record<string, boolean>> = {};
+
 const SectionAccordion = ({
   travelPlan,
   onRefresh,
@@ -425,7 +428,13 @@ const SectionAccordion = ({
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { colors } = useTheme();
-  const { openActivityModal, openActivityTypeModal, openViewActivity } = useTravelContext();
+  const {
+    openActivityModal,
+    openActivityTypeModal,
+    openViewActivity,
+    showActivityPinsInTripMap = true,
+    setShowActivityPinsInTripMap,
+  } = useTravelContext();
   const [isAddSectionVisible, setIsAddSectionVisible] = useState(false);
   const [selectedViewActivity, setSelectedViewActivity] = useState<{ id: string; travelId?: string } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -653,7 +662,22 @@ const SectionAccordion = ({
 
   // --- Selection & Expansion State ---
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  const [expandedSectionIds, setExpandedSectionIds] = useState<Record<string, boolean>>({});
+  const [expandedSectionIds, setExpandedSectionIds] = useState<Record<string, boolean>>(() => {
+    return travelId && sectionExpandedCache[travelId] ? { ...sectionExpandedCache[travelId] } : {};
+  });
+
+  useEffect(() => {
+    if (travelId) {
+      sectionExpandedCache[travelId] = expandedSectionIds;
+    }
+  }, [expandedSectionIds, travelId]);
+
+  useEffect(() => {
+    if (travelId && sectionExpandedCache[travelId]) {
+      setExpandedSectionIds({ ...sectionExpandedCache[travelId] });
+    }
+  }, [travelId]);
+
   const sectionPositions = useRef<Record<string, number>>({});
   const horizontalScrollViewRef = useRef<ScrollView>(null);
 
@@ -1492,10 +1516,10 @@ const SectionAccordion = ({
                 }}
                 className="flex-1 z-10 px-2 w-4xl h-4xl rounded-full"
               >
-                <View className={`${viewMode === 'narrow' ? 'hidden' : 'left-9px'}`}>
+                {/* <View className={`${viewMode === 'narrow' ? 'hidden' : 'left-9px'}`}>
                   <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full `} />
                   <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full `} />
-                </View>
+                </View> */}
                 <Ionicons name="flag" size={20} color="#F97066" />
               </View>
             )}
@@ -1676,6 +1700,26 @@ const SectionAccordion = ({
                 onValueChange={handleSectionTabNavToggle}
                 trackColor={{ false: colors.outline, true: `${colors.primary}80` }}
                 thumbColor={showSectionTabNavigation ? colors.primary : colors.outlineVariant}
+                ios_backgroundColor={colors.outline}
+              />
+            </View>
+
+            {/* Divider */}
+            <View className="h-1px mb-4" style={{ backgroundColor: colors.outlineVariant }} />
+
+            {/* Show Activity Pins in Trip Map Row */}
+            <View className="flex-row items-center justify-between mb-6">
+              <View className="pr-8 flex-1">
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>Show activity pins in Trip map</Text>
+                <Text className="text-base text-tertiary">Display activity pins and markers on the trip map</Text>
+              </View>
+              <Switch
+                value={showActivityPinsInTripMap}
+                onValueChange={(val) => {
+                  setShowActivityPinsInTripMap?.(val);
+                }}
+                trackColor={{ false: colors.outline, true: `${colors.primary}80` }}
+                thumbColor={showActivityPinsInTripMap ? colors.primary : colors.outlineVariant}
                 ios_backgroundColor={colors.outline}
               />
             </View>

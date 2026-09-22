@@ -236,6 +236,129 @@ const matchEntertainmentSubtype = (poi: any): string | null => {
   return null;
 };
 
+export const buildDestinationDtoFromGooglePlace = (location: GooglePlaceLocation): DestinationDto => {
+  const name = location.name || location.address || "";
+  const address = location.address || name;
+  let city = "";
+  let regionOrState = "";
+  let country = "";
+
+  const raw = location.raw;
+
+  if (raw && Array.isArray(raw.addressComponents)) {
+    raw.addressComponents.forEach((c: any) => {
+      const types = c.types || [];
+      if (types.includes("locality") || types.includes("postal_town") || (!city && types.includes("sublocality"))) {
+        city = c.longText || c.shortText || city;
+      }
+      if (types.includes("administrative_area_level_1")) {
+        regionOrState = c.longText || c.shortText || regionOrState;
+      }
+      if (types.includes("country")) {
+        country = c.longText || c.shortText || country;
+      }
+    });
+  } else if (raw && Array.isArray(raw.address_components)) {
+    raw.address_components.forEach((c: any) => {
+      const types = c.types || [];
+      if (types.includes("locality") || types.includes("postal_town") || (!city && types.includes("sublocality"))) {
+        city = c.long_name || c.short_name || city;
+      }
+      if (types.includes("administrative_area_level_1")) {
+        regionOrState = c.long_name || c.short_name || regionOrState;
+      }
+      if (types.includes("country")) {
+        country = c.long_name || c.short_name || country;
+      }
+    });
+  } else if (raw?.properties) {
+    city = raw.properties.city || raw.properties.town || raw.properties.village || "";
+    regionOrState = raw.properties.state || "";
+    country = raw.properties.country || "";
+  } else if (raw && Array.isArray(raw.context)) {
+    raw.context.forEach((c: any) => {
+      if (c.id?.startsWith("country")) country = c.text || country;
+      else if (c.id?.startsWith("region")) regionOrState = c.text || regionOrState;
+      else if (c.id?.startsWith("place")) city = c.text || city;
+    });
+  }
+
+  if (!city && location.secondaryText) {
+    const parts = location.secondaryText.split(",").map((p: string) => p.trim()).filter(Boolean);
+    if (parts.length > 1) {
+      city = parts[0];
+      if (!country) country = parts[parts.length - 1];
+    } else if (parts.length === 1) {
+      city = parts[0];
+    }
+  } else if (!city && location.address) {
+    const parts = location.address.split(",").map((p: string) => p.trim()).filter(Boolean);
+    if (parts.length >= 3) {
+      city = parts[parts.length - 3] || parts[parts.length - 2];
+      if (!country) country = parts[parts.length - 1];
+    } else if (parts.length === 2) {
+      city = parts[0];
+      if (!country) country = parts[1];
+    }
+  }
+
+  if (!country && location.address) {
+    const parts = location.address.split(",").map((p: string) => p.trim()).filter(Boolean);
+    if (parts.length > 0) {
+      country = parts[parts.length - 1];
+    }
+  }
+
+  return {
+    id: location.placeId || "",
+    name,
+    city: city || name,
+    regionOrState: regionOrState || undefined,
+    country: country || undefined,
+    address: address || undefined,
+    placeId: location.placeId || undefined,
+    coordinates: {
+      latitude: location.coordinates?.latitude || 0,
+      longitude: location.coordinates?.longitude || 0,
+    },
+  };
+};
+
+export const buildDestinationDtoFromPinnedLocation = (location: PinnedLocation): DestinationDto => {
+  const name = location.name || location.address || "";
+  const address = location.address || name;
+  let city = "";
+  let regionOrState = "";
+  let country = "";
+
+  if (location.address) {
+    const parts = location.address.split(",").map((p: string) => p.trim()).filter(Boolean);
+    if (parts.length >= 3) {
+      city = parts[parts.length - 3] || parts[parts.length - 2];
+      regionOrState = parts[parts.length - 2];
+      country = parts[parts.length - 1];
+    } else if (parts.length === 2) {
+      city = parts[0];
+      country = parts[1];
+    } else if (parts.length === 1) {
+      city = parts[0];
+    }
+  }
+
+  return {
+    id: (location as any).id || location.placeId || "",
+    name,
+    city: city || name,
+    regionOrState: regionOrState || undefined,
+    country: country || undefined,
+    address: address || undefined,
+    placeId: location.placeId || undefined,
+    coordinates: {
+      latitude: location.coordinates?.latitude || 0,
+      longitude: location.coordinates?.longitude || 0,
+    },
+  };
+};
 
 const EditActivity = ({
   itinerarySectionId,
@@ -321,15 +444,15 @@ const EditActivity = ({
     // 3. DestinationData: set coordinates and detail fields based on departure airport
     const depCoords = departureAirport?.coordinates
       ? {
-          latitude: departureAirport.coordinates.lat,
-          longitude: departureAirport.coordinates.lon,
-        }
+        latitude: departureAirport.coordinates.lat,
+        longitude: departureAirport.coordinates.lon,
+      }
       : null;
     const arrCoords = arrivalAirport?.coordinates
       ? {
-          latitude: arrivalAirport.coordinates.lat,
-          longitude: arrivalAirport.coordinates.lon,
-        }
+        latitude: arrivalAirport.coordinates.lat,
+        longitude: arrivalAirport.coordinates.lon,
+      }
       : null;
 
     setFieldValue("destinationData", {
@@ -841,37 +964,47 @@ const EditActivity = ({
               ? { latitude: arrivalAirportCoordsRef.current.lat, longitude: arrivalAirportCoordsRef.current.lon }
               : (values.destinationData as any)?.arrivalCoordinates,
           }
-          : (values.type === ActivityType.transit || values.type === ActivityType.rideRental) &&
-            (values.transportationDetails?.pickupLocation?.coordinates ||
-              values.transportationDetails?.dropoffLocation?.coordinates ||
-              values.rideRentalDetails?.pickupLocation?.coordinates ||
-              values.rideRentalDetails?.dropoffLocation?.coordinates ||
-              (values.destinationData as any)?.pickupCoordinates ||
-              (values.destinationData as any)?.dropoffCoordinates)
-            ? {
-              ...(values.destinationData || {}),
-              pickupCoordinates:
-                values.transportationDetails?.pickupLocation?.coordinates ||
-                values.rideRentalDetails?.pickupLocation?.coordinates ||
-                (values.destinationData as any)?.pickupCoordinates,
-              dropoffCoordinates:
-                values.transportationDetails?.dropoffLocation?.coordinates ||
-                values.rideRentalDetails?.dropoffLocation?.coordinates ||
-                (values.destinationData as any)?.dropoffCoordinates,
-              pickupLocation:
-                typeof values.transportationDetails?.pickupLocation === "object"
+          : (values.type === ActivityType.transit || values.type === ActivityType.rideRental)
+            ? (() => {
+              const isTransit = values.type === ActivityType.transit;
+              const pickLoc = isTransit
+                ? (values.transportationDetails?.pickupLocation && typeof values.transportationDetails.pickupLocation === "object"
                   ? values.transportationDetails.pickupLocation
-                  : typeof values.rideRentalDetails?.pickupLocation === "object"
-                    ? values.rideRentalDetails.pickupLocation
-                    : (values.destinationData as any)?.pickupLocation,
-              dropoffLocation:
-                typeof values.transportationDetails?.dropoffLocation === "object"
+                  : (values.destinationData as any)?.pickupLocation || null)
+                : (values.rideRentalDetails?.pickupLocation && typeof values.rideRentalDetails.pickupLocation === "object"
+                  ? values.rideRentalDetails.pickupLocation
+                  : (values.destinationData as any)?.pickupLocation || null);
+
+              const dropLoc = isTransit
+                ? (values.transportationDetails?.dropoffLocation && typeof values.transportationDetails.dropoffLocation === "object"
                   ? values.transportationDetails.dropoffLocation
-                  : typeof values.rideRentalDetails?.dropoffLocation === "object"
-                    ? values.rideRentalDetails.dropoffLocation
-                    : (values.destinationData as any)?.dropoffLocation,
-            }
-          : values.destinationData,
+                  : (values.destinationData as any)?.dropoffLocation || null)
+                : (values.rideRentalDetails?.dropoffLocation && typeof values.rideRentalDetails.dropoffLocation === "object"
+                  ? values.rideRentalDetails.dropoffLocation
+                  : (values.destinationData as any)?.dropoffLocation || null);
+
+              const existingDestData = (values.destinationData || {}) as any;
+              const primaryLoc = dropLoc || pickLoc;
+
+              return {
+                ...existingDestData,
+                id: existingDestData.id || primaryLoc?.id || primaryLoc?.placeId || undefined,
+                name: existingDestData.name || primaryLoc?.name || undefined,
+                city: existingDestData.city || primaryLoc?.city || undefined,
+                country: existingDestData.country || primaryLoc?.country || undefined,
+                regionOrState: existingDestData.regionOrState || primaryLoc?.regionOrState || undefined,
+                address: existingDestData.address || primaryLoc?.address || undefined,
+                placeId: existingDestData.placeId || primaryLoc?.placeId || undefined,
+                coordinates: (existingDestData.coordinates?.latitude && existingDestData.coordinates?.latitude !== 0)
+                  ? existingDestData.coordinates
+                  : (primaryLoc?.coordinates || { latitude: 0, longitude: 0 }),
+                pickupCoordinates: pickLoc?.coordinates || existingDestData.pickupCoordinates || null,
+                dropoffCoordinates: dropLoc?.coordinates || existingDestData.dropoffCoordinates || null,
+                pickupLocation: pickLoc,
+                dropoffLocation: dropLoc,
+              };
+            })()
+            : values.destinationData,
         customTags: values.customTags || [],
         images: values.images,
         isOffline: true,
@@ -928,12 +1061,12 @@ const EditActivity = ({
             pickupLocation: values.transportationDetails.pickupLocation
               ? (typeof values.transportationDetails.pickupLocation === "string"
                 ? values.transportationDetails.pickupLocation
-                : values.transportationDetails.pickupLocation.name || values.transportationDetails.pickupLocation.city || "")
+                : values.transportationDetails.pickupLocation.name || values.transportationDetails.pickupLocation.address || values.transportationDetails.pickupLocation.city || "")
               : null,
             dropoffLocation: values.transportationDetails.dropoffLocation
               ? (typeof values.transportationDetails.dropoffLocation === "string"
                 ? values.transportationDetails.dropoffLocation
-                : values.transportationDetails.dropoffLocation.name || values.transportationDetails.dropoffLocation.city || "")
+                : values.transportationDetails.dropoffLocation.name || values.transportationDetails.dropoffLocation.address || values.transportationDetails.dropoffLocation.city || "")
               : null,
             departureDateTime: finalStartDate
               ? finalStartDate
@@ -961,12 +1094,12 @@ const EditActivity = ({
             pickupLocation: values.rideRentalDetails.pickupLocation
               ? (typeof values.rideRentalDetails.pickupLocation === "string"
                 ? values.rideRentalDetails.pickupLocation
-                : values.rideRentalDetails.pickupLocation.name || values.rideRentalDetails.pickupLocation.city || "")
+                : values.rideRentalDetails.pickupLocation.name || values.rideRentalDetails.pickupLocation.address || values.rideRentalDetails.pickupLocation.city || "")
               : null,
             dropoffLocation: values.rideRentalDetails.dropoffLocation
               ? (typeof values.rideRentalDetails.dropoffLocation === "string"
                 ? values.rideRentalDetails.dropoffLocation
-                : values.rideRentalDetails.dropoffLocation.name || values.rideRentalDetails.dropoffLocation.city || "")
+                : values.rideRentalDetails.dropoffLocation.name || values.rideRentalDetails.dropoffLocation.address || values.rideRentalDetails.dropoffLocation.city || "")
               : null,
             rentalStartDateTime: finalStartDate || (values.rideRentalDetails.rentalStartDateTime && new Date(values.rideRentalDetails.rentalStartDateTime).getTime() > 0
               ? new Date(values.rideRentalDetails.rentalStartDateTime)
@@ -1155,26 +1288,52 @@ const EditActivity = ({
     transportationDetails: {
       mode: itineraryActivity?.transportationDetails?.mode || null,
       operatorProvider: itineraryActivity?.transportationDetails?.operatorProvider || "",
-      pickupLocation: (itineraryActivity?.transportationDetails?.pickupLocation && typeof itineraryActivity.transportationDetails.pickupLocation === "object")
-        ? itineraryActivity.transportationDetails.pickupLocation as DestinationDto
-        : itineraryActivity?.transportationDetails?.pickupLocation
-          ? {
+      pickupLocation: (() => {
+        const destPick = (itineraryActivity?.destinationData as any)?.pickupLocation;
+        if (destPick && typeof destPick === "object" && destPick.name) {
+          return destPick as DestinationDto;
+        }
+        const transPick = itineraryActivity?.transportationDetails?.pickupLocation;
+        if (transPick && typeof transPick === "object") {
+          return transPick as DestinationDto;
+        }
+        if (typeof transPick === "string" && transPick.trim()) {
+          try {
+            const parsed = JSON.parse(transPick);
+            if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
+          } catch {}
+          return {
             id: "",
-            name: String(itineraryActivity.transportationDetails.pickupLocation),
-            city: String(itineraryActivity.transportationDetails.pickupLocation),
-            coordinates: { latitude: 0, longitude: 0 },
-          }
-          : null,
-      dropoffLocation: (itineraryActivity?.transportationDetails?.dropoffLocation && typeof itineraryActivity.transportationDetails.dropoffLocation === "object")
-        ? itineraryActivity.transportationDetails.dropoffLocation as DestinationDto
-        : itineraryActivity?.transportationDetails?.dropoffLocation
-          ? {
+            name: transPick,
+            city: transPick,
+            coordinates: (itineraryActivity?.destinationData as any)?.pickupCoordinates || { latitude: 0, longitude: 0 },
+          } as DestinationDto;
+        }
+        return (destPick as DestinationDto) || null;
+      })(),
+      dropoffLocation: (() => {
+        const destDrop = (itineraryActivity?.destinationData as any)?.dropoffLocation;
+        if (destDrop && typeof destDrop === "object" && destDrop.name) {
+          return destDrop as DestinationDto;
+        }
+        const transDrop = itineraryActivity?.transportationDetails?.dropoffLocation;
+        if (transDrop && typeof transDrop === "object") {
+          return transDrop as DestinationDto;
+        }
+        if (typeof transDrop === "string" && transDrop.trim()) {
+          try {
+            const parsed = JSON.parse(transDrop);
+            if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
+          } catch {}
+          return {
             id: "",
-            name: String(itineraryActivity.transportationDetails.dropoffLocation),
-            city: String(itineraryActivity.transportationDetails.dropoffLocation),
-            coordinates: { latitude: 0, longitude: 0 },
-          }
-          : null,
+            name: transDrop,
+            city: transDrop,
+            coordinates: (itineraryActivity?.destinationData as any)?.dropoffCoordinates || { latitude: 0, longitude: 0 },
+          } as DestinationDto;
+        }
+        return (destDrop as DestinationDto) || null;
+      })(),
       departureDateTime: itineraryActivity?.transportationDetails?.departureDateTime
         ? new Date(itineraryActivity.transportationDetails.departureDateTime)
         : null,
@@ -1191,26 +1350,52 @@ const EditActivity = ({
     rideRentalDetails: {
       vehicleType: itineraryActivity?.rideRentalDetails?.vehicleType || null,
       vehicleModel: itineraryActivity?.rideRentalDetails?.vehicleModel || "",
-      pickupLocation: (itineraryActivity?.rideRentalDetails?.pickupLocation && typeof itineraryActivity.rideRentalDetails.pickupLocation === "object")
-        ? itineraryActivity.rideRentalDetails.pickupLocation as DestinationDto
-        : itineraryActivity?.rideRentalDetails?.pickupLocation
-          ? {
+      pickupLocation: (() => {
+        const destPick = (itineraryActivity?.destinationData as any)?.pickupLocation;
+        if (destPick && typeof destPick === "object" && destPick.name) {
+          return destPick as DestinationDto;
+        }
+        const ridePick = itineraryActivity?.rideRentalDetails?.pickupLocation;
+        if (ridePick && typeof ridePick === "object") {
+          return ridePick as DestinationDto;
+        }
+        if (typeof ridePick === "string" && ridePick.trim()) {
+          try {
+            const parsed = JSON.parse(ridePick);
+            if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
+          } catch {}
+          return {
             id: "",
-            name: String(itineraryActivity.rideRentalDetails.pickupLocation),
-            city: String(itineraryActivity.rideRentalDetails.pickupLocation),
-            coordinates: { latitude: 0, longitude: 0 },
-          }
-          : null,
-      dropoffLocation: (itineraryActivity?.rideRentalDetails?.dropoffLocation && typeof itineraryActivity.rideRentalDetails.dropoffLocation === "object")
-        ? itineraryActivity.rideRentalDetails.dropoffLocation as DestinationDto
-        : itineraryActivity?.rideRentalDetails?.dropoffLocation
-          ? {
+            name: ridePick,
+            city: ridePick,
+            coordinates: (itineraryActivity?.destinationData as any)?.pickupCoordinates || { latitude: 0, longitude: 0 },
+          } as DestinationDto;
+        }
+        return (destPick as DestinationDto) || null;
+      })(),
+      dropoffLocation: (() => {
+        const destDrop = (itineraryActivity?.destinationData as any)?.dropoffLocation;
+        if (destDrop && typeof destDrop === "object" && destDrop.name) {
+          return destDrop as DestinationDto;
+        }
+        const rideDrop = itineraryActivity?.rideRentalDetails?.dropoffLocation;
+        if (rideDrop && typeof rideDrop === "object") {
+          return rideDrop as DestinationDto;
+        }
+        if (typeof rideDrop === "string" && rideDrop.trim()) {
+          try {
+            const parsed = JSON.parse(rideDrop);
+            if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
+          } catch {}
+          return {
             id: "",
-            name: String(itineraryActivity.rideRentalDetails.dropoffLocation),
-            city: String(itineraryActivity.rideRentalDetails.dropoffLocation),
-            coordinates: { latitude: 0, longitude: 0 },
-          }
-          : null,
+            name: rideDrop,
+            city: rideDrop,
+            coordinates: (itineraryActivity?.destinationData as any)?.dropoffCoordinates || { latitude: 0, longitude: 0 },
+          } as DestinationDto;
+        }
+        return (destDrop as DestinationDto) || null;
+      })(),
       rentalStartDateTime: itineraryActivity?.rideRentalDetails?.rentalStartDateTime
         ? new Date(itineraryActivity.rideRentalDetails.rentalStartDateTime)
         : null,
@@ -1430,7 +1615,7 @@ const EditActivity = ({
                       >
                         <Ionicons name="location-outline" size={17} color={activityColor} />
                         <Text className="text-base font-semibold text-secondary/80">
-                          Place Details |
+                          Place Details
                         </Text>
                         <Text
                           className={`text-base  max-w-[200px] ${hasLocation ? "text-secondary/80" : "text-secondary/50"
@@ -2491,16 +2676,73 @@ const EditActivity = ({
               country={travelPlan?.travel?.destinationData?.country}
               onSelect={(location: PinnedLocation) => {
                 if (mapPinTargetField) {
-                  const placeText = mapPinTargetField === "title"
-                    ? (location.name || location.address || "")
-                    : (location.address || location.name || "");
-                  setFieldValue(mapPinTargetField, placeText);
-                  if (mapPinTargetField === "title") {
-                    if (!values.destination) {
-                      setFieldValue("destination", placeText);
+                  if (
+                    mapPinTargetField === "transportationDetails.pickupLocation" ||
+                    mapPinTargetField === "rideRentalDetails.pickupLocation"
+                  ) {
+                    const destLocation = buildDestinationDtoFromPinnedLocation(location);
+                    setFieldValue(mapPinTargetField, destLocation);
+                    setFieldValue("destinationData", {
+                      ...(values.destinationData || {}),
+                      id: (values.destinationData as any)?.id || destLocation.id || undefined,
+                      name: (values.destinationData as any)?.name || destLocation.name || undefined,
+                      city: (values.destinationData as any)?.city || destLocation.city || undefined,
+                      country: (values.destinationData as any)?.country || destLocation.country || undefined,
+                      regionOrState: (values.destinationData as any)?.regionOrState || destLocation.regionOrState || undefined,
+                      address: (values.destinationData as any)?.address || destLocation.address || undefined,
+                      coordinates: ((values.destinationData as any)?.coordinates?.latitude && (values.destinationData as any)?.coordinates?.latitude !== 0)
+                        ? (values.destinationData as any).coordinates
+                        : destLocation.coordinates,
+                      pickupCoordinates: destLocation.coordinates,
+                      pickupLocation: destLocation,
+                    });
+                    if (!values.destination && destLocation.address) {
+                      setFieldValue("destination", destLocation.address);
                     }
-                    if (location.coordinates) {
-                      setFieldValue("destinationData", {
+                  } else if (
+                    mapPinTargetField === "transportationDetails.dropoffLocation" ||
+                    mapPinTargetField === "rideRentalDetails.dropoffLocation"
+                  ) {
+                    const destLocation = buildDestinationDtoFromPinnedLocation(location);
+                    setFieldValue(mapPinTargetField, destLocation);
+                    setFieldValue("destinationData", {
+                      ...(values.destinationData || {}),
+                      id: (values.destinationData as any)?.id || destLocation.id || undefined,
+                      name: (values.destinationData as any)?.name || destLocation.name || undefined,
+                      city: (values.destinationData as any)?.city || destLocation.city || undefined,
+                      country: (values.destinationData as any)?.country || destLocation.country || undefined,
+                      regionOrState: (values.destinationData as any)?.regionOrState || destLocation.regionOrState || undefined,
+                      address: (values.destinationData as any)?.address || destLocation.address || undefined,
+                      coordinates: ((values.destinationData as any)?.coordinates?.latitude && (values.destinationData as any)?.coordinates?.latitude !== 0)
+                        ? (values.destinationData as any).coordinates
+                        : destLocation.coordinates,
+                      dropoffCoordinates: destLocation.coordinates,
+                      dropoffLocation: destLocation,
+                    });
+                    if (!values.destination && destLocation.address) {
+                      setFieldValue("destination", destLocation.address);
+                    }
+                  } else {
+                    const placeText = mapPinTargetField === "title"
+                      ? (location.name || location.address || "")
+                      : (location.address || location.name || "");
+                    setFieldValue(mapPinTargetField, placeText);
+                    if (mapPinTargetField === "title") {
+                      if (!values.destination) {
+                        setFieldValue("destination", placeText);
+                      }
+                      if (location.coordinates) {
+                        setFieldValue("destinationData", {
+                          id: (location as any).id || location.placeId || undefined,
+                          coordinates: {
+                            latitude: location.coordinates.latitude,
+                            longitude: location.coordinates.longitude,
+                          },
+                        });
+                      }
+                    }
+                    if (mapPinTargetField === "shoppingDetails.address" && location.coordinates) {
+                      setFieldValue("shoppingDetails.destinationAddressData", {
                         id: (location as any).id || location.placeId || undefined,
                         coordinates: {
                           latitude: location.coordinates.latitude,
@@ -2508,78 +2750,33 @@ const EditActivity = ({
                         },
                       });
                     }
-                  }
-                  if (mapPinTargetField === "shoppingDetails.address" && location.coordinates) {
-                    setFieldValue("shoppingDetails.destinationAddressData", {
-                      id: (location as any).id || location.placeId || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
-                  if (mapPinTargetField === "natureDetails.address" && location.coordinates) {
-                    setFieldValue("natureDetails.destinationAddressData", {
-                      id: (location as any).id || location.placeId || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
-                  if (mapPinTargetField === "entertainmentDetails.address" && location.coordinates) {
-                    setFieldValue("entertainmentDetails.destinationAddressData", {
-                      id: (location as any).id || location.placeId || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
-                  if (mapPinTargetField === "hikeOrCampDetails.address" && location.coordinates) {
-                    setFieldValue("hikeOrCampDetails.destinationAddressData", {
-                      id: (location as any).id || location.placeId || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
-                  if (
-                    (mapPinTargetField === "transportationDetails.pickupLocation" ||
-                      mapPinTargetField === "rideRentalDetails.pickupLocation") &&
-                    location.coordinates
-                  ) {
-                    setFieldValue("destinationData", {
-                      ...(values.destinationData || {}),
-                      pickupCoordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                      pickupLocation: {
-                        name: location.name || location.address,
-                        coordinates: location.coordinates,
-                        address: location.address,
-                      },
-                    });
-                  }
-                  if (
-                    (mapPinTargetField === "transportationDetails.dropoffLocation" ||
-                      mapPinTargetField === "rideRentalDetails.dropoffLocation") &&
-                    location.coordinates
-                  ) {
-                    setFieldValue("destinationData", {
-                      ...(values.destinationData || {}),
-                      dropoffCoordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                      dropoffLocation: {
-                        name: location.name || location.address,
-                        coordinates: location.coordinates,
-                        address: location.address,
-                      },
-                    });
+                    if (mapPinTargetField === "natureDetails.address" && location.coordinates) {
+                      setFieldValue("natureDetails.destinationAddressData", {
+                        id: (location as any).id || location.placeId || undefined,
+                        coordinates: {
+                          latitude: location.coordinates.latitude,
+                          longitude: location.coordinates.longitude,
+                        },
+                      });
+                    }
+                    if (mapPinTargetField === "entertainmentDetails.address" && location.coordinates) {
+                      setFieldValue("entertainmentDetails.destinationAddressData", {
+                        id: (location as any).id || location.placeId || undefined,
+                        coordinates: {
+                          latitude: location.coordinates.latitude,
+                          longitude: location.coordinates.longitude,
+                        },
+                      });
+                    }
+                    if (mapPinTargetField === "hikeOrCampDetails.address" && location.coordinates) {
+                      setFieldValue("hikeOrCampDetails.destinationAddressData", {
+                        id: (location as any).id || location.placeId || undefined,
+                        coordinates: {
+                          latitude: location.coordinates.latitude,
+                          longitude: location.coordinates.longitude,
+                        },
+                      });
+                    }
                   }
                 }
                 setShowMapPinModal(false);
@@ -2670,17 +2867,9 @@ const EditActivity = ({
               destinationCoordinates={travelPlan?.travel?.destinationData?.coordinates}
               country={travelPlan?.travel?.destinationData?.country}
               onSelect={(location: GooglePlaceLocation) => {
-                const placeName = location.name || location.address || "";
-                const destAddress = location.address || placeName;
-                const destLocation: DestinationDto = {
-                  id: location.placeId || "",
-                  name: location.name || location.address || "",
-                  city: location.secondaryText || location.address || "",
-                  coordinates: {
-                    latitude: location.coordinates?.latitude || 0,
-                    longitude: location.coordinates?.longitude || 0,
-                  },
-                };
+                const destLocation = buildDestinationDtoFromGooglePlace(location);
+                const placeName = destLocation.name || location.address || "";
+                const destAddress = location.address || destLocation.address || placeName;
 
                 if (googleSearchTarget === "operatorProvider") {
                   setFieldValue("transportationDetails.operatorProvider", placeName);
@@ -2689,40 +2878,27 @@ const EditActivity = ({
                   setFieldValue("destination", destAddress);
                   setFieldValue("rideRentalDetails.pickupLocation", destLocation);
                   setFieldValue("rideRentalDetails.dropoffLocation", destLocation);
-                  if (location.coordinates) {
-                    setFieldValue("destinationData", {
-                      id: location.placeId || undefined,
-                      name: location.name || undefined,
-                      city: location.secondaryText || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
+                  setFieldValue("destinationData", destLocation);
                 } else if (googleSearchTarget === "pickupLocation") {
                   if (values.type === ActivityType.rideRental) {
                     setFieldValue("rideRentalDetails.pickupLocation", destLocation);
                   } else {
                     setFieldValue("transportationDetails.pickupLocation", destLocation);
                   }
-                  if (location.coordinates) {
-                    setFieldValue("destinationData", {
-                      ...(values.destinationData || {}),
-                      id: location.placeId || (values.destinationData as any)?.id || undefined,
-                      name: location.name || (values.destinationData as any)?.name || undefined,
-                      city: location.secondaryText || (values.destinationData as any)?.city || undefined,
-                      coordinates: (values.destinationData as any)?.coordinates || {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                      pickupCoordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                      pickupLocation: destLocation,
-                    });
-                  }
+                  setFieldValue("destinationData", {
+                    ...(values.destinationData || {}),
+                    id: (values.destinationData as any)?.id || destLocation.id || undefined,
+                    name: (values.destinationData as any)?.name || destLocation.name || undefined,
+                    city: (values.destinationData as any)?.city || destLocation.city || undefined,
+                    country: (values.destinationData as any)?.country || destLocation.country || undefined,
+                    regionOrState: (values.destinationData as any)?.regionOrState || destLocation.regionOrState || undefined,
+                    address: (values.destinationData as any)?.address || destLocation.address || undefined,
+                    coordinates: ((values.destinationData as any)?.coordinates?.latitude && (values.destinationData as any)?.coordinates?.latitude !== 0)
+                      ? (values.destinationData as any).coordinates
+                      : destLocation.coordinates,
+                    pickupCoordinates: destLocation.coordinates,
+                    pickupLocation: destLocation,
+                  });
                   if (!values.destination && destAddress) {
                     setFieldValue("destination", destAddress);
                   }
@@ -2732,38 +2908,33 @@ const EditActivity = ({
                   } else {
                     setFieldValue("transportationDetails.dropoffLocation", destLocation);
                   }
-                  if (location.coordinates) {
-                    setFieldValue("destinationData", {
-                      ...(values.destinationData || {}),
-                      dropoffCoordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                      dropoffLocation: destLocation,
-                    });
-                  }
+                  setFieldValue("destinationData", {
+                    ...(values.destinationData || {}),
+                    id: (values.destinationData as any)?.id || destLocation.id || undefined,
+                    name: (values.destinationData as any)?.name || destLocation.name || undefined,
+                    city: (values.destinationData as any)?.city || destLocation.city || undefined,
+                    country: (values.destinationData as any)?.country || destLocation.country || undefined,
+                    regionOrState: (values.destinationData as any)?.regionOrState || destLocation.regionOrState || undefined,
+                    address: (values.destinationData as any)?.address || destLocation.address || undefined,
+                    coordinates: ((values.destinationData as any)?.coordinates?.latitude && (values.destinationData as any)?.coordinates?.latitude !== 0)
+                      ? (values.destinationData as any).coordinates
+                      : destLocation.coordinates,
+                    dropoffCoordinates: destLocation.coordinates,
+                    dropoffLocation: destLocation,
+                  });
                   if (!values.destination && destAddress) {
                     setFieldValue("destination", destAddress);
                   }
                 } else if (googleSearchTarget === "location") {
                   setFieldValue("destination", destAddress);
-                  if (location.coordinates) {
-                    setFieldValue("destinationData", {
-                      id: location.placeId || undefined,
-                      name: location.name || undefined,
-                      city: location.secondaryText || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
+                  setFieldValue("destinationData", destLocation);
                 } else {
                   setFieldValue("title", placeName);
                   setFieldValue("destination", destAddress);
                   if (values.type === ActivityType.stay) {
                     setFieldValue("accomodationDetails.accomodationName", placeName);
                     setFieldValue("accomodationDetails.address", destAddress);
+                    setFieldValue("accomodationDetails.destinationAddressData", destLocation);
                   }
                   if (values.type === ActivityType.rideRental) {
                     setFieldValue("rideRentalDetails.pickupLocation", destLocation);
@@ -2772,17 +2943,7 @@ const EditActivity = ({
                   if (values.type === ActivityType.transit) {
                     setFieldValue("transportationDetails.pickupLocation", destLocation);
                   }
-                  if (location.coordinates) {
-                    setFieldValue("destinationData", {
-                      id: location.placeId || undefined,
-                      name: location.name || undefined,
-                      city: location.secondaryText || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
+                  setFieldValue("destinationData", destLocation);
                 }
                 setShowGoogleSearchModal(false);
               }}

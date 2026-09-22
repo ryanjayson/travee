@@ -239,19 +239,13 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
               <View className="w-10 h-1 bg-gray-300 rounded-full" />
             </View>
 
-            <View className="flex-row justify-between items-center px-6 pt-1 pb-4 border-b border-gray-100">
+            <View className="flex-row justify-between items-center px-6 pt-1 pb-4">
               <View className="flex-1 pr-4">
                 <Text className="text-2xl font-bold text-secondary">
                   Destination Details
                 </Text>
-                <Text
-                  className="text-sm text-secondary/60 mt-0.5"
-                  numberOfLines={1}
-                >
-                  {placeTitle || destinationAddress || "Location Information"}
-                </Text>
               </View>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={handleDismiss}
                 activeOpacity={0.7}
                 accessibilityRole="button"
@@ -259,7 +253,7 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
                 className="items-center justify-center p-1"
               >
                 <Ionicons name="close" size={22} color="#999" />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
 
@@ -290,10 +284,8 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
                 <View className="bg-[#F8FAFC] rounded-2xl p-4 border border-gray-100 mb-3">
                   <View className="flex-row items-center justify-between mb-1.5">
                     <View className="flex-row items-center gap-1.5">
-                      <Icon name="place" size={16} color={activityColor} />
                       <Text
-                        className="text-[11px] uppercase tracking-wider font-bold"
-                        style={{ color: activityColor }}
+                        className="text-[11px] uppercase tracking-wider font-bold text-tertiary"
                       >
                         Location
                       </Text>
@@ -314,11 +306,11 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
                       <View className="flex-row items-start mt-1 gap-1.5">
                         <Icon
                           name="location-on"
-                          size={16}
+                          size={22}
                           color="#64748B"
                           style={{ marginTop: 2 }}
                         />
-                        <Text className="text-sm font-medium text-secondary/70 flex-1 leading-5">
+                        <Text className="text-base font-medium text-secondary/70 flex-1 leading-5">
                           {destinationAddress}
                         </Text>
                       </View>
@@ -326,11 +318,10 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
 
                   {/* Destination Badges (City, State, Country) */}
                   {(destData?.city || destData?.regionOrState || destData?.country) && (
-                    <View className="flex-row flex-wrap gap-1.5 mt-3 pt-2.5 border-t border-gray-200/60">
+                    <View className="flex-row flex-wrap gap-1.5 mt-3 pt-2.5">
                       {Boolean(destData?.city) && (
-                        <View className="bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100 flex-row items-center">
-                          <Icon name="apartment" size={13} color="#155EEF" />
-                          <Text className="text-xs font-medium text-blue-700 ml-1">
+                        <View className="px-2 py-1 rounded-lg border border-blue-100 flex-row items-center">
+                          <Text className="text-xs font-medium text-secondary ml-1">
                             {destData.city}
                           </Text>
                         </View>
@@ -356,7 +347,7 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
                 </View>
 
                 {/* Coordinates Card */}
-                {hasCoordinates && (
+                {!hasCoordinates && (
                   <View className="bg-[#F8FAFC] rounded-2xl p-4 border border-gray-100 mb-3">
                     <View className="flex-row items-center gap-1.5 mb-2">
                       <Icon name="my-location" size={15} color="#64748B" />
@@ -388,7 +379,7 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
 
                 {/* Action Buttons */}
                 <View className="mt-2 gap-2">
-                  {(hasCoordinates || destinationAddress) && (
+                  {(false && (hasCoordinates || destinationAddress)) && (
                     <TouchableOpacity
                       activeOpacity={0.7}
                       accessibilityRole="button"
@@ -419,8 +410,8 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
                       }}
                       className="flex-row items-center justify-center gap-2 p-3 rounded-2xl"
                     >
-                      <Icon name="edit-location" size={18} color="#64748B" />
-                      <Text className="text-sm font-medium text-secondary/70">
+                      <Icon name="edit-location" size={18} color="#0EA5E9" />
+                      <Text className="underline text-base font-medium text-primary">
                         Change Location
                       </Text>
                     </TouchableOpacity>
