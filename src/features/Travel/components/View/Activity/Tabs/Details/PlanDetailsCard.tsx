@@ -66,41 +66,39 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
     >
       <FadeInView delay={180} duration={200}>
         <View
-          className="p-5 pb-0 rounded-t-3xl"
+          className="p-5 pb-0 rounded-t-3xl flex-1"
           style={{ backgroundColor: `${themeColor}` }}
         >
-          <View>
-            <View className="flex-row items-start gap-2 w-full">
-              <View className="flex-col gap-2 flex-1">
-                {activity.destinationData?.name && activity.destinationData?.name != activity.title ?
-                  <View className="flex flex-col gap-3">
-                    <View className="flex flex-row gap-3 items-start flex-1">
-                      <View className="pt-0.5">
-                        <Icon name="location-on" size={22} color={"#FFFFFF"} />
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-xl leading-xl font-semibold text-white">
-                          {activity.destinationData?.name}
-                        </Text>
-                        <Text className="text-white/70 text-lg">
-                          {locationText}
-                        </Text>
-                      </View>
+          <View className="flex-row items-start gap-2 w-full">
+            <View className="flex-col gap-2 flex-1">
+              {activity.destinationData?.name && activity.destinationData?.name != activity.title ?
+                <View className="flex flex-col gap-3">
+                  <View className="flex flex-row gap-3 items-start flex-1">
+                    <View className="pt-0.5">
+                      <Icon name="location-on" size={22} color={"#FFFFFF"} />
                     </View>
-                  </View>
-                  :
-                  locationText && (
-                    <View className="flex flex-col flex-1">
-                      <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1 ">
-                        Address
+                    <View className="flex-1">
+                      <Text className="text-xl leading-xl font-semibold text-white">
+                        {activity.destinationData?.name}
                       </Text>
-                      <Text className="mb-1 text-white/70 text-xl ">
+                      <Text className="text-white/70 text-lg">
                         {locationText}
                       </Text>
                     </View>
-                  )
-                }
-              </View>
+                  </View>
+                </View>
+                :
+                locationText && (
+                  <View className="flex flex-col flex-1">
+                    <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1 ">
+                      Address
+                    </Text>
+                    <Text className="mb-1 text-white/70 text-xl ">
+                      {locationText}
+                    </Text>
+                  </View>
+                )
+              }
             </View>
           </View>
         </View>
@@ -204,7 +202,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
             display: hasContactInfo ? "flex" : "none",
           }}
         >
-          <Text className="text-xl font-semibold text-secondary mt-lg">
+          <Text className="text-xl font-semibold text-secondary">
             Contact Info
           </Text>
           <View className="rounded-2xl flex-col gap-3 p-2 pb-1 pl-1">

@@ -83,7 +83,7 @@ describe("ChecklistTab Component", () => {
       />
     );
 
-    expect(getByText("Add To-Do item")).toBeTruthy();
+    expect(getByLabelText("Add To-Do item")).toBeTruthy();
     expect(getByText("Pack sunscreen")).toBeTruthy();
     expect(getByText("SPF 50+")).toBeTruthy();
     expect(getByText("Bring passport")).toBeTruthy();
@@ -114,7 +114,7 @@ describe("ChecklistTab Component", () => {
   });
 
   it("handles opening the modal to add a new checklist item", () => {
-    const { getByText } = renderWithProviders(
+    const { getByLabelText } = renderWithProviders(
       <ChecklistTab
         activityId="act-1"
         travelId="trip-1"
@@ -122,7 +122,7 @@ describe("ChecklistTab Component", () => {
       />
     );
 
-    const addButton = getByText("Add To-Do item");
+    const addButton = getByLabelText("Add To-Do item");
     fireEvent.press(addButton);
 
     expect(mockOpenChecklistModal).toHaveBeenCalledWith(
@@ -157,14 +157,14 @@ describe("ChecklistTab Component", () => {
   });
 
   it("renders correctly in View Activity tab", () => {
-    const { getByText } = renderWithProviders(
+    const { getByLabelText, getByText } = renderWithProviders(
       <ViewChecklistTab
         activityId="act-1"
         itineraryActivity={mockActivity}
       />
     );
 
-    expect(getByText("Add To-Do item")).toBeTruthy();
+    expect(getByLabelText("Add To-Do item")).toBeTruthy();
     expect(getByText("Pack sunscreen")).toBeTruthy();
   });
 });
