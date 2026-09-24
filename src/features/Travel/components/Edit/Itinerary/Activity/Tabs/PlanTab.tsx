@@ -138,7 +138,7 @@ export default function PlanTab({
       <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
         <Icon name="event-note" size={26} color={"#344054"} />
         <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
-          Plan Details
+          Activity Details
         </Text>
 
       </View>

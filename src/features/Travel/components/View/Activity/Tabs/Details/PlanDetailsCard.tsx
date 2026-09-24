@@ -76,13 +76,13 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
                   <View className="flex flex-col gap-3">
                     <View className="flex flex-row gap-3 items-start flex-1">
                       <View className="pt-0.5">
-                        <Icon name="location-on" size={34} color={"#FFFFFF"} />
+                        <Icon name="location-on" size={22} color={"#FFFFFF"} />
                       </View>
                       <View className="flex-1">
                         <Text className="text-xl leading-xl font-semibold text-white">
                           {activity.destinationData?.name}
                         </Text>
-                        <Text className="text-white text-lg font-light">
+                        <Text className="text-white/70 text-lg">
                           {locationText}
                         </Text>
                       </View>
@@ -91,10 +91,10 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
                   :
                   locationText && (
                     <View className="flex flex-col flex-1">
-                      <Text className="text-xs font-semibold text-white/70 uppercase tracking-widest ">
+                      <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1 ">
                         Address
                       </Text>
-                      <Text className="mb-1 text-white text-xl font-light">
+                      <Text className="mb-1 text-white/70 text-xl ">
                         {locationText}
                       </Text>
                     </View>
@@ -113,10 +113,10 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
             style={{
               display: activity.startDate ? "flex" : "none",
             }}>
-            <Text className="text-xs font-semibold text-white/70 uppercase tracking-widest mb-1 ">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1 ">
               {activity.endDate ? "Start" : "Date"}
             </Text>
-            <Text className="text-2xl font-semibold text-white">
+            <Text className="text-2xl font-semibold text-white/90">
               {safeFormatTime(activity.startDate)}
             </Text>
             <Text className="text-base font-medium text-white/70 mt-0.5">
@@ -126,7 +126,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
 
           {activity.endDate && activity.startDate && (
             <View className="px-3 items-center justify-center">
-              <Icon name="chevron-right" size={38} color={"#FFFFFF"} style={{ opacity: .75 }} />
+              <Icon name="chevron-right" size={38} color={"#FFFFFF"} style={{ opacity: .50 }} />
             </View>
           )}
 
@@ -134,13 +134,13 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
             style={{
               display: activity.endDate ? "flex" : "none",
             }}>
-            <Text className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-1">
+            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
               End
             </Text>
-            <Text className="text-2xl font-semibold text-white text-right">
+            <Text className="text-2xl font-semibold text-white/90 text-right">
               {activity.endDate ? safeFormatTime(activity.endDate) : "--:--"}
             </Text>
-            <Text className="text-base font-medium text-white/80 mt-0.5 text-right">
+            <Text className="text-base font-medium text-white/70 mt-0.5 text-right">
               {activity.endDate ? safeFormatDate(activity.endDate) : ""}
             </Text>
           </View>
@@ -235,36 +235,39 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
         </View>
       </FadeInView>
 
-      <FadeInView delay={180} duration={400}>
-        <TouchableOpacity
-          onPress={() => {
-            if (activity) {
-              if (onEditActivity) {
-                onEditActivity(activity);
-              } else {
-                openActivityModal(
-                  activity,
-                  activity.sectionId || undefined,
-                  activity.travelId || undefined,
-                  activity.type
-                );
+      {!hasContactInfo && !hasPlanInfo && (
+        <FadeInView delay={180} duration={400}>
+          <TouchableOpacity
+            onPress={() => {
+              if (activity) {
+                if (onEditActivity) {
+                  onEditActivity(activity);
+                } else {
+                  openActivityModal(
+                    activity,
+                    activity.sectionId || undefined,
+                    activity.travelId || undefined,
+                    activity.type
+                  );
+                }
               }
-            }
-          }}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Edit or add more details"
-          className="flex-row items-center self-start mt-6 py-1 px-xs gap-1.5"
-        >
-          <Icon name="edit" size={20} color={"#0EA5E9"} />
-          <Text
-            className="text-base font-semibold"
-            style={{ color: "#0EA5E9" }}
+            }}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Edit or add more details"
+            className="flex-row items-center self-start mt-6 py-1 px-xs gap-1.5"
           >
-            Edit or Add more detail
-          </Text>
-        </TouchableOpacity>
-      </FadeInView>
+            <Icon name="edit" size={20} color={"#0EA5E9"} />
+            <Text
+              className="text-base font-semibold"
+              style={{ color: "#0EA5E9" }}
+            >
+              Edit or Add more detail
+            </Text>
+          </TouchableOpacity>
+        </FadeInView>
+
+      )}
 
 
 

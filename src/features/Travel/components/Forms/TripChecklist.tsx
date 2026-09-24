@@ -84,7 +84,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
         id: a.id!,
         label: a.title,
         type: "activity",
-        activityType: (a.type ?? TripPlanType.plan) as TripPlanType,
+        activityType: (a.type ?? TripPlanType.activity) as TripPlanType,
       }));
     return [...groupOpts, ...activityOpts];
   }, [groups, activities]);
@@ -254,7 +254,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
               <Icon name="folder" size={20} color="#263F69" />
             ) : selectedContext?.type === "activity" ? (
               <ActivityIcon
-                type={(selectedContext.activityType ?? TripPlanType.plan) as TripPlanType}
+                type={(selectedContext.activityType ?? TripPlanType.activity) as TripPlanType}
                 size={20}
                 color="#263F69"
               />
@@ -309,7 +309,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
                         <Icon name="folder" size={20} color="#263F69" />
                       ) : (
                         <ActivityIcon
-                          type={(option.activityType ?? TripPlanType.plan) as TripPlanType}
+                          type={(option.activityType ?? TripPlanType.activity) as TripPlanType}
                           size={20}
                           color="#666"
                         />
@@ -417,7 +417,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
             <View key={`activity-${activity.id}`} className="mb-5">
               <View className="flex-row items-center gap-2 mb-2">
                 <ActivityIcon
-                  type={(activity.type ?? TripPlanType.plan) as TripPlanType}
+                  type={(activity.type ?? TripPlanType.activity) as TripPlanType}
                   size={18}
                   color="#666"
                 />

@@ -21,7 +21,7 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
   let endDate: string | null = null;
   let endTime: string | null = null;
   let destination = "";
-  let resolvedType = TripPlanType.plan;
+  let resolvedType = TripPlanType.activity;
   
   // Heuristic 1: Detect Initial Title/Merchant from first lines
   const ignorePatterns = /^(booking|reservation|confirmation|ref|pnr|date|time|ticket|pass|order|receipt|tax|invoice|welcome|hello|dear|hi|your|trip|travel)/i;
@@ -86,7 +86,7 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
   };
 
   let bestCategory = {
-    type: TripPlanType.plan,
+    type: TripPlanType.activity,
     label: "Activity",
     score: 0
   };
@@ -369,7 +369,7 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
     startDate: startDate ? new Date(`${startDate}T${startTime || "00:00"}:00`) : undefined,
     endDate: endDate ? new Date(`${endDate}T${endTime || "00:00"}:00`) : undefined,
     destination: destination.trim(),
-    type: resolvedType !== TripPlanType.plan ? resolvedType : undefined,
+    type: resolvedType !== TripPlanType.activity ? resolvedType : undefined,
   };
 };
 

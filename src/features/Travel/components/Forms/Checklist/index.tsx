@@ -174,7 +174,7 @@ const EditChecklistItem = ({
               <Icon name="folder" size={20} color="#263F69" />
             ) : selectedContext?.type === "activity" ? (
               <ActivityIcon
-                type={(selectedContext.activityType ?? TripPlanType.plan) as TripPlanType}
+                type={(selectedContext.activityType ?? TripPlanType.activity) as TripPlanType}
                 size={24}
                 color="#263F69"
                 showIconOnly

@@ -357,7 +357,7 @@ const ViewTripModal = ({
               openActivityTypeModal(undefined, travelPlan.travel.id);
               return;
             }
-            if (type === TripPlanType.activity || type === TripPlanType.plan) {
+            if (type === TripPlanType.activity) {
               const allTripDestinations =
                 travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0
                   ? travelPlan.travel.tripDestinations

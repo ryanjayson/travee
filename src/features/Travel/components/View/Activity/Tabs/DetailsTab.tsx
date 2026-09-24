@@ -93,7 +93,6 @@ const DetailsTab = ({
       case TripPlanType.rideRental:
         return <RideRentalDetails data={itineraryActivity.rideRentalDetails} onFullScreenChange={onFullScreenChange} />;
       case TripPlanType.activity:
-      case TripPlanType.plan:
       default:
         return (
           <PlanDetails

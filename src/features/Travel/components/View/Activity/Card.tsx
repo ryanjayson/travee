@@ -565,7 +565,7 @@ const ActivityItemCard = ({
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
 
                   </Text>
-                  {itineraryEventActivity.type === TripPlanType.plan && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
+                  {itineraryEventActivity.type === TripPlanType.activity && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
                     <Text
                       style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
                       className="text-[8px] font-semibold text-gray/60 px-xxs"
@@ -614,18 +614,19 @@ const ActivityItemCard = ({
 
               <View className="flex-2">
                 <View className="flex-row justify-between items-start mb-1 gap-x-2">
-                  <Text className={`font-medium mt-1 text-secondary leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl text-lg ' : 'text-[20px]'}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
+                  <Text className={`font-medium mt-1 text-secondary leading-18px flex-1 wrap-break-word ${isNarrow ? 'pr-3xl text-lg ' : 'text-[20px] '}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
                     {itineraryEventActivity.title}
                   </Text>
                 </View>
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
                   <View
-                    className="flex-row items-center text-ellipsis rounded-sm w-[80%] -mt-xxs"
+                    className="flex-row items-start text-ellipsis rounded-sm w-[80%] "
                   >
-                    <Icon name="location-pin" size={14} color={"#B42318"} />
-                    <Text className="text-base text-tertiary "
+                    <Icon name="location-pin" size={12} color={"#B42318"} style={{ top: 2, opacity: 0.6 }} />
+                    <Text className="text-sm font-semibold text-tertiary "
                       ellipsizeMode="tail"
-                      numberOfLines={1}>
+                      numberOfLines={2}
+                    >
                       {itineraryEventActivity.destination}
                     </Text>
                   </View>
@@ -729,7 +730,7 @@ const ActivityItemCard = ({
               >
                 {!isNarrow && (
                   <Text className="text-[10px] text-[#999] font-medium uppercase tracking-tight">
-                    {itineraryEventActivity.isDone ? "" : "Mark as done"}
+                    {itineraryEventActivity.isDone ? "" : ""}
                   </Text>
                 )}
 

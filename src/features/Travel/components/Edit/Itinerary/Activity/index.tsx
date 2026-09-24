@@ -5,20 +5,18 @@ import { Formik, useFormikContext } from "formik";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert, Image,
-  Keyboard, LayoutAnimation, Modal,
+  Keyboard, Modal,
   ScrollView,
   StatusBar,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
-import { CalendarList } from "react-native-calendars";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
 import SimpleAccordion from "../../../../../../components/Accordion/Simple";
 import ActivityIcon, { activityIcons } from "../../../../../../components/ActivityIcon";
-import TouchButton from "../../../../../../components/atoms/TouchButton";
 import DescriptionInput from "../../../../../../components/molecules/DescriptionInput";
 import Tabs from "../../../../../../components/Tabs";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
@@ -26,10 +24,9 @@ import { useToast } from "../../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import { fetchLocalItineraryActivity } from "../../../../../../services/local/travelService";
-import { TripPlanType, ActivityType, getTripPlanTypeLabel, getActivityTypeLabel } from "../../../../../../types/enums";
+import { TripPlanType, ActivityType, getTripPlanTypeLabel } from "../../../../../../types/enums";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
 import { useDeleteActivityMutation, useUpdateActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
-import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItemMutation, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
 import { useUpdateSectionMutation } from "../../../../hooks/useSection";
 import { useTravelPlan } from "../../../../hooks/useTravel";
 import { Attachment, DestinationDto, Images, ItineraryActivity } from "../../../../types/TravelDto";
@@ -40,22 +37,13 @@ import { GoogleMapSearchModal, GooglePlaceLocation } from "../../../GoogleMapSea
 import { MapboxPlace } from "../../../MapboxDestinationSelector";
 import MapboxDestinationSelectorModal from "../../../MapboxDestinationSelector/Modal";
 import AirportLookupModal, { Airport } from "../../../Lookups/AirportLookupModal";
-import DateTime from "./DateTime";
 import AccomodationTab from "./Tabs/AccomodationTab";
-import CafeRestaurantTab from "./Tabs/CafeRestaurantTab";
-import EntertainmentTab from "./Tabs/EntertainmentTab";
 import FlightTab from "./Tabs/FlightTab";
-import HikeOrCampTab from "./Tabs/HikeOrCampTab";
-import NatureTab from "./Tabs/NatureTab";
-import PreparationTab from "./Tabs/PreparationTab";
 import RideRentalTab from "./Tabs/RideRentalTab";
-import ShoppingTab from "./Tabs/ShoppingTab";
-import SightseeingTab from "./Tabs/SightseeingTab";
 import TransportationTab from "./Tabs/TransportationTab";
-import WalkTab from "./Tabs/WalkTab";
 import PlanTab from "./Tabs/PlanTab";
+import ChecklistTab from "./Tabs/ChecklistTab";
 import PlanDateModal from "./DateTime/PlanDateModal";
-import CustomTagsInput from "./CustomTagsInput";
 import DestinationDetailsBottomSheet from "./DestinationDetailsBottomSheet";
 import { FadeInView } from "../../../../../../components/animations";
 import { safeJsonParse } from "../../../../../../utils/safeJsonParse";
@@ -713,10 +701,6 @@ const EditActivity = ({
   // Move useTheme to component top level (Rules of Hooks: must not be called inside callbacks)
   const { colors } = useTheme();
 
-  // Checklist state
-  const [newCheckTitle, setNewCheckTitle] = useState("");
-  const [newCheckDescription, setNewCheckDescription] = useState("");
-  const [showCheckDescription, setShowCheckDescription] = useState(false);
   const [createdSections, setCreatedSections] = useState<Record<string, string>>({});
   const { showToast } = useToast();
 
@@ -749,57 +733,7 @@ const EditActivity = ({
       showToast({ type: "error", message: "Failed to pick documents." });
     }
   };
-  const saveChecklistItem = useSaveChecklistItemMutation();
-  const deleteChecklistItem = useDeleteChecklistItemMutation();
-  const toggleChecklistItem = useToggleChecklistItemMutation();
   const activityId = itineraryActivity?.id;
-  const { data: checklistItems = [], refetch: refetchChecklist } = useChecklistItems(travelId);
-  const activityChecklistItems = checklistItems.filter(
-    (i) => activityId && i.activityId === activityId
-  );
-
-  const handleAddChecklistItem = async () => {
-    if (!newCheckTitle.trim() || !activityId || !travelId) return;
-    await saveChecklistItem.mutateAsync({
-      travelId,
-      activityId,
-      title: newCheckTitle.trim(),
-      description: newCheckDescription.trim() || undefined,
-      sortOrder: String(Date.now()),
-      isDone: false,
-      userId: userToken || "user",
-      isOffline: true,
-    });
-    setNewCheckTitle("");
-    setNewCheckDescription("");
-    setShowCheckDescription(false);
-    await refetchChecklist();
-  };
-
-  const handleToggleChecklistItem = async (item: any) => {
-    await toggleChecklistItem.mutateAsync({
-      id: item.id,
-      isDone: !item.isDone,
-      userId: userToken || "user",
-      travelId,
-    });
-    await refetchChecklist();
-  };
-
-  const handleDeleteChecklistItem = async (item: any) => {
-    const isConfirmed = await confirm({
-      title: "Remove Item",
-      message: `Remove "${item.title}"?`,
-      confirmText: "Remove",
-      cancelText: "Cancel",
-      type: "danger",
-    });
-
-    if (isConfirmed) {
-      await deleteChecklistItem.mutateAsync({ id: item.id, travelId });
-      await refetchChecklist();
-    }
-  };
 
   const pickImage = async (setFn: (field: string, value: any) => void, currentImages: Images[]) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -943,13 +877,13 @@ const EditActivity = ({
         description: values.description,
         sortOrder: finalSortOrder,
         type: values.type as TripPlanType,
-        planType: (values.type === TripPlanType.activity || values.type === TripPlanType.plan) ? (values.planType ?? null) : null,
-        website: (values.type === TripPlanType.activity || values.type === TripPlanType.plan) ? (values.website || null) : null,
-        bookingReference: (values.type === TripPlanType.activity || values.type === TripPlanType.plan) ? (values.bookingReference || null) : null,
-        contactName: (values.type === TripPlanType.activity || values.type === TripPlanType.plan) ? (values.contactName || null) : null,
-        contactNumber: (values.type === TripPlanType.activity || values.type === TripPlanType.plan) ? (values.contactNumber || null) : null,
-        contactEmail: (values.type === TripPlanType.activity || values.type === TripPlanType.plan) ? (values.contactEmail || null) : null,
-        priority: (values.type === TripPlanType.activity || values.type === TripPlanType.plan) ? (values.priority || null) : null,
+        planType: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.planType ?? null) : null,
+        website: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.website || null) : null,
+        bookingReference: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.bookingReference || null) : null,
+        contactName: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.contactName || null) : null,
+        contactNumber: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.contactNumber || null) : null,
+        contactEmail: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.contactEmail || null) : null,
+        priority: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.priority || null) : null,
         budget: values.budget || undefined,
         startDate: finalStartDate,
         endDate: finalEndDate,
@@ -1301,7 +1235,7 @@ const EditActivity = ({
           try {
             const parsed = JSON.parse(transPick);
             if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
-          } catch {}
+          } catch { }
           return {
             id: "",
             name: transPick,
@@ -1324,7 +1258,7 @@ const EditActivity = ({
           try {
             const parsed = JSON.parse(transDrop);
             if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
-          } catch {}
+          } catch { }
           return {
             id: "",
             name: transDrop,
@@ -1363,7 +1297,7 @@ const EditActivity = ({
           try {
             const parsed = JSON.parse(ridePick);
             if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
-          } catch {}
+          } catch { }
           return {
             id: "",
             name: ridePick,
@@ -1386,7 +1320,7 @@ const EditActivity = ({
           try {
             const parsed = JSON.parse(rideDrop);
             if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
-          } catch {}
+          } catch { }
           return {
             id: "",
             name: rideDrop,
@@ -1490,7 +1424,6 @@ const EditActivity = ({
         const shouldShowDestinationButton =
           hasLocation ||
           values.type === TripPlanType.activity ||
-          values.type === TripPlanType.plan ||
           values.type === TripPlanType.stay ||
           values.type === TripPlanType.rideRental ||
           values.type === TripPlanType.transit;
@@ -1527,7 +1460,7 @@ const EditActivity = ({
                   <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mt-lg mb-8">
                     <View className="flex-row justify-between items-center mb-1">
                       <Text className="text-lg text-secondary/80 font-semibold">
-                        {(values.type === TripPlanType.activity || values.type === TripPlanType.plan) ? "Plan Name" : values.type === TripPlanType.stay ? "Stay or Accomodation Name" : values.type === TripPlanType.transit ? "Transit Name" : values.type === TripPlanType.rideRental ? "Rental Name" : "Activity Name"} <Text className="text-red-500 text-lg">*</Text>
+                        {values.type === TripPlanType.activity ? "Plan Name" : values.type === TripPlanType.stay ? "Stay or Accomodation Name" : values.type === TripPlanType.transit ? "Transit Name" : values.type === TripPlanType.rideRental ? "Rental Name" : "Activity Name"} <Text className="text-red-500 text-lg">*</Text>
                       </Text>
 
                       <Text className="text-xs" style={{ color: '#98A2B3' }}>
@@ -1554,13 +1487,13 @@ const EditActivity = ({
                         style={{ marginTop: 2, height: 64 }}
                         contentStyle={{
                           backgroundColor: "transparent",
-                          paddingRight: (values.type === TripPlanType.activity || values.type === TripPlanType.plan || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental)
+                          paddingRight: (values.type === TripPlanType.activity || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental)
                             ? (values.title ? 95 : 55)
                             : 16,
                         }}
                         maxLength={40}
                       />
-                      {(values.type === TripPlanType.activity || values.type === TripPlanType.plan || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental) ? (
+                      {(values.type === TripPlanType.activity || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental) ? (
                         <View className="absolute right-3 flex-row items-center gap-1">
                           {Boolean(values.title) && (
                             <TouchableOpacity
@@ -1632,7 +1565,7 @@ const EditActivity = ({
                   </View>
 
                   {/* Plan Details */}
-                  {(values.type === TripPlanType.activity || values.type === TripPlanType.plan) && (
+                  {values.type === TripPlanType.activity && (
                     <PlanTab
                       values={values}
                       handleChange={handleChange}
@@ -1872,7 +1805,7 @@ const EditActivity = ({
                         Activity Type
                       </Text>
                       {(() => {
-                        const isTypeDisabled = !!values.id && values.type !== TripPlanType.activity && values.type !== TripPlanType.plan;
+                        const isTypeDisabled = !!values.id && values.type !== TripPlanType.activity;
                         return (
                           <TouchableOpacity
                             onPress={() => {
@@ -2076,95 +2009,6 @@ const EditActivity = ({
                         </View>
                       );
                     })}
-                  </View>
-                )}
-              </View>
-            ),
-          },
-          {
-            id: "checklist",
-            title: "Checklist",
-            disabled: !itineraryActivity?.id,
-            content: (
-              <View className="flex-1 pb-6 pt-2 px-5">
-
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  accessibilityLabel="Add To-Do item"
-                  onPress={() => {
-                    if (itineraryActivity) {
-                      openChecklistModal(null, [itineraryActivity], travelId);
-                    }
-                  }}
-                  className="flex-row items-center gap-1 mb-2 p-2 "
-                >
-                  <Icon name="add" size={24} color="#263F69" />
-                  <Text className="text-lg font-medium text-accent underline">Add To-Do item</Text>
-                </TouchableOpacity>
-                {/* 
-                             <Button
-                              mode="text"
-                              icon="plus"
-                              onPress={handleAddAttachmentPress}
-                              disabled={updateMutation.isPending}
-                              textColor="#263F69"
-                              style={[styles.addAttachmentButtonEmpty, { }]}
-                              labelStyle={styles.addAttachmentButtonLabel}
-                              accessibilityRole="button"
-                              accessibilityLabel="Add attachment"
-                            >
-            {updateMutation.isPending ? "Adding..." : "Add Attachment"}
-          </Button> */}
-                {/* Existing items */}
-                {activityChecklistItems.length > 0 && (
-                  <View className="bg-white rounded-[16px] border border-gray-100 overflow-hidden">
-                    {activityChecklistItems.map((item) => (
-                      <View
-                        key={item.id}
-                        className="flex-row items-center gap-3 px-4 py-4 border-b border-gray-50"
-                      >
-                        <TouchableOpacity
-                          accessibilityRole="checkbox"
-                          onPress={() => handleToggleChecklistItem(item)}
-                          className={`w-6 h-6 rounded-full border-2 items-center justify-center shrink-0 ${item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
-                            }`}
-                        >
-                          {item.isDone && <Icon name="check" size={14} color="#FFF" />}
-                        </TouchableOpacity>
-                        <View className="flex-1">
-                          <Text className={`text-lg ${item.isDone ? "line-through text-gray-400" : "text-gray-800 font-medium"}`}>
-                            {item.title}
-                          </Text>
-                          {item.description ? (
-                            <Text className="text-base text-gray-400 mt-0.5">{item.description}</Text>
-                          ) : null}
-                        </View>
-                        <TouchableOpacity
-                          accessibilityRole="button"
-                          accessibilityLabel="Edit checklist item"
-                          onPress={() => {
-                            if (itineraryActivity) {
-                              openChecklistModal(
-                                item,
-                                [itineraryActivity],
-                                travelId
-                              );
-                            }
-                          }}
-                          className="p-1 mr-1"
-                        >
-                          <Icon name="edit" size={20} color="#263F69" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          accessibilityRole="button"
-                          accessibilityLabel="Remove checklist item"
-                          onPress={() => handleDeleteChecklistItem(item)}
-                          className="p-1"
-                        >
-                          <Icon name="delete-outline" size={20} color="#c93030" />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
                   </View>
                 )}
               </View>

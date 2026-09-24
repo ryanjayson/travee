@@ -148,12 +148,12 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
   const activityTypeBreakdown = useMemo(() => {
     const map: Record<number, number> = {};
     allActivities.forEach((a) => {
-      const type = a.type ?? TripPlanType.plan;
+      const type = a.type ?? TripPlanType.activity;
       map[type] = (map[type] || 0) + 1;
     });
     return Object.entries(map)
       .map(([type, count]) => ({ type: Number(type), count }))
-      .filter((e) => e.type !== TripPlanType.plan)
+      .filter((e) => e.type !== TripPlanType.activity)
       .sort((a, b) => b.count - a.count);
   }, [allActivities]);
 

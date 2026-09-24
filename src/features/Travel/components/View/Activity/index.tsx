@@ -282,7 +282,7 @@ const ViewItineraryActivity = ({
                   </Text>
                 </View>
 
-                {itineraryActivity.type == TripPlanType.plan && itineraryActivity.planType && (
+                {itineraryActivity.type == TripPlanType.activity && itineraryActivity.planType && (
                   <View className="flex-row items-center ml-0.5">
                     <Text className="text-base text-tertiary/50 mr-0.5">
                       /

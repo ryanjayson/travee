@@ -360,7 +360,7 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       travelId?: string,
       initialType?: TripPlanType
     ) => {
-      if (!itineraryActivity && initialType === TripPlanType.plan) {
+      if (!itineraryActivity && initialType === TripPlanType.activity) {
         openGoogleSearchModal(itinerarySectionId, travelId);
       } else if (itineraryActivity || initialType !== undefined) {
         setActivityModal({
@@ -368,7 +368,7 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
           itineraryActivity,
           itinerarySectionId,
           travelId,
-          initialType: initialType ?? itineraryActivity?.type ?? TripPlanType.plan,
+          initialType: initialType ?? itineraryActivity?.type ?? TripPlanType.activity,
         });
       } else {
         setActivityTypeModal({

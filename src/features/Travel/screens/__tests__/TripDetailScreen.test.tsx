@@ -80,7 +80,7 @@ describe("TripDetailScreen", () => {
             id: "act-1",
             travelId: "trip-123",
             title: "Visit Sensoji Temple",
-            type: TripPlanType.plan,
+            type: TripPlanType.activity,
             destinationData: {
               coordinates: {
                 latitude: 35.7148,
@@ -212,7 +212,7 @@ describe("TripDetailScreen", () => {
             id: "act-no-loc",
             travelId: "trip-123",
             title: "Packing Luggage",
-            type: TripPlanType.plan,
+            type: TripPlanType.activity,
             destinationData: null,
           },
         ],

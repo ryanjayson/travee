@@ -293,7 +293,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                 className={`flex-row items-center gap-3  px-4 py-6 bg-gray-50 ${!isCollapsed ? "border-b border-[#e0e0e0]" : ""}`}
               >
                 <ActivityIcon
-                  type={(activity.type ?? TripPlanType.plan) as TripPlanType}
+                  type={(activity.type ?? TripPlanType.activity) as TripPlanType}
                   size={24}
                   showIconOnly
                 />

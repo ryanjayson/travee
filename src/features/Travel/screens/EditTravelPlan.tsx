@@ -146,13 +146,13 @@ const EditTravelPlan = () => {
       id: "detail",
       title: "Details",
       content: (
-        <CreateOrEdit 
+        <CreateOrEdit
           ref={formRef}
-          tripData={travelPlan!?.travel} 
-          mode="edit" 
+          tripData={travelPlan!?.travel}
+          mode="edit"
           onClose={() => {
             setActiveTab("itinerary");
-          }} 
+          }}
           hideSubmitButton={true}
         />
       )
@@ -165,8 +165,8 @@ const EditTravelPlan = () => {
           ref={itineraryRef}
           travelSections={travelPlan?.itinerarySection ?? null}
           travelId={travelId}
-          onSave={() => {}}
-          onBack={() => {}}
+          onSave={() => { }}
+          onBack={() => { }}
           onRefresh={refreshItinerary}
         />
       ),
@@ -174,6 +174,7 @@ const EditTravelPlan = () => {
     {
       id: "checklist",
       title: "Checklist",
+      isVisible: false,
       content: (
         <TripChecklist
           activities={travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || []}
@@ -234,12 +235,12 @@ const EditTravelPlan = () => {
       </View>
 
       <View className="flex-1 bg-gray-100">
-        <Tabs 
-          tabs={tabData} 
+        <Tabs
+          tabs={tabData}
           type="secondary"
-          initialActiveTabId="itinerary" 
+          initialActiveTabId="itinerary"
           activeTabId={activeTab}
-          onTabChange={(id) => setActiveTab(id as TabType)} 
+          onTabChange={(id) => setActiveTab(id as TabType)}
         />
 
         {activeTab === "detail" && (
@@ -250,7 +251,7 @@ const EditTravelPlan = () => {
               onPress={() => {
                 formRef.current?.submit();
               }}
-              className="h-7xl p-6"  
+              className="h-7xl p-6"
             />
           </View>
         )}

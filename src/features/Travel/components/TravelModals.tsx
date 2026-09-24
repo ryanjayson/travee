@@ -134,7 +134,7 @@ export const TravelModals: React.FC<TravelModalsProps> = ({ travelPlan: propTrav
             const travelId = activityTypeModal.travelId || activePlan?.travel?.id;
             closeActivityTypeModal();
             setTimeout(() => {
-              if (type === TripPlanType.plan) {
+              if (type === TripPlanType.activity) {
                 const countryName =
                   travelObj?.destinationData?.country ||
                   travelObj?.destination;
@@ -179,12 +179,12 @@ export const TravelModals: React.FC<TravelModalsProps> = ({ travelPlan: propTrav
                   id: "",
                   title: "",
                   destination: "",
-                  type: TripPlanType.plan,
+                  type: TripPlanType.activity,
                   sectionId: itinerarySectionId || "",
                 } as any,
                 itinerarySectionId,
                 travelId,
-                TripPlanType.plan
+                TripPlanType.activity
               );
             }, 100);
           }}
@@ -204,7 +204,7 @@ export const TravelModals: React.FC<TravelModalsProps> = ({ travelPlan: propTrav
                   id: "",
                   title: location.name,
                   destination: location.address || location.name,
-                  type: TripPlanType.plan,
+                  type: TripPlanType.activity,
                   sectionId: itinerarySectionId || "",
                   destinationData: {
                     id: location.placeId || "",
@@ -215,7 +215,7 @@ export const TravelModals: React.FC<TravelModalsProps> = ({ travelPlan: propTrav
                 } as any,
                 itinerarySectionId,
                 travelId,
-                TripPlanType.plan
+                TripPlanType.activity
               );
             }, 100);
           }}
