@@ -1,4 +1,4 @@
-import { ActivityType, ActivityPlanType, TravelStatus, ExpenseCategory, TripType } from "../../../types/enums";
+import { TripPlanType, ActivityType, TravelStatus, ExpenseCategory, TripType } from "../../../types/enums";
 
 export interface TravelPlan {
   travel: Travel;
@@ -354,9 +354,9 @@ export interface ItineraryActivity {
   expensesCount?: number;
   checklistCount?: number;
   sortOrder: string;
-  type?: ActivityType;
-  planType?: ActivityPlanType | null;
-  secondaryType?: ActivityType[];
+  type?: TripPlanType;
+  planType?: ActivityType | null;
+  secondaryType?: TripPlanType[];
   images?: Images[];
   destinationData?: DestinationDto;
   isOffline?: boolean;

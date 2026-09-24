@@ -19,7 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../../context/ToastContext";
 import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
-import { ActivityType } from "../../../../../../types/enums";
+import { TripPlanType } from "../../../../../../types/enums";
 import { useDeleteActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
 import { useTravelPlan } from "../../../../hooks/useTravel";
 import { ItineraryActivity } from "../../../../types/TravelDto";
@@ -37,7 +37,7 @@ interface ActivityModalProps {
   itineraryActivity: ItineraryActivity | null;
   itinerarySectionId?: string;
   travelId?: string;
-  initialType?: ActivityType;
+  initialType?: TripPlanType;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -134,8 +134,8 @@ const ActivityModal = ({
   const [selectedSectionId, setSelectedSectionId] = useState<string | undefined>(undefined);
   const [onSelectSectionCallback, setOnSelectSectionCallback] = useState<((id?: string) => void) | null>(null);
 
-  const [selectedActivityType, setSelectedActivityType] = useState<ActivityType | undefined>(undefined);
-  const [onSelectActivityTypeCallback, setOnSelectActivityTypeCallback] = useState<((type: ActivityType) => void) | null>(null);
+  const [selectedActivityType, setSelectedActivityType] = useState<TripPlanType | undefined>(undefined);
+  const [onSelectActivityTypeCallback, setOnSelectActivityTypeCallback] = useState<((type: TripPlanType) => void) | null>(null);
 
   const handleOpenSectionModal = (sectionsList: any[], currentId?: string, onSelect?: (id?: string) => void) => {
     setSections(sectionsList);
@@ -144,7 +144,7 @@ const ActivityModal = ({
     setShowSectionModal(true);
   };
 
-  const handleOpenPrimaryTypeModal = (currentType?: ActivityType, onSelect?: (type: ActivityType) => void) => {
+  const handleOpenPrimaryTypeModal = (currentType?: TripPlanType, onSelect?: (type: TripPlanType) => void) => {
     setSelectedActivityType(currentType);
     setOnSelectActivityTypeCallback(() => onSelect || null);
     setShowPrimaryTypeModal(true);

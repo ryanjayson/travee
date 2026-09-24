@@ -4,7 +4,7 @@ import { View, TouchableOpacity, Text, Linking, ScrollView } from "react-native"
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
 import DateTime from "../DateTime";
-import { ActivityType } from "../../../../../../../types/enums";
+import { TripPlanType } from "../../../../../../../types/enums";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 
 export interface AccommodationTypeItem {
@@ -84,7 +84,7 @@ export default function AccomodationTab({
   const currentSubType = values.accomodationDetails?.subType || null;
   const activityColor =
     activityIcons.find(
-      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === ActivityType.stay
+      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === TripPlanType.stay
     )?.color || colors.primary || "#02899a";
 
   return (
@@ -99,7 +99,7 @@ export default function AccomodationTab({
 
       {/* Date & Time Section */}
       <DateTime
-        activityType={ActivityType.stay}
+        activityType={TripPlanType.stay}
         title="Check-In Date & Time"
         startDate={values.startDate}
         startTime={values.startTime}

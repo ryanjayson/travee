@@ -14,7 +14,7 @@ interface EntertainmentDetailsCardProps {
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
-const entColor = activityIcons.find((icon) => icon.name === ActivityType.entertainmentAndRecreation)?.color || "#7B1FA2";
+const entColor = "#7B1FA2";
 
 const handleOpenLink = (url: string) => {
   if (url) {

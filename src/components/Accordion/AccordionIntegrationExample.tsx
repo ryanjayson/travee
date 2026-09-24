@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Accordion } from '../index';
+import Accordion from './index';
 
 /**
  * Example showing how to integrate the Accordion component into existing trip pages
@@ -39,8 +39,8 @@ export const TripDetailWithAccordion: React.FC = () => {
       <Accordion 
         title="Trip Information" 
         defaultExpanded={true}
-        backgroundColor="#f8f9fa"
-        headerBackgroundColor="#e9ecef"
+        containerStyle={{ backgroundColor: "#f8f9fa" }}
+        headerStyle={{ backgroundColor: "#e9ecef" }}
       >
         <View style={styles.tripDates}>
           <Text style={styles.dateLabel}>Dates:</Text>

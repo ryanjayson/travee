@@ -2,7 +2,7 @@ import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
 import { TripDetailScreen, getActivityCoordinates } from "../TripDetailScreen";
 import { useTravelPlan } from "../../hooks/useTravel";
-import { ActivityType } from "../../../../types/enums";
+import { TripPlanType } from "../../../../types/enums";
 
 // Mock hooks
 jest.mock("../../hooks/useTravel", () => ({
@@ -80,7 +80,7 @@ describe("TripDetailScreen", () => {
             id: "act-1",
             travelId: "trip-123",
             title: "Visit Sensoji Temple",
-            type: ActivityType.plan,
+            type: TripPlanType.plan,
             destinationData: {
               coordinates: {
                 latitude: 35.7148,
@@ -92,7 +92,7 @@ describe("TripDetailScreen", () => {
             id: "act-2",
             travelId: "trip-123",
             title: "Check into Hotel",
-            type: ActivityType.stay,
+            type: TripPlanType.stay,
             destinationData: {
               coordinates: {
                 latitude: 35.6909,
@@ -104,7 +104,7 @@ describe("TripDetailScreen", () => {
             id: "act-flight",
             travelId: "trip-123",
             title: "Flight to Tokyo",
-            type: ActivityType.flight,
+            type: TripPlanType.flight,
             destinationData: {
               departureCoordinates: {
                 latitude: 1.3644,
@@ -124,7 +124,7 @@ describe("TripDetailScreen", () => {
             id: "act-rental",
             travelId: "trip-123",
             title: "Rent Car",
-            type: ActivityType.rideRental,
+            type: TripPlanType.rideRental,
             destinationData: {
               coordinates: {
                 latitude: 35.55,
@@ -136,7 +136,7 @@ describe("TripDetailScreen", () => {
             id: "act-transit",
             travelId: "trip-123",
             title: "Bullet Train",
-            type: ActivityType.transit,
+            type: TripPlanType.transit,
             destinationData: {
               pickupCoordinates: {
                 latitude: 35.6812,
@@ -158,7 +158,7 @@ describe("TripDetailScreen", () => {
             id: "act-transit-addresses",
             travelId: "trip-123",
             title: "Highway Express Bus",
-            type: ActivityType.transit,
+            type: TripPlanType.transit,
             destinationData: null,
             transportationDetails: {
               pickupLocation: "Shinjuku Bus Terminal",
@@ -169,7 +169,7 @@ describe("TripDetailScreen", () => {
             id: "act-transit-pickup-only",
             travelId: "trip-123",
             title: "Morning Ferry",
-            type: ActivityType.transit,
+            type: TripPlanType.transit,
             destination: "Miyajima Island",
             destinationData: {
               coordinates: {
@@ -192,7 +192,7 @@ describe("TripDetailScreen", () => {
             id: "act-rental",
             travelId: "trip-123",
             title: "Toyota Rental Car",
-            type: ActivityType.rideRental,
+            type: TripPlanType.rideRental,
             destinationData: {
               pickupCoordinates: {
                 latitude: 35.5494,
@@ -212,7 +212,7 @@ describe("TripDetailScreen", () => {
             id: "act-no-loc",
             travelId: "trip-123",
             title: "Packing Luggage",
-            type: ActivityType.plan,
+            type: TripPlanType.plan,
             destinationData: null,
           },
         ],

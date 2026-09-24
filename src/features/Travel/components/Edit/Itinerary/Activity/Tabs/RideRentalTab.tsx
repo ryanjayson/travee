@@ -4,7 +4,7 @@ import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native"
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
 import DateTime from "../DateTime";
-import { ActivityType } from "../../../../../../../types/enums";
+import { TripPlanType } from "../../../../../../../types/enums";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 
 export interface VehicleTypeItem {
@@ -88,7 +88,7 @@ export default function RideRentalTab({
   const currentVehicle = values.rideRentalDetails?.vehicleType || null;
   const activityColor =
     activityIcons.find(
-      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === ActivityType.rideRental
+      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === TripPlanType.rideRental
     )?.color || colors.primary || "#02899a";
 
   const pickupTitle = getLocationTitle(values.rideRentalDetails?.pickupLocation);
@@ -239,7 +239,7 @@ export default function RideRentalTab({
 
       {/* 6. Rental Period (DateTime) */}
       <DateTime
-        activityType={ActivityType.rideRental}
+        activityType={TripPlanType.rideRental}
         title="Rental Period"
         startDate={values.startDate}
         startTime={values.startTime}

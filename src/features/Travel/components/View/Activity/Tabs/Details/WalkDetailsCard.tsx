@@ -10,7 +10,7 @@ interface WalkDetailsCardProps {
   data: WalkDetailsDto;
 }
 
-const walkColor = activityIcons.find((icon) => icon.name === ActivityType.walk)?.color || "#8BC34A";
+const walkColor = "#8BC34A";
 
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 

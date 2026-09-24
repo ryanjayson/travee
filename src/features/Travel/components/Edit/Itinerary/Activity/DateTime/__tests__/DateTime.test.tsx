@@ -2,7 +2,7 @@ import React from "react";
 import { Formik } from "formik";
 import { fireEvent } from "@testing-library/react-native";
 import DateTime from "../index";
-import { ActivityType } from "@/types/enums";
+import { TripPlanType } from "@/types/enums";
 import { renderWithProviders } from "@/test-utils/renderWithProviders";
 
 // Mock useTravelPlan hook
@@ -15,7 +15,7 @@ jest.mock("@/features/Travel/hooks/useTravel", () => ({
 
 describe("DateTime Component", () => {
   const defaultProps = {
-    activityType: ActivityType.plan,
+    activityType: TripPlanType.activity,
     startDate: "2026-10-01",
     startTime: "10:00",
     endDate: null,
@@ -87,7 +87,7 @@ describe("DateTime Component", () => {
 
   it("shows end date inputs automatically for inherently ranged activities (stay)", () => {
     const { getByText } = renderComponent({
-      activityType: ActivityType.stay,
+      activityType: TripPlanType.stay,
       startDate: "2026-10-01",
       endDate: "2026-10-05",
     });
@@ -98,7 +98,7 @@ describe("DateTime Component", () => {
 
   it("reveals end date & time when 'Add End Date & Time' is clicked", () => {
     const { getByText, queryByLabelText, getByLabelText } = renderComponent({
-      activityType: ActivityType.plan,
+      activityType: TripPlanType.activity,
       endDate: null,
     });
 

@@ -3,7 +3,7 @@ import { ScrollView, View, Text, Dimensions, NativeSyntheticEvent, NativeScrollE
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { ItineraryActivity } from "../../../../types/TravelDto";
-import { ActivityType } from "../../../../../../types/enums";
+import { TripPlanType } from "../../../../../../types/enums";
 import { activityIcons } from "../../../../../../components/ActivityIcon";
 import { FadeInView } from "../../../../../../components/animations";
 import {
@@ -84,51 +84,16 @@ const DetailsTab = ({
 
   const renderDetails = () => {
     switch (itineraryActivity.type) {
-      case ActivityType.flight:
+      case TripPlanType.flight:
         return <FlightDetails data={itineraryActivity.flightDetails} />;
-      case ActivityType.stay:
+      case TripPlanType.stay:
         return <AccomodationDetails data={itineraryActivity.accomodationDetails} onFullScreenChange={onFullScreenChange} />;
-      // case ActivityType.cafeRestaurant:
-      //   return (
-      //     <CafeRestaurantDetails
-      //       data={itineraryActivity.cafeRestaurantDetails}
-      //       activityStartDate={itineraryActivity.startDate}
-      //       onFullScreenChange={onFullScreenChange}
-      //     />
-      //   );
-      // case ActivityType.nature:
-      //   return (
-      //     <NatureDetails
-      //       data={itineraryActivity.natureDetails}
-      //       activityStartDate={itineraryActivity.startDate}
-      //       onFullScreenChange={onFullScreenChange}
-      //     />
-      //   );
-      // case ActivityType.shopppingAndService:
-      //   return <ShoppingDetails data={itineraryActivity.shoppingDetails} onFullScreenChange={onFullScreenChange} />;
-      // case ActivityType.entertainmentAndRecreation:
-      //   return (
-      //     <EntertainmentDetails
-      //       data={itineraryActivity.entertainmentDetails}
-      //       activityStartDate={itineraryActivity.startDate}
-      //       onFullScreenChange={onFullScreenChange}
-      //     />
-      //   );
-      // case ActivityType.walk:
-      //   return <WalkDetails data={itineraryActivity.walkDetails} />;
-      // case ActivityType.sightseeing:
-      //   return <SightseeingDetails data={itineraryActivity.sightseeingDetails} onFullScreenChange={onFullScreenChange} />;
-      // case ActivityType.preparation:
-      //   return <PreparationDetails data={itineraryActivity.preparationDetails} />;
-      // case ActivityType.hikeOrCamp:
-      //   return <HikeOrCampDetails data={itineraryActivity.hikeOrCampDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.transit:
+      case TripPlanType.transit:
         return <TransportationDetails data={itineraryActivity.transportationDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.rideRental:
+      case TripPlanType.rideRental:
         return <RideRentalDetails data={itineraryActivity.rideRentalDetails} onFullScreenChange={onFullScreenChange} />;
-      // case ActivityType.meetup:
-      //   return <MeetupDetails data={itineraryActivity.meetupDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.plan:
+      case TripPlanType.activity:
+      case TripPlanType.plan:
       default:
         return (
           <PlanDetails

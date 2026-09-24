@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useTravelContext } from "../../../context/TravelContext";
 import { useTravelPlan } from "../hooks/useTravel";
-import { ActivityType } from "../../../types/enums";
+import { TripPlanType } from "../../../types/enums";
 import type { TravelPlan } from "../types/TravelDto";
 
 import ExpenseModal from "./Forms/Expense/Modal";
@@ -134,7 +134,7 @@ export const TravelModals: React.FC<TravelModalsProps> = ({ travelPlan: propTrav
             const travelId = activityTypeModal.travelId || activePlan?.travel?.id;
             closeActivityTypeModal();
             setTimeout(() => {
-              if (type === ActivityType.plan) {
+              if (type === TripPlanType.plan) {
                 const countryName =
                   travelObj?.destinationData?.country ||
                   travelObj?.destination;
@@ -179,12 +179,12 @@ export const TravelModals: React.FC<TravelModalsProps> = ({ travelPlan: propTrav
                   id: "",
                   title: "",
                   destination: "",
-                  type: ActivityType.plan,
+                  type: TripPlanType.plan,
                   sectionId: itinerarySectionId || "",
                 } as any,
                 itinerarySectionId,
                 travelId,
-                ActivityType.plan
+                TripPlanType.plan
               );
             }, 100);
           }}
@@ -204,7 +204,7 @@ export const TravelModals: React.FC<TravelModalsProps> = ({ travelPlan: propTrav
                   id: "",
                   title: location.name,
                   destination: location.address || location.name,
-                  type: ActivityType.plan,
+                  type: TripPlanType.plan,
                   sectionId: itinerarySectionId || "",
                   destinationData: {
                     id: location.placeId || "",
@@ -215,7 +215,7 @@ export const TravelModals: React.FC<TravelModalsProps> = ({ travelPlan: propTrav
                 } as any,
                 itinerarySectionId,
                 travelId,
-                ActivityType.plan
+                TripPlanType.plan
               );
             }, 100);
           }}

@@ -68,20 +68,17 @@ export default function FlightTab({
             <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
               <Icon name="flight-takeoff" size={24} color={depParsed.code ? "#0EA5E9" : "#98A2B3"} />
               <Text
-                className={`text-2xl font-semibold ${depParsed.code ? "text-secondary/60" : "text-secondary/40"}`}
+                className={`text-2xl  font-semibold ${depParsed.code ? "text-secondary/60" : "text-secondary/40"}`}
               >
                 {depParsed.code || "---"}
               </Text>
             </View>
 
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
-              <Text className="text-lg text-secondary/80 ">From</Text>
               <Text
-                className={`text-2xl font-semibold ${depParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
-                numberOfLines={1}
-                ellipsizeMode="tail"
+                className={`text-xl font-semibold ${depParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
               >
-                {depParsed.name || "Select departure airport"}
+                {depParsed.name || "Select Departure Airport"}
               </Text>
             </View>
           </View>
@@ -129,13 +126,10 @@ export default function FlightTab({
               </View>
 
               <View className="flex-1 justify-center gap-0 px-sm pr-14">
-                <Text className="text-lg text-secondary/80 ">To</Text>
                 <Text
-                  className={`text-2xl font-semibold ${arrParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
+                  className={`text-xl font-semibold ${arrParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
                 >
-                  {arrParsed.name || "Select arrival airport"}
+                  {arrParsed.name || "Select Arrival Airport"}
                 </Text>
               </View>
             </View>

@@ -4,28 +4,16 @@ export enum IconSetProvider {
   feather,
 }
 
-export enum ActivityType {
-  plan = 0,
+export enum TripPlanType {
+  activity = 0,
   flight = 1,
   stay = 2, // checkin and checkout
   transit = 3, // ride, bike, boat, bus, taxi, train, ferry
   rideRental = 4, // RV, yatch, Motorbike, Motorcycle, car, bike
   tour = 5,
-  // preparation = 6,
-  // cafeRestaurant = 4, // food, eat, drink, snack, coffee, bar, lounge, pub
-  //more
-  // sightseeing = 10,
-  // shopppingAndService = 6, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
-  // entertainmentAndRecreation = 7, //park, museum, gym, cinema, stadium, zoo, concert
-  // nature = 5, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
-  // walk = 9, TODO: reenable for the future, do not enable yet
-  // hikeOrCamp = 13, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
-  // rest = 12,
-  // motorcycleRide = 14, // motorbike 
-  // meetup = 15,
 }
 
-export enum ActivityPlanType {
+export enum ActivityType {
   preparation = 1,
   restaurant = 2,
   cafeOrBar = 3, // food, eat, drink, snack, coffee, bar, lounge, pub
@@ -39,6 +27,10 @@ export enum ActivityPlanType {
   meetup = 12,
   walk = 8,
 }
+
+// // Aliases for transition and backwards compatibility
+// export { TripPlanType as PlanType };
+// export { ActivityType as PlanActivityType, ActivityType as ActivityPlanType };
 
 export enum StatusType {
   travel = 1,
@@ -198,70 +190,58 @@ export function getTripTypeLabel(type?: TripType | null): string {
   }
 }
 
-export function getActivityTypeLabel(type: ActivityType): string {
+export function getTripPlanTypeLabel(type: TripPlanType): string {
   switch (type) {
-    case ActivityType.plan:
-      return "Plan";
-    case ActivityType.flight:
+    case TripPlanType.activity:
+      return "Activity";
+    case TripPlanType.flight:
       return "Flight";
-    case ActivityType.stay:
+    case TripPlanType.stay:
       return "Stay";
-    // case ActivityType.cafeRestaurant:
-    //   return "Cafe/Restaurant";
-    // case ActivityType.nature:
-    //   return "Nature";
-    // case ActivityType.shopppingAndService:
-    //   return "Shopping";
-    // case ActivityType.entertainmentAndRecreation:
-    //   return "Entertainment";
-    // case ActivityType.walk:
-    //   return "Walk";
-    // case ActivityType.sightseeing:
-    //   return "Sightseeing";
-    // case ActivityType.preparation:
-    //   return "Preparation";
-    // case ActivityType.hikeOrCamp:
-    //   return "Hike / Camp";
-    case ActivityType.transit:
+    case TripPlanType.transit:
       return "Transit";
-    case ActivityType.rideRental:
+    case TripPlanType.rideRental:
       return "Rental";
-      case ActivityType.tour:
+    case TripPlanType.tour:
       return "Tour";
     default:
       return "Activity";
   }
 }
 
-export function getActivityPlanTypeLabel(type: ActivityPlanType): string {
+export function getActivityTypeLabel(type: ActivityType): string {
   switch (type) {
-    case ActivityPlanType.preparation:
+    case ActivityType.preparation:
       return "Preparation";
-    case ActivityPlanType.restaurant:
+    case ActivityType.restaurant:
       return "Restaurant";
-    case ActivityPlanType.cafeOrBar:
+    case ActivityType.cafeOrBar:
       return "Cafe / Bar";
-    case ActivityPlanType.sightseeing:
+    case ActivityType.sightseeing:
       return "Sightseeing";
-    case ActivityPlanType.shopping:
+    case ActivityType.shopping:
       return "Shopping";
-    case ActivityPlanType.entertainment:
+    case ActivityType.entertainment:
       return "Entertainment";
-    case ActivityPlanType.nature:
+    case ActivityType.nature:
       return "Nature";
-    case ActivityPlanType.walk:
+    case ActivityType.walk:
       return "Walk";
-    case ActivityPlanType.hikeOrCamp:
+    case ActivityType.hikeOrCamp:
       return "Hike / Camp";
-    case ActivityPlanType.rest:
+    case ActivityType.rest:
       return "Rest";
-    case ActivityPlanType.motorcycleRide:
+    case ActivityType.motorcycleRide:
       return "Motorcycle Ride";
-    case ActivityPlanType.meetup:
+    case ActivityType.meetup:
       return "Meetup";
     default:
       return "Plan";
   }
 }
+
+// Aliases for transition and backwards compatibility
+export const getActivityPlanTypeLabel = getActivityTypeLabel;
+export const getPlanTypeLabel = getTripPlanTypeLabel;
 
 

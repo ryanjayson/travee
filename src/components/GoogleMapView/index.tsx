@@ -36,7 +36,7 @@ export const GoogleMapView = ({
   apiKey = DEFAULT_GOOGLE_KEY,
   mapType = "roadmap",
   showTraffic = false,
-  showZoomControls = true,
+  showZoomControls = false,
   showBusinesses = false,
   customMapStyles,
   showConnectors = false,
@@ -45,7 +45,7 @@ export const GoogleMapView = ({
   connectorWidth = 6,
   connectorOpacity = 1,
   connectorDashed = false,
-  connectorGeodesic = true,
+  connectorGeodesic = false,
   connectByType = false,
   testID = "google-map-view",
 }: GoogleMapViewProps) => {

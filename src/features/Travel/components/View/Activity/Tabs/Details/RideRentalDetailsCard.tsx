@@ -2,7 +2,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { Text, View } from "react-native";
 import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateTimeUtils";
-import { RideRentalDetailsDto } from "../../../../../types/TravelDto";
+import { DestinationDto, RideRentalDetailsDto } from "../../../../../types/TravelDto";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
 
@@ -10,6 +10,12 @@ interface RideRentalDetailsCardProps {
   data: RideRentalDetailsDto;
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
+
+const getLocationTitle = (loc?: string | DestinationDto | null): string => {
+  if (!loc) return "";
+  if (typeof loc === "string") return loc;
+  return loc.name || loc.city || loc.address || "";
+};
 
 export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
   data,
@@ -22,10 +28,14 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
       : data.price
     : null;
 
+  const pickupLoc = getLocationTitle(data.pickupLocation);
+  const dropoffLoc = getLocationTitle(data.dropoffLocation);
+  const addressLoc = getLocationTitle(data.address);
+
   const locationText =
-    data.pickupLocation && data.dropoffLocation && data.pickupLocation !== data.dropoffLocation
-      ? `${data.pickupLocation} → ${data.dropoffLocation}`
-      : data.address || data.pickupLocation || data.dropoffLocation || data.destinationAddressData?.name || "";
+    pickupLoc && dropoffLoc && pickupLoc !== dropoffLoc
+      ? `${pickupLoc} → ${dropoffLoc}`
+      : addressLoc || pickupLoc || dropoffLoc || data.destinationAddressData?.name || "";
 
   const hasRentalInfo = Boolean(
     data.vehicleModel ||
@@ -33,8 +43,8 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
     data.bookingReference ||
     data.bookingStatus ||
     data.price ||
-    data.pickupLocation ||
-    data.dropoffLocation ||
+    pickupLoc ||
+    dropoffLoc ||
     data.websiteAddress
   );
 
@@ -135,14 +145,14 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
             />
             <Field
               label="Pick-up Location"
-              value={data.pickupLocation}
+              value={pickupLoc}
               icon="place"
               showBorder={false}
               borderColor="border-[#384690]"
             />
             <Field
               label="Drop-off Location"
-              value={data.dropoffLocation}
+              value={dropoffLoc}
               icon="pin-drop"
               showBorder={false}
               borderColor="border-[#384690]"

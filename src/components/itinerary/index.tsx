@@ -11,7 +11,7 @@ import {
 } from "react-native";
 
 import { Activity, ActivitySection } from "../../dtos/ItineraryDto";
-import { activityService } from "../../services/activityService";
+import { activityService } from "../../services/_activityService";
 
 interface Section {
   id: string;

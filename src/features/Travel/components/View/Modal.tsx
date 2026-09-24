@@ -10,7 +10,7 @@ import ViewTravel from ".";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import { useTravelContext } from "../../../../context/TravelContext";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
-import { TravelMenuAction, ActivityType } from "../../../../types/enums";
+import { TravelMenuAction, TripPlanType } from "../../../../types/enums";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
 import CreateTripModal from "../CreateOrEdit/Modal";
 import TravelActionFAB from "./TravelActionFAB";
@@ -357,7 +357,7 @@ const ViewTripModal = ({
               openActivityTypeModal(undefined, travelPlan.travel.id);
               return;
             }
-            if (type === ActivityType.plan) {
+            if (type === TripPlanType.activity || type === TripPlanType.plan) {
               const allTripDestinations =
                 travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0
                   ? travelPlan.travel.tripDestinations

@@ -2,7 +2,7 @@ import React from "react";
 import { Formik } from "formik";
 import { fireEvent } from "@testing-library/react-native";
 import TransportationTab from "../TransportationTab";
-import { ActivityType } from "@/types/enums";
+import { TripPlanType } from "@/types/enums";
 import { renderWithProviders } from "@/test-utils/renderWithProviders";
 
 // Mock useTravelPlan hook used by DateTime
@@ -15,7 +15,7 @@ jest.mock("@/features/Travel/hooks/useTravel", () => ({
 
 describe("TransportationTab Component", () => {
   const defaultValues = {
-    type: ActivityType.transit,
+    type: TripPlanType.transit,
     startDate: "2026-10-01",
     startTime: "09:00",
     endDate: "2026-10-01",

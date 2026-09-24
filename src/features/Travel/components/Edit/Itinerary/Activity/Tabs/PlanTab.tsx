@@ -9,7 +9,7 @@ import ActivityPlanTypeLookupModal, {
 import AddFieldModal, {
   APPLICABLE_PLAN_FIELDS,
 } from "../../../../Lookups/AddFieldModal";
-import { ActivityPlanType } from "../../../../../../../types/enums";
+import { ActivityType } from "../../../../../../../types/enums";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
 import { FadeInView } from "../../../../../../../components/animations";
 
@@ -168,7 +168,7 @@ export default function PlanTab({
         className="mb-5 mt-4"
       >
         <Text className="text-lg text-secondary/80 font-semibold mb-2">
-          Type of Plan
+          Type of Activity
         </Text>
 
         <TouchableOpacity
@@ -184,7 +184,7 @@ export default function PlanTab({
           accessibilityLabel={
             selectedPlanType
               ? `Plan type selected: ${selectedPlanType.label}. Tap to change.`
-              : "Select plan type"
+              : "Select activity type"
           }
         >
           <View className="flex-row items-center gap-3">
@@ -208,7 +208,7 @@ export default function PlanTab({
               <Text
                 className={`text-lg ${selectedPlanType ? "text-[#1D2939] font-semibold" : "text-[#98A2B3] font-normal"}`}
               >
-                {selectedPlanType ? selectedPlanType.label : "Select Plan Type"}
+                {selectedPlanType ? selectedPlanType.label : "Select Activity Type"}
               </Text>
               {selectedPlanType?.subtext && (
                 <Text className="text-sm text-[#667085] -mt-1" numberOfLines={1}>
@@ -437,7 +437,7 @@ export default function PlanTab({
         visible={showPlanTypeModal}
         onClose={() => setShowPlanTypeModal(false)}
         selectedType={values.planType}
-        onSelect={(type: ActivityPlanType) => {
+        onSelect={(type: ActivityType) => {
           setFieldValue?.("planType", type);
         }}
       />

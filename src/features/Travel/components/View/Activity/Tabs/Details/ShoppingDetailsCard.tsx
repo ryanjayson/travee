@@ -12,7 +12,7 @@ interface ShoppingDetailsCardProps {
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
-const shopColor = activityIcons.find((icon) => icon.name === ActivityType.shopppingAndService)?.color || "#E91E63";
+const shopColor = "#E91E63";
 
 const handleOpenLink = (url: string) => {
   if (url) {

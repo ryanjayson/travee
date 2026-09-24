@@ -17,7 +17,7 @@ export interface TravelDateModalProps {
   onConfirm: (startDate: Date, endDate: Date | null) => void;
 }
 
-const CALENDAR_THEME = {
+const CALENDAR_THEME: any = {
   todayTextColor: "#FFFFFF",
   todayBackgroundColor: "#B42318",
   selectedDayBackgroundColor: "#FFFFFF",

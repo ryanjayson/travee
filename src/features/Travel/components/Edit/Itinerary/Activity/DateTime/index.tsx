@@ -3,12 +3,12 @@ import { View, TouchableOpacity, Text, LayoutAnimation } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useFormikContext } from "formik";
 import { useTravelPlan } from "../../../../../hooks/useTravel";
-import { ActivityType } from "../../../../../../../types/enums";
+import { TripPlanType } from "../../../../../../../types/enums";
 import { FadeInView } from "../../../../../../../components/animations";
 
 interface DateTimeProps {
-  activityType?: ActivityType | number | string;
-  type?: ActivityType | number | string;
+  activityType?: TripPlanType | number | string;
+  type?: TripPlanType | number | string;
   title?: string;
   description?: string;
   startDate: string | null;
@@ -56,9 +56,9 @@ export default function DateTime({
   const finalAllowedClear = allowedClear && !isSectionDateSet;
 
   const isInherentlyRanged =
-    effectiveActivityType === ActivityType.stay ||
-    effectiveActivityType === ActivityType.transit ||
-    effectiveActivityType === ActivityType.rideRental;
+    effectiveActivityType === TripPlanType.stay ||
+    effectiveActivityType === TripPlanType.transit ||
+    effectiveActivityType === TripPlanType.rideRental;
 
   const [showEndDateTime, setShowEndDateTime] = useState<boolean>(
     Boolean(endDate || isInherentlyRanged)
@@ -70,31 +70,31 @@ export default function DateTime({
     }
   }, [endDate]);
 
-  const defaultTitle = effectiveActivityType === ActivityType.stay
+  const defaultTitle = effectiveActivityType === TripPlanType.stay
     ? "Check-In Date & Time"
-    : effectiveActivityType === ActivityType.transit
+    : effectiveActivityType === TripPlanType.transit
       ? "Departure & Arrival Date & Time"
-      : effectiveActivityType === ActivityType.rideRental
+      : effectiveActivityType === TripPlanType.rideRental
         ? "Rental Period"
         : "Date & Time";
 
-  const defaultDescription = (effectiveActivityType === ActivityType.stay || effectiveActivityType === ActivityType.transit || effectiveActivityType === ActivityType.rideRental)
+  const defaultDescription = (effectiveActivityType === TripPlanType.stay || effectiveActivityType === TripPlanType.transit || effectiveActivityType === TripPlanType.rideRental)
     ? null
     : "Plans with date & time are sorted based on their scheduled and cannot be reordered.";
 
-  const startDateLabel = effectiveActivityType === ActivityType.stay
+  const startDateLabel = effectiveActivityType === TripPlanType.stay
     ? "Check-In"
-    : effectiveActivityType === ActivityType.transit
+    : effectiveActivityType === TripPlanType.transit
       ? "Departure"
-      : effectiveActivityType === ActivityType.rideRental
+      : effectiveActivityType === TripPlanType.rideRental
         ? "Pick-Up"
         : "Start";
 
-  const endDateLabel = effectiveActivityType === ActivityType.stay
+  const endDateLabel = effectiveActivityType === TripPlanType.stay
     ? "Check-Out"
-    : effectiveActivityType === ActivityType.transit
+    : effectiveActivityType === TripPlanType.transit
       ? "Arrival"
-      : effectiveActivityType === ActivityType.rideRental
+      : effectiveActivityType === TripPlanType.rideRental
         ? "Drop-Off"
         : "End Date";
 

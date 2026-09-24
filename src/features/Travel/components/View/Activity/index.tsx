@@ -22,7 +22,7 @@ import FilesTab from "./Tabs/FilesTab";
 import NotesTab from "./Tabs/NotesTab";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 
-import { ActivityType, getActivityTypeLabel, ActivityPlanType, getActivityPlanTypeLabel } from "../../../../../types/enums";
+import { TripPlanType, getTripPlanTypeLabel, ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
 import { ACTIVITY_PLAN_TYPES } from "../../Lookups/ActivityPlanTypeLookupModal";
 import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 
@@ -131,7 +131,7 @@ const ViewItineraryActivity = ({
     if (type == null) return { text: "None", color: "#9E9E9E" };
     const iconConfig = activityIcons.find((i) => i.activityType === type);
     const color = iconConfig?.color ?? "#9E9E9E";
-    const text = type != null ? getActivityTypeLabel(type) : "None";
+    const text = type != null ? getTripPlanTypeLabel(type) : "None";
     return { text, color };
   };
 
@@ -145,7 +145,7 @@ const ViewItineraryActivity = ({
     }
     const label =
       typeof planType === "number" || (!isNaN(Number(planType)) && typeof planType !== "boolean")
-        ? getActivityPlanTypeLabel(Number(planType))
+        ? getActivityTypeLabel(Number(planType))
         : String(planType);
     return { text: label, color: "#c10003" };
   };
@@ -282,7 +282,7 @@ const ViewItineraryActivity = ({
                   </Text>
                 </View>
 
-                {itineraryActivity.type == ActivityType.plan && itineraryActivity.planType && (
+                {itineraryActivity.type == TripPlanType.plan && itineraryActivity.planType && (
                   <View className="flex-row items-center ml-0.5">
                     <Text className="text-base text-tertiary/50 mr-0.5">
                       /

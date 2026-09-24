@@ -4,7 +4,7 @@ import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native"
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
 import DateTime from "../DateTime";
-import { ActivityType } from "../../../../../../../types/enums";
+import { TripPlanType } from "../../../../../../../types/enums";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 
 export interface TransitModeItem {
@@ -101,7 +101,7 @@ export default function TransportationTab({
   const currentMode = values.transportationDetails?.mode || null;
   const activityColor =
     activityIcons.find(
-      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === ActivityType.transit
+      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === TripPlanType.transit
     )?.color || colors.primary || "#02899a";
 
   const pickupTitle = getLocationTitle(values.transportationDetails?.pickupLocation);
@@ -144,9 +144,9 @@ export default function TransportationTab({
             </View>
 
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
-              <Text className="text-sm text-secondary/80">From</Text>
+              {/* <Text className="text-sm text-secondary/80">From</Text> */}
               <Text
-                className={`text-2xl font-semibold leading-10px ${pickupTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                className={`text-xl font-semibold leading-10px ${pickupTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
               >
                 {pickupTitle || "Select departure location"}
               </Text>
@@ -178,7 +178,7 @@ export default function TransportationTab({
             }}
             className="absolute right-4 top-4 z-20 p-2 rounded-full items-center justify-center "
           >
-            <Icon name="close" size={18} color="#667085" />
+            <Icon name="close" size={18} color="#667085" style={{ opacity: 0.5 }} />
           </TouchableOpacity>
         )}
       </View>
@@ -239,9 +239,8 @@ export default function TransportationTab({
               </View>
 
               <View className="flex-1 justify-center gap-0 px-sm pr-14">
-                <Text className="text-sm text-secondary/80">To</Text>
                 <Text
-                  className={`text-2xl font-semibold leading-10px ${dropoffTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                  className={`text-xl font-semibold leading-10px ${dropoffTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
                 >
                   {dropoffTitle || "Select arrival location"}
                 </Text>
@@ -273,7 +272,7 @@ export default function TransportationTab({
               }}
               className="absolute right-4 bottom-4 z-20 p-2 rounded-full items-center justify-center "
             >
-              <Icon name="close" size={18} color="#667085" />
+              <Icon name="close" size={18} color="#667085" style={{ opacity: 0.5 }} />
             </TouchableOpacity>
           )}
         </View>
@@ -282,7 +281,7 @@ export default function TransportationTab({
 
       {/* Date & Time Section */}
       <DateTime
-        activityType={ActivityType.transit}
+        activityType={TripPlanType.transit}
         title="Departure & Arrival Date & Time"
         startDate={values.startDate}
         startTime={values.startTime}

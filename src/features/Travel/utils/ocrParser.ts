@@ -1,5 +1,5 @@
 import { ItineraryActivity } from "../types/TravelDto";
-import { ActivityType } from "../../../types/enums";
+import { TripPlanType } from "../../../types/enums";
 
 /**
  * Heuristic OCR parser for Travelled booking documents, screenshots, and receipts.
@@ -21,7 +21,7 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
   let endDate: string | null = null;
   let endTime: string | null = null;
   let destination = "";
-  let resolvedType = ActivityType.plan;
+  let resolvedType = TripPlanType.plan;
   
   // Heuristic 1: Detect Initial Title/Merchant from first lines
   const ignorePatterns = /^(booking|reservation|confirmation|ref|pnr|date|time|ticket|pass|order|receipt|tax|invoice|welcome|hello|dear|hi|your|trip|travel)/i;
@@ -39,54 +39,54 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
   // Heuristic 2: Advanced Travel Category Scoring Engine (Flight, Hotel, Airbnb, Train, Car, Ferry, Bus, Cruise, Attraction, Group Tour)
   const scores = {
     flight: {
-      type: ActivityType.flight,
+      type: TripPlanType.flight,
       label: "Flight",
       keywords: ["flight", "airline", "airport", "boarding pass", "e-ticket", "pnr", "carrier", "gate", "terminal", "layover", "cabin", "seat", "flight number", "airplane", "airways", "airlines"]
     },
     hotel: {
-      type: ActivityType.stay,
+      type: TripPlanType.stay,
       label: "Hotel",
       keywords: ["hotel", "motel", "resort", "inn", "suites", "accommodation", "check-in", "check-out", "booking.com", "expedia", "agoda", "reception", "breakfast", "night stay", "lodging"]
     },
     airbnb: {
-      type: ActivityType.stay,
+      type: TripPlanType.stay,
       label: "Airbnb",
       keywords: ["airbnb", "homestay", "host", "guest house", "villa", "apartment stay", "stay details", "house rules", "shared room", "superhost"]
     },
     train: {
-      type: ActivityType.transit,
+      type: TripPlanType.transit,
       label: "Train",
       keywords: ["train", "railway", "rail", "eurostar", "amtrak", "shinkansen", "carriage", "platform", "track", "station", "express train", "jr pass", "tgv"]
     },
     car: {
-      type: ActivityType.rideRental,
+      type: TripPlanType.rideRental,
       label: "Car Rental",
       keywords: ["car rental", "car hire", "hertz", "avis", "enterprise", "sixt", "budget car", "rental agreement", "vehicle lease", "pick-up location", "drop-off", "driver license"]
     },
     taxi: {
-      type: ActivityType.transit,
+      type: TripPlanType.transit,
       label: "Taxi",
       keywords: ["taxi", "cab", "uber", "grab", "lyft", "ride-sharing", "metered fare", "taxi receipt", "driver details"]
     },
     ferry: {
-      type: ActivityType.transit,
+      type: TripPlanType.transit,
       label: "Ferry",
       keywords: ["ferry", "pier", "port", "boat", "ferry terminal", "ferry ticket", "catamaran", "hydrofoil", "seacat"]
     },
     bus: {
-      type: ActivityType.transit,
+      type: TripPlanType.transit,
       label: "Bus",
       keywords: ["bus", "coach", "greyhound", "flixbus", "bus station", "terminal bus", "bus ticket", "shuttle", "transit link"]
     },
     cruise: {
-      type: ActivityType.transit,
+      type: TripPlanType.transit,
       label: "Cruise",
       keywords: ["cruise", "ship", "cruise line", "royal caribbean", "carnival", "msc cruise", "cabin number", "deck number", "port of call", "cruise terminal", "boarding card"]
     },
   };
 
   let bestCategory = {
-    type: ActivityType.plan,
+    type: TripPlanType.plan,
     label: "Activity",
     score: 0
   };
@@ -369,7 +369,7 @@ export const parseExtractedText = (text: string): Partial<ItineraryActivity> => 
     startDate: startDate ? new Date(`${startDate}T${startTime || "00:00"}:00`) : undefined,
     endDate: endDate ? new Date(`${endDate}T${endTime || "00:00"}:00`) : undefined,
     destination: destination.trim(),
-    type: resolvedType !== ActivityType.plan ? resolvedType : undefined,
+    type: resolvedType !== TripPlanType.plan ? resolvedType : undefined,
   };
 };
 

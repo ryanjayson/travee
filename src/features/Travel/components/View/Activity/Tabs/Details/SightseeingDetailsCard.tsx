@@ -12,7 +12,7 @@ interface SightseeingDetailsCardProps {
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
-const sightColor = activityIcons.find((icon) => icon.name === ActivityType.sightseeing)?.color || "#FF9800";
+const sightColor = "#FF9800";
 
 const handleOpenLink = (url: string) => {
   if (url) {

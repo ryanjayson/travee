@@ -11,7 +11,7 @@ import {
 import { useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { useConfirm } from "../../../../context/ConfirmContext";
-import { ActivityType } from "../../../../types/enums";
+import { TripPlanType } from "../../../../types/enums";
 import { useAuth } from "../../../Auth/hooks/AuthContext";
 import {
   useChecklistGroups,
@@ -32,7 +32,7 @@ interface ContextOption {
   id: string;
   label: string;
   type: ContextType;
-  activityType?: ActivityType;
+  activityType?: TripPlanType;
 }
 
 interface TripChecklistProps {
@@ -84,7 +84,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
         id: a.id!,
         label: a.title,
         type: "activity",
-        activityType: (a.type ?? ActivityType.plan) as ActivityType,
+        activityType: (a.type ?? TripPlanType.plan) as TripPlanType,
       }));
     return [...groupOpts, ...activityOpts];
   }, [groups, activities]);
@@ -254,7 +254,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
               <Icon name="folder" size={20} color="#263F69" />
             ) : selectedContext?.type === "activity" ? (
               <ActivityIcon
-                type={(selectedContext.activityType ?? ActivityType.plan) as ActivityType}
+                type={(selectedContext.activityType ?? TripPlanType.plan) as TripPlanType}
                 size={20}
                 color="#263F69"
               />
@@ -309,7 +309,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
                         <Icon name="folder" size={20} color="#263F69" />
                       ) : (
                         <ActivityIcon
-                          type={(option.activityType ?? ActivityType.plan) as ActivityType}
+                          type={(option.activityType ?? TripPlanType.plan) as TripPlanType}
                           size={20}
                           color="#666"
                         />
@@ -417,7 +417,7 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
             <View key={`activity-${activity.id}`} className="mb-5">
               <View className="flex-row items-center gap-2 mb-2">
                 <ActivityIcon
-                  type={(activity.type ?? ActivityType.plan) as ActivityType}
+                  type={(activity.type ?? TripPlanType.plan) as TripPlanType}
                   size={18}
                   color="#666"
                 />

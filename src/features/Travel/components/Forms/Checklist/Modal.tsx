@@ -19,7 +19,7 @@ import { ChecklistItem, ItineraryActivity } from "../../../types/TravelDto";
 import EditChecklistItem from "./index";
 import { useMemo } from "react";
 import { useChecklistGroups } from "../../../hooks/useChecklist";
-import { ActivityType } from "../../../../../types/enums";
+import { TripPlanType } from "../../../../../types/enums";
 import ContextLookupModal, { ContextOption } from "../../Lookups/ContextLookupModal";
 
 interface ChecklistModalProps {
@@ -96,7 +96,7 @@ const ChecklistModal = ({
         id: a.id!,
         label: a.title!,
         type: "activity",
-        activityType: (a.type ?? ActivityType.plan) as ActivityType,
+        activityType: (a.type ?? TripPlanType.plan) as TripPlanType,
       }));
     return [...groupOpts, ...activityOpts];
   }, [groups, activities]);
@@ -123,7 +123,7 @@ const ChecklistModal = ({
             id: matchingActivity.id!,
             label: matchingActivity.title || "Activity",
             type: "activity",
-            activityType: (matchingActivity.type ?? ActivityType.plan) as ActivityType,
+            activityType: (matchingActivity.type ?? TripPlanType.plan) as TripPlanType,
           };
           if (selectedContext?.id !== newContext.id || selectedContext?.type !== newContext.type) {
             setSelectedContext(newContext);
@@ -145,7 +145,7 @@ const ChecklistModal = ({
             id: currentAct.id!,
             label: currentAct.title || "Activity",
             type: "activity",
-            activityType: (currentAct.type ?? ActivityType.plan) as ActivityType,
+            activityType: (currentAct.type ?? TripPlanType.plan) as TripPlanType,
           });
         } else {
           setSelectedContext(null);

@@ -37,7 +37,7 @@ import ViewTravel from "../components/View";
 import Activity from "../components/View/Activity";
 import TravelModals from "../components/TravelModals";
 import TravelActionFAB from "../components/View/TravelActionFAB";
-import { ActivityType } from "../../../types/enums";
+import { TripPlanType } from "../../../types/enums";
 import { activityIcons } from "../../../components/ActivityIcon";
 import type { RootStackParamList } from "../../../navigation/navigation.types";
 
@@ -49,14 +49,14 @@ interface TripDetailScreenProps {
   connectorColor?: string;
 }
 
-const EXCLUDED_DEFAULT_TYPES: readonly ActivityType[] = [
-  ActivityType.flight,
-  ActivityType.stay,
-  ActivityType.rideRental,
-  ActivityType.transit,
+const EXCLUDED_DEFAULT_TYPES: readonly TripPlanType[] = [
+  TripPlanType.flight,
+  TripPlanType.stay,
+  TripPlanType.rideRental,
+  TripPlanType.transit,
 ];
 
-const getActivityPinColor = (type?: ActivityType | number): string => {
+const getActivityPinColor = (type?: TripPlanType | number): string => {
   if (type == null) return "#263F69";
   const iconConfig = activityIcons.find((item) => item.activityType === type);
   return iconConfig ? iconConfig.color : "#263F69";
@@ -456,7 +456,7 @@ export const TripDetailScreen = ({
   } | null>(null);
 
   useEffect(() => {
-    if (!activeActivity || activeActivity.type !== ActivityType.flight) {
+    if (!activeActivity || activeActivity.type !== TripPlanType.flight) {
       setAsyncFlightCoords(null);
       return;
     }
@@ -513,7 +513,7 @@ export const TripDetailScreen = ({
   useEffect(() => {
     if (
       !activeActivity ||
-      (activeActivity.type !== ActivityType.transit && activeActivity.type !== ActivityType.rideRental)
+      (activeActivity.type !== TripPlanType.transit && activeActivity.type !== TripPlanType.rideRental)
     ) {
       setAsyncTransitCoords(null);
       return;
@@ -584,7 +584,7 @@ export const TripDetailScreen = ({
       const actColor = getActivityPinColor(actType);
 
       // Case 1: Flight activity -> departure and arrival pins with flight connector line
-      if (actType === ActivityType.flight) {
+      if (actType === TripPlanType.flight) {
         const flightPins: GoogleMapPin[] = [];
         const depStr = activeActivity.flightDetails?.departureAirport || activeActivity.destination || "";
         const arrStr = activeActivity.flightDetails?.arrivalAirport || "";
@@ -612,7 +612,7 @@ export const TripDetailScreen = ({
             latitude: depCoords.latitude,
             longitude: depCoords.longitude,
             title: `Departure: ${depParsed.name || depParsed.code || "Departure Airport"}`,
-            type: ActivityType.flight,
+            type: TripPlanType.flight,
             color: actColor,
           });
         }
@@ -623,7 +623,7 @@ export const TripDetailScreen = ({
             latitude: arrCoords.latitude,
             longitude: arrCoords.longitude,
             title: `Arrival: ${arrParsed.name || arrParsed.code || "Arrival Airport"}`,
-            type: ActivityType.flight,
+            type: TripPlanType.flight,
             color: actColor,
           });
         }
@@ -637,7 +637,7 @@ export const TripDetailScreen = ({
       }
 
       // Case 2: Transit or RideRental activity -> pickup and dropoff pins with connector line
-      if (actType === ActivityType.transit || actType === ActivityType.rideRental) {
+      if (actType === TripPlanType.transit || actType === TripPlanType.rideRental) {
         const transitPins: GoogleMapPin[] = [];
         const destData = activeActivity.destinationData as any;
         const transDetails = activeActivity.transportationDetails as any;
@@ -741,7 +741,7 @@ export const TripDetailScreen = ({
           });
         }
 
-        const routeMode = (actType === ActivityType.transit ? "TRANSIT" : "DRIVING") as GoogleMapRouteMode;
+        const routeMode = (actType === TripPlanType.transit ? "TRANSIT" : "DRIVING") as GoogleMapRouteMode;
 
         return {
           pins: transitPins,
@@ -847,13 +847,13 @@ export const TripDetailScreen = ({
     if (!activeActivityId || !activeActivity) return null;
 
     // For a flight with both departure & arrival pins, let fitBounds frame both airports!
-    if (activeActivity.type === ActivityType.flight && pins.length > 1) {
+    if (activeActivity.type === TripPlanType.flight && pins.length > 1) {
       return null;
     }
 
     // For transit and rental with both pickup & dropoff pins, let fitBounds frame both stops!
     if (
-      (activeActivity.type === ActivityType.transit || activeActivity.type === ActivityType.rideRental) &&
+      (activeActivity.type === TripPlanType.transit || activeActivity.type === TripPlanType.rideRental) &&
       pins.length > 1
     ) {
       return null;
@@ -1079,7 +1079,7 @@ export const TripDetailScreen = ({
             //   openActivityTypeModal(undefined, travelPlan.travel.id);
             //   return;
             // }
-            if (type === ActivityType.plan) {
+            if (type === TripPlanType.activity || type === TripPlanType.plan) {
               const allTripDestinations =
                 travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0
                   ? travelPlan.travel.tripDestinations

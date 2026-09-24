@@ -228,7 +228,7 @@ const OsmMapPinModal = ({
 
   // Search state
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [searchResults, setSearchResults] = useState<NominatimSearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<PlaceSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [showSearchResults, setShowSearchResults] = useState<boolean>(false);
 
@@ -789,7 +789,7 @@ const OsmMapPinModal = ({
             <View style={styles.searchResultsContainer}>
               <FlatList
                 data={searchResults}
-                keyExtractor={(item) => String(item.place_id)}
+                keyExtractor={(item) => String(item.id)}
                 keyboardShouldPersistTaps="always"
                 renderItem={({ item }) => (
                   <TouchableOpacity

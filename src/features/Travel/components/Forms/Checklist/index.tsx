@@ -9,7 +9,7 @@ import {
 import { Checkbox, TextInput, useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import TouchButton from "../../../../../components/atoms/TouchButton";
-import { ActivityType } from "../../../../../types/enums";
+import { TripPlanType } from "../../../../../types/enums";
 import { useAuth } from "../../../../Auth/hooks/AuthContext";
 import {
   useSaveChecklistItemMutation,
@@ -174,7 +174,7 @@ const EditChecklistItem = ({
               <Icon name="folder" size={20} color="#263F69" />
             ) : selectedContext?.type === "activity" ? (
               <ActivityIcon
-                type={(selectedContext.activityType ?? ActivityType.plan) as ActivityType}
+                type={(selectedContext.activityType ?? TripPlanType.plan) as TripPlanType}
                 size={24}
                 color="#263F69"
                 showIconOnly

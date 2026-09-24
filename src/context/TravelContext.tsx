@@ -34,7 +34,7 @@ import {
   TripMember,
   ItinerarySection,
 } from "../features/Travel/types/TravelDto";
-import { ActivityType } from "../types/enums";
+import { TripPlanType } from "../types/enums";
 
 const initialContextValue: TravelContextType = {
   expenseModal: {
@@ -358,9 +358,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       itineraryActivity: ItineraryActivity | null = null,
       itinerarySectionId?: string,
       travelId?: string,
-      initialType?: ActivityType
+      initialType?: TripPlanType
     ) => {
-      if (!itineraryActivity && initialType === ActivityType.plan) {
+      if (!itineraryActivity && initialType === TripPlanType.plan) {
         openGoogleSearchModal(itinerarySectionId, travelId);
       } else if (itineraryActivity || initialType !== undefined) {
         setActivityModal({
@@ -368,7 +368,7 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
           itineraryActivity,
           itinerarySectionId,
           travelId,
-          initialType: initialType ?? itineraryActivity?.type ?? ActivityType.plan,
+          initialType: initialType ?? itineraryActivity?.type ?? TripPlanType.plan,
         });
       } else {
         setActivityTypeModal({

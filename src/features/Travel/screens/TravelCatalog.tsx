@@ -462,7 +462,7 @@ const TravelCatalog = () => {
                   height: 88,
                 },
               },
-            }}
+            } as any}
             renderArrow={(direction: string) => (
               <View className="bg-gray-50 rounded-full w-14 h-14 items-center justify-center">
                 <Icon

@@ -19,7 +19,7 @@ import { Divider, Switch } from 'react-native-paper';
 import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { Image } from "react-native";
 import { DestinationDto, ItineraryActivity } from "../../../types/TravelDto";
-import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
+import { TripPlanType, getTripPlanTypeLabel } from "../../../../../types/enums";
 import { useUpdateActivityMutation, useDeleteActivityMutation } from "../../../hooks/useActivity";
 import ActivityIcon from "../../../../../components/ActivityIcon";
 import MapboxDestinationSelectorModal from "../../MapboxDestinationSelector/Modal";
@@ -50,7 +50,7 @@ export interface ActivityFormValues {
   id?: string;
   title: string;
   description: string;
-  type?: ActivityType | number;
+  type?: TripPlanType | number;
   sortOrder?: string;
   startDate: string | null;
   startTime: string;
@@ -103,7 +103,7 @@ const EditActivity = ({
         title: values.title,
         description: values.description,
         sortOrder: values.sortOrder || "",
-        type: values.type as ActivityType,
+        type: values.type as TripPlanType,
         startDate: finalStartDate,
         endDate: finalEndDate,
         destination: values.destination,
@@ -149,7 +149,7 @@ const EditActivity = ({
         id: itineraryActivity?.id,
         title: itineraryActivity?.title || "",
         description: itineraryActivity?.description || "",
-        type: itineraryActivity?.type ?? ActivityType.plan,
+        type: itineraryActivity?.type ?? TripPlanType.plan,
         sortOrder: itineraryActivity?.sortOrder || "",
         startDate: itineraryActivity?.startDate ? new Date(itineraryActivity.startDate).toISOString().split('T')[0] : null,
         startTime: itineraryActivity?.startDate && String(itineraryActivity.startDate).includes('T') ? new Date(itineraryActivity.startDate).toISOString().substring(11, 16) : "08:00",
@@ -331,7 +331,7 @@ const EditActivity = ({
                     <Icon name="style" size={32} color={"#B3B3B3"} />
                   )}
                   <Text className="text-base text-gray-800 capitalize font-medium">
-                    {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
+                    {values.type != null ? getTripPlanTypeLabel(values.type) : "Select Type..."}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -442,7 +442,7 @@ const EditActivity = ({
                     </TouchableOpacity>
                   </View>
                   <ScrollView>
-                    {Object.keys(ActivityType)
+                    {Object.keys(TripPlanType)
                       .filter((key) => isNaN(Number(key)))
                       .filter((key) => key !== "walk")
                       .map((key) => (
@@ -452,14 +452,14 @@ const EditActivity = ({
                           onPress={() => {
                             setValues({
                               ...values,
-                              type: ActivityType[key as keyof typeof ActivityType],
+                              type: TripPlanType[key as keyof typeof TripPlanType],
                             });
                             setShowPrimaryTypeModal(false);
                           }}
                         >
-                          <ActivityIcon type={ActivityType[key as keyof typeof ActivityType]} size={24} color="#183B7A" />
+                          <ActivityIcon type={TripPlanType[key as keyof typeof TripPlanType]} size={24} color="#183B7A" />
                           <Text className="text-base text-gray-800 capitalize">
-                            {getActivityTypeLabel(ActivityType[key as keyof typeof ActivityType])}
+                            {getTripPlanTypeLabel(TripPlanType[key as keyof typeof TripPlanType])}
                           </Text>
                         </TouchableOpacity>
                       ))}

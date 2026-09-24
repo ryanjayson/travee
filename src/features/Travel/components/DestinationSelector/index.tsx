@@ -40,7 +40,7 @@ const DestinationSelector = ({ onClose, onSelect }: AddTravelModalProps) => {
                 id: data.place_id,
                 name: details.name || data.structured_formatting?.main_text || data.description,
                 address: details.formatted_address || data.structured_formatting?.secondary_text || data.description,
-                type: data.types?.[0] ? data.types[0].replace(/_/g, " ") : "Location",
+                type: (data as any).types?.[0] ? (data as any).types[0].replace(/_/g, " ") : (details as any)?.types?.[0] ? (details as any).types[0].replace(/_/g, " ") : "Location",
               };
               onSelect(place);
             }

@@ -14,7 +14,7 @@ import { FadeInView } from "../../../../../components/animations";
 import { useConfirm } from "../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../context/TravelContext";
-import { ActivityType, getActivityTypeLabel, ActivityPlanType, getActivityPlanTypeLabel } from "../../../../../types/enums";
+import { TripPlanType, getTripPlanTypeLabel, ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
 import { ACTIVITY_PLAN_TYPES } from "../../Lookups/ActivityPlanTypeLookupModal";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { ChecklistItem, ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
@@ -339,18 +339,18 @@ const ActivityItemCard = ({
     if (type == null) return { text: "None", color: "#9E9E9E" };
     const iconConfig = activityIcons.find((i) => i.activityType === type);
     const color = iconConfig?.color ?? "#9E9E9E";
-    const text = type != null ? getActivityTypeLabel(type) : "None";
+    const text = type != null ? getTripPlanTypeLabel(type) : "None";
     return { text, color };
   };
 
-  const getPlanTypeLabel = (planType?: ActivityPlanType | string | number | null): string => {
+  const getPlanTypeLabel = (planType?: ActivityType | string | number | null): string => {
     if (planType == null) return "";
     const match = ACTIVITY_PLAN_TYPES.find(
       (p) => p.type === planType || p.key === planType || String(p.type) === String(planType)
     );
     if (match) return match.label;
     if (typeof planType === "number" || (!isNaN(Number(planType)) && typeof planType !== "boolean")) {
-      return getActivityPlanTypeLabel(Number(planType));
+      return getActivityTypeLabel(Number(planType));
     }
     return String(planType);
   };
@@ -565,7 +565,7 @@ const ActivityItemCard = ({
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
 
                   </Text>
-                  {itineraryEventActivity.type == ActivityType.plan && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
+                  {itineraryEventActivity.type === TripPlanType.plan && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
                     <Text
                       style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
                       className="text-[8px] font-semibold text-gray/60 px-xxs"

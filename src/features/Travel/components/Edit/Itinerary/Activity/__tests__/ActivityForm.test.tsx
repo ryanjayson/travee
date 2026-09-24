@@ -1,7 +1,7 @@
 import React from "react";
 import { fireEvent, waitFor, act } from "@testing-library/react-native";
 import EditActivity from "../index";
-import { ActivityType, ActivityPlanType } from "@/types/enums";
+import { TripPlanType, ActivityType } from "@/types/enums";
 import { renderWithProviders } from "@/test-utils/renderWithProviders";
 
 const mockMutateAsync = jest.fn();
@@ -97,7 +97,7 @@ jest.mock("@/hooks/useLexicographicSort", () => ({
 describe("ActivityForm (EditActivity) Integration", () => {
   const defaultProps = {
     itineraryActivity: null,
-    initialType: ActivityType.plan,
+    initialType: TripPlanType.activity,
     onClose: jest.fn(),
     onOpenSectionModal: jest.fn(),
     onOpenPrimaryTypeModal: jest.fn(),
@@ -145,7 +145,7 @@ describe("ActivityForm (EditActivity) Integration", () => {
       expect(mockMutateAsync).toHaveBeenCalled();
       const payload = mockMutateAsync.mock.calls[0][0];
       expect(payload.title).toBe("Louvre Museum Visit");
-      expect(payload.type).toBe(ActivityType.plan);
+      expect(payload.type).toBe(TripPlanType.activity);
       expect(payload.travelId).toBe("travel-1");
       expect(payload.sectionId).toBe("section-1");
     });
@@ -158,7 +158,7 @@ describe("ActivityForm (EditActivity) Integration", () => {
       travelId: "travel-1",
       title: "Flight to Tokyo",
       description: "Non-stop flight on ANA",
-      type: ActivityType.flight,
+      type: TripPlanType.flight,
       flightDetails: {
         departureAirport: "LAX - Los Angeles International Airport",
         arrivalAirport: "HND - Tokyo Haneda Airport",
@@ -175,7 +175,7 @@ describe("ActivityForm (EditActivity) Integration", () => {
       <EditActivity
         {...defaultProps}
         itineraryActivity={existingActivity}
-        initialType={ActivityType.flight}
+        initialType={TripPlanType.flight}
       />
     );
 
@@ -188,7 +188,7 @@ describe("ActivityForm (EditActivity) Integration", () => {
 
   it("renders Stay tab when initialType is stay", () => {
     const { getByText } = renderWithProviders(
-      <EditActivity {...defaultProps} initialType={ActivityType.stay} />
+      <EditActivity {...defaultProps} initialType={TripPlanType.stay} />
     );
 
     expect(getByText(/stay details/i)).toBeTruthy();
@@ -197,7 +197,7 @@ describe("ActivityForm (EditActivity) Integration", () => {
 
   it("renders Rental tab when initialType is rideRental", () => {
     const { getByText } = renderWithProviders(
-      <EditActivity {...defaultProps} initialType={ActivityType.rideRental} />
+      <EditActivity {...defaultProps} initialType={TripPlanType.rideRental} />
     );
 
     expect(getByText(/rental details/i)).toBeTruthy();
@@ -206,7 +206,7 @@ describe("ActivityForm (EditActivity) Integration", () => {
 
   it("renders Transit tab when initialType is transit", () => {
     const { getByText } = renderWithProviders(
-      <EditActivity {...defaultProps} initialType={ActivityType.transit} />
+      <EditActivity {...defaultProps} initialType={TripPlanType.transit} />
     );
 
     expect(getByText(/transit details/i)).toBeTruthy();
