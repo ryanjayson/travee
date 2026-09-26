@@ -128,11 +128,6 @@ const CreateTripModal = ({
               { height: "100%" },
               {
                 // paddingTop: (mode === "edit" || keyboardVisible) ? insets.top + 0 : 0,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -8 },
-                shadowOpacity: 0.12,
-                shadowRadius: 16,
-                elevation: 24,
                 transform: [{ translateY }],
               }
             ]}

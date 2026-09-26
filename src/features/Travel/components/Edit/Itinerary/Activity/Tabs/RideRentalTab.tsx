@@ -97,10 +97,10 @@ export default function RideRentalTab({
   const dropoffSubtitle = getLocationSubtitle(values.rideRentalDetails?.dropoffLocation);
 
   return (
-    <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
-      <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
-        <Icon name="directions-car" size={26} color={"#34405480"} />
-        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
+    <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
+      <View className="flex-row gap-2 justify-start items-center mb-5">
+        <Icon name="directions-car" size={28} color={activityColor} />
+        <Text className="text-2xl font-semibold  text-secondary">
           Rental Details
         </Text>
       </View>
@@ -256,7 +256,7 @@ export default function RideRentalTab({
       />
 
       {/* 4. Vehicle Type Cards */}
-      <View className="mb-3 flex-1">
+      <View className="mb-3">
         <Text className="text-lg text-secondary/80 font-semibold mb-2 px-xs">
           Booking Details
         </Text>
@@ -309,7 +309,7 @@ export default function RideRentalTab({
                     <Icon
                       name={item.icon}
                       size={24}
-                      color={isSelected ? activityColor : "#475467"}
+                      color={isSelected ? activityColor : "#47546780"}
 
                     />
                   </View>
@@ -318,7 +318,7 @@ export default function RideRentalTab({
                     style={{
                       fontSize: 12,
                       fontWeight: isSelected ? "700" : "500",
-                      color: isSelected ? activityColor : "#344054",
+                      color: isSelected ? activityColor : "#34405480",
                     }}
                   >
                     {item.label}
@@ -331,7 +331,7 @@ export default function RideRentalTab({
       </View>
 
       {/* 5. Vehicle Model / Details */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.vehicleModel"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.vehicleModel"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Vehicle Model / Make"
           value={values.rideRentalDetails?.vehicleModel || ""}
@@ -341,7 +341,7 @@ export default function RideRentalTab({
       </View>
 
       {/* 7. Booking Reference */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingReference"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingReference"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Booking Reference"
           value={values.rideRentalDetails?.bookingReference || ""}
@@ -351,7 +351,7 @@ export default function RideRentalTab({
       </View>
 
       {/* 8. Website Link */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.websiteAddress"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.websiteAddress"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Website / Link"
           value={values.rideRentalDetails?.websiteAddress || ""}
@@ -402,7 +402,7 @@ export default function RideRentalTab({
 
 
       {/* Contact Name */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactName"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactName"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Contact Name"
           value={values.rideRentalDetails?.contactName || ""}
@@ -412,7 +412,7 @@ export default function RideRentalTab({
       </View>
 
       {/* Contact Number & Email Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactNumber"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactNumber"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Contact Number"
           value={values.rideRentalDetails?.contactNumber || ""}
@@ -421,7 +421,7 @@ export default function RideRentalTab({
           keyboardType="phone-pad"
         />
       </View>
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.emailAddress"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.emailAddress"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Email Address"
           value={values.rideRentalDetails?.emailAddress || ""}

@@ -127,80 +127,69 @@ export default function ChecklistTab({
 
   const renderContent = () => (
     <View className="flex-1 pb-6 pt-2 px-5">
-
-      {activityChecklistItems.length > 0 ? (
-        <View className="bg-gray-100 rounded-2xl border border-gray-200 overflow-hidden">
-          {activityChecklistItems.map((item) => (
-            <View
-              key={item.id}
-              className="flex-row items-center gap-3 px-4 py-4 border-b border-gray-200"
-            >
-              <TouchableOpacity
-                accessibilityRole="checkbox"
-                accessibilityLabel={
-                  item.isDone
-                    ? `Mark ${item.title} as incomplete`
-                    : `Mark ${item.title} as complete`
-                }
-                accessibilityState={{ checked: item.isDone }}
-                onPress={() => handleToggleChecklistItem(item)}
-                className={`w-6 h-6 rounded-full border-2 items-center justify-center shrink-0 ${item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
-                  }`}
-              >
-                {item.isDone && <Icon name="check" size={14} color="#FFF" />}
-              </TouchableOpacity>
-              <View className="flex-1">
-                <Text
-                  className={`text-lg ${item.isDone ? "line-through text-gray-400" : "text-gray-800 font-medium"
-                    }`}
-                >
-                  {item.title}
-                </Text>
-                {item.description ? (
-                  <Text className="text-base text-gray-400 mt-0.5">{item.description}</Text>
-                ) : null}
-              </View>
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Edit checklist item"
-                onPress={() => handleEditItem(item)}
-                className="p-1 mr-1"
-              >
-                <Icon name="edit" size={20} color="#263F69" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Remove checklist item"
-                onPress={() => handleDeleteChecklistItem(item)}
-                className="p-1"
-              >
-                <Icon name="delete-outline" size={20} color="#c93030" />
-              </TouchableOpacity>
-            </View>
-          ))}
+      <View className="bg-gray-100 rounded-2xl border border-gray-200 overflow-hidden">
+        {activityChecklistItems.map((item) => (
           <View
+            key={item.id}
             className="flex-row items-center gap-3 px-4 py-4 border-b border-gray-200"
           >
             <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Add To-Do item"
-              onPress={handleAddItem}
-              className="flex-row items-center gap-1"
+              accessibilityRole="checkbox"
+              accessibilityLabel={
+                item.isDone
+                  ? `Mark ${item.title} as incomplete`
+                  : `Mark ${item.title} as complete`
+              }
+              accessibilityState={{ checked: item.isDone }}
+              onPress={() => handleToggleChecklistItem(item)}
+              className={`w-6 h-6 rounded-full border-2 items-center justify-center shrink-0 ${item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
+                }`}
             >
-              <Icon name="add" size={24} color="#263F69" />
-              <Text className="text-lg font-medium text-accent underline">Add</Text>
+              {item.isDone && <Icon name="check" size={14} color="#FFF" />}
+            </TouchableOpacity>
+            <View className="flex-1">
+              <Text
+                className={`text-lg ${item.isDone ? "line-through text-gray-400" : "text-gray-800 font-medium"
+                  }`}
+              >
+                {item.title}
+              </Text>
+              {item.description ? (
+                <Text className="text-base text-gray-400 mt-0.5">{item.description}</Text>
+              ) : null}
+            </View>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Edit checklist item"
+              onPress={() => handleEditItem(item)}
+              className="p-1 mr-1"
+            >
+              <Icon name="edit" size={20} color="#263F69" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Remove checklist item"
+              onPress={() => handleDeleteChecklistItem(item)}
+              className="p-1"
+            >
+              <Icon name="delete-outline" size={20} color="#c93030" />
             </TouchableOpacity>
           </View>
+        ))}
+        <View
+          className="flex-row items-center gap-3 px-4 py-4 border-b border-gray-200"
+        >
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Add To-Do item"
+            onPress={handleAddItem}
+            className="flex-row items-center gap-1"
+          >
+            <Icon name="add" size={24} color="#263F69" />
+            <Text className="text-lg font-medium text-accent underline">Add</Text>
+          </TouchableOpacity>
         </View>
-      ) : (
-        <View className="items-center justify-center py-10">
-          <Icon name="playlist-add-check" size={44} color="#D1D5DB" />
-          <Text className="text-base font-medium text-gray-400 mt-2">No to-do items yet</Text>
-          <Text className="text-sm text-gray-400 text-center mt-1">
-            Tap &quot;Add To-Do item&quot; above to add tasks to this activity.
-          </Text>
-        </View>
-      )}
+      </View>
     </View>
   );
 

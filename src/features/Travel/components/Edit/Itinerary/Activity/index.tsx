@@ -1447,575 +1447,6 @@ const EditActivity = ({
           });
         };
 
-        const tabData = [];
-
-        tabData.push(
-          {
-            id: "details",
-            title: "Details",
-            content: (
-              <FadeInView type="up" delay={50} duration={350}>
-                <View className="flex-1 px-5 mt-2">
-                  {/* Title */}
-                  <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mt-lg mb-8">
-                    <View className="flex-row justify-between items-center mb-1">
-                      <Text className="text-lg text-secondary/80 font-semibold">
-                        {values.type === TripPlanType.activity ? "Plan Name" : values.type === TripPlanType.stay ? "Stay or Accomodation Name" : values.type === TripPlanType.transit ? "Transit Name" : values.type === TripPlanType.rideRental ? "Rental Name" : "Activity Name"} <Text className="text-red-500 text-lg">*</Text>
-                      </Text>
-
-                      <Text className="text-xs" style={{ color: '#98A2B3' }}>
-                        {(values.title || "").length}/40
-                      </Text>
-                    </View>
-                    <View className="relative justify-center">
-                      <TextInput
-                        mode="outlined"
-                        placeholder={values.type === TripPlanType.stay ? "e.g. Grand Hotel" : values.type === TripPlanType.transit ? "e.g. Train to Kyoto" : values.type === TripPlanType.rideRental ? "e.g. Hertz Car Rental" : "e.g. Museum Visit"}
-                        value={values.title}
-                        onChangeText={(text) => {
-                          handleChange("title")(text);
-                          if (values.type === TripPlanType.stay && (!values.accomodationDetails?.accomodationName || values.accomodationDetails.accomodationName === values.title)) {
-                            setFieldValue("accomodationDetails.accomodationName", text);
-                          }
-                        }}
-                        onBlur={handleBlur("title")}
-                        error={(touched.title || submitCount > 0) && Boolean(errors.title)}
-                        outlineColor="#E0E0E0"
-                        activeOutlineColor="#263F69"
-                        theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
-                        outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                        style={{ marginTop: 2, height: 64 }}
-                        contentStyle={{
-                          backgroundColor: "transparent",
-                          paddingRight: (values.type === TripPlanType.activity || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental)
-                            ? (values.title ? 95 : 55)
-                            : 16,
-                        }}
-                        maxLength={40}
-                      />
-                      {(values.type === TripPlanType.activity || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental) ? (
-                        <View className="absolute right-3 flex-row items-center gap-1">
-                          {Boolean(values.title) && (
-                            <TouchableOpacity
-                              onPress={() => {
-                                setFieldValue("title", "");
-                                if (values.type === TripPlanType.stay && values.accomodationDetails?.accomodationName === values.title) {
-                                  setFieldValue("accomodationDetails.accomodationName", "");
-                                }
-                              }}
-                              className="p-2"
-                              accessibilityRole="button"
-                              accessibilityLabel="Clear activity title"
-                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                            >
-                              <Icon name="close" size={20} color="#98A2B3" />
-                            </TouchableOpacity>
-                          )}
-                          <TouchableOpacity
-                            onPress={() => handleOpenGoogleSearch("title")}
-                            className="w-10 h-10 items-center justify-center"
-                            accessibilityRole="button"
-                            accessibilityLabel="Lookup location on Google map"
-                            activeOpacity={0.7}
-                          >
-                            <Icon name="pin-drop" size={22} color={activityColor} />
-                          </TouchableOpacity>
-                        </View>
-                      ) : null}
-                    </View>
-                    {(touched.title || submitCount > 0) && errors.title && (
-                      <View className="flex flex-row items-center mt-1">
-                        <Icon name="info-outline" size={14} color="#fb2c36" />
-                        <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
-                      </View>
-                    )}
-
-                    {/* <Text className="text-sm text-tertiary p-sm">
-                      You may give your Plan a custom name to help you stay organized.
-                    </Text> */}
-
-                    {/* Tertiary Button for Destination Details */}
-                    {shouldShowDestinationButton && (placeTitle || destinationAddress) && (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        accessibilityRole="button"
-                        accessibilityLabel={
-                          hasLocation
-                            ? `View destination details: ${placeTitle || destinationAddress}`
-                            : "View destination details"
-                        }
-                        onPress={() => setShowDestinationSheet(true)}
-                        className="flex-row items-center self-start mt-2.5 py-1 px-1 gap-1.5 opacity-60"
-                      >
-                        <Ionicons name="location-outline" size={17} color={activityColor} />
-                        <Text className="text-base font-semibold text-secondary/80">
-                          Place Details
-                        </Text>
-                        <Text
-                          className={`text-base  max-w-[200px] ${hasLocation ? "text-secondary/80" : "text-secondary/50"
-                            }`}
-                          ellipsizeMode="tail"
-                          numberOfLines={1}
-                        >
-                          {placeTitle || destinationAddress || ""}
-                        </Text>
-                        <Ionicons name="chevron-forward" size={15} color="#98A2B3" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-
-                  {/* Plan Details */}
-                  {values.type === TripPlanType.activity && (
-                    <PlanTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                      onPressLocationMap={() => handleOpenGoogleSearch("location")}
-                      onPressDate={() => setShowCalendarFor("startDate")}
-                      onPressTime={() => setShowTimePickerFor("startTime")}
-                      onClearDate={() => {
-                        setFieldValue("startDate", null);
-                        setFieldValue("endDate", null);
-                      }}
-                      onClearTime={() => setFieldValue("startTime", "")}
-                      onPressEndDate={() => setShowCalendarFor("endDate")}
-                      onPressEndTime={() => setShowTimePickerFor("endTime")}
-                      onClearEndDate={() => {
-                        setFieldValue("endDate", null);
-                        setFieldValue("endTime", "");
-                      }}
-                      onClearEndTime={() => setFieldValue("endTime", "")}
-                    />
-                  )}
-
-
-                  {/* Stay Details Accordion */}
-                  {values.type === TripPlanType.stay && (
-                    <AccomodationTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      colors={colors}
-                      setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
-                      formatAccomodationDateTime={formatFlightDateTime}
-                      onOpenPoiModal={(category) => {
-                        setPoiTargetType("accommodation");
-                        setPoiModalInitialCategory(category);
-                        setShowPoiModal(true);
-                      }}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                      onPressLocationMap={() => setShowGoogleSearchModal(true)}
-                      onPressDate={() => setShowCalendarFor("startDate")}
-                      onPressTime={() => setShowTimePickerFor("startTime")}
-                      onClearDate={() => {
-                        setFieldValue("startDate", null);
-                        setFieldValue("endDate", null);
-                        setFieldValue("accomodationDetails.checkinDateTime", null);
-                        setFieldValue("accomodationDetails.checkoutDateTime", null);
-                      }}
-                      onClearTime={() => {
-                        setFieldValue("startTime", "");
-                        if (values.startDate) {
-                          setFieldValue("accomodationDetails.checkinDateTime", new Date(`${values.startDate}T00:00:00`));
-                        }
-                      }}
-                      onPressEndDate={() => setShowCalendarFor("endDate")}
-                      onPressEndTime={() => setShowTimePickerFor("endTime")}
-                      onClearEndDate={() => {
-                        setFieldValue("endDate", null);
-                        setFieldValue("endTime", "");
-                        setFieldValue("accomodationDetails.checkoutDateTime", null);
-                      }}
-                      onClearEndTime={() => {
-                        setFieldValue("endTime", "");
-                        if (values.endDate) {
-                          setFieldValue("accomodationDetails.checkoutDateTime", new Date(`${values.endDate}T00:00:00`));
-                        }
-                      }}
-                    />
-                  )}
-
-                  {/* Flight Details Accordion */}
-                  {values.type === TripPlanType.flight && (
-                    <FlightTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      openFlightModal={openFlightModal}
-                      setShowFlightDatePickerFor={setShowFlightDatePickerFor}
-                      formatFlightDateTime={formatFlightDateTime}
-                      handleFlightSelect={handleFlightSelect}
-                      onOpenAirportLookup={(mode) => setShowAirportLookupFor(mode)}
-                      showArrivalPrefillNotice={showArrivalPrefillNotice}
-                      tripStartDate={travelPlan?.travel?.startOrDepartureDate}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                    />
-                  )}
-
-                  {/* Transit Details */}
-                  {values.type === TripPlanType.transit && (
-                    <TransportationTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      colors={colors}
-                      setShowTransportationDatePickerFor={setShowTransportationDatePickerFor}
-                      formatTransportationDateTime={formatFlightDateTime}
-                      onOpenMapPinModal={handleOpenMapPinModal}
-                      onOpenGoogleSearch={handleOpenGoogleSearch}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                      onPressDate={() => setShowCalendarFor("startDate")}
-                      onPressTime={() => setShowTimePickerFor("startTime")}
-                      onClearDate={() => {
-                        setFieldValue("startDate", null);
-                        setFieldValue("endDate", null);
-                        setFieldValue("transportationDetails.departureDateTime", null);
-                        setFieldValue("transportationDetails.arrivalDateTime", null);
-                      }}
-                      onClearTime={() => {
-                        setFieldValue("startTime", "");
-                        if (values.startDate) {
-                          setFieldValue("transportationDetails.departureDateTime", new Date(`${values.startDate}T00:00:00`));
-                        }
-                      }}
-                      onPressEndDate={() => setShowCalendarFor("endDate")}
-                      onPressEndTime={() => setShowTimePickerFor("endTime")}
-                      onClearEndDate={() => {
-                        setFieldValue("endDate", null);
-                        setFieldValue("endTime", "");
-                        setFieldValue("transportationDetails.arrivalDateTime", null);
-                      }}
-                      onClearEndTime={() => {
-                        setFieldValue("endTime", "");
-                        if (values.endDate) {
-                          setFieldValue("transportationDetails.arrivalDateTime", new Date(`${values.endDate}T00:00:00`));
-                        }
-                      }}
-                    />
-                  )}
-
-                  {/* Ride Rental Details */}
-                  {values.type === TripPlanType.rideRental && (
-                    <RideRentalTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      colors={colors}
-                      onOpenMapPinModal={handleOpenMapPinModal}
-                      onOpenGoogleSearch={handleOpenGoogleSearch}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                      onPressDate={() => setShowCalendarFor("startDate")}
-                      onPressTime={() => setShowTimePickerFor("startTime")}
-                      onClearDate={() => {
-                        setFieldValue("startDate", null);
-                        setFieldValue("endDate", null);
-                        setFieldValue("rideRentalDetails.rentalStartDateTime", null);
-                        setFieldValue("rideRentalDetails.rentalEndDateTime", null);
-                      }}
-                      onClearTime={() => {
-                        setFieldValue("startTime", "");
-                        if (values.startDate) {
-                          setFieldValue("rideRentalDetails.rentalStartDateTime", new Date(`${values.startDate}T00:00:00`));
-                        }
-                      }}
-                      onPressEndDate={() => setShowCalendarFor("endDate")}
-                      onPressEndTime={() => setShowTimePickerFor("endTime")}
-                      onClearEndDate={() => {
-                        setFieldValue("endDate", null);
-                        setFieldValue("endTime", "");
-                        setFieldValue("rideRentalDetails.rentalEndDateTime", null);
-                      }}
-                      onClearEndTime={() => {
-                        setFieldValue("endTime", "");
-                        if (values.endDate) {
-                          setFieldValue("rideRentalDetails.rentalEndDateTime", new Date(`${values.endDate}T00:00:00`));
-                        }
-                      }}
-                    />
-                  )}
-
-                  {/* Activity Details Accordion */}
-                  <SimpleAccordion key="activity-details-accordion" title="Additional Details" defaultExpanded={false}>
-
-
-                    {/* Date & Time fields removed from main form and injected into specific tabs */}
-
-                    {/* Location */}
-                    {/* <View ref={(el) => { fieldRefs.current["destination"] = el; }} className="mb-5">
-                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Location</Text>
-                    {values.destinationData ? (() => {
-                      const { longitude, latitude } = values.destinationData.coordinates;
-                      const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
-                      return (
-                        <TouchableOpacity 
-                          activeOpacity={0.8} 
-                          onPress={() => setShowDestinationModal(true)}
-                          className="mt-1"
-                          accessibilityRole="button"
-                        >
-                          <View className="rounded-2xl overflow-hidden border border-gray-100">
-                            <Image source={{ uri: mapUrl }} style={{ width: '100%', height: 120, borderRadius: 16 }} resizeMode="cover" />
-                            <View className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded-full flex-row items-center">
-                              <Icon name="location-on" size={12} color="#FFF" />
-                              <Text className="text-white text-[10px] ml-1">{values.destination}</Text>
-                            </View>
-                          </View>
-                        </TouchableOpacity>
-                      );
-                    })() : (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => setShowDestinationModal(true)}
-                        accessibilityRole="button"
-                      >
-                        <View pointerEvents="none">
-                          <TextInput
-                            mode="outlined"
-                            placeholder="Search city or country..."
-                            value=""
-                            editable={false}
-                            outlineColor="#E0E0E0"
-                            activeOutlineColor="#263F69"
-                            left={<TextInput.Icon icon="map-marker" color="#999" />}
-                            theme={{ colors: { onSurfaceVariant: '#888' } }}
-                            outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                            style={{ marginTop: 6, height: 64 }}
-                            contentStyle={{ backgroundColor: "transparent" }}
-                          />
-                        </View>
-                      </TouchableOpacity>
-                    )}
-                  </View> */}
-
-
-                    {/* Activity Type */}
-                    <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-6">
-                      <Text className="text-lg text-secondary/80 font-semibold mb-3">
-                        Activity Type
-                      </Text>
-                      {(() => {
-                        const isTypeDisabled = !!values.id && values.type !== TripPlanType.activity;
-                        return (
-                          <TouchableOpacity
-                            onPress={() => {
-                              onOpenPrimaryTypeModal(values.type as TripPlanType, (type) => {
-                                setFieldValue("type", type);
-                                setActiveTabId("details");
-                                scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                              });
-                            }}
-                            disabled={isTypeDisabled}
-                            accessibilityRole="button"
-                            accessibilityState={{ disabled: isTypeDisabled }}
-                            className={`flex-row items-center justify-between border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 gap-3 ${isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
-                              }`}
-                          >
-                            {values.type != null ? (
-                              <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
-                            ) : (
-                              <Icon name="style" size={24} color={"#B3B3B3"} />
-                            )}
-                            <Text className="text-base flex-1 text-gray-800 font-medium capitalize">
-                              {values.type != null ? getTripPlanTypeLabel(values.type) : "Select Type..."}
-                            </Text>
-                            <Icon name="keyboard-arrow-down" size={24} color="#999" />
-
-                          </TouchableOpacity>
-                        );
-                      })()}
-                    </View>
-
-
-                    {/* Itinerary Section */}
-                    <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-6">
-                      <Text className="text-xl text-secondary/80 font-semibold ">
-                        Section
-                      </Text>
-
-                      <Text className={`text-base text-tertiary mb-2`}>
-                        Select the Section to add this activity.
-                      </Text>
-
-                      <View className="flex-row items-center gap-2 mt-1">
-                        <TouchableOpacity
-                          onPress={() => {
-                            onOpenSectionModal(sections, values.sectionId, (id) => {
-                              setFieldValue("sectionId", id);
-                              const section = sections.find(s => s.id === id);
-                              if (section && section.startDate) {
-                                setFieldValue("startDate", toLocalDateStr(section.startDate));
-                                if (!values.startTime) {
-                                  setFieldValue("startTime", `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`);
-                                }
-                              }
-                            });
-                          }}
-                          className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 flex-1 flex-row items-center gap-3"
-                          accessibilityRole="button"
-                          accessibilityLabel="Select itinerary section"
-                        >
-                          <Icon name="folder" size={24} color="#263F69" />
-                          <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
-                            {selectedSectionName || "Select Section"}
-                          </Text>
-                          <Icon name="keyboard-arrow-down" size={24} color="#999" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          onPress={handleAddNewSection}
-                          className="w-6xl h-6xl rounded-xl items-center justify-center animate-fade-in bg-primary/10"
-                          accessibilityRole="button"
-                          accessibilityLabel="Add new section"
-                        >
-                          <Icon name="add" size={28} color="#0EA5E9" />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                    {/* Description */}
-                    <View ref={(el) => { fieldRefs.current["description"] = el; }} className="">
-                      <View className="flex-row gap-2 justify-start items-center px-xs">
-                        <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
-                          Description
-                        </Text>
-                      </View>
-                      <DescriptionInput
-                        value={values.description}
-                        onChange={(text) => setFieldValue("description", text)}
-                        label="Description"
-                        placeholder="Activity details"
-                        confirmLabel={`${values.description ? `Update` : 'Add'}`}
-                        maxLength={500}
-                      />
-                    </View>
-
-                    {/* Custom Tags */}
-                    {/* <View ref={(el) => { fieldRefs.current["customTags"] = el; }} className="mt-5">
-                      <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Custom Tags</Text>
-                      <CustomTagsInput
-                        tags={values.customTags}
-                        onChangeTags={(tags) => setFieldValue("customTags", tags)}
-                      />
-                    </View> */}
-                  </SimpleAccordion>
-
-                </View>
-              </FadeInView>
-            ),
-          },
-          {
-            id: "images",
-            title: "Images",
-            disabled: !itineraryActivity?.id,
-            content: (
-              <View className="flex-1 pb-6 pt-2 px-5">
-                <Text className="text-xs font-semibold tracking-wider uppercase mb-2 ">Upload Images</Text>
-                <TouchableOpacity
-                  onPress={() => pickImage(setFieldValue, values.images)}
-                  className="border-2 border-dashed border-[#ddd] h-[140px] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-center gap-3 mb-4"
-                  accessibilityRole="button"
-                  accessibilityLabel="Upload images"
-                >
-                  <Icon name="add-photo-alternate" size={28} color="#263F69" />
-                  <Text className="text-base text-[#263F69] font-medium">Add Photos</Text>
-                </TouchableOpacity>
-
-                {values.images.length > 0 && (
-                  <View className="flex-row flex-wrap gap-3">
-                    {values.images.map((item, index) => (
-                      <View key={`${item.url}-${index}`} className="relative">
-                        <Image
-                          source={{ uri: item.url }}
-                          style={{ width: 100, height: 100, borderRadius: 12 }}
-                          resizeMode="cover"
-                        />
-                        <TouchableOpacity
-                          className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5"
-                          accessibilityRole="button"
-                          accessibilityLabel="Remove image"
-                          onPress={() => {
-                            const updated = values.images.filter((_, i) => i !== index);
-                            setFieldValue("images", updated);
-                          }}
-                        >
-                          <Icon name="close" size={16} color="#FFF" />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-            ),
-          },
-          {
-            id: "attachments",
-            title: "Attachments",
-            disabled: !itineraryActivity?.id,
-            content: (
-              <View className="flex-1 pb-6 pt-2 px-5">
-                <Text className="text-xs font-semibold tracking-wider uppercase mb-2">File Attachments</Text>
-                <TouchableOpacity
-                  onPress={() => pickDocument(setFieldValue, values.attachments || [])}
-                  className="border-2 border-dashed border-[#ddd] h-[140px] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-center gap-3 mb-2"
-                  accessibilityRole="button"
-                  accessibilityLabel="Upload files"
-                >
-                  <Icon name="attach-file" size={28} color="#263F69" />
-                  <Text className="text-base text-[#263F69] font-medium">Attach Files</Text>
-                </TouchableOpacity>
-                <Text className="text-xs text-gray-500 mb-4">
-                  Supported formats: PDF, Word, Excel, PowerPoint
-                </Text>
-
-                {(values.attachments || []).length > 0 && (
-                  <View className="gap-2">
-                    {(values.attachments || []).map((file, index) => {
-                      const displaySize = file.size
-                        ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
-                        : "Unknown size";
-                      return (
-                        <View key={`${file.url}-${index}`} className="flex-row items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
-                          <Icon name="insert-drive-file" size={24} color="#263F69" className="mr-3" />
-                          <View className="flex-1">
-                            <Text className="text-sm font-semibold text-gray-800" numberOfLines={1}>
-                              {file.name}
-                            </Text>
-                            <Text className="text-xs text-gray-400 mt-0.5">
-                              {displaySize}
-                            </Text>
-                          </View>
-                          <TouchableOpacity
-                            className="p-1"
-                            accessibilityRole="button"
-                            accessibilityLabel="Remove attachment"
-                            onPress={() => {
-                              const updated = (values.attachments || []).filter((_, i) => i !== index);
-                              setFieldValue("attachments", updated);
-                            }}
-                          >
-                            <Icon name="close" size={20} color="#888" />
-                          </TouchableOpacity>
-                        </View>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
-            ),
-          },
-        );
-
         return (
           <View className="flex-1 bg-gray-100 overflow-hidden">
             <StatusBar barStyle={"dark-content"} />
@@ -2027,16 +1458,416 @@ const EditActivity = ({
             />
             <FormikDirtyListener onDirtyChange={onDirtyChange} />
 
-            <View className="flex-1 py-3 ">
-              <Tabs
-                tabs={tabData}
-                activeTabId={activeTabId}
-                onTabChange={setActiveTabId}
-                type="default"
-                onScroll={onScroll}
-                scrollViewRef={scrollViewRef}
-              />
-            </View>
+            <ScrollView
+              ref={scrollViewRef}
+              className="flex-1"
+              contentContainerStyle={{ paddingBottom: 100 }}
+              onScroll={onScroll}
+              scrollEventThrottle={16}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View className="px-5 py-3">
+                {/* Title */}
+                <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mt-md mb-8">
+                  <View className="flex-row justify-between items-center mb-1">
+                    <Text className="text-lg text-secondary/80 font-semibold">
+                      {values.type === TripPlanType.activity ? "Plan Name" : values.type === TripPlanType.stay ? "Stay or Accomodation Name" : values.type === TripPlanType.transit ? "Transit Name" : values.type === TripPlanType.rideRental ? "Rental Name" : "Activity Name"} <Text className="text-red-500 text-lg">*</Text>
+                    </Text>
+
+                    <Text className="text-xs" style={{ color: '#98A2B3' }}>
+                      {(values.title || "").length}/40
+                    </Text>
+                  </View>
+                  <View className="relative justify-center">
+                    <TextInput
+                      mode="outlined"
+                      placeholder={values.type === TripPlanType.stay ? "e.g. Grand Hotel" : values.type === TripPlanType.transit ? "e.g. Train to Kyoto" : values.type === TripPlanType.rideRental ? "e.g. Hertz Car Rental" : "e.g. Museum Visit"}
+                      value={values.title}
+                      onChangeText={(text) => {
+                        handleChange("title")(text);
+                        if (values.type === TripPlanType.stay && (!values.accomodationDetails?.accomodationName || values.accomodationDetails.accomodationName === values.title)) {
+                          setFieldValue("accomodationDetails.accomodationName", text);
+                        }
+                      }}
+                      onBlur={handleBlur("title")}
+                      error={(touched.title || submitCount > 0) && Boolean(errors.title)}
+                      outlineColor="#E0E0E0"
+                      activeOutlineColor="#263F69"
+                      theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
+                      outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                      style={{ marginTop: 2, height: 64 }}
+                      contentStyle={{
+                        backgroundColor: "transparent",
+                        paddingRight: (values.type === TripPlanType.activity || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental)
+                          ? (values.title ? 95 : 55)
+                          : 16,
+                      }}
+                      maxLength={40}
+                    />
+                    {(values.type === TripPlanType.activity || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental) ? (
+                      <View className="absolute right-3 flex-row items-center gap-1">
+                        {Boolean(values.title) && (
+                          <TouchableOpacity
+                            onPress={() => {
+                              setFieldValue("title", "");
+                              if (values.type === TripPlanType.stay && values.accomodationDetails?.accomodationName === values.title) {
+                                setFieldValue("accomodationDetails.accomodationName", "");
+                              }
+                            }}
+                            className="p-2"
+                            accessibilityRole="button"
+                            accessibilityLabel="Clear activity title"
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          >
+                            <Icon name="close" size={20} color="#98A2B3" />
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity
+                          onPress={() => handleOpenGoogleSearch("title")}
+                          className="w-10 h-10 items-center justify-center"
+                          accessibilityRole="button"
+                          accessibilityLabel="Lookup location on Google map"
+                          activeOpacity={0.7}
+                        >
+                          <Icon name="pin-drop" size={22} color={activityColor} />
+                        </TouchableOpacity>
+                      </View>
+                    ) : null}
+                  </View>
+                  {(touched.title || submitCount > 0) && errors.title && (
+                    <View className="flex flex-row items-center mt-1">
+                      <Icon name="info-outline" size={14} color="#fb2c36" />
+                      <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
+                    </View>
+                  )}
+
+                  {/* <Text className="text-sm text-tertiary p-sm">
+                      You may give your Plan a custom name to help you stay organized.
+                    </Text> */}
+
+                  {/* Tertiary Button for Destination Details */}
+                  {shouldShowDestinationButton && (placeTitle || destinationAddress) && (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        hasLocation
+                          ? `View destination details: ${placeTitle || destinationAddress}`
+                          : "View destination details"
+                      }
+                      onPress={() => setShowDestinationSheet(true)}
+                      className="flex-row items-center self-start mt-2.5 py-1 px-1 gap-1.5 opacity-60"
+                    >
+                      <Ionicons name="location-outline" size={17} color={activityColor} />
+                      <Text className="text-base font-semibold text-secondary/80">
+                        Place Details
+                      </Text>
+                      <Text
+                        className={`text-base  max-w-[200px] ${hasLocation ? "text-secondary/80" : "text-secondary/50"
+                          }`}
+                        ellipsizeMode="tail"
+                        numberOfLines={1}
+                      >
+                        {placeTitle || destinationAddress || ""}
+                      </Text>
+                      <Ionicons name="chevron-forward" size={15} color="#98A2B3" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Plan Details */}
+                {values.type === TripPlanType.activity && (
+                  <PlanTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                    onPressLocationMap={() => handleOpenGoogleSearch("location")}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => {
+                      setFieldValue("startDate", null);
+                      setFieldValue("endDate", null);
+                    }}
+                    onClearTime={() => setFieldValue("startTime", "")}
+                    onPressEndDate={() => setShowCalendarFor("endDate")}
+                    onPressEndTime={() => setShowTimePickerFor("endTime")}
+                    onClearEndDate={() => {
+                      setFieldValue("endDate", null);
+                      setFieldValue("endTime", "");
+                    }}
+                    onClearEndTime={() => setFieldValue("endTime", "")}
+                  />
+                )}
+
+                {/* Stay Details Accordion */}
+                {values.type === TripPlanType.stay && (
+                  <AccomodationTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    colors={colors}
+                    setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
+                    formatAccomodationDateTime={formatFlightDateTime}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("accommodation");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                    onPressLocationMap={() => setShowGoogleSearchModal(true)}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => {
+                      setFieldValue("startDate", null);
+                      setFieldValue("endDate", null);
+                      setFieldValue("accomodationDetails.checkinDateTime", null);
+                      setFieldValue("accomodationDetails.checkoutDateTime", null);
+                    }}
+                    onClearTime={() => {
+                      setFieldValue("startTime", "");
+                      if (values.startDate) {
+                        setFieldValue("accomodationDetails.checkinDateTime", new Date(`${values.startDate}T00:00:00`));
+                      }
+                    }}
+                    onPressEndDate={() => setShowCalendarFor("endDate")}
+                    onPressEndTime={() => setShowTimePickerFor("endTime")}
+                    onClearEndDate={() => {
+                      setFieldValue("endDate", null);
+                      setFieldValue("endTime", "");
+                      setFieldValue("accomodationDetails.checkoutDateTime", null);
+                    }}
+                    onClearEndTime={() => {
+                      setFieldValue("endTime", "");
+                      if (values.endDate) {
+                        setFieldValue("accomodationDetails.checkoutDateTime", new Date(`${values.endDate}T00:00:00`));
+                      }
+                    }}
+                  />
+                )}
+
+                {/* Flight Details Accordion */}
+                {values.type === TripPlanType.flight && (
+                  <FlightTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    openFlightModal={openFlightModal}
+                    setShowFlightDatePickerFor={setShowFlightDatePickerFor}
+                    formatFlightDateTime={formatFlightDateTime}
+                    handleFlightSelect={handleFlightSelect}
+                    onOpenAirportLookup={(mode) => setShowAirportLookupFor(mode)}
+                    showArrivalPrefillNotice={showArrivalPrefillNotice}
+                    tripStartDate={travelPlan?.travel?.startOrDepartureDate}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Transit Details */}
+                {values.type === TripPlanType.transit && (
+                  <TransportationTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    colors={colors}
+                    setShowTransportationDatePickerFor={setShowTransportationDatePickerFor}
+                    formatTransportationDateTime={formatFlightDateTime}
+                    onOpenMapPinModal={handleOpenMapPinModal}
+                    onOpenGoogleSearch={handleOpenGoogleSearch}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => {
+                      setFieldValue("startDate", null);
+                      setFieldValue("endDate", null);
+                      setFieldValue("transportationDetails.departureDateTime", null);
+                      setFieldValue("transportationDetails.arrivalDateTime", null);
+                    }}
+                    onClearTime={() => {
+                      setFieldValue("startTime", "");
+                      if (values.startDate) {
+                        setFieldValue("transportationDetails.departureDateTime", new Date(`${values.startDate}T00:00:00`));
+                      }
+                    }}
+                    onPressEndDate={() => setShowCalendarFor("endDate")}
+                    onPressEndTime={() => setShowTimePickerFor("endTime")}
+                    onClearEndDate={() => {
+                      setFieldValue("endDate", null);
+                      setFieldValue("endTime", "");
+                      setFieldValue("transportationDetails.arrivalDateTime", null);
+                    }}
+                    onClearEndTime={() => {
+                      setFieldValue("endTime", "");
+                      if (values.endDate) {
+                        setFieldValue("transportationDetails.arrivalDateTime", new Date(`${values.endDate}T00:00:00`));
+                      }
+                    }}
+                  />
+                )}
+
+                {/* Ride Rental Details */}
+                {values.type === TripPlanType.rideRental && (
+                  <RideRentalTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    colors={colors}
+                    onOpenMapPinModal={handleOpenMapPinModal}
+                    onOpenGoogleSearch={handleOpenGoogleSearch}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => {
+                      setFieldValue("startDate", null);
+                      setFieldValue("endDate", null);
+                      setFieldValue("rideRentalDetails.rentalStartDateTime", null);
+                      setFieldValue("rideRentalDetails.rentalEndDateTime", null);
+                    }}
+                    onClearTime={() => {
+                      setFieldValue("startTime", "");
+                      if (values.startDate) {
+                        setFieldValue("rideRentalDetails.rentalStartDateTime", new Date(`${values.startDate}T00:00:00`));
+                      }
+                    }}
+                    onPressEndDate={() => setShowCalendarFor("endDate")}
+                    onPressEndTime={() => setShowTimePickerFor("endTime")}
+                    onClearEndDate={() => {
+                      setFieldValue("endDate", null);
+                      setFieldValue("endTime", "");
+                      setFieldValue("rideRentalDetails.rentalEndDateTime", null);
+                    }}
+                    onClearEndTime={() => {
+                      setFieldValue("endTime", "");
+                      if (values.endDate) {
+                        setFieldValue("rideRentalDetails.rentalEndDateTime", new Date(`${values.endDate}T00:00:00`));
+                      }
+                    }}
+                  />
+                )}
+
+                {/* Activity Details Accordion */}
+                <SimpleAccordion key="activity-details-accordion" title="Additional Details" defaultExpanded={false}>
+                  {/* Activity Type */}
+                  <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-6">
+                    <Text className="text-lg text-secondary/80 font-semibold mb-3">
+                      Activity Type
+                    </Text>
+                    {(() => {
+                      const isTypeDisabled = !!values.id && values.type !== TripPlanType.activity;
+                      return (
+                        <TouchableOpacity
+                          onPress={() => {
+                            onOpenPrimaryTypeModal(values.type as TripPlanType, (type) => {
+                              setFieldValue("type", type);
+                              setActiveTabId("details");
+                              scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                            });
+                          }}
+                          disabled={isTypeDisabled}
+                          accessibilityRole="button"
+                          accessibilityState={{ disabled: isTypeDisabled }}
+                          className={`flex-row items-center justify-between border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 gap-3 ${isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
+                            }`}
+                        >
+                          {values.type != null ? (
+                            <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
+                          ) : (
+                            <Icon name="style" size={24} color={"#B3B3B3"} />
+                          )}
+                          <Text className="text-base flex-1 text-gray-800 font-medium capitalize">
+                            {values.type != null ? getTripPlanTypeLabel(values.type) : "Select Type..."}
+                          </Text>
+                          <Icon name="keyboard-arrow-down" size={24} color="#999" />
+                        </TouchableOpacity>
+                      );
+                    })()}
+                  </View>
+
+                  {/* Itinerary Section */}
+                  <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-6">
+                    <Text className="text-xl text-secondary/80 font-semibold ">
+                      Section
+                    </Text>
+
+                    <Text className={`text-base text-tertiary mb-2`}>
+                      Select the Section to add this activity.
+                    </Text>
+
+                    <View className="flex-row items-center gap-2 mt-1">
+                      <TouchableOpacity
+                        onPress={() => {
+                          onOpenSectionModal(sections, values.sectionId, (id) => {
+                            setFieldValue("sectionId", id);
+                            const section = sections.find(s => s.id === id);
+                            if (section && section.startDate) {
+                              setFieldValue("startDate", toLocalDateStr(section.startDate));
+                              if (!values.startTime) {
+                                setFieldValue("startTime", `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`);
+                              }
+                            }
+                          });
+                        }}
+                        className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 flex-1 flex-row items-center gap-3"
+                        accessibilityRole="button"
+                        accessibilityLabel="Select itinerary section"
+                      >
+                        <Icon name="folder" size={24} color="#263F69" />
+                        <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
+                          {selectedSectionName || "Select Section"}
+                        </Text>
+                        <Icon name="keyboard-arrow-down" size={24} color="#999" />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={handleAddNewSection}
+                        className="w-6xl h-6xl rounded-xl items-center justify-center animate-fade-in bg-primary/10"
+                        accessibilityRole="button"
+                        accessibilityLabel="Add new section"
+                      >
+                        <Icon name="add" size={28} color="#0EA5E9" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* Description */}
+                  <View ref={(el) => { fieldRefs.current["description"] = el; }} className="">
+                    <View className="flex-row gap-2 justify-start items-center px-xs">
+                      <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
+                        Description
+                      </Text>
+                    </View>
+                    <DescriptionInput
+                      value={values.description}
+                      onChange={(text) => setFieldValue("description", text)}
+                      label="Description"
+                      placeholder="Activity details"
+                      confirmLabel={`${values.description ? `Update` : 'Add'}`}
+                      maxLength={500}
+                    />
+                  </View>
+
+                  {/* Custom Tags */}
+                  {/* <View ref={(el) => { fieldRefs.current["customTags"] = el; }} className="mt-5">
+                      <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Custom Tags</Text>
+                      <CustomTagsInput
+                        tags={values.customTags}
+                        onChangeTags={(tags) => setFieldValue("customTags", tags)}
+                      />
+                    </View> */}
+                </SimpleAccordion>
+              </View>
+            </ScrollView>
 
             <MapboxDestinationSelectorModal
               visible={showDestinationModal}

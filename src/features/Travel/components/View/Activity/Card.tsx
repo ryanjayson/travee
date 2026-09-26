@@ -548,8 +548,8 @@ const ActivityItemCard = ({
               ? "opacity-50 border border-success-700 bg-success-25"
               : "bg-white"
               } 
-            ${isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")
-              }  ${isDragActive ? "opacity-100 shadow-2xl" : ""}`}>
+            ${isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")}  
+            ${isDragActive ? "opacity-100 shadow-2xl" : ""}`}>
             <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
               {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
                 <View
@@ -595,7 +595,7 @@ const ActivityItemCard = ({
                 )} */}
             </View>
 
-            <View className="flex-row justify-between items-start mb-3 gap-x-2">
+            <View className="flex-row justify-between items-start gap-x-2">
               {/* {itineraryEventActivity && itineraryEventActivity.images && itineraryEventActivity.images.length > 0 && (
                 <View className="flex-1 ">
                   <View className="my-1 rounded-md">
@@ -620,10 +620,10 @@ const ActivityItemCard = ({
                 </View>
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
                   <View
-                    className="flex-row items-start text-ellipsis rounded-sm w-[80%] "
+                    className="flex-row items-start text-ellipsis rounded-sm pr-xl "
                   >
                     <Icon name="location-pin" size={12} color={"#B42318"} style={{ top: 2, opacity: 0.6 }} />
-                    <Text className="text-sm font-semibold text-tertiary "
+                    <Text className="text-sm leading-md font-semibold text-tertiary "
                       ellipsizeMode="tail"
                       numberOfLines={2}
                     >
@@ -633,8 +633,7 @@ const ActivityItemCard = ({
                 )}
 
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (
-                  <Text className="text-sm text-tertiary  mt-2 
-                    mb-4"
+                  <Text className="text-sm leading-18px mt-xs text-tertiary"
                     numberOfLines={2}
                     ellipsizeMode="tail">
                     {itineraryEventActivity.description}
@@ -722,7 +721,7 @@ const ActivityItemCard = ({
               </View>
             )}
 
-            <View className={`absolute right-2  ${isNarrow ? "top-[50%]" : "bottom-2"}`}>
+            <View className={`absolute   right-2  ${isNarrow ? "top-2" : "top-2"}`}>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={handleToggleDone}
@@ -735,8 +734,8 @@ const ActivityItemCard = ({
                 )}
 
                 {itineraryEventActivity.isDone ?
-                  (<Icon name="radio-button-checked" size={24} color="#0c6134" style={{ opacity: 0.5 }} />)
-                  : (<Icon name="radio-button-unchecked" size={24} color="#D0D5DD" style={{ opacity: 0.5 }} />)}
+                  (<Icon name="radio-button-checked" size={24} color="#0c6134" style={{ opacity: 0.3 }} />)
+                  : (<Icon name="radio-button-unchecked" size={24} color="#D0D5DD" style={{ opacity: 0.3 }} />)}
 
                 {/* <View className="h-6 w-6 border-2 border-dashed border-gray-400 rounded-full">
 

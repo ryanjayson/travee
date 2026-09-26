@@ -44,9 +44,9 @@ export const SimpleAccordion = ({
         accessibilityState={{ disabled }}
         accessibilityLabel={`${title} section`}
       >
-        <View className="flex-row gap-2 justify-start items-center border-l-3 border-primary pl-4">
-          <Icon name="settings" size={26} color={"#34405480"} />
-          <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
+        <View className="flex-row gap-2 justify-start items-center ">
+          <Icon name="settings" size={28} color={"#34405480"} />
+          <Text className="text-2xl font-semibold text-secondary">
             {title}
           </Text>
         </View>
@@ -70,6 +70,7 @@ export const SimpleAccordion = ({
 const styles = StyleSheet.create({
   container: {
     // marginBottom: 16,
+    display: "flex",
     overflow: "hidden", // Crucial for layout clipping during animations
   },
   content: {

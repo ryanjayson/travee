@@ -30,13 +30,15 @@ export interface PlanTypeItem {
 }
 
 export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
+
+
   {
-    type: ActivityType.preparation,
-    key: "preparation",
-    label: "Preparation",
-    subtext: "Packing, checklists, and pre-trip tasks",
-    iconName: "build",
-    color: "#607D8B",
+    type: ActivityType.cafe,
+    key: "cafe",
+    label: "Cafe",
+    subtext: "Coffee, drinks, snacks, cafes, lounges, and bars",
+    iconName: "local-cafe",
+    color: "#ea580c",
   },
   {
     type: ActivityType.restaurant,
@@ -47,28 +49,12 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     color: "#e03e3e",
   },
   {
-    type: ActivityType.cafeOrBar,
-    key: "cafeOrBar",
-    label: "Cafe / Bar",
-    subtext: "Coffee, drinks, snacks, cafes, lounges, and bars",
-    iconName: "local-cafe",
-    color: "#ea580c",
-  },
-  {
     type: ActivityType.sightseeing,
     key: "sightseeing",
     label: "Sightseeing",
     subtext: "Landmarks, attractions, and photo spots",
     iconName: "photo-camera",
     color: "#f0a505",
-  },
-  {
-    type: ActivityType.shopping,
-    key: "shopping",
-    label: "Shopping",
-    subtext: "Markets, stores, spas, banks, and essentials",
-    iconName: "shopping-bag",
-    color: "#db2777",
   },
   {
     type: ActivityType.entertainment,
@@ -79,12 +65,36 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     color: "#0891b2",
   },
   {
+    type: ActivityType.shopping,
+    key: "shopping",
+    label: "Shopping",
+    subtext: "Markets, stores, spas, banks, and essentials",
+    iconName: "shopping-bag",
+    color: "#db2777",
+  },
+  {
     type: ActivityType.nature,
     key: "nature",
     label: "Nature",
     subtext: "Beaches, lakes, parks, and natural wonders",
     iconName: "terrain",
     color: "#165135",
+  },
+  {
+    type: ActivityType.hike,
+    key: "hike",
+    label: "Hike",
+    subtext: "Hiking trails, trekking, and camping",
+    iconName: "hiking",
+    color: "#429862",
+  },
+  {
+    type: ActivityType.camp,
+    key: "camp",
+    label: "Camp",
+    subtext: "Camping, hiking trails, trekking, and camping",
+    iconName: "night-shelter",
+    color: "#429862",
   },
   {
     type: ActivityType.walk,
@@ -94,14 +104,7 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     iconName: "directions-walk",
     color: "#8BC34A",
   },
-  {
-    type: ActivityType.hikeOrCamp,
-    key: "hikeOrCamp",
-    label: "Hike / Camp",
-    subtext: "Hiking trails, trekking, and camping",
-    iconName: "hiking",
-    color: "#429862",
-  },
+
   {
     type: ActivityType.rest,
     key: "rest",
@@ -111,11 +114,11 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     color: "#9E9E9E",
   },
   {
-    type: ActivityType.motorcycleRide,
-    key: "motorcycleRide",
-    label: "Motorcycle Ride",
-    subtext: "Motorbike trips and scenic rides",
-    iconName: "motorcycle",
+    type: ActivityType.ride,
+    key: "ride",
+    label: "Ride",
+    subtext: "Motorbike, Biking, and scenic rides",
+    iconName: "directions-bike",
     color: "#156994",
   },
   {
@@ -125,6 +128,14 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     subtext: "Gatherings, meetups, and socializing",
     iconName: "people",
     color: "#26A69A",
+  },
+  {
+    type: ActivityType.preparation,
+    key: "preparation",
+    label: "Preparation",
+    subtext: "Packing, checklists, and pre-trip tasks",
+    iconName: "build",
+    color: "#607D8B",
   },
 ];
 

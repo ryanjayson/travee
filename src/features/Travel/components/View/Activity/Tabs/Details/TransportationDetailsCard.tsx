@@ -68,7 +68,8 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
   );
 
   return (
-    <View className="mt-4 overflow-hidden">
+
+    <View className="mt-4 px-2 overflow-hidden">
       {/* Main Details Body */}
       <FadeInView delay={180} duration={400} className="bg-[#018091] rounded-3xl p-5">
         <View className="">
@@ -147,7 +148,8 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
           <Text className="text-xl font-semibold text-secondary mt-lg">
             Transit Info
           </Text>
-          <View className="rounded-2xl flex-col gap-3 p-2">
+          <View className="rounded-2xl flex-col p-2 pl-0">
+
             <Field
               label="Booking Ref"
               value={data.bookingReference}
@@ -207,7 +209,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
           <Text className="text-xl font-semibold text-secondary mt-lg">
             Contact Info
           </Text>
-          <View className="rounded-2xl flex-col gap-3 p-2 pb-1 pl-1">
+          <View className="rounded-2xl flex-col p-2 pb-1 pl-0">
             {(data as any).contactName ? (
               <Field
                 label="Contact Person"

@@ -131,7 +131,7 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
         </View>
       ) : null}
       <View className={`flex-1 ${borderClass} ${showBorder ? "pb-3" : ""}`}>
-        <Text className="text-lg font-semibold text-secondary ">
+        <Text className="text-base font-medium text-secondary ">
           {label}
         </Text>
         {isInteractive ? (
@@ -153,7 +153,7 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
             {actionIconName && (
               <Icon
                 name={actionIconName}
-                size={16}
+                size={14}
                 color="#344054"
                 style={{ opacity: 0.6 }}
               />

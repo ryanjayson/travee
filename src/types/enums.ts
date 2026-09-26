@@ -14,18 +14,19 @@ export enum TripPlanType {
 }
 
 export enum ActivityType {
-  preparation = 1,
+  cafe = 1, // food, eat, drink, snack, coffee, bar, lounge, pub
   restaurant = 2,
-  cafeOrBar = 3, // food, eat, drink, snack, coffee, bar, lounge, pub
-  sightseeing = 4,
+  sightseeing = 3,
+  entertainment = 4, //park, museum, gym, cinema, stadium, zoo, concert
   shopping = 5, // , spa, events, festivals, parties, show, tour guide, clothes_store, supermarket, convenience_store, atm, bank, pharmacy, gas_station
-  entertainment = 6, //park, museum, gym, cinema, stadium, zoo, concert
-  nature = 7, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
-  hikeOrCamp = 9, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
-  rest = 10,
-  motorcycleRide = 11, // motorbike 
-  meetup = 12,
-  walk = 8,
+  nature = 6, // beach, mountain, lake, river, waterfall, forest, jungle, cave, desert, canyon, volcano
+  camp = 7, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
+  hike = 8, //mountain, forest, jungle, cave, desert, canyon, volcano, campground
+  rest = 9,
+  ride = 10, // motorbike, motorcycle, car, bike
+  meetup = 11,
+  walk = 12,
+  preparation = 13,
 }
 
 // // Aliases for transition and backwards compatibility
@@ -215,8 +216,8 @@ export function getActivityTypeLabel(type: ActivityType): string {
       return "Preparation";
     case ActivityType.restaurant:
       return "Restaurant";
-    case ActivityType.cafeOrBar:
-      return "Cafe / Bar";
+    case ActivityType.cafe:
+      return "Cafe";
     case ActivityType.sightseeing:
       return "Sightseeing";
     case ActivityType.shopping:
@@ -227,12 +228,14 @@ export function getActivityTypeLabel(type: ActivityType): string {
       return "Nature";
     case ActivityType.walk:
       return "Walk";
-    case ActivityType.hikeOrCamp:
-      return "Hike / Camp";
+    case ActivityType.camp:
+      return "Camp";
+    case ActivityType.hike:
+      return "Hike";
     case ActivityType.rest:
       return "Rest";
-    case ActivityType.motorcycleRide:
-      return "Motorcycle Ride";
+    case ActivityType.ride:
+      return "Ride";
     case ActivityType.meetup:
       return "Meetup";
     default:

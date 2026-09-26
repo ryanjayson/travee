@@ -110,10 +110,10 @@ export default function TransportationTab({
   const dropoffSubtitle = getLocationSubtitle(values.transportationDetails?.dropoffLocation);
 
   return (
-    <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
-      <View className="flex-row gap-2 justify-start items-center mb-6 border-l-3 border-primary pl-4">
-        <Icon name="directions-bus" size={26} color={"#34405480"} />
-        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
+    <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
+      <View className="flex-row gap-2 justify-start items-center mb-5">
+        <Icon name="directions-bus" size={28} color={activityColor} />
+        <Text className="text-2xl font-semibold  text-secondary">
           Transit Details
         </Text>
       </View>
@@ -344,7 +344,7 @@ export default function TransportationTab({
                     <Icon
                       name={item.icon}
                       size={24}
-                      color={isSelected ? activityColor : "#475467"}
+                      color={isSelected ? activityColor : "#47546780"}
                     />
                   </View>
                   <Text
@@ -352,7 +352,7 @@ export default function TransportationTab({
                     style={{
                       fontSize: 12,
                       fontWeight: isSelected ? "700" : "500",
-                      color: isSelected ? activityColor : "#344054",
+                      color: isSelected ? activityColor : "#34405480",
                     }}
                   >
                     {item.label}
@@ -366,8 +366,8 @@ export default function TransportationTab({
 
 
       {/* Seat / Coach / Vehicle Number & Booking Reference */}
-      <View className="mb-5 flex-1">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.seatOrVehicleNumber"] = el; }} style={{ flex: 1 }}>
+      <View className="mb-5">
+        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.seatOrVehicleNumber"] = el; }}>
           <FloatingLabelInput
             label="Seat / Coach / Vehicle #"
             value={values.transportationDetails?.seatOrVehicleNumber || ""}
@@ -378,7 +378,7 @@ export default function TransportationTab({
       </View>
 
       {/* Booking Status & Price */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.bookingStatus"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.bookingStatus"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Booking Reference"
           value={values.transportationDetails?.bookingReference || ""}
@@ -389,7 +389,7 @@ export default function TransportationTab({
 
 
       {/* Website Address / Ticket Link */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.websiteAddress"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.websiteAddress"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Website Address / Ticket Link"
           value={values.transportationDetails?.websiteAddress || ""}
@@ -432,7 +432,7 @@ export default function TransportationTab({
       </View>
 
       {/* Contact Number */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.contactNumber"] = el; }} className="mb-8 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.contactNumber"] = el; }} className="mb-8">
         <FloatingLabelInput
           label="Contact Number"
           value={values.transportationDetails?.contactNumber || ""}

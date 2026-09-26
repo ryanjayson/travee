@@ -62,26 +62,26 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
   const hasNotes = Boolean(activity.notes || activity.description);
 
   return (
-    <View className="mt-4 px-2 overflow-hidden"
+    <View className="mt-2 px-2 overflow-hidden"
     >
-      <FadeInView delay={180} duration={200}>
+      <FadeInView type="down" delay={180} duration={200}>
         <View
-          className="p-5 pb-0 rounded-t-3xl flex-1"
-          style={{ backgroundColor: `${themeColor}` }}
+          className="p-2xl rounded-3xl flex-1 mb-4"
+          style={{ backgroundColor: `${themeColor}30` }}
         >
-          <View className="flex-row items-start gap-2 w-full">
+          <View className="flex-row items-start w-full ">
             <View className="flex-col gap-2 flex-1">
               {activity.destinationData?.name && activity.destinationData?.name != activity.title ?
                 <View className="flex flex-col gap-3">
                   <View className="flex flex-row gap-3 items-start flex-1">
                     <View className="pt-0.5">
-                      <Icon name="location-on" size={22} color={"#FFFFFF"} />
+                      <Icon name="location-on" size={28} color={themeColor} />
                     </View>
                     <View className="flex-1">
-                      <Text className="text-xl leading-xl font-semibold text-white">
+                      <Text className="text-xl leading-xl font-semibold text-secondary">
                         {activity.destinationData?.name}
                       </Text>
-                      <Text className="text-white/70 text-lg">
+                      <Text className="text-secondary/60 font-semibold text-base">
                         {locationText}
                       </Text>
                     </View>
@@ -90,12 +90,19 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
                 :
                 locationText && (
                   <View className="flex flex-col flex-1">
-                    <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1 ">
-                      Address
-                    </Text>
-                    <Text className="mb-1 text-white/70 text-xl ">
-                      {locationText}
-                    </Text>
+                    <View className="flex flex-row gap-3 items-start flex-1">
+                      <View className="pt-0.5">
+                        <Icon name="location-on" size={28} color={themeColor} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xs font-bold text-secondary uppercase tracking-widest mb-1 ">
+                          Address
+                        </Text>
+                        <Text className="mb-1 text-secondary/60 text-base font-semibold">
+                          {locationText}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
                 )
               }
@@ -104,56 +111,62 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
         </View>
 
         <View
-          className="flex-row items-center justify-between p-5 rounded-b-3xl"
-          style={{ backgroundColor: `${themeColor}` }}
-        >
-          <View className="flex-1"
+          className="flex-row gap-4">
+          <View className="flex-1 p-5 rounded-3xl"
             style={{
               display: activity.startDate ? "flex" : "none",
+              backgroundColor: `${themeColor}60`
             }}>
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1 ">
+            <View className="flex-1 mb-3">
+              <Icon name="timer" size={28} color={themeColor} />
+            </View>
+            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1 ">
               {activity.endDate ? "Start" : "Date"}
             </Text>
-            <Text className="text-2xl font-semibold text-white/90">
+            <Text className="text-2xl font-semibold text-secondary/90">
               {safeFormatTime(activity.startDate)}
             </Text>
-            <Text className="text-base font-medium text-white/70 mt-0.5">
+            <Text className="text-base font-medium text-secondary/70 mt-0.5">
               {safeFormatDate(activity.startDate)}
             </Text>
           </View>
 
-          {activity.endDate && activity.startDate && (
+          {/* {activity.endDate && activity.startDate && (
             <View className="px-3 items-center justify-center">
               <Icon name="chevron-right" size={38} color={"#FFFFFF"} style={{ opacity: .50 }} />
             </View>
-          )}
+          )} */}
 
-          <View className="flex-1 items-end"
+          <View className="flex-1 p-5 rounded-3xl "
             style={{
               display: activity.endDate ? "flex" : "none",
+              backgroundColor: `${themeColor}30`
             }}>
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            <View className="flex-1 mb-3">
+              <Icon name="timer-off" size={28} color={themeColor} />
+            </View>
+            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1">
               End
             </Text>
-            <Text className="text-2xl font-semibold text-white/90 text-right">
+            <Text className="text-2xl font-semibold text-secondary/90">
               {activity.endDate ? safeFormatTime(activity.endDate) : "--:--"}
             </Text>
-            <Text className="text-base font-medium text-white/70 mt-0.5 text-right">
+            <Text className="text-base font-medium text-secondary/70 mt-0.5">
               {activity.endDate ? safeFormatDate(activity.endDate) : ""}
             </Text>
           </View>
         </View>
       </FadeInView>
 
-      <FadeInView delay={180} duration={400}>
+      <FadeInView type="down" delay={180} duration={400}>
         <View
-          className="px-md my-lg"
+          className="px-md mt-xl"
           style={{ display: hasPlanInfo ? "flex" : "none" }}
         >
           <Text className="text-xl font-semibold text-secondary mt-lg">
             {planTypeConfig ? `${planTypeConfig.label} Info` : "Plan Info"}
           </Text>
-          <View className="rounded-2xl flex-col gap-3 p-2">
+          <View className="rounded-2xl flex-col p-2 pl-0">
             <Field
               label="Booking Ref"
               value={activity.bookingReference}
@@ -195,9 +208,9 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
         </View>
       </FadeInView>
 
-      <FadeInView delay={180} duration={400}>
+      <FadeInView type="down" delay={180} duration={400}>
         <View
-          className="px-md"
+          className="px-md mt-xl"
           style={{
             display: hasContactInfo ? "flex" : "none",
           }}
@@ -205,7 +218,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
           <Text className="text-xl font-semibold text-secondary">
             Contact Info
           </Text>
-          <View className="rounded-2xl flex-col gap-3 p-2 pb-1 pl-1">
+          <View className="rounded-2xl flex-col p-2 pb-1 pl-0">
             <Field
               label="Contact Person"
               value={activity.contactName}
@@ -234,7 +247,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
       </FadeInView>
 
       {!hasContactInfo && !hasPlanInfo && (
-        <FadeInView delay={180} duration={400}>
+        <FadeInView type="down" delay={180} duration={400}>
           <TouchableOpacity
             onPress={() => {
               if (activity) {
@@ -267,10 +280,8 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
 
       )}
 
-
-
       {hasNotes ? (
-        <FadeInView delay={180} duration={400}>
+        <FadeInView type="down" delay={180} duration={400}>
           <View className="px-md my-lg">
             <Text className="text-xl font-semibold text-secondary mt-lg">
               Notes

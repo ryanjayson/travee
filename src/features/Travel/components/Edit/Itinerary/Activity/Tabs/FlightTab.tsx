@@ -44,10 +44,10 @@ export default function FlightTab({
   const arrParsed = parseAirport(arrivalAirport);
 
   return (
-    <View className={`flex-1  pt-2 ${noPadding ? "" : "px-5"}`}>
-      <View className="flex-row gap-2 justify-start items-center mb-6 border-l-3 border-primary pl-4">
-        <Icon name="local-airport" size={24} color={"#344054"} />
-        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
+    <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
+      <View className="flex-row gap-2 justify-start items-center mb-5">
+        <Icon name="local-airport" size={28} color={"#0EA5E9"} />
+        <Text className="text-2xl font-semibold  text-secondary">
           Flight Details
         </Text>
       </View>
@@ -85,7 +85,7 @@ export default function FlightTab({
         </TouchableOpacity>
       </View>
 
-      <View className="flex-1">
+      <View className="relative">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureDate"] = el; }} className="flex-row gap-4 ">
           <View className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4" pointerEvents="box-none">
             <TouchableOpacity

@@ -133,14 +133,13 @@ export default function PlanTab({
   };
 
   return (
-    <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
+    <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
       {/* Header */}
-      <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
-        <Icon name="event-note" size={26} color={"#344054"} />
-        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
+      <View className="flex-row gap-2 justify-start items-center mb-5">
+        <Icon name="event-note" size={28} color={"#34405480"} />
+        <Text className="text-2xl font-semibold  text-secondary">
           Activity Details
         </Text>
-
       </View>
 
       {/* Date & Time Section */}
@@ -242,7 +241,7 @@ export default function PlanTab({
         if (!fieldMeta) return null;
 
         return (
-          <View key={fieldId} className="mb-5 flex-1">
+          <View key={fieldId} className="mb-5">
             <FadeInView type="zoom" delay={200} duration={500} >
 
               {fieldId === "location" && (

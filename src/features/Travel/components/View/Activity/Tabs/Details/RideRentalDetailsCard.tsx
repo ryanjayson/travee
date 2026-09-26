@@ -24,8 +24,8 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
     ? data.price.startsWith("₱") || data.price.startsWith("$")
       ? data.price
       : !isNaN(Number(data.price))
-      ? `₱${Number(data.price).toLocaleString()}`
-      : data.price
+        ? `₱${Number(data.price).toLocaleString()}`
+        : data.price
     : null;
 
   const pickupLoc = getLocationTitle(data.pickupLocation);
@@ -49,49 +49,108 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
   );
 
   return (
-    <View className="mt-4 overflow-hidden">
+    <View className="mt-2 px-2 overflow-hidden">
       {/* Main Details Body */}
-      <FadeInView delay={180} duration={400}>
-        <View className="p-5 pb-0 bg-[#384690+30] rounded-t-3xl">
-          <View className="">
-            <Text className="text-xs font-medium text-secondary/80 uppercase tracking-wide mb-1">
-              {data.vehicleType ? `${data.vehicleType} Rental` : "Ride & Rental"}
-            </Text>
-            <Text className="text-2xl leading-2xl font-semibold mb-1 text-secondary">
-              {data.providerName || data.destinationAddressData?.name || "N/A"}
-            </Text>
 
-            <Text className="text-lg font-semibold mb-1 text-secondary/40">
-              {locationText || "N/A"}
-            </Text>
+      <FadeInView type="down" delay={180} duration={200}>
+        <View className="p-2xl rounded-3xl flex-1 mb-4 bg-[#384690+30]">
+          <View className="flex-row items-start w-full">
+            <View className="flex-col gap-2 flex-1">
+              {data.destinationAddressData?.name && data.destinationAddressData?.name != data.providerName ? (
+                <View className="flex flex-col gap-3">
+                  <View className="flex flex-row gap-3 items-start flex-1">
+                    <View className="pt-0.5">
+                      <Icon name="location-on" size={28} color={"#384690"} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-xs font-medium text-secondary/70 uppercase tracking-wide">
+                        {data.vehicleType ? `${data.vehicleType} Rental` : "Ride & Rental"}
+                      </Text>
+                      <Text className="text-xl leading-xl font-semibold text-secondary">
+                        {data.destinationAddressData?.name}
+                      </Text>
+                      <Text className="text-secondary/60 font-semibold text-base">
+                        {data.address || locationText}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ) : (data.address || locationText) ? (
+                <View className="flex flex-col flex-1">
+                  <View className="flex flex-row gap-3 items-start flex-1">
+                    <View className="pt-0.5">
+                      <Icon name="location-on" size={28} color={"#384690"} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">
+                        Address
+                      </Text>
+                      <Text className="mb-1 text-secondary/80 text-base font-semibold">
+                        {data.address || locationText}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ) : data.providerName ? (
+                <View className="flex flex-col flex-1">
+                  <View className="flex flex-row gap-3 items-start flex-1">
+                    <View className="pt-0.5">
+                      <Icon name="directions-car" size={28} color={"#384690"} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-xs font-medium text-secondary/70 uppercase tracking-wide">
+                        {data.vehicleType ? `${data.vehicleType} Rental` : "Ride & Rental"}
+                      </Text>
+                      <Text className="text-xl leading-xl font-semibold text-secondary">
+                        {data.providerName}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ) : null}
+            </View>
           </View>
         </View>
 
-        <View className="flex-row items-center justify-between p-5 bg-[#384690+30] rounded-b-3xl">
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-secondary/500 uppercase tracking-widest mb-1">
+        <View className="flex-row gap-4">
+          <View
+            className="flex-1 p-5 rounded-3xl"
+            style={{
+              display: data.rentalStartDateTime ? "flex" : "none",
+              backgroundColor: "#38469050",
+            }}
+          >
+            <View className="flex-1 mb-3">
+              <Icon name="timer" size={28} color={"#384690"} />
+            </View>
+            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
               Pick-up
             </Text>
-            <Text className="text-2xl font-semibold text-secondary/80">
+            <Text className="text-2xl font-semibold text-secondary/70">
               {safeFormatTime(data.rentalStartDateTime)}
             </Text>
-            <Text className="text-base font-medium text-secondary/80 mt-0.5">
+            <Text className="text-base font-medium text-secondary/70 mt-0.5">
               {safeFormatDate(data.rentalStartDateTime)}
             </Text>
           </View>
 
-          <View className="px-3 items-center justify-center">
-            <Icon name="arrow-forward" size={30} color={"#384690"} />
-          </View>
-
-          <View className="flex-1 items-end">
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1">
+          <View
+            className="flex-1 p-5 rounded-3xl"
+            style={{
+              display: data.rentalEndDateTime ? "flex" : "none",
+              backgroundColor: "#38469030",
+            }}
+          >
+            <View className="flex-1 mb-3">
+              <Icon name="timer-off" size={28} color={"#384690"} />
+            </View>
+            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
               Drop-off
             </Text>
-            <Text className="text-2xl font-semibold text-secondary/80 text-right">
+            <Text className="text-2xl font-semibold text-secondary/70">
               {data.rentalEndDateTime ? safeFormatTime(data.rentalEndDateTime) : "--:--"}
             </Text>
-            <Text className="text-base font-medium text-secondary/80 mt-0.5 text-right">
+            <Text className="text-base font-medium text-secondary/70 mt-0.5">
               {data.rentalEndDateTime ? safeFormatDate(data.rentalEndDateTime) : ""}
             </Text>
           </View>
@@ -100,13 +159,13 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
 
       <FadeInView delay={180} duration={400}>
         <View
-          className="px-md my-lg"
+          className="px-md mt-xl"
           style={{ display: hasRentalInfo ? "flex" : "none" }}
         >
           <Text className="text-xl font-semibold text-secondary mt-lg">
             Rental Info
           </Text>
-          <View className="rounded-2xl flex-col gap-3 p-2">
+          <View className="rounded-2xl flex-col p-2 pl-0">
             <Field
               label="Booking Ref"
               value={data.bookingReference}
@@ -116,7 +175,7 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
               borderColor="border-[#384690]"
             />
             <Field
-              label="Vehicle Model"
+              label="Model"
               value={data.vehicleModel}
               icon="directions-car"
               showBorder={false}
@@ -144,20 +203,6 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
               borderColor="border-[#384690]"
             />
             <Field
-              label="Pick-up Location"
-              value={pickupLoc}
-              icon="place"
-              showBorder={false}
-              borderColor="border-[#384690]"
-            />
-            <Field
-              label="Drop-off Location"
-              value={dropoffLoc}
-              icon="pin-drop"
-              showBorder={false}
-              borderColor="border-[#384690]"
-            />
-            <Field
               label="Website"
               value={data.websiteAddress}
               icon="link"
@@ -171,7 +216,7 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
 
       <FadeInView delay={180} duration={400}>
         <View
-          className="px-md"
+          className="px-md mt-xl"
           style={{
             display:
               data.contactName || data.contactNumber || data.emailAddress ? "flex" : "none",
@@ -180,7 +225,7 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
           <Text className="text-xl font-semibold text-secondary mt-lg">
             Contact Info
           </Text>
-          <View className="rounded-2xl flex-col gap-3 p-2 pb-1 pl-1">
+          <View className="rounded-2xl flex-col p-2 pl-0">
             <Field
               label="Contact Person"
               value={data.contactName}

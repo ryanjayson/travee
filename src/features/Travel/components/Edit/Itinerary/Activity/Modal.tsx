@@ -485,7 +485,9 @@ const ActivityModal = ({
 
   return (
     <>
-      <Modal visible={visible} transparent animationType="none"
+      <Modal visible={visible}
+        transparent={false}
+        animationType="none"
         onRequestClose={() => {
           if (isChildModalOpenRef.current || isChildModalOpen) return;
           handleCancel();
@@ -496,10 +498,10 @@ const ActivityModal = ({
         >
           <Animated.View
             className="flex-1 justify-end"
-            style={{
-              backgroundColor: "rgba(0,0,0,0.5)",
-              opacity: backdropOpacity
-            }}
+          // style={{
+          //   backgroundColor: "rgba(0,0,0,0.5)",
+          //   opacity: backdropOpacity
+          // }}
           >
             <Animated.View
               {...sheetPanResponder.panHandlers}
@@ -508,11 +510,6 @@ const ActivityModal = ({
                 { height: "100%" },
                 {
                   paddingTop: insets.top + 16,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: -8 },
-                  shadowOpacity: 0.12,
-                  shadowRadius: 16,
-                  elevation: 24,
                   transform: [{ translateY }],
                 }
               ]}
