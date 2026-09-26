@@ -1,5 +1,5 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Animated,
   Dimensions,
@@ -12,7 +12,7 @@ import {
   PanResponder,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import Create from ".";
+import Create, { CreateOrEditRef } from ".";
 import StatusBadge from "../../../../components/StatusBadge";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { TravelStatus } from "../../../../types/enums";
@@ -27,6 +27,7 @@ interface AddTripModalProps {
   tripData?: Travel;
   mode?: "create" | "edit";
   onCreated?: (createdId: string) => void;
+  autoFocusSearch?: boolean;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -37,6 +38,7 @@ const CreateTripModal = ({
   tripData,
   mode = "create",
   onCreated,
+  autoFocusSearch,
 }: AddTripModalProps) => {
 
   const [isSaving, setIsSaving] = useState(false);
@@ -49,6 +51,15 @@ const CreateTripModal = ({
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
   const dragStartDy = useRef(0);
+  const createRef = useRef<CreateOrEditRef>(null);
+
+  const shouldAutoFocus = autoFocusSearch !== undefined ? autoFocusSearch : mode === "create";
+
+  const triggerFocus = useCallback(() => {
+    if (shouldAutoFocus) {
+      createRef.current?.focusSearch();
+    }
+  }, [shouldAutoFocus]);
 
   // Slide up transition on opening
   useEffect(() => {
@@ -60,9 +71,18 @@ const CreateTripModal = ({
         tension: 65,
         friction: 11,
         useNativeDriver: true,
-      }).start();
+      }).start(() => {
+        triggerFocus();
+      });
+
+      // Scheduled fallback in case animation completion is delayed or onShow fires
+      const timer = setTimeout(() => {
+        triggerFocus();
+      }, 250);
+
+      return () => clearTimeout(timer);
     }
-  }, [showModal]);
+  }, [showModal, triggerFocus]);
 
 
   const handleCancel = () => {
@@ -88,6 +108,7 @@ const CreateTripModal = ({
       transparent
       animationType="none"
       onRequestClose={handleCancel}
+      onShow={triggerFocus}
     >
       <StatusBar style="dark" />
       <KeyboardAvoidingView
@@ -107,11 +128,6 @@ const CreateTripModal = ({
               { height: "100%" },
               {
                 // paddingTop: (mode === "edit" || keyboardVisible) ? insets.top + 0 : 0,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -8 },
-                shadowOpacity: 0.12,
-                shadowRadius: 16,
-                elevation: 24,
                 transform: [{ translateY }],
               }
             ]}
@@ -148,12 +164,14 @@ const CreateTripModal = ({
             </View>
             <View className="flex-1">
               <Create
+                ref={createRef}
                 onClose={handleCancel}
                 onStatusChange={setTripStatus}
                 tripData={tripData}
                 mode={mode}
                 onCreated={onCreated}
                 hideSubmitButton={keyboardVisible}
+                autoFocusSearch={showModal && shouldAutoFocus}
                 onScroll={(e) => {
                   const y = e.nativeEvent.contentOffset.y;
                   isAtTop.current = y <= 0;

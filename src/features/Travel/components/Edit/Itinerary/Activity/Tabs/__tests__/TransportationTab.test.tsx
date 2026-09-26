@@ -2,7 +2,7 @@ import React from "react";
 import { Formik } from "formik";
 import { fireEvent } from "@testing-library/react-native";
 import TransportationTab from "../TransportationTab";
-import { ActivityType } from "@/types/enums";
+import { TripPlanType } from "@/types/enums";
 import { renderWithProviders } from "@/test-utils/renderWithProviders";
 
 // Mock useTravelPlan hook used by DateTime
@@ -15,7 +15,7 @@ jest.mock("@/features/Travel/hooks/useTravel", () => ({
 
 describe("TransportationTab Component", () => {
   const defaultValues = {
-    type: ActivityType.transit,
+    type: TripPlanType.transit,
     startDate: "2026-10-01",
     startTime: "09:00",
     endDate: "2026-10-01",
@@ -99,6 +99,47 @@ describe("TransportationTab Component", () => {
       "transportationDetails.dropoffLocation",
       defaultValues.transportationDetails.pickupLocation
     );
+    expect(setFieldValue).toHaveBeenCalledWith(
+      "destinationData",
+      expect.objectContaining({
+        pickupLocation: defaultValues.transportationDetails.dropoffLocation,
+        dropoffLocation: defaultValues.transportationDetails.pickupLocation,
+      })
+    );
+  });
+
+  it("clears pickup location and removes it from destinationData", () => {
+    const setFieldValue = jest.fn();
+    const { getByLabelText } = renderComponent({ setFieldValue });
+
+    const clearPickupBtn = getByLabelText("Clear departure location");
+    fireEvent.press(clearPickupBtn);
+
+    expect(setFieldValue).toHaveBeenCalledWith("transportationDetails.pickupLocation", null);
+    expect(setFieldValue).toHaveBeenCalledWith(
+      "destinationData",
+      expect.objectContaining({
+        pickupCoordinates: null,
+        pickupLocation: null,
+      })
+    );
+  });
+
+  it("clears dropoff location and removes it from destinationData", () => {
+    const setFieldValue = jest.fn();
+    const { getByLabelText } = renderComponent({ setFieldValue });
+
+    const clearDropoffBtn = getByLabelText("Clear arrival location");
+    fireEvent.press(clearDropoffBtn);
+
+    expect(setFieldValue).toHaveBeenCalledWith("transportationDetails.dropoffLocation", null);
+    expect(setFieldValue).toHaveBeenCalledWith(
+      "destinationData",
+      expect.objectContaining({
+        dropoffCoordinates: null,
+        dropoffLocation: null,
+      })
+    );
   });
 
   it("renders transit modes and allows selection toggle", () => {
@@ -127,3 +168,4 @@ describe("TransportationTab Component", () => {
     expect(handleChangeText).toHaveBeenCalledWith("Car 7, Seat 3B");
   });
 });
+

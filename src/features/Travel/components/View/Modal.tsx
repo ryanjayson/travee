@@ -10,9 +10,10 @@ import ViewTravel from ".";
 import { useConfirm } from "../../../../context/ConfirmContext";
 import { useTravelContext } from "../../../../context/TravelContext";
 import type { RootStackParamList } from "../../../../navigation/navigation.types";
-import { TravelMenuAction } from "../../../../types/enums";
+import { TravelMenuAction, TripPlanType } from "../../../../types/enums";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
 import CreateTripModal from "../CreateOrEdit/Modal";
+import TravelActionFAB from "./TravelActionFAB";
 import { useArchiveTravel, useCancelTravel, useDeleteTravel, useTravelPlan, useUnarchiveTravel } from "../../hooks/useTravel";
 
 interface ViewTripModalProps {
@@ -38,7 +39,7 @@ const ViewTripModal = ({
   const [scrollYVal, setScrollYVal] = useState<number>(0);
   const [isFabOpen, setIsFabOpen] = useState<boolean>(false);
   const [showEditTripModal, setShowEditTripModal] = useState<boolean>(false);
-
+  const queryClient = useQueryClient();
   const expandAnim = useRef(new Animated.Value(0)).current;
   const collapseTriggerRef = useRef<(() => void) | null>(null);
 
@@ -51,14 +52,9 @@ const ViewTripModal = ({
   }, [expanded]);
 
   const progress = Math.min(Math.max(scrollYVal / 150, 0), 1);
-  const headerBg = `rgba(255, 255, 255, ${progress})`;
-  const headerBorder = `rgba(0, 0, 0, ${progress * 0.08})`;
-
-  const r = Math.round(255 - (255 - 137) * progress);
-  const g = Math.round(255 - (255 - 147) * progress);
-  const b = Math.round(255 - (255 - 158) * progress);
-  const baseColor = `rgb(${r}, ${g}, ${b})`;
-  const iconColor = baseColor;
+  const headerBg = "#ffffff";
+  const headerBorder = `rgba(0, 0, 0, ${Math.max(progress * 0.08, 0.06)})`;
+  const iconColor = "#344054";
 
   const titleOpacity = Math.min(Math.max((scrollYVal - 40) / 60, 0), 1);
 
@@ -80,13 +76,35 @@ const ViewTripModal = ({
 
   // useContext never throws — returns null if outside NavigationContainer
   const navContext = useContext(NavigationContext);
-  const navigation = navContext as NativeStackNavigationProp<RootStackParamList> | null;
-  const queryClient = useQueryClient();
-  const { setRefetchTravelPlan } = useTravelContext();
+  const {
+    setRefetchTravelPlan,
+    viewActivityId,
+    closeViewActivity,
+    openNoteModal,
+    openChecklistModal,
+    openExpenseModal,
+    openActivityTypeModal,
+    openActivityModal,
+    openGoogleSearchModal,
+    openSectionModal,
+    activeTripViewTab,
+  } = useTravelContext();
   const {
     data: travelPlan,
     refetch,
   } = useTravelPlan(travelId);
+
+  const allActivities = travelPlan?.itinerarySection?.flatMap(s => s.itineraryActivity || []) || [];
+
+  const countryName = React.useMemo(() => {
+    const rawDest = travelPlan?.travel?.destinationData as any;
+    if (rawDest && typeof rawDest === "object" && rawDest.country) {
+      return rawDest.country;
+    }
+    const dest = travelPlan?.travel?.destination || "";
+    const parts = dest.split(",").map((p: string) => p.trim()).filter(Boolean);
+    return parts.length > 0 ? parts[parts.length - 1] : "";
+  }, [travelPlan?.travel?.destination, travelPlan?.travel?.destinationData]);
 
   useEffect(() => {
     if (showModal && travelId) {
@@ -188,7 +206,9 @@ const ViewTripModal = ({
       animationType="slide"
       statusBarTranslucent={true}
       onRequestClose={() => {
-        if (isFabOpen) {
+        if (viewActivityId) {
+          closeViewActivity?.();
+        } else if (isFabOpen) {
           setIsFabOpen(false);
         } else {
           handleCancel();
@@ -196,14 +216,14 @@ const ViewTripModal = ({
       }}
     >
       <StatusBar style="dark" />
-      <View style={{ flex: 1 }}>
-        {/* Content Container filling the entire screen */}
-        <View style={StyleSheet.absoluteFill}>
+      <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+        {/* Content Container filling the entire screen with top inset padding */}
+        <View style={[StyleSheet.absoluteFill, { paddingTop: insets.top + 48, backgroundColor: "#ffffff" }]}>
           {travelPlan && (
-            <ViewTravel 
-              travelPlan={travelPlan} 
-              onClose={handleCancel} 
-              expanded={expanded} 
+            <ViewTravel
+              travelPlan={travelPlan}
+              onClose={handleCancel}
+              expanded={expanded}
               onExpandedChange={setExpanded}
               onScrollY={setScrollYVal}
               showMap={showMapModal}
@@ -222,7 +242,7 @@ const ViewTripModal = ({
         </View>
 
         {/* Sticky/Overlay Header floating on top */}
-        <View 
+        <View
           style={{
             position: "absolute",
             top: 0,
@@ -259,13 +279,13 @@ const ViewTripModal = ({
               </Animated.View>
             </Animated.View>
           </TouchableOpacity>
-    
+
           <View style={{ opacity: titleOpacity, marginLeft: 8, flex: 1 }}>
             <Text className="text-xl font-medium" style={{ color: "#111827" }} ellipsizeMode="tail" numberOfLines={1}>
               {travelPlan && `${travelPlan.travel.title}`}
             </Text>
           </View>
-          
+
           <View style={{ flexDirection: "row", alignItems: "center", marginRight: 8 }}>
             {/* Share/Map modal button when not at full height */}
             {!expanded && (
@@ -283,7 +303,7 @@ const ViewTripModal = ({
 
             <TouchableOpacity
               style={{ padding: 6 }}
-              onPress={() => setShowTravelNavigationModal(true)}  
+              onPress={() => setShowTravelNavigationModal(true)}
               activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               accessibilityRole="button"
@@ -315,6 +335,54 @@ const ViewTripModal = ({
         tripData={travelPlan?.travel}
         mode="edit"
       />
+
+      {travelPlan && (
+        <TravelActionFAB
+          currentTab={activeTripViewTab || "details"}
+          open={isFabOpen}
+          setOpen={setIsFabOpen}
+          travelId={travelPlan.travel.id}
+          onEditTrip={() => setShowEditTripModal(true)}
+          onAddNote={() => {
+            openNoteModal(null, allActivities, travelPlan.travel.id);
+          }}
+          onAddChecklist={() => {
+            openChecklistModal(null, allActivities, travelPlan.travel.id);
+          }}
+          onAddExpense={() => {
+            openExpenseModal(null, undefined, allActivities, travelPlan.travel.id);
+          }}
+          onAddActivity={(type: any) => {
+            if (!type) {
+              openActivityTypeModal(undefined, travelPlan.travel.id);
+              return;
+            }
+            if (type === TripPlanType.activity) {
+              const allTripDestinations =
+                travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0
+                  ? travelPlan.travel.tripDestinations
+                  : travelPlan.travel.destination
+                    ? [{ destination: travelPlan.travel.destination, destinationData: travelPlan.travel.destinationData }]
+                    : [];
+
+              openGoogleSearchModal(
+                undefined,
+                travelPlan.travel.id,
+                travelPlan.travel.destination,
+                travelPlan.travel.destinationData?.coordinates,
+                countryName,
+                undefined,
+                allTripDestinations
+              );
+            } else {
+              openActivityModal(null, undefined, travelPlan.travel.id, type);
+            }
+          }}
+          onAddSection={() => {
+            openSectionModal(null, travelPlan.travel.id);
+          }}
+        />
+      )}
     </Modal>
   );
 };

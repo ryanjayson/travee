@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, Image, Dimensions, Linking, StyleSheet, Modal, Pressable, Platform, ActivityIndicator, Alert, AlertButton } from "react-native";
+import { View, Animated, Text, FlatList, TouchableOpacity, Image, Dimensions, Linking, Modal, Pressable, Platform, ActivityIndicator, Alert, AlertButton } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme, Button } from "react-native-paper";
 import WebView from "react-native-webview";
@@ -10,6 +10,7 @@ import { ItineraryActivity, Attachment, Images } from "../../../../types/TravelD
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useUpdateActivityMutation } from "../../../../hooks/useActivity";
+import { useConfirm } from "../../../../../../context/ConfirmContext";
 
 interface FilesTabProps {
   itineraryActivity?: ItineraryActivity;
@@ -66,6 +67,7 @@ const isLocalUrl = (url: string) => {
 
 const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => {
   const { colors } = useTheme();
+  const { confirm } = useConfirm();
   const updateMutation = useUpdateActivityMutation();
   const images: Images[] = itineraryActivity?.images || [];
   const attachments: Attachment[] = itineraryActivity?.attachments || [];
@@ -141,6 +143,56 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
         },
       ]
     );
+  };
+
+  const handleDeleteImage = async (imageIndex: number) => {
+    try {
+      const isConfirmed = await confirm({
+        title: "Delete Image",
+        message: "Are you sure you want to delete this image?",
+        confirmText: "Yes",
+        cancelText: "No",
+        type: "danger",
+      });
+
+      if (isConfirmed && itineraryActivity) {
+        const updatedImages = images.filter((_, idx) => idx !== imageIndex);
+        const updatedActivity: ItineraryActivity = {
+          ...itineraryActivity,
+          images: updatedImages,
+        };
+        await updateMutation.mutateAsync(updatedActivity);
+      }
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      Alert.alert("Error", "Failed to delete image.");
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentIndex: number, fileName?: string) => {
+    try {
+      const isConfirmed = await confirm({
+        title: "Delete File",
+        message: fileName
+          ? `Are you sure you want to delete "${fileName}"?`
+          : "Are you sure you want to delete this file?",
+        confirmText: "Yes",
+        cancelText: "No",
+        type: "danger",
+      });
+
+      if (isConfirmed && itineraryActivity) {
+        const updatedAttachments = attachments.filter((_, idx) => idx !== attachmentIndex);
+        const updatedActivity: ItineraryActivity = {
+          ...itineraryActivity,
+          attachments: updatedAttachments,
+        };
+        await updateMutation.mutateAsync(updatedActivity);
+      }
+    } catch (error) {
+      console.error("Error deleting attachment:", error);
+      Alert.alert("Error", "Failed to delete file.");
+    }
   };
 
   const handleAddAttachmentPress = async () => {
@@ -300,21 +352,15 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
         data={data}
         keyExtractor={(item, index) => (item.isAddButton ? "add-image-button" : `${item.url}-${index}`)}
         numColumns={3}
-        contentContainerStyle={styles.gridContent}
-        columnWrapperStyle={styles.gridColumnWrapper}
+        className="flex-1"
+        contentContainerStyle={{ padding: 16 }}
+        columnWrapperStyle={{ justifyContent: "flex-start", gap: 8, marginBottom: 8 }}
         renderItem={({ item, index }) => {
           if (item.isAddButton) {
             return (
               <TouchableOpacity
-                style={[
-                  styles.imageContainer,
-                  styles.addButtonContainer,
-                  {
-                    width: IMAGE_SIZE,
-                    height: IMAGE_SIZE,
-                    borderColor: "#263F69",
-                  },
-                ]}
+                style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
+                className="rounded-lg overflow-hidden bg-gray-100 justify-center items-center border-[1.5px] border-dashed border-[#263F69] p-2"
                 onPress={handleAddImagePress}
                 disabled={updateMutation.isPending}
                 activeOpacity={0.7}
@@ -322,11 +368,11 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                 accessibilityLabel="Add image"
               >
                 {updateMutation.isPending ? (
-                  <ActivityIndicator size="small" color={"#263F69"} />
+                  <ActivityIndicator size="small" color="#263F69" />
                 ) : (
                   <>
-                    <MaterialIcons name="add-a-photo" size={24} color={"#263F69"} />
-                    <Text style={[styles.addButtonText, { color: "#263F69" }]} numberOfLines={1}>
+                    <MaterialIcons name="add-a-photo" size={24} color="#263F69" />
+                    <Text className="text-[11px] font-semibold mt-1.5 text-center text-[#263F69]" numberOfLines={1}>
                       Add Image
                     </Text>
                   </>
@@ -337,18 +383,36 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
 
           const actualIndex = index - 1; // map back to original images array
           return (
-            <TouchableOpacity
-              style={[styles.imageContainer, { width: IMAGE_SIZE, height: IMAGE_SIZE }]}
-              onPress={() => {
-                setViewerActiveIndex(actualIndex);
-                onImageViewerToggle?.(true);
-              }}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`View image ${item.title || ""}`}
+            <View
+              style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
+              className="rounded-lg overflow-hidden bg-gray-100 relative"
             >
-              <Image source={{ uri: item.url }} style={styles.image} resizeMode="cover" />
-            </TouchableOpacity>
+              <TouchableOpacity
+                className="w-full h-full"
+                onPress={() => {
+                  setViewerActiveIndex(actualIndex);
+                  onImageViewerToggle?.(true);
+                }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`View image ${item.title || ""}`}
+              >
+                <Image source={{ uri: item.url }} className="w-full h-full" resizeMode="cover" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full justify-center items-center z-10"
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.50)",
+                }}
+                onPress={() => handleDeleteImage(actualIndex)}
+                disabled={updateMutation.isPending}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Delete image"
+              >
+                <MaterialIcons name="delete-outline" size={16} color="#FFF" />
+              </TouchableOpacity>
+            </View>
           );
         }}
       />
@@ -358,23 +422,25 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
   const renderAttachments = () => {
     if (attachments.length === 0) {
       return (
-        <View style={styles.emptyState}>
-          <MaterialIcons name="attach-file" size={48} color={colors.outline} style={styles.emptyIcon} />
-          <Text style={[styles.emptyTitle, { color: colors.outline }]}>No attachments uploaded yet</Text>
+        <View className="flex-1 justify-center items-center px-8 py-12">
+          <MaterialIcons name="attach-file" size={48} color={colors.outline} style={{ marginBottom: 16, opacity: 0.6 }} />
+          <Text className="text-lg font-semibold text-center" style={{ color: colors.outline }}>
+            No attachments uploaded yet
+          </Text>
           <Button
             mode="text"
             icon="plus"
             onPress={handleAddAttachmentPress}
             disabled={updateMutation.isPending}
             textColor="#0EA5E9"
-            style={[styles.addAttachmentButtonEmpty, {}]}
-            labelStyle={styles.addAttachmentButtonLabel}
+            className="self-center"
+            labelStyle={{ fontSize: 14, fontWeight: "600", textDecorationLine: "underline" }}
             accessibilityRole="button"
             accessibilityLabel="Add attachment"
           >
             {updateMutation.isPending ? "Adding..." : "Add Attachment"}
           </Button>
-          <Text style={[styles.acceptedTypesLabelEmpty, { color: colors.onSurfaceVariant }]}>
+          <Text className="text-xs text-center" style={{ color: colors.onSurfaceVariant }}>
             Supported formats: PDF, Word, Excel, PowerPoint
           </Text>
         </View>
@@ -388,8 +454,9 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
         key="attachments-list-view"
         data={data}
         keyExtractor={(item, index) => (item.isAddButton ? "add-attachment-button" : `${item.url}-${index}`)}
-        contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => {
+        className="flex-1"
+        contentContainerStyle={{ padding: 16, gap: 10 }}
+        renderItem={({ item, index }) => {
           if (item.isAddButton) {
             return (
               <View>
@@ -399,42 +466,55 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                   onPress={handleAddAttachmentPress}
                   disabled={updateMutation.isPending}
                   textColor="#263F69"
-                  style={styles.addAttachmentButton}
-                  labelStyle={styles.addAttachmentButtonLabel}
+                  className="self-start -ml-2"
+                  labelStyle={{ fontSize: 14, fontWeight: "600", textDecorationLine: "underline" }}
                   accessibilityRole="button"
                   accessibilityLabel="Add attachment"
                 >
                   {updateMutation.isPending ? "Adding..." : "Add Attachment"}
                 </Button>
-                <Text style={[styles.acceptedTypesLabel, { color: colors.onSurfaceVariant }]}>
+                <Text className="text-xs ml-2 -mt-1 mb-2" style={{ color: colors.onSurfaceVariant }}>
                   Supported formats: PDF, Word, Excel, PowerPoint
                 </Text>
               </View>
             );
           }
 
+          const actualIndex = index - 1;
           const iconName = getFileIcon(item.name);
           return (
-            <TouchableOpacity
-              style={[styles.attachmentItem, { borderColor: "#DDD", backgroundColor: "#F3F4F6" }]}
-              onPress={() => handleOpenAttachment(item)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`Open file ${item.name}`}
-            >
-              <View style={[styles.iconWrapper, {}]}>
-                <MaterialIcons name={iconName as any} size={24} color={"#263F69"} />
-              </View>
-              <View style={styles.attachmentDetails}>
-                <Text style={[styles.fileName, { color: "#000000" }]} numberOfLines={1}>
-                  {item.name}
-                </Text>
-                <Text style={[styles.fileSize, { color: "#999999" }]}>
-                  {formatFileSize(item.size)}
-                </Text>
-              </View>
-              <MaterialIcons name="open-in-new" size={20} color={colors.outline} />
-            </TouchableOpacity>
+            <View className="flex-row items-center p-3 rounded-xl border border-[#DDD] bg-[#F3F4F6]">
+              <TouchableOpacity
+                className="flex-1 flex-row items-center"
+                onPress={() => handleOpenAttachment(item)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`Open file ${item.name}`}
+              >
+                <View className="w-11 h-11 rounded-lg justify-center items-center mr-3">
+                  <MaterialIcons name={iconName as any} size={24} color="#263F69" />
+                </View>
+                <View className="flex-1 pr-lg">
+                  <Text className="text-base leading-5 font-semibold mb-0.5 text-black" numberOfLines={2}>
+                    {item.name}
+                  </Text>
+                  <Text className="text-xs text-[#999999]">
+                    {formatFileSize(item.size)}
+                  </Text>
+                </View>
+                <MaterialIcons name="open-in-new" size={20} color={colors.outline} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleDeleteAttachment(actualIndex, item.name)}
+                disabled={updateMutation.isPending}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`Delete file ${item.name}`}
+                className="p-1.5 ml-2 rounded-lg justify-center items-center"
+              >
+                <MaterialIcons name="delete-outline" size={20} color="#D32F2F" />
+              </TouchableOpacity>
+            </View>
           );
         }}
       />
@@ -465,7 +545,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1">
       <Tabs tabs={subTabs} initialActiveTabId="images" type="secondary" expanded={true} />
 
       {/* Full-screen Image Viewer Modal */}
@@ -478,7 +558,12 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
           onImageViewerToggle?.(false);
         }}
       >
-        <View style={styles.viewerBackground}>
+        <Animated.View
+          className="flex-1justify-center items-center"
+          style={{
+            backgroundColor: "rgba(0,0,0,0.99)",
+          }}
+        >
           {viewerActiveIndex !== null && (
             <FlatList
               data={images}
@@ -494,7 +579,8 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
               })}
               renderItem={({ item }) => (
                 <Pressable
-                  style={styles.viewerSlide}
+                  style={{ width: screenWidth }}
+                  className="h-full justify-center items-center"
                   onPress={() => {
                     setViewerActiveIndex(null);
                     onImageViewerToggle?.(false);
@@ -504,7 +590,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                 >
                   <Image
                     source={{ uri: item.url }}
-                    style={styles.viewerImage}
+                    className="w-full h-full"
                     resizeMode="contain"
                   />
                 </Pressable>
@@ -514,7 +600,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
 
           {/* Floating Close Button */}
           <TouchableOpacity
-            style={styles.closeButton}
+            className="absolute top-12 right-5 w-10 h-10 rounded-full bg-white/20 justify-center items-center z-10"
             onPress={() => {
               setViewerActiveIndex(null);
               onImageViewerToggle?.(false);
@@ -525,7 +611,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
           >
             <MaterialIcons name="close" size={24} color="#FFF" />
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </Modal>
 
       {/* In-app Document/Web Viewer Modal */}
@@ -538,11 +624,18 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
           onImageViewerToggle?.(false);
         }}
       >
-        <View style={[styles.modalContainer, { backgroundColor: colors.background }]}>
+        <View className="flex-1" style={{ backgroundColor: colors.background }}>
           {/* Header */}
-          <View style={[styles.modalHeader, { borderBottomColor: colors.outlineVariant, backgroundColor: colors.surface }]}>
+          <View
+            className="flex-row items-center px-4 h-14 border-b"
+            style={{
+              borderBottomColor: colors.outlineVariant,
+              backgroundColor: colors.surface,
+              ...(Platform.OS === "android" ? { elevation: 2 } : {}),
+            }}
+          >
             <TouchableOpacity
-              style={styles.modalCloseButton}
+              className="p-1 mr-4"
               onPress={() => {
                 setSelectedFileUrl(null);
                 onImageViewerToggle?.(false);
@@ -553,7 +646,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
             >
               <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: colors.onSurface }]} numberOfLines={1}>
+            <Text className="text-lg font-semibold flex-1" style={{ color: colors.onSurface }} numberOfLines={1}>
               {selectedFileName}
             </Text>
           </View>
@@ -562,14 +655,14 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
           {selectedFileUrl && (
             <WebView
               source={{ uri: getWebViewSourceUrl() }}
-              style={styles.webView}
+              className="flex-1"
               originWhitelist={["*"]}
               allowFileAccess={true}
               domStorageEnabled={true}
               javaScriptEnabled={true}
               startInLoadingState={true}
               renderLoading={() => (
-                <View style={styles.webLoading}>
+                <View className="absolute inset-0 justify-center items-center bg-white/70">
                   <ActivityIndicator size="large" color={colors.primary} />
                 </View>
               )}
@@ -580,220 +673,30 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
 
       {/* Downloading Overlay */}
       {isDownloading && (
-        <View style={styles.downloadingOverlay}>
-          <View style={styles.downloadingCard}>
+        <View className="absolute inset-0 bg-black/40 justify-center items-center z-[999]">
+          <View
+            className="bg-white p-6 rounded-2xl items-center gap-3 shadow-lg"
+            style={Platform.select({
+              ios: {
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 4,
+              },
+              android: {
+                elevation: 5,
+              },
+            })}
+          >
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.downloadingText, { color: colors.onSurface }]}>Downloading file...</Text>
+            <Text className="text-sm font-semibold" style={{ color: colors.onSurface }}>
+              Downloading file...
+            </Text>
           </View>
         </View>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 32,
-    paddingVertical: 48,
-  },
-  emptyIcon: {
-    marginBottom: 16,
-    opacity: 0.6,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    // marginBottom: 6,
-    textAlign: "center",
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 18,
-  },
-  gridContent: {
-    padding: 16,
-  },
-  gridColumnWrapper: {
-    justifyContent: "flex-start",
-    gap: 8,
-    marginBottom: 8,
-  },
-  imageContainer: {
-    borderRadius: 8,
-    overflow: "hidden",
-    backgroundColor: "#F3F4F6",
-  },
-  addButtonContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1.5,
-    borderStyle: "dashed",
-    padding: 8,
-  },
-  addButtonText: {
-    fontSize: 11,
-    fontWeight: "600",
-    marginTop: 6,
-    textAlign: "center",
-  },
-  addAttachmentButton: {
-    alignSelf: "flex-start",
-    marginLeft: -8,
-  },
-  addAttachmentButtonLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    textDecorationLine: "underline",
-  },
-  acceptedTypesLabel: {
-    fontSize: 12,
-    marginLeft: 8,
-    marginTop: -4,
-    marginBottom: 8,
-  },
-  addAttachmentButtonEmpty: {
-    alignSelf: "center",
-    textDecorationLine: "underline",
-  },
-  acceptedTypesLabelEmpty: {
-    fontSize: 12,
-    textAlign: "center",
-    // marginTop: -4,
-    // marginBottom: 8,    
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  listContent: {
-    padding: 16,
-    gap: 10,
-  },
-  attachmentItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  iconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  attachmentDetails: {
-    flex: 1,
-  },
-  fileName: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  fileSize: {
-    fontSize: 12,
-  },
-  viewerBackground: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.95)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  viewerSlide: {
-    width: screenWidth,
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  viewerImage: {
-    width: "100%",
-    height: "100%",
-  },
-  closeButton: {
-    position: "absolute",
-    top: 48,
-    right: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  modalContainer: {
-    flex: 1,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    height: 56,
-    borderBottomWidth: 1,
-    ...Platform.select({
-      ios: {
-        paddingTop: 0,
-      },
-      android: {
-        paddingTop: 0,
-        elevation: 2,
-      },
-    }),
-  },
-  modalCloseButton: {
-    padding: 4,
-    marginRight: 16,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    flex: 1,
-  },
-  webView: {
-    flex: 1,
-  },
-  webLoading: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.7)",
-  },
-  downloadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 999,
-  },
-  downloadingCard: {
-    backgroundColor: "#FFF",
-    padding: 24,
-    borderRadius: 16,
-    alignItems: "center",
-    gap: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  downloadingText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});
 
 export default FilesTab;

@@ -1,12 +1,12 @@
 import React from "react";
 import { View } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { IconSetProvider, ActivityType } from "../../types/enums";
+import { IconSetProvider, TripPlanType } from "../../types/enums";
 // eslint-disable-next-line
 import Icon from "react-native-vector-icons/MaterialIcons";
 
 type ActivityTypeProps = {
-  type: ActivityType;
+  type: TripPlanType;
   size?: number;
   color?: string;
   showIconOnly?: boolean;
@@ -16,31 +16,31 @@ type ActivityTypeProps = {
 interface ActivityIcon {
   iconSet: IconSetProvider;
   iconName: any;
-  activityType: ActivityType;
-  name: ActivityType;
+  activityType: TripPlanType;
+  name: TripPlanType;
   color: string; // hue color per activity
 }
 
 const activityIcons: ActivityIcon[] = [
   {
     iconSet: IconSetProvider.material,
-    activityType: ActivityType.plan,
-    name: ActivityType.plan,
+    activityType: TripPlanType.activity,
+    name: TripPlanType.activity,
     iconName: "lightbulb",
     color: "#c10003", // grey
   },
 
   {
     iconSet: IconSetProvider.ionic,
-    activityType: ActivityType.flight,
-    name: ActivityType.flight,
+    activityType: TripPlanType.flight,
+    name: TripPlanType.flight,
     iconName: "airplane",
     color: "#2196F3", // blue hsl(207)
   },
   {
     iconSet: IconSetProvider.material,
-    activityType: ActivityType.stay,
-    name: ActivityType.stay,
+    activityType: TripPlanType.stay,
+    name: TripPlanType.stay,
     iconName: "hotel",
     color: "#a659ee", // purple hsl(291)
   },
@@ -74,8 +74,8 @@ const activityIcons: ActivityIcon[] = [
   // },
   {
     iconSet: IconSetProvider.material,
-    activityType: ActivityType.transit,
-    name: ActivityType.transit,
+    activityType: TripPlanType.transit,
+    name: TripPlanType.transit,
     iconName: "directions-bus",
     color: "#02899a", // cyan hsl(187)
   },
@@ -109,8 +109,8 @@ const activityIcons: ActivityIcon[] = [
   // },
   {
     iconSet: IconSetProvider.material,
-    activityType: ActivityType.tour,
-    name: ActivityType.tour,
+    activityType: TripPlanType.tour,
+    name: TripPlanType.tour,
     iconName: "hiking",
     color: "#429862", // dark-green hsl(86)
   },
@@ -130,8 +130,8 @@ const activityIcons: ActivityIcon[] = [
   // },
   {
     iconSet: IconSetProvider.material,
-    activityType: ActivityType.rideRental,
-    name: ActivityType.rideRental,
+    activityType: TripPlanType.rideRental,
+    name: TripPlanType.rideRental,
     iconName: "directions-car",
     color: "#384690", // indigo hsl(231)
   },
@@ -143,7 +143,7 @@ const getIcon = (type: number): ActivityIcon => {
   const selectedIcon = activityIcons.find((i) => i.activityType == type);
   return (
     selectedIcon ??
-    activityIcons.find((i) => i.activityType === ActivityType.plan)!
+    activityIcons.find((i) => i.activityType === TripPlanType.activity)!
   );
 };
 

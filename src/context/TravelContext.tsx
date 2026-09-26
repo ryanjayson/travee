@@ -34,99 +34,106 @@ import {
   TripMember,
   ItinerarySection,
 } from "../features/Travel/types/TravelDto";
-import { ActivityType } from "../types/enums";
+import { TripPlanType } from "../types/enums";
 
 const initialContextValue: TravelContextType = {
   expenseModal: {
     visible: false,
     itineraryExpense: null,
   },
-  openExpenseModal: () => {},
-  closeExpenseModal: () => {},
+  openExpenseModal: () => { },
+  closeExpenseModal: () => { },
 
   noteModal: {
     visible: false,
     itineraryNote: null,
   },
-  openNoteModal: () => {},
-  closeNoteModal: () => {},
+  openNoteModal: () => { },
+  closeNoteModal: () => { },
 
   checklistModal: {
     visible: false,
     checklistItem: null,
     travelId: "",
   },
-  openChecklistModal: () => {},
-  closeChecklistModal: () => {},
+  openChecklistModal: () => { },
+  closeChecklistModal: () => { },
 
   checklistGroupModal: {
     visible: false,
     travelId: "",
   },
-  openChecklistGroupModal: () => {},
-  closeChecklistGroupModal: () => {},
+  openChecklistGroupModal: () => { },
+  closeChecklistGroupModal: () => { },
 
   activityModal: {
     visible: false,
     itineraryActivity: null,
   },
-  openActivityModal: () => {},
-  closeActivityModal: () => {},
+  openActivityModal: () => { },
+  closeActivityModal: () => { },
 
   activityTypeModal: {
     visible: false,
   },
-  openActivityTypeModal: () => {},
-  closeActivityTypeModal: () => {},
+  openActivityTypeModal: () => { },
+  closeActivityTypeModal: () => { },
 
   memberModal: {
     visible: false,
     editingMember: null,
     travelId: "",
   },
-  openMemberModal: () => {},
-  closeMemberModal: () => {},
+  openMemberModal: () => { },
+  closeMemberModal: () => { },
 
   descriptionModal: {
     visible: false,
     value: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
   },
-  openDescriptionModal: () => {},
-  closeDescriptionModal: () => {},
+  openDescriptionModal: () => { },
+  closeDescriptionModal: () => { },
 
   destinationModal: {
     visible: false,
     initialValue: "",
-    onSelect: () => {},
+    onSelect: () => { },
   },
-  openDestinationModal: () => {},
-  closeDestinationModal: () => {},
+  openDestinationModal: () => { },
+  closeDestinationModal: () => { },
 
   flightModal: {
     visible: false,
   },
-  openFlightModal: () => {},
-  closeFlightModal: () => {},
+  openFlightModal: () => { },
+  closeFlightModal: () => { },
 
   sectionModal: {
     visible: false,
     itinerarySection: null,
   },
-  openSectionModal: () => {},
-  closeSectionModal: () => {},
+  openSectionModal: () => { },
+  closeSectionModal: () => { },
 
   googleSearchModal: {
     visible: false,
   },
-  openGoogleSearchModal: () => {},
-  closeGoogleSearchModal: () => {},
+  openGoogleSearchModal: () => { },
+  closeGoogleSearchModal: () => { },
 
   activeTripViewTab: "details",
-  setActiveTripViewTab: () => {},
+  setActiveTripViewTab: () => { },
 
-  refetchTravelPlan: () => {},
-  setRefetchTravelPlan: () => {},
+  refetchTravelPlan: () => { },
+  setRefetchTravelPlan: () => { },
+
+  viewActivityId: null,
+  openViewActivity: () => { },
+  closeViewActivity: () => { },
+
+  showActivityPinsInTripMap: true,
+  setShowActivityPinsInTripMap: () => { },
 };
 
 // Create the typed Context
@@ -179,13 +186,13 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
   const [descriptionModal, setDescriptionModal] = useState<DescriptionModalState>({
     visible: false,
     value: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   const [destinationModal, setDestinationModal] = useState<DestinationModalState>({
     visible: false,
     initialValue: "",
-    onSelect: () => {},
+    onSelect: () => { },
   });
 
   const [flightModal, setFlightModal] = useState<FlightModalState>({
@@ -200,6 +207,17 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
   const [googleSearchModal, setGoogleSearchModal] = useState<GoogleSearchModalState>({
     visible: false,
   });
+
+  const [viewActivityId, setViewActivityId] = useState<string | null>(null);
+  const [showActivityPinsInTripMap, setShowActivityPinsInTripMap] = useState<boolean>(true);
+
+  const openViewActivity = useCallback((id: string) => {
+    setViewActivityId(id);
+  }, []);
+
+  const closeViewActivity = useCallback(() => {
+    setViewActivityId(null);
+  }, []);
 
   const openGoogleSearchModal = useCallback(
     (
@@ -340,9 +358,9 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       itineraryActivity: ItineraryActivity | null = null,
       itinerarySectionId?: string,
       travelId?: string,
-      initialType?: ActivityType
+      initialType?: TripPlanType
     ) => {
-      if (!itineraryActivity && initialType === ActivityType.plan) {
+      if (!itineraryActivity && initialType === TripPlanType.activity) {
         openGoogleSearchModal(itinerarySectionId, travelId);
       } else if (itineraryActivity || initialType !== undefined) {
         setActivityModal({
@@ -350,7 +368,7 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
           itineraryActivity,
           itinerarySectionId,
           travelId,
-          initialType: initialType ?? itineraryActivity?.type ?? ActivityType.plan,
+          initialType: initialType ?? itineraryActivity?.type ?? TripPlanType.activity,
         });
       } else {
         setActivityTypeModal({
@@ -543,6 +561,11 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       setActiveTripViewTab,
       refetchTravelPlan,
       setRefetchTravelPlan,
+      viewActivityId,
+      openViewActivity,
+      closeViewActivity,
+      showActivityPinsInTripMap,
+      setShowActivityPinsInTripMap,
     }),
     [
       expenseModal,
@@ -585,6 +608,11 @@ export const TravelProvider: FC<TravelProviderProps> = ({ children }) => {
       setActiveTripViewTab,
       refetchTravelPlan,
       setRefetchTravelPlan,
+      viewActivityId,
+      openViewActivity,
+      closeViewActivity,
+      showActivityPinsInTripMap,
+      setShowActivityPinsInTripMap,
     ]
   );
 

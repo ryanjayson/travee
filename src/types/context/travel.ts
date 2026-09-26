@@ -9,7 +9,7 @@ import {
 } from "../../features/Travel/types/TravelDto";
 import { MapboxPlace } from "../../features/Travel/components/MapboxDestinationSelector";
 import { GooglePlaceLocation } from "../../components/GoogleMapSearchBox";
-import { ActivityType } from "../enums";
+import { TripPlanType } from "../enums";
 
 export interface GoogleSearchModalState {
   visible: boolean;
@@ -77,7 +77,7 @@ export interface ActivityModalState {
   itineraryActivity: ItineraryActivity | null;
   itinerarySectionId?: string;
   travelId?: string;
-  initialType?: ActivityType;
+  initialType?: TripPlanType;
 }
 
 export interface ActivityTypeModalState {
@@ -153,7 +153,7 @@ export interface TravelContextType {
     itineraryActivity?: ItineraryActivity | null,
     itinerarySectionId?: string,
     travelId?: string,
-    initialType?: ActivityType
+    initialType?: TripPlanType
   ) => void;
   closeActivityModal: () => void;
 
@@ -227,6 +227,13 @@ export interface TravelContextType {
 
   refetchTravelPlan: () => void;
   setRefetchTravelPlan: (fn: (() => void) | null) => void;
+
+  viewActivityId?: string | null;
+  openViewActivity?: (activityId: string) => void;
+  closeViewActivity?: () => void;
+
+  showActivityPinsInTripMap?: boolean;
+  setShowActivityPinsInTripMap?: (val: boolean) => void;
 }
 
 

@@ -19,7 +19,7 @@ import { useNavigation, useFocusEffect, useScrollToTop } from '@react-navigation
 import { useAllActivities } from '../features/Travel/hooks/useActivity';
 import { useTravels } from '../features/Travel/hooks/useTravel';
 import { Travel } from '../features/Travel/types/TravelDto';
-import { ActivityType, TravelStatus, getActivityTypeLabel } from '../types/enums';
+import { TripPlanType, TravelStatus, getTripPlanTypeLabel } from '../types/enums';
 import Hero from '../components/Home/Hero/index';
 import UpcomingTrips from '../components/Home/UpcomingTrips';
 import ViewTravelModal from '../features/Travel/components/View/Modal';
@@ -128,8 +128,7 @@ const HomeScreen = () => {
 
   const handlePressTrip = (trip: Travel) => {
     if (trip && trip.id) {
-      setSelectedTravelForModal(trip);
-      setShowTravelViewModal(true);
+      navigation.navigate("TravelDetail", { travelId: trip.id });
     }
   };
 
@@ -240,7 +239,7 @@ const HomeScreen = () => {
     return Object.entries(counts)
       .map(([typeStr, count]) => {
         const type = parseInt(typeStr, 10);
-        const label = getActivityTypeLabel(type);
+        const label = getTripPlanTypeLabel(type);
         return { type, typeName: label || 'Unknown', count };
       })
       .sort((a, b) => b.count - a.count)
@@ -249,8 +248,11 @@ const HomeScreen = () => {
 
   const getIconForActivityType = (type?: number) => {
     const map: Record<number, string> = {
-      [ActivityType.flight]: 'airplane',
-      [ActivityType.stay]: 'bed',
+      [TripPlanType.flight]: 'airplane',
+      [TripPlanType.stay]: 'bed',
+      [TripPlanType.transit]: 'bus',
+      [TripPlanType.rideRental]: 'car',
+      [TripPlanType.tour]: 'trail-sign',
     };
     return (map[type ?? 0] ?? 'location') as any;
   };
@@ -260,7 +262,7 @@ const HomeScreen = () => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return travels
       .filter(t => {
-        if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past, TravelStatus.Travelling].includes(t.status as TravelStatus)) return false;
+        if (t.isArchived || [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past, TravelStatus.Travelling, TravelStatus.Draft].includes(t.status as TravelStatus)) return false;
         if (t.status === TravelStatus.Upcoming) return true;
         if (t.startOrDepartureDate) {
           const s = new Date(t.startOrDepartureDate); s.setHours(0, 0, 0, 0);

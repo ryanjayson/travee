@@ -44,10 +44,10 @@ export default function FlightTab({
   const arrParsed = parseAirport(arrivalAirport);
 
   return (
-    <View className={`flex-1  pt-2 ${noPadding ? "" : "px-5"}`}>
-      <View className="flex-row gap-2 justify-start items-center mb-6 border-l-3 border-primary pl-4">
-        <Icon name="local-airport" size={24} color={"#344054"} />
-        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
+    <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
+      <View className="flex-row gap-2 justify-start items-center mb-5">
+        <Icon name="local-airport" size={28} color={"#0EA5E9"} />
+        <Text className="text-2xl font-semibold  text-secondary">
           Flight Details
         </Text>
       </View>
@@ -68,27 +68,24 @@ export default function FlightTab({
             <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
               <Icon name="flight-takeoff" size={24} color={depParsed.code ? "#0EA5E9" : "#98A2B3"} />
               <Text
-                className={`text-2xl font-semibold ${depParsed.code ? "text-secondary/60" : "text-secondary/40"}`}
+                className={`text-2xl  font-semibold ${depParsed.code ? "text-secondary/60" : "text-secondary/40"}`}
               >
                 {depParsed.code || "---"}
               </Text>
             </View>
 
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
-              <Text className="text-lg text-secondary/80 ">From</Text>
               <Text
-                className={`text-2xl font-semibold ${depParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
-                numberOfLines={1}
-                ellipsizeMode="tail"
+                className={`text-xl font-semibold ${depParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
               >
-                {depParsed.name || "Select departure airport"}
+                {depParsed.name || "Select Departure Airport"}
               </Text>
             </View>
           </View>
         </TouchableOpacity>
       </View>
 
-      <View className="flex-1">
+      <View className="relative">
         <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureDate"] = el; }} className="flex-row gap-4 ">
           <View className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4" pointerEvents="box-none">
             <TouchableOpacity
@@ -129,13 +126,10 @@ export default function FlightTab({
               </View>
 
               <View className="flex-1 justify-center gap-0 px-sm pr-14">
-                <Text className="text-lg text-secondary/80 ">To</Text>
                 <Text
-                  className={`text-2xl font-semibold ${arrParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
+                  className={`text-xl font-semibold ${arrParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
                 >
-                  {arrParsed.name || "Select arrival airport"}
+                  {arrParsed.name || "Select Arrival Airport"}
                 </Text>
               </View>
             </View>

@@ -68,7 +68,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
   const ongoingTrip = travellingTrip !== undefined ? travellingTrip : (propOngoingTrip ?? null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
-  const { openExpenseModal, openNoteModal, openActivityModal } = useTravelContext();
+  const { openExpenseModal, openNoteModal, openActivityModal, openActivityTypeModal } = useTravelContext();
   const { data: profile } = useUserProfile();
   const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
@@ -509,7 +509,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                 <TouchableOpacity
                   className='items-center justify-center w-7xl h-7xl rounded-full bg-primary/20'
                   onPress={() => {
-                    openActivityModal(null, undefined, ongoingTrip?.id);
+                    openActivityTypeModal(undefined, ongoingTrip?.id);
                   }}
                   accessibilityRole="button"
                   accessibilityLabel="Add Activity"

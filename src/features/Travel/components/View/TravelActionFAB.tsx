@@ -3,13 +3,13 @@ import { FAB, Portal, useTheme } from 'react-native-paper';
 import { BackHandler, TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons as Icon } from '@expo/vector-icons';
-import { ActivityType } from '../../../../types/enums';
+import { TripPlanType } from '../../../../types/enums';
 
 interface TravelActionFABProps {
   onAddNote: () => void;
   onAddChecklist: () => void;
   onAddExpense: () => void;
-  onAddActivity: (type?: ActivityType) => void;
+  onAddActivity: (type?: TripPlanType) => void;
   onAddSection: () => void;
   currentTab?: string;
   open?: boolean;
@@ -165,7 +165,7 @@ const TravelActionFAB = ({
           marginBottom: 0
         },
         color: 'white',
-        onPress: () => onAddActivity(ActivityType.transit),
+        onPress: () => onAddActivity(TripPlanType.transit),
       },
 
       {
@@ -182,7 +182,7 @@ const TravelActionFAB = ({
           marginBottom: 0
         },
         color: 'white',
-        onPress: () => onAddActivity(ActivityType.rideRental),
+        onPress: () => onAddActivity(TripPlanType.rideRental),
       },
 
       {
@@ -199,7 +199,7 @@ const TravelActionFAB = ({
           marginBottom: 10
         },
         color: 'white',
-        onPress: () => onAddActivity(ActivityType.tour),
+        onPress: () => onAddActivity(TripPlanType.tour),
       },
 
       {
@@ -216,7 +216,7 @@ const TravelActionFAB = ({
           marginBottom: 0
         },
         color: 'white',
-        onPress: () => onAddActivity(ActivityType.stay),
+        onPress: () => onAddActivity(TripPlanType.stay),
       },
 
 
@@ -234,7 +234,7 @@ const TravelActionFAB = ({
           marginBottom: 0
         },
         color: 'white',
-        onPress: () => onAddActivity(ActivityType.flight),
+        onPress: () => onAddActivity(TripPlanType.flight),
       },
 
       {
@@ -251,7 +251,7 @@ const TravelActionFAB = ({
           marginBottom: 0
         },
         color: 'white',
-        onPress: () => onAddActivity(ActivityType.plan),
+        onPress: () => onAddActivity(TripPlanType.activity),
         wrapperStyle: {
           marginTop: 24,
         },

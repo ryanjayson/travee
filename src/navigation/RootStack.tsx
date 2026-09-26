@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import {
   CreateTravelPlanScreen,
   EditTravelPlanScreen,
+  TravelDetailScreen,
 } from "../navigation/TabScreens";
 import { RootTabs } from "./RootTabs";
 import type { RootStackParamList } from "./navigation.types";
@@ -35,6 +36,15 @@ export function RootStack() {
           presentation: "modal",
           animation: "slide_from_bottom",
           headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="TravelDetail"
+        component={TravelDetailScreen}
+        options={{
+          headerShown: false,
+          animation: "slide_from_right",
         }}
       />
     </Stack.Navigator>

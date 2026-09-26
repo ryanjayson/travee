@@ -4,7 +4,7 @@ import { View, TouchableOpacity, Text, Linking, ScrollView } from "react-native"
 import { TextInput, useTheme } from "react-native-paper";
 import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
 import DateTime from "../DateTime";
-import { ActivityType } from "../../../../../../../types/enums";
+import { TripPlanType } from "../../../../../../../types/enums";
 import { activityIcons } from "../../../../../../../components/ActivityIcon";
 
 export interface AccommodationTypeItem {
@@ -84,22 +84,21 @@ export default function AccomodationTab({
   const currentSubType = values.accomodationDetails?.subType || null;
   const activityColor =
     activityIcons.find(
-      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === ActivityType.stay
+      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === TripPlanType.stay
     )?.color || colors.primary || "#02899a";
 
   return (
-    <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
-      <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
-        <Icon name="hotel" size={24} color={"#34405480"} />
-        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
-          Stay Details
+    <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
+      <View className="flex-row gap-2 justify-start items-center mb-5">
+        <Icon name="hotel" size={28} color={activityColor} />
+        <Text className="text-2xl font-semibold  text-secondary">
+          Accomodation Details
         </Text>
       </View>
 
-
       {/* Date & Time Section */}
       <DateTime
-        activityType={ActivityType.stay}
+        activityType={TripPlanType.stay}
         title="Check-In Date & Time"
         startDate={values.startDate}
         startTime={values.startTime}
@@ -166,7 +165,7 @@ export default function AccomodationTab({
       </View> */}
 
       {/* Accommodation Type (Sub-type) */}
-      <View className="mb-5 flex-1">
+      <View className="mb-5">
         <Text className="text-lg text-secondary/80 font-semibold mb-2 px-xs">
           Booking Details
         </Text>
@@ -216,7 +215,7 @@ export default function AccomodationTab({
                     <Icon
                       name={item.icon}
                       size={24}
-                      color={isSelected ? activityColor : "#475467"}
+                      color={isSelected ? activityColor : "#47546780"}
 
                     />
                   </View>
@@ -225,7 +224,7 @@ export default function AccomodationTab({
                     style={{
                       fontSize: 12,
                       fontWeight: isSelected ? "700" : "500",
-                      color: isSelected ? activityColor : "#344054",
+                      color: isSelected ? activityColor : "#34405480",
                       textAlign: "center",
                     }}
                   >
@@ -240,7 +239,7 @@ export default function AccomodationTab({
 
 
       {/* Website Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.websiteAddress"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.websiteAddress"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Website Address"
           value={values.accomodationDetails?.websiteAddress || ""}
@@ -307,7 +306,7 @@ export default function AccomodationTab({
       </View>
 
       {/* Contact Name */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.contactName"] = el; }} className="mb-5 flex-1">
+      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.contactName"] = el; }} className="mb-5">
         <FloatingLabelInput
           label="Contact Name"
           value={values.accomodationDetails?.contactName || ""}

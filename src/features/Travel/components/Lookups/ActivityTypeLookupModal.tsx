@@ -16,11 +16,12 @@ import {
   TextInput,
 } from "react-native";
 import { useTheme } from "react-native-paper";
-import { ActivityType, getActivityTypeLabel } from "../../../../types/enums";
+import { TripPlanType, getTripPlanTypeLabel } from "../../../../types/enums";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FadeInView } from "../../../../components/animations";
+import { text } from "@nozbe/watermelondb/decorators";
 
 const ACTIVITY_TYPE_SUBTEXT: Record<string, string> = {
   flight: "Flights, layovers, and airport transits",
@@ -36,15 +37,15 @@ const ACTIVITY_TYPE_SUBTEXT: Record<string, string> = {
   hikeOrCamp: "Hiking trails, trekking, and camping",
   preparation: "Packing, checklists, and pre-trip tasks",
   tour: "Local tours, guided tours, and excursions",
-  plan: "Sightseeing, activities, attractions, etc.",
+  activity: "Sightseeing, attraction, landmark, etc.",
 };
 
 
 interface ActivityTypeLookupModalProps {
   visible: boolean;
   onClose: () => void;
-  selectedType?: ActivityType;
-  onSelect: (type: ActivityType) => void;
+  selectedType?: TripPlanType;
+  onSelect: (type: TripPlanType) => void;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -179,17 +180,16 @@ const ActivityTypeLookupModal = ({
     });
   };
 
-  const handleSelect = (type: ActivityType) => {
+  const handleSelect = (type: TripPlanType) => {
     onSelect(type);
     handleCancel();
   };
 
-  const types = Object.keys(ActivityType)
+  const types = Object.keys(TripPlanType)
     .filter((key) => isNaN(Number(key)))
-    .filter((key) => key !== "walk")
     .map((key) => {
-      const typeValue = ActivityType[key as keyof typeof ActivityType];
-      const displayName = getActivityTypeLabel(typeValue);
+      const typeValue = TripPlanType[key as keyof typeof TripPlanType];
+      const displayName = getTripPlanTypeLabel(typeValue);
       return { key, typeValue, displayName };
     });
 
@@ -258,14 +258,14 @@ const ActivityTypeLookupModal = ({
             >
               <View className="flex-col items-start gap-1 pt-2xl">
                 <Text
-                  className="text-4xl  text-primary "
+                  className="text-3xl   text-primary "
                 >
-                  Activity type
+                  Add Plan
                 </Text>
                 <Text
                   className="text-base  text-white opacity-60"
                 >
-                  Select type of activity
+                  What do you want to add to your trip
                 </Text>
               </View>
 
@@ -285,14 +285,15 @@ const ActivityTypeLookupModal = ({
                   {types.map(({ key, typeValue, displayName }) => (
                     <TouchableOpacity
                       key={key}
-                      className="p-6 flex-row items-center gap-4 active:bg-gray-100 mb-2"
+                      className={`px-6 flex-row items-center gap-4 active:bg-gray-100 mb-2 
+                               ${key === "activity" ? "py-5xl" : "py-3"}`}
                       onPress={() => handleSelect(typeValue)}
                       accessibilityRole="button"
                       accessibilityLabel={`Select activity type ${displayName}`}
                     >
                       <ActivityIcon type={typeValue} size={24} />
                       <View className="flex-1 ">
-                        <Text className="text-2xl text-white capitalize font-medium tracking-wide">
+                        <Text className={` text-white capitalize tracking-wide ${key === "activity" ? "text-2xl font-semibold" : "font-medium  text-xl"}`}>
                           {displayName}
                         </Text>
                         {ACTIVITY_TYPE_SUBTEXT[key] ? (

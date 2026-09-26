@@ -1,4 +1,4 @@
-import { ActivityType, ActivityPlanType, TravelStatus, ExpenseCategory, TripType } from "../../../types/enums";
+import { TripPlanType, ActivityType, TravelStatus, ExpenseCategory, TripType } from "../../../types/enums";
 
 export interface TravelPlan {
   travel: Travel;
@@ -220,8 +220,8 @@ export interface TransportationDetailsDto {
   activityId?: string;
   mode?: string | null; // ride, bike, boat, bus, taxi, train, ferry
   operatorProvider?: string | null;
-  pickupLocation?: string | null;
-  dropoffLocation?: string | null;
+  pickupLocation?: string | DestinationDto | null;
+  dropoffLocation?: string | DestinationDto | null;
   departureDateTime?: Date | string | null;
   arrivalDateTime?: Date | string | null;
   seatOrVehicleNumber?: string | null;
@@ -321,8 +321,8 @@ export interface RideRentalDetailsDto {
   destinationAddressData?: DestinationDto;
   vehicleType?: string | null; // RV, yacht, motorbike, car, bike
   vehicleModel?: string | null;
-  pickupLocation?: string | null;
-  dropoffLocation?: string | null;
+  pickupLocation?: string | DestinationDto | null;
+  dropoffLocation?: string | DestinationDto | null;
   rentalStartDateTime?: Date | string | null;
   rentalEndDateTime?: Date | string | null;
   bookingReference?: string | null;
@@ -354,9 +354,9 @@ export interface ItineraryActivity {
   expensesCount?: number;
   checklistCount?: number;
   sortOrder: string;
-  type?: ActivityType;
-  planType?: ActivityPlanType | null;
-  secondaryType?: ActivityType[];
+  type?: TripPlanType;
+  planType?: ActivityType | null;
+  secondaryType?: TripPlanType[];
   images?: Images[];
   destinationData?: DestinationDto;
   isOffline?: boolean;
@@ -445,6 +445,8 @@ export interface DestinationDto {
   city?: string;
   regionOrState?: string;
   country?: string;
+  address?: string;
+  placeId?: string;
   coordinates: CoordinatesDto;
 }
 

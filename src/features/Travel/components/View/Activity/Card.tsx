@@ -14,7 +14,8 @@ import { FadeInView } from "../../../../../components/animations";
 import { useConfirm } from "../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../context/TravelContext";
-import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
+import { TripPlanType, getTripPlanTypeLabel, ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
+import { ACTIVITY_PLAN_TYPES } from "../../Lookups/ActivityPlanTypeLookupModal";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { ChecklistItem, ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import MapViewer from "../../MapViewer";
@@ -80,6 +81,8 @@ const ActivityItemCard = ({
     openNoteModal,
     openChecklistModal,
     openActivityModal,
+    openActivityTypeModal,
+    openViewActivity,
   } = useTravelContext();
   const [isAddPressed, setIsAddPressed] = useState<boolean>(false);
   const updateMutation = useUpdateActivityMutation();
@@ -336,8 +339,20 @@ const ActivityItemCard = ({
     if (type == null) return { text: "None", color: "#9E9E9E" };
     const iconConfig = activityIcons.find((i) => i.activityType === type);
     const color = iconConfig?.color ?? "#9E9E9E";
-    const text = type != null ? getActivityTypeLabel(type) : "None";
+    const text = type != null ? getTripPlanTypeLabel(type) : "None";
     return { text, color };
+  };
+
+  const getPlanTypeLabel = (planType?: ActivityType | string | number | null): string => {
+    if (planType == null) return "";
+    const match = ACTIVITY_PLAN_TYPES.find(
+      (p) => p.type === planType || p.key === planType || String(p.type) === String(planType)
+    );
+    if (match) return match.label;
+    if (typeof planType === "number" || (!isNaN(Number(planType)) && typeof planType !== "boolean")) {
+      return getActivityTypeLabel(Number(planType));
+    }
+    return String(planType);
   };
 
   const handleToggleDone = async () => {
@@ -367,7 +382,11 @@ const ActivityItemCard = ({
   };
 
   const handleViewModeActivity = (id: string) => {
-    setShowActivityViewModal(true);
+    if (openViewActivity) {
+      openViewActivity(id);
+    } else {
+      setShowActivityViewModal(true);
+    }
   };
 
   if (plainMode) {
@@ -392,7 +411,7 @@ const ActivityItemCard = ({
           </Text>
         </TouchableOpacity>
 
-        {itineraryEventActivity.id ? (
+        {!openViewActivity && itineraryEventActivity.id ? (
           <ViewActivityModal
             id={itineraryEventActivity.id}
             travelId={itineraryEventActivity.travelId}
@@ -493,18 +512,18 @@ const ActivityItemCard = ({
 
         {(!isDragActive && !parentIsDragging && isLastItem) && viewMode === 'expanded' && (
           <TouchableHighlight
-            underlayColor={"none"}
-            className={`absolute h-6xl w-6xl bottom-[-30px] left-lg z-9999 `} //TODO: apply to last item for now, later show this to cards between
-            onPress={() => openActivityModal(null, itineraryActivity.sectionId || undefined, itineraryActivity.travelId)}
+            underlayColor={"red"}
+            className={`absolute bottom-[24px] left-lg z-9999`} //TODO: apply to last item for now, later show this to cards between
+            onPress={() => openActivityTypeModal(itineraryActivity.sectionId || undefined, itineraryActivity.travelId)}
             onShowUnderlay={() => setIsAddPressed(true)}
             onHideUnderlay={() => setIsAddPressed(false)}
             accessibilityRole="button"
             accessibilityLabel="Add activity"
           >
             <View
-              className={`${isAddPressed ? 'bg-[#183B7A] rounded-md' : ' rounded-md bg-white '} border-gray-300  left-[37px] absolute m-2 mt-2xl border px-1px z-9999`}
+              className={`${isAddPressed ? 'bg-[#183B7A] border-[#183B7A]' : '  bg-white border-gray-300 '} rounded-md  left-[37px] absolute m-2 mt-[26px] border px-1px z-9999`}
             >
-              <Icon name="add" size={20} color={`${isAddPressed ? '#263F69' : '#999'}`} />
+              <Icon name="add" size={20} color={`${isAddPressed ? '#183B7A' : '#999'}`} />
             </View>
           </TouchableHighlight>
         )}
@@ -529,30 +548,29 @@ const ActivityItemCard = ({
               ? "opacity-50 border border-success-700 bg-success-25"
               : "bg-white"
               } 
-            ${isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")
-              }  ${isDragActive ? "opacity-100 shadow-2xl" : ""}`}>
+            ${isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")}  
+            ${isDragActive ? "opacity-100 shadow-2xl" : ""}`}>
             <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
               {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
                 <View
-                  style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }}
-                  className="items-end rounded-xs px-2 py-0.5 flex-row"
+
+                  className="items-center flex-row"
                 >
                   <Text
                     // style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                    style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                    className="text-[8px] tracking-wider uppercase font-extrabold text-gray/60 "
+                    style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }}
+                    // style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
+                    className="text-[8px] rounded-xs px-2 py-0.5 tracking-wider uppercase font-extrabold text-gray/60 "
                   >
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
 
                   </Text>
-                  {itineraryEventActivity.type == ActivityType.plan && (
+                  {itineraryEventActivity.type === TripPlanType.activity && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
                     <Text
                       style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                      className="text-[8px]  font-semibold  text-gray/60 px-xxs"
+                      className="text-[8px] font-semibold text-gray/60 px-xxs"
                     >
-                      | Sightseeing
-                      {itineraryEventActivity.planType}
-
+                      / {getPlanTypeLabel(itineraryEventActivity.planType)}
                     </Text>
                   )}
 
@@ -577,7 +595,7 @@ const ActivityItemCard = ({
                 )} */}
             </View>
 
-            <View className="flex-row justify-between items-start mb-3 gap-x-2">
+            <View className="flex-row justify-between items-start gap-x-2">
               {/* {itineraryEventActivity && itineraryEventActivity.images && itineraryEventActivity.images.length > 0 && (
                 <View className="flex-1 ">
                   <View className="my-1 rounded-md">
@@ -596,26 +614,26 @@ const ActivityItemCard = ({
 
               <View className="flex-2">
                 <View className="flex-row justify-between items-start mb-1 gap-x-2">
-                  <Text className={`font-medium mt-1 text-secondary leading-5 flex-1 wrap-break-word ${isNarrow ? 'pr-3xl text-lg ' : 'text-[20px]'}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
+                  <Text className={`font-medium mt-1 text-secondary leading-18px flex-1 wrap-break-word ${isNarrow ? 'pr-3xl text-lg ' : 'text-[20px] '}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
                     {itineraryEventActivity.title}
                   </Text>
                 </View>
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && (
                   <View
-                    className="flex-row items-center text-ellipsis rounded-sm w-[80%] -mt-xxs"
+                    className="flex-row items-start text-ellipsis rounded-sm pr-xl "
                   >
-                    <Icon name="location-pin" size={14} color={"#B42318"} />
-                    <Text className="text-base text-tertiary "
+                    <Icon name="location-pin" size={12} color={"#B42318"} style={{ top: 2, opacity: 0.6 }} />
+                    <Text className="text-sm leading-md font-semibold text-tertiary "
                       ellipsizeMode="tail"
-                      numberOfLines={1}>
+                      numberOfLines={2}
+                    >
                       {itineraryEventActivity.destination}
                     </Text>
                   </View>
                 )}
 
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity.description && (
-                  <Text className="text-sm text-tertiary  mt-2 
-                    mb-4"
+                  <Text className="text-sm leading-18px mt-xs text-tertiary"
                     numberOfLines={2}
                     ellipsizeMode="tail">
                     {itineraryEventActivity.description}
@@ -703,7 +721,7 @@ const ActivityItemCard = ({
               </View>
             )}
 
-            <View className={`absolute right-2  ${isNarrow ? "top-[50%]" : "bottom-2"}`}>
+            <View className={`absolute   right-2  ${isNarrow ? "top-2" : "top-2"}`}>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={handleToggleDone}
@@ -711,13 +729,13 @@ const ActivityItemCard = ({
               >
                 {!isNarrow && (
                   <Text className="text-[10px] text-[#999] font-medium uppercase tracking-tight">
-                    {itineraryEventActivity.isDone ? "" : "Mark as done"}
+                    {itineraryEventActivity.isDone ? "" : ""}
                   </Text>
                 )}
 
                 {itineraryEventActivity.isDone ?
-                  (<Icon name="radio-button-checked" size={24} color="#0c6134" style={{ opacity: 0.5 }} />)
-                  : (<Icon name="radio-button-unchecked" size={24} color="#D0D5DD" />)}
+                  (<Icon name="radio-button-checked" size={24} color="#0c6134" style={{ opacity: 0.3 }} />)
+                  : (<Icon name="radio-button-unchecked" size={24} color="#D0D5DD" style={{ opacity: 0.3 }} />)}
 
                 {/* <View className="h-6 w-6 border-2 border-dashed border-gray-400 rounded-full">
 
@@ -736,12 +754,14 @@ const ActivityItemCard = ({
         </View>
       )}
 
-      <ViewActivityModal
-        id={itineraryEventActivity.id!}
-        travelId={itineraryEventActivity.travelId}
-        showModal={showActivityViewModal}
-        setShowModal={setShowActivityViewModal}
-      />
+      {!openViewActivity && itineraryEventActivity.id && (
+        <ViewActivityModal
+          id={itineraryEventActivity.id}
+          travelId={itineraryEventActivity.travelId}
+          showModal={showActivityViewModal}
+          setShowModal={setShowActivityViewModal}
+        />
+      )}
 
       {itineraryEventActivity.destinationData?.coordinates && (
         <MapViewer

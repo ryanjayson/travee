@@ -12,20 +12,7 @@ import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import CreateTravelModal from "../features/Travel/components/CreateOrEdit/Modal";
 import ViewTravelModal from "../features/Travel/components/View/Modal";
-import ExpenseModal from "../features/Travel/components/Forms/Expense/Modal";
-import NoteModal from "../features/Travel/components/Forms/Note/Modal";
-import ChecklistModal from "../features/Travel/components/Forms/Checklist/Modal";
-import ChecklistGroupModal from "../features/Travel/components/Forms/Checklist/ChecklistGroupModal";
-import ActivityModal from "../features/Travel/components/Edit/Itinerary/Activity/Modal";
-import ActivityTypeLookupModal from "../features/Travel/components/Lookups/ActivityTypeLookupModal";
-import MemberModal from "../features/Travel/components/Forms/Member/Modal";
-import SectionModal from "../features/Travel/components/Edit/Itinerary/Section/Modal";
-import DescriptionModal from "../components/molecules/DescriptionInput/Modal";
-import MapboxDestinationSelectorModal from "../features/Travel/components/MapboxDestinationSelector/Modal";
-import FlightModal from "../features/Travel/components/Forms/Flight/FlightModal";
-import { GoogleMapSearchModal } from "../components/GoogleMapSearchBox";
-import { ActivityType } from "../types/enums";
-import { useTravelPlan } from "../features/Travel/hooks/useTravel";
+import TravelModals from "../features/Travel/components/TravelModals";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
@@ -79,44 +66,7 @@ function RootTabsComponent() {
   const [visibleCreateTravelModal, setVisibleCreateTravelModal] = React.useState(false);
   const [showTravelViewModal, setShowTravelViewModal] = React.useState(false);
   const [selectedTravelId, setSelectedTravelId] = React.useState("");
-  const {
-    expenseModal,
-    closeExpenseModal,
-    noteModal,
-    closeNoteModal,
-    checklistModal,
-    closeChecklistModal,
-    checklistGroupModal,
-    openChecklistGroupModal,
-    closeChecklistGroupModal,
-    activityModal,
-    openActivityModal,
-    closeActivityModal,
-    activityTypeModal,
-    closeActivityTypeModal,
-    memberModal,
-    closeMemberModal,
-    descriptionModal,
-    closeDescriptionModal,
-    destinationModal,
-    closeDestinationModal,
-    flightModal,
-    closeFlightModal,
-    sectionModal,
-    closeSectionModal,
-    googleSearchModal,
-    openGoogleSearchModal,
-    closeGoogleSearchModal,
-  } = useTravelContext();
   const insets = useSafeAreaInsets();
-  const { data: searchTravelPlan } = useTravelPlan(googleSearchModal.travelId || "");
-  const searchDestinations =
-    googleSearchModal.destinations ||
-    (searchTravelPlan?.travel?.tripDestinations && searchTravelPlan.travel.tripDestinations.length > 0
-      ? searchTravelPlan.travel.tripDestinations
-      : searchTravelPlan?.travel?.destination
-        ? [{ destination: searchTravelPlan.travel.destination, destinationData: searchTravelPlan.travel.destinationData }]
-        : undefined);
 
   return (
     <>
@@ -254,159 +204,7 @@ function RootTabsComponent() {
           showModal={showTravelViewModal}
           setShowModal={setShowTravelViewModal}
         />
-        <ExpenseModal
-          visible={expenseModal.visible}
-          itineraryExpense={expenseModal.itineraryExpense}
-          activityId={expenseModal.activityId}
-          activities={expenseModal.activities}
-          travelId={expenseModal.travelId}
-          onClose={closeExpenseModal}
-        />
-        <NoteModal
-          visible={noteModal.visible}
-          itineraryNote={noteModal.itineraryNote}
-          activities={noteModal.activities}
-          travelId={noteModal.travelId}
-          onClose={closeNoteModal}
-        />
-        <ChecklistModal
-          visible={checklistModal.visible}
-          checklistItem={checklistModal.checklistItem}
-          activities={checklistModal.activities}
-          travelId={checklistModal.travelId}
-          onClose={closeChecklistModal}
-          onOpenNewGroupModal={() => openChecklistGroupModal(checklistModal.travelId)}
-        />
-        <ChecklistGroupModal
-          visible={checklistGroupModal.visible}
-          travelId={checklistGroupModal.travelId}
-          onClose={closeChecklistGroupModal}
-        />
-        <ActivityTypeLookupModal
-          visible={activityTypeModal.visible}
-          onClose={closeActivityTypeModal}
-          onSelect={(type) => {
-            const itinerarySectionId = activityTypeModal.itinerarySectionId;
-            const travelId = activityTypeModal.travelId;
-            closeActivityTypeModal();
-            setTimeout(() => {
-              if (type === ActivityType.plan) {
-                openGoogleSearchModal(itinerarySectionId, travelId);
-              } else {
-                openActivityModal(null, itinerarySectionId, travelId, type);
-              }
-            }, 100);
-          }}
-        />
-        <GoogleMapSearchModal
-          visible={googleSearchModal.visible}
-          destination={googleSearchModal.destination || searchTravelPlan?.travel?.destination}
-          destinations={searchDestinations}
-          destinationCoordinates={googleSearchModal.destinationCoordinates || searchTravelPlan?.travel?.destinationData?.coordinates}
-          country={googleSearchModal.country || searchTravelPlan?.travel?.destinationData?.country}
-          onClose={closeGoogleSearchModal}
-          onManualEntry={() => {
-            const itinerarySectionId = googleSearchModal.itinerarySectionId;
-            const travelId = googleSearchModal.travelId;
-            closeGoogleSearchModal();
-            setTimeout(() => {
-              openActivityModal(
-                {
-                  id: "",
-                  title: "",
-                  destination: "",
-                  type: ActivityType.plan,
-                  sectionId: itinerarySectionId || "",
-                } as any,
-                itinerarySectionId,
-                travelId,
-                ActivityType.plan
-              );
-            }, 100);
-          }}
-          onSelect={(location) => {
-            if (googleSearchModal.onSelect) {
-              googleSearchModal.onSelect(location);
-              closeGoogleSearchModal();
-              return;
-            }
-            const itinerarySectionId = googleSearchModal.itinerarySectionId;
-            const travelId = googleSearchModal.travelId;
-            closeGoogleSearchModal();
-            setTimeout(() => {
-              openActivityModal(
-                {
-                  id: "",
-                  title: location.name,
-                  destination: location.address || location.name,
-                  type: ActivityType.plan,
-                  sectionId: itinerarySectionId || "",
-                  destinationData: {
-                    id: location.placeId || "",
-                    name: location.name || undefined,
-                    city: location.secondaryText || undefined,
-                    coordinates: location.coordinates,
-                  },
-                } as any,
-                itinerarySectionId,
-                travelId,
-                ActivityType.plan
-              );
-            }, 100);
-          }}
-        />
-        <ActivityModal
-          visible={activityModal.visible}
-          itineraryActivity={activityModal.itineraryActivity}
-          itinerarySectionId={activityModal.itinerarySectionId}
-          travelId={activityModal.travelId}
-          initialType={activityModal.initialType}
-          onClose={closeActivityModal}
-        />
-        <MemberModal
-          visible={memberModal.visible}
-          editingMember={memberModal.editingMember}
-          travelId={memberModal.travelId}
-          onClose={closeMemberModal}
-        />
-        <DescriptionModal
-          visible={descriptionModal.visible}
-          onClose={closeDescriptionModal}
-          value={descriptionModal.value}
-          onConfirm={descriptionModal.onConfirm}
-          label={descriptionModal.label}
-          placeholder={descriptionModal.placeholder}
-          confirmLabel={descriptionModal.confirmLabel}
-          maxLength={descriptionModal.maxLength}
-        />
-        <MapboxDestinationSelectorModal
-          visible={destinationModal.visible}
-          initialValue={destinationModal.initialValue}
-          onSelect={(place, isAddMore) => {
-            if (destinationModal.onSelect) {
-              destinationModal.onSelect(place, isAddMore);
-            }
-          }}
-          onClose={closeDestinationModal}
-        />
-        <FlightModal
-          visible={flightModal.visible}
-          defaultDate={flightModal.defaultDate}
-          onConfirm={(flightData) => {
-            if (flightModal.onConfirm) {
-              flightModal.onConfirm(flightData);
-            }
-            closeFlightModal();
-          }}
-          onClose={closeFlightModal}
-        />
-        <SectionModal
-          visible={sectionModal.visible}
-          itinerarySection={sectionModal.itinerarySection}
-          travelId={sectionModal.travelId}
-          onClose={closeSectionModal}
-          onSaveSuccess={sectionModal.onSaveSuccess}
-        />
+        <TravelModals />
       </View>
 
     </>

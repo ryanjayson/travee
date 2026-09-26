@@ -19,7 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../../context/ToastContext";
 import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
-import { ActivityType } from "../../../../../../types/enums";
+import { TripPlanType } from "../../../../../../types/enums";
 import { useDeleteActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
 import { useTravelPlan } from "../../../../hooks/useTravel";
 import { ItineraryActivity } from "../../../../types/TravelDto";
@@ -37,7 +37,7 @@ interface ActivityModalProps {
   itineraryActivity: ItineraryActivity | null;
   itinerarySectionId?: string;
   travelId?: string;
-  initialType?: ActivityType;
+  initialType?: TripPlanType;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -134,8 +134,8 @@ const ActivityModal = ({
   const [selectedSectionId, setSelectedSectionId] = useState<string | undefined>(undefined);
   const [onSelectSectionCallback, setOnSelectSectionCallback] = useState<((id?: string) => void) | null>(null);
 
-  const [selectedActivityType, setSelectedActivityType] = useState<ActivityType | undefined>(undefined);
-  const [onSelectActivityTypeCallback, setOnSelectActivityTypeCallback] = useState<((type: ActivityType) => void) | null>(null);
+  const [selectedActivityType, setSelectedActivityType] = useState<TripPlanType | undefined>(undefined);
+  const [onSelectActivityTypeCallback, setOnSelectActivityTypeCallback] = useState<((type: TripPlanType) => void) | null>(null);
 
   const handleOpenSectionModal = (sectionsList: any[], currentId?: string, onSelect?: (id?: string) => void) => {
     setSections(sectionsList);
@@ -144,7 +144,7 @@ const ActivityModal = ({
     setShowSectionModal(true);
   };
 
-  const handleOpenPrimaryTypeModal = (currentType?: ActivityType, onSelect?: (type: ActivityType) => void) => {
+  const handleOpenPrimaryTypeModal = (currentType?: TripPlanType, onSelect?: (type: TripPlanType) => void) => {
     setSelectedActivityType(currentType);
     setOnSelectActivityTypeCallback(() => onSelect || null);
     setShowPrimaryTypeModal(true);
@@ -485,7 +485,9 @@ const ActivityModal = ({
 
   return (
     <>
-      <Modal visible={visible} transparent animationType="none"
+      <Modal visible={visible}
+        transparent={false}
+        animationType="none"
         onRequestClose={() => {
           if (isChildModalOpenRef.current || isChildModalOpen) return;
           handleCancel();
@@ -496,10 +498,10 @@ const ActivityModal = ({
         >
           <Animated.View
             className="flex-1 justify-end"
-            style={{
-              backgroundColor: "rgba(0,0,0,0.5)",
-              opacity: backdropOpacity
-            }}
+          // style={{
+          //   backgroundColor: "rgba(0,0,0,0.5)",
+          //   opacity: backdropOpacity
+          // }}
           >
             <Animated.View
               {...sheetPanResponder.panHandlers}
@@ -508,11 +510,6 @@ const ActivityModal = ({
                 { height: "100%" },
                 {
                   paddingTop: insets.top + 16,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: -8 },
-                  shadowOpacity: 0.12,
-                  shadowRadius: 16,
-                  elevation: 24,
                   transform: [{ translateY }],
                 }
               ]}
@@ -582,7 +579,7 @@ const ActivityModal = ({
                       ) : (
                         <View className="flex-row items-center gap-1.5 bg-primary/10 py-1.5 px-3 rounded-full">
                           <Icon name="check" size={20} color={colors.primary} />
-                          <Text className="text-lg font-medium" style={{ color: colors.primary }}>
+                          <Text className="text-lg px-sm font-medium" style={{ color: colors.primary }}>
                             {latestActivity?.id ? "Save" : "Add"}
                           </Text>
                         </View>

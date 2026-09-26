@@ -160,7 +160,7 @@ const DraggableSectionItem = ({
 }: DraggableSectionItemProps) => {
   const shiftAnim = useRef(new Animated.Value(0)).current;
   const lastTargetShift = useRef(0);
-  const { openActivityModal } = useTravelContext();
+  const { openActivityModal, openActivityTypeModal } = useTravelContext();
 
   useEffect(() => {
     if (!masterDragState.isDragging || masterDragState.dragIndex === null) {
@@ -372,7 +372,7 @@ const DraggableSectionItem = ({
                       </View>
 
                       <TouchableOpacity
-                        onPress={() => openActivityModal(null, section.id || undefined, section.travelId)}
+                        onPress={() => openActivityTypeModal(section.id || undefined, section.travelId)}
                         accessibilityRole="button"
                         activeOpacity={0.7}
                         className="flex-row items-center bg-primary/10 px-3 py-1.5 rounded-lg gap-2 mt-md"
@@ -416,6 +416,9 @@ const DraggableSectionItem = ({
   );
 };
 
+// Cache to persist expanded section IDs across bottom sheet / component transitions
+const sectionExpandedCache: Record<string, Record<string, boolean>> = {};
+
 const SectionAccordion = ({
   travelPlan,
   onRefresh,
@@ -425,7 +428,13 @@ const SectionAccordion = ({
   const queryClient = useQueryClient();
   const { showToast } = useToast();
   const { colors } = useTheme();
-  const { openActivityModal } = useTravelContext();
+  const {
+    openActivityModal,
+    openActivityTypeModal,
+    openViewActivity,
+    showActivityPinsInTripMap = true,
+    setShowActivityPinsInTripMap,
+  } = useTravelContext();
   const [isAddSectionVisible, setIsAddSectionVisible] = useState(false);
   const [selectedViewActivity, setSelectedViewActivity] = useState<{ id: string; travelId?: string } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -653,7 +662,22 @@ const SectionAccordion = ({
 
   // --- Selection & Expansion State ---
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
-  const [expandedSectionIds, setExpandedSectionIds] = useState<Record<string, boolean>>({});
+  const [expandedSectionIds, setExpandedSectionIds] = useState<Record<string, boolean>>(() => {
+    return travelId && sectionExpandedCache[travelId] ? { ...sectionExpandedCache[travelId] } : {};
+  });
+
+  useEffect(() => {
+    if (travelId) {
+      sectionExpandedCache[travelId] = expandedSectionIds;
+    }
+  }, [expandedSectionIds, travelId]);
+
+  useEffect(() => {
+    if (travelId && sectionExpandedCache[travelId]) {
+      setExpandedSectionIds({ ...sectionExpandedCache[travelId] });
+    }
+  }, [travelId]);
+
   const sectionPositions = useRef<Record<string, number>>({});
   const horizontalScrollViewRef = useRef<ScrollView>(null);
 
@@ -1260,7 +1284,7 @@ const SectionAccordion = ({
               </View>
               <View className="justify-center items-center gap-3 flex-row mt-lg">
                 <TouchableOpacity
-                  onPress={() => openActivityModal(null, undefined, travelId)}
+                  onPress={() => openActivityTypeModal(undefined, travelId)}
                   accessibilityRole="button"
                   activeOpacity={0.7}
                   className="flex-row items-center bg-primary/10 px-3 py-1.5 rounded-lg gap-2"
@@ -1381,7 +1405,11 @@ const SectionAccordion = ({
                               accessibilityLabel={`View activity ${eventActivity.title}`}
                               onPress={() => {
                                 if (eventActivity.id) {
-                                  setSelectedViewActivity({ id: eventActivity.id, travelId: section.travelId });
+                                  if (openViewActivity) {
+                                    openViewActivity(eventActivity.id);
+                                  } else {
+                                    setSelectedViewActivity({ id: eventActivity.id, travelId: section.travelId });
+                                  }
                                 }
                               }}
                               className="ml-5 py-2 flex-row gap-x-3 items-center"
@@ -1488,10 +1516,10 @@ const SectionAccordion = ({
                 }}
                 className="flex-1 z-10 px-2 w-4xl h-4xl rounded-full"
               >
-                <View className={`${viewMode === 'narrow' ? 'hidden' : 'left-9px'}`}>
+                {/* <View className={`${viewMode === 'narrow' ? 'hidden' : 'left-9px'}`}>
                   <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full `} />
                   <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full `} />
-                </View>
+                </View> */}
                 <Ionicons name="flag" size={20} color="#F97066" />
               </View>
             )}
@@ -1675,6 +1703,26 @@ const SectionAccordion = ({
                 ios_backgroundColor={colors.outline}
               />
             </View>
+
+            {/* Divider */}
+            <View className="h-1px mb-4" style={{ backgroundColor: colors.outlineVariant }} />
+
+            {/* Show Activity Pins in Trip Map Row */}
+            <View className="flex-row items-center justify-between mb-6">
+              <View className="pr-8 flex-1">
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>Show activity pins in Trip map</Text>
+                <Text className="text-base text-tertiary">Display activity pins and markers on the trip map</Text>
+              </View>
+              <Switch
+                value={showActivityPinsInTripMap}
+                onValueChange={(val) => {
+                  setShowActivityPinsInTripMap?.(val);
+                }}
+                trackColor={{ false: colors.outline, true: `${colors.primary}80` }}
+                thumbColor={showActivityPinsInTripMap ? colors.primary : colors.outlineVariant}
+                ios_backgroundColor={colors.outline}
+              />
+            </View>
           </Animated.View>
         </Animated.View>
       </Modal>
@@ -1696,7 +1744,7 @@ const SectionAccordion = ({
       />
 
       {/* View Activity Modal */}
-      {selectedViewActivity && (
+      {!openViewActivity && selectedViewActivity && (
         <ViewActivityModal
           id={selectedViewActivity.id}
           travelId={selectedViewActivity.travelId}

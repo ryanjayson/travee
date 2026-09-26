@@ -52,6 +52,7 @@ export interface TripDestinationSearchBoxProps {
   onSelect: (destination: TripDestinationDto) => void;
   placeholder?: string;
   disabled?: boolean;
+  autoFocus?: boolean;
 }
 
 const generateSessionToken = (): string => {
@@ -103,6 +104,7 @@ export const TripDestinationSearchBox = React.forwardRef<
   onSelect,
   placeholder = "Search place, city, or country",
   disabled = false,
+  autoFocus = false,
 }, ref) => {
   const { colors } = useTheme();
   const inputRef = useRef<TextInput>(null);
@@ -586,6 +588,7 @@ export const TripDestinationSearchBox = React.forwardRef<
           onChangeText={handleQueryChange}
           placeholder={placeholder}
           placeholderTextColor="#98A2B3"
+          autoFocus={autoFocus}
           onFocus={() => {
             if (predictions.length > 0 || query.trim().length >= 2) {
               setIsExpanded(true);

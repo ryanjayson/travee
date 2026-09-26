@@ -318,8 +318,10 @@ const ShareOverlay: React.FC<ShareOverlayProps> = ({
         <ViewShot
           ref={viewShotRef}
           options={{ format: 'png', quality: 1.0 }}
-          style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
-          className={`overflow-hidden bg-[#0C2A5A] ${transparentCapture ? 'bg-transparent' : ''}`}
+          style={[
+            { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, overflow: 'hidden' },
+            transparentCapture ? { backgroundColor: 'transparent' } : { backgroundColor: '#0C2A5A' }
+          ]}
         >
           {/* ── Layer 1: user photo (only when not doing transparent capture) ── */}
           {backgroundImageUri && !transparentCapture ? (

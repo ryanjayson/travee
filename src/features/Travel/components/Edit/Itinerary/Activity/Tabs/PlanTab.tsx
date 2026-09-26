@@ -9,7 +9,7 @@ import ActivityPlanTypeLookupModal, {
 import AddFieldModal, {
   APPLICABLE_PLAN_FIELDS,
 } from "../../../../Lookups/AddFieldModal";
-import { ActivityPlanType } from "../../../../../../../types/enums";
+import { ActivityType } from "../../../../../../../types/enums";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
 import { FadeInView } from "../../../../../../../components/animations";
 
@@ -133,14 +133,13 @@ export default function PlanTab({
   };
 
   return (
-    <View className={`flex-1 pt-2 ${noPadding ? "" : "px-5"}`}>
+    <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
       {/* Header */}
-      <View className="flex-row gap-2 justify-start items-center mb-5 border-l-3 border-primary pl-4">
-        <Icon name="event-note" size={26} color={"#344054"} />
-        <Text className="text-lg font-semibold tracking-wider uppercase text-secondary">
-          Plan Details
+      <View className="flex-row gap-2 justify-start items-center mb-5">
+        <Icon name="event-note" size={28} color={"#34405480"} />
+        <Text className="text-2xl font-semibold  text-secondary">
+          Activity Details
         </Text>
-
       </View>
 
       {/* Date & Time Section */}
@@ -168,7 +167,7 @@ export default function PlanTab({
         className="mb-5 mt-4"
       >
         <Text className="text-lg text-secondary/80 font-semibold mb-2">
-          Type of Plan
+          Type of Activity
         </Text>
 
         <TouchableOpacity
@@ -184,7 +183,7 @@ export default function PlanTab({
           accessibilityLabel={
             selectedPlanType
               ? `Plan type selected: ${selectedPlanType.label}. Tap to change.`
-              : "Select plan type"
+              : "Select activity type"
           }
         >
           <View className="flex-row items-center gap-3">
@@ -208,7 +207,7 @@ export default function PlanTab({
               <Text
                 className={`text-lg ${selectedPlanType ? "text-[#1D2939] font-semibold" : "text-[#98A2B3] font-normal"}`}
               >
-                {selectedPlanType ? selectedPlanType.label : "Select Plan Type"}
+                {selectedPlanType ? selectedPlanType.label : "Select Activity Type"}
               </Text>
               {selectedPlanType?.subtext && (
                 <Text className="text-sm text-[#667085] -mt-1" numberOfLines={1}>
@@ -242,7 +241,7 @@ export default function PlanTab({
         if (!fieldMeta) return null;
 
         return (
-          <View key={fieldId} className="mb-5 flex-1">
+          <View key={fieldId} className="mb-5">
             <FadeInView type="zoom" delay={200} duration={500} >
 
               {fieldId === "location" && (
@@ -408,14 +407,10 @@ export default function PlanTab({
       })}
 
       {/* Button below plan detail section: Title "Add Field" / "Add or remove Field" */}
-      <View className="mt-1 mb-6">
+      <View className="mt-1 mb-12">
         <TouchableOpacity
           onPress={() => setShowAddFieldModal(true)}
-          className="border-[1.5px] border-dashed rounded-[16px] py-3.5 px-5 items-center justify-center"
-          style={{
-            borderColor: colors.primary + "50" || "#263F69",
-            backgroundColor: `${colors.primary || "#263F69"}08`,
-          }}
+          className="items-start justify-start"
           activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel={
@@ -441,7 +436,7 @@ export default function PlanTab({
         visible={showPlanTypeModal}
         onClose={() => setShowPlanTypeModal(false)}
         selectedType={values.planType}
-        onSelect={(type: ActivityPlanType) => {
+        onSelect={(type: ActivityType) => {
           setFieldValue?.("planType", type);
         }}
       />

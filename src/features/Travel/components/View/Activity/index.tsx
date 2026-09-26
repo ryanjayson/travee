@@ -2,15 +2,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Animated,
-  Dimensions, PanResponder,
-  Pressable,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  View
+  View,
+  BackHandler,
 } from "react-native";
 import { FAB, Portal, Provider } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { activityIcons } from "../../../../../components/ActivityIcon";
 import { FadeInView } from "../../../../../components/animations";
 import TouchButton from "../../../../../components/atoms/TouchButton";
@@ -23,56 +20,37 @@ import DetailsTab from "./Tabs/DetailsTab";
 import ExpensesTab from "./Tabs/ExpensesTab";
 import FilesTab from "./Tabs/FilesTab";
 import NotesTab from "./Tabs/NotesTab";
+import { MaterialIcons as Icon } from "@expo/vector-icons";
 
-import { ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
-import { ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
-
-import { hasActivityData } from "./Tabs/Details/DetailComponents";
+import { TripPlanType, getTripPlanTypeLabel, ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
+import { ACTIVITY_PLAN_TYPES } from "../../Lookups/ActivityPlanTypeLookupModal";
+import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 
 interface ViewTripActivityProps {
   id: string;
-  onClose: () => void;
+  onClose?: () => void;
   translateY?: Animated.Value;
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   hasNext?: boolean;
   hasPrev?: boolean;
+  isMidSnap?: boolean;
+  isExpanded?: boolean;
+  onScrollAtTopChange?: (isAtTop: boolean) => void;
 }
 
-const getActivityDetailData = (activity: ItineraryActivity | null) => {
-  if (!activity) return null;
-  switch (activity.type) {
-    case ActivityType.flight:
-      return activity.flightDetails;
-    case ActivityType.stay:
-      return activity.accomodationDetails;
-    case ActivityType.transit:
-      return activity.transportationDetails;
-    case ActivityType.rideRental:
-      return activity.rideRentalDetails;
-    default:
-      return (
-        activity.restDetails ||
-        activity.motorcycleRideDetails ||
-        activity.meetupDetails ||
-        null
-      );
-  }
-};
-
-const hasActivityDetails = (activity?: ItineraryActivity | null) => {
-  if (!activity) return false;
-  switch (activity.type) {
-    case ActivityType.flight:
-      return !!activity.flightDetails;
-    case ActivityType.stay:
-      return !!activity.accomodationDetails;
-    default:
-      return false;
-  }
-};
-
-const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwipeLeft, onSwipeRight, hasNext = false, hasPrev = false }: ViewTripActivityProps) => {
+const ViewItineraryActivity = ({
+  id,
+  onClose,
+  translateY: _translateYProp,
+  onSwipeLeft: _onSwipeLeft,
+  onSwipeRight: _onSwipeRight,
+  hasNext: _hasNext = false,
+  hasPrev: _hasPrev = false,
+  isMidSnap = false,
+  isExpanded = false,
+  onScrollAtTopChange,
+}: ViewTripActivityProps) => {
   const {
     data: itineraryActivity,
     isLoading,
@@ -96,287 +74,44 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
   }, [travelPlan?.itinerarySection, itineraryActivity?.sectionId]);
 
   const [fabOpen, setFabOpen] = useState(false);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
   const [showMoreButton, setShowMoreButton] = useState<boolean>(false);
   const { openExpenseModal, openNoteModal } = useTravelContext();
-  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-  const isImageViewerOpenRef = useRef(false);
-  isImageViewerOpenRef.current = isImageViewerOpen;
+  const [_isImageViewerOpen, setIsImageViewerOpen] = useState(false);
 
-  const [isMapFullScreen, setIsMapFullScreen] = useState(false);
-  const isMapFullScreenRef = useRef(false);
-  isMapFullScreenRef.current = isMapFullScreen;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
-  // ─── Horizontal swipe for activity navigation ───────────────────────────────
-  const { width: screenWidth } = Dimensions.get("window");
-  const translateX = useRef(new Animated.Value(0)).current;
-  const fadeAnim = useRef(new Animated.Value(1)).current; // fade-in for new content
-  const isSwipeAnimating = useRef(false);
-
-  // Derive opacity and scale from horizontal drag position (gallery-style fade)
-  const swipeOpacity = translateX.interpolate({
-    inputRange: [-screenWidth, -screenWidth * 0.3, 0, screenWidth * 0.3, screenWidth],
-    outputRange: [0, 0.4, 1, 0.4, 0],
-    extrapolate: "clamp",
-  });
-  const swipeScale = translateX.interpolate({
-    inputRange: [-screenWidth, 0, screenWidth],
-    outputRange: [0.92, 1, 0.92],
-    extrapolate: "clamp",
-  });
-
-  // Keep swipe callbacks in refs to avoid stale closures in PanResponder
-  const onSwipeLeftRef = useRef(onSwipeLeft);
-  const onSwipeRightRef = useRef(onSwipeRight);
-  const hasNextRef = useRef(hasNext);
-  const hasPrevRef = useRef(hasPrev);
-  onSwipeLeftRef.current = onSwipeLeft;
-  onSwipeRightRef.current = onSwipeRight;
-  hasNextRef.current = hasNext;
-  hasPrevRef.current = hasPrev;
-
-  // Reset horizontal position + fade in new content when activity ID changes
+  // Reset states and fade in when activity ID changes
   useEffect(() => {
     setIsDescriptionExpanded(false);
     setShowMoreButton(false);
-    translateX.setValue(0);
     fadeAnim.setValue(0);
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 300,
-      useNativeDriver: false,
+      duration: 250,
+      useNativeDriver: true,
     }).start();
-  }, [id]);
+  }, [id, fadeAnim]);
 
-  const swipePanResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gs) => {
-        if (isImageViewerOpenRef.current || isMapFullScreenRef.current) return false;
-        // Only claim horizontal gestures, ignore vertical
-        const isHorizontal = Math.abs(gs.dx) > Math.abs(gs.dy) && Math.abs(gs.dx) > 3;
-        return isHorizontal && !isSwipeAnimating.current;
-      },
-      onMoveShouldSetPanResponderCapture: (_, gs) => {
-        if (isImageViewerOpenRef.current || isMapFullScreenRef.current) return false;
-        const isHorizontal = Math.abs(gs.dx) > Math.abs(gs.dy) && Math.abs(gs.dx) > 5;
-        return isHorizontal && !isSwipeAnimating.current;
-      },
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: () => {
-        translateX.setValue(0);
-      },
-      onPanResponderMove: (_, gs) => {
-        // Add resistance when swiping past bounds (no next/prev)
-        const canGoLeft = hasNextRef.current; // swipe left = go to next
-        const canGoRight = hasPrevRef.current; // swipe right = go to prev
-        let dx = gs.dx;
-        if ((dx < 0 && !canGoLeft) || (dx > 0 && !canGoRight)) {
-          dx = dx * 0.25; // rubber-band resistance
-        }
-        translateX.setValue(dx);
-      },
-      onPanResponderRelease: (_, gs) => {
-        const SWIPE_THRESHOLD = 25;
-        const VELOCITY_THRESHOLD = 0.15;
-        const swipedLeft = gs.dx < -SWIPE_THRESHOLD || gs.vx < -VELOCITY_THRESHOLD;
-        const swipedRight = gs.dx > SWIPE_THRESHOLD || gs.vx > VELOCITY_THRESHOLD;
-        if (swipedLeft && hasNextRef.current) {
-          // Slide content off to the left
-          isSwipeAnimating.current = true;
-          Animated.timing(translateX, {
-            toValue: -screenWidth,
-            duration: 250,
-            useNativeDriver: false,
-          }).start(() => {
-            isSwipeAnimating.current = false;
-            onSwipeLeftRef.current?.();
-          });
-        } else if (swipedRight && hasPrevRef.current) {
-          // Slide content off to the right
-          isSwipeAnimating.current = true;
-          Animated.timing(translateX, {
-            toValue: screenWidth,
-            duration: 250,
-            useNativeDriver: false,
-          }).start(() => {
-            isSwipeAnimating.current = false;
-            onSwipeRightRef.current?.();
-          });
-        } else {
-          // Bounce back
-          Animated.spring(translateX, {
-            toValue: 0,
-            tension: 120,
-            friction: 12,
-            useNativeDriver: false,
-          }).start();
-        }
-      },
-      onPanResponderTerminate: () => {
-        Animated.spring(translateX, {
-          toValue: 0,
-          tension: 120,
-          friction: 12,
-          useNativeDriver: false,
-        }).start();
-      },
-    })
+  // Handle Android back button/gesture to trigger onClose
+  useEffect(() => {
+    if (!onClose) return;
 
-  ).current;
+    const onBackPress = () => {
+      onClose();
+      return true;
+    };
 
-  const insets = useSafeAreaInsets();
-  const { height: screenHeight } = Dimensions.get("window");
-  const yOffset = insets.top + 60; // Estimated parent modal header offset
-  const parentHeight = screenHeight - yOffset;
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      onBackPress
+    );
 
-  // Snap points represent the translateY value (offset from top of parent container)
-  // 90% sheet height: translateY = parentHeight * 0.1
-  // Min sheet height: 25% sheet height -> 0.75 offset
+    return () => subscription.remove();
+  }, [onClose]);
+
   const description = itineraryActivity?.description?.trim();
-  const SNAP_EXTENDED = description && description.length > 0 ? 166 : 140;
-  const SNAP_90 = parentHeight * 0.1;
-  const SNAP_MIN = parentHeight - SNAP_EXTENDED;
 
-  const initialDetailData = getActivityDetailData(itineraryActivity);
-  const initialHasDetails = hasActivityData(initialDetailData);
-  const initialSnapPoint = (itineraryActivity?.type === ActivityType.plan || !initialHasDetails) ? SNAP_90 : SNAP_MIN;
-
-  const snappedY = useRef(initialSnapPoint);
-  const dragStartY = useRef(0);
-
-  // Use passed translateY prop or fallback to local Animated.Value
-  const translateYRef = useRef(translateYProp || new Animated.Value(initialSnapPoint));
-  const translateY = translateYProp || translateYRef.current;
-  const [currentSnap, setCurrentSnap] = useState(initialSnapPoint);
-
-  // Dynamically update snap configurations once itineraryActivity loads
-  React.useEffect(() => {
-    if (itineraryActivity) {
-      const isNoType = itineraryActivity.type === ActivityType.plan;
-      const detailData = getActivityDetailData(itineraryActivity);
-      const hasDetails = hasActivityData(detailData);
-
-      const targetSnap = (isNoType || !hasDetails) ? SNAP_90 : SNAP_MIN;
-
-      snappedY.current = targetSnap;
-      setCurrentSnap(targetSnap);
-
-      Animated.spring(translateY, {
-        toValue: targetSnap,
-        tension: 80,
-        friction: 12,
-        useNativeDriver: false,
-      }).start();
-
-      if (targetSnap === SNAP_MIN) {
-        setIsDescriptionExpanded(false);
-      }
-    }
-  }, [itineraryActivity?.id, parentHeight, SNAP_MIN, SNAP_90]);
-
-  const detailData = getActivityDetailData(itineraryActivity);
-  const hasDetails = hasActivityData(detailData);
-  const canSnap = itineraryActivity?.type !== ActivityType.plan && hasDetails;
-  const canSnapRef = useRef(canSnap);
-  canSnapRef.current = canSnap;
-
-  // Slowly changing black overlay opacity as sheet is panned/scrolled towards SNAP_90
-  const rangeEnd = SNAP_MIN;
-  const overlayOpacity = translateY.interpolate({
-    inputRange: [SNAP_90, rangeEnd],
-    outputRange: [0.55, 0.04],
-    extrapolate: "clamp",
-  });
-
-  const snapTo = (toValue: number) => {
-    if (!canSnapRef.current && toValue !== SNAP_90) {
-      return;
-    }
-    snappedY.current = toValue;
-    setCurrentSnap(toValue);
-    Animated.spring(translateY, {
-      toValue,
-      tension: 80,
-      friction: 12,
-      useNativeDriver: false,
-    }).start();
-
-    if (toValue === SNAP_MIN) {
-      setIsDescriptionExpanded(false);
-    }
-  };
-
-  const snap90Ref = useRef(SNAP_90);
-  const snapMinRef = useRef(SNAP_MIN);
-  const parentHeightRef = useRef(parentHeight);
-  const snapToRef = useRef(snapTo);
-
-  snap90Ref.current = SNAP_90;
-  snapMinRef.current = SNAP_MIN;
-  parentHeightRef.current = parentHeight;
-  snapToRef.current = snapTo;
-
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: (evt, gestureState) => {
-        if (isMapFullScreenRef.current || !canSnapRef.current) return false;
-        const touchStartRelativeY = evt.nativeEvent.pageY - (yOffset + snappedY.current);
-        return touchStartRelativeY > -30 && touchStartRelativeY < 180;
-      },
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => {
-        if (isMapFullScreenRef.current || !canSnapRef.current) return false;
-        const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 8;
-        if (!isVertical) return false;
-
-        const touchStartRelativeY = evt.nativeEvent.pageY - (yOffset + snappedY.current);
-        return touchStartRelativeY > -30 && touchStartRelativeY < 180;
-      },
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
-        if (isMapFullScreenRef.current || !canSnapRef.current) return false;
-        const isVertical = Math.abs(gestureState.dy) > Math.abs(gestureState.dx) && Math.abs(gestureState.dy) > 5;
-        if (!isVertical) return false;
-
-        const touchStartRelativeY = evt.nativeEvent.pageY - (yOffset + snappedY.current);
-        return touchStartRelativeY > -30 && touchStartRelativeY < 180;
-      },
-      onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: () => {
-        dragStartY.current = snappedY.current;
-        translateY.setOffset(snappedY.current);
-        translateY.setValue(0);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        const nextY = dragStartY.current + gestureState.dy;
-        const clampedY = Math.max(snap90Ref.current, Math.min(snapMinRef.current, nextY));
-        translateY.setValue(clampedY - dragStartY.current);
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        translateY.flattenOffset();
-        const nextY = dragStartY.current + gestureState.dy;
-        const velocityY = gestureState.vy;
-
-        let target = snapMinRef.current;
-        if (velocityY < -0.3) {
-          target = snap90Ref.current;
-        } else if (velocityY > 0.3) {
-          target = snapMinRef.current;
-        } else {
-          const dist90 = Math.abs(nextY - snap90Ref.current);
-          const distMin = Math.abs(nextY - snapMinRef.current);
-          target = dist90 < distMin ? snap90Ref.current : snapMinRef.current;
-        }
-        snapToRef.current(target);
-      },
-      onPanResponderTerminate: () => {
-        translateY.flattenOffset();
-        snapToRef.current(snappedY.current);
-      },
-    })
-  ).current;
-
-  // Stable callbacks so tabs don't re-render on unrelated state changes
   const handleOpenAddExpense = useCallback(() => {
     setFabOpen(false);
     openExpenseModal(
@@ -392,13 +127,27 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
     );
   }, [id, itineraryActivity, openExpenseModal]);
 
-
   const getActivityTypeDetails = (type: any) => {
     if (type == null) return { text: "None", color: "#9E9E9E" };
     const iconConfig = activityIcons.find((i) => i.activityType === type);
     const color = iconConfig?.color ?? "#9E9E9E";
-    const text = type != null ? getActivityTypeLabel(type) : "None";
+    const text = type != null ? getTripPlanTypeLabel(type) : "None";
     return { text, color };
+  };
+
+  const getPlanTypeDetails = (planType: any) => {
+    if (planType == null) return { text: "None", color: "#9E9E9E" };
+    const match = ACTIVITY_PLAN_TYPES.find(
+      (p) => p.type === planType || p.key === planType || String(p.type) === String(planType)
+    );
+    if (match) {
+      return { text: match.label, color: match.color };
+    }
+    const label =
+      typeof planType === "number" || (!isNaN(Number(planType)) && typeof planType !== "boolean")
+        ? getActivityTypeLabel(Number(planType))
+        : String(planType);
+    return { text: label, color: "#c10003" };
   };
 
   const handleOpenAddNote = useCallback(() => {
@@ -413,17 +162,60 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
     );
   }, [id, itineraryActivity, openNoteModal]);
 
-  const handleEditExpense = useCallback((expense: ItineraryExpense) => {
-    openExpenseModal(
-      expense,
-      id,
-      itineraryActivity ? [itineraryActivity] : []
-    );
-  }, [id, itineraryActivity, openExpenseModal]);
+  const handleEditExpense = useCallback(
+    (expense: ItineraryExpense) => {
+      openExpenseModal(expense, id, itineraryActivity ? [itineraryActivity] : []);
+    },
+    [id, itineraryActivity, openExpenseModal]
+  );
 
-  const handleEditNote = useCallback((note: ItineraryNote) => {
-    openNoteModal(note, itineraryActivity ? [itineraryActivity] : []);
-  }, [itineraryActivity, openNoteModal]);
+  const handleEditNote = useCallback(
+    (note: ItineraryNote) => {
+      openNoteModal(note, itineraryActivity ? [itineraryActivity] : []);
+    },
+    [itineraryActivity, openNoteModal]
+  );
+
+  const tabData = [
+    {
+      id: "details",
+      title: "Details",
+      content: (
+        <DetailsTab
+          itineraryActivity={itineraryActivity}
+          isMidSnap={isMidSnap}
+          isExpanded={isExpanded}
+          onScrollAtTopChange={onScrollAtTopChange}
+        />
+      ),
+    },
+    {
+      id: "expenses",
+      isVisible: false,
+      title: "Expenses",
+      icon: "receipt",
+      content: <ExpensesTab activityId={id} onEditExpense={handleEditExpense} />,
+    },
+    {
+      id: "checklist",
+      title: "Checklists",
+      // icon: "checklist",
+      content: <ChecklistTab activityId={id} itineraryActivity={itineraryActivity} />,
+    },
+    {
+      id: "notes",
+      isVisible: false,
+      title: "Notes",
+      icon: "note",
+      content: <NotesTab activityId={id} onEditNote={handleEditNote} />,
+    },
+    {
+      id: "files",
+      title: "Files",
+      // icon: "description",
+      content: <FilesTab itineraryActivity={itineraryActivity} onImageViewerToggle={setIsImageViewerOpen} />,
+    },
+  ];
 
   const renderContent = () => {
     if (isLoading) {
@@ -450,270 +242,178 @@ const ViewItineraryActivity = ({ id, onClose, translateY: translateYProp, onSwip
       <Tabs
         tabs={tabData}
         type="default"
-        initialActiveTabId="checklist"
+        initialActiveTabId="details"
         expanded={true}
         applyFadeAnimation={false}
-        onTabChange={() => {
-          if (snappedY.current !== SNAP_90) {
-            snapTo(SNAP_90);
-          }
-        }}
       />
     );
   };
 
-  const tabData = [
-    // { id: "details", title: "Details",  content: <DetailsTab itineraryActivity={itineraryActivity} /> },
-    // { id: "details", title: "Details",  content: <View><Text>Detail</Text></View> },
-    {
-      id: "expenses",
-      isVisible: false,
-      title: "Expenses",
-      icon: "receipt",
-      content: <ExpensesTab activityId={id} onEditExpense={handleEditExpense} />
-      ,
-    },
-    { id: "checklist", title: "Checklists", icon: "checklist", content: <ChecklistTab activityId={id} itineraryActivity={itineraryActivity} /> },
-
-    {
-      id: "notes",
-      isVisible: false,
-      title: "Notes",
-      icon: "note",
-      content: <NotesTab activityId={id} onEditNote={handleEditNote} />,
-    },
-    { id: "files", title: "Files", icon: "description", content: <FilesTab itineraryActivity={itineraryActivity} onImageViewerToggle={setIsImageViewerOpen} /> },
-  ];
-
   return (
     <Provider>
-      <View className="flex-1">
-
-        {/* Horizontal swipe wrapper — covers entire screen for easy swiping */}
-        <Animated.View
-          {...swipePanResponder.panHandlers}
-          style={{
-            flex: 1,
-            transform: [{ translateX }, { scale: swipeScale }],
-
-            // opacity: Animated.multiply(swipeOpacity, fadeAnim),
-          }}
-        >
-
-          {/* Background Details Tab */}
-          <View style={{
-            height: parentHeight, width: "100%",
-          }}>
-            <DetailsTab itineraryActivity={itineraryActivity} onFullScreenChange={setIsMapFullScreen} />
-            {/* Animated Black Overlay */}
-            <TouchableWithoutFeedback
-              onPress={() => snapTo(SNAP_MIN)}
-              disabled={currentSnap === SNAP_MIN || !canSnap}
-            >
-              <Animated.View
-                pointerEvents={(currentSnap === SNAP_MIN || !canSnap) ? "none" : "auto"}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: "#000000",
-                  opacity: overlayOpacity,
-                }}
-              />
-            </TouchableWithoutFeedback>
-          </View>
-
-          {/* Snappable Bottom Form Sheet */}
-          <Animated.View
-            {...(canSnap ? panResponder.panHandlers : {})}
-            style={[
-              {
-                transform: [{ translateY }],
-                height: parentHeight,
-                position: "absolute",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "#FFFFFF",
-                borderTopLeftRadius: 32,
-                borderTopRightRadius: 32,
-                // borderWidth: 2,
-                borderBottomWidth: 0,
-                borderColor: "#E5E7EB",
-                shadowColor: "#000",
-                shadowOffset: { width: 1, height: 1 },
-                shadowOpacity: 1,
-                shadowRadius: 26,
-                elevation: 34,
-              },
-            ]}
-          >
-            {/* Drag Handle */}
-            <View className="w-full items-center pt-3 pb-2 bg-transparent rounded-t-[32px]">
-              {canSnap && <View className="w-10 h-1 bg-gray-300 rounded-full" />}
-            </View>
-
-            {sectionName && (
-              <View className="items-center py-1 px-md absolute -top-[28px] left-lg">
-                <Text
-                  className="font-semibold tracking-wide text-md text-white"
-                  style={{
-                    textShadowColor: "rgba(0, 0, 0, 0.75)",
-                    textShadowOffset: { width: 2, height: 2 },
-                    textShadowRadius: 10,
-                  }}
+      <Animated.View style={{ flex: 1, opacity: fadeAnim }} className="flex-1 bg-white">
+        {/* Activity header */}
+        <View className="px-5 pb-2 bg-white mt-1 w-full">
+          <FadeInView key={`title-${id}`} type="right" delay={50} duration={350} className="w-full">
+            {itineraryActivity?.type != null && (
+              <View className="flex-row items-center ">
+                {sectionName && (
+                  <View className="flex-row items-center ">
+                    <View className="bg-accent mr-0.5 px-2 py-0.5 rounded-xs">
+                      <Text className="text-[8px] tracking-wider font-semibold text-white">
+                        {sectionName}
+                      </Text>
+                    </View>
+                    <Text className="text-base text-tertiary/50 mx-0.5">
+                      /
+                    </Text>
+                  </View>
+                )}
+                <View
+                  style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + "20" }}
+                  className="items-end rounded-xs px-2 py-0.5 mr-0.5"
                 >
-                  {sectionName}
-                </Text>
+
+                  <Text
+                    style={{ color: getActivityTypeDetails(itineraryActivity.type).color }}
+                    className="text-[8px] tracking-wider uppercase font-extrabold"
+                  >
+                    {getActivityTypeDetails(itineraryActivity.type).text}
+                  </Text>
+                </View>
+
+                {itineraryActivity.type == TripPlanType.activity && itineraryActivity.planType && (
+                  <View className="flex-row items-center ml-0.5">
+                    <Text className="text-base text-tertiary/50 mr-0.5">
+                      /
+                    </Text>
+                    <View
+                      style={{ backgroundColor: getPlanTypeDetails(itineraryActivity.planType).color + "20" }}
+                      className="items-end rounded-xs px-2 py-0.5 mr-0.5"
+                    >
+                      <Text
+                        style={{ color: getPlanTypeDetails(itineraryActivity.planType).color }}
+                        className="text-[8px] font-semibold"
+                      >
+                        {getPlanTypeDetails(itineraryActivity.planType).text}
+                      </Text>
+                    </View>
+                  </View>
+                )}
               </View>
             )}
-            {/* Activity header with edit button */}
-            <View className="px-5 pb-2 bg-white mt-2">
-              <View className="flex-row items-start justify-between">
-                <View className="flex-1">
-                  <FadeInView key={`title-${id}`} type="up" delay={50} duration={350}>
-                    {itineraryActivity?.type != null && itineraryActivity.type !== ActivityType.plan && (
-                      <View className={`flex-row items-center -mt-2 mb-2`}>
-                        <View
-                          style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + '20' }}
-                          className="items-end rounded-xs px-2 py-0.5"
-                        >
-                          <Text
-                            style={{ color: getActivityTypeDetails(itineraryActivity.type).color }}
-                            className="text-[8px] tracking-wider uppercase font-extrabold"
-                          >
-                            {getActivityTypeDetails(itineraryActivity.type).text}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
-                    <Text className="text-xl font-semibold" style={{ paddingBottom: description ? 6 : 0 }}>{itineraryActivity?.title}</Text>
-                  </FadeInView>
-
-                  {description && (
-                    <FadeInView key={`desc-${id}`} type="up" delay={120} duration={350}>
-                      <View className="">
-                        {/* Hidden text element for un-truncated line measurement */}
-                        <Text
-                          style={{ position: "absolute", opacity: 0, zIndex: -1000 }}
-                          className="text-base text-[#999] leading-6"
-                          onTextLayout={(e) => {
-                            setShowMoreButton(e.nativeEvent.lines.length > 1);
-                          }}
-                        >
-                          {description}
-                        </Text>
-
-                        {/* Visible description text with Show More / Show Less button on same line */}
-                        {showMoreButton && !isDescriptionExpanded ? (
-                          <View className="flex-row items-center">
-                            <Text
-                              className="flex-1 text-base text-[#999] leading-6"
-                              numberOfLines={1}
-                            >
-                              {description}
-                            </Text>
-                            <TouchableOpacity
-                              onPress={() => {
-                                if (canSnap && snappedY.current !== SNAP_90) {
-                                  snapTo(SNAP_90);
-                                }
-                                setIsDescriptionExpanded(true);
-                              }}
-                              accessibilityRole="button"
-                              className="ml-1"
-                            >
-                              <Text className="text-sm text-secondary font-medium underline">
-                                Show more
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        ) : (
-                          <Text className="text-base text-[#999] leading-6">
-                            {description}
-                            {showMoreButton && isDescriptionExpanded && (
-                              <Text
-                                onPress={() => {
-                                  setIsDescriptionExpanded(false);
-                                }}
-                                accessibilityRole="button"
-                                className="text-sm text-secondary font-medium underline"
-                              >
-                                {" Show less"}
-                              </Text>
-                            )}
-                          </Text>
-                        )}
-                      </View>
-                    </FadeInView>
-                  )}
-                </View>
-              </View>
-            </View>
-
-            {/* Tabs */}
-            <Pressable
-              onPress={() => {
-                if (canSnap && snappedY.current !== SNAP_90) {
-                  snapTo(SNAP_90);
-                }
-              }}
-              className="flex-1 "
+            <Text className="text-4xl font-semibold mt-1" style={{ paddingBottom: description ? 2 : 0 }}
+              numberOfLines={!isExpanded && !isMidSnap ? 1 : undefined}
             >
-              <FadeInView key={`tabs-${id}`} type="up" delay={180} duration={400} style={{ flex: 1 }}>
-                {renderContent()}
-              </FadeInView>
-            </Pressable>
-          </Animated.View>
+              {itineraryActivity?.title}
+            </Text>
 
-          {/* TODO: show when expense implemented */}
-          <Portal>
-            <FAB.Group
-              open={fabOpen}
-              visible={false}
-              icon={fabOpen ? "close" : "plus"}
-              actions={[
-                {
-                  icon: "cash",
-                  label: "Add Expense",
-                  style: {
-                    elevation: 0,
-                    borderRadius: 50,
-                    padding: 6,
-                    backgroundColor: '#263F69',
-                    marginRight: -6,
-                    marginBottom: 10
-                  },
-                  color: 'white',
-                  onPress: handleOpenAddExpense,
+            {description && (
+              <View className="w-full mt-1">
+                {/* Hidden text element for un-truncated line measurement */}
+                <Text
+                  style={{ position: "absolute", opacity: 0, zIndex: -1000, left: 0, right: 0 }}
+                  className="text-base text-[#999] leading-6"
+                  onTextLayout={(e) => {
+                    setShowMoreButton(e.nativeEvent.lines.length > 1);
+                  }}
+                >
+                  {description}
+                </Text>
+
+                {/* Visible description text with Show More / Show Less button on same line */}
+                {showMoreButton && !isDescriptionExpanded ? (
+                  <View className="flex-row items-center w-full">
+                    <Text
+                      className="flex-1 text-base text-[#999] leading-6"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {description}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => setIsDescriptionExpanded(true)}
+                      accessibilityRole="button"
+                      activeOpacity={0.7}
+                      className="ml-1 shrink-0"
+                    >
+                      <Text className="text-md text-tertiary font-semibold underline">
+                        Show more
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <Text className="text-base text-[#999] leading-6">
+                    {description}
+                    {showMoreButton && isDescriptionExpanded && (
+                      <Text
+                        onPress={() => setIsDescriptionExpanded(false)}
+                        accessibilityRole="button"
+                        className="text-md text-tertiary font-semibold underline"
+                      >
+                        {" Show less"}
+                      </Text>
+                    )}
+                  </Text>
+                )}
+              </View>
+            )}
+          </FadeInView>
+        </View>
+
+        {/* Tabs */}
+        <View className="flex-1"
+          style={{ marginTop: !isMidSnap && !isExpanded ? 10 : 0 }}>
+          <FadeInView key={`tabs-${id}`} type="right" delay={180} duration={400} style={{ flex: 1 }}>
+            {renderContent()}
+          </FadeInView>
+        </View>
+
+        {/* TODO: show when expense implemented */}
+        <Portal>
+          <FAB.Group
+            open={fabOpen}
+            visible={false}
+            icon={fabOpen ? "close" : "plus"}
+            actions={[
+              {
+                icon: "cash",
+                label: "Add Expense",
+                style: {
+                  elevation: 0,
+                  borderRadius: 50,
+                  padding: 6,
+                  backgroundColor: "#263F69",
+                  marginRight: -6,
+                  marginBottom: 10,
                 },
-                {
-                  icon: "fountain-pen-tip",
-                  label: "Add Note",
-                  style: {
-                    elevation: 0,
-                    borderRadius: 50,
-                    padding: 6,
-                    backgroundColor: '#263F69',
-                    marginRight: -6,
-                    marginBottom: 10
-                  },
-                  color: 'white',
-                  onPress: handleOpenAddNote,
+                color: "white",
+                onPress: handleOpenAddExpense,
+              },
+              {
+                icon: "fountain-pen-tip",
+                label: "Add Note",
+                style: {
+                  elevation: 0,
+                  borderRadius: 50,
+                  padding: 6,
+                  backgroundColor: "#263F69",
+                  marginRight: -6,
+                  marginBottom: 10,
                 },
-              ]}
-              onStateChange={({ open }) => setFabOpen(open)}
-              fabStyle={{
-                backgroundColor: fabOpen ? '#82181a' : '#263F69',
-                borderRadius: 50,
-              }}
-              color="white"
-            />
-          </Portal>
-        </Animated.View>
-      </View>
+                color: "white",
+                onPress: handleOpenAddNote,
+              },
+            ]}
+            onStateChange={({ open }) => setFabOpen(open)}
+            fabStyle={{
+              backgroundColor: fabOpen ? "#82181a" : "#263F69",
+              borderRadius: 50,
+            }}
+            color="white"
+          />
+        </Portal>
+      </Animated.View>
     </Provider>
   );
 };

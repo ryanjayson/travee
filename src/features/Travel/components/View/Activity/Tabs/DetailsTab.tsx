@@ -1,9 +1,9 @@
-import React from "react";
-import { ScrollView, View, Text, Dimensions } from "react-native";
+import React, { useRef, useState } from "react";
+import { ScrollView, View, Text, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import { ItineraryActivity } from "../../../../types/TravelDto";
-import { ActivityType } from "../../../../../../types/enums";
+import { TripPlanType } from "../../../../../../types/enums";
 import { activityIcons } from "../../../../../../components/ActivityIcon";
 import { FadeInView } from "../../../../../../components/animations";
 import {
@@ -22,14 +22,56 @@ import {
   MotorcycleRideDetails,
   MeetupDetails,
   RideRentalDetails,
+  PlanDetails,
 } from "./Details/DetailComponents";
 
 interface DetailsTabProps {
   itineraryActivity?: ItineraryActivity;
   onFullScreenChange?: (fullScreen: boolean) => void;
+  scrollEnabled?: boolean;
+  isMidSnap?: boolean;
+  isExpanded?: boolean;
+  onScrollAtTopChange?: (isAtTop: boolean) => void;
+  onEditActivity?: (activity: ItineraryActivity) => void;
 }
 
-const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) => {
+const DetailsTab = ({
+  itineraryActivity,
+  onFullScreenChange,
+  scrollEnabled = true,
+  isMidSnap = false,
+  isExpanded = false,
+  onScrollAtTopChange,
+  onEditActivity,
+}: DetailsTabProps) => {
+  const [isAtTop, setIsAtTop] = useState(true);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Lock ScrollView when bottom sheet snap is mid.
+  // Enable ScrollView when snap is expanded (so it can scroll up when content overflows).
+  const shouldScroll = isMidSnap ? false : isExpanded ? true : scrollEnabled;
+
+  React.useEffect(() => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    setIsAtTop(true);
+    onScrollAtTopChange?.(true);
+  }, [itineraryActivity?.id, onScrollAtTopChange]);
+
+  React.useEffect(() => {
+    if (!isExpanded && !isMidSnap) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+      setIsAtTop(true);
+      onScrollAtTopChange?.(true);
+    }
+  }, [isExpanded, isMidSnap, onScrollAtTopChange]);
+
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = e.nativeEvent.contentOffset.y;
+    const atTop = y <= 2;
+    setIsAtTop(atTop);
+    onScrollAtTopChange?.(atTop);
+  };
+
   const insets = useSafeAreaInsets();
   const { height: screenHeight } = Dimensions.get("window");
   const yOffset = insets.top + 60;
@@ -38,70 +80,47 @@ const DetailsTab = ({ itineraryActivity, onFullScreenChange }: DetailsTabProps) 
 
   if (!itineraryActivity) return null;
 
-  const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity.type)?.color || "#9E9E9E";
+  // const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity.type)?.color || "#9E9E9E";
 
   const renderDetails = () => {
     switch (itineraryActivity.type) {
-      case ActivityType.flight:
+      case TripPlanType.flight:
         return <FlightDetails data={itineraryActivity.flightDetails} />;
-      case ActivityType.stay:
+      case TripPlanType.stay:
         return <AccomodationDetails data={itineraryActivity.accomodationDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.cafeRestaurant:
-        return (
-          <CafeRestaurantDetails
-            data={itineraryActivity.cafeRestaurantDetails}
-            activityStartDate={itineraryActivity.startDate}
-            onFullScreenChange={onFullScreenChange}
-          />
-        );
-      case ActivityType.nature:
-        return (
-          <NatureDetails
-            data={itineraryActivity.natureDetails}
-            activityStartDate={itineraryActivity.startDate}
-            onFullScreenChange={onFullScreenChange}
-          />
-        );
-      case ActivityType.shopppingAndService:
-        return <ShoppingDetails data={itineraryActivity.shoppingDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.entertainmentAndRecreation:
-        return (
-          <EntertainmentDetails
-            data={itineraryActivity.entertainmentDetails}
-            activityStartDate={itineraryActivity.startDate}
-            onFullScreenChange={onFullScreenChange}
-          />
-        );
-      // case ActivityType.walk:
-      //   return <WalkDetails data={itineraryActivity.walkDetails} />;
-      case ActivityType.sightseeing:
-        return <SightseeingDetails data={itineraryActivity.sightseeingDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.preparation:
-        return <PreparationDetails data={itineraryActivity.preparationDetails} />;
-      case ActivityType.hikeOrCamp:
-        return <HikeOrCampDetails data={itineraryActivity.hikeOrCampDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.transit:
+      case TripPlanType.transit:
         return <TransportationDetails data={itineraryActivity.transportationDetails} onFullScreenChange={onFullScreenChange} />;
-      case ActivityType.rideRental:
+      case TripPlanType.rideRental:
         return <RideRentalDetails data={itineraryActivity.rideRentalDetails} onFullScreenChange={onFullScreenChange} />;
-      // case ActivityType.meetup:
-      //   return <MeetupDetails data={itineraryActivity.meetupDetails} onFullScreenChange={onFullScreenChange} />;
+      case TripPlanType.activity:
       default:
-        return <Text className="text-white p-4 text-center">No type-specific details available.</Text>;
+        return (
+          <PlanDetails
+            activity={itineraryActivity}
+            onFullScreenChange={onFullScreenChange}
+            onEditActivity={onEditActivity}
+          />
+        );
     }
   };
 
   return (
-    <View
-      className="flex-1 "
-      style={{
-        backgroundColor: activityColor,
-      }}
-    >
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom }} className="flex-1">
-        <FadeInView key={`details-${itineraryActivity.id}`} type="down" delay={40} duration={300} className="px-3">
+    <View className="flex-1">
+      <ScrollView
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={shouldScroll}
+        scrollEnabled={shouldScroll}
+        bounces={false}
+        alwaysBounceVertical={false}
+        overScrollMode="never"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
+        className="flex-1"
+      >
+        <View className="px-3">
           {renderDetails()}
-        </FadeInView>
+        </View>
       </ScrollView>
     </View>
   );

@@ -17,7 +17,7 @@ import { useTravelContext } from "../../../../../context/TravelContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
 import { activityIcons } from "../../../../../components/ActivityIcon";
-import { ActivityType } from "../../../../../types/enums";
+import { TripPlanType } from "../../../../../types/enums";
 import { ItineraryActivity } from "../../../types/TravelDto";
 
 // AnimatedIcon removed to prevent TypeError on setNativeProps
@@ -34,25 +34,17 @@ const screenHeight = Platform.OS === "android"
   ? Dimensions.get("screen").height
   : Dimensions.get("window").height;
 
-// const is60PercentSnap = (type?: ActivityType) => {
+// const is60PercentSnap = (type?: TripPlanType) => {
 //   if (type == null) return false;
-//   return [
-//     ActivityType.preparation,
-//     // ActivityType.shopppingAndService,
-//     // ActivityType.nature,
-//     // ActivityType.sightseeing,
-//     // // ActivityType.walk,
-//     // ActivityType.entertainmentAndRecreation,
-//     // ActivityType.cafeRestaurant,
-//   ].includes(type);
+//   return [];
 // };
 
 const hasActivityDetails = (activity?: ItineraryActivity | null) => {
   if (!activity) return false;
   switch (activity.type) {
-    case ActivityType.flight:
+    case TripPlanType.flight:
       return !!activity.flightDetails;
-    case ActivityType.stay:
+    case TripPlanType.stay:
       return !!activity.accomodationDetails;
     // case ActivityType.cafeRestaurant:
     //   return !!activity.cafeRestaurantDetails;

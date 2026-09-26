@@ -5,20 +5,18 @@ import { Formik, useFormikContext } from "formik";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert, Image,
-  Keyboard, LayoutAnimation, Modal,
+  Keyboard, Modal,
   ScrollView,
   StatusBar,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
-import { CalendarList } from "react-native-calendars";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
 import SimpleAccordion from "../../../../../../components/Accordion/Simple";
 import ActivityIcon, { activityIcons } from "../../../../../../components/ActivityIcon";
-import TouchButton from "../../../../../../components/atoms/TouchButton";
 import DescriptionInput from "../../../../../../components/molecules/DescriptionInput";
 import Tabs from "../../../../../../components/Tabs";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
@@ -26,10 +24,9 @@ import { useToast } from "../../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../../../hooks/useLexicographicSort";
 import { fetchLocalItineraryActivity } from "../../../../../../services/local/travelService";
-import { ActivityType, ActivityPlanType, getActivityTypeLabel } from "../../../../../../types/enums";
+import { TripPlanType, ActivityType, getTripPlanTypeLabel } from "../../../../../../types/enums";
 import { useAuth } from "../../../../../Auth/hooks/AuthContext";
 import { useDeleteActivityMutation, useUpdateActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
-import { useChecklistItems, useDeleteChecklistItemMutation, useSaveChecklistItemMutation, useToggleChecklistItemMutation } from "../../../../hooks/useChecklist";
 import { useUpdateSectionMutation } from "../../../../hooks/useSection";
 import { useTravelPlan } from "../../../../hooks/useTravel";
 import { Attachment, DestinationDto, Images, ItineraryActivity } from "../../../../types/TravelDto";
@@ -40,22 +37,13 @@ import { GoogleMapSearchModal, GooglePlaceLocation } from "../../../GoogleMapSea
 import { MapboxPlace } from "../../../MapboxDestinationSelector";
 import MapboxDestinationSelectorModal from "../../../MapboxDestinationSelector/Modal";
 import AirportLookupModal, { Airport } from "../../../Lookups/AirportLookupModal";
-import DateTime from "./DateTime";
 import AccomodationTab from "./Tabs/AccomodationTab";
-import CafeRestaurantTab from "./Tabs/CafeRestaurantTab";
-import EntertainmentTab from "./Tabs/EntertainmentTab";
 import FlightTab from "./Tabs/FlightTab";
-import HikeOrCampTab from "./Tabs/HikeOrCampTab";
-import NatureTab from "./Tabs/NatureTab";
-import PreparationTab from "./Tabs/PreparationTab";
 import RideRentalTab from "./Tabs/RideRentalTab";
-import ShoppingTab from "./Tabs/ShoppingTab";
-import SightseeingTab from "./Tabs/SightseeingTab";
 import TransportationTab from "./Tabs/TransportationTab";
-import WalkTab from "./Tabs/WalkTab";
 import PlanTab from "./Tabs/PlanTab";
+import ChecklistTab from "./Tabs/ChecklistTab";
 import PlanDateModal from "./DateTime/PlanDateModal";
-import CustomTagsInput from "./CustomTagsInput";
 import DestinationDetailsBottomSheet from "./DestinationDetailsBottomSheet";
 import { FadeInView } from "../../../../../../components/animations";
 import { safeJsonParse } from "../../../../../../utils/safeJsonParse";
@@ -69,10 +57,10 @@ interface Place {
 
 interface EditActivityProps {
   itineraryActivity: ItineraryActivity | null;
-  initialType?: ActivityType;
+  initialType?: TripPlanType;
   onClose: () => void;
   onOpenSectionModal: (sections: any[], currentId: string | undefined, onSelect: (id?: string) => void) => void;
-  onOpenPrimaryTypeModal: (currentType: ActivityType, onSelect: (type: ActivityType) => void) => void;
+  onOpenPrimaryTypeModal: (currentType: TripPlanType, onSelect: (type: TripPlanType) => void) => void;
   itinerarySectionId?: string;
   travelId?: string;
   onScroll?: (event: any) => void;
@@ -97,8 +85,8 @@ export interface ActivityFormValues {
   id?: string;
   title: string;
   description: string;
-  type?: ActivityType | number;
-  planType?: ActivityPlanType | null;
+  type?: TripPlanType | number;
+  planType?: ActivityType | null;
   sortOrder?: string;
   startDate: string | null;
   startTime: string;
@@ -236,6 +224,129 @@ const matchEntertainmentSubtype = (poi: any): string | null => {
   return null;
 };
 
+export const buildDestinationDtoFromGooglePlace = (location: GooglePlaceLocation): DestinationDto => {
+  const name = location.name || location.address || "";
+  const address = location.address || name;
+  let city = "";
+  let regionOrState = "";
+  let country = "";
+
+  const raw = location.raw;
+
+  if (raw && Array.isArray(raw.addressComponents)) {
+    raw.addressComponents.forEach((c: any) => {
+      const types = c.types || [];
+      if (types.includes("locality") || types.includes("postal_town") || (!city && types.includes("sublocality"))) {
+        city = c.longText || c.shortText || city;
+      }
+      if (types.includes("administrative_area_level_1")) {
+        regionOrState = c.longText || c.shortText || regionOrState;
+      }
+      if (types.includes("country")) {
+        country = c.longText || c.shortText || country;
+      }
+    });
+  } else if (raw && Array.isArray(raw.address_components)) {
+    raw.address_components.forEach((c: any) => {
+      const types = c.types || [];
+      if (types.includes("locality") || types.includes("postal_town") || (!city && types.includes("sublocality"))) {
+        city = c.long_name || c.short_name || city;
+      }
+      if (types.includes("administrative_area_level_1")) {
+        regionOrState = c.long_name || c.short_name || regionOrState;
+      }
+      if (types.includes("country")) {
+        country = c.long_name || c.short_name || country;
+      }
+    });
+  } else if (raw?.properties) {
+    city = raw.properties.city || raw.properties.town || raw.properties.village || "";
+    regionOrState = raw.properties.state || "";
+    country = raw.properties.country || "";
+  } else if (raw && Array.isArray(raw.context)) {
+    raw.context.forEach((c: any) => {
+      if (c.id?.startsWith("country")) country = c.text || country;
+      else if (c.id?.startsWith("region")) regionOrState = c.text || regionOrState;
+      else if (c.id?.startsWith("place")) city = c.text || city;
+    });
+  }
+
+  if (!city && location.secondaryText) {
+    const parts = location.secondaryText.split(",").map((p: string) => p.trim()).filter(Boolean);
+    if (parts.length > 1) {
+      city = parts[0];
+      if (!country) country = parts[parts.length - 1];
+    } else if (parts.length === 1) {
+      city = parts[0];
+    }
+  } else if (!city && location.address) {
+    const parts = location.address.split(",").map((p: string) => p.trim()).filter(Boolean);
+    if (parts.length >= 3) {
+      city = parts[parts.length - 3] || parts[parts.length - 2];
+      if (!country) country = parts[parts.length - 1];
+    } else if (parts.length === 2) {
+      city = parts[0];
+      if (!country) country = parts[1];
+    }
+  }
+
+  if (!country && location.address) {
+    const parts = location.address.split(",").map((p: string) => p.trim()).filter(Boolean);
+    if (parts.length > 0) {
+      country = parts[parts.length - 1];
+    }
+  }
+
+  return {
+    id: location.placeId || "",
+    name,
+    city: city || name,
+    regionOrState: regionOrState || undefined,
+    country: country || undefined,
+    address: address || undefined,
+    placeId: location.placeId || undefined,
+    coordinates: {
+      latitude: location.coordinates?.latitude || 0,
+      longitude: location.coordinates?.longitude || 0,
+    },
+  };
+};
+
+export const buildDestinationDtoFromPinnedLocation = (location: PinnedLocation): DestinationDto => {
+  const name = location.name || location.address || "";
+  const address = location.address || name;
+  let city = "";
+  let regionOrState = "";
+  let country = "";
+
+  if (location.address) {
+    const parts = location.address.split(",").map((p: string) => p.trim()).filter(Boolean);
+    if (parts.length >= 3) {
+      city = parts[parts.length - 3] || parts[parts.length - 2];
+      regionOrState = parts[parts.length - 2];
+      country = parts[parts.length - 1];
+    } else if (parts.length === 2) {
+      city = parts[0];
+      country = parts[1];
+    } else if (parts.length === 1) {
+      city = parts[0];
+    }
+  }
+
+  return {
+    id: (location as any).id || location.placeId || "",
+    name,
+    city: city || name,
+    regionOrState: regionOrState || undefined,
+    country: country || undefined,
+    address: address || undefined,
+    placeId: location.placeId || undefined,
+    coordinates: {
+      latitude: location.coordinates?.latitude || 0,
+      longitude: location.coordinates?.longitude || 0,
+    },
+  };
+};
 
 const EditActivity = ({
   itinerarySectionId,
@@ -319,12 +430,27 @@ const EditActivity = ({
     setFieldValue("destination", `${depCity} (${departureAirport.code})`);
 
     // 3. DestinationData: set coordinates and detail fields based on departure airport
+    const depCoords = departureAirport?.coordinates
+      ? {
+        latitude: departureAirport.coordinates.lat,
+        longitude: departureAirport.coordinates.lon,
+      }
+      : null;
+    const arrCoords = arrivalAirport?.coordinates
+      ? {
+        latitude: arrivalAirport.coordinates.lat,
+        longitude: arrivalAirport.coordinates.lon,
+      }
+      : null;
+
     setFieldValue("destinationData", {
       id: departureAirport.id,
-      coordinates: {
-        longitude: departureAirport.coordinates.lon,
-        latitude: departureAirport.coordinates.lat,
-      },
+      coordinates: depCoords ? {
+        latitude: depCoords.latitude,
+        longitude: depCoords.longitude,
+      } : undefined,
+      departureCoordinates: depCoords,
+      arrivalCoordinates: arrCoords,
     });
 
     const parsedDepartureDate =
@@ -575,10 +701,6 @@ const EditActivity = ({
   // Move useTheme to component top level (Rules of Hooks: must not be called inside callbacks)
   const { colors } = useTheme();
 
-  // Checklist state
-  const [newCheckTitle, setNewCheckTitle] = useState("");
-  const [newCheckDescription, setNewCheckDescription] = useState("");
-  const [showCheckDescription, setShowCheckDescription] = useState(false);
   const [createdSections, setCreatedSections] = useState<Record<string, string>>({});
   const { showToast } = useToast();
 
@@ -611,57 +733,7 @@ const EditActivity = ({
       showToast({ type: "error", message: "Failed to pick documents." });
     }
   };
-  const saveChecklistItem = useSaveChecklistItemMutation();
-  const deleteChecklistItem = useDeleteChecklistItemMutation();
-  const toggleChecklistItem = useToggleChecklistItemMutation();
   const activityId = itineraryActivity?.id;
-  const { data: checklistItems = [], refetch: refetchChecklist } = useChecklistItems(travelId);
-  const activityChecklistItems = checklistItems.filter(
-    (i) => activityId && i.activityId === activityId
-  );
-
-  const handleAddChecklistItem = async () => {
-    if (!newCheckTitle.trim() || !activityId || !travelId) return;
-    await saveChecklistItem.mutateAsync({
-      travelId,
-      activityId,
-      title: newCheckTitle.trim(),
-      description: newCheckDescription.trim() || undefined,
-      sortOrder: String(Date.now()),
-      isDone: false,
-      userId: userToken || "user",
-      isOffline: true,
-    });
-    setNewCheckTitle("");
-    setNewCheckDescription("");
-    setShowCheckDescription(false);
-    await refetchChecklist();
-  };
-
-  const handleToggleChecklistItem = async (item: any) => {
-    await toggleChecklistItem.mutateAsync({
-      id: item.id,
-      isDone: !item.isDone,
-      userId: userToken || "user",
-      travelId,
-    });
-    await refetchChecklist();
-  };
-
-  const handleDeleteChecklistItem = async (item: any) => {
-    const isConfirmed = await confirm({
-      title: "Remove Item",
-      message: `Remove "${item.title}"?`,
-      confirmText: "Remove",
-      cancelText: "Cancel",
-      type: "danger",
-    });
-
-    if (isConfirmed) {
-      await deleteChecklistItem.mutateAsync({ id: item.id, travelId });
-      await refetchChecklist();
-    }
-  };
 
   const pickImage = async (setFn: (field: string, value: any) => void, currentImages: Images[]) => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -689,23 +761,23 @@ const EditActivity = ({
 
       // Build proper Date objects from strings
       let finalStartDate: Date | undefined = undefined;
-      if (values.type === ActivityType.flight) {
+      if (values.type === TripPlanType.flight) {
         finalStartDate = values.flightDetails?.departureDate
           ? new Date(values.flightDetails.departureDate)
           : undefined;
-      } else if (values.type === ActivityType.stay) {
+      } else if (values.type === TripPlanType.stay) {
         finalStartDate = values.startDate
           ? new Date(`${values.startDate}T${values.startTime || "00:00"}:00`)
           : (values.accomodationDetails?.checkinDateTime
             ? new Date(values.accomodationDetails.checkinDateTime)
             : undefined);
-      } else if (values.type === ActivityType.transit) {
+      } else if (values.type === TripPlanType.transit) {
         finalStartDate = values.startDate
           ? new Date(`${values.startDate}T${values.startTime || "00:00"}:00`)
           : (values.transportationDetails?.departureDateTime
             ? new Date(values.transportationDetails.departureDateTime)
             : undefined);
-      } else if (values.type === ActivityType.rideRental) {
+      } else if (values.type === TripPlanType.rideRental) {
         finalStartDate = values.startDate
           ? new Date(`${values.startDate}T${values.startTime || "00:00"}:00`)
           : (values.rideRentalDetails?.rentalStartDateTime
@@ -718,21 +790,21 @@ const EditActivity = ({
       }
 
       let finalEndDate: Date | undefined = undefined;
-      if (values.type === ActivityType.flight && values.flightDetails?.arrivalDate) {
+      if (values.type === TripPlanType.flight && values.flightDetails?.arrivalDate) {
         finalEndDate = new Date(values.flightDetails.arrivalDate);
-      } else if (values.type === ActivityType.stay) {
+      } else if (values.type === TripPlanType.stay) {
         finalEndDate = values.endDate
           ? new Date(`${values.endDate}T${values.endTime || "00:00"}:00`)
           : (values.accomodationDetails?.checkoutDateTime
             ? new Date(values.accomodationDetails.checkoutDateTime)
             : undefined);
-      } else if (values.type === ActivityType.transit) {
+      } else if (values.type === TripPlanType.transit) {
         finalEndDate = values.endDate
           ? new Date(`${values.endDate}T${values.endTime || "00:00"}:00`)
           : (values.transportationDetails?.arrivalDateTime
             ? new Date(values.transportationDetails.arrivalDateTime)
             : undefined);
-      } else if (values.type === ActivityType.rideRental) {
+      } else if (values.type === TripPlanType.rideRental) {
         finalEndDate = values.endDate
           ? new Date(`${values.endDate}T${values.endTime || "00:00"}:00`)
           : (values.rideRentalDetails?.rentalEndDateTime
@@ -804,25 +876,75 @@ const EditActivity = ({
         title: values.title,
         description: values.description,
         sortOrder: finalSortOrder,
-        type: values.type as ActivityType,
-        planType: values.type === ActivityType.plan ? (values.planType ?? null) : null,
-        website: values.type === ActivityType.plan ? (values.website || null) : null,
-        bookingReference: values.type === ActivityType.plan ? (values.bookingReference || null) : null,
-        contactName: values.type === ActivityType.plan ? (values.contactName || null) : null,
-        contactNumber: values.type === ActivityType.plan ? (values.contactNumber || null) : null,
-        contactEmail: values.type === ActivityType.plan ? (values.contactEmail || null) : null,
-        priority: values.type === ActivityType.plan ? (values.priority || null) : null,
+        type: values.type as TripPlanType,
+        planType: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.planType ?? null) : null,
+        website: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.website || null) : null,
+        bookingReference: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.bookingReference || null) : null,
+        contactName: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.contactName || null) : null,
+        contactNumber: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.contactNumber || null) : null,
+        contactEmail: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.contactEmail || null) : null,
+        priority: (values.type === TripPlanType.activity || values.type === TripPlanType.activity) ? (values.priority || null) : null,
         budget: values.budget || undefined,
         startDate: finalStartDate,
         endDate: finalEndDate,
         destination: values.destination,
-        destinationData: values.destinationData,
+        destinationData: values.type === TripPlanType.flight && (departureAirportCoordsRef.current || arrivalAirportCoordsRef.current)
+          ? {
+            ...(values.destinationData || {}),
+            departureCoordinates: departureAirportCoordsRef.current
+              ? { latitude: departureAirportCoordsRef.current.lat, longitude: departureAirportCoordsRef.current.lon }
+              : (values.destinationData as any)?.departureCoordinates,
+            arrivalCoordinates: arrivalAirportCoordsRef.current
+              ? { latitude: arrivalAirportCoordsRef.current.lat, longitude: arrivalAirportCoordsRef.current.lon }
+              : (values.destinationData as any)?.arrivalCoordinates,
+          }
+          : (values.type === TripPlanType.transit || values.type === TripPlanType.rideRental)
+            ? (() => {
+              const isTransit = values.type === TripPlanType.transit;
+              const pickLoc = isTransit
+                ? (values.transportationDetails?.pickupLocation && typeof values.transportationDetails.pickupLocation === "object"
+                  ? values.transportationDetails.pickupLocation
+                  : (values.destinationData as any)?.pickupLocation || null)
+                : (values.rideRentalDetails?.pickupLocation && typeof values.rideRentalDetails.pickupLocation === "object"
+                  ? values.rideRentalDetails.pickupLocation
+                  : (values.destinationData as any)?.pickupLocation || null);
+
+              const dropLoc = isTransit
+                ? (values.transportationDetails?.dropoffLocation && typeof values.transportationDetails.dropoffLocation === "object"
+                  ? values.transportationDetails.dropoffLocation
+                  : (values.destinationData as any)?.dropoffLocation || null)
+                : (values.rideRentalDetails?.dropoffLocation && typeof values.rideRentalDetails.dropoffLocation === "object"
+                  ? values.rideRentalDetails.dropoffLocation
+                  : (values.destinationData as any)?.dropoffLocation || null);
+
+              const existingDestData = (values.destinationData || {}) as any;
+              const primaryLoc = dropLoc || pickLoc;
+
+              return {
+                ...existingDestData,
+                id: existingDestData.id || primaryLoc?.id || primaryLoc?.placeId || undefined,
+                name: existingDestData.name || primaryLoc?.name || undefined,
+                city: existingDestData.city || primaryLoc?.city || undefined,
+                country: existingDestData.country || primaryLoc?.country || undefined,
+                regionOrState: existingDestData.regionOrState || primaryLoc?.regionOrState || undefined,
+                address: existingDestData.address || primaryLoc?.address || undefined,
+                placeId: existingDestData.placeId || primaryLoc?.placeId || undefined,
+                coordinates: (existingDestData.coordinates?.latitude && existingDestData.coordinates?.latitude !== 0)
+                  ? existingDestData.coordinates
+                  : (primaryLoc?.coordinates || { latitude: 0, longitude: 0 }),
+                pickupCoordinates: pickLoc?.coordinates || existingDestData.pickupCoordinates || null,
+                dropoffCoordinates: dropLoc?.coordinates || existingDestData.dropoffCoordinates || null,
+                pickupLocation: pickLoc,
+                dropoffLocation: dropLoc,
+              };
+            })()
+            : values.destinationData,
         customTags: values.customTags || [],
         images: values.images,
         isOffline: true,
         travelId: values.travelId,
         attachments: values.attachments,
-        flightDetails: values.type === ActivityType.flight && values.flightDetails
+        flightDetails: values.type === TripPlanType.flight && values.flightDetails
           ? {
             departureAirport: values.flightDetails.departureAirport,
             arrivalAirport: values.flightDetails.arrivalAirport,
@@ -841,7 +963,7 @@ const EditActivity = ({
             price: values.flightDetails.price != null && values.flightDetails.price !== "" ? Number(values.flightDetails.price) : null,
           }
           : null,
-        accomodationDetails: values.type === ActivityType.stay && values.accomodationDetails
+        accomodationDetails: values.type === TripPlanType.stay && values.accomodationDetails
           ? {
             accomodationName: values.accomodationDetails.accomodationName || values.title || "",
             address: values.accomodationDetails.address || values.destination || null,
@@ -866,19 +988,19 @@ const EditActivity = ({
           }
           : null,
 
-        transportationDetails: values.type === ActivityType.transit && values.transportationDetails
+        transportationDetails: values.type === TripPlanType.transit && values.transportationDetails
           ? {
             mode: values.transportationDetails.mode || null,
             operatorProvider: values.transportationDetails.operatorProvider || null,
             pickupLocation: values.transportationDetails.pickupLocation
               ? (typeof values.transportationDetails.pickupLocation === "string"
                 ? values.transportationDetails.pickupLocation
-                : values.transportationDetails.pickupLocation.name || values.transportationDetails.pickupLocation.city || "")
+                : values.transportationDetails.pickupLocation.name || values.transportationDetails.pickupLocation.address || values.transportationDetails.pickupLocation.city || "")
               : null,
             dropoffLocation: values.transportationDetails.dropoffLocation
               ? (typeof values.transportationDetails.dropoffLocation === "string"
                 ? values.transportationDetails.dropoffLocation
-                : values.transportationDetails.dropoffLocation.name || values.transportationDetails.dropoffLocation.city || "")
+                : values.transportationDetails.dropoffLocation.name || values.transportationDetails.dropoffLocation.address || values.transportationDetails.dropoffLocation.city || "")
               : null,
             departureDateTime: finalStartDate
               ? finalStartDate
@@ -898,7 +1020,7 @@ const EditActivity = ({
             notes: values.transportationDetails.notes || null,
           }
           : null,
-        rideRentalDetails: values.type === ActivityType.rideRental && values.rideRentalDetails
+        rideRentalDetails: values.type === TripPlanType.rideRental && values.rideRentalDetails
           ? {
             providerName: values.title || "",
             vehicleType: values.rideRentalDetails.vehicleType || null,
@@ -906,12 +1028,12 @@ const EditActivity = ({
             pickupLocation: values.rideRentalDetails.pickupLocation
               ? (typeof values.rideRentalDetails.pickupLocation === "string"
                 ? values.rideRentalDetails.pickupLocation
-                : values.rideRentalDetails.pickupLocation.name || values.rideRentalDetails.pickupLocation.city || "")
+                : values.rideRentalDetails.pickupLocation.name || values.rideRentalDetails.pickupLocation.address || values.rideRentalDetails.pickupLocation.city || "")
               : null,
             dropoffLocation: values.rideRentalDetails.dropoffLocation
               ? (typeof values.rideRentalDetails.dropoffLocation === "string"
                 ? values.rideRentalDetails.dropoffLocation
-                : values.rideRentalDetails.dropoffLocation.name || values.rideRentalDetails.dropoffLocation.city || "")
+                : values.rideRentalDetails.dropoffLocation.name || values.rideRentalDetails.dropoffLocation.address || values.rideRentalDetails.dropoffLocation.city || "")
               : null,
             rentalStartDateTime: finalStartDate || (values.rideRentalDetails.rentalStartDateTime && new Date(values.rideRentalDetails.rentalStartDateTime).getTime() > 0
               ? new Date(values.rideRentalDetails.rentalStartDateTime)
@@ -1007,7 +1129,7 @@ const EditActivity = ({
     id: itineraryActivity?.id,
     title: itineraryActivity?.title || "",
     description: itineraryActivity?.description || "",
-    type: itineraryActivity?.type ?? initialType ?? ActivityType.plan,
+    type: itineraryActivity?.type ?? initialType ?? TripPlanType.activity,
     planType: itineraryActivity?.planType ?? null,
     sortOrder: itineraryActivity?.sortOrder || "",
     startDate: itineraryActivity?.startDate
@@ -1078,10 +1200,10 @@ const EditActivity = ({
     accomodationDetails: {
       accomodationName: (itineraryActivity?.accomodationDetails?.accomodationName || "").trim() !== ""
         ? itineraryActivity.accomodationDetails.accomodationName
-        : (itineraryActivity?.type === ActivityType.stay ? itineraryActivity?.title || "" : ""),
+        : (itineraryActivity?.type === TripPlanType.stay ? itineraryActivity?.title || "" : ""),
       address: (itineraryActivity?.accomodationDetails?.address || "").trim() !== ""
         ? itineraryActivity.accomodationDetails.address
-        : (itineraryActivity?.type === ActivityType.stay ? itineraryActivity?.destination || "" : ""),
+        : (itineraryActivity?.type === TripPlanType.stay ? itineraryActivity?.destination || "" : ""),
       destinationAddressData: itineraryActivity?.accomodationDetails?.destinationAddressData ?? null,
       subType: itineraryActivity?.accomodationDetails?.subType || null,
       checkinDateTime: itineraryActivity?.accomodationDetails?.checkinDateTime && new Date(itineraryActivity.accomodationDetails.checkinDateTime).getTime() > 0
@@ -1100,26 +1222,52 @@ const EditActivity = ({
     transportationDetails: {
       mode: itineraryActivity?.transportationDetails?.mode || null,
       operatorProvider: itineraryActivity?.transportationDetails?.operatorProvider || "",
-      pickupLocation: (itineraryActivity?.transportationDetails?.pickupLocation && typeof itineraryActivity.transportationDetails.pickupLocation === "object")
-        ? itineraryActivity.transportationDetails.pickupLocation as DestinationDto
-        : itineraryActivity?.transportationDetails?.pickupLocation
-          ? {
+      pickupLocation: (() => {
+        const destPick = (itineraryActivity?.destinationData as any)?.pickupLocation;
+        if (destPick && typeof destPick === "object" && destPick.name) {
+          return destPick as DestinationDto;
+        }
+        const transPick = itineraryActivity?.transportationDetails?.pickupLocation;
+        if (transPick && typeof transPick === "object") {
+          return transPick as DestinationDto;
+        }
+        if (typeof transPick === "string" && transPick.trim()) {
+          try {
+            const parsed = JSON.parse(transPick);
+            if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
+          } catch { }
+          return {
             id: "",
-            name: String(itineraryActivity.transportationDetails.pickupLocation),
-            city: String(itineraryActivity.transportationDetails.pickupLocation),
-            coordinates: { latitude: 0, longitude: 0 },
-          }
-          : null,
-      dropoffLocation: (itineraryActivity?.transportationDetails?.dropoffLocation && typeof itineraryActivity.transportationDetails.dropoffLocation === "object")
-        ? itineraryActivity.transportationDetails.dropoffLocation as DestinationDto
-        : itineraryActivity?.transportationDetails?.dropoffLocation
-          ? {
+            name: transPick,
+            city: transPick,
+            coordinates: (itineraryActivity?.destinationData as any)?.pickupCoordinates || { latitude: 0, longitude: 0 },
+          } as DestinationDto;
+        }
+        return (destPick as DestinationDto) || null;
+      })(),
+      dropoffLocation: (() => {
+        const destDrop = (itineraryActivity?.destinationData as any)?.dropoffLocation;
+        if (destDrop && typeof destDrop === "object" && destDrop.name) {
+          return destDrop as DestinationDto;
+        }
+        const transDrop = itineraryActivity?.transportationDetails?.dropoffLocation;
+        if (transDrop && typeof transDrop === "object") {
+          return transDrop as DestinationDto;
+        }
+        if (typeof transDrop === "string" && transDrop.trim()) {
+          try {
+            const parsed = JSON.parse(transDrop);
+            if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
+          } catch { }
+          return {
             id: "",
-            name: String(itineraryActivity.transportationDetails.dropoffLocation),
-            city: String(itineraryActivity.transportationDetails.dropoffLocation),
-            coordinates: { latitude: 0, longitude: 0 },
-          }
-          : null,
+            name: transDrop,
+            city: transDrop,
+            coordinates: (itineraryActivity?.destinationData as any)?.dropoffCoordinates || { latitude: 0, longitude: 0 },
+          } as DestinationDto;
+        }
+        return (destDrop as DestinationDto) || null;
+      })(),
       departureDateTime: itineraryActivity?.transportationDetails?.departureDateTime
         ? new Date(itineraryActivity.transportationDetails.departureDateTime)
         : null,
@@ -1136,26 +1284,52 @@ const EditActivity = ({
     rideRentalDetails: {
       vehicleType: itineraryActivity?.rideRentalDetails?.vehicleType || null,
       vehicleModel: itineraryActivity?.rideRentalDetails?.vehicleModel || "",
-      pickupLocation: (itineraryActivity?.rideRentalDetails?.pickupLocation && typeof itineraryActivity.rideRentalDetails.pickupLocation === "object")
-        ? itineraryActivity.rideRentalDetails.pickupLocation as DestinationDto
-        : itineraryActivity?.rideRentalDetails?.pickupLocation
-          ? {
+      pickupLocation: (() => {
+        const destPick = (itineraryActivity?.destinationData as any)?.pickupLocation;
+        if (destPick && typeof destPick === "object" && destPick.name) {
+          return destPick as DestinationDto;
+        }
+        const ridePick = itineraryActivity?.rideRentalDetails?.pickupLocation;
+        if (ridePick && typeof ridePick === "object") {
+          return ridePick as DestinationDto;
+        }
+        if (typeof ridePick === "string" && ridePick.trim()) {
+          try {
+            const parsed = JSON.parse(ridePick);
+            if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
+          } catch { }
+          return {
             id: "",
-            name: String(itineraryActivity.rideRentalDetails.pickupLocation),
-            city: String(itineraryActivity.rideRentalDetails.pickupLocation),
-            coordinates: { latitude: 0, longitude: 0 },
-          }
-          : null,
-      dropoffLocation: (itineraryActivity?.rideRentalDetails?.dropoffLocation && typeof itineraryActivity.rideRentalDetails.dropoffLocation === "object")
-        ? itineraryActivity.rideRentalDetails.dropoffLocation as DestinationDto
-        : itineraryActivity?.rideRentalDetails?.dropoffLocation
-          ? {
+            name: ridePick,
+            city: ridePick,
+            coordinates: (itineraryActivity?.destinationData as any)?.pickupCoordinates || { latitude: 0, longitude: 0 },
+          } as DestinationDto;
+        }
+        return (destPick as DestinationDto) || null;
+      })(),
+      dropoffLocation: (() => {
+        const destDrop = (itineraryActivity?.destinationData as any)?.dropoffLocation;
+        if (destDrop && typeof destDrop === "object" && destDrop.name) {
+          return destDrop as DestinationDto;
+        }
+        const rideDrop = itineraryActivity?.rideRentalDetails?.dropoffLocation;
+        if (rideDrop && typeof rideDrop === "object") {
+          return rideDrop as DestinationDto;
+        }
+        if (typeof rideDrop === "string" && rideDrop.trim()) {
+          try {
+            const parsed = JSON.parse(rideDrop);
+            if (parsed && typeof parsed === "object" && parsed.name) return parsed as DestinationDto;
+          } catch { }
+          return {
             id: "",
-            name: String(itineraryActivity.rideRentalDetails.dropoffLocation),
-            city: String(itineraryActivity.rideRentalDetails.dropoffLocation),
-            coordinates: { latitude: 0, longitude: 0 },
-          }
-          : null,
+            name: rideDrop,
+            city: rideDrop,
+            coordinates: (itineraryActivity?.destinationData as any)?.dropoffCoordinates || { latitude: 0, longitude: 0 },
+          } as DestinationDto;
+        }
+        return (destDrop as DestinationDto) || null;
+      })(),
       rentalStartDateTime: itineraryActivity?.rideRentalDetails?.rentalStartDateTime
         ? new Date(itineraryActivity.rideRentalDetails.rentalStartDateTime)
         : null,
@@ -1249,10 +1423,10 @@ const EditActivity = ({
         const hasLocation = Boolean(placeTitle || destinationAddress || destData);
         const shouldShowDestinationButton =
           hasLocation ||
-          values.type === ActivityType.plan ||
-          values.type === ActivityType.stay ||
-          values.type === ActivityType.rideRental ||
-          values.type === ActivityType.transit;
+          values.type === TripPlanType.activity ||
+          values.type === TripPlanType.stay ||
+          values.type === TripPlanType.rideRental ||
+          values.type === TripPlanType.transit;
 
         const handleAddNewSection = () => {
           openSectionModal(null, travelId, (newSection) => {
@@ -1273,876 +1447,6 @@ const EditActivity = ({
           });
         };
 
-        const tabData = [];
-
-        tabData.push(
-          {
-            id: "details",
-            title: "Details",
-            content: (
-              <FadeInView type="up" delay={50} duration={350}>
-                <View className="flex-1 px-5 mt-2">
-                  {/* Title */}
-                  <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mt-lg mb-8">
-                    <View className="flex-row justify-between items-center mb-1">
-                      <Text className="text-lg text-secondary/80 font-semibold">
-                        {values.type === ActivityType.plan ? "Plan Name" : values.type === ActivityType.stay ? "Stay or Accomodation Name" : values.type === ActivityType.transit ? "Transit Name" : values.type === ActivityType.rideRental ? "Rental Name" : "Activity Name"} <Text className="text-red-500 text-lg">*</Text>
-                      </Text>
-
-                      <Text className="text-xs" style={{ color: '#98A2B3' }}>
-                        {(values.title || "").length}/40
-                      </Text>
-                    </View>
-                    <View className="relative justify-center">
-                      <TextInput
-                        mode="outlined"
-                        placeholder={values.type === ActivityType.stay ? "e.g. Grand Hotel" : values.type === ActivityType.transit ? "e.g. Train to Kyoto" : values.type === ActivityType.rideRental ? "e.g. Hertz Car Rental" : "e.g. Museum Visit"}
-                        value={values.title}
-                        onChangeText={(text) => {
-                          handleChange("title")(text);
-                          if (values.type === ActivityType.stay && (!values.accomodationDetails?.accomodationName || values.accomodationDetails.accomodationName === values.title)) {
-                            setFieldValue("accomodationDetails.accomodationName", text);
-                          }
-                        }}
-                        onBlur={handleBlur("title")}
-                        error={(touched.title || submitCount > 0) && Boolean(errors.title)}
-                        outlineColor="#E0E0E0"
-                        activeOutlineColor="#263F69"
-                        theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
-                        outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                        style={{ marginTop: 2, height: 64 }}
-                        contentStyle={{
-                          backgroundColor: "transparent",
-                          paddingRight: (values.type === ActivityType.plan || values.type === ActivityType.stay || values.type === ActivityType.transit || values.type === ActivityType.rideRental)
-                            ? (values.title ? 95 : 55)
-                            : 16,
-                        }}
-                        maxLength={40}
-                      />
-                      {(values.type === ActivityType.plan || values.type === ActivityType.stay || values.type === ActivityType.transit || values.type === ActivityType.rideRental) ? (
-                        <View className="absolute right-3 flex-row items-center gap-1">
-                          {Boolean(values.title) && (
-                            <TouchableOpacity
-                              onPress={() => {
-                                setFieldValue("title", "");
-                                if (values.type === ActivityType.stay && values.accomodationDetails?.accomodationName === values.title) {
-                                  setFieldValue("accomodationDetails.accomodationName", "");
-                                }
-                              }}
-                              className="p-2"
-                              accessibilityRole="button"
-                              accessibilityLabel="Clear activity title"
-                              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                            >
-                              <Icon name="close" size={20} color="#98A2B3" />
-                            </TouchableOpacity>
-                          )}
-                          <TouchableOpacity
-                            onPress={() => handleOpenGoogleSearch("title")}
-                            className="w-10 h-10 items-center justify-center"
-                            accessibilityRole="button"
-                            accessibilityLabel="Lookup location on Google map"
-                            activeOpacity={0.7}
-                          >
-                            <Icon name="pin-drop" size={22} color={activityColor} />
-                          </TouchableOpacity>
-                        </View>
-                      ) : null}
-                    </View>
-                    {(touched.title || submitCount > 0) && errors.title && (
-                      <View className="flex flex-row items-center mt-1">
-                        <Icon name="info-outline" size={14} color="#fb2c36" />
-                        <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
-                      </View>
-                    )}
-
-                    {/* <Text className="text-sm text-tertiary p-sm">
-                      You may give your Plan a custom name to help you stay organized.
-                    </Text> */}
-
-                    {/* Tertiary Button for Destination Details */}
-                    {shouldShowDestinationButton && (placeTitle || destinationAddress) && (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        accessibilityRole="button"
-                        accessibilityLabel={
-                          hasLocation
-                            ? `View destination details: ${placeTitle || destinationAddress}`
-                            : "View destination details"
-                        }
-                        onPress={() => setShowDestinationSheet(true)}
-                        className="flex-row items-center self-start mt-2.5 py-1 px-1 gap-1.5 opacity-60"
-                      >
-                        <Ionicons name="location-outline" size={17} color={activityColor} />
-                        <Text className="text-base font-semibold text-secondary/80">
-                          Place Details |
-                        </Text>
-                        <Text
-                          className={`text-base  max-w-[200px] ${hasLocation ? "text-secondary/80" : "text-secondary/50"
-                            }`}
-                          ellipsizeMode="tail"
-                          numberOfLines={1}
-                        >
-                          {placeTitle || destinationAddress || ""}
-                        </Text>
-                        <Ionicons name="chevron-forward" size={15} color="#98A2B3" />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-
-                  {/* Plan Details */}
-                  {values.type === ActivityType.plan && (
-                    <PlanTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                      onPressLocationMap={() => handleOpenGoogleSearch("location")}
-                      onPressDate={() => setShowCalendarFor("startDate")}
-                      onPressTime={() => setShowTimePickerFor("startTime")}
-                      onClearDate={() => {
-                        setFieldValue("startDate", null);
-                        setFieldValue("endDate", null);
-                      }}
-                      onClearTime={() => setFieldValue("startTime", "")}
-                      onPressEndDate={() => setShowCalendarFor("endDate")}
-                      onPressEndTime={() => setShowTimePickerFor("endTime")}
-                      onClearEndDate={() => {
-                        setFieldValue("endDate", null);
-                        setFieldValue("endTime", "");
-                      }}
-                      onClearEndTime={() => setFieldValue("endTime", "")}
-                    />
-                  )}
-
-
-                  {/* Stay Details Accordion */}
-                  {values.type === ActivityType.stay && (
-                    <AccomodationTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      colors={colors}
-                      setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
-                      formatAccomodationDateTime={formatFlightDateTime}
-                      onOpenPoiModal={(category) => {
-                        setPoiTargetType("accommodation");
-                        setPoiModalInitialCategory(category);
-                        setShowPoiModal(true);
-                      }}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                      onPressLocationMap={() => setShowGoogleSearchModal(true)}
-                      onPressDate={() => setShowCalendarFor("startDate")}
-                      onPressTime={() => setShowTimePickerFor("startTime")}
-                      onClearDate={() => {
-                        setFieldValue("startDate", null);
-                        setFieldValue("endDate", null);
-                        setFieldValue("accomodationDetails.checkinDateTime", null);
-                        setFieldValue("accomodationDetails.checkoutDateTime", null);
-                      }}
-                      onClearTime={() => {
-                        setFieldValue("startTime", "");
-                        if (values.startDate) {
-                          setFieldValue("accomodationDetails.checkinDateTime", new Date(`${values.startDate}T00:00:00`));
-                        }
-                      }}
-                      onPressEndDate={() => setShowCalendarFor("endDate")}
-                      onPressEndTime={() => setShowTimePickerFor("endTime")}
-                      onClearEndDate={() => {
-                        setFieldValue("endDate", null);
-                        setFieldValue("endTime", "");
-                        setFieldValue("accomodationDetails.checkoutDateTime", null);
-                      }}
-                      onClearEndTime={() => {
-                        setFieldValue("endTime", "");
-                        if (values.endDate) {
-                          setFieldValue("accomodationDetails.checkoutDateTime", new Date(`${values.endDate}T00:00:00`));
-                        }
-                      }}
-                    />
-                  )}
-
-                  {/* Flight Details Accordion */}
-                  {values.type === ActivityType.flight && (
-                    <FlightTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      openFlightModal={openFlightModal}
-                      setShowFlightDatePickerFor={setShowFlightDatePickerFor}
-                      formatFlightDateTime={formatFlightDateTime}
-                      handleFlightSelect={handleFlightSelect}
-                      onOpenAirportLookup={(mode) => setShowAirportLookupFor(mode)}
-                      showArrivalPrefillNotice={showArrivalPrefillNotice}
-                      tripStartDate={travelPlan?.travel?.startOrDepartureDate}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                    />
-                  )}
-
-                  {/* Cafe / Restaurant Details */}
-                  {/* {values.type === ActivityType.cafeRestaurant && (
-                  <CafeRestaurantTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    onOpenPoiModal={(category) => {
-                      setPoiTargetType("cafeRestaurant");
-                      setPoiModalInitialCategory(category);
-                      setShowPoiModal(true);
-                    }}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
-                  />
-                )} */}
-
-                  {/* Nature Details */}
-                  {/* {values.type === ActivityType.nature && (
-                  <NatureTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    onOpenPoiModal={(category) => {
-                      setPoiTargetType("nature");
-                      setPoiModalInitialCategory(category);
-                      setShowPoiModal(true);
-                    }}
-                    onOpenMapPinModal={handleOpenMapPinModal}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
-                  />
-                )} */}
-
-                  {/* Shopping & Service Details */}
-                  {/* {values.type === ActivityType.shopppingAndService && (
-                  <ShoppingTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    onOpenPoiModal={(category) => {
-                      setPoiTargetType("shoppingDetails");
-                      setPoiModalInitialCategory(category);
-                      setShowPoiModal(true);
-                    }}
-                    onOpenMapPinModal={handleOpenMapPinModal}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
-                  />
-                )} */}
-
-                  {/* Entertainment & Recreation Details */}
-                  {/* {values.type === ActivityType.entertainmentAndRecreation && (
-                  <EntertainmentTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    onOpenPoiModal={(category) => {
-                      setPoiTargetType("entertainmentDetails");
-                      setPoiModalInitialCategory(category);
-                      setShowPoiModal(true);
-                    }}
-                    onOpenMapPinModal={handleOpenMapPinModal}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
-                  />
-                )} */}
-
-                  {/* Transit Details */}
-                  {values.type === ActivityType.transit && (
-                    <TransportationTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      colors={colors}
-                      setShowTransportationDatePickerFor={setShowTransportationDatePickerFor}
-                      formatTransportationDateTime={formatFlightDateTime}
-                      onOpenMapPinModal={handleOpenMapPinModal}
-                      onOpenGoogleSearch={handleOpenGoogleSearch}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                      onPressDate={() => setShowCalendarFor("startDate")}
-                      onPressTime={() => setShowTimePickerFor("startTime")}
-                      onClearDate={() => {
-                        setFieldValue("startDate", null);
-                        setFieldValue("endDate", null);
-                        setFieldValue("transportationDetails.departureDateTime", null);
-                        setFieldValue("transportationDetails.arrivalDateTime", null);
-                      }}
-                      onClearTime={() => {
-                        setFieldValue("startTime", "");
-                        if (values.startDate) {
-                          setFieldValue("transportationDetails.departureDateTime", new Date(`${values.startDate}T00:00:00`));
-                        }
-                      }}
-                      onPressEndDate={() => setShowCalendarFor("endDate")}
-                      onPressEndTime={() => setShowTimePickerFor("endTime")}
-                      onClearEndDate={() => {
-                        setFieldValue("endDate", null);
-                        setFieldValue("endTime", "");
-                        setFieldValue("transportationDetails.arrivalDateTime", null);
-                      }}
-                      onClearEndTime={() => {
-                        setFieldValue("endTime", "");
-                        if (values.endDate) {
-                          setFieldValue("transportationDetails.arrivalDateTime", new Date(`${values.endDate}T00:00:00`));
-                        }
-                      }}
-                    />
-                  )}
-
-                  {/* Walk Details */}
-                  {/* {values.type === ActivityType.walk && (
-                  <WalkTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
-                  />
-                )} */}
-
-                  {/* Sightseeing Details */}
-                  {/* {values.type === ActivityType.sightseeing && (
-                  <SightseeingTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    onOpenPoiModal={(category, targetField) => {
-                      setPoiTargetType(targetField === "address" ? "sightseeing_address" : "sightseeing");
-                      setPoiModalInitialCategory(category);
-                      setShowPoiModal(true);
-                    }}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
-                  />
-                )} */}
-
-                  {/* Preparation Details */}
-                  {/* {values.type === ActivityType.preparation && (
-                  <PreparationTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    formatDateTime={formatFlightDateTime}
-                    onOpenDatePicker={() => setShowPreparationDeadlinePicker(true)}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                  />
-                )} */}
-
-                  {/* Rest Details */}
-                  {/* {values.type === ActivityType.rest && (
-                  <RestTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
-                  />
-                )} */}
-
-                  {/* Hike or Camp Details */}
-                  {/* {values.type === ActivityType.hikeOrCamp && (
-                  <HikeOrCampTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    onOpenPoiModal={(category) => {
-                      setPoiTargetType("hikeOrCamp");
-                      setPoiModalInitialCategory(category);
-                      setShowPoiModal(true);
-                    }}
-                    onOpenMapPinModal={handleOpenMapPinModal}
-                    formatDateTime={formatFlightDateTime}
-                    onOpenCheckinPicker={() => setShowHikeOrCampDatePickerFor("checkinDateTime")}
-                    onOpenCheckoutPicker={() => setShowHikeOrCampDatePickerFor("checkoutDateTime")}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                  />
-                )} */}
-
-                  {/* Motorcycle Ride Details */}
-                  {/* {values.type === ActivityType.motorcycleRide && (
-                  <MotorcycleRideTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
-                  />
-                )} */}
-
-                  {/* Meetup Details */}
-                  {/* {values.type === ActivityType.meetup && (
-                  <MeetupTab
-                    values={values}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                    setFieldValue={setFieldValue}
-                    onOpenPoiModal={(category) => {
-                      setPoiTargetType("meetup");
-                      setPoiModalInitialCategory(category);
-                      setShowPoiModal(true);
-                    }}
-                    noPadding={true}
-                    fieldRefs={fieldRefs}
-                    onPressDate={() => setShowCalendarFor("startDate")}
-                    onPressTime={() => setShowTimePickerFor("startTime")}
-                    onClearDate={() => setValues({ ...values, startDate: null, startTime: "" })}
-                    onClearTime={() => setValues({ ...values, startTime: "" })}
-                  />
-                )} */}
-
-                  {/* Ride Rental Details */}
-                  {values.type === ActivityType.rideRental && (
-                    <RideRentalTab
-                      values={values}
-                      handleChange={handleChange}
-                      handleBlur={handleBlur}
-                      setFieldValue={setFieldValue}
-                      colors={colors}
-                      onOpenMapPinModal={handleOpenMapPinModal}
-                      onOpenGoogleSearch={handleOpenGoogleSearch}
-                      noPadding={true}
-                      fieldRefs={fieldRefs}
-                      onPressDate={() => setShowCalendarFor("startDate")}
-                      onPressTime={() => setShowTimePickerFor("startTime")}
-                      onClearDate={() => {
-                        setFieldValue("startDate", null);
-                        setFieldValue("endDate", null);
-                        setFieldValue("rideRentalDetails.rentalStartDateTime", null);
-                        setFieldValue("rideRentalDetails.rentalEndDateTime", null);
-                      }}
-                      onClearTime={() => {
-                        setFieldValue("startTime", "");
-                        if (values.startDate) {
-                          setFieldValue("rideRentalDetails.rentalStartDateTime", new Date(`${values.startDate}T00:00:00`));
-                        }
-                      }}
-                      onPressEndDate={() => setShowCalendarFor("endDate")}
-                      onPressEndTime={() => setShowTimePickerFor("endTime")}
-                      onClearEndDate={() => {
-                        setFieldValue("endDate", null);
-                        setFieldValue("endTime", "");
-                        setFieldValue("rideRentalDetails.rentalEndDateTime", null);
-                      }}
-                      onClearEndTime={() => {
-                        setFieldValue("endTime", "");
-                        if (values.endDate) {
-                          setFieldValue("rideRentalDetails.rentalEndDateTime", new Date(`${values.endDate}T00:00:00`));
-                        }
-                      }}
-                    />
-                  )}
-
-                  {/* Activity Details Accordion */}
-                  <SimpleAccordion key="activity-details-accordion" title="Additional Details" defaultExpanded={false}>
-
-
-                    {/* Date & Time fields removed from main form and injected into specific tabs */}
-
-                    {/* Location */}
-                    {/* <View ref={(el) => { fieldRefs.current["destination"] = el; }} className="mb-5">
-                    <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Location</Text>
-                    {values.destinationData ? (() => {
-                      const { longitude, latitude } = values.destinationData.coordinates;
-                      const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+263F69(${longitude},${latitude})/${longitude},${latitude},12,0/600x300?access_token=${MAPBOX_ACCESS_TOKEN}`;
-                      return (
-                        <TouchableOpacity 
-                          activeOpacity={0.8} 
-                          onPress={() => setShowDestinationModal(true)}
-                          className="mt-1"
-                          accessibilityRole="button"
-                        >
-                          <View className="rounded-2xl overflow-hidden border border-gray-100">
-                            <Image source={{ uri: mapUrl }} style={{ width: '100%', height: 120, borderRadius: 16 }} resizeMode="cover" />
-                            <View className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded-full flex-row items-center">
-                              <Icon name="location-on" size={12} color="#FFF" />
-                              <Text className="text-white text-[10px] ml-1">{values.destination}</Text>
-                            </View>
-                          </View>
-                        </TouchableOpacity>
-                      );
-                    })() : (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => setShowDestinationModal(true)}
-                        accessibilityRole="button"
-                      >
-                        <View pointerEvents="none">
-                          <TextInput
-                            mode="outlined"
-                            placeholder="Search city or country..."
-                            value=""
-                            editable={false}
-                            outlineColor="#E0E0E0"
-                            activeOutlineColor="#263F69"
-                            left={<TextInput.Icon icon="map-marker" color="#999" />}
-                            theme={{ colors: { onSurfaceVariant: '#888' } }}
-                            outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
-                            style={{ marginTop: 6, height: 64 }}
-                            contentStyle={{ backgroundColor: "transparent" }}
-                          />
-                        </View>
-                      </TouchableOpacity>
-                    )}
-                  </View> */}
-
-
-                    {/* Activity Type */}
-                    <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-6">
-                      <Text className="text-lg text-secondary/80 font-semibold mb-3">
-                        Activity Type
-                      </Text>
-                      {(() => {
-                        const isTypeDisabled = !!values.id && values.type !== ActivityType.plan;
-                        return (
-                          <TouchableOpacity
-                            onPress={() => {
-                              onOpenPrimaryTypeModal(values.type as ActivityType, (type) => {
-                                setFieldValue("type", type);
-                                setActiveTabId("details");
-                                scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                              });
-                            }}
-                            disabled={isTypeDisabled}
-                            accessibilityRole="button"
-                            accessibilityState={{ disabled: isTypeDisabled }}
-                            className={`flex-row items-center justify-between border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 gap-3 ${isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
-                              }`}
-                          >
-                            {values.type != null ? (
-                              <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
-                            ) : (
-                              <Icon name="style" size={24} color={"#B3B3B3"} />
-                            )}
-                            <Text className="text-base flex-1 text-gray-800 font-medium capitalize">
-                              {values.type != null ? getActivityTypeLabel(values.type) : "Select Type..."}
-                            </Text>
-                            <Icon name="keyboard-arrow-down" size={24} color="#999" />
-
-                          </TouchableOpacity>
-                        );
-                      })()}
-                    </View>
-
-
-                    {/* Itinerary Section */}
-                    <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-6">
-                      <Text className="text-xl text-secondary/80 font-semibold ">
-                        Section
-                      </Text>
-
-                      <Text className={`text-base text-tertiary mb-2`}>
-                        Select the Section to add this activity.
-                      </Text>
-
-                      <View className="flex-row items-center gap-2 mt-1">
-                        <TouchableOpacity
-                          onPress={() => {
-                            onOpenSectionModal(sections, values.sectionId, (id) => {
-                              setFieldValue("sectionId", id);
-                              const section = sections.find(s => s.id === id);
-                              if (section && section.startDate) {
-                                setFieldValue("startDate", toLocalDateStr(section.startDate));
-                                if (!values.startTime) {
-                                  setFieldValue("startTime", `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`);
-                                }
-                              }
-                            });
-                          }}
-                          className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 flex-1 flex-row items-center gap-3"
-                          accessibilityRole="button"
-                          accessibilityLabel="Select itinerary section"
-                        >
-                          <Icon name="folder" size={24} color="#263F69" />
-                          <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
-                            {selectedSectionName || "Select Section"}
-                          </Text>
-                          <Icon name="keyboard-arrow-down" size={24} color="#999" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          onPress={handleAddNewSection}
-                          className="w-6xl h-6xl rounded-xl items-center justify-center animate-fade-in bg-primary/10"
-                          accessibilityRole="button"
-                          accessibilityLabel="Add new section"
-                        >
-                          <Icon name="add" size={28} color="#0EA5E9" />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                    {/* Description */}
-                    <View ref={(el) => { fieldRefs.current["description"] = el; }} className="">
-                      <View className="flex-row gap-2 justify-start items-center px-xs">
-                        <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
-                          Description
-                        </Text>
-                      </View>
-                      <DescriptionInput
-                        value={values.description}
-                        onChange={(text) => setFieldValue("description", text)}
-                        label="Description"
-                        placeholder="Activity details"
-                        confirmLabel={`${values.description ? `Update` : 'Add'}`}
-                        maxLength={500}
-                      />
-                    </View>
-
-                    {/* Custom Tags */}
-                    {/* <View ref={(el) => { fieldRefs.current["customTags"] = el; }} className="mt-5">
-                      <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Custom Tags</Text>
-                      <CustomTagsInput
-                        tags={values.customTags}
-                        onChangeTags={(tags) => setFieldValue("customTags", tags)}
-                      />
-                    </View> */}
-                  </SimpleAccordion>
-
-                </View>
-              </FadeInView>
-            ),
-          },
-          {
-            id: "images",
-            title: "Images",
-            disabled: !itineraryActivity?.id,
-            content: (
-              <View className="flex-1 pb-6 pt-2 px-5">
-                <Text className="text-xs font-semibold tracking-wider uppercase mb-2 ">Upload Images</Text>
-                <TouchableOpacity
-                  onPress={() => pickImage(setFieldValue, values.images)}
-                  className="border-2 border-dashed border-[#ddd] h-[140px] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-center gap-3 mb-4"
-                  accessibilityRole="button"
-                  accessibilityLabel="Upload images"
-                >
-                  <Icon name="add-photo-alternate" size={28} color="#263F69" />
-                  <Text className="text-base text-[#263F69] font-medium">Add Photos</Text>
-                </TouchableOpacity>
-
-                {values.images.length > 0 && (
-                  <View className="flex-row flex-wrap gap-3">
-                    {values.images.map((item, index) => (
-                      <View key={`${item.url}-${index}`} className="relative">
-                        <Image
-                          source={{ uri: item.url }}
-                          style={{ width: 100, height: 100, borderRadius: 12 }}
-                          resizeMode="cover"
-                        />
-                        <TouchableOpacity
-                          className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5"
-                          accessibilityRole="button"
-                          accessibilityLabel="Remove image"
-                          onPress={() => {
-                            const updated = values.images.filter((_, i) => i !== index);
-                            setFieldValue("images", updated);
-                          }}
-                        >
-                          <Icon name="close" size={16} color="#FFF" />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-            ),
-          },
-          {
-            id: "attachments",
-            title: "Attachments",
-            disabled: !itineraryActivity?.id,
-            content: (
-              <View className="flex-1 pb-6 pt-2 px-5">
-                <Text className="text-xs font-semibold tracking-wider uppercase mb-2">File Attachments</Text>
-                <TouchableOpacity
-                  onPress={() => pickDocument(setFieldValue, values.attachments || [])}
-                  className="border-2 border-dashed border-[#ddd] h-[140px] rounded-[16px] bg-white px-4 py-4 flex-row items-center justify-center gap-3 mb-2"
-                  accessibilityRole="button"
-                  accessibilityLabel="Upload files"
-                >
-                  <Icon name="attach-file" size={28} color="#263F69" />
-                  <Text className="text-base text-[#263F69] font-medium">Attach Files</Text>
-                </TouchableOpacity>
-                <Text className="text-xs text-gray-500 mb-4">
-                  Supported formats: PDF, Word, Excel, PowerPoint
-                </Text>
-
-                {(values.attachments || []).length > 0 && (
-                  <View className="gap-2">
-                    {(values.attachments || []).map((file, index) => {
-                      const displaySize = file.size
-                        ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
-                        : "Unknown size";
-                      return (
-                        <View key={`${file.url}-${index}`} className="flex-row items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
-                          <Icon name="insert-drive-file" size={24} color="#263F69" className="mr-3" />
-                          <View className="flex-1">
-                            <Text className="text-sm font-semibold text-gray-800" numberOfLines={1}>
-                              {file.name}
-                            </Text>
-                            <Text className="text-xs text-gray-400 mt-0.5">
-                              {displaySize}
-                            </Text>
-                          </View>
-                          <TouchableOpacity
-                            className="p-1"
-                            accessibilityRole="button"
-                            accessibilityLabel="Remove attachment"
-                            onPress={() => {
-                              const updated = (values.attachments || []).filter((_, i) => i !== index);
-                              setFieldValue("attachments", updated);
-                            }}
-                          >
-                            <Icon name="close" size={20} color="#888" />
-                          </TouchableOpacity>
-                        </View>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
-            ),
-          },
-          {
-            id: "checklist",
-            title: "Checklist",
-            disabled: !itineraryActivity?.id,
-            content: (
-              <View className="flex-1 pb-6 pt-2 px-5">
-
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  accessibilityLabel="Add To-Do item"
-                  onPress={() => {
-                    if (itineraryActivity) {
-                      openChecklistModal(null, [itineraryActivity], travelId);
-                    }
-                  }}
-                  className="flex-row items-center gap-1 mb-2 p-2 "
-                >
-                  <Icon name="add" size={24} color="#263F69" />
-                  <Text className="text-lg font-medium text-accent underline">Add To-Do item</Text>
-                </TouchableOpacity>
-                {/* 
-                             <Button
-                              mode="text"
-                              icon="plus"
-                              onPress={handleAddAttachmentPress}
-                              disabled={updateMutation.isPending}
-                              textColor="#263F69"
-                              style={[styles.addAttachmentButtonEmpty, { }]}
-                              labelStyle={styles.addAttachmentButtonLabel}
-                              accessibilityRole="button"
-                              accessibilityLabel="Add attachment"
-                            >
-            {updateMutation.isPending ? "Adding..." : "Add Attachment"}
-          </Button> */}
-                {/* Existing items */}
-                {activityChecklistItems.length > 0 && (
-                  <View className="bg-white rounded-[16px] border border-gray-100 overflow-hidden">
-                    {activityChecklistItems.map((item) => (
-                      <View
-                        key={item.id}
-                        className="flex-row items-center gap-3 px-4 py-4 border-b border-gray-50"
-                      >
-                        <TouchableOpacity
-                          accessibilityRole="checkbox"
-                          onPress={() => handleToggleChecklistItem(item)}
-                          className={`w-6 h-6 rounded-full border-2 items-center justify-center shrink-0 ${item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
-                            }`}
-                        >
-                          {item.isDone && <Icon name="check" size={14} color="#FFF" />}
-                        </TouchableOpacity>
-                        <View className="flex-1">
-                          <Text className={`text-lg ${item.isDone ? "line-through text-gray-400" : "text-gray-800 font-medium"}`}>
-                            {item.title}
-                          </Text>
-                          {item.description ? (
-                            <Text className="text-base text-gray-400 mt-0.5">{item.description}</Text>
-                          ) : null}
-                        </View>
-                        <TouchableOpacity
-                          accessibilityRole="button"
-                          accessibilityLabel="Edit checklist item"
-                          onPress={() => {
-                            if (itineraryActivity) {
-                              openChecklistModal(
-                                item,
-                                [itineraryActivity],
-                                travelId
-                              );
-                            }
-                          }}
-                          className="p-1 mr-1"
-                        >
-                          <Icon name="edit" size={20} color="#263F69" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          accessibilityRole="button"
-                          accessibilityLabel="Remove checklist item"
-                          onPress={() => handleDeleteChecklistItem(item)}
-                          className="p-1"
-                        >
-                          <Icon name="delete-outline" size={20} color="#c93030" />
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-            ),
-          },
-        );
-
         return (
           <View className="flex-1 bg-gray-100 overflow-hidden">
             <StatusBar barStyle={"dark-content"} />
@@ -2154,16 +1458,416 @@ const EditActivity = ({
             />
             <FormikDirtyListener onDirtyChange={onDirtyChange} />
 
-            <View className="flex-1 py-3 ">
-              <Tabs
-                tabs={tabData}
-                activeTabId={activeTabId}
-                onTabChange={setActiveTabId}
-                type="default"
-                onScroll={onScroll}
-                scrollViewRef={scrollViewRef}
-              />
-            </View>
+            <ScrollView
+              ref={scrollViewRef}
+              className="flex-1"
+              contentContainerStyle={{ paddingBottom: 100 }}
+              onScroll={onScroll}
+              scrollEventThrottle={16}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View className="px-5 py-3">
+                {/* Title */}
+                <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mt-md mb-8">
+                  <View className="flex-row justify-between items-center mb-1">
+                    <Text className="text-lg text-secondary/80 font-semibold">
+                      {values.type === TripPlanType.activity ? "Plan Name" : values.type === TripPlanType.stay ? "Stay or Accomodation Name" : values.type === TripPlanType.transit ? "Transit Name" : values.type === TripPlanType.rideRental ? "Rental Name" : "Activity Name"} <Text className="text-red-500 text-lg">*</Text>
+                    </Text>
+
+                    <Text className="text-xs" style={{ color: '#98A2B3' }}>
+                      {(values.title || "").length}/40
+                    </Text>
+                  </View>
+                  <View className="relative justify-center">
+                    <TextInput
+                      mode="outlined"
+                      placeholder={values.type === TripPlanType.stay ? "e.g. Grand Hotel" : values.type === TripPlanType.transit ? "e.g. Train to Kyoto" : values.type === TripPlanType.rideRental ? "e.g. Hertz Car Rental" : "e.g. Museum Visit"}
+                      value={values.title}
+                      onChangeText={(text) => {
+                        handleChange("title")(text);
+                        if (values.type === TripPlanType.stay && (!values.accomodationDetails?.accomodationName || values.accomodationDetails.accomodationName === values.title)) {
+                          setFieldValue("accomodationDetails.accomodationName", text);
+                        }
+                      }}
+                      onBlur={handleBlur("title")}
+                      error={(touched.title || submitCount > 0) && Boolean(errors.title)}
+                      outlineColor="#E0E0E0"
+                      activeOutlineColor="#263F69"
+                      theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
+                      outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                      style={{ marginTop: 2, height: 64 }}
+                      contentStyle={{
+                        backgroundColor: "transparent",
+                        paddingRight: (values.type === TripPlanType.activity || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental)
+                          ? (values.title ? 95 : 55)
+                          : 16,
+                      }}
+                      maxLength={40}
+                    />
+                    {(values.type === TripPlanType.activity || values.type === TripPlanType.stay || values.type === TripPlanType.transit || values.type === TripPlanType.rideRental) ? (
+                      <View className="absolute right-3 flex-row items-center gap-1">
+                        {Boolean(values.title) && (
+                          <TouchableOpacity
+                            onPress={() => {
+                              setFieldValue("title", "");
+                              if (values.type === TripPlanType.stay && values.accomodationDetails?.accomodationName === values.title) {
+                                setFieldValue("accomodationDetails.accomodationName", "");
+                              }
+                            }}
+                            className="p-2"
+                            accessibilityRole="button"
+                            accessibilityLabel="Clear activity title"
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                          >
+                            <Icon name="close" size={20} color="#98A2B3" />
+                          </TouchableOpacity>
+                        )}
+                        <TouchableOpacity
+                          onPress={() => handleOpenGoogleSearch("title")}
+                          className="w-10 h-10 items-center justify-center"
+                          accessibilityRole="button"
+                          accessibilityLabel="Lookup location on Google map"
+                          activeOpacity={0.7}
+                        >
+                          <Icon name="pin-drop" size={22} color={activityColor} />
+                        </TouchableOpacity>
+                      </View>
+                    ) : null}
+                  </View>
+                  {(touched.title || submitCount > 0) && errors.title && (
+                    <View className="flex flex-row items-center mt-1">
+                      <Icon name="info-outline" size={14} color="#fb2c36" />
+                      <Text className="text-red-500 text-xs ml-1" >{errors.title}</Text>
+                    </View>
+                  )}
+
+                  {/* <Text className="text-sm text-tertiary p-sm">
+                      You may give your Plan a custom name to help you stay organized.
+                    </Text> */}
+
+                  {/* Tertiary Button for Destination Details */}
+                  {shouldShowDestinationButton && (placeTitle || destinationAddress) && (
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        hasLocation
+                          ? `View destination details: ${placeTitle || destinationAddress}`
+                          : "View destination details"
+                      }
+                      onPress={() => setShowDestinationSheet(true)}
+                      className="flex-row items-center self-start mt-2.5 py-1 px-1 gap-1.5 opacity-60"
+                    >
+                      <Ionicons name="location-outline" size={17} color={activityColor} />
+                      <Text className="text-base font-semibold text-secondary/80">
+                        Place Details
+                      </Text>
+                      <Text
+                        className={`text-base  max-w-[200px] ${hasLocation ? "text-secondary/80" : "text-secondary/50"
+                          }`}
+                        ellipsizeMode="tail"
+                        numberOfLines={1}
+                      >
+                        {placeTitle || destinationAddress || ""}
+                      </Text>
+                      <Ionicons name="chevron-forward" size={15} color="#98A2B3" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Plan Details */}
+                {values.type === TripPlanType.activity && (
+                  <PlanTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                    onPressLocationMap={() => handleOpenGoogleSearch("location")}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => {
+                      setFieldValue("startDate", null);
+                      setFieldValue("endDate", null);
+                    }}
+                    onClearTime={() => setFieldValue("startTime", "")}
+                    onPressEndDate={() => setShowCalendarFor("endDate")}
+                    onPressEndTime={() => setShowTimePickerFor("endTime")}
+                    onClearEndDate={() => {
+                      setFieldValue("endDate", null);
+                      setFieldValue("endTime", "");
+                    }}
+                    onClearEndTime={() => setFieldValue("endTime", "")}
+                  />
+                )}
+
+                {/* Stay Details Accordion */}
+                {values.type === TripPlanType.stay && (
+                  <AccomodationTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    colors={colors}
+                    setShowAccomodationDatePickerFor={setShowAccomodationDatePickerFor}
+                    formatAccomodationDateTime={formatFlightDateTime}
+                    onOpenPoiModal={(category) => {
+                      setPoiTargetType("accommodation");
+                      setPoiModalInitialCategory(category);
+                      setShowPoiModal(true);
+                    }}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                    onPressLocationMap={() => setShowGoogleSearchModal(true)}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => {
+                      setFieldValue("startDate", null);
+                      setFieldValue("endDate", null);
+                      setFieldValue("accomodationDetails.checkinDateTime", null);
+                      setFieldValue("accomodationDetails.checkoutDateTime", null);
+                    }}
+                    onClearTime={() => {
+                      setFieldValue("startTime", "");
+                      if (values.startDate) {
+                        setFieldValue("accomodationDetails.checkinDateTime", new Date(`${values.startDate}T00:00:00`));
+                      }
+                    }}
+                    onPressEndDate={() => setShowCalendarFor("endDate")}
+                    onPressEndTime={() => setShowTimePickerFor("endTime")}
+                    onClearEndDate={() => {
+                      setFieldValue("endDate", null);
+                      setFieldValue("endTime", "");
+                      setFieldValue("accomodationDetails.checkoutDateTime", null);
+                    }}
+                    onClearEndTime={() => {
+                      setFieldValue("endTime", "");
+                      if (values.endDate) {
+                        setFieldValue("accomodationDetails.checkoutDateTime", new Date(`${values.endDate}T00:00:00`));
+                      }
+                    }}
+                  />
+                )}
+
+                {/* Flight Details Accordion */}
+                {values.type === TripPlanType.flight && (
+                  <FlightTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    openFlightModal={openFlightModal}
+                    setShowFlightDatePickerFor={setShowFlightDatePickerFor}
+                    formatFlightDateTime={formatFlightDateTime}
+                    handleFlightSelect={handleFlightSelect}
+                    onOpenAirportLookup={(mode) => setShowAirportLookupFor(mode)}
+                    showArrivalPrefillNotice={showArrivalPrefillNotice}
+                    tripStartDate={travelPlan?.travel?.startOrDepartureDate}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                  />
+                )}
+
+                {/* Transit Details */}
+                {values.type === TripPlanType.transit && (
+                  <TransportationTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    colors={colors}
+                    setShowTransportationDatePickerFor={setShowTransportationDatePickerFor}
+                    formatTransportationDateTime={formatFlightDateTime}
+                    onOpenMapPinModal={handleOpenMapPinModal}
+                    onOpenGoogleSearch={handleOpenGoogleSearch}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => {
+                      setFieldValue("startDate", null);
+                      setFieldValue("endDate", null);
+                      setFieldValue("transportationDetails.departureDateTime", null);
+                      setFieldValue("transportationDetails.arrivalDateTime", null);
+                    }}
+                    onClearTime={() => {
+                      setFieldValue("startTime", "");
+                      if (values.startDate) {
+                        setFieldValue("transportationDetails.departureDateTime", new Date(`${values.startDate}T00:00:00`));
+                      }
+                    }}
+                    onPressEndDate={() => setShowCalendarFor("endDate")}
+                    onPressEndTime={() => setShowTimePickerFor("endTime")}
+                    onClearEndDate={() => {
+                      setFieldValue("endDate", null);
+                      setFieldValue("endTime", "");
+                      setFieldValue("transportationDetails.arrivalDateTime", null);
+                    }}
+                    onClearEndTime={() => {
+                      setFieldValue("endTime", "");
+                      if (values.endDate) {
+                        setFieldValue("transportationDetails.arrivalDateTime", new Date(`${values.endDate}T00:00:00`));
+                      }
+                    }}
+                  />
+                )}
+
+                {/* Ride Rental Details */}
+                {values.type === TripPlanType.rideRental && (
+                  <RideRentalTab
+                    values={values}
+                    handleChange={handleChange}
+                    handleBlur={handleBlur}
+                    setFieldValue={setFieldValue}
+                    colors={colors}
+                    onOpenMapPinModal={handleOpenMapPinModal}
+                    onOpenGoogleSearch={handleOpenGoogleSearch}
+                    noPadding={true}
+                    fieldRefs={fieldRefs}
+                    onPressDate={() => setShowCalendarFor("startDate")}
+                    onPressTime={() => setShowTimePickerFor("startTime")}
+                    onClearDate={() => {
+                      setFieldValue("startDate", null);
+                      setFieldValue("endDate", null);
+                      setFieldValue("rideRentalDetails.rentalStartDateTime", null);
+                      setFieldValue("rideRentalDetails.rentalEndDateTime", null);
+                    }}
+                    onClearTime={() => {
+                      setFieldValue("startTime", "");
+                      if (values.startDate) {
+                        setFieldValue("rideRentalDetails.rentalStartDateTime", new Date(`${values.startDate}T00:00:00`));
+                      }
+                    }}
+                    onPressEndDate={() => setShowCalendarFor("endDate")}
+                    onPressEndTime={() => setShowTimePickerFor("endTime")}
+                    onClearEndDate={() => {
+                      setFieldValue("endDate", null);
+                      setFieldValue("endTime", "");
+                      setFieldValue("rideRentalDetails.rentalEndDateTime", null);
+                    }}
+                    onClearEndTime={() => {
+                      setFieldValue("endTime", "");
+                      if (values.endDate) {
+                        setFieldValue("rideRentalDetails.rentalEndDateTime", new Date(`${values.endDate}T00:00:00`));
+                      }
+                    }}
+                  />
+                )}
+
+                {/* Activity Details Accordion */}
+                <SimpleAccordion key="activity-details-accordion" title="Additional Details" defaultExpanded={false}>
+                  {/* Activity Type */}
+                  <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-6">
+                    <Text className="text-lg text-secondary/80 font-semibold mb-3">
+                      Activity Type
+                    </Text>
+                    {(() => {
+                      const isTypeDisabled = !!values.id && values.type !== TripPlanType.activity;
+                      return (
+                        <TouchableOpacity
+                          onPress={() => {
+                            onOpenPrimaryTypeModal(values.type as TripPlanType, (type) => {
+                              setFieldValue("type", type);
+                              setActiveTabId("details");
+                              scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                            });
+                          }}
+                          disabled={isTypeDisabled}
+                          accessibilityRole="button"
+                          accessibilityState={{ disabled: isTypeDisabled }}
+                          className={`flex-row items-center justify-between border rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 gap-3 ${isTypeDisabled ? "bg-gray-100 opacity-60" : "bg-white"
+                            }`}
+                        >
+                          {values.type != null ? (
+                            <ActivityIcon type={values.type as number} size={24} showIconOnly={true} />
+                          ) : (
+                            <Icon name="style" size={24} color={"#B3B3B3"} />
+                          )}
+                          <Text className="text-base flex-1 text-gray-800 font-medium capitalize">
+                            {values.type != null ? getTripPlanTypeLabel(values.type) : "Select Type..."}
+                          </Text>
+                          <Icon name="keyboard-arrow-down" size={24} color="#999" />
+                        </TouchableOpacity>
+                      );
+                    })()}
+                  </View>
+
+                  {/* Itinerary Section */}
+                  <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-6">
+                    <Text className="text-xl text-secondary/80 font-semibold ">
+                      Section
+                    </Text>
+
+                    <Text className={`text-base text-tertiary mb-2`}>
+                      Select the Section to add this activity.
+                    </Text>
+
+                    <View className="flex-row items-center gap-2 mt-1">
+                      <TouchableOpacity
+                        onPress={() => {
+                          onOpenSectionModal(sections, values.sectionId, (id) => {
+                            setFieldValue("sectionId", id);
+                            const section = sections.find(s => s.id === id);
+                            if (section && section.startDate) {
+                              setFieldValue("startDate", toLocalDateStr(section.startDate));
+                              if (!values.startTime) {
+                                setFieldValue("startTime", `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`);
+                              }
+                            }
+                          });
+                        }}
+                        className="border rounded-2xl h-7xl border-[#E0E0E0] bg-white px-4 py-4 flex-1 flex-row items-center gap-3"
+                        accessibilityRole="button"
+                        accessibilityLabel="Select itinerary section"
+                      >
+                        <Icon name="folder" size={24} color="#263F69" />
+                        <Text className={`text-base flex-1 font-medium ${selectedSectionName ? 'text-gray-800' : 'text-gray-400'}`}>
+                          {selectedSectionName || "Select Section"}
+                        </Text>
+                        <Icon name="keyboard-arrow-down" size={24} color="#999" />
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={handleAddNewSection}
+                        className="w-6xl h-6xl rounded-xl items-center justify-center animate-fade-in bg-primary/10"
+                        accessibilityRole="button"
+                        accessibilityLabel="Add new section"
+                      >
+                        <Icon name="add" size={28} color="#0EA5E9" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* Description */}
+                  <View ref={(el) => { fieldRefs.current["description"] = el; }} className="">
+                    <View className="flex-row gap-2 justify-start items-center px-xs">
+                      <Text className="text-xs font-bold tracking-wider uppercase text-secondary/40">
+                        Description
+                      </Text>
+                    </View>
+                    <DescriptionInput
+                      value={values.description}
+                      onChange={(text) => setFieldValue("description", text)}
+                      label="Description"
+                      placeholder="Activity details"
+                      confirmLabel={`${values.description ? `Update` : 'Add'}`}
+                      maxLength={500}
+                    />
+                  </View>
+
+                  {/* Custom Tags */}
+                  {/* <View ref={(el) => { fieldRefs.current["customTags"] = el; }} className="mt-5">
+                      <Text className="text-xs font-semibold tracking-wider uppercase mb-1">Custom Tags</Text>
+                      <CustomTagsInput
+                        tags={values.customTags}
+                        onChangeTags={(tags) => setFieldValue("customTags", tags)}
+                      />
+                    </View> */}
+                </SimpleAccordion>
+              </View>
+            </ScrollView>
 
             <MapboxDestinationSelectorModal
               visible={showDestinationModal}
@@ -2241,6 +1945,13 @@ const EditActivity = ({
                     : null;
                   if (arrCoords) {
                     arrivalAirportCoordsRef.current = arrCoords;
+                    setFieldValue("destinationData", {
+                      ...(values.destinationData || {}),
+                      arrivalCoordinates: {
+                        latitude: arrCoords.lat,
+                        longitude: arrCoords.lon,
+                      },
+                    });
                   }
                   const arrCity = airport.type === "city" ? airport.name : airport.city_name;
                   if (!values.title || values.title.toLowerCase() === "flight" || values.title.trim() === "") {
@@ -2429,16 +2140,73 @@ const EditActivity = ({
               country={travelPlan?.travel?.destinationData?.country}
               onSelect={(location: PinnedLocation) => {
                 if (mapPinTargetField) {
-                  const placeText = mapPinTargetField === "title"
-                    ? (location.name || location.address || "")
-                    : (location.address || location.name || "");
-                  setFieldValue(mapPinTargetField, placeText);
-                  if (mapPinTargetField === "title") {
-                    if (!values.destination) {
-                      setFieldValue("destination", placeText);
+                  if (
+                    mapPinTargetField === "transportationDetails.pickupLocation" ||
+                    mapPinTargetField === "rideRentalDetails.pickupLocation"
+                  ) {
+                    const destLocation = buildDestinationDtoFromPinnedLocation(location);
+                    setFieldValue(mapPinTargetField, destLocation);
+                    setFieldValue("destinationData", {
+                      ...(values.destinationData || {}),
+                      id: (values.destinationData as any)?.id || destLocation.id || undefined,
+                      name: (values.destinationData as any)?.name || destLocation.name || undefined,
+                      city: (values.destinationData as any)?.city || destLocation.city || undefined,
+                      country: (values.destinationData as any)?.country || destLocation.country || undefined,
+                      regionOrState: (values.destinationData as any)?.regionOrState || destLocation.regionOrState || undefined,
+                      address: (values.destinationData as any)?.address || destLocation.address || undefined,
+                      coordinates: ((values.destinationData as any)?.coordinates?.latitude && (values.destinationData as any)?.coordinates?.latitude !== 0)
+                        ? (values.destinationData as any).coordinates
+                        : destLocation.coordinates,
+                      pickupCoordinates: destLocation.coordinates,
+                      pickupLocation: destLocation,
+                    });
+                    if (!values.destination && destLocation.address) {
+                      setFieldValue("destination", destLocation.address);
                     }
-                    if (location.coordinates) {
-                      setFieldValue("destinationData", {
+                  } else if (
+                    mapPinTargetField === "transportationDetails.dropoffLocation" ||
+                    mapPinTargetField === "rideRentalDetails.dropoffLocation"
+                  ) {
+                    const destLocation = buildDestinationDtoFromPinnedLocation(location);
+                    setFieldValue(mapPinTargetField, destLocation);
+                    setFieldValue("destinationData", {
+                      ...(values.destinationData || {}),
+                      id: (values.destinationData as any)?.id || destLocation.id || undefined,
+                      name: (values.destinationData as any)?.name || destLocation.name || undefined,
+                      city: (values.destinationData as any)?.city || destLocation.city || undefined,
+                      country: (values.destinationData as any)?.country || destLocation.country || undefined,
+                      regionOrState: (values.destinationData as any)?.regionOrState || destLocation.regionOrState || undefined,
+                      address: (values.destinationData as any)?.address || destLocation.address || undefined,
+                      coordinates: ((values.destinationData as any)?.coordinates?.latitude && (values.destinationData as any)?.coordinates?.latitude !== 0)
+                        ? (values.destinationData as any).coordinates
+                        : destLocation.coordinates,
+                      dropoffCoordinates: destLocation.coordinates,
+                      dropoffLocation: destLocation,
+                    });
+                    if (!values.destination && destLocation.address) {
+                      setFieldValue("destination", destLocation.address);
+                    }
+                  } else {
+                    const placeText = mapPinTargetField === "title"
+                      ? (location.name || location.address || "")
+                      : (location.address || location.name || "");
+                    setFieldValue(mapPinTargetField, placeText);
+                    if (mapPinTargetField === "title") {
+                      if (!values.destination) {
+                        setFieldValue("destination", placeText);
+                      }
+                      if (location.coordinates) {
+                        setFieldValue("destinationData", {
+                          id: (location as any).id || location.placeId || undefined,
+                          coordinates: {
+                            latitude: location.coordinates.latitude,
+                            longitude: location.coordinates.longitude,
+                          },
+                        });
+                      }
+                    }
+                    if (mapPinTargetField === "shoppingDetails.address" && location.coordinates) {
+                      setFieldValue("shoppingDetails.destinationAddressData", {
                         id: (location as any).id || location.placeId || undefined,
                         coordinates: {
                           latitude: location.coordinates.latitude,
@@ -2446,42 +2214,33 @@ const EditActivity = ({
                         },
                       });
                     }
-                  }
-                  if (mapPinTargetField === "shoppingDetails.address" && location.coordinates) {
-                    setFieldValue("shoppingDetails.destinationAddressData", {
-                      id: (location as any).id || location.placeId || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
-                  if (mapPinTargetField === "natureDetails.address" && location.coordinates) {
-                    setFieldValue("natureDetails.destinationAddressData", {
-                      id: (location as any).id || location.placeId || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
-                  if (mapPinTargetField === "entertainmentDetails.address" && location.coordinates) {
-                    setFieldValue("entertainmentDetails.destinationAddressData", {
-                      id: (location as any).id || location.placeId || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
-                  if (mapPinTargetField === "hikeOrCampDetails.address" && location.coordinates) {
-                    setFieldValue("hikeOrCampDetails.destinationAddressData", {
-                      id: (location as any).id || location.placeId || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
+                    if (mapPinTargetField === "natureDetails.address" && location.coordinates) {
+                      setFieldValue("natureDetails.destinationAddressData", {
+                        id: (location as any).id || location.placeId || undefined,
+                        coordinates: {
+                          latitude: location.coordinates.latitude,
+                          longitude: location.coordinates.longitude,
+                        },
+                      });
+                    }
+                    if (mapPinTargetField === "entertainmentDetails.address" && location.coordinates) {
+                      setFieldValue("entertainmentDetails.destinationAddressData", {
+                        id: (location as any).id || location.placeId || undefined,
+                        coordinates: {
+                          latitude: location.coordinates.latitude,
+                          longitude: location.coordinates.longitude,
+                        },
+                      });
+                    }
+                    if (mapPinTargetField === "hikeOrCampDetails.address" && location.coordinates) {
+                      setFieldValue("hikeOrCampDetails.destinationAddressData", {
+                        id: (location as any).id || location.placeId || undefined,
+                        coordinates: {
+                          latitude: location.coordinates.latitude,
+                          longitude: location.coordinates.longitude,
+                        },
+                      });
+                    }
                   }
                 }
                 setShowMapPinModal(false);
@@ -2511,11 +2270,11 @@ const EditActivity = ({
                       ? "Search Pickup Location"
                       : googleSearchTarget === "dropoffLocation"
                         ? "Search Drop-off Location"
-                        : values.type === ActivityType.stay
+                        : values.type === TripPlanType.stay
                           ? "Search Your Stay"
-                          : values.type === ActivityType.transit
+                          : values.type === TripPlanType.transit
                             ? "Search Transit Spot"
-                            : values.type === ActivityType.rideRental
+                            : values.type === TripPlanType.rideRental
                               ? "Search Rental Spot"
                               : "Search Places"
               }
@@ -2528,7 +2287,7 @@ const EditActivity = ({
                       ? "Search pickup station, branch, or address"
                       : googleSearchTarget === "dropoffLocation"
                         ? "Search drop-off station, branch, or address"
-                        : values.type === ActivityType.stay
+                        : values.type === TripPlanType.stay
                           ? "Search for hotel, resort, or accommodation"
                           : undefined
               }
@@ -2541,7 +2300,7 @@ const EditActivity = ({
                       ? "Search pickup location..."
                       : googleSearchTarget === "dropoffLocation"
                         ? "Search drop-off location..."
-                        : values.type === ActivityType.stay
+                        : values.type === TripPlanType.stay
                           ? "Search stay, hotel, resort..."
                           : undefined
               }
@@ -2551,11 +2310,11 @@ const EditActivity = ({
                   : googleSearchTarget === "providerName"
                     ? (values.title || "")
                     : googleSearchTarget === "pickupLocation"
-                      ? (values.type === ActivityType.rideRental
+                      ? (values.type === TripPlanType.rideRental
                         ? (values.rideRentalDetails?.pickupLocation?.name || values.rideRentalDetails?.pickupLocation?.city || "")
                         : (values.transportationDetails?.pickupLocation?.name || values.transportationDetails?.pickupLocation?.city || ""))
                       : googleSearchTarget === "dropoffLocation"
-                        ? (values.type === ActivityType.rideRental
+                        ? (values.type === TripPlanType.rideRental
                           ? (values.rideRentalDetails?.dropoffLocation?.name || values.rideRentalDetails?.dropoffLocation?.city || "")
                           : (values.transportationDetails?.dropoffLocation?.name || values.transportationDetails?.dropoffLocation?.city || ""))
                         : values.title
@@ -2572,17 +2331,9 @@ const EditActivity = ({
               destinationCoordinates={travelPlan?.travel?.destinationData?.coordinates}
               country={travelPlan?.travel?.destinationData?.country}
               onSelect={(location: GooglePlaceLocation) => {
-                const placeName = location.name || location.address || "";
-                const destAddress = location.address || placeName;
-                const destLocation: DestinationDto = {
-                  id: location.placeId || "",
-                  name: location.name || location.address || "",
-                  city: location.secondaryText || location.address || "",
-                  coordinates: {
-                    latitude: location.coordinates?.latitude || 0,
-                    longitude: location.coordinates?.longitude || 0,
-                  },
-                };
+                const destLocation = buildDestinationDtoFromGooglePlace(location);
+                const placeName = destLocation.name || location.address || "";
+                const destAddress = location.address || destLocation.address || placeName;
 
                 if (googleSearchTarget === "operatorProvider") {
                   setFieldValue("transportationDetails.operatorProvider", placeName);
@@ -2591,95 +2342,74 @@ const EditActivity = ({
                   setFieldValue("destination", destAddress);
                   setFieldValue("rideRentalDetails.pickupLocation", destLocation);
                   setFieldValue("rideRentalDetails.dropoffLocation", destLocation);
-                  if (location.coordinates) {
-                    setFieldValue("destinationData", {
-                      id: location.placeId || undefined,
-                      name: location.name || undefined,
-                      city: location.secondaryText || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
+                  setFieldValue("destinationData", destLocation);
                 } else if (googleSearchTarget === "pickupLocation") {
-                  if (values.type === ActivityType.rideRental) {
+                  if (values.type === TripPlanType.rideRental) {
                     setFieldValue("rideRentalDetails.pickupLocation", destLocation);
                   } else {
                     setFieldValue("transportationDetails.pickupLocation", destLocation);
                   }
+                  setFieldValue("destinationData", {
+                    ...(values.destinationData || {}),
+                    id: (values.destinationData as any)?.id || destLocation.id || undefined,
+                    name: (values.destinationData as any)?.name || destLocation.name || undefined,
+                    city: (values.destinationData as any)?.city || destLocation.city || undefined,
+                    country: (values.destinationData as any)?.country || destLocation.country || undefined,
+                    regionOrState: (values.destinationData as any)?.regionOrState || destLocation.regionOrState || undefined,
+                    address: (values.destinationData as any)?.address || destLocation.address || undefined,
+                    placeId: (values.destinationData as any)?.placeId || destLocation.placeId || undefined,
+                    coordinates: ((values.destinationData as any)?.coordinates?.latitude && (values.destinationData as any)?.coordinates?.latitude !== 0)
+                      ? (values.destinationData as any).coordinates
+                      : destLocation.coordinates,
+                    pickupCoordinates: destLocation.coordinates,
+                    pickupLocation: destLocation,
+                  });
                   if (!values.destination && destAddress) {
                     setFieldValue("destination", destAddress);
-                    if (location.coordinates) {
-                      setFieldValue("destinationData", {
-                        id: location.placeId || undefined,
-                        name: location.name || undefined,
-                        city: location.secondaryText || undefined,
-                        coordinates: {
-                          latitude: location.coordinates.latitude,
-                          longitude: location.coordinates.longitude,
-                        },
-                      });
-                    }
                   }
                 } else if (googleSearchTarget === "dropoffLocation") {
-                  if (values.type === ActivityType.rideRental) {
+                  if (values.type === TripPlanType.rideRental) {
                     setFieldValue("rideRentalDetails.dropoffLocation", destLocation);
                   } else {
                     setFieldValue("transportationDetails.dropoffLocation", destLocation);
                   }
+                  setFieldValue("destinationData", {
+                    ...(values.destinationData || {}),
+                    id: (values.destinationData as any)?.id || destLocation.id || undefined,
+                    name: (values.destinationData as any)?.name || destLocation.name || undefined,
+                    city: (values.destinationData as any)?.city || destLocation.city || undefined,
+                    country: (values.destinationData as any)?.country || destLocation.country || undefined,
+                    regionOrState: (values.destinationData as any)?.regionOrState || destLocation.regionOrState || undefined,
+                    address: (values.destinationData as any)?.address || destLocation.address || undefined,
+                    placeId: (values.destinationData as any)?.placeId || destLocation.placeId || undefined,
+                    coordinates: ((values.destinationData as any)?.coordinates?.latitude && (values.destinationData as any)?.coordinates?.latitude !== 0)
+                      ? (values.destinationData as any).coordinates
+                      : destLocation.coordinates,
+                    dropoffCoordinates: destLocation.coordinates,
+                    dropoffLocation: destLocation,
+                  });
                   if (!values.destination && destAddress) {
                     setFieldValue("destination", destAddress);
-                    if (location.coordinates) {
-                      setFieldValue("destinationData", {
-                        id: location.placeId || undefined,
-                        name: location.name || undefined,
-                        city: location.secondaryText || undefined,
-                        coordinates: {
-                          latitude: location.coordinates.latitude,
-                          longitude: location.coordinates.longitude,
-                        },
-                      });
-                    }
                   }
                 } else if (googleSearchTarget === "location") {
                   setFieldValue("destination", destAddress);
-                  if (location.coordinates) {
-                    setFieldValue("destinationData", {
-                      id: location.placeId || undefined,
-                      name: location.name || undefined,
-                      city: location.secondaryText || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
+                  setFieldValue("destinationData", destLocation);
                 } else {
                   setFieldValue("title", placeName);
                   setFieldValue("destination", destAddress);
-                  if (values.type === ActivityType.stay) {
+                  if (values.type === TripPlanType.stay) {
                     setFieldValue("accomodationDetails.accomodationName", placeName);
                     setFieldValue("accomodationDetails.address", destAddress);
+                    setFieldValue("accomodationDetails.destinationAddressData", destLocation);
                   }
-                  if (values.type === ActivityType.rideRental) {
+                  if (values.type === TripPlanType.rideRental) {
                     setFieldValue("rideRentalDetails.pickupLocation", destLocation);
                     setFieldValue("rideRentalDetails.dropoffLocation", destLocation);
                   }
-                  if (values.type === ActivityType.transit) {
+                  if (values.type === TripPlanType.transit) {
                     setFieldValue("transportationDetails.pickupLocation", destLocation);
                   }
-                  if (location.coordinates) {
-                    setFieldValue("destinationData", {
-                      id: location.placeId || undefined,
-                      name: location.name || undefined,
-                      city: location.secondaryText || undefined,
-                      coordinates: {
-                        latitude: location.coordinates.latitude,
-                        longitude: location.coordinates.longitude,
-                      },
-                    });
-                  }
+                  setFieldValue("destinationData", destLocation);
                 }
                 setShowGoogleSearchModal(false);
               }}
@@ -2695,9 +2425,9 @@ const EditActivity = ({
                 setFieldValue("startDate", startDate);
                 setFieldValue("endDate", endDate);
                 if (endDate && !values.endTime) {
-                  setFieldValue("endTime", values.type === ActivityType.transit ? "12:00" : values.type === ActivityType.rideRental ? "17:00" : "18:00");
+                  setFieldValue("endTime", values.type === TripPlanType.transit ? "12:00" : values.type === TripPlanType.rideRental ? "17:00" : "18:00");
                 }
-                if (values.type === ActivityType.stay) {
+                if (values.type === TripPlanType.stay) {
                   if (startDate) {
                     setFieldValue("accomodationDetails.checkinDateTime", new Date(`${startDate}T${values.startTime || "15:00"}:00`));
                     if (!values.startTime) {
@@ -2715,7 +2445,7 @@ const EditActivity = ({
                     setFieldValue("accomodationDetails.checkoutDateTime", null);
                   }
                 }
-                if (values.type === ActivityType.transit) {
+                if (values.type === TripPlanType.transit) {
                   if (startDate) {
                     setFieldValue("transportationDetails.departureDateTime", new Date(`${startDate}T${values.startTime || "09:00"}:00`));
                     if (!values.startTime) {
@@ -2733,7 +2463,7 @@ const EditActivity = ({
                     setFieldValue("transportationDetails.arrivalDateTime", null);
                   }
                 }
-                if (values.type === ActivityType.rideRental) {
+                if (values.type === TripPlanType.rideRental) {
                   if (startDate) {
                     setFieldValue("rideRentalDetails.rentalStartDateTime", new Date(`${startDate}T${values.startTime || "09:00"}:00`));
                     if (!values.startTime) {
@@ -2784,19 +2514,19 @@ const EditActivity = ({
                 const timeString = `${hours}:${minutes}`;
                 if (showTimePickerFor === "startTime") {
                   const updated: any = { ...values, startTime: timeString };
-                  if (values.type === ActivityType.stay && values.startDate) {
+                  if (values.type === TripPlanType.stay && values.startDate) {
                     updated.accomodationDetails = {
                       ...values.accomodationDetails,
                       checkinDateTime: new Date(`${values.startDate}T${timeString}:00`),
                     };
                   }
-                  if (values.type === ActivityType.transit && values.startDate) {
+                  if (values.type === TripPlanType.transit && values.startDate) {
                     updated.transportationDetails = {
                       ...values.transportationDetails,
                       departureDateTime: new Date(`${values.startDate}T${timeString}:00`),
                     };
                   }
-                  if (values.type === ActivityType.rideRental && values.startDate) {
+                  if (values.type === TripPlanType.rideRental && values.startDate) {
                     updated.rideRentalDetails = {
                       ...values.rideRentalDetails,
                       rentalStartDateTime: new Date(`${values.startDate}T${timeString}:00`),
@@ -2805,19 +2535,19 @@ const EditActivity = ({
                   setValues(updated);
                 } else {
                   const updated: any = { ...values, endTime: timeString };
-                  if (values.type === ActivityType.stay && values.endDate) {
+                  if (values.type === TripPlanType.stay && values.endDate) {
                     updated.accomodationDetails = {
                       ...values.accomodationDetails,
                       checkoutDateTime: new Date(`${values.endDate}T${timeString}:00`),
                     };
                   }
-                  if (values.type === ActivityType.transit && values.endDate) {
+                  if (values.type === TripPlanType.transit && values.endDate) {
                     updated.transportationDetails = {
                       ...values.transportationDetails,
                       arrivalDateTime: new Date(`${values.endDate}T${timeString}:00`),
                     };
                   }
-                  if (values.type === ActivityType.rideRental && values.endDate) {
+                  if (values.type === TripPlanType.rideRental && values.endDate) {
                     updated.rideRentalDetails = {
                       ...values.rideRentalDetails,
                       rentalEndDateTime: new Date(`${values.endDate}T${timeString}:00`),

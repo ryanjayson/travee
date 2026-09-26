@@ -28,14 +28,20 @@ jest.mock("@react-navigation/native", () => {
   };
 });
 
+const mockSearchFocus = jest.fn();
+
 // Mock TripDestinationSearchBox to isolate from Google Places API
 jest.mock("../TripDestinationSearchBox", () => {
   const React = require("react");
   const { TouchableOpacity, Text } = require("react-native");
   return {
     __esModule: true,
-    default: ({ onSelect, placeholder, disabled }: any) =>
-      React.createElement(
+    default: React.forwardRef(({ onSelect, placeholder, disabled }: any, ref: any) => {
+      React.useImperativeHandle(ref, () => ({
+        focus: mockSearchFocus,
+        clear: jest.fn(),
+      }));
+      return React.createElement(
         TouchableOpacity,
         {
           testID: "mock-destination-search-box",
@@ -50,7 +56,8 @@ jest.mock("../TripDestinationSearchBox", () => {
             }),
         },
         React.createElement(Text, null, placeholder || "Search place, city, or country")
-      ),
+      );
+    }),
   };
 });
 
@@ -209,5 +216,32 @@ describe("CreateOrEdit (Trip Form) Component", () => {
     await waitFor(() => {
       expect(mockMutate).toHaveBeenCalled();
     });
+  });
+
+  it("exposes focusSearch on imperative ref", () => {
+    const ref = React.createRef<CreateOrEditRef>();
+    renderWithProviders(
+      <CreateOrEdit {...defaultProps} ref={ref} />
+    );
+
+    act(() => {
+      ref.current?.focusSearch();
+    });
+
+    expect(mockSearchFocus).toHaveBeenCalled();
+  });
+
+  it("triggers focus when autoFocusSearch prop is true", async () => {
+    jest.useFakeTimers();
+    renderWithProviders(
+      <CreateOrEdit {...defaultProps} autoFocusSearch={true} />
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+
+    expect(mockSearchFocus).toHaveBeenCalled();
+    jest.useRealTimers();
   });
 });

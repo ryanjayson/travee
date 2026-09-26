@@ -18,14 +18,14 @@ import {
 } from "react-native";
 import { useTheme } from "react-native-paper";
 import ActivityIcon from "../../../../components/ActivityIcon";
-import { ActivityType } from "../../../../types/enums";
+import { TripPlanType } from "../../../../types/enums";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 
 interface ContextOption {
   id: string;
   label: string;
   type: "group" | "activity";
-  activityType?: ActivityType;
+  activityType?: TripPlanType;
 }
 
 interface ContextLookupModalProps {
@@ -315,7 +315,7 @@ const ContextLookupModal = ({
                         <Icon name="folder" size={28} color="#263F69" />
                       ) : (
                         <ActivityIcon
-                          type={(option.activityType ?? ActivityType.plan) as ActivityType}
+                          type={(option.activityType ?? TripPlanType.activity) as TripPlanType}
                           size={28}
                           color="#263F69"
                           showIconOnly

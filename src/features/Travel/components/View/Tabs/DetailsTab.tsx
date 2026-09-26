@@ -4,7 +4,7 @@ import { ScrollView, TouchableOpacity, View, Text } from "react-native";
 import { useTheme } from "react-native-paper";
 import Svg, { Circle, G } from "react-native-svg";
 import ActivityIcon from "../../../../../components/ActivityIcon";
-import { ActivityType, ExpenseCategory, TripType, getActivityTypeLabel, getTripTypeLabel } from "../../../../../types/enums";
+import { TripPlanType, ExpenseCategory, TripType, getTripPlanTypeLabel, getTripTypeLabel } from "../../../../../types/enums";
 import TripIcon from "../../../../../components/TripIcon";
 import { TravelPlan } from "../../../../Travel/types/TravelDto";
 import { useChecklistGroups, useChecklistItems } from "../../../hooks/useChecklist";
@@ -148,16 +148,16 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
   const activityTypeBreakdown = useMemo(() => {
     const map: Record<number, number> = {};
     allActivities.forEach((a) => {
-      const type = a.type ?? ActivityType.plan;
+      const type = a.type ?? TripPlanType.activity;
       map[type] = (map[type] || 0) + 1;
     });
     return Object.entries(map)
       .map(([type, count]) => ({ type: Number(type), count }))
-      .filter((e) => e.type !== ActivityType.plan)
+      .filter((e) => e.type !== TripPlanType.activity)
       .sort((a, b) => b.count - a.count);
   }, [allActivities]);
 
-  const activityTypeName = (type: number) => getActivityTypeLabel(type);
+  const activityTypeName = (type: number) => getTripPlanTypeLabel(type);
 
   // ─── Checklist group breakdown ──────────────────────────────────────────────
   const groupBreakdown = useMemo(() => {

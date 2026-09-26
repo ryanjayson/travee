@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Modal, TouchableOpacity, View, Text } from "react-native";
 import { CalendarList } from "react-native-calendars";
-import { useTheme } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import TouchButton from "../../../../components/atoms/TouchButton";
 import { TravelStatus } from "../../../../types/enums";
@@ -18,7 +17,7 @@ export interface TravelDateModalProps {
   onConfirm: (startDate: Date, endDate: Date | null) => void;
 }
 
-const CALENDAR_THEME = {
+const CALENDAR_THEME: any = {
   todayTextColor: "#FFFFFF",
   todayBackgroundColor: "#B42318",
   selectedDayBackgroundColor: "#FFFFFF",
@@ -37,7 +36,6 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
   mode = "create",
   onConfirm,
 }) => {
-  const { colors } = useTheme();
   const { data: travels } = useTravels();
 
   const [tempDepartureDate, setTempDepartureDate] = useState<Date | null>(null);

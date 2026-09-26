@@ -16,12 +16,12 @@ import {
   TextInput,
 } from "react-native";
 import { useTheme } from "react-native-paper";
-import { ActivityPlanType } from "../../../../types/enums";
+import { ActivityType } from "../../../../types/enums";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export interface PlanTypeItem {
-  type: ActivityPlanType;
+  type: ActivityType;
   key: string;
   label: string;
   subtext: string;
@@ -30,16 +30,18 @@ export interface PlanTypeItem {
 }
 
 export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
+
+
   {
-    type: ActivityPlanType.preparation,
-    key: "preparation",
-    label: "Preparation",
-    subtext: "Packing, checklists, and pre-trip tasks",
-    iconName: "build",
-    color: "#607D8B",
+    type: ActivityType.cafe,
+    key: "cafe",
+    label: "Cafe",
+    subtext: "Coffee, drinks, snacks, cafes, lounges, and bars",
+    iconName: "local-cafe",
+    color: "#ea580c",
   },
   {
-    type: ActivityPlanType.restaurant,
+    type: ActivityType.restaurant,
     key: "restaurant",
     label: "Restaurant",
     subtext: "Dining, meals, and food spots",
@@ -47,15 +49,7 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     color: "#e03e3e",
   },
   {
-    type: ActivityPlanType.cafeOrBar,
-    key: "cafeOrBar",
-    label: "Cafe / Bar",
-    subtext: "Coffee, drinks, snacks, cafes, lounges, and bars",
-    iconName: "local-cafe",
-    color: "#ea580c",
-  },
-  {
-    type: ActivityPlanType.sightseeing,
+    type: ActivityType.sightseeing,
     key: "sightseeing",
     label: "Sightseeing",
     subtext: "Landmarks, attractions, and photo spots",
@@ -63,23 +57,23 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     color: "#f0a505",
   },
   {
-    type: ActivityPlanType.shoppingOrService,
-    key: "shoppingOrService",
-    label: "Shopping & Service",
-    subtext: "Markets, stores, spas, banks, and essentials",
-    iconName: "shopping-bag",
-    color: "#db2777",
-  },
-  {
-    type: ActivityPlanType.entertainmentOrRecreation,
-    key: "entertainmentOrRecreation",
-    label: "Entertainment & Recreation",
+    type: ActivityType.entertainment,
+    key: "entertainment",
+    label: "Entertainment",
     subtext: "Museums, parks, shows, cinema, and sports",
     iconName: "local-play",
     color: "#0891b2",
   },
   {
-    type: ActivityPlanType.nature,
+    type: ActivityType.shopping,
+    key: "shopping",
+    label: "Shopping",
+    subtext: "Markets, stores, spas, banks, and essentials",
+    iconName: "shopping-bag",
+    color: "#db2777",
+  },
+  {
+    type: ActivityType.nature,
     key: "nature",
     label: "Nature",
     subtext: "Beaches, lakes, parks, and natural wonders",
@@ -87,23 +81,32 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     color: "#165135",
   },
   {
-    type: ActivityPlanType.walk,
+    type: ActivityType.hike,
+    key: "hike",
+    label: "Hike",
+    subtext: "Hiking trails, trekking, and camping",
+    iconName: "hiking",
+    color: "#429862",
+  },
+  {
+    type: ActivityType.camp,
+    key: "camp",
+    label: "Camp",
+    subtext: "Camping, hiking trails, trekking, and camping",
+    iconName: "night-shelter",
+    color: "#429862",
+  },
+  {
+    type: ActivityType.walk,
     key: "walk",
     label: "Walk",
     subtext: "City strolls, walking tours, and exploration",
     iconName: "directions-walk",
     color: "#8BC34A",
   },
+
   {
-    type: ActivityPlanType.hikeOrCamp,
-    key: "hikeOrCamp",
-    label: "Hike / Camp",
-    subtext: "Hiking trails, trekking, and camping",
-    iconName: "hiking",
-    color: "#429862",
-  },
-  {
-    type: ActivityPlanType.rest,
+    type: ActivityType.rest,
     key: "rest",
     label: "Rest",
     subtext: "Relaxation, downtime, and rest",
@@ -111,28 +114,36 @@ export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
     color: "#9E9E9E",
   },
   {
-    type: ActivityPlanType.motorcycleRide,
-    key: "motorcycleRide",
-    label: "Motorcycle Ride",
-    subtext: "Motorbike trips and scenic rides",
-    iconName: "motorcycle",
+    type: ActivityType.ride,
+    key: "ride",
+    label: "Ride",
+    subtext: "Motorbike, Biking, and scenic rides",
+    iconName: "directions-bike",
     color: "#156994",
   },
   {
-    type: ActivityPlanType.meetup,
+    type: ActivityType.meetup,
     key: "meetup",
     label: "Meetup",
     subtext: "Gatherings, meetups, and socializing",
     iconName: "people",
     color: "#26A69A",
   },
+  {
+    type: ActivityType.preparation,
+    key: "preparation",
+    label: "Preparation",
+    subtext: "Packing, checklists, and pre-trip tasks",
+    iconName: "build",
+    color: "#607D8B",
+  },
 ];
 
 interface ActivityPlanTypeLookupModalProps {
   visible: boolean;
   onClose: () => void;
-  selectedType?: ActivityPlanType | null;
-  onSelect: (type: ActivityPlanType) => void;
+  selectedType?: ActivityType | null;
+  onSelect: (type: ActivityType) => void;
 }
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -265,7 +276,7 @@ const ActivityPlanTypeLookupModal = ({
     });
   };
 
-  const handleSelect = (type: ActivityPlanType) => {
+  const handleSelect = (type: ActivityType) => {
     onSelect(type);
     handleCancel();
   };
@@ -298,6 +309,7 @@ const ActivityPlanTypeLookupModal = ({
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
         style={{ flex: 1 }}
+
       >
         <Animated.View
           className="flex-1 justify-end"
@@ -306,6 +318,14 @@ const ActivityPlanTypeLookupModal = ({
             opacity: backdropOpacity,
           }}
         >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={handleCancel}
+            className="absolute inset-0"
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss plan type bottom sheet"
+          />
+
           <Animated.View
             {...sheetPanResponder.panHandlers}
             className="rounded-t-[30px] bg-white overflow-hidden"
@@ -337,14 +357,14 @@ const ActivityPlanTypeLookupModal = ({
             {/* Header */}
             <View
               {...(!keyboardVisible && dragPanResponder.panHandlers)}
-              className="flex-row justify-between items-center px-6 pb-4 border-b border-gray-200"
+              className="flex-row justify-between items-center px-6 pb-4"
               style={{ paddingTop: keyboardVisible ? 0 : 2 }}
             >
 
 
               <View className="flex-1">
-                <View className="flex-row items-center">
-                  <TouchableOpacity
+                <View className="flex-row items-center mb-1">
+                  {/* <TouchableOpacity
                     onPress={handleCancel}
                     accessibilityRole="button"
                     accessibilityLabel="Close add field modal"
@@ -356,14 +376,14 @@ const ActivityPlanTypeLookupModal = ({
                       size={28}
                       color={"#999"}
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                   <Text className="text-2xl font-semibold text-accent">
-                    Plan Type
+                    Activity Type
                   </Text>
                 </View>
 
                 <Text className="text-tertiary text-base leading-4">
-                  Select type best describe this Plan
+                  Select type best describe this Activity
                 </Text>
               </View>
             </View>
@@ -384,10 +404,10 @@ const ActivityPlanTypeLookupModal = ({
                   return (
                     <TouchableOpacity
                       key={item.key}
-                      className="px-6 py-5 border-b border-gray-100 flex-row items-center gap-4 active:bg-gray-50"
+                      className="px-6 py-5  flex-row items-center gap-4 active:bg-gray-50"
                       onPress={() => handleSelect(item.type)}
                       accessibilityRole="button"
-                      accessibilityLabel={`Select plan type ${item.label}`}
+                      accessibilityLabel={`Select activity type ${item.label}`}
                     >
                       {/* Color-assigned icon badge */}
                       <View>

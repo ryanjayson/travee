@@ -2,7 +2,7 @@ import React from "react";
 import { Formik } from "formik";
 import { fireEvent } from "@testing-library/react-native";
 import PlanTab from "../PlanTab";
-import { ActivityType, ActivityPlanType } from "@/types/enums";
+import { TripPlanType, ActivityType } from "@/types/enums";
 import { renderWithProviders } from "@/test-utils/renderWithProviders";
 
 // Mock useTravelPlan hook used by DateTime
@@ -15,8 +15,8 @@ jest.mock("@/features/Travel/hooks/useTravel", () => ({
 
 describe("PlanTab Component", () => {
   const defaultValues = {
-    type: ActivityType.plan,
-    planType: ActivityPlanType.restaurant,
+    type: TripPlanType.activity,
+    planType: ActivityType.restaurant,
     title: "Dinner at Bistro",
     destination: "Paris, France",
     startDate: "2026-10-01",
