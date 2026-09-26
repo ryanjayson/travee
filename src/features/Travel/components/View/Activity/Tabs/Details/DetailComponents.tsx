@@ -2,39 +2,15 @@ import React from "react";
 import { Text, View } from "react-native";
 import { FlightDetailsCard } from "./FlightDetailsCard";
 import { AccomodationDetailsCard } from "./AccomodationDetailsCard";
-import { CafeRestaurantDetailsCard } from "./CafeRestaurantDetailsCard";
-import { HikeOrCampDetailsCard } from "./HikeOrCampDetailsCard";
 import { TransportationDetailsCard } from "./TransportationDetailsCard";
 import { RideRentalDetailsCard } from "./RideRentalDetailsCard";
-import { SightseeingDetailsCard } from "./SightseeingDetailsCard";
-import { EntertainmentDetailsCard } from "./EntertainmentDetailsCard";
-import { NatureDetailsCard } from "./NatureDetailsCard";
-import { ShoppingDetailsCard } from "./ShoppingDetailsCard";
-import { WalkDetailsCard } from "./WalkDetailsCard";
-import { PreparationDetailsCard } from "./PreparationDetailsCard";
-import { RestDetailsCard } from "./RestDetailsCard";
-import { MotorcycleRideDetailsCard } from "./MotorcycleRideDetailsCard";
-import { MeetupDetailsCard } from "./MeetupDetailsCard";
 import { PlanDetailsCard } from "./PlanDetailsCard";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 
 import {
   ItineraryActivity,
   FlightDetailsDto,
-  AccomodationDetailsDto,
-  CafeRestaurantDetailsDto,
-  NatureDetailsDto,
-  ShoppingDetailsDto,
-  EntertainmentDetailsDto,
-  TransportationDetailsDto,
-  WalkDetailsDto,
-  SightseeingDetailsDto,
-  PreparationDetailsDto,
-  RestDetailsDto,
-  HikeOrCampDetailsDto,
-  MotorcycleRideDetailsDto,
-  MeetupDetailsDto,
-  RideRentalDetailsDto,
+  AccomodationDetailsDto, TransportationDetailsDto, RideRentalDetailsDto
 } from "../../../../../types/TravelDto";
 
 export const hasActivityData = (data: any): boolean => {
@@ -109,116 +85,9 @@ export const AccomodationDetails = ({ data, onFullScreenChange }: { data?: Accom
   return <AccomodationDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const CafeRestaurantDetails = ({
-  data,
-  activityStartDate,
-  onFullScreenChange,
-}: {
-  data?: CafeRestaurantDetailsDto | null;
-  activityStartDate?: Date | string | null;
-  onFullScreenChange?: (fullScreen: boolean) => void;
-}) => {
-  const hasDate = Boolean(
-    activityStartDate && (activityStartDate instanceof Date || String(activityStartDate).trim() !== "")
-  );
-  if (!hasActivityData(data) && !hasDate) return <NoDetailsAdded />;
-  return (
-    <CafeRestaurantDetailsCard
-      data={data || ({} as any)}
-      activityStartDate={activityStartDate}
-      onFullScreenChange={onFullScreenChange}
-    />
-  );
-};
-
-export const NatureDetails = ({
-  data,
-  activityStartDate,
-  onFullScreenChange,
-}: {
-  data?: NatureDetailsDto | null;
-  activityStartDate?: Date | string | null;
-  onFullScreenChange?: (fullScreen: boolean) => void;
-}) => {
-  const hasDate = Boolean(
-    activityStartDate && (activityStartDate instanceof Date || String(activityStartDate).trim() !== "")
-  );
-  if (!hasActivityData(data) && !hasDate) return <NoDetailsAdded />;
-  return (
-    <NatureDetailsCard
-      data={data || ({} as any)}
-      activityStartDate={activityStartDate}
-      onFullScreenChange={onFullScreenChange}
-    />
-  );
-};
-
-export const ShoppingDetails = ({ data, onFullScreenChange }: { data?: ShoppingDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <ShoppingDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
-};
-
-export const EntertainmentDetails = ({
-  data,
-  activityStartDate,
-  onFullScreenChange,
-}: {
-  data?: EntertainmentDetailsDto | null;
-  activityStartDate?: Date | string | null;
-  onFullScreenChange?: (fullScreen: boolean) => void;
-}) => {
-  const hasDate = Boolean(
-    activityStartDate && (activityStartDate instanceof Date || String(activityStartDate).trim() !== "")
-  );
-  if (!hasActivityData(data) && !hasDate) return <NoDetailsAdded />;
-  return (
-    <EntertainmentDetailsCard
-      data={data || ({} as any)}
-      activityStartDate={activityStartDate}
-      onFullScreenChange={onFullScreenChange}
-    />
-  );
-};
-
 export const TransportationDetails = ({ data, onFullScreenChange }: { data?: TransportationDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!hasActivityData(data)) return <NoDetailsAdded />;
   return <TransportationDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
-};
-
-export const WalkDetails = ({ data }: { data?: WalkDetailsDto | null }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <WalkDetailsCard data={data!} />;
-};
-
-export const SightseeingDetails = ({ data, onFullScreenChange }: { data?: SightseeingDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <SightseeingDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
-};
-
-export const PreparationDetails = ({ data }: { data?: PreparationDetailsDto | null }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <PreparationDetailsCard data={data!} />;
-};
-
-export const RestDetails = ({ data }: { data?: RestDetailsDto | null }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <RestDetailsCard data={data!} />;
-};
-
-export const HikeOrCampDetails = ({ data, onFullScreenChange }: { data?: HikeOrCampDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
-  const dataWithoutPermit = { ...data, permitRequired: null }
-  if (!hasActivityData(dataWithoutPermit)) return <NoDetailsAdded />;
-  return <HikeOrCampDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
-};
-
-export const MotorcycleRideDetails = ({ data }: { data?: MotorcycleRideDetailsDto | null }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <MotorcycleRideDetailsCard data={data!} />;
-};
-
-export const MeetupDetails = ({ data, onFullScreenChange }: { data?: MeetupDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
-  if (!hasActivityData(data)) return <NoDetailsAdded />;
-  return <MeetupDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };
 
 export const RideRentalDetails = ({ data, onFullScreenChange }: { data?: RideRentalDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {

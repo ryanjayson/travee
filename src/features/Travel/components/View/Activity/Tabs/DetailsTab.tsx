@@ -1,28 +1,12 @@
 import React, { useRef, useState } from "react";
-import { ScrollView, View, Text, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
+import { ScrollView, View, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { LinearGradient } from "expo-linear-gradient";
 import { ItineraryActivity } from "../../../../types/TravelDto";
 import { TripPlanType } from "../../../../../../types/enums";
-import { activityIcons } from "../../../../../../components/ActivityIcon";
-import { FadeInView } from "../../../../../../components/animations";
 import {
   FlightDetails,
-  AccomodationDetails,
-  CafeRestaurantDetails,
-  NatureDetails,
-  ShoppingDetails,
-  EntertainmentDetails,
-  TransportationDetails,
-  WalkDetails,
-  SightseeingDetails,
-  PreparationDetails,
-  RestDetails,
-  HikeOrCampDetails,
-  MotorcycleRideDetails,
-  MeetupDetails,
-  RideRentalDetails,
-  PlanDetails,
+  AccomodationDetails, TransportationDetails, RideRentalDetails,
+  PlanDetails
 } from "./Details/DetailComponents";
 
 interface DetailsTabProps {
