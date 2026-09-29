@@ -553,17 +553,13 @@ const ActivityItemCard = ({
             <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
               {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
                 <View
-
-                  className="items-center flex-row"
-                >
+                  className="items-center flex-row">
                   <Text
                     // style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }}
                     style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }}
                     // style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                    className="text-[8px] rounded-xs px-2 py-0.5 tracking-wider uppercase font-extrabold text-gray/60 "
-                  >
+                    className="text-[8px] rounded-xs px-1 py-0.5 tracking-wider uppercase font-extrabold text-gray/60 ">
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
-
                   </Text>
                   {itineraryEventActivity.type === TripPlanType.activity && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
                     <Text
