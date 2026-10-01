@@ -4,12 +4,17 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useAuth } from "../../../../../../Auth/hooks/AuthContext";
 import { useConfirm } from "../../../../../../../context/ConfirmContext";
 import { useTravelContext } from "../../../../../../../context/TravelContext";
+import { useKeyboardVisible } from "../../../../../../../hooks/useKeyboardVisible";
 import {
   useChecklistItems,
   useChecklistItemsByActivity,
   useDeleteChecklistItemMutation,
   useToggleChecklistItemMutation,
 } from "../../../../../hooks/useChecklist";
+import ChecklistItemRow, {
+  AddChecklistItemRow,
+  ChecklistScrollContext,
+} from "../../../../Checklist/ChecklistItemRow";
 import { ChecklistItem, ItineraryActivity } from "../../../../../types/TravelDto";
 
 export interface ChecklistTabProps {
@@ -28,6 +33,52 @@ export default function ChecklistTab({
   const { openChecklistModal } = useTravelContext();
   const { confirm } = useConfirm();
   const { userToken } = useAuth();
+  const { keyboardVisible, keyboardHeight } = useKeyboardVisible();
+  const scrollViewRef = React.useRef<ScrollView>(null);
+  const activeTargetRef = React.useRef<any>(null);
+
+  const scrollToRef = (target: any) => {
+    if (!target) return;
+    activeTargetRef.current = target;
+    const targetNode = target.current || target;
+    const scrollNode = scrollViewRef.current;
+    if (!targetNode || !scrollNode) return;
+
+    const performScroll = () => {
+      if (typeof targetNode.measureLayout === "function") {
+        targetNode.measureLayout(
+          scrollNode,
+          (_x: number, y: number) => {
+            scrollNode.scrollTo({
+              y: Math.max(0, y - 70),
+              animated: true,
+            });
+          },
+          () => {
+            if (typeof targetNode.measureInWindow === "function") {
+              targetNode.measureInWindow((_x: number, y: number) => {
+                if (y !== undefined) {
+                  scrollNode.scrollTo({
+                    y: Math.max(0, y - 70),
+                    animated: true,
+                  });
+                }
+              });
+            }
+          }
+        );
+      }
+    };
+
+    setTimeout(performScroll, 50);
+    setTimeout(performScroll, 250);
+  };
+
+  React.useEffect(() => {
+    if (keyboardVisible && activeTargetRef.current) {
+      scrollToRef(activeTargetRef.current);
+    }
+  }, [keyboardVisible]);
 
   const effectiveTravelId = propTravelId || itineraryActivity?.travelId || "";
   const effectiveActivityId = activityId || itineraryActivity?.id || "";
@@ -129,81 +180,45 @@ export default function ChecklistTab({
     <View className="flex-1 pb-6 pt-2 px-5">
       <View className="bg-gray-100 rounded-2xl border border-gray-200 overflow-hidden">
         {activityChecklistItems.map((item) => (
-          <View
+          <ChecklistItemRow
             key={item.id}
-            className="flex-row items-center gap-3 px-4 py-4 border-b border-gray-200"
-          >
-            <TouchableOpacity
-              accessibilityRole="checkbox"
-              accessibilityLabel={
-                item.isDone
-                  ? `Mark ${item.title} as incomplete`
-                  : `Mark ${item.title} as complete`
-              }
-              accessibilityState={{ checked: item.isDone }}
-              onPress={() => handleToggleChecklistItem(item)}
-              className={`w-6 h-6 rounded-full border-2 items-center justify-center shrink-0 ${item.isDone ? "bg-[#263F69] border-[#263F69]" : "border-[#263F69]"
-                }`}
-            >
-              {item.isDone && <Icon name="check" size={14} color="#FFF" />}
-            </TouchableOpacity>
-            <View className="flex-1">
-              <Text
-                className={`text-lg ${item.isDone ? "line-through text-gray-400" : "text-gray-800 font-medium"
-                  }`}
-              >
-                {item.title}
-              </Text>
-              {item.description ? (
-                <Text className="text-base text-gray-400 mt-0.5">{item.description}</Text>
-              ) : null}
-            </View>
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Edit checklist item"
-              onPress={() => handleEditItem(item)}
-              className="p-1 mr-1"
-            >
-              <Icon name="edit" size={20} color="#263F69" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Remove checklist item"
-              onPress={() => handleDeleteChecklistItem(item)}
-              className="p-1"
-            >
-              <Icon name="delete-outline" size={20} color="#c93030" />
-            </TouchableOpacity>
-          </View>
+            item={item}
+            onToggle={handleToggleChecklistItem}
+            onEdit={handleEditItem}
+            onDelete={handleDeleteChecklistItem}
+          />
         ))}
-        <View
-          className="flex-row items-center gap-3 px-4 py-4 border-b border-gray-200"
-        >
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Add To-Do item"
-            onPress={handleAddItem}
-            className="flex-row items-center gap-1"
-          >
-            <Icon name="add" size={24} color="#263F69" />
-            <Text className="text-lg font-medium text-accent underline">Add</Text>
-          </TouchableOpacity>
-        </View>
+        <AddChecklistItemRow
+          travelId={effectiveTravelId}
+          activityId={effectiveActivityId}
+          hasBottomBorder
+        />
       </View>
     </View>
   );
 
   if (isScrollable) {
     return (
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: 100 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {renderContent()}
-      </ScrollView>
+      <ChecklistScrollContext.Provider value={{ scrollToRef }}>
+        <ScrollView
+          ref={scrollViewRef}
+          className="flex-1"
+          contentContainerStyle={{
+            paddingBottom: keyboardVisible ? keyboardHeight + 80 : 100,
+          }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
+          {renderContent()}
+        </ScrollView>
+      </ChecklistScrollContext.Provider>
     );
   }
 
-  return renderContent();
+  return (
+    <ChecklistScrollContext.Provider value={{ scrollToRef }}>
+      {renderContent()}
+    </ChecklistScrollContext.Provider>
+  );
 }
