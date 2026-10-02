@@ -994,13 +994,17 @@ const EditActivity = ({
             operatorProvider: values.transportationDetails.operatorProvider || null,
             pickupLocation: values.transportationDetails.pickupLocation
               ? (typeof values.transportationDetails.pickupLocation === "string"
-                ? values.transportationDetails.pickupLocation
-                : values.transportationDetails.pickupLocation.name || values.transportationDetails.pickupLocation.address || values.transportationDetails.pickupLocation.city || "")
+                ? ((values.destinationData as any)?.pickupLocation && typeof (values.destinationData as any).pickupLocation === "object"
+                  ? JSON.stringify((values.destinationData as any).pickupLocation)
+                  : values.transportationDetails.pickupLocation)
+                : JSON.stringify(values.transportationDetails.pickupLocation))
               : null,
             dropoffLocation: values.transportationDetails.dropoffLocation
               ? (typeof values.transportationDetails.dropoffLocation === "string"
-                ? values.transportationDetails.dropoffLocation
-                : values.transportationDetails.dropoffLocation.name || values.transportationDetails.dropoffLocation.address || values.transportationDetails.dropoffLocation.city || "")
+                ? ((values.destinationData as any)?.dropoffLocation && typeof (values.destinationData as any).dropoffLocation === "object"
+                  ? JSON.stringify((values.destinationData as any).dropoffLocation)
+                  : values.transportationDetails.dropoffLocation)
+                : JSON.stringify(values.transportationDetails.dropoffLocation))
               : null,
             departureDateTime: finalStartDate
               ? finalStartDate
@@ -1027,13 +1031,17 @@ const EditActivity = ({
             vehicleModel: values.rideRentalDetails.vehicleModel || null,
             pickupLocation: values.rideRentalDetails.pickupLocation
               ? (typeof values.rideRentalDetails.pickupLocation === "string"
-                ? values.rideRentalDetails.pickupLocation
-                : values.rideRentalDetails.pickupLocation.name || values.rideRentalDetails.pickupLocation.address || values.rideRentalDetails.pickupLocation.city || "")
+                ? ((values.destinationData as any)?.pickupLocation && typeof (values.destinationData as any).pickupLocation === "object"
+                  ? JSON.stringify((values.destinationData as any).pickupLocation)
+                  : values.rideRentalDetails.pickupLocation)
+                : JSON.stringify(values.rideRentalDetails.pickupLocation))
               : null,
             dropoffLocation: values.rideRentalDetails.dropoffLocation
               ? (typeof values.rideRentalDetails.dropoffLocation === "string"
-                ? values.rideRentalDetails.dropoffLocation
-                : values.rideRentalDetails.dropoffLocation.name || values.rideRentalDetails.dropoffLocation.address || values.rideRentalDetails.dropoffLocation.city || "")
+                ? ((values.destinationData as any)?.dropoffLocation && typeof (values.destinationData as any).dropoffLocation === "object"
+                  ? JSON.stringify((values.destinationData as any).dropoffLocation)
+                  : values.rideRentalDetails.dropoffLocation)
+                : JSON.stringify(values.rideRentalDetails.dropoffLocation))
               : null,
             rentalStartDateTime: finalStartDate || (values.rideRentalDetails.rentalStartDateTime && new Date(values.rideRentalDetails.rentalStartDateTime).getTime() > 0
               ? new Date(values.rideRentalDetails.rentalStartDateTime)

@@ -124,14 +124,14 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
   const isUnderlined = Boolean(isLink || isPhone || isContactNumber || isCall || isEmail);
 
   return (
-    <View className="flex-row items-start gap-3 my-xs">
+    <View className="flex-row items-start gap-6 my-md">
       {icon ? (
         <View className="rounded-full border-tertiary/10" style={{ alignItems: "center", justifyContent: "center" }}>
-          <Icon name={icon as any} size={22} color="#344054" />
+          <Icon name={icon as any} size={28} color="#344054" />
         </View>
       ) : null}
       <View className={`flex-1 ${borderClass} ${showBorder ? "pb-3" : ""}`}>
-        <Text className="text-base font-medium text-secondary ">
+        <Text className="text-xl font-medium text-secondary">
           {label}
         </Text>
         {isInteractive ? (
@@ -142,7 +142,7 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
             className="flex-row items-center gap-1.5 pr-xl"
           >
             <Text
-              className="text-base font-normal text-secondary/50 "
+              className="text-xl font-normal text-secondary/50 "
               numberOfLines={isLink ? 1 : numberOfLines}
               style={{
                 textDecorationLine: isUnderlined ? "underline" : "none",
@@ -161,7 +161,7 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
           </TouchableOpacity>
         ) : (
           <Text
-            className="text-base font-normal text-secondary/50"
+            className="text-xl font-normal text-secondary/50"
             numberOfLines={numberOfLines}
           >
             {value}

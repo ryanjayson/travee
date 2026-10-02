@@ -198,7 +198,7 @@ const ViewItineraryActivity = ({
     },
     {
       id: "checklist",
-      title: "Checklists",
+      title: "Checklist",
       // icon: "checklist",
       content: <ChecklistTab activityId={id} itineraryActivity={itineraryActivity} />,
     },

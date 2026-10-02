@@ -66,7 +66,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
     >
       <FadeInView type="down" delay={180} duration={200}>
         <View
-          className="p-2xl rounded-3xl flex-1 mb-4"
+          className="p-2xl rounded-3xl flex-1 mb-4 gap-6"
           style={{ backgroundColor: `${themeColor}30` }}
         >
           <View className="flex-row items-start w-full ">
@@ -74,14 +74,11 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
               {activity.destinationData?.name && activity.destinationData?.name != activity.title ?
                 <View className="flex flex-col gap-3">
                   <View className="flex flex-row gap-3 items-start flex-1">
-                    <View className="pt-0.5">
-                      <Icon name="location-on" size={28} color={themeColor} />
-                    </View>
                     <View className="flex-1">
-                      <Text className="text-xl leading-xl font-semibold text-secondary">
+                      <Text className="text-2xl leading-xl font-semibold text-secondary tracking-tight">
                         {activity.destinationData?.name}
                       </Text>
-                      <Text className="text-secondary/60 font-semibold text-base">
+                      <Text className="text-secondary/60 font-normal leading-2xl text-lg">
                         {locationText}
                       </Text>
                     </View>
@@ -91,14 +88,11 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
                 locationText && (
                   <View className="flex flex-col flex-1">
                     <View className="flex flex-row gap-3 items-start flex-1">
-                      <View className="pt-0.5">
-                        <Icon name="location-on" size={28} color={themeColor} />
-                      </View>
                       <View className="flex-1">
-                        <Text className="text-xs font-bold text-secondary uppercase tracking-widest mb-1 ">
+                        <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
                           Address
                         </Text>
-                        <Text className="mb-1 text-secondary/60 text-base font-semibold">
+                        <Text className="text-secondary/60 font-normal leading-2xl text-lg">
                           {locationText}
                         </Text>
                       </View>
@@ -108,52 +102,39 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
               }
             </View>
           </View>
-        </View>
 
-        <View
-          className="flex-row gap-4">
-          <View className="flex-1 p-5 rounded-3xl"
-            style={{
-              display: activity.startDate ? "flex" : "none",
-              backgroundColor: `${themeColor}60`
-            }}>
-            <View className="flex-1 mb-3">
-              <Icon name="timer" size={28} color={themeColor} />
+          <View className="flex-row gap-6">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
             </View>
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1 ">
-              {activity.endDate ? "Start" : "Date"}
-            </Text>
-            <Text className="text-2xl font-semibold text-secondary/90">
-              {safeFormatTime(activity.startDate)}
-            </Text>
-            <Text className="text-base font-medium text-secondary/70 mt-0.5">
-              {safeFormatDate(activity.startDate)}
-            </Text>
+            <View className="mb-3">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                {activity.endDate ? "Start" : "Date"}
+              </Text>
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {safeFormatTime(activity.startDate)}
+              </Text>
+              <Text className="text-base font-medium text-secondary/40">
+                {safeFormatDate(activity.startDate)}
+              </Text>
+            </View>
           </View>
 
-          {/* {activity.endDate && activity.startDate && (
-            <View className="px-3 items-center justify-center">
-              <Icon name="chevron-right" size={38} color={"#FFFFFF"} style={{ opacity: .50 }} />
+          <View className="flex-row gap-6">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
             </View>
-          )} */}
-
-          <View className="flex-1 p-5 rounded-3xl "
-            style={{
-              display: activity.endDate ? "flex" : "none",
-              backgroundColor: `${themeColor}30`
-            }}>
-            <View className="flex-1 mb-3">
-              <Icon name="timer-off" size={28} color={themeColor} />
+            <View className="mb-3">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                End
+              </Text>
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {activity.endDate ? safeFormatTime(activity.endDate) : "--:--"}
+              </Text>
+              <Text className="text-base font-medium text-secondary/40">
+                {activity.endDate ? safeFormatDate(activity.endDate) : ""}
+              </Text>
             </View>
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest mb-1">
-              End
-            </Text>
-            <Text className="text-2xl font-semibold text-secondary/90">
-              {activity.endDate ? safeFormatTime(activity.endDate) : "--:--"}
-            </Text>
-            <Text className="text-base font-medium text-secondary/70 mt-0.5">
-              {activity.endDate ? safeFormatDate(activity.endDate) : ""}
-            </Text>
           </View>
         </View>
       </FadeInView>
@@ -163,9 +144,12 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
           className="px-md mt-xl"
           style={{ display: hasPlanInfo ? "flex" : "none" }}
         >
-          <Text className="text-xl font-semibold text-secondary mt-lg">
+          <Text className="text-xl font-semibold text-secondary ">
             {planTypeConfig ? `${planTypeConfig.label} Info` : "Plan Info"}
           </Text>
+          {/* <Text className="text-lg font-normal leading-2xl text-secondary/60 mb-md ">
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod.
+          </Text> */}
           <View className="rounded-2xl flex-col p-2 pl-0">
             <Field
               label="Booking Ref"
@@ -210,7 +194,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
 
       <FadeInView type="down" delay={180} duration={400}>
         <View
-          className="px-md mt-xl"
+          className="px-md mt-2xl"
           style={{
             display: hasContactInfo ? "flex" : "none",
           }}
@@ -266,7 +250,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="Edit or add more details"
-            className="flex-row items-center self-start mt-6 py-1 px-xs gap-1.5"
+            className="flex-row items-center self-start mt-2 py-1 px-xs gap-1.5"
           >
             <Icon name="edit" size={20} color={"#0EA5E9"} />
             <Text

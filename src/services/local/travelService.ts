@@ -801,8 +801,8 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           activityId: aid,
           mode: item.mode,
           operatorProvider: item.operatorProvider,
-          pickupLocation: item.pickupLocation,
-          dropoffLocation: item.dropoffLocation,
+          pickupLocation: safeJsonParse(item.pickupLocation, item.pickupLocation),
+          dropoffLocation: safeJsonParse(item.dropoffLocation, item.dropoffLocation),
           departureDateTime: sanitizeDate(item.departureDateTime),
           arrivalDateTime: sanitizeDate(item.arrivalDateTime),
           seatOrVehicleNumber: item.seatOrVehicleNumber,
@@ -906,8 +906,8 @@ export const getTravelPlanLocally = async (id: number | string): Promise<any> =>
           destinationAddressData: safeJsonParse(item.destinationAddressData, null),
           vehicleType: item.vehicleType,
           vehicleModel: item.vehicleModel,
-          pickupLocation: item.pickupLocation,
-          dropoffLocation: item.dropoffLocation,
+          pickupLocation: safeJsonParse(item.pickupLocation, item.pickupLocation),
+          dropoffLocation: safeJsonParse(item.dropoffLocation, item.dropoffLocation),
           rentalStartDateTime: sanitizeDate(item.rentalStartDateTime),
           rentalEndDateTime: sanitizeDate(item.rentalEndDateTime),
           bookingReference: item.bookingReference,
@@ -1637,8 +1637,12 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
       const transportPayload = {
         mode: activityData.transportationDetails.mode || null,
         operatorProvider: activityData.transportationDetails.operatorProvider || null,
-        pickupLocation: activityData.transportationDetails.pickupLocation || null,
-        dropoffLocation: activityData.transportationDetails.dropoffLocation || null,
+        pickupLocation: typeof activityData.transportationDetails.pickupLocation === "object" && activityData.transportationDetails.pickupLocation
+          ? JSON.stringify(activityData.transportationDetails.pickupLocation)
+          : activityData.transportationDetails.pickupLocation || null,
+        dropoffLocation: typeof activityData.transportationDetails.dropoffLocation === "object" && activityData.transportationDetails.dropoffLocation
+          ? JSON.stringify(activityData.transportationDetails.dropoffLocation)
+          : activityData.transportationDetails.dropoffLocation || null,
         departureDateTime: sanitizeDate(activityData.transportationDetails.departureDateTime),
         arrivalDateTime: sanitizeDate(activityData.transportationDetails.arrivalDateTime),
         seatOrVehicleNumber: activityData.transportationDetails.seatOrVehicleNumber || null,
@@ -1832,8 +1836,12 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
           : null,
         vehicleType: activityData.rideRentalDetails.vehicleType || null,
         vehicleModel: activityData.rideRentalDetails.vehicleModel || null,
-        pickupLocation: activityData.rideRentalDetails.pickupLocation || null,
-        dropoffLocation: activityData.rideRentalDetails.dropoffLocation || null,
+        pickupLocation: typeof activityData.rideRentalDetails.pickupLocation === "object" && activityData.rideRentalDetails.pickupLocation
+          ? JSON.stringify(activityData.rideRentalDetails.pickupLocation)
+          : activityData.rideRentalDetails.pickupLocation || null,
+        dropoffLocation: typeof activityData.rideRentalDetails.dropoffLocation === "object" && activityData.rideRentalDetails.dropoffLocation
+          ? JSON.stringify(activityData.rideRentalDetails.dropoffLocation)
+          : activityData.rideRentalDetails.dropoffLocation || null,
         rentalStartDateTime: sanitizeDate(activityData.rideRentalDetails.rentalStartDateTime),
         rentalEndDateTime: sanitizeDate(activityData.rideRentalDetails.rentalEndDateTime),
         bookingReference: activityData.rideRentalDetails.bookingReference || null,

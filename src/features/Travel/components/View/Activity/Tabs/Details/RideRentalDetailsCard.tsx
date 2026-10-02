@@ -7,7 +7,7 @@ import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
 
 interface RideRentalDetailsCardProps {
-  data: RideRentalDetailsDto;
+  data: RideRentalDetailsDto & { destinationData?: any };
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
@@ -48,118 +48,107 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
     data.websiteAddress
   );
 
+  const themeColor = "#384690";
+
   return (
     <View className="mt-2 px-2 overflow-hidden">
       {/* Main Details Body */}
 
       <FadeInView type="down" delay={180} duration={200}>
-        <View className="p-2xl rounded-3xl flex-1 mb-4 bg-[#384690+30]">
+        <View
+          className="p-2xl rounded-3xl flex-1 mb-4 gap-6"
+          style={{ backgroundColor: `${themeColor}30` }}
+        >
           <View className="flex-row items-start w-full">
             <View className="flex-col gap-2 flex-1">
-              {data.destinationAddressData?.name && data.destinationAddressData?.name != data.providerName ? (
+              {data.destinationAddressData?.name && data.destinationAddressData?.name !== data.providerName ? (
                 <View className="flex flex-col gap-3">
                   <View className="flex flex-row gap-3 items-start flex-1">
-                    <View className="pt-0.5">
-                      <Icon name="location-on" size={28} color={"#384690"} />
-                    </View>
                     <View className="flex-1">
-                      <Text className="text-xs font-medium text-secondary/70 uppercase tracking-wide">
-                        {data.vehicleType ? `${data.vehicleType} Rental` : "Ride & Rental"}
-                      </Text>
-                      <Text className="text-xl leading-xl font-semibold text-secondary">
+                      <Text className="text-2xl leading-xl font-semibold text-secondary tracking-tight">
                         {data.destinationAddressData?.name}
                       </Text>
-                      <Text className="text-secondary/60 font-semibold text-base">
-                        {data.address || locationText}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              ) : (data.address || locationText) ? (
-                <View className="flex flex-col flex-1">
-                  <View className="flex flex-row gap-3 items-start flex-1">
-                    <View className="pt-0.5">
-                      <Icon name="location-on" size={28} color={"#384690"} />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-xs font-bold text-secondary uppercase tracking-widest mb-1">
-                        Address
-                      </Text>
-                      <Text className="mb-1 text-secondary/80 text-base font-semibold">
-                        {data.address || locationText}
-                      </Text>
+                      {data.address || locationText ? (
+                        <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                          {data.address || locationText}
+                        </Text>
+                      ) : null}
                     </View>
                   </View>
                 </View>
               ) : data.providerName ? (
-                <View className="flex flex-col flex-1">
+                <View className="flex flex-col gap-3">
                   <View className="flex flex-row gap-3 items-start flex-1">
-                    <View className="pt-0.5">
-                      <Icon name="directions-car" size={28} color={"#384690"} />
-                    </View>
                     <View className="flex-1">
-                      <Text className="text-xs font-medium text-secondary/70 uppercase tracking-wide">
-                        {data.vehicleType ? `${data.vehicleType} Rental` : "Ride & Rental"}
-                      </Text>
-                      <Text className="text-xl leading-xl font-semibold text-secondary">
+                      {/* <Text className="text-2xl leading-xl font-semibold text-secondary tracking-tight">
                         {data.providerName}
-                      </Text>
+                      </Text> */}
+                      {(data.address || locationText) && (data.address || locationText) !== data.providerName ? (
+                        <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                          {data.address || locationText}
+                        </Text>
+                      ) : null}
                     </View>
                   </View>
                 </View>
-              ) : null}
+              ) : (
+                (data.address || locationText) && (
+                  <View className="flex flex-col flex-1">
+                    <View className="flex flex-row gap-3 items-start flex-1">
+                      <View className="flex-1">
+                        <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                          Address
+                        </Text>
+                        <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                          {data.address || locationText}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                )
+              )}
             </View>
           </View>
-        </View>
 
-        <View className="flex-row gap-4">
-          <View
-            className="flex-1 p-5 rounded-3xl"
-            style={{
-              display: data.rentalStartDateTime ? "flex" : "none",
-              backgroundColor: "#38469050",
-            }}
-          >
-            <View className="flex-1 mb-3">
-              <Icon name="timer" size={28} color={"#384690"} />
+          <View className="flex-row gap-6">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
             </View>
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
-              Pick-up
-            </Text>
-            <Text className="text-2xl font-semibold text-secondary/70">
-              {safeFormatTime(data.rentalStartDateTime)}
-            </Text>
-            <Text className="text-base font-medium text-secondary/70 mt-0.5">
-              {safeFormatDate(data.rentalStartDateTime)}
-            </Text>
+            <View className="mb-3">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                Pick-up
+              </Text>
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {data.rentalStartDateTime ? safeFormatTime(data.rentalStartDateTime) : "--:--"}
+              </Text>
+              <Text className="text-base font-medium text-secondary/50">
+                {data.rentalStartDateTime ? safeFormatDate(data.rentalStartDateTime) : ""}
+              </Text>
+            </View>
           </View>
 
-          <View
-            className="flex-1 p-5 rounded-3xl"
-            style={{
-              display: data.rentalEndDateTime ? "flex" : "none",
-              backgroundColor: "#38469030",
-            }}
-          >
-            <View className="flex-1 mb-3">
-              <Icon name="timer-off" size={28} color={"#384690"} />
+          <View className="flex-row gap-6">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
             </View>
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
-              Drop-off
-            </Text>
-            <Text className="text-2xl font-semibold text-secondary/70">
-              {data.rentalEndDateTime ? safeFormatTime(data.rentalEndDateTime) : "--:--"}
-            </Text>
-            <Text className="text-base font-medium text-secondary/70 mt-0.5">
-              {data.rentalEndDateTime ? safeFormatDate(data.rentalEndDateTime) : ""}
-            </Text>
+            <View className="mb-3">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                Drop-off
+              </Text>
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {data.rentalEndDateTime ? safeFormatTime(data.rentalEndDateTime) : "--:--"}
+              </Text>
+              <Text className="text-base font-medium text-secondary/50">
+                {data.rentalEndDateTime ? safeFormatDate(data.rentalEndDateTime) : ""}
+              </Text>
+            </View>
           </View>
         </View>
       </FadeInView>
 
       <FadeInView delay={180} duration={400}>
         <View
-          className="px-md mt-xl"
+          className="px-md "
           style={{ display: hasRentalInfo ? "flex" : "none" }}
         >
           <Text className="text-xl font-semibold text-secondary mt-lg">

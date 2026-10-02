@@ -13,6 +13,13 @@ import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView, StaggerItem } from "../../../../../../../components/animations";
 
 export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = ({ data, onFullScreenChange }) => {
+  const themeColor = "#9c46ec";
+
+  const locationText =
+    data.address ||
+    data.destinationAddressData?.address ||
+    data.destinationAddressData?.name ||
+    "";
 
   return (
     <View className="mt-2 px-2 overflow-hidden">
@@ -20,42 +27,34 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
 
       <FadeInView type="down" delay={180} duration={200}>
         <View
-          className="p-2xl rounded-3xl flex-1 mb-4 bg-[#9c46ec+40] "
+          className="p-2xl rounded-3xl flex-1 mb-4 gap-6"
+          style={{ backgroundColor: `${themeColor}30` }}
         >
           <View className="flex-row items-start w-full ">
             <View className="flex-col gap-2 flex-1">
               {data.destinationAddressData?.name && data.destinationAddressData?.name != data.accomodationName ?
                 <View className="flex flex-col gap-3">
                   <View className="flex flex-row gap-3 items-start flex-1">
-                    <View className="pt-0.5">
-                      <Icon name="location-on" size={28} color={"#9c46ec"} />
-                    </View>
                     <View className="flex-1">
-                      <Text className="text-xs font-medium text-secondary/70 uppercase tracking-wide">
-                        {data.subType ? `${data.subType} Name` : "Place to stay"}
-                      </Text>
-                      <Text className="text-xl leading-xl font-semibold text-secondary">
+                      <Text className="text-2xl leading-xl font-semibold text-secondary tracking-tight">
                         {data.destinationAddressData?.name}
                       </Text>
-                      <Text className="text-secondary/60 font-semibold text-base">
-                        {data.address}
+                      <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                        {locationText}
                       </Text>
                     </View>
                   </View>
                 </View>
                 :
-                data.address && (
+                locationText && (
                   <View className="flex flex-col flex-1">
                     <View className="flex flex-row gap-3 items-start flex-1">
-                      <View className="pt-0.5">
-                        <Icon name="location-on" size={28} color={"#9c46ec"} />
-                      </View>
                       <View className="flex-1">
-                        <Text className="text-xs font-bold text-secondary uppercase tracking-widest mb-1 ">
+                        <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
                           Address
                         </Text>
-                        <Text className="mb-1 text-secondary/80 text-base font-semibold">
-                          {data.address}
+                        <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                          {locationText}
                         </Text>
                       </View>
                     </View>
@@ -64,48 +63,39 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
               }
             </View>
           </View>
-        </View>
 
-        <View
-          className="flex-row gap-4"
-        >
-          <View className="flex-1 p-5 rounded-3xl"
-            style={{
-              display: data.checkinDateTime ? "flex" : "none",
-              backgroundColor: `#9c46ec80`
-            }}>
-            <View className="flex-1 mb-3">
-              <Icon name="timer" size={28} color={"#9c46ec"} />
+          <View className="flex-row gap-6">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
             </View>
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest ">
-              Check-in
-            </Text>
-            <Text className="text-2xl font-semibold text-secondary/70">
-              {safeFormatTime(data.checkinDateTime)}
-            </Text>
-            <Text className="text-base font-medium text-secondary/70 mt-0.5">
-              {safeFormatDate(data.checkinDateTime)}
-            </Text>
+            <View className="mb-3">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                Check-in
+              </Text>
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {data.checkinDateTime ? safeFormatTime(data.checkinDateTime) : "--:--"}
+              </Text>
+              <Text className="text-base font-medium text-secondary/50">
+                {data.checkinDateTime ? safeFormatDate(data.checkinDateTime) : ""}
+              </Text>
+            </View>
           </View>
 
-
-          <View className="flex-1 p-5 rounded-3xl "
-            style={{
-              display: data.checkoutDateTime ? "flex" : "none",
-              backgroundColor: `#9c46ec40`
-            }}>
-            <View className="flex-1 mb-3">
-              <Icon name="timer-off" size={28} color={"#9c46ec"} />
+          <View className="flex-row gap-6">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
             </View>
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest ">
-              Check-out
-            </Text>
-            <Text className="text-2xl font-semibold text-secondary/70">
-              {data.checkoutDateTime ? safeFormatTime(data.checkoutDateTime) : "--:--"}
-            </Text>
-            <Text className="text-base font-medium text-secondary/70 mt-0.5">
-              {data.checkoutDateTime ? safeFormatDate(data.checkoutDateTime) : ""}
-            </Text>
+            <View className="mb-3">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                Check-out
+              </Text>
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {data.checkoutDateTime ? safeFormatTime(data.checkoutDateTime) : "--:--"}
+              </Text>
+              <Text className="text-base font-medium text-secondary/50">
+                {data.checkoutDateTime ? safeFormatDate(data.checkoutDateTime) : ""}
+              </Text>
+            </View>
           </View>
         </View>
       </FadeInView>

@@ -73,9 +73,33 @@ const DetailsTab = ({
       case TripPlanType.stay:
         return <AccomodationDetails data={itineraryActivity.accomodationDetails} onFullScreenChange={onFullScreenChange} />;
       case TripPlanType.transit:
-        return <TransportationDetails data={itineraryActivity.transportationDetails} onFullScreenChange={onFullScreenChange} />;
+        return (
+          <TransportationDetails
+            data={
+              itineraryActivity.transportationDetails
+                ? {
+                    ...itineraryActivity.transportationDetails,
+                    destinationData: itineraryActivity.destinationData,
+                  }
+                : null
+            }
+            onFullScreenChange={onFullScreenChange}
+          />
+        );
       case TripPlanType.rideRental:
-        return <RideRentalDetails data={itineraryActivity.rideRentalDetails} onFullScreenChange={onFullScreenChange} />;
+        return (
+          <RideRentalDetails
+            data={
+              itineraryActivity.rideRentalDetails
+                ? {
+                    ...itineraryActivity.rideRentalDetails,
+                    destinationData: itineraryActivity.destinationData,
+                  }
+                : null
+            }
+            onFullScreenChange={onFullScreenChange}
+          />
+        );
       case TripPlanType.activity:
       default:
         return (

@@ -29,7 +29,7 @@ export const safeFormatDate = (
       day: "numeric",
       year: "numeric",
     })} - ${d.toLocaleDateString(undefined, {
-      weekday: "short",
+      weekday: "long",
     })}`;
   } catch (e) {
     return fallback;

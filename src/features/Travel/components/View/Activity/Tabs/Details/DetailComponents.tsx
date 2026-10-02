@@ -85,12 +85,12 @@ export const AccomodationDetails = ({ data, onFullScreenChange }: { data?: Accom
   return <AccomodationDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const TransportationDetails = ({ data, onFullScreenChange }: { data?: TransportationDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
+export const TransportationDetails = ({ data, onFullScreenChange }: { data?: (TransportationDetailsDto & { destinationData?: any }) | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!hasActivityData(data)) return <NoDetailsAdded />;
   return <TransportationDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };
 
-export const RideRentalDetails = ({ data, onFullScreenChange }: { data?: RideRentalDetailsDto | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
+export const RideRentalDetails = ({ data, onFullScreenChange }: { data?: (RideRentalDetailsDto & { destinationData?: any }) | null; onFullScreenChange?: (fullScreen: boolean) => void }) => {
   if (!hasActivityData(data)) return <NoDetailsAdded />;
   return <RideRentalDetailsCard data={data!} onFullScreenChange={onFullScreenChange} />;
 };

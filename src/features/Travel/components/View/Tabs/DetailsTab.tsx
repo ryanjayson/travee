@@ -38,18 +38,20 @@ const StatCard = ({
   <AnimatedPressable
     onPress={onPress}
     disabled={!onPress}
-    className={` rounded-3xl border border-[#e0e0e0] p-4 flex-1 min-w-[44%] bg-[${accent}]`}
+    className={`rounded-4xl border border-[#e0e0e0] p-6 flex-1 min-w-[44%] bg-[${accent}]`}
     accessibilityRole="button"
     activeOpacity={onPress ? 0.7 : 1}
   >
     <View
-      className="w-9 h-9 rounded-full justify-center mb-3"
+      className="w-9 h-9 rounded-full justify-center"
     >
-      <Icon name={icon} size={30} color={'white'} />
+      <Icon name={icon} size={38} color={'white'} />
     </View>
-    <Text className="text-3xl font-bold text-white">{value}</Text>
-    <Text className="text-xs font-semibold text-gray-100 uppercase tracking-wider mt-2">{label}</Text>
-    {sub ? <Text className="text-[11px] text-gray-300">{sub}</Text> : null}
+
+    <Text className="text-4xl font-bold text-white mt-2">{value}</Text>
+    <Text className="text-base font-semibold text-gray-100 uppercase tracking-wider">{label}</Text>
+
+    {sub ? <Text className="text-base text-gray-200 -mt-1">{sub}</Text> : null}
   </AnimatedPressable>
 );
 

@@ -148,14 +148,6 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
     }
   };
 
-  if (groupsLoading || itemsLoading) {
-    return (
-      <View className="flex-1 items-center justify-center py-10">
-        <ActivityIndicator color={colors.primary} />
-      </View>
-    );
-  }
-
   const totalCount = items.length;
   const doneCount = items.filter((i) => i.isDone).length;
   const progressPercent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
@@ -196,6 +188,14 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
     }
   };
 
+  if (groupsLoading || itemsLoading) {
+    return (
+      <View className="flex-1 items-center justify-center py-10">
+        <ActivityIndicator color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <>
       <ScrollView
@@ -210,59 +210,64 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       >
         <View className="px-6 py-5">
           {/* Summary header */}
-          <View className="flex-row items-center justify-between">
-            <Text className="text-2xl tracking-tight font-medium  text-secondary mb-0">
-              Trip checklist
-            </Text>
-          </View>
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-lg tracking-tight text-tertiary/60 mb-0 leading-xl">
-              Track your travel essentials, custom lists, and itinerary tasks
-            </Text>
-          </View>
-
-          <View className="bg-gray-200 h-6 rounded-xl mb-3 overflow-hidden justify-between flex-row items-center px-1">
-            <View
-              className={`bg-[#05966980] h-4  ${progressPercent === 100 ? 'rounded-full' : 'rounded-l-full'}`}
-              style={{ width: `${progressPercent}%` }}
-            />
-
-            <Text className={`text-xs font-semibold px-1 z-10 absolute right-1 top-[4px] ${doneCount === totalCount ? 'text-white' : 'text-[#059669]'}`}>
-              {doneCount}/{totalCount}
-            </Text>
-          </View>
-
-          {/* Filter button below header */}
-          <View className="flex-row justify-end mb-5">
-            <View ref={filterButtonRef} collapsable={false}>
-              <TouchableOpacity
-                onPress={handleOpenFilter}
-                accessibilityRole="button"
-                accessibilityLabel="Filter checklist"
-                activeOpacity={0.7}
-                className="flex-row items-center justify-center py-2xl "
-              >
-                <View className="flex-row items-center gap-1.5">
-                  <Text
-                    className="text-base font-semibold text-accent"
-                  >
-                    {selectedFilter === 'All' ? 'All' : selectedFilter}
-                  </Text>
-                  <Icon
-                    name="filter-alt"
-                    size={20}
-                    color={selectedFilter !== 'All' ? colors.primary : '#94A3B8'}
-                  />
-                </View>
-              </TouchableOpacity>
+          <FadeInView
+            type="up"
+            delay={100}
+            duration={350}
+          >
+            <View className="flex-row items-center justify-between">
+              <Text className="text-2xl tracking-tight font-medium  text-secondary mb-0">
+                Trip checklist
+              </Text>
             </View>
-          </View>
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-lg tracking-tight text-tertiary/60 mb-0 leading-xl">
+                Track your travel essentials, custom lists, and itinerary tasks
+              </Text>
+            </View>
 
+            <View className="bg-gray-200 h-6 rounded-xl mb-3 overflow-hidden justify-between flex-row items-center px-1">
+              <View
+                className={`bg-[#05966980] h-4  ${progressPercent === 100 ? 'rounded-full' : 'rounded-l-full'}`}
+                style={{ width: `${progressPercent}%` }}
+              />
+
+              <Text className={`text-xs font-semibold px-1 z-10 absolute right-1 top-[4px] ${doneCount === totalCount ? 'text-white' : 'text-[#059669]'}`}>
+                {doneCount}/{totalCount}
+              </Text>
+            </View>
+
+            {/* Filter button below header */}
+            <View className="flex-row justify-end mb-5">
+              <View ref={filterButtonRef} collapsable={false}>
+                <TouchableOpacity
+                  onPress={handleOpenFilter}
+                  accessibilityRole="button"
+                  accessibilityLabel="Filter checklist"
+                  activeOpacity={0.7}
+                  className="flex-row items-center justify-center py-2xl "
+                >
+                  <View className="flex-row items-center gap-1.5">
+                    <Text
+                      className="text-base font-semibold text-accent"
+                    >
+                      {selectedFilter === 'All' ? 'All' : selectedFilter}
+                    </Text>
+                    <Icon
+                      name="filter-alt"
+                      size={20}
+                      color={selectedFilter !== 'All' ? colors.primary : '#94A3B8'}
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </FadeInView>
           {/* Ungrouped / General */}
           {(selectedFilter === 'All' || selectedFilter === 'General') && (
             <View className="rounded-4xl overflow-hidden mb-4">
               <FadeInView
-                type="right"
+                type="up"
                 delay={100}
                 duration={350}
               >
@@ -317,7 +322,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                 return (
                   <FadeInView
                     key={group.id}
-                    type="right"
+                    type="up"
                     delay={100}
                     duration={350}
                   >
@@ -377,7 +382,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                 return (
                   <FadeInView
                     key={`activity-${activity.id}`}
-                    type="right"
+                    type="up"
                     delay={100}
                     duration={350}
                   >

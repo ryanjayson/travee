@@ -1015,9 +1015,9 @@ export const TripDetailScreen = ({
                     <View className="pr-1">
                       <Icon name="chevron-left" size={24} color={"#999"} style={{ opacity: 0.5 }} />
                     </View>
-                    <Text className="text-sm font-semibold uppercase text-tertiary/50">
+                    {/* <Text className="text-sm font-semibold uppercase text-tertiary/50">
                       Back to Trip
-                    </Text>
+                    </Text> */}
                   </TouchableOpacity>
 
                   <TouchableOpacity

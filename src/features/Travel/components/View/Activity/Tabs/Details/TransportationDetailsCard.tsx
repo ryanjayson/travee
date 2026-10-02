@@ -6,28 +6,67 @@ import { DestinationDto, TransportationDetailsDto } from "../../../../../types/T
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
 
-const getLocationTitle = (loc?: string | DestinationDto | null): string => {
-  if (!loc) return "";
-  if (typeof loc === "string") return loc;
-  return loc.name || loc.city || loc.address || "";
+const parseLocObject = (loc?: any): DestinationDto | null => {
+  if (!loc) return null;
+  if (typeof loc === "object" && (loc.name || loc.address || loc.city)) {
+    return loc as DestinationDto;
+  }
+  if (typeof loc === "string" && loc.trim().startsWith("{")) {
+    try {
+      const parsed = JSON.parse(loc);
+      if (parsed && typeof parsed === "object") {
+        return parsed as DestinationDto;
+      }
+    } catch { }
+  }
+  return null;
 };
 
-const getLocationSubtitle = (loc?: string | DestinationDto | null): string => {
+const getLocationTitle = (loc?: any): string => {
   if (!loc) return "";
-  if (typeof loc === "string") return "";
-  if (loc.address && loc.address !== loc.name) {
-    return loc.address;
+  const obj = parseLocObject(loc);
+  if (obj) {
+    return obj.name || obj.city || obj.address || "";
   }
-  const parts = [
-    loc.city && loc.city !== loc.name ? loc.city : null,
-    loc.regionOrState,
-    loc.country,
-  ].filter(Boolean);
-  return parts.join(", ");
+  if (typeof loc === "string") {
+    const commaIndex = loc.indexOf(",");
+    if (commaIndex > 0) {
+      return loc.substring(0, commaIndex).trim();
+    }
+    return loc.trim();
+  }
+  return "";
+};
+
+const getLocationAddress = (loc?: any): string => {
+  if (!loc) return "";
+  const obj = parseLocObject(loc);
+  if (obj) {
+    if (obj.address && (!obj.name || obj.address.toLowerCase() !== obj.name.toLowerCase())) {
+      return obj.address;
+    }
+    const regionParts = [
+      obj.city && obj.name && obj.city.toLowerCase() !== obj.name.toLowerCase() ? obj.city : (!obj.name ? obj.city : null),
+      obj.regionOrState,
+      obj.country,
+    ].filter(Boolean);
+    if (regionParts.length > 0) {
+      return regionParts.join(", ");
+    }
+    return obj.address || "";
+  }
+  if (typeof loc === "string") {
+    const commaIndex = loc.indexOf(",");
+    if (commaIndex > 0) {
+      return loc.substring(commaIndex + 1).trim();
+    }
+    return "";
+  }
+  return "";
 };
 
 interface TransportationDetailsCardProps {
-  data: TransportationDetailsDto;
+  data: TransportationDetailsDto & { destinationData?: any };
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
@@ -42,14 +81,38 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
         : data.price
     : null;
 
-  const pickupTitle = getLocationTitle(data.pickupLocation);
-  const pickupSubtitle = getLocationSubtitle(data.pickupLocation);
-  const dropoffTitle = getLocationTitle(data.dropoffLocation);
-  const dropoffSubtitle = getLocationSubtitle(data.dropoffLocation);
+  const destData = (data as any).destinationData;
+  const pickLocObj = parseLocObject(data.pickupLocation);
+  const destPickObj = parseLocObject(destData?.pickupLocation);
+  const dropLocObj = parseLocObject(data.dropoffLocation);
+  const destDropObj = parseLocObject(destData?.dropoffLocation);
+
+  const rawPickup =
+    (pickLocObj?.address ? pickLocObj : null) ||
+    (destPickObj?.address ? destPickObj : null) ||
+    pickLocObj ||
+    destPickObj ||
+    data.pickupLocation ||
+    destData?.pickupLocation ||
+    (data as any).pickupAddress;
+
+  const rawDropoff =
+    (dropLocObj?.address ? dropLocObj : null) ||
+    (destDropObj?.address ? destDropObj : null) ||
+    dropLocObj ||
+    destDropObj ||
+    data.dropoffLocation ||
+    destData?.dropoffLocation ||
+    (data as any).dropoffAddress;
+
+  const pickupTitle = getLocationTitle(rawPickup);
+  const pickupSubtitle = getLocationAddress(rawPickup);
+  const dropoffTitle = getLocationTitle(rawDropoff);
+  const dropoffSubtitle = getLocationAddress(rawDropoff);
 
   const locationText =
     pickupTitle && dropoffTitle && pickupTitle !== dropoffTitle
-      ? `${pickupTitle} → ${dropoffTitle}`
+      ? `${pickupTitle} ➠ ${dropoffTitle}`
       : pickupTitle || dropoffTitle || "";
 
   const hasTransitInfo = Boolean(
@@ -67,73 +130,98 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
     (data as any).emailAddress
   );
 
-  return (
+  const themeColor = "#018091";
 
+  return (
     <View className="mt-4 px-2 overflow-hidden">
       {/* Main Details Body */}
-      <FadeInView delay={180} duration={400} className="bg-[#018091] rounded-3xl p-5">
-        <View className="">
-          <View className="">
-            {/* <Text className="text-xs font-medium text-secondary/80 uppercase tracking-wide mb-1">
-              {data.mode ? `${data.mode.charAt(0).toUpperCase() + data.mode.slice(1)} Transit` : "Transportation"}
-            </Text> */}
-            {data.operatorProvider &&
-              <Text className="text-2xl leading-2xl font-semibold mb-1 text-white">
-                {data.operatorProvider}
-              </Text>
-            }
-            {/* 
-            <Text className="text-lg font-semibold mb-1 text-white/40">
-              {locationText || "N/A"}
-            </Text> */}
+      <FadeInView type="down" delay={180} duration={200}>
+        <View
+          className="p-2xl rounded-3xl flex-1 mb-2 gap-4"
+          style={{ backgroundColor: `${themeColor}30` }}
+        >
+          <View className="flex-row items-start w-full mb-2">
+            <View className="flex-col gap-2 flex-1">
+              {data.operatorProvider ? (
+                <View className="flex flex-col gap-3">
+                  <View className="flex flex-row gap-3 items-start flex-1">
+                    <View className="flex-1">
+                      <Text className="text-2xl leading-xl font-semibold text-secondary tracking-tight">
+                        {data.operatorProvider}
+                      </Text>
+                      {locationText ? (
+                        <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                          {locationText}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                </View>
+              ) : (
+                locationText && (
+                  <View className="flex flex-col flex-1">
+                    <View className="flex flex-row gap-3 items-start flex-1">
+                      <View className="flex-1">
+                        <Text className="text-[10px] font-semibold text-secondary uppercase tracking-wide">
+                          Route
+                        </Text>
+                        <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                          {locationText}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                )
+              )}
+            </View>
           </View>
-        </View>
 
-        <View className="flex-row items-center justify-between">
-          <View className="flex-1">
-            <Text className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-1">
-              Departure
-            </Text>
-            <Text className="text-xl font-semibold text-white">
-              {pickupTitle}
-            </Text>
-            {pickupSubtitle ? (
-              <Text className="text-base font-medium text-white/80 mt-0.5">
-                {pickupSubtitle}
+          <View className="flex-row gap-4">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
+            </View>
+            <View className="mb-3 flex-1">
+              <Text className="text-sm font-semibold text-secondary/50  tracking-wide">
+                Departure
               </Text>
-            ) : null}
-            <View className="mt-2">
-              <Text className="text-2xl font-semibold text-white">
-                {safeFormatTime(data.departureDateTime)}
-              </Text>
-              <Text className="text-base font-medium text-white/80 mt-0.5">
-                {safeFormatDate(data.departureDateTime)}
+              {pickupTitle ? (
+                <Text className="text-xl font-semibold text-secondary">
+                  {pickupTitle}
+                </Text>
+              ) : null}
+              {pickupSubtitle && pickupSubtitle !== pickupTitle ? (
+                <Text className="text-lg leading-2xl text-secondary/50 mt-1">
+                  {pickupSubtitle}
+                </Text>
+              ) : null}
+
+              <Text className="text-lg font-semibold text-secondary/40">
+                {data.departureDateTime ? safeFormatTime(data.departureDateTime) : "--:--"}{data.departureDateTime ? `, ${safeFormatDate(data.departureDateTime)}` : ""}
               </Text>
             </View>
           </View>
 
-          <View className="items-center justify-center px-2">
-            <Icon name="chevron-right" size={38} color={"#FFFFFF"} style={{ opacity: 0.75 }} />
-          </View>
-
-          <View className="flex-1 items-end">
-            <Text className="text-xs font-semibold text-white/80 uppercase tracking-widest mb-1">
-              Arrival
-            </Text>
-            <Text className="text-xl font-semibold text-white text-right">
-              {dropoffTitle || "N/A"}
-            </Text>
-            {dropoffSubtitle ? (
-              <Text className="text-base font-medium text-white/80 mt-0.5 text-right">
-                {dropoffSubtitle}
+          <View className="flex-row gap-4
+          ">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
+            </View>
+            <View className="mb-3 flex-1">
+              <Text className="text-sm font-semibold text-secondary/50  tracking-wide">
+                Arrival
               </Text>
-            ) : null}
-            <View className="mt-2 items-end">
-              <Text className="text-2xl font-semibold text-white text-right">
-                {data.arrivalDateTime ? safeFormatTime(data.arrivalDateTime) : "--:--"}
-              </Text>
-              <Text className="text-base font-medium text-white/80 mt-0.5 text-right">
-                {data.arrivalDateTime ? safeFormatDate(data.arrivalDateTime) : ""}
+              {dropoffTitle ? (
+                <Text className="text-xl font-semibold text-secondary">
+                  {dropoffTitle}
+                </Text>
+              ) : null}
+              {dropoffSubtitle && dropoffSubtitle !== dropoffTitle ? (
+                <Text className="text-lg leading-2xl text-secondary/50">
+                  {dropoffSubtitle}
+                </Text>
+              ) : null}
+              <Text className="text-lg font-semibold text-secondary/40">
+                {data.arrivalDateTime ? safeFormatTime(data.arrivalDateTime) : "--:--"}{data.arrivalDateTime ? `, ${safeFormatDate(data.arrivalDateTime)}` : ""}
               </Text>
             </View>
           </View>
@@ -145,7 +233,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
           className="px-md my-lg"
           style={{ display: hasTransitInfo ? "flex" : "none" }}
         >
-          <Text className="text-xl font-semibold text-secondary mt-lg">
+          <Text className="text-xl font-semibold text-secondary">
             Transit Info
           </Text>
           <View className="rounded-2xl flex-col p-2 pl-0">
@@ -206,7 +294,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
             display: hasContactInfo ? "flex" : "none",
           }}
         >
-          <Text className="text-xl font-semibold text-secondary mt-lg">
+          <Text className="text-xl font-semibold text-secondary">
             Contact Info
           </Text>
           <View className="rounded-2xl flex-col p-2 pb-1 pl-0">
