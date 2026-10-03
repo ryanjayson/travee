@@ -20,6 +20,7 @@ interface UpcomingTripsProps {
 
 const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }: UpcomingTripsProps) => {
   const navigation = useNavigation<any>();
+  const { colors } = useTheme();
   const { openActivityTypeModal } = useTravelContext();
   const [selectedDestinationsTrip, setSelectedDestinationsTrip] = useState<Travel | null>(null);
   const [showDestinationsSheet, setShowDestinationsSheet] = useState(false);
@@ -85,7 +86,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
         <Text className="text-xl font-semibold text-secondary">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
           <TouchableOpacity
-            className="flex-row items-center gap-1 align-center"
+            className="flex-row items-center gap-1"
             accessibilityRole="button"
             accessibilityLabel={`View all ${upcomingTrips.length} upcoming trips in catalog`}
             onPress={handleGoToUpcomingCatalog}
@@ -99,7 +100,9 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
       </View>
 
       {isLoading ? (
-        <Text className="text-gray-500 text-sm px-5">Loading...</Text>
+        <View className="w-full px-4 py-8 items-center justify-center">
+          <Text className="text-gray-400 text-sm">Loading upcoming trips...</Text>
+        </View>
       ) : upcomingTrips.length > 0 ? (
         <View className=" flex-1 w-full px-4 gap-4">
           {displayedTrips.map((item, index) => {
@@ -237,53 +240,47 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
               ]}
             >
               <View style={styles.showMoreContent}>
-                <Text style={[styles.showMoreLabel, { color: "#0EA5E9" }]}>
+                <Text style={[styles.showMoreLabel, { color: colors.primary || "#0EA5E9" }]}>
                   Show more upcoming trips
                 </Text>
                 <Ionicons
                   name="chevron-forward"
                   size={16}
-                  color={"#0EA5E9"}
+                  color={colors.primary || "#0EA5E9"}
                 />
               </View>
             </TouchableOpacity>
           )}
         </View>
       ) : (
-        <View className="flex-1 gap-4 justify-center items-center">
+        <View className="w-full px-4">
           <TouchableOpacity
             onPress={onAddTripPress}
             activeOpacity={0.7}
             accessibilityRole="button"
-            accessibilityLabel="Add a new trip"
-            className="mx-5 h-110 align-middle justify-center rounded-2xl p-6 items-center border-2 border-dashed border-gray-300 "
+            accessibilityLabel="Plan your first trip"
+            className="w-full justify-center rounded-3xl p-6 items-center border-2 border-dashed border-gray-300 bg-white/50"
           >
-            <FadeInView type="up" delay={50} duration={350}>
+            <FadeInView type="up" delay={50} duration={350} className="w-full items-center">
               <View className="items-center">
-                <Ionicons name="briefcase-outline" size={42} color="#d1d5db" />
+                <Ionicons name="briefcase-outline" size={42} color={colors.outline || "#d1d5db"} />
 
-                <Text className="text-2xl font-medium text-secondary text-center mb-sm">
+                <Text className="text-xl font-semibold text-secondary text-center mt-3 mb-1">
                   No upcoming trips
                 </Text>
-                <Text className="text-lg font-normal text-tertiary/60 text-center px-3xl leading-[28px]">
+                <Text className="text-sm font-normal text-tertiary/70 text-center px-4 leading-5">
                   You haven't planned any trips yet. Create one to get started.
                 </Text>
               </View>
             </FadeInView>
-            <View className="justify-center items-center gap-3 flex-row mt-lg">
-              <TouchableOpacity
-                onPress={onAddTripPress}
-                accessibilityRole="button"
-                activeOpacity={0.7}
-                className="flex-row items-center bg-primary/10 px-4 py-2 rounded-full gap-2"
+            <View className="flex-row items-center bg-primary/10 px-4 py-2 rounded-full gap-2 mt-4">
+              <Ionicons name="add" size={16} color={colors.primary || "#0EA5E9"} />
+              <Text
+                className="font-medium text-base text-primary"
+                style={{ color: colors.primary }}
               >
-                <Ionicons name="add" size={16} color={"#0EA5E9"} />
-                <Text
-                  className="font-medium text-base text-primary"
-                >
-                  Plan Your First Trip
-                </Text>
-              </TouchableOpacity>
+                Plan Your First Trip
+              </Text>
             </View>
           </TouchableOpacity>
         </View>

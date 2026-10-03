@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { Animated, StyleProp, ViewStyle } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -22,6 +22,19 @@ export const FadeInView: React.FC<FadeInViewProps> = ({
   className,
 }) => {
   const anim = useRef(new Animated.Value(0)).current;
+  const hasAnimatedRef = useRef(false);
+
+  useEffect(() => {
+    if (!hasAnimatedRef.current) {
+      hasAnimatedRef.current = true;
+      Animated.timing(anim, {
+        toValue: 1,
+        duration,
+        delay,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [anim, delay, duration]);
 
   useFocusEffect(
     useCallback(() => {
@@ -32,6 +45,7 @@ export const FadeInView: React.FC<FadeInViewProps> = ({
         delay,
         useNativeDriver: true,
       }).start();
+      hasAnimatedRef.current = true;
     }, [anim, delay, duration])
   );
 

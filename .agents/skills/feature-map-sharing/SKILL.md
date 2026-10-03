@@ -179,7 +179,7 @@ interface DoneActivity {
 ```
 
 ### Implementation
-- Loads `assets/geo/countries.json` (bundled GeoJSON) via `require`
+- Loads `src/assets/geo/countries.json` (bundled GeoJSON) via `require`
 - Uses `d3-geo` `geoMercator().fitExtent()` to project the country outline onto canvas dimensions
 - `geoPath().projection(projection)` generates the SVG `d` path data
 - Activity pins mapped from lat/lng to pixel coordinates via the same projection
@@ -230,4 +230,5 @@ interface DoneActivity {
 | `src/features/Travel/components/MapViewer/index.tsx` | Main map modal with settings, WebView, overlay |
 | `src/features/Travel/components/ShareOverlay/ShareTripModal.tsx` | Shareable trip card modal |
 | `src/features/Travel/components/ShareOverlay/CountryOutline.tsx` | SVG country outline with activity pins |
-| `src/agents/skills/feature-map-sharing/SKILL.md` | This specification |
+| `src/assets/geo/countries.json` | Bundled world countries GeoJSON for country outlines |
+| `.agents/skills/feature-map-sharing/SKILL.md` | This specification |

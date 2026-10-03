@@ -1,3 +1,7 @@
+# Style Guide — Buttons & Interaction (appendix)
+
+> This mirrors the canonical rule in `.agents/rules/code-style-guide.md`. Edit both together; when in doubt, the rule file wins.
+
 Button & Interaction Rules
 When generating or refactoring buttons, the AI must adhere to the following hierarchy:
 

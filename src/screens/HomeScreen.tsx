@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Dimensions,
   RefreshControl,
@@ -257,7 +257,7 @@ const HomeScreen = () => {
     return (map[type ?? 0] ?? 'location') as any;
   };
 
-  const getAllUpcomingTrips = (): Travel[] => {
+  const upcomingTrips = useMemo((): Travel[] => {
     if (!travels) return [];
     const today = new Date(); today.setHours(0, 0, 0, 0);
     return travels
@@ -275,15 +275,13 @@ const HomeScreen = () => {
         if (!b.startOrDepartureDate) return -1;
         return new Date(a.startOrDepartureDate).getTime() - new Date(b.startOrDepartureDate).getTime();
       });
-  };
+  }, [travels]);
 
   const tripStats = getTripStats();
   const topActivityTypes = getTopActivityTypes();
   const favoriteActivityName = topActivityTypes[0]?.typeName ?? 'N/A';
-  const upcomingTrips = getAllUpcomingTrips();
 
   const handleRefresh = async () => {
-    debugger;
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
@@ -323,6 +321,7 @@ const HomeScreen = () => {
           unreadNotifications={unreadNotifications}
           onOpenNotifications={() => setShowNotificationsModal(true)}
           onOpenProfile={() => setShowProfileModal(true)}
+          onPressTrip={handlePressTrip}
         />
 
         <View

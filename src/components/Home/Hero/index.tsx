@@ -5,7 +5,6 @@ import { Animated, Image, Modal, Text, TouchableOpacity, View } from 'react-nati
 import { useTravelContext } from "../../../context/TravelContext";
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import ViewTravelModal from "../../../features/Travel/components/View/Modal";
 import ItineraryTab from "../../../features/Travel/components/View/Tabs/ItineraryTab";
 import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
 import { Travel } from '../../../features/Travel/types/TravelDto';
@@ -62,15 +61,15 @@ interface HeroProps {
   unreadNotifications?: number;
   onOpenNotifications?: () => void;
   onOpenProfile?: () => void;
+  onPressTrip?: (trip: Travel) => void;
 }
 
-const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onOpenNotifications, onOpenProfile }: HeroProps) => {
+const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripModal, unreadNotifications = 0, onOpenNotifications, onOpenProfile, onPressTrip }: HeroProps) => {
   const ongoingTrip = travellingTrip !== undefined ? travellingTrip : (propOngoingTrip ?? null);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
   const { openExpenseModal, openNoteModal, openActivityModal, openActivityTypeModal } = useTravelContext();
   const { data: profile } = useUserProfile();
-  const [showTravelViewModal, setShowTravelViewModal] = useState<boolean>(false);
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
   const [plainMode, setPlainMode] = useState<boolean>(false);
 
@@ -268,8 +267,8 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                   <Text className="text-green-600 text-[10px]">Travelling</Text>
                 </View>
                 <Text
-                  className="text-white font-semibold mb-3 tracking-normal"
-                  style={{ fontSize: titleIsLong ? 42 : 46, lineHeight: titleIsLong ? 42 : 48 }}
+                  className="text-white font-semibold mb-3 tracking-normal "
+                  style={{ fontSize: titleIsLong ? 42 : 46, lineHeight: titleIsLong ? 44 : 48 }}
                   numberOfLines={3}
                   onTextLayout={(e) => {
                     if (e.nativeEvent.lines.length > 1 && !adjustedRef.current) {
@@ -281,10 +280,13 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                   {ongoingTrip.title}
                 </Text>
 
-                <View className="flex-row items-center gap-1.5 mb-6">
-                  <Ionicons name="location-outline" size={18} color="#ffffff" />
+                <View className="flex-row items-center gap-3 mb-6">
                   <Text className="text-white/90 text-xl " numberOfLines={1}>
+                    <Ionicons name="location-outline" size={18} color="#ffffff" />
                     {ongoingTrip.destination}
+                  </Text>
+                  <Text className="text-white/60 text-xl " numberOfLines={1}>
+                    ❘  Until {formatDate(ongoingTrip.endOrReturnDate)}
                   </Text>
                 </View>
 
@@ -445,43 +447,35 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
 
 
         {travelPlan && (
-          <>
-            <ViewTravelModal
-              travelId={ongoingTrip?.id || ""}
-              showModal={showTravelViewModal}
-              setShowModal={setShowTravelViewModal}
-            />
-
-            <Modal
-              visible={showItineraryTab}
-              transparent={false}
-              animationType="none"
-              onRequestClose={() => setShowItineraryTab(false)}>
-              <View className="flex-row justify-between items-center px-5 py-2 border-b border-gray-200 pt-14">
-                <View className="flex-col flex-1 ">
-                  <Text className="text-sm text-gray-400 font-medium">
-                    {travelPlan.travel.title}
-                  </Text>
-                  <Text className="text-2xl text-gray-700 font-medium">
-                    Itinerary
-                  </Text>
-                </View>
-                {/* <TouchableOpacity onPress={() => setPlainMode(p => !p)} >
-                      <Icon name={plainMode ? "format-list-bulleted" : "list"} size={32} color={plainMode ? "#263F69" : "#333"} />
-                  </TouchableOpacity> */}
-                <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
-                  <Icon name="clear" size={36} color={"#333"} />
-                </TouchableOpacity>
+          <Modal
+            visible={showItineraryTab}
+            transparent={false}
+            animationType="none"
+            onRequestClose={() => setShowItineraryTab(false)}>
+            <View className="flex-row justify-between items-center px-5 py-2 border-b border-gray-200 pt-14">
+              <View className="flex-col flex-1 ">
+                <Text className="text-sm text-gray-400 font-medium">
+                  {travelPlan.travel.title}
+                </Text>
+                <Text className="text-2xl text-gray-700 font-medium">
+                  Itinerary
+                </Text>
               </View>
+              {/* <TouchableOpacity onPress={() => setPlainMode(p => !p)} >
+                    <Icon name={plainMode ? "format-list-bulleted" : "list"} size={32} color={plainMode ? "#263F69" : "#333"} />
+                </TouchableOpacity> */}
+              <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
+                <Icon name="clear" size={36} color={"#333"} />
+              </TouchableOpacity>
+            </View>
 
-              <View className="flex-1">
-                <ItineraryTab
-                  travelPlan={travelPlan}
-                // plainMode={plainMode}
-                />
-              </View>
-            </Modal>
-          </>
+            <View className="flex-1">
+              <ItineraryTab
+                travelPlan={travelPlan}
+              // plainMode={plainMode}
+              />
+            </View>
+          </Modal>
         )}
       </View>
 
@@ -496,7 +490,15 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                 <TouchableOpacity
                   // style={{ borderCurve: 'continuous' }}
                   className='items-center justify-center w-7xl h-7xl rounded-full bg-primary/20'
-                  onPress={() => setShowTravelViewModal(true)}
+                  onPress={() => {
+                    if (ongoingTrip) {
+                      if (onPressTrip) {
+                        onPressTrip(ongoingTrip);
+                      } else if (ongoingTrip.id) {
+                        navigation.navigate("TravelDetail", { travelId: ongoingTrip.id });
+                      }
+                    }
+                  }}
                   accessibilityRole="button"
                   accessibilityLabel="View Trip"
                 >
