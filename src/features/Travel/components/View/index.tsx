@@ -417,7 +417,7 @@ const ViewTravel = ({
       {/* Content Sheet */}
       <Animated.View className="flex-1">
         {/* Trip Title & Summary */}
-        <View className="px-6 py-3 bg-white flex-row justify-between items-start relative">
+        <View className="px-6 py-2 bg-white flex-row justify-between items-start relative">
           <Animated.View className="flex-1 mr-4">
             <FadeInView type="right" delay={80} duration={200}>
               <View className="flex-row items-center gap-3"
@@ -427,9 +427,8 @@ const ViewTravel = ({
                     <StatusBadge type={1} status={travelPlan.travel.status} />
                   </View>
                 )}
-
                 <Text
-                  className={`${isMinimized ? "text-2xl  mt-lg!" : "text-4xl"} mt-sm leading-relaxed font-semibold text-secondary flex-1`}
+                  className={`${isMinimized ? "text-2xl  mt-lg!" : "text-[30px] pr-2xl "} mt-md font-semibold text-secondary flex-1`}
                   numberOfLines={isMinimized ? 1 : undefined}
                 >
                   {travelPlan.travel.title}
@@ -447,8 +446,8 @@ const ViewTravel = ({
                     onPress={() => setShowDestinationsSheet(true)}
                     className="flex-row items-center mr-3 my-0.5"
                   >
-                    <Icon name="location-pin" size={18} color="#999" />
-                    <Text className="text-md font-medium text-tertiary ml-0.5" numberOfLines={1}>
+                    <Icon name="location-pin" size={14} color="#999" />
+                    <Text className="text-base font-medium text-tertiary ml-1" numberOfLines={1}>
                       {destinationInfo.destinationText}
                     </Text>
                     {destinationInfo.isMultiple && (
@@ -463,9 +462,12 @@ const ViewTravel = ({
                 )}
 
                 {formattedDates && (
-                  <View className="flex-row items-center my-0.5">
+                  <View className="flex-row items-center ">
+                    <Text className="text-md font-medium text-tertiary pr-lg opacity-50">
+                      ❘
+                    </Text>
                     <Icon name="calendar-month" size={16} color="#999" />
-                    <Text className="text-md font-medium text-tertiary ml-0.5">
+                    <Text className="text-base font-medium text-tertiary ml-1">
                       {formattedDates}
                     </Text>
                   </View>
@@ -490,8 +492,8 @@ const ViewTravel = ({
         </View>
 
         {/* Tabbed Content */}
-        <Animated.View className="flex-1 mb-4"
-          style={{ marginTop: isMinimized ? 12 : 0 }}>
+        <Animated.View className="flex-1 "
+          style={{ marginTop: isMinimized ? 18 : 0 }}>
           <FadeInView type="right" delay={80} duration={400} className="flex-1">
             <Tabs
               tabs={tabData}
@@ -500,7 +502,7 @@ const ViewTravel = ({
               type="default"
               onTabChange={setActiveTabId}
               expanded={true}
-              wrapperStyle={`bg-white px-1 pb-2 ${activeTabId === "itinerary" ? "border-b border-[#e0e0e0]" : ""
+              wrapperStyle={`bg-white px-1 pb-4 ${activeTabId === "itinerary" ? "border-b border-[#e0e0e0]" : ""
                 }`}
             />
           </FadeInView>

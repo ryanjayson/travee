@@ -486,7 +486,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
       </View>
 
       {ongoingTrip && (
-        <View className="mx-5 my-3 py-4 rounded-4x">
+        <View className="mx-5 my-3 py-2 rounded-4x ">
 
           <Text className="text-xs uppercase font-semibold px-xl text-secondary/80 ">Quick Actions</Text>
           <FadeInView type="up" delay={100} duration={450}>

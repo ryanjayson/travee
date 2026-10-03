@@ -265,12 +265,8 @@ export const TripDetailScreen = ({
   const snappedY = useRef(SNAP_MID);
   const dragStartY = useRef(0);
   const translateY = useRef(new Animated.Value(SNAP_MID)).current;
-  const mapPaddingBottom = translateY.interpolate({
-    inputRange: [SNAP_EXPANDED, SNAP_MID, SNAP_COLLAPSED],
-    outputRange: [screenHeight - SNAP_EXPANDED - 20, screenHeight - SNAP_MID - 20, 0],
-    extrapolate: "clamp",
-  });
   const [currentSnap, setCurrentSnap] = useState(SNAP_MID);
+  const bottomOffset = Math.max(0, screenHeight - currentSnap);
 
   const snapTo = useCallback(
     (toValue: number) => {
@@ -870,17 +866,28 @@ export const TripDetailScreen = ({
     return null;
   }, [activeActivityId, activeActivity, pins]);
 
+  const isExpanded = currentSnap === SNAP_EXPANDED;
+
+  const activityZoom = useMemo(() => {
+    if (currentSnap === SNAP_COLLAPSED) return 14;
+    if (currentSnap === SNAP_MID) return 16;
+    return undefined; // no zoom change when expanded
+  }, [currentSnap, SNAP_COLLAPSED, SNAP_MID]);
+
+  const tripZoom = useMemo(() => {
+    if (currentSnap === SNAP_COLLAPSED) return 13;
+    if (currentSnap === SNAP_MID) return 12;
+    return undefined; // no zoom change when expanded
+  }, [currentSnap, SNAP_COLLAPSED, SNAP_MID]);
+
   const mapCenterCoordinates = useMemo(() => {
     if (!selectedActivityCoords) return null;
-    // When bottom sheet is at SNAP_MID or open, apply vertical offset so pin is centered in the visible map above the sheet
-    const offsetY = currentSnap === SNAP_COLLAPSED ? 0 : Math.round(screenHeight * 0.16);
     return {
       latitude: selectedActivityCoords.latitude,
       longitude: selectedActivityCoords.longitude,
-      zoom: 15,
-      offsetY,
+      zoom: activityZoom,
     };
-  }, [selectedActivityCoords, currentSnap, SNAP_COLLAPSED, screenHeight]);
+  }, [selectedActivityCoords, activityZoom]);
 
   const initialCoordinates = useMemo(() => {
     if (pins.length > 0) {
@@ -923,24 +930,23 @@ export const TripDetailScreen = ({
       <StatusBar barStyle="dark-content" />
 
       {/* 1. Google Map in the background with pins */}
-      <Animated.View
-        className="absolute inset-0"
-        style={{ paddingBottom: mapPaddingBottom }}
-      >
+      <View className="absolute inset-0">
         <GoogleMapView
           pins={pins}
           initialCoordinates={initialCoordinates}
           centerCoordinates={mapCenterCoordinates}
           selectedPinId={selectedActivityCoords ? activeActivityId : null}
+          bottomOffset={bottomOffset}
+          isExpanded={isExpanded}
           onPinPress={handlePinPress}
-          zoom={12}
+          zoom={tripZoom}
           showConnectors={effectiveShowConnectors}
           connectorColor={effectiveConnectorColor}
           routeMode={effectiveRouteMode}
           connectByType={!activeActivityId}
           testID="trip-google-map"
         />
-      </Animated.View>
+      </View>
 
       {/* Floating Back Navigation Button */}
       <View className="absolute left-4 z-20" style={{ top: insets.top + 8 }}>

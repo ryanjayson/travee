@@ -55,7 +55,7 @@ const getDisplayLocation = (loc?: any): string => {
         if (obj && typeof obj === "object") {
           return obj.name || obj.city || obj.address || loc;
         }
-      } catch {}
+      } catch { }
     }
     const commaIndex = loc.indexOf(",");
     if (commaIndex > 0) {
@@ -584,15 +584,17 @@ const ActivityItemCard = ({
                     // style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
                     className="text-[8px] rounded-xs px-1 py-0.5 tracking-wider uppercase font-extrabold text-gray/60 ">
                     {getActivityTypeDetails(itineraryEventActivity.type).text}
+
+                    {itineraryEventActivity.type === TripPlanType.activity && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
+                      <Text
+                        style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
+                        className="text-[8px] font-normal text-gray/60 px-xxs"
+                      >
+                        / {getPlanTypeLabel(itineraryEventActivity.planType)}
+                      </Text>
+                    )}
+
                   </Text>
-                  {itineraryEventActivity.type === TripPlanType.activity && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
-                    <Text
-                      style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                      className="text-[8px] font-semibold text-gray/60 px-xxs"
-                    >
-                      / {getPlanTypeLabel(itineraryEventActivity.planType)}
-                    </Text>
-                  )}
 
                 </View>
               )}
@@ -643,7 +645,7 @@ const ActivityItemCard = ({
                     className="flex-row items-start text-ellipsis rounded-sm pr-xl "
                   >
                     <Icon name="location-pin" size={12} color={"#B42318"} style={{ top: 2, opacity: 0.6 }} />
-                    <Text className="text-sm pl-xs leading-md font-semibold text-tertiary "
+                    <Text className="text-sm pl-xs leading-md  text-tertiary "
                       ellipsizeMode="tail"
                       numberOfLines={2}
                     >
@@ -675,7 +677,7 @@ const ActivityItemCard = ({
                   <View
                     className="flex-row items-start text-ellipsis rounded-sm pr-xl gap-1 "
                   >
-                    <Text className="text-sm leading-md font-semibold text-tertiary ">
+                    <Text className="text-sm leading-md  text-tertiary ">
                       {getDisplayLocation(itineraryEventActivity.transportationDetails?.pickupLocation)} ➠ {getDisplayLocation(itineraryEventActivity.transportationDetails?.dropoffLocation)}
                     </Text>
                   </View>

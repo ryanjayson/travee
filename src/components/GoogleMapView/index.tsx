@@ -29,6 +29,8 @@ export const GoogleMapView = ({
   initialCoordinates,
   centerCoordinates,
   selectedPinId,
+  bottomOffset = 0,
+  isExpanded = false,
   zoom = 13,
   onPinPress,
   onMapPress,
@@ -126,6 +128,8 @@ export const GoogleMapView = ({
     let currentConnectorColor = '${connectorColor}';
     let activeRouteRequestId = 0;
     let pendingCenter = null;
+    let currentCenterTarget = null;
+    let currentBottomOffset = ${typeof bottomOffset === 'number' ? bottomOffset : 0};
 
     function createSvgPin(color) {
       const pinColor = color || '#263F69';
@@ -135,6 +139,24 @@ export const GoogleMapView = ({
         '<circle cx="18" cy="17" r="7" fill="#FFFFFF"/>' +
         '</svg>';
       return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+
+    function getCenterWithOffset(lat, lng, offsetY, targetZoom) {
+      if (!map || !offsetY) {
+        return new google.maps.LatLng(lat, lng);
+      }
+      const projection = map.getProjection();
+      if (!projection) {
+        return new google.maps.LatLng(lat, lng);
+      }
+      const zoom = (typeof targetZoom === 'number' && targetZoom > 0) ? targetZoom : map.getZoom();
+      const scale = Math.pow(2, zoom);
+      const targetLatLng = new google.maps.LatLng(lat, lng);
+      const worldPoint = projection.fromLatLngToPoint(targetLatLng);
+      if (!worldPoint) return targetLatLng;
+      const newWorldY = worldPoint.y + (offsetY / scale);
+      const newCenter = projection.fromPointToLatLng(new google.maps.Point(worldPoint.x, newWorldY));
+      return newCenter || targetLatLng;
     }
 
     function initMap() {
@@ -167,8 +189,25 @@ export const GoogleMapView = ({
       renderPins(initialPins);
 
       if (pendingCenter) {
-        window.centerOnLocation(pendingCenter.lat, pendingCenter.lng, pendingCenter.zoom, pendingCenter.pinId, pendingCenter.offsetY);
+        window.centerOnLocation(pendingCenter.lat, pendingCenter.lng, pendingCenter.zoom, pendingCenter.pinId, pendingCenter.offsetY, false);
         pendingCenter = null;
+      }
+
+      if (typeof ResizeObserver !== 'undefined') {
+        const mapDiv = document.getElementById('map');
+        if (mapDiv) {
+          const ro = new ResizeObserver(function() {
+            if (map) {
+              google.maps.event.trigger(map, 'resize');
+              if (currentCenterTarget) {
+                const targetZoom = currentCenterTarget.zoom || map.getZoom();
+                const centerLatLng = getCenterWithOffset(currentCenterTarget.lat, currentCenterTarget.lng, currentCenterTarget.offsetY, targetZoom);
+                map.setCenter(centerLatLng);
+              }
+            }
+          });
+          ro.observe(mapDiv);
+        }
       }
     }
 
@@ -649,11 +688,12 @@ export const GoogleMapView = ({
         }
       }
 
-      if (!pendingCenter) {
+      if (!pendingCenter && !currentCenterTarget) {
         if (pinsList.length > 1) {
-          map.fitBounds(bounds, { top: 60, right: 40, bottom: 80, left: 40 });
+          map.fitBounds(bounds, { top: 60, right: 40, bottom: currentBottomOffset + 40, left: 40 });
         } else if (pinsList.length === 1) {
-          map.setCenter({ lat: pinsList[0].latitude, lng: pinsList[0].longitude });
+          const centerLatLng = getCenterWithOffset(pinsList[0].latitude, pinsList[0].longitude, currentBottomOffset / 2, ${zoom});
+          map.setCenter(centerLatLng);
           map.setZoom(${zoom});
         }
       }
@@ -666,27 +706,69 @@ export const GoogleMapView = ({
       }
     };
 
+    window.setZoomLevel = function(newZoom) {
+      if (map && typeof newZoom === 'number' && newZoom > 0 && map.getZoom() !== newZoom) {
+        map.setZoom(newZoom);
+      }
+    };
+
+    window.setBottomOffset = function(newOffset) {
+      currentBottomOffset = typeof newOffset === 'number' ? newOffset : 0;
+      const isExp = arguments[1];
+      if (!map) return;
+      if (isExp) {
+        return;
+      }
+      if (currentCenterTarget) {
+        const offset = (typeof currentCenterTarget.offsetY === 'number' && currentCenterTarget.offsetY !== 0)
+          ? currentCenterTarget.offsetY
+          : (currentBottomOffset / 2);
+        const targetZoom = (typeof currentCenterTarget.zoom === 'number' && currentCenterTarget.zoom > 0) ? currentCenterTarget.zoom : map.getZoom();
+        const centerLatLng = getCenterWithOffset(currentCenterTarget.lat, currentCenterTarget.lng, offset, targetZoom);
+        map.panTo(centerLatLng);
+      } else if (currentPins && currentPins.length > 1) {
+        const bounds = new google.maps.LatLngBounds();
+        currentPins.forEach(function(pin) {
+          if (typeof pin.latitude === 'number' && typeof pin.longitude === 'number') {
+            bounds.extend({ lat: pin.latitude, lng: pin.longitude });
+          }
+        });
+        if (!bounds.isEmpty()) {
+          map.fitBounds(bounds, { top: 60, right: 40, bottom: currentBottomOffset + 40, left: 40 });
+        }
+      } else if (currentPins && currentPins.length === 1) {
+        const pin = currentPins[0];
+        const centerLatLng = getCenterWithOffset(pin.latitude, pin.longitude, currentBottomOffset / 2, map.getZoom());
+        map.panTo(centerLatLng);
+      }
+    };
+
     window.centerOnLocation = function(lat, lng, zoomLevel, pinId, offsetY) {
       if (!map) {
         pendingCenter = { lat: lat, lng: lng, zoom: zoomLevel, pinId: pinId, offsetY: offsetY };
         return;
       }
-      const target = new google.maps.LatLng(lat, lng);
-      map.panTo(target);
-      if (typeof zoomLevel === 'number' && zoomLevel > 0) {
+      const animate = arguments[5];
+      const effectiveOffset = (typeof offsetY === 'number' && offsetY !== 0) ? offsetY : (currentBottomOffset / 2);
+      currentCenterTarget = { lat: lat, lng: lng, zoom: zoomLevel, pinId: pinId, offsetY: effectiveOffset };
+
+      if (typeof zoomLevel === 'number' && zoomLevel > 0 && map.getZoom() !== zoomLevel) {
         map.setZoom(zoomLevel);
       }
-      if (typeof offsetY === 'number' && offsetY !== 0) {
-        let offsetApplied = false;
-        const applyOffset = function() {
-          if (offsetApplied) return;
-          offsetApplied = true;
-          try {
-            map.panBy(0, offsetY);
-          } catch (e) {}
-        };
-        google.maps.event.addListenerOnce(map, 'idle', applyOffset);
-        setTimeout(applyOffset, 400);
+
+      const targetZoom = (typeof zoomLevel === 'number' && zoomLevel > 0) ? zoomLevel : map.getZoom();
+      const target = getCenterWithOffset(lat, lng, effectiveOffset, targetZoom);
+      if (animate === false) {
+        map.setCenter(target);
+      } else {
+        map.panTo(target);
+      }
+
+      if (!map.getProjection() && effectiveOffset !== 0) {
+        google.maps.event.addListenerOnce(map, 'projection_changed', function() {
+          const refinedCenter = getCenterWithOffset(lat, lng, effectiveOffset, targetZoom);
+          map.setCenter(refinedCenter);
+        });
       }
 
       // Briefly bounce the matching marker to clearly highlight the selected activity pin
@@ -714,6 +796,7 @@ export const GoogleMapView = ({
 
     window.resetCenter = function() {
       pendingCenter = null;
+      currentCenterTarget = null;
       if (map && currentPins && currentPins.length > 1) {
         const bounds = new google.maps.LatLngBounds();
         currentPins.forEach(function(pin) {
@@ -722,8 +805,12 @@ export const GoogleMapView = ({
           }
         });
         if (!bounds.isEmpty()) {
-          map.fitBounds(bounds, { top: 60, right: 40, bottom: 80, left: 40 });
+          map.fitBounds(bounds, { top: 60, right: 40, bottom: currentBottomOffset + 40, left: 40 });
         }
+      } else if (map && currentPins && currentPins.length === 1) {
+        const pin = currentPins[0];
+        const centerLatLng = getCenterWithOffset(pin.latitude, pin.longitude, currentBottomOffset / 2, ${zoom});
+        map.panTo(centerLatLng);
       }
     };
 
@@ -830,6 +917,29 @@ export const GoogleMapView = ({
     }
   }, [pins]);
 
+  // Dynamically update map zoom level when zoom prop changes (unless expanded)
+  useEffect(() => {
+    if (
+      !isExpanded &&
+      typeof zoom === "number" &&
+      zoom > 0 &&
+      webViewRef.current &&
+      typeof webViewRef.current.injectJavaScript === "function"
+    ) {
+      const code = `if (window.setZoomLevel) { window.setZoomLevel(${zoom}); } true;`;
+      webViewRef.current.injectJavaScript(code);
+    }
+  }, [zoom, isExpanded]);
+
+  // Update bottom offset when bottomOffset prop changes
+  useEffect(() => {
+    if (webViewRef.current && typeof webViewRef.current.injectJavaScript === "function") {
+      const offset = typeof bottomOffset === "number" ? bottomOffset : 0;
+      const code = `if (window.setBottomOffset) { window.setBottomOffset(${offset}, ${Boolean(isExpanded)}); } true;`;
+      webViewRef.current.injectJavaScript(code);
+    }
+  }, [bottomOffset, isExpanded]);
+
   // Center on coordinates when centerCoordinates prop changes
   useEffect(() => {
     if (
@@ -841,10 +951,11 @@ export const GoogleMapView = ({
       typeof webViewRef.current.injectJavaScript === "function"
     ) {
       isCenteredRef.current = true;
-      const targetZoom = centerCoordinates.zoom || 15;
+      const targetZoom = isExpanded ? null : (typeof centerCoordinates.zoom === "number" && centerCoordinates.zoom > 0 ? centerCoordinates.zoom : null);
       const pinId = selectedPinId || "";
-      const offsetY = typeof centerCoordinates.offsetY === "number" ? centerCoordinates.offsetY : 0;
-      const code = `if (window.centerOnLocation) { window.centerOnLocation(${centerCoordinates.latitude}, ${centerCoordinates.longitude}, ${targetZoom}, ${JSON.stringify(pinId)}, ${offsetY}); } true;`;
+      const offsetY = typeof centerCoordinates.offsetY === "number" ? centerCoordinates.offsetY : (bottomOffset ? bottomOffset / 2 : 0);
+      const zoomParam = targetZoom !== null ? targetZoom : "null";
+      const code = `if (window.centerOnLocation) { window.centerOnLocation(${centerCoordinates.latitude}, ${centerCoordinates.longitude}, ${zoomParam}, ${JSON.stringify(pinId)}, ${offsetY}); } true;`;
       webViewRef.current.injectJavaScript(code);
     } else if (!centerCoordinates && !selectedPinId && isCenteredRef.current) {
       isCenteredRef.current = false;
@@ -856,7 +967,7 @@ export const GoogleMapView = ({
         webViewRef.current.injectJavaScript(code);
       }
     }
-  }, [centerCoordinates, selectedPinId]);
+  }, [centerCoordinates, selectedPinId, bottomOffset, isExpanded]);
 
   // Center on pin when selectedPinId prop changes without explicit centerCoordinates
   useEffect(() => {
@@ -876,11 +987,13 @@ export const GoogleMapView = ({
         (targetPin.latitude !== 0 || targetPin.longitude !== 0)
       ) {
         isCenteredRef.current = true;
-        const code = `if (window.centerOnLocation) { window.centerOnLocation(${targetPin.latitude}, ${targetPin.longitude}, 15, ${JSON.stringify(selectedPinId)}, 0); } true;`;
+        const targetZoom = isExpanded ? "null" : 15;
+        const offsetY = bottomOffset ? bottomOffset / 2 : 0;
+        const code = `if (window.centerOnLocation) { window.centerOnLocation(${targetPin.latitude}, ${targetPin.longitude}, ${targetZoom}, ${JSON.stringify(selectedPinId)}, ${offsetY}); } true;`;
         webViewRef.current.injectJavaScript(code);
       }
     }
-  }, [selectedPinId, centerCoordinates, pins]);
+  }, [selectedPinId, centerCoordinates, pins, bottomOffset, isExpanded]);
 
   const handleMessage = useCallback(
     (event: any) => {

@@ -37,6 +37,8 @@ export interface GoogleMapViewProps {
     offsetY?: number;
   } | null;
   selectedPinId?: string | null;
+  bottomOffset?: number;
+  isExpanded?: boolean;
   zoom?: number;
   onPinPress?: (pin: GoogleMapPin) => void;
   onMapPress?: () => void;

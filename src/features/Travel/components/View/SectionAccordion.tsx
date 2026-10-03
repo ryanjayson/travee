@@ -1534,8 +1534,8 @@ const SectionAccordion = ({
           style={{
             zIndex: 999999,
             position: "absolute",
-            top: -56,
-            right: 10,
+            top: -62,
+            right: -4,
           }}
         >
           <TouchableOpacity
@@ -1595,7 +1595,6 @@ const SectionAccordion = ({
           >
             {/* Drag Handle Area */}
             <View
-
               className="w-full items-center py-4 rounded-t-[28px]"
               style={{ backgroundColor: colors.surface }}
             >

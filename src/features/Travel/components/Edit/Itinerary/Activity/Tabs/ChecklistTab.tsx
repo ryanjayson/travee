@@ -178,7 +178,7 @@ export default function ChecklistTab({
 
   const renderContent = () => (
     <View className="flex-1 pb-6 pt-2 px-5">
-      <View className="bg-gray-100 rounded-2xl border border-gray-200 overflow-hidden">
+      <View className="overflow-hidden">
         {activityChecklistItems.map((item) => (
           <ChecklistItemRow
             key={item.id}

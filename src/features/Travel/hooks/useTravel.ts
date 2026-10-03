@@ -35,7 +35,7 @@ export const useUpdateTravel = () => {
   >({
     mutationFn: async ({ id, data }) => {
 
-      if (data.isOffline) { // Forced true as per user request on v1
+      if (data.isOffline || true) { // Forced true as per user request on v1
         try {
           const localTravel = await saveTravelLocally(data, id);
           return { data: localTravel, isSuccess: true };

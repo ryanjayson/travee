@@ -101,7 +101,7 @@ describe("GoogleMapView Component", () => {
 
   it("renders connector polyline and requests road route via DirectionsService when showConnectors is true", () => {
     const { getByTestId } = render(
-      <GoogleMapView pins={mockPins} showConnectors={true} />
+      <GoogleMapView pins={mockPins} showConnectors={true} connectorGeodesic={true} connectorWidth={3} />
     );
     const webview = getByTestId("webview");
     const html = webview.props.source.html;
@@ -255,5 +255,18 @@ describe("GoogleMapView Component", () => {
 
     expect(html).toContain("typeGroups[typeKey]");
     expect(html).toContain("calculateRoadRoute(group.coords, currentRouteMode, reqId, group.color)");
+  });
+
+  it("adapts map centering and exposes window.setBottomOffset when bottomOffset changes", () => {
+    const { getByTestId, rerender } = render(
+      <GoogleMapView pins={mockPins} bottomOffset={300} />
+    );
+    const webview = getByTestId("webview");
+    expect(webview.props.source.html).toContain("window.setBottomOffset = function(newOffset)");
+    expect(webview.props.source.html).toContain("currentBottomOffset = 300;");
+
+    rerender(
+      <GoogleMapView pins={mockPins} bottomOffset={500} />
+    );
   });
 });

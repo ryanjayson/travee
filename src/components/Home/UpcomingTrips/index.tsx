@@ -80,7 +80,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
   };
 
   return (
-    <View className="w-full mb-6 px-1 mt-lg">
+    <View className="w-full mb-6 px-1 ">
       <View className="flex-row items-center justify-between px-6 mb-4">
         <Text className="text-xl font-semibold text-secondary">Upcoming Trips</Text>
         {upcomingTrips.length > 0 && (
@@ -101,7 +101,7 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
       {isLoading ? (
         <Text className="text-gray-500 text-sm px-5">Loading...</Text>
       ) : upcomingTrips.length > 0 ? (
-        <View className="w-full px-4 gap-4">
+        <View className=" flex-1 w-full px-4 gap-4">
           {displayedTrips.map((item, index) => {
             const validDestinations = (item.tripDestinations && item.tripDestinations.length > 0)
               ? item.tripDestinations.map((d: any) => d.destination).filter(Boolean)
@@ -287,8 +287,6 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
             </View>
           </TouchableOpacity>
         </View>
-
-
       )}
 
       <DestinationsBottomSheet
