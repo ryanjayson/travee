@@ -38,14 +38,14 @@ Implement per `PRD.md`. Technical obligations:
 
 | Area | Requirement |
 |------|-------------|
-| Performance | 60fps list scrolling; no synchronous DB work on the render path; memoize heavy components; batch DB writes |
-| Offline | Full CRUD without network; graceful degradation when API is unreachable |
+| Performance | 60/120fps UI thread animations (`useNativeDriver`/Reanimated); `expo-image` hardware caching; list virtualization; `expo-haptics` for tactile feedback; no sync DB work on render |
+| Offline & Edge Cases | Full CRUD without network; 4 UI states (Data, Empty with CTA, Loading, Error with retry); sanitize invalid dates and (0,0) coordinates |
 | Startup | DB init and PostHog init must not block first paint |
 | Reliability | Global error handler + ErrorBoundary + persistent error logs (rotation at 500 rows) |
 | Security | See `SECURITY.md`; secrets never in source; sensitive prefs in `expo-secure-store` |
 | Accessibility | Touchables need `accessibilityRole="button"` and labels for icon-only controls |
 | Observability | Structured `errorLogger` (category + severity) and PostHog events with opt-out |
-| Compatibility | iOS + Android; portrait; light UI (`userInterfaceStyle: light`) |
+| Compatibility | iOS + Android parity: hardware `BackHandler` vs edge swipe `beforeRemove`, `elevation` vs iOS `shadow*`, platform-aware `KeyboardAvoidingView` |
 
 ## 4. Environment & External Services
 

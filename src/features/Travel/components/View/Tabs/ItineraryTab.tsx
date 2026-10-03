@@ -9,10 +9,18 @@ interface ItineraryTabProps {
   isMinimized?: boolean;
 }
 
-const ItineraryTab = ({ travelPlan, onRefresh, isMinimized }: ItineraryTabProps) => {
+const ItineraryTab = ({
+  travelPlan,
+  onRefresh,
+  isMinimized,
+}: ItineraryTabProps) => {
   return (
     <View className="flex-1 bg-gray-100 px-3">
-      <SectionAccordion travelPlan={travelPlan} onRefresh={onRefresh} isMinimized={isMinimized} />
+      <SectionAccordion
+        travelPlan={travelPlan}
+        onRefresh={onRefresh}
+        isMinimized={isMinimized}
+      />
     </View>
   );
 };

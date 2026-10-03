@@ -174,7 +174,9 @@ const PlanDateModal: React.FC<PlanDateModalProps> = ({
     >
       <View className="flex-1 bg-white pt-12">
         {/* Header */}
-        <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
+        <View
+          className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white"
+        >
           <View className="flex-1">
             <Text className="text-2xl font-bold">Plan Date</Text>
             {dateLabel && (
@@ -191,7 +193,12 @@ const PlanDateModal: React.FC<PlanDateModalProps> = ({
               accessibilityLabel="Clear selected dates"
               className="flex-row items-center mr-xl"
             >
-              <Text className="text-base text-tertiary underline font-bold" style={{ color: colors.primary }}>Clear</Text>
+              <Text
+                className="text-base text-tertiary underline font-bold"
+                style={{ color: colors.primary }}
+              >
+                Clear
+              </Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity

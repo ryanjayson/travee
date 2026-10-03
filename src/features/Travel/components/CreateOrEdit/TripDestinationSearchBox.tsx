@@ -12,7 +12,12 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 // @ts-ignore
 import { GOOGLE_MAPS_API_KEY as ENV_GOOGLE_KEY } from "@env";
+import { logger, ErrorSeverity } from "../../../../services/errorLogger";
 import { DestinationDto, TripDestinationDto } from "../../types/TravelDto";
+import {
+  generateSessionToken,
+  getPlaceTypeIcon,
+} from "./createOrEditUtils";
 
 // Google Maps API Key
 const DEFAULT_GOOGLE_KEY =
@@ -22,11 +27,16 @@ const DEFAULT_GOOGLE_KEY =
   "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao";
 
 // Google Maps Endpoints (New & Legacy)
-const GOOGLE_NEW_AUTOCOMPLETE_URL = "https://places.googleapis.com/v1/places:autocomplete";
-const GOOGLE_NEW_SEARCH_TEXT_URL = "https://places.googleapis.com/v1/places:searchText";
-const GOOGLE_NEW_DETAILS_BASE_URL = "https://places.googleapis.com/v1/places";
-const GOOGLE_LEGACY_AUTOCOMPLETE_URL = "https://maps.googleapis.com/maps/api/place/autocomplete/json";
-const GOOGLE_LEGACY_DETAILS_URL = "https://maps.googleapis.com/maps/api/place/details/json";
+const GOOGLE_NEW_AUTOCOMPLETE_URL =
+  "https://places.googleapis.com/v1/places:autocomplete";
+const GOOGLE_NEW_SEARCH_TEXT_URL =
+  "https://places.googleapis.com/v1/places:searchText";
+const GOOGLE_NEW_DETAILS_BASE_URL =
+  "https://places.googleapis.com/v1/places";
+const GOOGLE_LEGACY_AUTOCOMPLETE_URL =
+  "https://maps.googleapis.com/maps/api/place/autocomplete/json";
+const GOOGLE_LEGACY_DETAILS_URL =
+  "https://maps.googleapis.com/maps/api/place/details/json";
 
 export interface DestinationSearchResultItem {
   id: string;
@@ -54,48 +64,6 @@ export interface TripDestinationSearchBoxProps {
   disabled?: boolean;
   autoFocus?: boolean;
 }
-
-const generateSessionToken = (): string => {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-};
-
-const getPlaceTypeIcon = (types?: string[]): keyof typeof Icon.glyphMap => {
-  if (!types || types.length === 0) return "place";
-  const typeStr = types.join(" ").toLowerCase();
-
-  if (
-    typeStr.includes("country") ||
-    typeStr.includes("administrative_area_level_1") ||
-    typeStr.includes("region")
-  ) {
-    return "flag";
-  }
-  if (
-    typeStr.includes("locality") ||
-    typeStr.includes("city") ||
-    typeStr.includes("town") ||
-    typeStr.includes("administrative_area")
-  ) {
-    return "location-city";
-  }
-  if (typeStr.includes("airport") || typeStr.includes("flight")) {
-    return "flight";
-  }
-  if (
-    typeStr.includes("island") ||
-    typeStr.includes("beach") ||
-    typeStr.includes("natural_feature") ||
-    typeStr.includes("park")
-  ) {
-    return "terrain";
-  }
-
-  return "place";
-};
 
 export const TripDestinationSearchBox = React.forwardRef<
   TripDestinationSearchBoxRef,
@@ -211,8 +179,14 @@ export const TripDestinationSearchBox = React.forwardRef<
         headers: {
           "Content-Type": "application/json",
           "X-Goog-Api-Key": activeApiKey,
-          "X-Goog-FieldMask":
-            "places.id,places.displayName,places.formattedAddress,places.location,places.addressComponents,places.types",
+          "X-Goog-FieldMask": [
+            "places.id",
+            "places.displayName",
+            "places.formattedAddress",
+            "places.location",
+            "places.addressComponents",
+            "places.types",
+          ].join(","),
         },
         body: JSON.stringify(bodyPayload),
         signal,
@@ -311,19 +285,21 @@ export const TripDestinationSearchBox = React.forwardRef<
       setIsLoading(true);
 
       try {
-        // Step 1: Run Google Places Autocomplete (New) and Google Places Text Search (New) in parallel
-        // Autocomplete provides fast prefix predictions (up to 5)
-        // Text Search with pageSize: 10 provides full matches and direct coordinates (up to 10)
+        // Parallel Google Places Autocomplete (New) and Text Search (New)
         const [autocompleteResults, textResults] = await Promise.all([
-          searchGooglePlacesNew(clean, controller.signal).catch(() => [] as DestinationSearchResultItem[]),
-          searchGooglePlacesText(clean, controller.signal).catch(() => [] as DestinationSearchResultItem[]),
+          searchGooglePlacesNew(clean, controller.signal).catch(
+            () => [] as DestinationSearchResultItem[]
+          ),
+          searchGooglePlacesText(clean, controller.signal).catch(
+            () => [] as DestinationSearchResultItem[]
+          ),
         ]);
 
         const combined: DestinationSearchResultItem[] = [];
         const seenIds = new Set<string>();
         const seenNames = new Set<string>();
 
-        // Add Autocomplete results first, augmenting with coordinates from Text Search if matched
+        // Add Autocomplete results first, augmenting with coords from Text Search
         for (const item of autocompleteResults) {
           const key = item.placeId || item.id;
           const nameKey = item.name.toLowerCase().trim();
@@ -331,7 +307,9 @@ export const TripDestinationSearchBox = React.forwardRef<
             seenIds.add(key);
             seenNames.add(nameKey);
             const matchingText = textResults.find(
-              (t) => (t.placeId && t.placeId === item.placeId) || t.name.toLowerCase().trim() === nameKey
+              (t) =>
+                (t.placeId && t.placeId === item.placeId) ||
+                t.name.toLowerCase().trim() === nameKey
             );
             combined.push(matchingText ? { ...item, ...matchingText } : item);
           }
@@ -492,9 +470,12 @@ export const TripDestinationSearchBox = React.forwardRef<
       // 3. Fetch details from Legacy Google Places Details
       if (activeApiKey) {
         try {
-          const detailsUrl = `${GOOGLE_LEGACY_DETAILS_URL}?place_id=${encodeURIComponent(
-            item.placeId
-          )}&fields=place_id,name,formatted_address,geometry,address_components&key=${activeApiKey}&sessiontoken=${sessionTokenRef.current}`;
+          const fields =
+            "place_id,name,formatted_address,geometry,address_components";
+          const detailsUrl =
+            `${GOOGLE_LEGACY_DETAILS_URL}?place_id=${encodeURIComponent(item.placeId)}` +
+            `&fields=${fields}&key=${activeApiKey}` +
+            `&sessiontoken=${sessionTokenRef.current}`;
 
           const response = await fetch(detailsUrl);
           if (response.ok) {
@@ -559,7 +540,11 @@ export const TripDestinationSearchBox = React.forwardRef<
       onSelect(fallbackDestination);
       inputRef.current?.focus();
     } catch (err) {
-      console.warn("[TripDestinationSearchBox] Selection resolution error:", err);
+      logger.service(err, {
+        severity: ErrorSeverity.Low,
+        screen: "CreateOrEdit",
+        action: "selectDestinationPrediction",
+      });
     } finally {
       setIsSelectingId(null);
     }
@@ -580,8 +565,18 @@ export const TripDestinationSearchBox = React.forwardRef<
   return (
     <View className="w-full relative z-30" style={{ zIndex: 100 }}>
       {/* Search Bar Input */}
-      <View className="flex-row items-center h-19 px-3.5 bg-white rounded-2xl border-2 border-primary/20 ">
-        <Icon name="search" size={20} color={colors.primary} style={{ marginRight: 8 }} />
+      <View
+        className={
+          "flex-row items-center h-19 px-3.5 bg-white " +
+          "rounded-2xl border-2 border-primary/20"
+        }
+      >
+        <Icon
+          name="search"
+          size={20}
+          color={colors.primary}
+          style={{ marginRight: 8 }}
+        />
         <TextInput
           ref={inputRef}
           value={query}
@@ -602,7 +597,11 @@ export const TripDestinationSearchBox = React.forwardRef<
           style={{ color: "#101828" }}
         />
         {isLoading && (
-          <ActivityIndicator size="small" color={colors.primary} className="mr-2" />
+          <ActivityIndicator
+            size="small"
+            color={colors.primary}
+            className="mr-2"
+          />
         )}
         {query.length > 0 && (
           <TouchableOpacity
@@ -622,8 +621,15 @@ export const TripDestinationSearchBox = React.forwardRef<
       {/* Results List Rendered Below the SearchBox */}
       {isExpanded && query.trim().length >= 2 && (
         <View
-          className="absolute top-20 left-0 right-0 bg-white rounded-2xl "
-          style={{ elevation: 12, zIndex: 999 }}
+          className="absolute top-20 left-0 right-0 bg-white rounded-2xl"
+          style={{
+            elevation: 12,
+            zIndex: 999,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 10,
+          }}
         >
           {predictions.length > 0 ? (
             <ScrollView
@@ -665,9 +671,17 @@ export const TripDestinationSearchBox = React.forwardRef<
                         </View>
 
                         {isSelected ? (
-                          <ActivityIndicator size="small" color={colors.primary} />
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.primary}
+                          />
                         ) : (
-                          <Icon name="add" size={20} color={colors.primary} style={{ marginRight: 6 }} />
+                          <Icon
+                            name="add"
+                            size={20}
+                            color={colors.primary}
+                            style={{ marginRight: 6 }}
+                          />
                         )}
                       </View>
                     </TouchableOpacity>
@@ -678,12 +692,21 @@ export const TripDestinationSearchBox = React.forwardRef<
           ) : isLoading ? (
             <View className="items-center justify-center py-6">
               <ActivityIndicator size="small" color={colors.primary} />
-              <Text className="text-base text-gray-500 mt-2 font-medium">Searching Google Maps...</Text>
+              <Text className="text-base text-gray-500 mt-2 font-medium">
+                Searching Google Maps...
+              </Text>
             </View>
           ) : (
             <View className="items-center justify-center py-6 px-4">
-              <Icon name="location-off" size={24} color="#98A2B3" style={{ marginBottom: 4 }} />
-              <Text className="text-sm font-semibold text-gray-700 mb-0.5">No destinations found</Text>
+              <Icon
+                name="location-off"
+                size={24}
+                color="#98A2B3"
+                style={{ marginBottom: 4 }}
+              />
+              <Text className="text-sm font-semibold text-gray-700 mb-0.5">
+                No destinations found
+              </Text>
               <Text className="text-xs text-gray-500 text-center">
                 Try searching with a city or country name
               </Text>

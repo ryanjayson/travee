@@ -1,88 +1,38 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Clipboard, ToastAndroid, Platform, Alert } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useTheme } from "react-native-paper";
 import { FlightDetailsDto } from "../../../../../types/TravelDto";
 import { Barcode } from "../../../../../../../components/Barcode";
-import { safeFormatTime, safeFormatDate } from "../../../../../../../utils/dateTimeUtils";
+import {
+  safeFormatTime,
+  safeFormatDate,
+} from "../../../../../../../utils/dateTimeUtils";
 import { FadeInView } from "@/components/animations";
+import { parseAirport } from "../../../../../../../utils/airportUtils";
+import { copyToClipboard } from "./activityDetailUtils";
 
 interface FlightDetailsCardProps {
   data: FlightDetailsDto;
 }
 
-
-const parseAirport = (airportStr: string | null | undefined) => {
-  if (!airportStr) return { code: "", name: "" };
-
-  const str = airportStr.trim();
-  if (!str) return { code: "", name: "" };
-
-  // 1. Try to find the last opening parenthesis '('
-  const lastParenIndex = str.lastIndexOf('(');
-  if (lastParenIndex !== -1) {
-    const afterParen = str.slice(lastParenIndex + 1).trim();
-    // Match the first 3 alphanumeric characters as the IATA code
-    const codeMatch = afterParen.match(/^([a-z0-9]{3})/i);
-    if (codeMatch) {
-      const code = codeMatch[1].toUpperCase();
-      const name = str.slice(0, lastParenIndex).trim();
-      return { code, name };
-    }
-  }
-
-  // 2. Try to find the last opening bracket '['
-  const lastBracketIndex = str.lastIndexOf('[');
-  if (lastBracketIndex !== -1) {
-    const afterBracket = str.slice(lastBracketIndex + 1).trim();
-    const codeMatch = afterBracket.match(/^([a-z0-9]{3})/i);
-    if (codeMatch) {
-      const code = codeMatch[1].toUpperCase();
-      const name = str.slice(0, lastBracketIndex).trim();
-      return { code, name };
-    }
-  }
-
-  // 3. Fallback to other patterns if no parenthesis or bracket is found
-  // Match patterns like "MNL - Name" or "Name - MNL"
-  const dashMatchStart = str.match(/^([a-z0-9]{3})\s*[-–—]\s*(.+)$/i);
-  if (dashMatchStart) {
-    return { code: dashMatchStart[1].trim().toUpperCase(), name: dashMatchStart[2].trim() };
-  }
-
-  const dashMatchEnd = str.match(/^(.+?)\s*[-–—]\s*([a-z0-9]{3})$/i);
-  if (dashMatchEnd) {
-    return { code: dashMatchEnd[2].trim().toUpperCase(), name: dashMatchEnd[1].trim() };
-  }
-
-  // Match pure 3-letter alphanumeric code
-  if (/^[a-z0-9]{3}$/i.test(str)) {
-    return { code: str.toUpperCase(), name: "" };
-  }
-
-  // Default: No code found, return the whole thing as name
-  return { code: "", name: str };
-};
-
 export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) => {
-  const { colors } = useTheme();
-
   const handleCopy = (text: string, label: string) => {
-    if (!text) return;
-    Clipboard.setString(text);
-    if (Platform.OS === "android") {
-      ToastAndroid.show(`${label} copied to clipboard`, ToastAndroid.SHORT);
-    } else {
-      Alert.alert("Copied", `${label} copied to clipboard`);
-    }
+    copyToClipboard(text, label);
   };
 
-
   return (
-    <View className="rounded-3xl border-gray-150 mb-6 shadow-md overflow-hidden bg-accent mt-4">
+    <View
+      className={
+        "rounded-3xl border-gray-150 mb-6 shadow-md overflow-hidden " +
+        "bg-accent mt-4"
+      }
+    >
       {/* Header Banner */}
       <View
-        className="flex-row items-center justify-between rounded-t-3xl px-5 py-4 border-2 border-b-0 border-gray-500 "
+        className={
+          "flex-row items-center justify-between rounded-t-3xl px-5 " +
+          "py-4 border-2 border-b-0 border-gray-500"
+        }
       >
         <View className="flex-row items-center gap-2">
           <Icon name="flight" size={20} color="#2196F3" />
@@ -100,12 +50,17 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
       </View>
 
       {/* Ticket Body */}
-      <View className="p-5 border-l-2 border-r-2 border-gray-500  -mt-1">
+      <View className="p-5 border-l-2 border-r-2 border-gray-500 -mt-1">
         {/* Route Row */}
         <View className="flex-row items-center justify-between mb-4">
           {/* Departure Airport */}
           <View className="flex-1">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            <Text
+              className={
+                "text-xs font-semibold text-white uppercase " +
+                "tracking-widest mb-1"
+              }
+            >
               Departure
             </Text>
             {(() => {
@@ -118,7 +73,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
                     >
                       {code}
                     </Text>
-                    {name ? (
+                    {name && name !== code ? (
                       <Text className="text-xxs font-semibold text-white/60 mt-0.5 text-left">
                         {name}
                       </Text>
@@ -141,7 +96,6 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
             <View className="w-full flex-row items-center justify-center">
               <View className="flex-1 h-1px border-t border-dashed border-gray-300" />
               <FadeInView type="right" delay={500} duration={600}>
-
                 <Icon
                   name="flight"
                   size={52}
@@ -152,7 +106,6 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
                   }}
                 />
               </FadeInView>
-
               <View className="flex-1 h-1px border-t border-dashed border-gray-300" />
             </View>
             {data.departureDate && data.arrivalDate && (
@@ -173,12 +126,16 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
                 })()}
               </Text>
             )}
-
           </View>
 
           {/* Arrival Airport */}
           <View className="flex-1 items-end">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            <Text
+              className={
+                "text-xs font-semibold text-white uppercase " +
+                "tracking-widest mb-1"
+              }
+            >
               Arrival
             </Text>
             {(() => {
@@ -191,7 +148,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
                     >
                       {code}
                     </Text>
-                    {name ? (
+                    {name && name !== code ? (
                       <Text className="text-xxs font-semibold text-white/60 mt-0.5 text-right">
                         {name}
                       </Text>
@@ -238,7 +195,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
       <View className="flex-row items-center justify-between relative h-6 my-1 mt-0 ">
         {/* Left Notch */}
         <View
-          className="absolute left-[-12px] w-7 h-7 rounded-full bg-secondary border-2 border-gray-500"
+          className="absolute left-[-12px] w-7 h-7 rounded-full border-2 border-gray-500"
           style={{
             transform: [{ translateX: 0 }],
             backgroundColor: "#EAECF0",
@@ -265,11 +222,21 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
       </View>
 
       {/* Ticket Stub */}
-      <View className="p-5 pt-2 border-2 -mt-[2px] border-t-0 border-gray-500 rounded-b-3xl ">
+      <View
+        className={
+          "p-5 pt-2 border-2 -mt-[2px] border-t-0 border-gray-500 " +
+          "rounded-b-3xl"
+        }
+      >
         {/* Grid Row 1: Gate, Terminal, Seat */}
         <View className="flex-row justify-between mb-4 gap-2">
           <View className="flex-1">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            <Text
+              className={
+                "text-xs font-semibold text-white uppercase " +
+                "tracking-widest mb-1"
+              }
+            >
               Terminal
             </Text>
             <Text className="text-xl font-bold text-white/60">
@@ -277,7 +244,12 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
             </Text>
           </View>
           <View className="flex-1 items-center">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            <Text
+              className={
+                "text-xs font-semibold text-white uppercase " +
+                "tracking-widest mb-1"
+              }
+            >
               Gate
             </Text>
             <Text className="text-xl font-bold text-white/60">
@@ -285,7 +257,12 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
             </Text>
           </View>
           <View className="flex-1 items-end">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            <Text
+              className={
+                "text-xs font-semibold text-white uppercase " +
+                "tracking-widest mb-1"
+              }
+            >
               Seat
             </Text>
             <Text className="text-xl font-bold text-white/60">
@@ -297,12 +274,19 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
         {/* Grid Row 2: Booking Ref & Price */}
         <View className="flex-row items-center justify-between mb-6 pt-2">
           <View className="flex-1">
-            <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+            <Text
+              className={
+                "text-xs font-semibold text-white uppercase " +
+                "tracking-widest mb-1"
+              }
+            >
               Booking Ref
             </Text>
             {data.bookingReference ? (
               <TouchableOpacity
-                onPress={() => handleCopy(data.bookingReference || "", "Booking reference")}
+                onPress={() =>
+                  handleCopy(data.bookingReference || "", "Booking reference")
+                }
                 className="flex-row items-center gap-1"
                 activeOpacity={0.7}
                 accessibilityRole="button"
@@ -319,7 +303,12 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
 
           {data.price ? (
             <View className="flex-1 items-end">
-              <Text className="text-xs font-semibold text-white uppercase tracking-widest mb-1">
+              <Text
+                className={
+                  "text-xs font-semibold text-white uppercase " +
+                  "tracking-widest mb-1"
+                }
+              >
                 Price
               </Text>
               <Text className="text-lg font-bold text-white/60">
@@ -332,7 +321,11 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
         {/* Barcode Graphic */}
         <Barcode
           value={data.bookingReference}
-          onPress={data.bookingReference ? () => handleCopy(data.bookingReference || "", "Booking reference") : undefined}
+          onPress={
+            data.bookingReference
+              ? () => handleCopy(data.bookingReference || "", "Booking reference")
+              : undefined
+          }
           backgroundColor="#263F69"
           barColor="#FFFFFF"
         />

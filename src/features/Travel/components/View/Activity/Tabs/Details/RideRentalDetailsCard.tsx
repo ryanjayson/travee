@@ -1,32 +1,24 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { Text, View } from "react-native";
-import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateTimeUtils";
-import { DestinationDto, RideRentalDetailsDto } from "../../../../../types/TravelDto";
+import {
+  safeFormatDate,
+  safeFormatTime,
+} from "../../../../../../../utils/dateTimeUtils";
+import { RideRentalDetailsDto } from "../../../../../types/TravelDto";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
+import { formatPrice, getLocationTitle } from "./activityDetailUtils";
 
 interface RideRentalDetailsCardProps {
   data: RideRentalDetailsDto & { destinationData?: any };
   onFullScreenChange?: (fullScreen: boolean) => void;
 }
 
-const getLocationTitle = (loc?: string | DestinationDto | null): string => {
-  if (!loc) return "";
-  if (typeof loc === "string") return loc;
-  return loc.name || loc.city || loc.address || "";
-};
-
 export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
   data,
 }) => {
-  const formattedPrice = data.price
-    ? data.price.startsWith("₱") || data.price.startsWith("$")
-      ? data.price
-      : !isNaN(Number(data.price))
-        ? `₱${Number(data.price).toLocaleString()}`
-        : data.price
-    : null;
+  const formattedPrice = formatPrice(data.price);
 
   const pickupLoc = getLocationTitle(data.pickupLocation);
   const dropoffLoc = getLocationTitle(data.dropoffLocation);
@@ -48,24 +40,35 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
     data.websiteAddress
   );
 
+  const hasContactInfo = Boolean(
+    data.contactName || data.contactNumber || data.emailAddress
+  );
+
+  const hasNameMismatch =
+    data.destinationAddressData?.name &&
+    data.destinationAddressData?.name !== data.providerName;
+
   const themeColor = "#384690";
 
   return (
-    <View className="mt-4 px-2 overflow-hidden">
+    <View className="mt-4 px-2">
       {/* Main Details Body */}
-
-      <FadeInView type="down" delay={180} duration={200}>
-        <View
-          className="p-2xl rounded-3xl flex-1 mb-4 gap-6"
-          style={{ backgroundColor: `${themeColor}30` }}
-        >
+      <View
+        className="p-2xl rounded-3xl mb-4 gap-6"
+        style={{ backgroundColor: `${themeColor}30` }}
+      >
           <View className="flex-row items-start w-full">
             <View className="flex-col gap-2 flex-1">
-              {data.destinationAddressData?.name && data.destinationAddressData?.name !== data.providerName ? (
+              {hasNameMismatch ? (
                 <View className="flex flex-col gap-3">
                   <View className="flex flex-row gap-3 items-start flex-1">
                     <View className="flex-1">
-                      <Text className="text-2xl leading-xl font-semibold text-secondary tracking-tight">
+                      <Text
+                        className={
+                          "text-2xl leading-xl font-semibold " +
+                          "text-secondary tracking-tight"
+                        }
+                      >
                         {data.destinationAddressData?.name}
                       </Text>
                       {data.address || locationText ? (
@@ -80,10 +83,8 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
                 <View className="flex flex-col gap-3">
                   <View className="flex flex-row gap-3 items-start flex-1">
                     <View className="flex-1">
-                      {/* <Text className="text-2xl leading-xl font-semibold text-secondary tracking-tight">
-                        {data.providerName}
-                      </Text> */}
-                      {(data.address || locationText) && (data.address || locationText) !== data.providerName ? (
+                      {(data.address || locationText) &&
+                      (data.address || locationText) !== data.providerName ? (
                         <Text className="text-secondary/60 font-normal leading-2xl text-lg">
                           {data.address || locationText}
                         </Text>
@@ -96,7 +97,12 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
                   <View className="flex flex-col flex-1">
                     <View className="flex flex-row gap-3 items-start flex-1">
                       <View className="flex-1">
-                        <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                        <Text
+                          className={
+                            "text-xs font-semibold text-secondary " +
+                            "uppercase tracking-widest"
+                          }
+                        >
                           Address
                         </Text>
                         <Text className="text-secondary/60 font-normal leading-2xl text-lg">
@@ -119,10 +125,14 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
                 Pick-up
               </Text>
               <Text className="text-2xl font-semibold text-secondary/40">
-                {data.rentalStartDateTime ? safeFormatTime(data.rentalStartDateTime) : "--:--"}
+                {data.rentalStartDateTime
+                  ? safeFormatTime(data.rentalStartDateTime)
+                  : "--:--"}
               </Text>
               <Text className="text-base font-medium text-secondary/50">
-                {data.rentalStartDateTime ? safeFormatDate(data.rentalStartDateTime) : ""}
+                {data.rentalStartDateTime
+                  ? safeFormatDate(data.rentalStartDateTime)
+                  : ""}
               </Text>
             </View>
           </View>
@@ -136,15 +146,18 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
                 Drop-off
               </Text>
               <Text className="text-2xl font-semibold text-secondary/40">
-                {data.rentalEndDateTime ? safeFormatTime(data.rentalEndDateTime) : "--:--"}
+                {data.rentalEndDateTime
+                  ? safeFormatTime(data.rentalEndDateTime)
+                  : "--:--"}
               </Text>
               <Text className="text-base font-medium text-secondary/50">
-                {data.rentalEndDateTime ? safeFormatDate(data.rentalEndDateTime) : ""}
+                {data.rentalEndDateTime
+                  ? safeFormatDate(data.rentalEndDateTime)
+                  : ""}
               </Text>
             </View>
           </View>
         </View>
-      </FadeInView>
 
       <FadeInView delay={180} duration={400}>
         <View
@@ -207,8 +220,7 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
         <View
           className="px-md mt-xl"
           style={{
-            display:
-              data.contactName || data.contactNumber || data.emailAddress ? "flex" : "none",
+            display: hasContactInfo ? "flex" : "none",
           }}
         >
           <Text className="text-xl font-semibold text-secondary mt-lg">

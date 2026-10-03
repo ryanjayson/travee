@@ -4,14 +4,27 @@ import { ScrollView, TouchableOpacity, View, Text } from "react-native";
 import { useTheme } from "react-native-paper";
 import Svg, { Circle, G } from "react-native-svg";
 import ActivityIcon from "../../../../../components/ActivityIcon";
-import { TripPlanType, ExpenseCategory, TripType, getTripPlanTypeLabel, getTripTypeLabel } from "../../../../../types/enums";
+import {
+  TripPlanType,
+  ExpenseCategory,
+  TripType,
+  getTripPlanTypeLabel,
+  getTripTypeLabel,
+} from "../../../../../types/enums";
 import TripIcon from "../../../../../components/TripIcon";
 import { TravelPlan } from "../../../../Travel/types/TravelDto";
-import { useChecklistGroups, useChecklistItems } from "../../../hooks/useChecklist";
+import {
+  useChecklistGroups,
+  useChecklistItems,
+} from "../../../hooks/useChecklist";
 import { useItineraryExpenses } from "../../../hooks/useExpense";
 import { useItineraryNotes } from "../../../hooks/useNote";
 import { getExpenseCategoryColor } from "../../Forms/Expense/ExpenseCategoryIcon";
-import { FadeInView, AnimatedPressable, StaggerItem } from "../../../../../components/animations";
+import {
+  FadeInView,
+  AnimatedPressable,
+  StaggerItem,
+} from "../../../../../components/animations";
 
 interface DetailsTabProps {
   travelPlan: TravelPlan;
@@ -42,32 +55,41 @@ const StatCard = ({
     accessibilityRole="button"
     activeOpacity={onPress ? 0.7 : 1}
   >
-    <View
-      className="w-9 h-9 rounded-full justify-center"
-    >
-      <Icon name={icon} size={38} color={'white'} />
+    <View className="w-9 h-9 rounded-full justify-center">
+      <Icon name={icon} size={38} color={"white"} />
     </View>
 
     <Text className="text-4xl font-bold text-white mt-2">{value}</Text>
-    <Text className="text-base font-semibold text-gray-100 uppercase tracking-wider">{label}</Text>
+    <Text className="text-base font-semibold text-gray-100 uppercase tracking-wider">
+      {label}
+    </Text>
 
     {sub ? <Text className="text-base text-gray-200 -mt-1">{sub}</Text> : null}
   </AnimatedPressable>
 );
 
-const SectionHeader = ({ icon, title }: { icon: string | any; title: string }) => (
+const SectionHeader = ({
+  icon: _icon,
+  title,
+}: {
+  icon: string | any;
+  title: string;
+}) => (
   <View className="flex-1 justify-start gap-0 mt-3">
     <Text className="text-sm font-semibold tracking-wider uppercase mb-3 px-1">
       {title}
     </Text>
-    {/* <Text className="text-base font-normal text-gray-400 mb-3">
-      Click row to see details
-    </Text> */}
   </View>
 );
 
-// ─── Donut Chart Component ───────────────────────────────────────────────────
-const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: string }>; total: number }) => {
+// --- Donut Chart Component ---
+const DonutChart = ({
+  data,
+  total,
+}: {
+  data: Array<{ amount: number; color: string }>;
+  total: number;
+}) => {
   const radius = 35;
   const strokeWidth = 12;
   const circumference = 2 * Math.PI * radius;
@@ -75,7 +97,14 @@ const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: stri
   let accumulatedPercent = 0;
 
   return (
-    <View style={{ width: 100, height: 100, alignItems: "center", justifyContent: "center" }}>
+    <View
+      style={{
+        width: 100,
+        height: 100,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Svg width={100} height={100} viewBox="0 0 100 100">
         <G transform="rotate(-90 50 50)">
           {/* Background circle */}
@@ -89,7 +118,7 @@ const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: stri
           />
           {data.map((slice, index) => {
             const percent = slice.amount / total;
-            const strokeDashoffset = circumference - (percent * circumference);
+            const strokeDashoffset = circumference - percent * circumference;
             const rotation = accumulatedPercent * 360;
             accumulatedPercent += percent;
 
@@ -111,9 +140,27 @@ const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: stri
         </G>
       </Svg>
       {/* Central absolute text for total */}
-      <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 9, fontWeight: "bold", color: "#888888" }} className="uppercase tracking-wider">Total</Text>
-        <Text style={{ fontSize: 13, fontWeight: "bold", color: "#1A1A1A" }} numberOfLines={1}>
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Text
+          style={{ fontSize: 9, fontWeight: "bold", color: "#888888" }}
+          className="uppercase tracking-wider"
+        >
+          Total
+        </Text>
+        <Text
+          style={{ fontSize: 13, fontWeight: "bold", color: "#1A1A1A" }}
+          numberOfLines={1}
+        >
           ${total >= 1000 ? `${(total / 1000).toFixed(1)}k` : Math.round(total)}
         </Text>
       </View>
@@ -121,80 +168,94 @@ const DonutChart = ({ data, total }: { data: Array<{ amount: number; color: stri
   );
 };
 
-const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange }: DetailsTabProps) => {
-  const { colors } = useTheme();
+const DetailsTab = ({
+  travelPlan,
+  scrollEnabled = false,
+  onScrollY,
+  onTabChange,
+}: DetailsTabProps) => {
+  const { colors: _colors } = useTheme();
   const travelId = travelPlan.travel.id || "";
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState<boolean>(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] =
+    useState<boolean>(false);
   const [showMoreButton, setShowMoreButton] = useState<boolean>(false);
-  const [isNoteDescriptionExpanded, setIsNoteDescriptionExpanded] = useState<boolean>(false);
+  const [isNoteDescriptionExpanded, setIsNoteDescriptionExpanded] =
+    useState<boolean>(false);
   const [showNoteMoreButton, setShowNoteMoreButton] = useState<boolean>(false);
 
   const { data: expenses = [] } = useItineraryExpenses(travelId);
-  // const { data: notes = [] } = useItineraryNotes(travelId);
   const { data: checklistGroups = [] } = useChecklistGroups(travelId);
   const { data: checklistItems = [] } = useChecklistItems(travelId);
 
   const allActivities = useMemo(
-    () => travelPlan.itinerarySection?.flatMap((s) => s.itineraryActivity || []) ?? [],
+    () =>
+      travelPlan.itinerarySection?.flatMap(
+        (s) => s.itineraryActivity || []
+      ) ?? [],
     [travelPlan]
   );
 
   const totalActivities = allActivities.length;
   const doneActivities = allActivities.filter((a) => a.isDone).length;
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-
   const totalChecklist = checklistItems.length;
   const doneChecklist = checklistItems.filter((i) => i.isDone).length;
 
-  const activityTypeBreakdown = useMemo(() => {
-    const map: Record<number, number> = {};
-    allActivities.forEach((a) => {
-      const type = a.type ?? TripPlanType.activity;
-      map[type] = (map[type] || 0) + 1;
-    });
-    return Object.entries(map)
-      .map(([type, count]) => ({ type: Number(type), count }))
-      .filter((e) => e.type !== TripPlanType.activity)
-      .sort((a, b) => b.count - a.count);
+  // Breakdown of activities by type
+  const typeBreakdown = useMemo(() => {
+    const counts: Partial<Record<TripPlanType, number>> = {};
+    for (const a of allActivities) {
+      counts[a.type] = (counts[a.type] ?? 0) + 1;
+    }
+    return Object.entries(counts) as unknown as Array<[TripPlanType, number]>;
   }, [allActivities]);
 
-  const activityTypeName = (type: number) => getTripPlanTypeLabel(type);
-
-  // ─── Checklist group breakdown ──────────────────────────────────────────────
+  // Breakdown of checklist items by group
   const groupBreakdown = useMemo(() => {
-    return checklistGroups.map((g) => {
-      const groupItems = checklistItems.filter((i) => i.checklistGroupId === g.id);
+    return checklistGroups.map((group) => {
+      const itemsInGroup = checklistItems.filter(
+        (i) => i.checklistGroupId === group.id
+      );
+      const done = itemsInGroup.filter((i) => i.isDone).length;
       return {
-        ...g,
-        total: groupItems.length,
-        done: groupItems.filter((i) => i.isDone).length,
+        id: group.id,
+        title: group.title,
+        description: group.description,
+        total: itemsInGroup.length,
+        done,
       };
     });
   }, [checklistGroups, checklistItems]);
 
-  const ungroupedItems = checklistItems.filter((i) => !i.checklistGroupId && !i.activityId);
+  const ungroupedItems = useMemo(
+    () =>
+      checklistItems.filter(
+        (i) => !i.checklistGroupId && !i.activityId
+      ),
+    [checklistItems]
+  );
 
-  // ─── Expense currency breakdown ─────────────────────────────────────────────
+  // Breakdown of expenses by currency
   const currencyBreakdown = useMemo(() => {
-    const map: Record<string, number> = {};
-    expenses.forEach((e) => {
+    const totals: Record<string, number> = {};
+    for (const e of expenses) {
       const cur = e.currency || "$";
-      map[cur] = (map[cur] || 0) + e.amount;
-    });
-    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+      totals[cur] = (totals[cur] ?? 0) + (e.amount ?? 0);
+    }
+    return Object.entries(totals);
   }, [expenses]);
 
-  // ─── Expense category breakdown ─────────────────────────────────────────────
+  // Breakdown of expenses by category
   const categoryBreakdown = useMemo(() => {
     const map: Record<number, { amount: number; name: string; color: string }> = {};
     expenses.forEach((e) => {
       const cat = e.expenseCategory ?? ExpenseCategory.None;
       const amount = e.amount || 0;
       if (!map[cat]) {
-        const name = cat === ExpenseCategory.None
-          ? "General"
-          : ExpenseCategory[cat].replace(/([A-Z])/g, " $1").trim();
+        const name =
+          cat === ExpenseCategory.None
+            ? "General"
+            : ExpenseCategory[cat].replace(/([A-Z])/g, " $1").trim();
         const color = getExpenseCategoryColor(cat);
         map[cat] = { amount: 0, name, color };
       }
@@ -205,22 +266,32 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
       .sort((a, b) => b.amount - a.amount);
   }, [expenses]);
 
+  const totalExpenses = useMemo(
+    () => expenses.reduce((sum, e) => sum + (e.amount ?? 0), 0),
+    [expenses]
+  );
+
   return (
     <ScrollView
-      className="flex-1"
-      showsVerticalScrollIndicator={false}
+      className="flex-1 "
       contentContainerStyle={{ paddingBottom: 40 }}
+      scrollEnabled={scrollEnabled}
+      onScroll={(e) => onScrollY?.(e.nativeEvent.contentOffset.y)}
+      scrollEventThrottle={16}
     >
-      <View className="px-5">
-
-        <FadeInView type="up" delay={100} duration={350}>
-          <SectionHeader icon="dashboard" title="Overview" />
-          <View className="flex-row flex-wrap gap-3 mb-4">
+      <View className="px-4 py-2 gap-4">
+        {/* Stat Cards Row */}
+        <FadeInView type="up" delay={100} duration={400}>
+          <View className="flex-row gap-3">
             <StatCard
               icon="event-note"
               label="Activities"
               value={totalActivities}
-              sub={doneActivities > 0 ? `${doneActivities} completed` : "None done yet"}
+              sub={
+                doneActivities > 0
+                  ? `${doneActivities} completed`
+                  : "None done yet"
+              }
               accent="#263F69"
               onPress={() => onTabChange?.("itinerary")}
             />
@@ -228,7 +299,11 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
               icon="playlist-add-check"
               label="Checklist"
               value={`${doneChecklist}/${totalChecklist}`}
-              sub={totalChecklist > 0 ? `${Math.round((doneChecklist / totalChecklist) * 100)}% complete` : "No items yet"}
+              sub={
+                totalChecklist > 0
+                  ? `${Math.round((doneChecklist / totalChecklist) * 100)}% complete`
+                  : "No items yet"
+              }
               accent="#059669"
               onPress={() => onTabChange?.("checklist")}
             />
@@ -237,18 +312,30 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
 
         {travelPlan.travel.description && (
           <FadeInView type="up" delay={200} duration={400}>
-            <View className="bg-white rounded-3xl border border-[#e0e0e0] p-4 mb-3 flex-row items-start gap-4 mb-4">
+            <View
+              className={
+                "bg-white rounded-3xl border border-[#e0e0e0] p-4 " +
+                "mb-3 flex-row items-start gap-4 mb-4"
+              }
+            >
               <View className="flex-1 gap-2">
-                <Text className="text-xs font-bold uppercase tracking-wide">About this trip</Text>
+                <Text className="text-xs font-bold uppercase tracking-wide">
+                  About this trip
+                </Text>
 
-                {travelPlan.travel.type != null && travelPlan.travel.type !== TripType.none && (
-                  <View className="flex-row items-center gap-2">
-                    <TripIcon type={travelPlan.travel.type} size={34} showIconOnly />
-                    <Text className="text-base font-bold text-[#1A1A1A]">
-                      {getTripTypeLabel(travelPlan.travel.type)}
-                    </Text>
-                  </View>
-                )}
+                {travelPlan.travel.type != null &&
+                  travelPlan.travel.type !== TripType.none && (
+                    <View className="flex-row items-center gap-2">
+                      <TripIcon
+                        type={travelPlan.travel.type}
+                        size={34}
+                        showIconOnly
+                      />
+                      <Text className="text-base font-bold text-[#1A1A1A]">
+                        {getTripTypeLabel(travelPlan.travel.type)}
+                      </Text>
+                    </View>
+                  )}
 
                 <View>
                   <Text
@@ -264,7 +351,12 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
                   </Text>
 
                   {travelPlan.travel.description && showMoreButton && (
-                    <TouchableOpacity onPress={() => setIsDescriptionExpanded(!isDescriptionExpanded)}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setIsDescriptionExpanded(!isDescriptionExpanded)
+                      }
+                      accessibilityRole="button"
+                    >
                       <Text className="text-sm font-black text-[#555] mt-1 underline">
                         {isDescriptionExpanded ? "Show less" : "Show more"}
                       </Text>
@@ -276,7 +368,6 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
           </FadeInView>
         )}
 
-
         {travelPlan.travel.notes ? (
           <FadeInView type="up" delay={300} duration={400}>
             <View className="px-4">
@@ -284,7 +375,10 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
                 className="text-md text-tertiary leading-6"
                 numberOfLines={isNoteDescriptionExpanded ? undefined : 2}
                 onTextLayout={(e) => {
-                  if (!showNoteMoreButton && e.nativeEvent.lines.length >= 3) {
+                  if (
+                    !showNoteMoreButton &&
+                    e.nativeEvent.lines.length >= 3
+                  ) {
                     setShowNoteMoreButton(true);
                   }
                 }}
@@ -293,7 +387,12 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
               </Text>
 
               {travelPlan.travel.notes && showNoteMoreButton && (
-                <TouchableOpacity onPress={() => setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)}>
+                <TouchableOpacity
+                  onPress={() =>
+                    setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)
+                  }
+                  accessibilityRole="button"
+                >
                   <Text className="text-sm font-medium text-[#555] mt-1 underline">
                     {isNoteDescriptionExpanded ? "Show less" : "Show more"}
                   </Text>
@@ -303,21 +402,16 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
           </FadeInView>
         ) : null}
 
-        {/* <View className="flex-row flex-wrap gap-3">
-          <StatCard
-            icon="account-balance-wallet"
-            label="Expenses"
-            value={`$${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-            sub={`${expenses.length} transaction${expenses.length !== 1 ? "s" : ""}`}
-            accent="#DC2626"
-          />
-        </View> */}
-
-        {/* ─── Expenses Breakdown ────────────────────────────────────────── */}
+        {/* Expenses Breakdown */}
         {false && expenses.length > 0 && totalExpenses > 0 && (
           <>
             <SectionHeader icon="pie-chart" title="Expense Distribution" />
-            <View className="bg-white rounded-2xl border border-[#e0e0e0] p-4 flex-row items-center gap-6">
+            <View
+              className={
+                "bg-white rounded-2xl border border-[#e0e0e0] p-4 " +
+                "flex-row items-center gap-6"
+              }
+            >
               {/* Column 1: Pie/Donut Chart */}
               <View className="items-center justify-center pr-4 border-r border-gray-100">
                 <DonutChart data={categoryBreakdown} total={totalExpenses} />
@@ -326,19 +420,28 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
               {/* Column 2: Legend List */}
               <View className="flex-1 gap-2.5">
                 {categoryBreakdown.map((entry) => (
-                  <View key={entry.category} className="flex-row items-center justify-between">
+                  <View
+                    key={entry.category}
+                    className="flex-row items-center justify-between"
+                  >
                     <View className="flex-row items-center gap-2 flex-1">
-                      {/* Dot icon with category color */}
                       <View
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: entry.color }}
                       />
-                      <Text className="text-sm font-semibold text-gray-700 capitalize flex-1" numberOfLines={1}>
+                      <Text
+                        className="text-sm font-semibold text-gray-700 capitalize flex-1"
+                        numberOfLines={1}
+                      >
                         {entry.name}
                       </Text>
                     </View>
                     <Text className="text-sm font-bold text-gray-800 ml-2">
-                      ${entry.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      $
+                      {entry.amount.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </Text>
                   </View>
                 ))}
@@ -347,84 +450,128 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
           </>
         )}
 
-        {/* ─── Expenses Breakdown ────────────────────────────────────────── */}
+        {/* Currency Breakdown */}
         {false && expenses.length > 0 && (
           <>
-            <SectionHeader icon="account-balance-wallet" title="Expenses by Currency" />
+            <SectionHeader
+              icon="account-balance-wallet"
+              title="Expenses by Currency"
+            />
             <View className="bg-white rounded-2xl border border-[#e0e0e0] overflow-hidden">
               {currencyBreakdown.map(([currency, amount], idx) => (
                 <View
                   key={currency}
-                  className={`flex-row items-center px-4 py-4 ${idx < currencyBreakdown.length - 1 ? "border-b border-gray-50" : ""}`}
+                  className={`flex-row items-center px-4 py-4 ${idx < currencyBreakdown.length - 1
+                      ? "border-b border-gray-50"
+                      : ""
+                    }`}
                 >
                   <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center">
-                    <Text className="text-sm font-bold text-red-600">{currency}</Text>
+                    <Text className="text-sm font-bold text-red-600">
+                      {currency}
+                    </Text>
                   </View>
                   <Text className="text-base text-gray-700 font-medium flex-1 ml-3">
                     {currency === "$" ? "USD" : currency}
                   </Text>
                   <Text className="text-md font-bold text-[#DC2626]">
-                    {currency}{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {currency}
+                    {amount.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </Text>
                 </View>
               ))}
               <View className="flex-row items-center px-4 py-3 bg-gray-50 border-t border-gray-100">
                 <Icon name="receipt-long" size={24} color="#555" />
-                <Text className="text-sm text-gray-600 font-semibold flex-1 ml-3">Total Transactions</Text>
-                <Text className="text-base font-bold text-gray-700">{expenses.length}</Text>
+                <Text className="text-sm text-gray-600 font-semibold flex-1 ml-3">
+                  Total Transactions
+                </Text>
+                <Text className="text-base font-bold text-gray-700">
+                  {expenses.length}
+                </Text>
               </View>
             </View>
           </>
         )}
 
-
-        {/* ─── Checklist Progress ────────────────────────────────────────── */}
+        {/* Checklist Progress */}
         {false && totalChecklist > 0 && (
           <>
             <SectionHeader icon="folder-open" title="Checklist by Group" />
             <View className="bg-white rounded-2xl border border-[#e0e0e0] overflow-hidden">
-              {/* Ungrouped */}
               {ungroupedItems.length > 0 && (
                 <View className="flex-row items-center px-4 py-3 border-b border-gray-50">
                   <Icon name="list" size={24} color="#888" />
-                  <Text className="text-base text-gray-600 font-medium flex-1 ml-3">General</Text>
+                  <Text className="text-base text-gray-600 font-medium flex-1 ml-3">
+                    General
+                  </Text>
                   <View className="items-end">
-                    <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">
-                      {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
+                    <Text
+                      className={
+                        "text-base text-gray-400 mr-1 bg-gray-200 " +
+                        "px-2 border border-gray-200 rounded-full"
+                      }
+                    >
+                      {ungroupedItems.filter((i) => i.isDone).length}/
+                      {ungroupedItems.length}
                     </Text>
                     <View className="bg-gray-200 h-2 w-20 rounded-full mt-1 overflow-hidden">
                       <View
                         className="bg-[#263F69] h-2 rounded-full"
                         style={{
-                          width: `${Math.round((ungroupedItems.filter((i) => i.isDone).length / ungroupedItems.length) * 100)}%`,
+                          width: `${Math.round(
+                            (ungroupedItems.filter((i) => i.isDone).length /
+                              ungroupedItems.length) *
+                            100
+                          )}%`,
                         }}
                       />
                     </View>
                   </View>
                 </View>
               )}
-              {/* Groups */}
               {groupBreakdown.map((group, idx) => (
                 <View
                   key={group.id}
-                  className={`flex-row items-center px-4 py-3 ${idx < groupBreakdown.length - 1 ? "border-b border-gray-50" : ""}`}
+                  className={`flex-row items-center px-4 py-3 ${idx < groupBreakdown.length - 1
+                      ? "border-b border-gray-50"
+                      : ""
+                    }`}
                 >
                   <Icon name="folder" size={24} color="#263F69" />
                   <View className="flex-1 ml-3">
-                    <Text className="text-base text-gray-800 font-semibold">{group.title}</Text>
+                    <Text className="text-base text-gray-800 font-semibold">
+                      {group.title}
+                    </Text>
                     {group.description ? (
-                      <Text className="text-xs text-gray-400" numberOfLines={1}>{group.description}</Text>
+                      <Text
+                        className="text-xs text-gray-400"
+                        numberOfLines={1}
+                      >
+                        {group.description}
+                      </Text>
                     ) : null}
                   </View>
                   <View className="items-end">
-                    <Text className="text-base text-gray-400 mr-1 bg-gray-200 px-2 border border-gray-200 rounded-full">
+                    <Text
+                      className={
+                        "text-base text-gray-400 mr-1 bg-gray-200 " +
+                        "px-2 border border-gray-200 rounded-full"
+                      }
+                    >
                       {group.done}/{group.total}
                     </Text>
                     {group.total > 0 && (
                       <View className="bg-gray-200 h-1.5 w-20 rounded-full mt-1 overflow-hidden">
                         <View
                           className="bg-[#059669] h-1.5 rounded-full"
-                          style={{ width: `${Math.round((group.done / group.total) * 100)}%` }}
+                          style={{
+                            width: `${Math.round(
+                              (group.done / group.total) * 100
+                            )}%`,
+                          }}
                         />
                       </View>
                     )}
@@ -433,13 +580,14 @@ const DetailsTab = ({ travelPlan, scrollEnabled = false, onScrollY, onTabChange 
               ))}
               {checklistGroups.length === 0 && ungroupedItems.length === 0 && (
                 <View className="p-4 items-center">
-                  <Text className="text-sm text-gray-400">No checklist groups created yet.</Text>
+                  <Text className="text-sm text-gray-400">
+                    No checklist groups created yet.
+                  </Text>
                 </View>
               )}
             </View>
           </>
         )}
-
       </View>
     </ScrollView>
   );

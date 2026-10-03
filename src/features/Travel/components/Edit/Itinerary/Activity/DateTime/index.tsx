@@ -78,9 +78,12 @@ export default function DateTime({
         ? "Rental Period"
         : "Date & Time";
 
-  const defaultDescription = (effectiveActivityType === TripPlanType.stay || effectiveActivityType === TripPlanType.transit || effectiveActivityType === TripPlanType.rideRental)
-    ? null
-    : "Plans with date & time are sorted based on their scheduled and cannot be reordered.";
+  const defaultDescription =
+    effectiveActivityType === TripPlanType.stay ||
+    effectiveActivityType === TripPlanType.transit ||
+    effectiveActivityType === TripPlanType.rideRental
+      ? null
+      : "Plans with date & time are sorted based on their scheduled and cannot be reordered.";
 
   const startDateLabel = effectiveActivityType === TripPlanType.stay
     ? "Check-In"
@@ -97,6 +100,9 @@ export default function DateTime({
       : effectiveActivityType === TripPlanType.rideRental
         ? "Drop-Off"
         : "End Date";
+
+  const inputContainerClass =
+    "border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl";
 
   return (
     <View className="mb-5">
@@ -120,17 +126,31 @@ export default function DateTime({
 
 
       <View className={`flex-row items-center gap-4 mt-2`}>
-        <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
+        <View className={inputContainerClass}>
           <TouchableOpacity
             onPress={onPressDate}
-            className={`flex-1 flex-row items-center p-3 gap-2 ${!finalAllowedClear ? "opacity-30" : ""}`}
+            className={`flex-1 flex-row items-center p-3 gap-2 ${
+              !finalAllowedClear ? "opacity-30" : ""
+            }`}
             accessibilityRole="button"
             accessibilityLabel="Select date"
             disabled={!finalAllowedClear}
           >
-            <Icon name={showEndDateTime ? "date-range" : "calendar-today"} size={24} color="#98A2B3" />
-            <Text className={`text-xl  ${startDate ? "text-gray-800 top-2 " : "text-[#98A2B3]"}`}>
-              {startDate ? String(startDate) : showEndDateTime ? startDateLabel : defaultTitle.split(" ")[0]}
+            <Icon
+              name={showEndDateTime ? "date-range" : "calendar-today"}
+              size={24}
+              color="#98A2B3"
+            />
+            <Text
+              className={`text-xl  ${
+                startDate ? "text-gray-800 top-2 " : "text-[#98A2B3]"
+              }`}
+            >
+              {startDate
+                ? String(startDate)
+                : showEndDateTime
+                ? startDateLabel
+                : defaultTitle.split(" ")[0]}
             </Text>
           </TouchableOpacity>
 
@@ -153,10 +173,12 @@ export default function DateTime({
             </TouchableOpacity>
           )}
         </View>
-        <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
+        <View className={inputContainerClass}>
           <TouchableOpacity
             onPress={onPressTime}
-            className={`flex-1 flex-row items-center p-3 gap-2 ${!finalAllowedClear ? "opacity-30" : ""}`}
+            className={`flex-1 flex-row items-center p-3 gap-2 ${
+              !finalAllowedClear ? "opacity-30" : ""
+            }`}
             accessibilityRole="button"
             accessibilityLabel="Select time"
             disabled={!finalAllowedClear}
@@ -212,15 +234,23 @@ export default function DateTime({
               )}
             </View>
             <View className="flex-row items-center gap-4">
-              <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
+              <View className={inputContainerClass}>
                 <TouchableOpacity
                   onPress={onPressEndDate || onPressDate}
                   className="flex-1 flex-row items-center p-3 gap-2"
                   accessibilityRole="button"
                   accessibilityLabel="Select end date"
                 >
-                  <Icon name={showEndDateTime ? "date-range" : "calendar-today"} size={24} color="#98A2B3" />
-                  <Text className={`text-xl ${endDate ? "text-gray-800 top-2" : "text-[#98A2B3]"}`}>
+                  <Icon
+                    name={showEndDateTime ? "date-range" : "calendar-today"}
+                    size={24}
+                    color="#98A2B3"
+                  />
+                  <Text
+                    className={`text-xl ${
+                      endDate ? "text-gray-800 top-2" : "text-[#98A2B3]"
+                    }`}
+                  >
                     {endDate ? String(endDate) : endDateLabel}
                   </Text>
                 </TouchableOpacity>
@@ -242,7 +272,7 @@ export default function DateTime({
                 </Text>
               ) : null}
 
-              <View className="border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl">
+              <View className={inputContainerClass}>
 
                 {/* Start Date & Time Label (when date range is present or revealed) */}
                 {endTime ? (
@@ -252,13 +282,19 @@ export default function DateTime({
                 ) : null}
                 <TouchableOpacity
                   onPress={onPressEndTime}
-                  className={`flex-1 flex-row items-center p-3 gap-2 ${!onPressEndTime ? "opacity-30" : ""}`}
+                  className={`flex-1 flex-row items-center p-3 gap-2 ${
+                    !onPressEndTime ? "opacity-30" : ""
+                  }`}
                   accessibilityRole="button"
                   accessibilityLabel="Select end time"
                   disabled={!onPressEndTime}
                 >
                   <Icon name="access-time" size={24} color="#98A2B3" />
-                  <Text className={`text-xl ${endTime ? "text-gray-800 top-2" : "text-[#98A2B3]"}`}>
+                  <Text
+                    className={`text-xl ${
+                      endTime ? "text-gray-800 top-2" : "text-[#98A2B3]"
+                    }`}
+                  >
                     {endTime ? String(endTime) : "Time"}
                   </Text>
 

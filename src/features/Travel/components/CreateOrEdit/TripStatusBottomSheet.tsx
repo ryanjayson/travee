@@ -23,6 +23,26 @@ export interface TripStatusBottomSheetProps {
   onClose: () => void;
 }
 
+const STATUS_GUIDE_ITEMS = [
+  {
+    status: TravelStatus.Draft,
+    description: "Dates are not set yet. Trip remains in draft mode.",
+  },
+  {
+    status: TravelStatus.Upcoming,
+    description: "Start and end dates are in the future.",
+  },
+  {
+    status: TravelStatus.Travelling,
+    description:
+      "Current date is between departure/start and arrival/end date.",
+  },
+  {
+    status: TravelStatus.Past,
+    description: "Travel dates have already passed.",
+  },
+];
+
 export const TripStatusBottomSheet: React.FC<TripStatusBottomSheetProps> = ({
   visible,
   onClose,
@@ -89,25 +109,6 @@ export const TripStatusBottomSheet: React.FC<TripStatusBottomSheetProps> = ({
     extrapolate: "clamp",
   });
 
-  const statuses = [
-    {
-      status: TravelStatus.Draft,
-      description: "Dates are not set yet. Trip remains in draft mode.",
-    },
-    {
-      status: TravelStatus.Upcoming,
-      description: "Start and end dates are in the future.",
-    },
-    {
-      status: TravelStatus.Travelling,
-      description: "Current date is between departure/start and arrival/end date.",
-    },
-    {
-      status: TravelStatus.Past,
-      description: "Travel dates have already passed.",
-    },
-  ];
-
   return (
     <Modal
       visible={visible}
@@ -138,6 +139,7 @@ export const TripStatusBottomSheet: React.FC<TripStatusBottomSheetProps> = ({
             transform: [{ translateY }],
             maxHeight: screenHeight * 0.85,
             paddingBottom: Math.max(insets.bottom, 24),
+            elevation: 24,
           }}
         >
           {/* Drag Handle Area */}
@@ -169,31 +171,49 @@ export const TripStatusBottomSheet: React.FC<TripStatusBottomSheetProps> = ({
           {/* Content */}
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 12 }}
+            contentContainerStyle={{
+              paddingHorizontal: 24,
+              paddingVertical: 12,
+            }}
           >
             <Text className="text-sm text-gray-500 mb-4 leading-5">
-              The status of a trip is automatically updated based on your selected departure and return dates.
+              The status of a trip is automatically updated based on your
+              selected departure and return dates.
             </Text>
 
             {/* Policy Notice Box */}
-            <View className="flex-row bg-amber-50 rounded-2xl p-4 border border-amber-200 mb-5 items-start">
-              <Icon name="schedule" size={20} color="#D97706" style={{ marginTop: 2, marginRight: 10 }} />
+            <View
+              className={
+                "flex-row bg-amber-50 rounded-2xl p-4 border " +
+                "border-amber-200 mb-5 items-start"
+              }
+            >
+              <Icon
+                name="schedule"
+                size={20}
+                color="#D97706"
+                style={{ marginTop: 2, marginRight: 10 }}
+              />
               <View className="flex-1">
                 <Text className="text-sm font-bold text-amber-900 mb-1">
                   Scheduling Policy
                 </Text>
                 <Text className="text-xs text-amber-800 leading-4">
-                  Overlapping travel dates between different trips are not supported. Each trip must have unique dates.
+                  Overlapping travel dates between different trips are not
+                  supported. Each trip must have unique dates.
                 </Text>
               </View>
             </View>
 
             {/* Status Cards */}
             <View className="gap-2.5 mb-6">
-              {statuses.map((item) => (
+              {STATUS_GUIDE_ITEMS.map((item) => (
                 <View
                   key={item.status}
-                  className="flex-row items-center bg-[#F8FAFC] rounded-2xl p-3.5 border border-gray-100"
+                  className={
+                    "flex-row items-center bg-[#F8FAFC] rounded-2xl " +
+                    "p-3.5 border border-gray-100"
+                  }
                 >
                   <View className="w-24 mr-3 items-start justify-center">
                     <StatusBadge

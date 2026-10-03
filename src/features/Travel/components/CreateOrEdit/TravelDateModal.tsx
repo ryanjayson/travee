@@ -7,6 +7,12 @@ import { TravelStatus } from "../../../../types/enums";
 import { Travel } from "../../types/TravelDto";
 import { useTravels } from "../../hooks/useTravel";
 
+import {
+  computeBlockedTravelDates,
+  computeMarkedDates,
+  hasBlockedDateInRange,
+} from "./createOrEditUtils";
+
 export interface TravelDateModalProps {
   visible: boolean;
   onClose: () => void;
@@ -33,7 +39,6 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
   initialStartDate,
   initialEndDate,
   tripData,
-  mode = "create",
   onConfirm,
 }) => {
   const { data: travels } = useTravels();
@@ -45,7 +50,10 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
     if (!tempDepartureDate) {
       return "Select date or date range";
     }
-    if (!tempReturnDate || tempDepartureDate.getTime() === tempReturnDate.getTime()) {
+    if (
+      !tempReturnDate ||
+      tempDepartureDate.getTime() === tempReturnDate.getTime()
+    ) {
       return "Day tour only";
     }
     return "Multiple days trip";
@@ -54,117 +62,24 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
   // Sync initial dates when modal is opened
   useEffect(() => {
     if (visible) {
-      setTempDepartureDate(initialStartDate ? new Date(initialStartDate) : null);
+      setTempDepartureDate(
+        initialStartDate ? new Date(initialStartDate) : null
+      );
       setTempReturnDate(initialEndDate ? new Date(initialEndDate) : null);
     }
   }, [visible, initialStartDate, initialEndDate]);
 
-  // Memoize blocked dates calculation
-  const blockedDates = useMemo(() => {
-    const dates: Record<string, any> = {};
-    if (!travels) return dates;
+  // Memoize blocked dates calculation using pure helper
+  const blockedDates = useMemo(
+    () => computeBlockedTravelDates(travels, tripData?.id),
+    [travels, tripData?.id]
+  );
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    travels.forEach((t: any) => {
-      if (tripData && t.id === tripData.id) return;
-      if (
-        t.isArchived ||
-        [TravelStatus.Cancelled, TravelStatus.Archieved, TravelStatus.Past].includes(
-          t.status as TravelStatus
-        )
-      ) {
-        return;
-      }
-
-      if (t.startOrDepartureDate) {
-        const start = new Date(t.startOrDepartureDate);
-        start.setHours(0, 0, 0, 0);
-        const end = t.endOrReturnDate ? new Date(t.endOrReturnDate) : start;
-        end.setHours(0, 0, 0, 0);
-
-        if (end >= today) {
-          let current = new Date(start);
-          const isTravelling = start <= today && end >= today;
-          const color = isTravelling ? "#E8F5E8" : "#E3F2FD";
-          const textColor = isTravelling ? "#2E7D32" : "#263F69";
-
-          while (current <= end) {
-            const dateStr = current.toISOString().split("T")[0];
-            dates[dateStr] = {
-              disableTouchEvent: true,
-              selected: true,
-              color: color,
-              textColor: textColor,
-            };
-            current.setDate(current.getDate() + 1);
-          }
-        }
-      }
-    });
-    return dates;
-  }, [travels, tripData]);
-
-  // Memoize marked dates for range highlight
-  const markedDates = useMemo(() => {
-    const marked: Record<string, any> = {};
-    const start = tempDepartureDate;
-    const end = tempReturnDate;
-
-    if (start && !isNaN(start.getTime())) {
-      const startStr = start.toISOString().split("T")[0];
-      marked[startStr] = {
-        startingDay: true,
-        selected: true,
-        color: "#263F69",
-        textColor: "#ffffff",
-      };
-
-      if (end && !isNaN(end.getTime())) {
-        const endStr = end.toISOString().split("T")[0];
-        marked[endStr] = {
-          endingDay: true,
-          selected: true,
-          color: "#263F69",
-          textColor: "#ffffff",
-        };
-
-        let currentDate = new Date(start.getTime());
-        currentDate.setDate(currentDate.getDate() + 1);
-
-        while (currentDate.toDateString() !== end.toDateString() && currentDate < end) {
-          const midStr = currentDate.toISOString().split("T")[0];
-          marked[midStr] = {
-            selected: true,
-            color: "#263F6920",
-            textColor: "#ffffff",
-          };
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-      }
-    }
-
-    return {
-      ...blockedDates,
-      ...marked,
-    };
-  }, [tempDepartureDate, tempReturnDate, blockedDates]);
-
-  // Helper to check for blocked dates in the middle of a selected range
-  const hasBlockedDateInBetween = useCallback((start: Date, end: Date) => {
-    let current = new Date(start.getTime());
-    current.setDate(current.getDate() + 1);
-
-    while (current.getTime() < end.getTime()) {
-      const dateStr = current.toISOString().split("T")[0];
-      if (blockedDates[dateStr]) {
-        return true;
-      }
-      current.setDate(current.getDate() + 1);
-    }
-    return false;
-  }, [blockedDates]);
+  // Memoize marked dates for range highlight using pure helper
+  const markedDates = useMemo(
+    () => computeMarkedDates(tempDepartureDate, tempReturnDate, blockedDates),
+    [tempDepartureDate, tempReturnDate, blockedDates]
+  );
 
   // Memoize date selection handler
   const handleDayPress = useCallback(
@@ -176,15 +91,17 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
       } else if (pressedDate < tempDepartureDate) {
         setTempDepartureDate(pressedDate);
         setTempReturnDate(null);
-      } else if (hasBlockedDateInBetween(tempDepartureDate, pressedDate)) {
-        // A date is already selected in between, so reset start date to pressed date
+      } else if (
+        hasBlockedDateInRange(tempDepartureDate, pressedDate, blockedDates)
+      ) {
+        // A date is already selected in between, so reset start to pressed
         setTempDepartureDate(pressedDate);
         setTempReturnDate(null);
       } else {
         setTempReturnDate(pressedDate);
       }
     },
-    [tempDepartureDate, tempReturnDate, hasBlockedDateInBetween]
+    [tempDepartureDate, tempReturnDate, blockedDates]
   );
 
   const handleConfirm = useCallback(() => {
@@ -202,7 +119,12 @@ const TravelDateModal: React.FC<TravelDateModalProps> = ({
     >
       <View className="flex-1 bg-white pt-12">
         {/* Header */}
-        <View className="flex-row justify-between items-center p-5 border-b border-gray-200 bg-white">
+        <View
+          className={
+            "flex-row justify-between items-center p-5 " +
+            "border-b border-gray-200 bg-white"
+          }
+        >
           <View className="flex-1">
             <Text className="text-2xl font-bold">Travel Dates</Text>
             {dateLabel && (

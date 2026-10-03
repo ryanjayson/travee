@@ -1,12 +1,18 @@
 import React, { useRef, useState } from "react";
-import { ScrollView, View, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  ScrollView,
+  View,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from "react-native";
 import { ItineraryActivity } from "../../../../types/TravelDto";
 import { TripPlanType } from "../../../../../../types/enums";
 import {
   FlightDetails,
-  AccomodationDetails, TransportationDetails, RideRentalDetails,
-  PlanDetails
+  AccomodationDetails,
+  TransportationDetails,
+  RideRentalDetails,
+  PlanDetails,
 } from "./Details/DetailComponents";
 
 interface DetailsTabProps {
@@ -28,11 +34,11 @@ const DetailsTab = ({
   onScrollAtTopChange,
   onEditActivity,
 }: DetailsTabProps) => {
-  const [isAtTop, setIsAtTop] = useState(true);
+  const [, setIsAtTop] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Lock ScrollView when bottom sheet snap is mid.
-  // Enable ScrollView when snap is expanded (so it can scroll up when content overflows).
+  // Enable ScrollView when snap is expanded.
   const shouldScroll = isMidSnap ? false : isExpanded ? true : scrollEnabled;
 
   React.useEffect(() => {
@@ -42,12 +48,12 @@ const DetailsTab = ({
   }, [itineraryActivity?.id, onScrollAtTopChange]);
 
   React.useEffect(() => {
-    if (!isExpanded && !isMidSnap) {
+    if (!isExpanded) {
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
       setIsAtTop(true);
       onScrollAtTopChange?.(true);
     }
-  }, [isExpanded, isMidSnap, onScrollAtTopChange]);
+  }, [isExpanded, onScrollAtTopChange]);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const y = e.nativeEvent.contentOffset.y;
@@ -56,22 +62,19 @@ const DetailsTab = ({
     onScrollAtTopChange?.(atTop);
   };
 
-  const insets = useSafeAreaInsets();
-  const { height: screenHeight } = Dimensions.get("window");
-  const yOffset = insets.top + 60;
-  const parentHeight = screenHeight - yOffset;
-  const paddingBottom = 100; //parentHeight * 0.35 + 40; // 35% sheet height + extra spacing
-
   if (!itineraryActivity) return null;
-
-  // const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity.type)?.color || "#9E9E9E";
 
   const renderDetails = () => {
     switch (itineraryActivity.type) {
       case TripPlanType.flight:
         return <FlightDetails data={itineraryActivity.flightDetails} />;
       case TripPlanType.stay:
-        return <AccomodationDetails data={itineraryActivity.accomodationDetails} onFullScreenChange={onFullScreenChange} />;
+        return (
+          <AccomodationDetails
+            data={itineraryActivity.accomodationDetails}
+            onFullScreenChange={onFullScreenChange}
+          />
+        );
       case TripPlanType.transit:
         return (
           <TransportationDetails
@@ -116,7 +119,7 @@ const DetailsTab = ({
     <View className="flex-1">
       <ScrollView
         ref={scrollViewRef}
-        showsVerticalScrollIndicator={shouldScroll}
+        showsVerticalScrollIndicator={false}
         scrollEnabled={shouldScroll}
         bounces={false}
         alwaysBounceVertical={false}
@@ -126,17 +129,10 @@ const DetailsTab = ({
         contentContainerStyle={{ paddingBottom: 40, flexGrow: 1 }}
         className="flex-1"
       >
-        <View className="px-3">
-          {renderDetails()}
-        </View>
+        <View className="px-3">{renderDetails()}</View>
       </ScrollView>
     </View>
   );
 };
 
 export default DetailsTab;
-
-
-
-
-

@@ -22,7 +22,12 @@ import FilesTab from "./Tabs/FilesTab";
 import NotesTab from "./Tabs/NotesTab";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 
-import { TripPlanType, getTripPlanTypeLabel, ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
+import {
+  TripPlanType,
+  getTripPlanTypeLabel,
+  ActivityType,
+  getActivityTypeLabel,
+} from "../../../../../types/enums";
 import { ACTIVITY_PLAN_TYPES } from "../../../constants/activityPlanTypes";
 import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 
@@ -213,7 +218,12 @@ const ViewItineraryActivity = ({
       id: "files",
       title: "Files",
       // icon: "description",
-      content: <FilesTab itineraryActivity={itineraryActivity} onImageViewerToggle={setIsImageViewerOpen} />,
+      content: (
+        <FilesTab
+          itineraryActivity={itineraryActivity}
+          onImageViewerToggle={setIsImageViewerOpen}
+        />
+      ),
     },
   ];
 
@@ -270,29 +280,40 @@ const ViewItineraryActivity = ({
                   </View>
                 )}
                 <View
-                  style={{ backgroundColor: getActivityTypeDetails(itineraryActivity.type).color + "20" }}
+                  style={{
+                    backgroundColor:
+                      getActivityTypeDetails(itineraryActivity.type).color + "20",
+                  }}
                   className="items-end rounded-xs px-2 py-0.5 mr-0.5"
                 >
-
                   <Text
-                    style={{ color: getActivityTypeDetails(itineraryActivity.type).color }}
+                    style={{
+                      color: getActivityTypeDetails(itineraryActivity.type).color,
+                    }}
                     className="text-[8px] tracking-wider uppercase font-extrabold"
                   >
                     {getActivityTypeDetails(itineraryActivity.type).text}
                   </Text>
                 </View>
 
-                {itineraryActivity.type == TripPlanType.activity && itineraryActivity.planType && (
+                {itineraryActivity.type == TripPlanType.activity &&
+                  itineraryActivity.planType && (
                   <View className="flex-row items-center ml-0.5">
                     <Text className="text-base text-tertiary/50 mr-0.5">
                       /
                     </Text>
                     <View
-                      style={{ backgroundColor: getPlanTypeDetails(itineraryActivity.planType).color + "20" }}
+                      style={{
+                        backgroundColor:
+                          getPlanTypeDetails(itineraryActivity.planType).color +
+                          "20",
+                      }}
                       className="items-end rounded-xs px-2 py-0.5 mr-0.5"
                     >
                       <Text
-                        style={{ color: getPlanTypeDetails(itineraryActivity.planType).color }}
+                        style={{
+                          color: getPlanTypeDetails(itineraryActivity.planType).color,
+                        }}
                         className="text-[8px] font-semibold"
                       >
                         {getPlanTypeDetails(itineraryActivity.planType).text}
@@ -302,7 +323,9 @@ const ViewItineraryActivity = ({
                 )}
               </View>
             )}
-            <Text className="text-4xl font-semibold mt-1" style={{ paddingBottom: description ? 2 : 0 }}
+            <Text
+              className="text-4xl font-semibold mt-1"
+              style={{ paddingBottom: description ? 2 : 0 }}
               numberOfLines={!isExpanded && !isMidSnap ? 1 : undefined}
             >
               {itineraryActivity?.title}
@@ -362,9 +385,14 @@ const ViewItineraryActivity = ({
         </View>
 
         {/* Tabs */}
-        <View className="flex-1"
-          style={{ marginTop: !isMidSnap && !isExpanded ? 10 : 0 }}>
-          <FadeInView key={`tabs-${id}`} type="right" delay={180} duration={400} style={{ flex: 1 }}>
+        <View className="flex-1">
+          <FadeInView
+            key={`tabs-${id}`}
+            type="right"
+            delay={180}
+            duration={400}
+            style={{ flex: 1 }}
+          >
             {renderContent()}
           </FadeInView>
         </View>

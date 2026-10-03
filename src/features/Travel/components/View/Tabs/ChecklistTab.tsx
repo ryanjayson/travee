@@ -64,7 +64,12 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
 
   const [selectedFilter, setSelectedFilter] = useState<ChecklistFilterOption>('All');
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [filterButtonLayout, setFilterButtonLayout] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const [filterButtonLayout, setFilterButtonLayout] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const filterButtonRef = useRef<View>(null);
 
   const handleOpenFilter = () => {
@@ -226,13 +231,26 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
               </Text>
             </View>
 
-            <View className="bg-gray-200 h-6 rounded-xl mb-3 overflow-hidden justify-between flex-row items-center px-1">
+            <View
+              className={
+                "bg-gray-200 h-6 rounded-xl mb-3 overflow-hidden " +
+                "justify-between flex-row items-center px-1"
+              }
+            >
               <View
-                className={`bg-[#05966980] h-4  ${progressPercent === 100 ? 'rounded-full' : 'rounded-l-full'}`}
+                className={
+                  `bg-[#05966980] h-4 ` +
+                  `${progressPercent === 100 ? "rounded-full" : "rounded-l-full"}`
+                }
                 style={{ width: `${progressPercent}%` }}
               />
 
-              <Text className={`text-xs font-semibold px-1 z-10 absolute right-1 top-[4px] ${doneCount === totalCount ? 'text-white' : 'text-[#059669]'}`}>
+              <Text
+                className={
+                  `text-xs font-semibold px-1 z-10 absolute right-1 top-[4px] ` +
+                  `${doneCount === totalCount ? "text-white" : "text-[#059669]"}`
+                }
+              >
                 {doneCount}/{totalCount}
               </Text>
             </View>
@@ -302,7 +320,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           {/* Custom Group Header & Items */}
           {(selectedFilter === 'All' || selectedFilter === 'Custom') && (
             <View className="flex-row items-center justify-between mt-2xl px-4">
-              <Text className="text-2xl font-semibold text-secondary">My Custom List</Text>
+              <Text className="text-2xl font-semibold text-secondary">My Custom Checklist</Text>
               <TouchableOpacity
                 onPress={() => setShowGroupModal(true)}
                 activeOpacity={0.7}
@@ -358,7 +376,12 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                         <Text className="text-base text-gray-400 mr-1 rounded-full">
                           {doneCt}/{groupItems.length}
                         </Text>
-                        <Icon name="chevron-right" size={24} color="#999" style={{ opacity: 0.6 }} />
+                        <Icon
+                          name="chevron-right"
+                          size={24}
+                          color="#999"
+                          style={{ opacity: 0.6 }}
+                        />
                       </View>
                     </TouchableOpacity>
                   </FadeInView>
@@ -369,7 +392,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           {/* Activity Header & Items */}
           {(selectedFilter === 'All' || selectedFilter === 'Activity') && hasActivityItems && (
             <View className="flex-row items-center justify-between mt-2xl px-4">
-              <Text className="text-2xl font-semibold mb-2 text-secondary">Activity</Text>
+              <Text className="text-2xl font-semibold mb-2 text-secondary">Activity To-do's</Text>
             </View>
           )}
 
@@ -397,7 +420,8 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                           type: "activity",
                           id: activity.id,
                           title: activity.title,
-                          activityType: (activity.type ?? TripPlanType.activity) as TripPlanType,
+                          activityType: (activity.type ??
+                            TripPlanType.activity) as TripPlanType,
                         })
                       }
                       className="flex-row items-center gap-3 px-5 bg-gray-50"
@@ -418,7 +442,12 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                         <Text className="text-base text-gray-400 mr-1 rounded-full">
                           {doneCt}/{activityItems.length}
                         </Text>
-                        <Icon name="chevron-right" size={24} color="#999" style={{ opacity: 0.6 }} />
+                        <Icon
+                          name="chevron-right"
+                          size={24}
+                          color="#999"
+                          style={{ opacity: 0.6 }}
+                        />
                       </View>
                     </TouchableOpacity>
                   </FadeInView>
@@ -428,7 +457,12 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
 
           {/* Empty state when current filter has no items */}
           {/* {filteredTotal === 0 && (
-            <FadeInView type="up" delay={50} duration={300} className="py-12 items-center justify-center">
+            <FadeInView
+              type="up"
+              delay={50}
+              duration={300}
+              className="py-12 items-center justify-center"
+            >
               <Text className="text-base font-semibold text-gray-700 text-center mb-1">
                 No {selectedFilter} Items
               </Text> 
@@ -463,18 +497,26 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           <View className="flex-1">
             <TouchableOpacity
               activeOpacity={1}
-              className="absolute w-[215px] rounded-2xl border border-gray-200 shadow-lg overflow-hidden"
+              className={
+                "absolute w-[215px] rounded-2xl border border-gray-200 " +
+                "shadow-lg overflow-hidden"
+              }
               style={{
                 backgroundColor: colors.surface,
                 top: filterButtonLayout ? filterButtonLayout.y : 180,
                 right: filterButtonLayout
-                  ? Math.max(16, Dimensions.get('window').width - (filterButtonLayout.x + filterButtonLayout.width))
+                  ? Math.max(
+                    16,
+                    Dimensions.get("window").width -
+                    (filterButtonLayout.x + filterButtonLayout.width)
+                  )
                   : 24,
               }}
             >
               <View className="py-1">
                 {FILTER_OPTIONS.map((option, index) => {
                   const isSelected = selectedFilter === option.id;
+                  const isLastOption = index === FILTER_OPTIONS.length - 1;
                   return (
                     <TouchableOpacity
                       key={option.id}
@@ -484,9 +526,15 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                         setSelectedFilter(option.id);
                         setShowFilterPanel(false);
                       }}
-                      className={`flex-row items-center py-2.5 px-3 ${index < FILTER_OPTIONS.length - 1 ? 'border-b border-[#F1F5F9]' : ''
-                        }`}
-                      style={isSelected ? { backgroundColor: colors.primary + '12' } : undefined}
+                      className={
+                        `flex-row items-center py-2.5 px-3 ` +
+                        `${!isLastOption ? "border-b border-[#F1F5F9]" : ""}`
+                      }
+                      style={
+                        isSelected
+                          ? { backgroundColor: colors.primary + "12" }
+                          : undefined
+                      }
                     >
                       <View className="flex-row items-center justify-between flex-1">
                         <View className="flex-row items-center gap-3">

@@ -1,6 +1,13 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Clipboard, ToastAndroid, Platform, Alert, Linking } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { copyToClipboard } from "./activityDetailUtils";
+import { logger } from "../../../../../../../services/errorLogger";
 
 export interface ActivityCardDisplayFieldProps {
   label: string;
@@ -41,37 +48,41 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
   iconActionColor,
   numberOfLines,
 }) => {
-  if (value === undefined || value === null || String(value).trim() === "") return null;
+  if (value === undefined || value === null || String(value).trim() === "") {
+    return null;
+  }
 
   const strValue = String(value).trim();
-  const actionColor = iconActionColor || iconLinkColor || "#FFFFFF";
+  const _actionColor = iconActionColor || iconLinkColor || "#FFFFFF";
 
   const handleCopyAction = () => {
     if (onCopy) {
       onCopy();
     } else {
-      Clipboard.setString(strValue);
-      if (Platform.OS === "android") {
-        ToastAndroid.show(`${label} copied to clipboard`, ToastAndroid.SHORT);
-      } else {
-        Alert.alert("Copied", `${label} copied to clipboard`);
-      }
+      copyToClipboard(strValue, label);
     }
   };
 
   const handleLinkAction = () => {
-    const formattedUrl = strValue.startsWith("http://") || strValue.startsWith("https://")
-      ? strValue
-      : `https://${strValue}`;
-    Linking.openURL(formattedUrl).catch((err) => console.error("Failed to open link", err));
+    const formattedUrl =
+      strValue.startsWith("http://") || strValue.startsWith("https://")
+        ? strValue
+        : `https://${strValue}`;
+    Linking.openURL(formattedUrl).catch((err) =>
+      logger.service(err, { screen: "ActivityCardDisplayField", action: "openLink" })
+    );
   };
 
   const handlePhoneAction = () => {
-    Linking.openURL(`tel:${strValue}`).catch((err) => console.error("Failed to make call", err));
+    Linking.openURL(`tel:${strValue}`).catch((err) =>
+      logger.service(err, { screen: "ActivityCardDisplayField", action: "makeCall" })
+    );
   };
 
   const handleEmailAction = () => {
-    Linking.openURL(`mailto:${strValue}`).catch((err) => console.error("Failed to send email", err));
+    Linking.openURL(`mailto:${strValue}`).catch((err) =>
+      logger.service(err, { screen: "ActivityCardDisplayField", action: "sendEmail" })
+    );
   };
 
   const handlePress = () => {
@@ -126,7 +137,10 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
   return (
     <View className="flex-row items-start gap-6 my-md">
       {icon ? (
-        <View className="rounded-full border-tertiary/10" style={{ alignItems: "center", justifyContent: "center" }}>
+        <View
+          className="rounded-full border-tertiary/10"
+          style={{ alignItems: "center", justifyContent: "center" }}
+        >
           <Icon name={icon as any} size={28} color="#344054" />
         </View>
       ) : null}

@@ -150,14 +150,18 @@ const ViewActivityModal = ({
   const yOffset = insets.top + 60; // Estimated parent modal header offset
   const parentHeight = screenHeight - yOffset;
 
-  const SNAP_EXTENDED = itineraryActivity?.description && itineraryActivity.description.length > 0 ? 100 : 90;
+  const hasDesc = Boolean(
+    itineraryActivity?.description && itineraryActivity.description.length > 0
+  );
+  const SNAP_EXTENDED = hasDesc ? 100 : 90;
   const SNAP_90 = parentHeight * 0.1;
   const SNAP_MIN = parentHeight - SNAP_EXTENDED;
 
-
   const translateY = useRef(new Animated.Value(SNAP_MIN)).current;
 
-  const activityColor = activityIcons.find((icon) => icon.name === itineraryActivity?.type)?.color || "#9E9E9E";
+  const activityColor =
+    activityIcons.find((icon) => icon.name === itineraryActivity?.type)?.color ||
+    "#9E9E9E";
 
   const { animatedBgColor, overlayOpacity } = useMemo(() => {
     const rangeEnd = SNAP_MIN;
@@ -253,7 +257,11 @@ const ViewActivityModal = ({
             <TouchableOpacity
               onPress={() => {
                 if (itineraryActivity) {
-                  openActivityModal(itineraryActivity, itineraryActivity.sectionId || undefined, travelId);
+                  openActivityModal(
+                    itineraryActivity,
+                    itineraryActivity.sectionId || undefined,
+                    travelId
+                  );
                 }
               }}
               activeOpacity={0.7}

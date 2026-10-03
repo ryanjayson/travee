@@ -1,13 +1,32 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, ActivityIndicator, ScrollView, TouchableOpacity, Modal, Alert, Text, KeyboardAvoidingView, Platform } from "react-native";
-import {  DataTable, useTheme, Checkbox,TextInput } from "react-native-paper";
+import {
+  View,
+  ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+  Alert,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { DataTable, useTheme, Checkbox, TextInput } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { TravelPlan, ItineraryExpense } from "../../../../Travel/types/TravelDto";
+import {
+  TravelPlan,
+  ItineraryExpense,
+} from "../../../../Travel/types/TravelDto";
 import { useItineraryExpenses } from "../../../hooks/useExpense";
 import { useTripMembers } from "../../../hooks/useTripMembers";
-import { useMemberSplitBills, useSaveManyMemberSplitBillsMutation, useSaveMemberSplitBillMutation } from "../../../hooks/useMemberSplitBills";
+import {
+  useMemberSplitBills,
+  useSaveManyMemberSplitBillsMutation,
+  useSaveMemberSplitBillMutation,
+} from "../../../hooks/useMemberSplitBills";
 import ExpenseCategoryIcon from "../../Forms/Expense/ExpenseCategoryIcon";
 import { useKeyboardVisible } from "../../../../../hooks/useKeyboardVisible";
+import { formatDateTimeDisplay, formatMoney } from "./expensesTabUtils";
+import { logger } from "../../../../../services/errorLogger";
 
 interface ExpensesTabProps {
   travelPlan: TravelPlan;
@@ -16,69 +35,86 @@ interface ExpensesTabProps {
   onScrollY?: (y: number) => void;
 }
 
-
-// Custom self-contained slider component utilizing pure JS gesture responders for Android and iOS compatibility
-const CustomSlider = ({ value, onChange, disabled, colors }: { value: number; onChange: (val: number) => void; disabled?: boolean; colors: any }) => {
+// Self-contained slider utilizing JS gesture responders for cross-platform support
+const CustomSlider = ({
+  value,
+  onChange,
+  disabled,
+  colors,
+}: {
+  value: number;
+  onChange: (val: number) => void;
+  disabled?: boolean;
+  colors: any;
+}) => {
   const [sliderWidth, setSliderWidth] = useState(0);
 
   const handleTouch = (evt: any) => {
     if (disabled || sliderWidth <= 0) return;
     const { locationX } = evt.nativeEvent;
-    const pct = Math.max(0, Math.min(100, Math.round((locationX / sliderWidth) * 100)));
+    const pct = Math.max(
+      0,
+      Math.min(100, Math.round((locationX / sliderWidth) * 100))
+    );
     onChange(pct);
   };
 
   return (
     <View className="mb-4">
       <View className="flex-row justify-between items-center mb-1">
-        <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Split Share</Text>
-        <Text style={{ color: disabled ? '#999' : colors.primary }} className="text-sm font-bold">
+        <Text className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          Split Share
+        </Text>
+        <Text
+          style={{ color: disabled ? "#999" : colors.primary }}
+          className="text-sm font-bold"
+        >
           {value.toFixed(0)}%
         </Text>
       </View>
-      <View 
+      <View
         onLayout={(e) => setSliderWidth(e.nativeEvent.layout.width)}
         onStartShouldSetResponder={() => !disabled}
         onMoveShouldSetResponder={() => !disabled}
         onResponderGrant={handleTouch}
         onResponderMove={handleTouch}
-        style={{ 
-          height: 32, 
-          justifyContent: 'center',
-          opacity: disabled ? 0.6 : 1 
+        style={{
+          height: 32,
+          justifyContent: "center",
+          opacity: disabled ? 0.6 : 1,
         }}
         className="w-full relative"
       >
         {/* Track Background */}
         <View className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
           {/* Active Progress */}
-          <View 
-            style={{ 
-              width: `${value}%`, 
-              backgroundColor: disabled ? '#9E9E9E' : colors.primary 
-            }} 
+          <View
+            style={{
+              width: `${value}%`,
+              backgroundColor: disabled ? "#9E9E9E" : colors.primary,
+            }}
             className="h-full rounded-full"
           />
         </View>
-        
+
         {/* Thumb */}
-        <View 
+        <View
           pointerEvents="none"
-          style={{ 
-            left: `${value}%`, 
+          style={{
+            left: `${value}%`,
             marginLeft: -10,
-            position: 'absolute',
+            position: "absolute",
             width: 20,
             height: 20,
             borderRadius: 10,
-            backgroundColor: '#FFFFFF',
+            backgroundColor: "#FFFFFF",
             borderWidth: 3,
-            borderColor: disabled ? '#9E9E9E' : colors.primary,
-            shadowColor: '#000',
+            borderColor: disabled ? "#9E9E9E" : colors.primary,
+            shadowColor: "#000",
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.22,
             shadowRadius: 2.22,
-            elevation: 3
+            elevation: 3,
           }}
         />
       </View>
@@ -86,9 +122,14 @@ const CustomSlider = ({ value, onChange, disabled, colors }: { value: number; on
   );
 };
 
-const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrollY }: ExpensesTabProps) => {
+const ExpensesTab = ({
+  travelPlan,
+  onEditExpense,
+  scrollEnabled = false,
+  onScrollY: _onScrollY,
+}: ExpensesTabProps) => {
   const { colors } = useTheme();
-  
+
   // UI and Local states
   const [splitEqually, setSplitEqually] = useState(true);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -99,31 +140,48 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
   const [notes, setNotes] = useState("");
   const [percentageShare, setPercentageShare] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
-  const { keyboardVisible, isFloating } = useKeyboardVisible();
+  const { keyboardVisible } = useKeyboardVisible();
+
+  const travelId = travelPlan.travel.id || "";
 
   // Queries
-  const { data: expenses = [], isLoading: isLoadingExpenses } = useItineraryExpenses(travelPlan.travel.id || "");
-  const { data: members = [], isLoading: isLoadingMembers } = useTripMembers(travelPlan.travel.id || "");
-  const { data: splits = [], isLoading: isLoadingSplits } = useMemberSplitBills(travelPlan.travel.id || "");
+  const { data: expenses = [], isLoading: isLoadingExpenses } =
+    useItineraryExpenses(travelId);
+  const { data: members = [], isLoading: isLoadingMembers } =
+    useTripMembers(travelId);
+  const { data: splits = [], isLoading: isLoadingSplits } =
+    useMemberSplitBills(travelId);
 
   // Mutations
-  const { mutate: saveManySplits } = useSaveManyMemberSplitBillsMutation(travelPlan.travel.id || "");
+  const { mutate: saveManySplits } =
+    useSaveManyMemberSplitBillsMutation(travelId);
   const { mutate: saveSingleSplit } = useSaveMemberSplitBillMutation();
 
   // Statistics Calculations
-  const totalExpense = expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
-  const totalSplitBillBase = expenses?.reduce((sum, exp) => sum + (exp.isIncludeInBill !== false ? exp.amount : 0), 0) || 0;
+  const totalExpense =
+    expenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
+  const totalSplitBillBase =
+    expenses?.reduce(
+      (sum, exp) => sum + (exp.isIncludeInBill !== false ? exp.amount : 0),
+      0
+    ) || 0;
 
   // Build the live combined member splitting allocations list
   const memberSplits = members.map((member) => {
-    const splitRecord = splits.find((s) => String(s.memberId) === String(member.id));
-    
-    const directExpensesAmount = expenses?.reduce((sum, exp) => {
-      if (exp.isIncludeInBill === false && String(exp.memberId) === String(member.id)) {
-        return sum + exp.amount;
-      }
-      return sum;
-    }, 0) || 0;
+    const splitRecord = splits.find(
+      (s) => String(s.memberId) === String(member.id)
+    );
+
+    const directExpensesAmount =
+      expenses?.reduce((sum, exp) => {
+        if (
+          exp.isIncludeInBill === false &&
+          String(exp.memberId) === String(member.id)
+        ) {
+          return sum + exp.amount;
+        }
+        return sum;
+      }, 0) || 0;
 
     let currentPercentageShare = 0;
     let owesAmount = 0;
@@ -135,14 +193,16 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
     if (members.length > 0) {
       if (splitEqually) {
         currentPercentageShare = 100 / members.length;
-        owesAmount = (totalSplitBillBase / members.length) + directExpensesAmount;
+        owesAmount = totalSplitBillBase / members.length + directExpensesAmount;
         memberIsPaid = splitRecord ? splitRecord.isPaid : false;
         memberPaymentType = splitRecord?.paymentType || "Cash";
         memberPaidDate = splitRecord?.paidDate || null;
         memberNotes = splitRecord?.notes || "";
       } else {
         currentPercentageShare = splitRecord ? splitRecord.percentageShare : 0;
-        owesAmount = (totalSplitBillBase * currentPercentageShare / 100) + directExpensesAmount;
+        owesAmount =
+          (totalSplitBillBase * currentPercentageShare) / 100 +
+          directExpensesAmount;
         memberIsPaid = splitRecord ? splitRecord.isPaid : false;
         memberPaymentType = splitRecord?.paymentType || "Cash";
         memberPaidDate = splitRecord?.paidDate || null;
@@ -166,57 +226,89 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
 
   // Calculate overall collections
   const totalSplitBill = memberSplits.reduce((sum, s) => sum + s.owesAmount, 0);
-  const totalCollected = memberSplits.reduce((sum, s) => sum + (s.isPaid ? s.owesAmount : 0), 0);
+  const totalCollected = memberSplits.reduce(
+    (sum, s) => sum + (s.isPaid ? s.owesAmount : 0),
+    0
+  );
   const totalRemaining = totalSplitBill - totalCollected;
 
   // Auto-sync Equal Splits to DB to preserve queries integrity
   useEffect(() => {
-    if (splitEqually && members.length > 0 && totalSplitBillBase >= 0 && !isLoadingSplits) {
+    if (
+      splitEqually &&
+      members.length > 0 &&
+      totalSplitBillBase >= 0 &&
+      !isLoadingSplits
+    ) {
       const needsSync = members.some((m) => {
-        const splitRecord = splits.find((s) => String(s.memberId) === String(m.id));
-        const directAmount = expenses?.reduce((sum, exp) => {
-          if (exp.isIncludeInBill === false && String(exp.memberId) === String(m.id)) {
-            return sum + exp.amount;
-          }
-          return sum;
-        }, 0) || 0;
-        const expectedOwes = (totalSplitBillBase / members.length) + directAmount;
-        const expectedPercent = 100 / members.length;
-        
-        if (!splitRecord) return true;
-        return Math.abs(splitRecord.owesAmount - expectedOwes) > 0.01 || 
-               Math.abs(splitRecord.percentageShare - expectedPercent) > 0.01;
-      });
-
-      if (needsSync) {
-        const equalSplits = members.map((m) => {
-          const splitRecord = splits.find((s) => String(s.memberId) === String(m.id));
-          const directAmount = expenses?.reduce((sum, exp) => {
-            if (exp.isIncludeInBill === false && String(exp.memberId) === String(m.id)) {
+        const splitRecord = splits.find(
+          (s) => String(s.memberId) === String(m.id)
+        );
+        const directAmount =
+          expenses?.reduce((sum, exp) => {
+            if (
+              exp.isIncludeInBill === false &&
+              String(exp.memberId) === String(m.id)
+            ) {
               return sum + exp.amount;
             }
             return sum;
           }, 0) || 0;
+        const expectedOwes = totalSplitBillBase / members.length + directAmount;
+        const expectedPercent = 100 / members.length;
+
+        if (!splitRecord) return true;
+        return (
+          Math.abs(splitRecord.owesAmount - expectedOwes) > 0.01 ||
+          Math.abs(splitRecord.percentageShare - expectedPercent) > 0.01
+        );
+      });
+
+      if (needsSync) {
+        const equalSplits = members.map((m) => {
+          const splitRecord = splits.find(
+            (s) => String(s.memberId) === String(m.id)
+          );
+          const directAmount =
+            expenses?.reduce((sum, exp) => {
+              if (
+                exp.isIncludeInBill === false &&
+                String(exp.memberId) === String(m.id)
+              ) {
+                return sum + exp.amount;
+              }
+              return sum;
+            }, 0) || 0;
           return {
+            id: splitRecord?.id,
             travelId: travelPlan.travel.id || "",
-            memberId: m.id || "",
-            owesAmount: (totalSplitBillBase / members.length) + directAmount,
+            memberId: m.id,
+            owesAmount: totalSplitBillBase / members.length + directAmount,
             percentageShare: 100 / members.length,
             isPaid: splitRecord ? splitRecord.isPaid : false,
             paymentType: splitRecord?.paymentType || "Cash",
-            paidDate: splitRecord?.paidDate ? new Date(splitRecord.paidDate).getTime() : undefined,
+            paidDate: splitRecord?.paidDate || undefined,
             notes: splitRecord?.notes || undefined,
           };
         });
+
         saveManySplits(equalSplits);
       }
     }
-  }, [splitEqually, members.length, totalSplitBillBase, splits, isLoadingSplits, expenses]);
+  }, [
+    splitEqually,
+    members,
+    totalSplitBillBase,
+    expenses,
+    splits,
+    isLoadingSplits,
+    saveManySplits,
+    travelPlan.travel.id,
+  ]);
 
-  // Log Payments / Custom Split Shares in Modal
   const handleOpenPaymentModal = (split: any) => {
     setSelectedMemberSplit(split);
-    setIsPaid(split.isPaid);
+    setIsPaid(split.isPaid || false);
     setPaymentType(split.paymentType || "Cash");
     setNotes(split.notes || "");
     setPercentageShare(split.percentageShare || 0);
@@ -226,15 +318,20 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
   const handleSavePayment = () => {
     if (!selectedMemberSplit) return;
 
-    const directExpensesAmount = expenses?.reduce((sum, exp) => {
-      if (exp.isIncludeInBill === false && String(exp.memberId) === String(selectedMemberSplit.memberId)) {
-        return sum + exp.amount;
-      }
-      return sum;
-    }, 0) || 0;
+    const directExpensesAmount =
+      expenses?.reduce((sum, exp) => {
+        if (
+          exp.isIncludeInBill === false &&
+          String(exp.memberId) === String(selectedMemberSplit.memberId)
+        ) {
+          return sum + exp.amount;
+        }
+        return sum;
+      }, 0) || 0;
 
-    const finalPercent = splitEqually ? (100 / members.length) : percentageShare;
-    const finalOwes = (totalSplitBillBase * (finalPercent / 100)) + directExpensesAmount;
+    const finalPercent = splitEqually ? 100 / members.length : percentageShare;
+    const finalOwes =
+      (totalSplitBillBase * (finalPercent / 100)) + directExpensesAmount;
 
     saveSingleSplit(
       {
@@ -245,7 +342,9 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
         percentageShare: finalPercent,
         isPaid: isPaid,
         paymentType: paymentType,
-        paidDate: isPaid ? (selectedMemberSplit.paidDate || new Date().getTime()) : undefined,
+        paidDate: isPaid
+          ? selectedMemberSplit.paidDate || new Date().getTime()
+          : undefined,
         notes: notes.trim() || undefined,
       },
       {
@@ -255,7 +354,7 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
         },
         onError: (err) => {
           Alert.alert("Error", "Failed to save details. Please try again.");
-          console.error(err);
+          logger.service(err, { screen: "ExpensesTab", action: "savePayment" });
         },
       }
     );
@@ -269,55 +368,87 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
     );
   }
 
-  const sortedExpenses = expenses ? [...expenses].sort((a, b) => {
-    const timeA = new Date(a.dateTime || 0).getTime();
-    const timeB = new Date(b.dateTime || 0).getTime();
-    return timeB - timeA;
-  }) : [];
+  const sortedExpenses = expenses
+    ? [...expenses].sort((a, b) => {
+        const timeA = new Date(a.dateTime || 0).getTime();
+        const timeB = new Date(b.dateTime || 0).getTime();
+        return timeB - timeA;
+      })
+    : [];
 
   return (
-    <ScrollView 
-      className="flex-1 bg-gray-100" 
+    <ScrollView
+      className="flex-1 bg-gray-100"
       contentContainerStyle={{ padding: 16 }}
+      scrollEnabled={scrollEnabled}
     >
-      
       {/* Redesigned Combined Dashboard Card */}
-      <View className="bg-gray_blue-700 rounded-2xl border border-[#e0e0e0] p-3 mb-5 overflow-hidden">
-        
+      <View
+        className={
+          "bg-gray_blue-700 rounded-2xl border border-[#e0e0e0] " +
+          "p-3 mb-5 overflow-hidden"
+        }
+      >
         {/* Highlighted Primary Stat: Total Expense */}
         <View className="items-center py-1 mb-4">
-          <Text className="text-gray-400 text-xs font-bold uppercase tracking-widest">Total Expense</Text>
-          <Text 
-            className="text-4xl text-white font-extrabold mt-1 tracking-tight"
-          >
-            ${totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <Text className="text-gray-400 text-xs font-bold uppercase tracking-widest">
+            Total Expense
+          </Text>
+          <Text className="text-4xl text-white font-extrabold mt-1 tracking-tight">
+            {formatMoney(totalExpense)}
           </Text>
         </View>
 
         {/* Sub-stats Row (Split Bill, Collected, Remaining) */}
-        <View className="flex-row justify-between bg-white/80 rounded-2xl p-4 border border-gray-100 mb-4 gap-2">
+        <View
+          className={
+            "flex-row justify-between bg-white/80 rounded-2xl p-4 " +
+            "border border-gray-100 mb-4 gap-2"
+          }
+        >
           <View className="flex-1 items-center">
-            <Text className="text-gray-800 text-[10px] font-bold uppercase tracking-wider text-center">Split Bill</Text>
+            <Text
+              className={
+                "text-gray-800 text-[10px] font-bold uppercase " +
+                "tracking-wider text-center"
+              }
+            >
+              Split Bill
+            </Text>
             <Text className="text-base font-extrabold text-gray-800 mt-1 text-center">
-              ${totalSplitBill.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatMoney(totalSplitBill)}
             </Text>
           </View>
-          
+
           <View className="w-1px bg-gray-200" />
 
           <View className="flex-1 items-center">
-            <Text className="text-emerald-600 text-[10px] font-bold uppercase tracking-wider text-center">Collected</Text>
+            <Text
+              className={
+                "text-emerald-600 text-[10px] font-bold uppercase " +
+                "tracking-wider text-center"
+              }
+            >
+              Collected
+            </Text>
             <Text className="text-base font-extrabold text-emerald-600 mt-1 text-center">
-              ${totalCollected.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatMoney(totalCollected)}
             </Text>
           </View>
 
           <View className="w-1px bg-gray-200" />
 
           <View className="flex-1 items-center">
-            <Text className="text-amber-600 text-[10px] font-bold uppercase tracking-wider text-center">Remaining</Text>
+            <Text
+              className={
+                "text-amber-600 text-[10px] font-bold uppercase " +
+                "tracking-wider text-center"
+              }
+            >
+              Remaining
+            </Text>
             <Text className="text-base font-extrabold text-amber-600 mt-1 text-center">
-              ${totalRemaining.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatMoney(totalRemaining)}
             </Text>
           </View>
         </View>
@@ -325,57 +456,45 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
         {/* Checkbox: Split Bill Equally */}
         <View className="flex-row items-center mb-1 mt-1 ml-1">
           <Checkbox
-            status={splitEqually ? 'checked' : 'unchecked'}
+            status={splitEqually ? "checked" : "unchecked"}
             onPress={() => setSplitEqually(!splitEqually)}
             color={"#fff"}
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => setSplitEqually(!splitEqually)}
             accessibilityRole="checkbox"
           >
             <Text className="text-sm font-semibold text-white ml-1">
-              Split bill equally among members
+              Split bill equally among all members
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Line Separator & Expand Toggle Button */}
-        <View className="h-1px bg-gray-600 my-2" />
-        
+        {/* Expandable Member Allocation List Toggle */}
         <TouchableOpacity
           onPress={() => setIsExpanded(!isExpanded)}
-          className="flex-row items-center justify-between py-1 px-1"
+          className="flex-row items-center justify-between pt-3 border-t border-gray-100 mt-1 px-1"
+          activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel="Toggle members list"
         >
-          <View className="flex-1">
-              <View className="flex-row items-center gap-2">
-              <Icon name="people" size={24} color={"#fff"} />
-              <Text className="text-base text-white">
-                Member split allocation ({memberSplits.length})
-              </Text>
-          </View>
-          {isExpanded &&(
-            <Text className="text-xs font-normal text-gray-400 ml-4xl">
-              Click row to see member split bill details
-            </Text>
-          )}
-          </View>
-
-          <Icon 
-            name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
-            size={24} 
-            color={"#fff"} 
+          <Text className="text-xs font-bold text-white uppercase tracking-wider">
+            {isExpanded
+              ? "Hide Member Shares"
+              : `View Member Shares (${memberSplits.length})`}
+          </Text>
+          <Icon
+            name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+            size={20}
+            color={"#fff"}
           />
-          
         </TouchableOpacity>
 
-        {/* Collapsible Members Allocation List/Table */}
+        {/* Member Allocations Section */}
         {isExpanded && (
-          <View className="mt-4">
+          <View className="mt-3 pt-2">
             {memberSplits.length > 0 ? (
-              <View className="border border-gray-100 rounded-2xl overflow-hidden bg-gray-50/20">
+              <View className="border border-white/20 rounded-2xl overflow-hidden">
                 {memberSplits.map((split, index) => {
                   const firstLetter = split.name.trim().charAt(0).toUpperCase();
                   const isLast = index === memberSplits.length - 1;
@@ -384,17 +503,20 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
                     <TouchableOpacity
                       key={split.memberId}
                       onPress={() => handleOpenPaymentModal(split)}
-                      className={`flex-row items-center p-3 justify-between ${!isLast ? 'border-b border-gray-100' : ''}`}
+                      className={
+                        `flex-row items-center p-3 justify-between ` +
+                        `${!isLast ? "border-b border-gray-100" : ""}`
+                      }
                       activeOpacity={0.7}
                       accessibilityRole="button"
                     >
                       <View className="flex-row items-center flex-1 pr-4">
                         {/* Circle Avatar */}
-                        <View 
+                        <View
                           style={{ backgroundColor: colors.primaryContainer }}
                           className="w-12 h-12 rounded-full justify-center items-center mr-2.5"
                         >
-                          <Text 
+                          <Text
                             style={{ color: colors.onPrimaryContainer }}
                             className="text-base font-bold"
                           >
@@ -404,9 +526,14 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
 
                         {/* Member Details */}
                         <View className="flex-1">
-                          <Text className="text-lg text-white" numberOfLines={1}>{split.name}</Text>
+                          <Text
+                            className="text-lg text-white"
+                            numberOfLines={1}
+                          >
+                            {split.name}
+                          </Text>
                           <Text className="text-[12px] text-white mt-0.5 font-semibold">
-                            Owes: ${split.owesAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            Owes: {formatMoney(split.owesAmount)}
                           </Text>
                         </View>
                       </View>
@@ -420,9 +547,27 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
                         </View>
 
                         {/* Paid/Unpaid Badge */}
-                        <View className={`px-2 py-0.5 rounded-full ${split.isPaid ? 'bg-emerald-50 border border-emerald-100' : 'bg-amber-50 border border-amber-100'}`}>
-                          <Text className={`text-[12px] font-bold ${split.isPaid ? 'text-emerald-700' : 'text-amber-700'}`}>
-                            {split.isPaid ? 'Paid' : 'Unpaid'}
+                        <View
+                          className={
+                            `px-2 py-0.5 rounded-full ` +
+                            `${
+                              split.isPaid
+                                ? "bg-emerald-50 border border-emerald-100"
+                                : "bg-amber-50 border border-amber-100"
+                            }`
+                          }
+                        >
+                          <Text
+                            className={
+                              `text-[12px] font-bold ` +
+                              `${
+                                split.isPaid
+                                  ? "text-emerald-700"
+                                  : "text-amber-700"
+                              }`
+                            }
+                          >
+                            {split.isPaid ? "Paid" : "Unpaid"}
                           </Text>
                         </View>
                       </View>
@@ -431,10 +576,16 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
                 })}
               </View>
             ) : (
-              <View className="bg-white rounded-[24px] border border-dashed border-gray-200 p-6 items-center justify-center">
+              <View
+                className={
+                  "bg-white rounded-[24px] border border-dashed " +
+                  "border-gray-200 p-6 items-center justify-center"
+                }
+              >
                 <Icon name="people-outline" size={32} color="#BDBDBD" />
                 <Text className="text-gray-500 text-xs mt-2 text-center">
-                  No members added to this trip yet. Go to Edit Trip and open the Members tab to add some!
+                  No members added to this trip yet. Go to Edit Trip and open the
+                  Members tab to add some!
                 </Text>
               </View>
             )}
@@ -454,56 +605,117 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
           <DataTable>
             <DataTable.Header className="bg-gray-50/50">
               <DataTable.Title style={{ maxWidth: 40 }}>{""}</DataTable.Title>
-              <DataTable.Title textStyle={{ color: colors.onSurfaceVariant, fontSize: 11, fontWeight: '600' }}>Item</DataTable.Title>
-              <DataTable.Title numeric textStyle={{ color: colors.onSurfaceVariant, fontSize: 11, fontWeight: '600' }}>Date</DataTable.Title>
-              <DataTable.Title style={{ maxWidth: 40 }} numeric textStyle={{ color: colors.onSurfaceVariant, fontSize: 11, fontWeight: '600' }}>Split</DataTable.Title>
-              <DataTable.Title numeric textStyle={{ color: colors.onSurfaceVariant, fontSize: 11, fontWeight: '600' }}>Amount</DataTable.Title>
+              <DataTable.Title
+                textStyle={{
+                  color: colors.onSurfaceVariant,
+                  fontSize: 11,
+                  fontWeight: "600",
+                }}
+              >
+                Item
+              </DataTable.Title>
+              <DataTable.Title
+                numeric
+                textStyle={{
+                  color: colors.onSurfaceVariant,
+                  fontSize: 11,
+                  fontWeight: "600",
+                }}
+              >
+                Date
+              </DataTable.Title>
+              <DataTable.Title
+                style={{ maxWidth: 40 }}
+                numeric
+                textStyle={{
+                  color: colors.onSurfaceVariant,
+                  fontSize: 11,
+                  fontWeight: "600",
+                }}
+              >
+                Split
+              </DataTable.Title>
+              <DataTable.Title
+                numeric
+                textStyle={{
+                  color: colors.onSurfaceVariant,
+                  fontSize: 11,
+                  fontWeight: "600",
+                }}
+              >
+                Amount
+              </DataTable.Title>
             </DataTable.Header>
 
             {sortedExpenses.length > 0 ? (
               sortedExpenses.map((expense, index) => (
-                <DataTable.Row 
-                  key={expense.id || index} 
+                <DataTable.Row
+                  key={expense.id || index}
                   className="border-b-0"
                   onPress={() => onEditExpense?.(expense)}
                 >
                   <DataTable.Cell style={{ maxWidth: 40 }}>
-                     <ExpenseCategoryIcon category={expense.expenseCategory} size={22} color={"#363F72"} />
-                  </DataTable.Cell>
-                  <DataTable.Cell textStyle={{ fontSize: 14, fontWeight: '700', color: '#000' }}>
-                    {expense.title}
-                  </DataTable.Cell>
-                  <DataTable.Cell numeric textStyle={{ fontSize: 12, color: colors.onSurfaceVariant }}>
-                    {(() => {
-                      const d = new Date(expense.dateTime);
-                      return d.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' }) + 
-                             " " + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
-                    })()}
-                  </DataTable.Cell>
-                  <DataTable.Cell style={{ maxWidth: 40 }} numeric>
-                    <Icon 
-                      name={expense.isIncludeInBill !== false ? "check" : "close"} 
-                      size={18} 
-                      color={expense.isIncludeInBill !== false ? "#16A34A" : "#FFF"} 
+                    <ExpenseCategoryIcon
+                      category={expense.expenseCategory}
+                      size={22}
+                      color={"#363F72"}
                     />
                   </DataTable.Cell>
-                      <DataTable.Cell numeric textStyle={{ fontSize: 13, fontWeight: '700', color: colors.primary }}>
-                    {expense.currency || '$'}{expense.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <DataTable.Cell
+                    textStyle={{ fontSize: 14, fontWeight: "700", color: "#000" }}
+                  >
+                    {expense.title}
+                  </DataTable.Cell>
+                  <DataTable.Cell
+                    numeric
+                    textStyle={{ fontSize: 12, color: colors.onSurfaceVariant }}
+                  >
+                    {formatDateTimeDisplay(expense.dateTime)}
+                  </DataTable.Cell>
+                  <DataTable.Cell style={{ maxWidth: 40 }} numeric>
+                    <Icon
+                      name={expense.isIncludeInBill !== false ? "check" : "close"}
+                      size={18}
+                      color={
+                        expense.isIncludeInBill !== false ? "#16A34A" : "#FFF"
+                      }
+                    />
+                  </DataTable.Cell>
+                  <DataTable.Cell
+                    numeric
+                    textStyle={{
+                      fontSize: 13,
+                      fontWeight: "700",
+                      color: colors.primary,
+                    }}
+                  >
+                    {formatMoney(expense.amount, expense.currency || "$")}
                   </DataTable.Cell>
                 </DataTable.Row>
               ))
             ) : (
               <View className="py-10 items-center">
-                <Text className="text-gray-400 text-sm">No expenses recorded for this trip.</Text>
+                <Text className="text-gray-400 text-sm">
+                  No expenses recorded for this trip.
+                </Text>
               </View>
             )}
 
             {expenses && expenses.length > 0 && (
               <DataTable.Row className="bg-gray-50/30 border-t border-gray-100">
                 <DataTable.Cell style={{ maxWidth: 40 }}>{""}</DataTable.Cell>
-                <DataTable.Cell textStyle={{ fontWeight: '700', color: '#1A1A1A' }}>Total</DataTable.Cell>
-                <DataTable.Cell numeric textStyle={{ fontWeight: '800', color: colors.primary, fontSize: 15 }}>
-                  ${totalExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <DataTable.Cell textStyle={{ fontWeight: "700", color: "#1A1A1A" }}>
+                  Total
+                </DataTable.Cell>
+                <DataTable.Cell
+                  numeric
+                  textStyle={{
+                    fontWeight: "800",
+                    color: colors.primary,
+                    fontSize: 15,
+                  }}
+                >
+                  {formatMoney(totalExpense)}
                 </DataTable.Cell>
               </DataTable.Row>
             )}
@@ -522,120 +734,144 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           className="flex-1"
         >
-          <View className="flex-1 justify-center items-center p-5" style={{backgroundColor: "rgba(0,0,0,0.5)"}}>
-          
-            <View 
-              style={{ width: '100%', maxWidth: 360, maxHeight: '85%' }}
+          <View
+            className="flex-1 justify-center items-center p-5"
+            style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          >
+            <View
+              style={{ width: "100%", maxWidth: 360, maxHeight: "85%" }}
               className="bg-white rounded-[30px] shadow-lg p-6 overflow-hidden"
             >
-            
-            {/* Modal Header */}
-            <View className="flex-row justify-between items-center pb-4 border-b border-gray-100 mb-4">
-              <Text className="text-base font-bold text-gray-800">
-                Split share
-              </Text>
-              <TouchableOpacity 
-                onPress={() => setPaymentModalVisible(false)}
-                accessibilityRole="button"
-                accessibilityLabel="Close"
+              {/* Modal Header */}
+              <View
+                className="flex-row justify-between items-center pb-4 border-b border-gray-100 mb-4"
               >
-                <Icon name="close" size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            {selectedMemberSplit && (
-              <ScrollView 
-                ref={scrollViewRef}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-              >
-                {/* Member Info */}
-                <Text className="text-2xl font-bold text-gray-800 mb-0.5">
-                  {selectedMemberSplit.name}
+                <Text className="text-base font-bold text-gray-800">
+                  Split share
                 </Text>
-                <Text className="text-base text-gray-500 font-semibold mb-2">
-                  Owes: ${(((totalSplitBillBase * (splitEqually ? (100 / members.length) : percentageShare)) / 100) + 
-                    (expenses?.reduce((sum, exp) => {
-                      if (exp.isIncludeInBill === false && String(exp.memberId) === String(selectedMemberSplit.memberId)) {
-                        return sum + exp.amount;
-                      }
-                      return sum;
-                    }, 0) || 0)
-                  ).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </Text>
+                <TouchableOpacity
+                  onPress={() => setPaymentModalVisible(false)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Close"
+                >
+                  <Icon name="close" size={24} color="#666" />
+                </TouchableOpacity>
+              </View>
 
-                {/* Notice if Equal Splitting is Locked */}
-                {splitEqually && (
-                  <View className="bg-amber-50 border border-amber-100 p-2.5 rounded-xl mb-4">
-                    <Text className="text-[10px] text-amber-700 font-medium leading-5">
-                      ⚠ Uncheck "Split bill equally" in the card to unlock custom percentage slider.
-                    </Text>
-                  </View>
-                )}
+              {selectedMemberSplit && (
+                <ScrollView
+                  ref={scrollViewRef}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {/* Member Info */}
+                  <Text className="text-2xl font-bold text-gray-800 mb-0.5">
+                    {selectedMemberSplit.name}
+                  </Text>
+                  <Text className="text-base text-gray-500 font-semibold mb-2">
+                    Owes:{" "}
+                    {formatMoney(
+                      (totalSplitBillBase *
+                        (splitEqually
+                          ? 100 / members.length
+                          : percentageShare)) /
+                        100 +
+                        (expenses?.reduce((sum, exp) => {
+                          if (
+                            exp.isIncludeInBill === false &&
+                            String(exp.memberId) ===
+                              String(selectedMemberSplit.memberId)
+                          ) {
+                            return sum + exp.amount;
+                          }
+                          return sum;
+                        }, 0) || 0)
+                    )}
+                  </Text>
 
-                {/* Percentage Share Slider */}
-                <CustomSlider 
-                  value={splitEqually ? (100 / members.length) : percentageShare}
-                  onChange={setPercentageShare}
-                  disabled={splitEqually}
-                  colors={colors}
-                />
+                  {/* Notice if Equal Splitting is Locked */}
+                  {splitEqually && (
+                    <View className="bg-amber-50 border border-amber-100 p-2.5 rounded-xl mb-4">
+                      <Text className="text-[10px] text-amber-700 font-medium leading-5">
+                        ⚠ Uncheck &quot;Split bill equally&quot; in the card to unlock
+                        custom percentage slider.
+                      </Text>
+                    </View>
+                  )}
 
-                {/* Toggle Paid Status Checkbox */}
-                <View className="flex-row items-center mb-5 mt-1 -ml-2">
-                  <Checkbox
-                    status={isPaid ? 'checked' : 'unchecked'}
-                    onPress={() => setIsPaid(!isPaid)}
-                    color={colors.primary}
+                  {/* Percentage Share Slider */}
+                  <CustomSlider
+                    value={
+                      splitEqually
+                        ? 100 / members.length
+                        : percentageShare
+                    }
+                    onChange={setPercentageShare}
+                    disabled={splitEqually}
+                    colors={colors}
                   />
-                  <TouchableOpacity 
-                    activeOpacity={0.7} 
-                    onPress={() => setIsPaid(!isPaid)}
-                    accessibilityRole="checkbox"
-                  >
-                    <Text className="text-sm font-semibold text-gray-700 ml-1">
-                      Mark as Paid
-                    </Text>
-                  </TouchableOpacity>
-                </View>
 
-                {/* Payment Method Selector (Always Editable as requested) */}
-                <View className="mb-5">
-                  <Text className="text-xs font-semibold uppercase tracking-wider mb-2">
-                    Payment Method
-                  </Text>
-                  <View className="flex-row flex-wrap gap-2">
-                    {["Cash", "Gcash", "Bank Transfer", "Others"].map((type) => {
-                      const isSelected = paymentType === type;
-                      return (
-                        <TouchableOpacity
-                          key={type}
-                          onPress={() => setPaymentType(type)}
-                          style={{ 
-                            backgroundColor: isSelected ? colors.primary : '#F2F4F7',
-                            borderColor: isSelected ? colors.primary : '#E0E0E0'
-                          }}
-                          className="px-3 py-1.5 border rounded-full"
-                          accessibilityRole="button"
-                        >
-                          <Text 
-                            style={{ color: isSelected ? '#FFF' : '#666' }}
-                            className="text-sm font-semibold"
-                          >
-                            {type}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
+                  {/* Toggle Paid Status Checkbox */}
+                  <View className="flex-row items-center mb-5 mt-1 -ml-2">
+                    <Checkbox
+                      status={isPaid ? "checked" : "unchecked"}
+                      onPress={() => setIsPaid(!isPaid)}
+                      color={colors.primary}
+                    />
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => setIsPaid(!isPaid)}
+                      accessibilityRole="checkbox"
+                    >
+                      <Text className="text-sm font-semibold text-gray-700 ml-1">
+                        Mark as Paid
+                      </Text>
+                    </TouchableOpacity>
                   </View>
-                </View>
 
-                {/* Custom Notes / Memo Input */}
-                <View className="mb-6">
-                  <Text className="text-xs font-semibold uppercase tracking-wider mb-2">
-                    Notes / Memo
-                  </Text>
-                  <TextInput
+                  {/* Payment Method Selector */}
+                  <View className="mb-5">
+                    <Text className="text-xs font-semibold uppercase tracking-wider mb-2">
+                      Payment Method
+                    </Text>
+                    <View className="flex-row flex-wrap gap-2">
+                      {["Cash", "Gcash", "Bank Transfer", "Others"].map(
+                        (type) => {
+                          const isSelected = paymentType === type;
+                          return (
+                            <TouchableOpacity
+                              key={type}
+                              onPress={() => setPaymentType(type)}
+                              style={{
+                                backgroundColor: isSelected
+                                  ? colors.primary
+                                  : "#F2F4F7",
+                                borderColor: isSelected
+                                  ? colors.primary
+                                  : "#E0E0E0",
+                              }}
+                              className="px-3 py-1.5 border rounded-full"
+                              accessibilityRole="button"
+                            >
+                              <Text
+                                style={{ color: isSelected ? "#FFF" : "#666" }}
+                                className="text-sm font-semibold"
+                              >
+                                {type}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        }
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Custom Notes / Memo Input */}
+                  <View className="mb-6">
+                    <Text className="text-xs font-semibold uppercase tracking-wider mb-2">
+                      Notes / Memo
+                    </Text>
+                    <TextInput
                       mode="outlined"
                       placeholder="Add details, e.g. Request sent, Paid cash"
                       value={notes}
@@ -644,31 +880,40 @@ const ExpensesTab = ({ travelPlan, onEditExpense, scrollEnabled = false, onScrol
                       activeOutlineColor="#263F69"
                       multiline
                       numberOfLines={3}
-                      theme={{ colors: { onSurfaceVariant: '#888' } }}
-                      outlineStyle={{ borderWidth: 1, backgroundColor: "#FFFFFF", borderRadius: 16 }}
+                      theme={{ colors: { onSurfaceVariant: "#888" } }}
+                      outlineStyle={{
+                        borderWidth: 1,
+                        backgroundColor: "#FFFFFF",
+                        borderRadius: 16,
+                      }}
                       style={{ paddingVertical: 0, height: 80, fontSize: 12 }}
                       contentStyle={{ backgroundColor: "transparent" }}
                       onFocus={() => {
                         setTimeout(() => {
-                          scrollViewRef.current?.scrollToEnd({ animated: true });
+                          scrollViewRef.current?.scrollToEnd({
+                            animated: true,
+                          });
                         }, 150);
                       }}
                     />
-                </View>
-                {/* Save Details Button */}
-                <TouchableOpacity
-                  onPress={handleSavePayment}
-                  style={{ backgroundColor: colors.primary }}
-                  className={`p-4 rounded-[16px] items-center justify-center shadow-sm ${keyboardVisible ? "mb-80" : "mb-0"}`}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                >
-                  <Text className="text-white text-base font-semibold">
-                    Save Details
-                  </Text>
-                </TouchableOpacity>
-              </ScrollView>
-            )}
+                  </View>
+                  {/* Save Details Button */}
+                  <TouchableOpacity
+                    onPress={handleSavePayment}
+                    style={{ backgroundColor: colors.primary }}
+                    className={
+                      `p-4 rounded-[16px] items-center justify-center ` +
+                      `shadow-sm ${keyboardVisible ? "mb-80" : "mb-0"}`
+                    }
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                  >
+                    <Text className="text-white text-base font-semibold">
+                      Save Details
+                    </Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              )}
             </View>
           </View>
         </KeyboardAvoidingView>

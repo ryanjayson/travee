@@ -1,6 +1,6 @@
 ---
 name: clean-code
-description: Transform, refactor, prettify, and format code to production-grade standards without altering implementation behavior or business logic. Focuses strictly on code cleanup, readability, Clean Code principles, industry standards, and best known methods (BKM) for scalability, performance, and efficiency while writing concise code ("code less") and avoiding long lines (<100 chars). Use whenever refactoring, formatting, simplifying complex functions, cleaning up technical debt, or optimizing code structure without changing how it works.
+description: Transform, refactor, prettify, and format code to production-grade standards without altering implementation behavior or business logic. Focuses strictly on code cleanup, readability, Clean Code principles, industry standards, and best known methods (BKM) for scalability, performance, and efficiency while writing concise code ("code less") and avoiding long lines (<100 chars). Actively checks for reusable methods/helpers and extracts them to the appropriate helper files. Use whenever refactoring, formatting, simplifying complex functions, cleaning up technical debt, or optimizing code structure without changing how it works.
 license: MIT
 metadata:
   author: travee
@@ -17,7 +17,7 @@ Comprehensive guide for transforming existing code into clean, concise, high-per
 > - **Do NOT change business logic**, calculation rules, state transitions, or user flows.
 > - **Do NOT change public contracts**, exported function signatures, prop types, or API response handling.
 > - **Do NOT introduce unrequested feature changes** or swap architectural patterns without instruction.
-> - **Focus strictly on code cleanup**: flattening nesting, removing dead code, formatting long lines, simplifying syntax, improving readability, and removing technical debt.
+> - **Focus strictly on code cleanup**: flattening nesting, removing dead code, extracting common helpers, formatting long lines, simplifying syntax, improving readability, and removing technical debt.
 
 ---
 
@@ -26,11 +26,14 @@ Comprehensive guide for transforming existing code into clean, concise, high-per
 Every code cleanup or refactor must uphold these foundational pillars:
 
 1. **Behavioral Invariance (Implementation Preserved):** 100% fidelity to existing business logic, component behavior, edge case handling, and feature flows.
-2. **Production-Grade Reliability:** Defensively typed, zero uncaught edge cases, graceful error degradation, structured logging, and no leaky abstractions.
-3. **Clean Code & Simplicity:** Single Responsibility Principle (SRP), meaningful self-documenting names, small composable functions, and shallow indentation.
-4. **Code Less (Conciseness Without Obscurity):** Eliminate boilerplate, dead code, and redundant state. Derive values on the fly rather than keeping synchronized states.
-5. **Strict Line Length & Prettification:** Keep lines under 100 characters (target 80-90). Format JSX, function arguments, and complex conditionals cleanly across multiple lines.
-6. **Scalability & Performance:** Minimize unnecessary re-renders, preserve stable references for memoized components, use $O(1)$ lookups over nested loops, and respect architectural boundaries.
+2. **Cross-Platform Parity (Android & iOS):** Flawless behavior across both platforms (gestures, hardware back buttons, safe insets, elevation/shadows).
+3. **UI/UX Performance & Best Libraries:** Leverage high-performance primitives (`expo-image`, Reanimated/NativeDriver, `expo-haptics`, virtualized lists).
+4. **Production-Grade Reliability:** Defensively typed, zero uncaught edge cases, graceful error degradation, structured logging, and no leaky abstractions.
+5. **Clean Code & Simplicity:** Single Responsibility Principle (SRP), meaningful self-documenting names, small composable functions, and shallow indentation.
+6. **Code Less (Conciseness Without Obscurity):** Eliminate boilerplate, dead code, and redundant state. Derive values on the fly rather than keeping synchronized states.
+7. **Reusable Helper Extraction:** Actively inspect methods, formatters, and logic blocks. Extract reusable functions to the appropriate helper file and reference them cleanly.
+8. **Strict Line Length & Prettification:** Keep lines under 100 characters (target 80-90). Format JSX, function arguments, and complex conditionals cleanly across multiple lines.
+9. **Scalability & Efficiency:** Minimize unnecessary re-renders, preserve stable references for memoized components, use $O(1)$ lookups, and respect architectural boundaries.
 
 ---
 
@@ -53,8 +56,9 @@ Never refactor blindly. Always execute in three controlled phases to guarantee z
 1. Perform small, focused edits rather than massive rewrites.
 2. Preserve exact business outcomes: every input must yield the identical output.
 3. Flatten control flow using early returns and guard clauses without altering conditional branches.
-4. Extract reusable pure utility functions or custom hooks if it improves clarity.
-5. Reformat and split long lines into structured, readable blocks (<100 characters).
+4. Audit for reusable helpers: check if methods, date math, or formatters belong in helper files.
+5. Extract reusable pure utility functions or custom hooks to the right location.
+6. Reformat and split long lines into structured, readable blocks (<100 characters).
 
 ### Phase 3: Verification
 1. Re-run `npx tsc --noEmit` to confirm zero type errors.
@@ -135,6 +139,28 @@ const activeTitles = activities
   .filter((a) => a.status === 'active' && a.title)
   .map((a) => a.title.trim());
 ```
+
+### 3.4 Identifying & Extracting Reusable Helpers
+When reviewing code, actively check if an inline function, formatting block,
+date math, or data transformation can be extracted as a reusable helper.
+
+#### Decision Matrix for Helper Placement:
+
+| Scope | When to Use | Target Location | Import Example |
+|---|---|---|---|
+| **Global Utility** | Universal, domain-agnostic logic (date formatting, currency, safe string math, array chunking) | `src/utils/<utilityName>.ts` | `import { formatDate } from '@/utils/dateUtils'` |
+| **Feature Helper** | Domain-specific logic shared across 2+ components in a feature | `src/features/<Feature>/utils/` | `import { getTravelStatus } from '../utils/travelStatus'` |
+| **Module Pure Helper** | Logic tightly coupled to a single component or screen | Top of file (outside render) | Local reference in same file |
+
+#### Rules for Extracting Helpers:
+1. **Pure Functions First:** Helpers must depend only on their explicit
+   parameters without relying on component closures or React state hooks.
+2. **Prevent Duplication (DRY):** If the same date parsing, string manipulation,
+   or regex check appears in 2+ files, consolidate it into a single utility file.
+3. **Strict Typing:** All extracted helper functions must have explicit
+   TypeScript parameter types and return types.
+4. **Reference via Clean Imports:** Use the `@/...` path alias for shared
+   utilities (`@/utils/...`) rather than deep relative parent paths.
 
 ---
 
@@ -292,6 +318,48 @@ Refactored code must respect Travee's strict layer boundaries:
 - Custom interactive buttons/cards must use `TouchableOpacity` with `accessibilityRole="button"`.
 - Icon-only touchables must have `accessibilityLabel`.
 
+### 6.5 Cross-Platform Parity (Android vs iOS)
+When writing or refactoring components, always accommodate platform differences:
+
+1. **Back Navigation & Gestures:**
+   - **Android:** Handle hardware back button with `BackHandler.addEventListener('hardwareBackPress', ...)` returning `true` to intercept.
+   - **iOS:** Intercept screen edge swipe-back gestures using React Navigation's `navigation.addListener('beforeRemove', (e) => e.preventDefault())`.
+   - Modals & Bottom Sheets: Always dismiss open sheets/modals before allowing app exit.
+2. **Keyboard Handling:**
+   - Use platform-aware `KeyboardAvoidingView`:
+     `behavior={Platform.OS === 'ios' ? 'padding' : undefined}`
+   - Avoid applying iOS padding to Android where `windowSoftInputMode="adjustResize"` already handles panning.
+3. **Safe Area Insets & Status Bars:**
+   - Consume `useSafeAreaInsets()` for top/bottom padding instead of hardcoded numbers.
+   - On Android, pair translucent status bars with top inset compensation.
+4. **Shadows vs Elevation:**
+   - iOS uses `shadowColor`, `shadowOffset`, `shadowOpacity`, and `shadowRadius`.
+   - Android uses `elevation`.
+   - Always specify both, or use NativeWind/Paper shadow utility classes so cards render with depth on both operating systems.
+5. **Scroll & Overscroll Physics:**
+   - iOS bounces by default; Android applies stretch/glow effects.
+   - When nesting a ScrollView inside a gesture/pan-responder, set `overScrollMode="never"` on Android.
+
+### 6.6 UI/UX Performance & Best-in-Class Libraries
+Always use the highest-performing libraries and patterns:
+
+1. **Images (`expo-image`):**
+   - Prefer `expo-image` over React Native's core `Image`.
+   - Features built-in memory/disk caching, hardware decoding, blurhash placeholders, and downsampling to prevent out-of-memory crashes.
+2. **Native Thread Animations:**
+   - Ensure all animations run at 60/120fps on the UI thread.
+   - With `Animated`, use `useNativeDriver: true` for transform and opacity.
+   - For complex interactions, use `react-native-reanimated` Worklets to avoid JS bridge bottlenecks.
+3. **Tactile Haptic Feedback (`expo-haptics`):**
+   - Provide subtle feedback for key actions (pull-to-refresh, toggles, deletes, reordering) using `Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)`.
+4. **List Virtualization:**
+   - For lists, use `keyExtractor` outside render, memoized `renderItem`, and `getItemLayout` for fixed dimensions.
+   - Use `removeClippedSubviews={true}` on Android for large datasets.
+5. **Comprehensive Edge Cases:**
+   - Always support 4 distinct UI states: **Data**, **Empty** (with actionable CTA), **Loading** (skeleton or spinner), and **Error** (with retry button).
+   - Sanitize coordinates (reject NaN, `0,0` coordinates).
+   - Handle offline mode gracefully (never block UI on network).
+
 ---
 
 ## 7. Refactoring Smells Checklist
@@ -304,6 +372,9 @@ Use this checklist during refactoring reviews to quickly catch code debt:
 | **Deep Nesting** | >3 levels of `if/else` | Invert conditions and apply early return guard clauses |
 | **Long Line Length** | Lines exceeding 100 characters | Split JSX props, destructure parameters, break chained calls |
 | **Duplicate Logic** | Copy-pasted helper logic | Extract to `@/utils` or shared hook |
+| **Inline Pure Helper** | Formatters/math embedded in render | Extract to helper file or hoist to module scope |
+| **Missing Android/iOS Parity** | Platform-specific bugs (e.g. shadow without elevation, unhandled back button) | Add platform checks for BackHandler, elevation, and keyboard behavior |
+| **Unoptimized Images/Media** | Raw RN Image without caching | Use `expo-image` with caching and blurhash |
 | **Leaky `any` Types** | Bypasses TypeScript checks | Replace with strict interfaces, generics, or unknown + type guards |
 | **Inline Function in List** | Recreates closures on every render | Wrap in `useCallback` or move ID handling inside child component |
 | **Bare `console.log`** | Pollutes production output | Replace with `errorLogger.logError` or debug logger |
@@ -316,8 +387,12 @@ Use this checklist during refactoring reviews to quickly catch code debt:
 
 A refactored file is production-ready only when:
 1. **Behavior Preserved:** Implementation behavior, business logic, state handling, and props remain 100% identical.
-2. `npx tsc --noEmit` passes with 0 errors.
-3. `npm test` passes with 0 failures.
-4. All lines are formatted cleanly and stay under 100 characters.
-5. No dead imports, unused variables, or commented-out code remains.
-6. All buttons adhere to accessibility and theme rules.
+2. **Cross-Platform Verified:** Accommodates both Android (BackHandler, elevation) and iOS (gestures, shadows, safe insets).
+3. **UI/UX Performance Optimized:** Animations run on UI thread, lists are virtualized, images use `expo-image`, and tactile haptics are considered.
+4. **Edge Cases Handled:** Data, Empty, Loading, and Error states handled cleanly with input sanitization.
+5. **Reusable Helpers Extracted:** Common methods, formatters, and reusable logic are saved to the correct helper file (`src/utils/` or feature `utils/`) and referenced cleanly.
+6. `npx tsc --noEmit` passes with 0 errors.
+7. `npm test` passes with 0 failures.
+8. All lines are formatted cleanly and stay under 100 characters.
+9. No dead imports, unused variables, or commented-out code remains.
+10. All buttons adhere to accessibility and theme rules.

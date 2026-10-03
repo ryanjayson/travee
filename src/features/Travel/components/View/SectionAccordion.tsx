@@ -1,7 +1,21 @@
 import { MaterialIcons as Icon, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Dimensions, Easing, LayoutAnimation, Modal, PanResponder, Pressable, RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import {
+  Animated,
+  Dimensions,
+  Easing,
+  LayoutAnimation,
+  Modal,
+  PanResponder,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useTheme } from "react-native-paper";
 import Svg, { Line } from "react-native-svg";
 import Accordion from "../../../../components/Accordion";
@@ -9,7 +23,10 @@ import { FadeInView, StaggerItem } from "../../../../components/animations";
 import { useToast } from "../../../../context/ToastContext";
 import { useTravelContext } from "../../../../context/TravelContext";
 import { useLexicographicSort } from "../../../../hooks/useLexicographicSort";
-import { updateActivitySortOrderLocally, updateSectionSortOrderLocally } from "../../../../services/local/travelService";
+import {
+  updateActivitySortOrderLocally,
+  updateSectionSortOrderLocally,
+} from "../../../../services/local/travelService";
 import { ItineraryActivity, ItinerarySection, TravelPlan } from "../../../Travel/types/TravelDto";
 import { useTravelPlan } from "../../hooks/useTravel";
 import { useTripSetting, useUpdateTripSetting } from "../../hooks/useTripSetting";
@@ -17,6 +34,14 @@ import DraggableSectionContainer from "../Edit/Itinerary/DraggableSectionContain
 import SectionModal from "../Edit/Itinerary/Section/Modal";
 import ActivityItemCard from "./Activity/Card";
 import ViewActivityModal from "./Activity/Modal";
+import {
+  toViewMode,
+  toItineraryView,
+  isValidStartDate,
+  slowSpringAnimation,
+  sortActivities,
+  ViewMode,
+} from "./sectionAccordionUtils";
 
 interface SectionAccordionProps {
   travelPlan: TravelPlan;
@@ -57,63 +82,6 @@ const viewModeConfig = {
   },
 };
 
-const toViewMode = (itineraryView?: string): "plain" | "narrow" | "expanded" => {
-  switch (itineraryView) {
-    case "plain":
-      return "plain";
-    case "compact":
-      return "narrow";
-    case "detailed":
-    default:
-      return "expanded";
-  }
-};
-
-const toItineraryView = (viewMode: "plain" | "narrow" | "expanded"): "plain" | "compact" | "detailed" => {
-  switch (viewMode) {
-    case "plain":
-      return "plain";
-    case "narrow":
-      return "compact";
-    case "expanded":
-    default:
-      return "detailed";
-  }
-};
-
-const isValidStartDate = (dateVal: any): boolean => {
-  if (dateVal === null || dateVal === undefined || dateVal === "") return false;
-  if (typeof dateVal === "number" && dateVal <= 0) return false;
-  const d = new Date(dateVal);
-  return !isNaN(d.getTime());
-};
-
-
-const slowSpringAnimation = {
-  duration: 1000,
-  create: {
-    type: LayoutAnimation.Types.spring,
-    property: LayoutAnimation.Properties.opacity,
-    springDamping: 0.2,
-  },
-  update: {
-    type: LayoutAnimation.Types.spring,
-    springDamping: 0.2,
-  },
-  delete: {
-    type: LayoutAnimation.Types.spring,
-    property: LayoutAnimation.Properties.opacity,
-    springDamping: 0.2,
-  },
-};
-
-const sortActivities = (activities?: ItineraryActivity[]) => {
-  if (!activities) return [];
-  return [...activities].sort((a, b) =>
-    (a.sortOrder || "").localeCompare(b.sortOrder || "")
-  );
-};
-
 interface DraggableSectionItemProps {
   key?: string;
   section: ItinerarySection;
@@ -125,12 +93,21 @@ interface DraggableSectionItemProps {
   onMasterDragStart: (index: number) => void;
   onMasterDragMove: (currentIndex: number, dy: number, moveY: number) => void;
   onMasterDragEnd: (fromIndex: number, toIndex: number) => void;
-  sectionDragState: { sectionId: string; isDragging: boolean; dragIndex: number | null } | null;
+  sectionDragState: {
+    sectionId: string;
+    isDragging: boolean;
+    dragIndex: number | null;
+  } | null;
   masterSectionRefs: React.MutableRefObject<Record<string, any>>;
-  masterSectionBounds: React.MutableRefObject<Record<string, { pageY: number; height: number }>>;
-  renderActivityCards: (section: ItinerarySection, activities: ItineraryActivity[]) => React.ReactNode;
+  masterSectionBounds: React.MutableRefObject<
+    Record<string, { pageY: number; height: number }>
+  >;
+  renderActivityCards: (
+    section: ItinerarySection,
+    activities: ItineraryActivity[]
+  ) => React.ReactNode;
   sectionRefs: React.MutableRefObject<Record<string, any>>;
-  viewMode?: "plain" | "narrow" | "expanded";
+  viewMode?: ViewMode;
   allowItemReordering?: boolean;
   onPressMore: (section: ItinerarySection) => void;
   isExpanded?: boolean;
@@ -202,14 +179,22 @@ const DraggableSectionItem = ({
       easing: Easing.out(Easing.quad),
       useNativeDriver: false,
     }).start();
-  }, [masterDragState.isDragging, masterDragState.dragIndex, masterHoverState?.index, mapIndex, sections]);
+  }, [
+    masterDragState.isDragging,
+    masterDragState.dragIndex,
+    masterHoverState?.index,
+    mapIndex,
+    sections,
+  ]);
 
-  const isThisSectionDragging = masterDragState.isDragging && masterDragState.dragIndex === mapIndex;
+  const isThisSectionDragging =
+    masterDragState.isDragging && masterDragState.dragIndex === mapIndex;
 
   const dragIndex = masterDragState.dragIndex;
   const hoverIndex = masterHoverState?.index ?? dragIndex;
-  const subSections = sections.filter(s => s.isDefaultSection === false);
-  const draggedSection = dragIndex !== null && dragIndex !== undefined ? subSections[dragIndex] : null;
+  const subSections = sections.filter((s) => s.isDefaultSection === false);
+  const draggedSection =
+    dragIndex !== null && dragIndex !== undefined ? subSections[dragIndex] : null;
   const draggedHeight = draggedSection
     ? (masterSectionBounds.current[draggedSection.id || ""]?.height ?? 180)
     : 180;
@@ -248,19 +233,41 @@ const DraggableSectionItem = ({
               if (ref && section.id) masterSectionRefs.current[section.id] = ref;
             }}
           >
-            {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) > mapIndex && (
-              <View className="absolute -top-[10px] left-[22px] right-[12px] flex-row items-center z-50">
-                <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
-                <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 " />
-              </View>
-            )}
+            {masterHoverState?.index === mapIndex &&
+              (masterDragState.dragIndex ?? -1) > mapIndex && (
+                <View
+                  className={
+                    "absolute -top-[10px] left-[22px] right-[12px] " +
+                    "flex-row items-center z-50"
+                  }
+                >
+                  <View
+                    className={
+                      "w-2.5 h-2.5 rounded-full bg-[#183B7A] " +
+                      "border-2 border-white shadow-sm z-50"
+                    }
+                  />
+                  <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 " />
+                </View>
+              )}
 
-            {masterHoverState?.index === mapIndex && (masterDragState.dragIndex ?? -1) < mapIndex && (
-              <View className="absolute -bottom-[10px] left-[22px] right-[12px] flex-row items-center z-50">
-                <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
-                <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 " />
-              </View>
-            )}
+            {masterHoverState?.index === mapIndex &&
+              (masterDragState.dragIndex ?? -1) < mapIndex && (
+                <View
+                  className={
+                    "absolute -bottom-[10px] left-[22px] right-[12px] " +
+                    "flex-row items-center z-50"
+                  }
+                >
+                  <View
+                    className={
+                      "w-2.5 h-2.5 rounded-full bg-[#183B7A] " +
+                      "border-2 border-white shadow-sm z-50"
+                    }
+                  />
+                  <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 " />
+                </View>
+              )}
 
             <Accordion
               viewMode={viewMode}
@@ -271,35 +278,53 @@ const DraggableSectionItem = ({
                 <View className="flex-row align-middle items-center">
                   {allowItemReordering && !isValidStartDate(section.startDate) && (
                     <View
-                      className="absolute top-0 z-50 -ml-md flex-row items-center justify-center w-2xl"
+                      className={
+                        "absolute top-0 z-50 -ml-md flex-row " +
+                        "items-center justify-center w-2xl"
+                      }
                       {...panHandlers}
                     >
-                      <MaterialIcons name="drag-handle" size={24} color={isSectionActive ? "#183B7A" : "#999"} />
+                      <MaterialIcons
+                        name="drag-handle"
+                        size={24}
+                        color={isSectionActive ? "#183B7A" : "#999"}
+                      />
                     </View>
                   )}
                   <View className="flex-row">
                     {expanded ? (
-                      <View className={`${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`}>
-                        <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
-                        <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
+                      <View
+                        className={`${viewMode === "narrow" ? "left-[45px]" : "left-[51px]"}`}
+                      >
+                        <View
+                          className="absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full"
+                        />
+                        <View
+                          className="absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full"
+                        />
                       </View>
                     ) : null}
 
-                    <Text style={{ marginLeft: allowItemReordering && !isValidStartDate(section.startDate) ? 16 : 0 }} className="flex-row items-center text-xl font-bold  text-white bg-accent/90 rounded-xs px-2 ">
+                    <Text
+                      style={{
+                        marginLeft:
+                          allowItemReordering && !isValidStartDate(section.startDate) ? 16 : 0,
+                      }}
+                      className={
+                        "flex-row items-center text-xl font-bold " +
+                        "text-white bg-accent/90 rounded-xs px-2 "
+                      }
+                    >
                       {section?.title}
                       {isValidStartDate(section.startDate) ? (
                         <Text className="text-white/70 font-semibold text-sm">
-                          {` ${new Date(section.startDate).toLocaleDateString('en-US', { weekday: 'short', day: '2-digit' })} `}
+                          {` ${new Date(section.startDate).toLocaleDateString("en-US", {
+                            weekday: "short",
+                            day: "2-digit",
+                          })} `}
                         </Text>
                       ) : null}
                     </Text>
-
-                    {/* {expanded ? (
-                      <>
-                        <View className={`absolute -bottom-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
-                        <View className={`absolute -bottom-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full ${viewMode === 'narrow' ? 'left-[45px]' : 'left-[51px]'}`} />
-                      </>
-                    ) : null} */}
                   </View>
                 </View>
               )}
@@ -322,7 +347,6 @@ const DraggableSectionItem = ({
 
               <View
                 style={{ backgroundColor: "#FFF", paddingBottom: 20, paddingEnd: 5, }}
-                // className={` ${viewMode === "narrow" ? "px-4" : ""}`}
                 collapsable={false}
                 ref={(ref) => {
                   if (ref && section.id) sectionRefs.current[section.id] = ref;
@@ -330,7 +354,10 @@ const DraggableSectionItem = ({
               >
                 {section.description && section.description.trim() !== "" && (
                   <View className="bg-white flex-1 px-3 z-0 ">
-                    <View className={`absolute h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[59px]' : 'left-[65px] '} z-0`}>
+                    <View
+                      className={`absolute h-full w-md pb-lg ${viewMode === "narrow" ? "left-[59px]" : "left-[65px] "
+                        } z-0`}
+                    >
                       <Svg height={'200%'}
                         width="5"
                       >
@@ -364,18 +391,29 @@ const DraggableSectionItem = ({
                         No Activities Yet
                       </Text>
                       <View className="text-center tracking-wide flex-row align-center ">
-                        <Text className="text-md font-normal text-tertiary/60 text-center leading-[28px]">
+                        <Text
+                          className={
+                            "text-md font-normal text-tertiary/60 " +
+                            "text-center leading-[28px]"
+                          }
+                        >
                           You have not added any activities to this section yet.
-                          {allowItemReordering ? " Create, or drag & drop activity here " : " Create one now"}
+                          {allowItemReordering
+                            ? " Create, or drag & drop activity here "
+                            : " Create one now"}
                         </Text>
-
                       </View>
 
                       <TouchableOpacity
-                        onPress={() => openActivityTypeModal(section.id || undefined, section.travelId)}
+                        onPress={() =>
+                          openActivityTypeModal(section.id || undefined, section.travelId)
+                        }
                         accessibilityRole="button"
                         activeOpacity={0.7}
-                        className="flex-row items-center bg-primary/10 px-3 py-1.5 rounded-lg gap-2 mt-md"
+                        className={
+                          "flex-row items-center bg-primary/10 " +
+                          "px-3 py-1.5 rounded-lg gap-2 mt-md"
+                        }
                       >
                         <Icon name="add" size={16} color={"#0EA5E9"} />
                         <Text
@@ -389,7 +427,10 @@ const DraggableSectionItem = ({
                 )}
 
                 {viewMode !== 'plain' && (
-                  <View className={`absolute h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[59px]' : 'left-[65px] '} z-0`}>
+                  <View
+                    className={`absolute h-full w-md pb-lg ${viewMode === "narrow" ? "left-[59px]" : "left-[65px] "
+                      } z-0`}
+                  >
                     <Svg height={'130%'}
                       width="5"
                     >
@@ -436,7 +477,10 @@ const SectionAccordion = ({
     setShowActivityPinsInTripMap,
   } = useTravelContext();
   const [isAddSectionVisible, setIsAddSectionVisible] = useState(false);
-  const [selectedViewActivity, setSelectedViewActivity] = useState<{ id: string; travelId?: string } | null>(null);
+  const [selectedViewActivity, setSelectedViewActivity] = useState<{
+    id: string;
+    travelId?: string;
+  } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const iterarysections = travelPlan.itinerarySection;
@@ -651,7 +695,10 @@ const SectionAccordion = ({
     dragIndex: number | null;
     draggedHeight?: number;
   } | null>(null);
-  const [hoverState, setHoverState] = useState<{ sectionId: string | null; index: number } | null>(null);
+  const [hoverState, setHoverState] = useState<{
+    sectionId: string | null;
+    index: number;
+  } | null>(null);
 
   // --- Master Section Drag State ---
   const [masterDragState, setMasterDragState] = useState<{
@@ -711,9 +758,18 @@ const SectionAccordion = ({
     initialScrollY.current = scrollOffset.current;
     Object.entries(masterSectionRefs.current).forEach(([idStr, ref]) => {
       if (ref && ref.measure) {
-        ref.measure((_x: number, _y: number, _width: number, height: number, _pageX: number, pageY: number) => {
-          masterSectionBounds.current[idStr] = { pageY, height };
-        });
+        ref.measure(
+          (
+            _x: number,
+            _y: number,
+            _width: number,
+            height: number,
+            _pageX: number,
+            pageY: number
+          ) => {
+            masterSectionBounds.current[idStr] = { pageY, height };
+          }
+        );
       }
     });
     setMasterDragState({ isDragging: true, dragIndex: index });
@@ -730,7 +786,8 @@ const SectionAccordion = ({
       const sec = subSections[i];
       const bounds = masterSectionBounds.current[sec.id || ""];
       if (bounds) {
-        // Expand bounding hitboxes slightly (+/- 20px padding) to eliminate coordinate gaps/dead-zones
+        // Expand bounding hitboxes slightly (+/- 20px padding) to eliminate
+        // coordinate gaps/dead-zones
         const shiftedTop = bounds.pageY - scrollDelta - 20;
         const shiftedBottom = shiftedTop + bounds.height + 40;
 
@@ -795,7 +852,10 @@ const SectionAccordion = ({
   };
 
   const handleMasterSectionDragEnd = (fromIndex: number, _toIndex: number) => {
-    const finalToIndex = _toIndex !== undefined && _toIndex !== null ? _toIndex : (masterHoverStateRef.current?.index ?? fromIndex);
+    const finalToIndex =
+      _toIndex !== undefined && _toIndex !== null
+        ? _toIndex
+        : (masterHoverStateRef.current?.index ?? fromIndex);
 
     setMasterDragState({ isDragging: false, dragIndex: null });
     setMasterHoverState(null);
@@ -843,9 +903,18 @@ const SectionAccordion = ({
     initialScrollY.current = scrollOffset.current;
     Object.entries(sectionRefs.current).forEach(([idStr, ref]) => {
       if (ref && ref.measure) {
-        ref.measure((_x: number, _y: number, _width: number, height: number, _pageX: number, pageY: number) => {
-          sectionBounds.current[idStr] = { pageY, height };
-        });
+        ref.measure(
+          (
+            _x: number,
+            _y: number,
+            _width: number,
+            height: number,
+            _pageX: number,
+            pageY: number
+          ) => {
+            sectionBounds.current[idStr] = { pageY, height };
+          }
+        );
       }
     });
     setSectionDragState({ sectionId, isDragging: true, dragIndex: index, draggedHeight: height });
@@ -860,7 +929,11 @@ const SectionAccordion = ({
     const currentCardHeight = viewMode === "narrow" ? 75 : (viewMode === "expanded" ? 165 : 110);
 
     let foundIntersection = false;
-    for (const [idStr, bounds] of Object.entries(sectionBounds.current) as [string, { pageY: number; height: number }][]) {
+    const boundsEntries = Object.entries(sectionBounds.current) as [
+      string,
+      { pageY: number; height: number },
+    ][];
+    for (const [idStr, bounds] of boundsEntries) {
       const id = idStr;
       const shiftedTop = bounds.pageY - scrollDelta;
       const shiftedBottom = shiftedTop + bounds.height;
@@ -1097,8 +1170,18 @@ const SectionAccordion = ({
             (sectionDragState?.sectionId !== section.id ||
               (sectionDragState?.dragIndex !== index &&
                 (sectionDragState?.dragIndex ?? -1) > index)) && (
-              <View className="absolute -top-[5px] left-[28px] right-[16px] flex-row items-center z-50">
-                <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
+              <View
+                className={
+                  "absolute -top-[5px] left-[28px] right-[16px] " +
+                  "flex-row items-center z-50"
+                }
+              >
+                <View
+                  className={
+                    "w-2.5 h-2.5 rounded-full bg-[#183B7A] " +
+                    "border-2 border-white shadow-sm z-50"
+                  }
+                />
                 <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
               </View>
             )}
@@ -1115,14 +1198,17 @@ const SectionAccordion = ({
             onDragStart={allowItemReordering ? (idx: number, h: number) =>
               handleSectionActivityDragStart(section.id || "", idx, h) : undefined
             }
-            onDragEnd={allowItemReordering ? (fromIdx: number, toIdx: number, targetSecId?: string | null) =>
-              handleSectionActivityDragEnd(
-                section.id || "",
-                eventActivity,
-                fromIdx,
-                toIdx,
-                targetSecId
-              ) : undefined
+            onDragEnd={
+              allowItemReordering
+                ? (fromIdx: number, toIdx: number, targetSecId?: string | null) =>
+                  handleSectionActivityDragEnd(
+                    section.id || "",
+                    eventActivity,
+                    fromIdx,
+                    toIdx,
+                    targetSecId
+                  )
+                : undefined
             }
             onDragMove={(currentIndex, dy, moveY) =>
               handleDragMove(
@@ -1146,8 +1232,18 @@ const SectionAccordion = ({
             sectionDragState?.sectionId === section.id &&
             sectionDragState?.dragIndex !== index &&
             (sectionDragState?.dragIndex ?? -1) < index && (
-              <View className="absolute -bottom-[5px] left-[28px] right-[16px] flex-row items-center z-50">
-                <View className="w-2.5 h-2.5 rounded-full bg-[#183B7A] border-2 border-white shadow-sm z-50" />
+              <View
+                className={
+                  "absolute -bottom-[5px] left-[28px] right-[16px] " +
+                  "flex-row items-center z-50"
+                }
+              >
+                <View
+                  className={
+                    "w-2.5 h-2.5 rounded-full bg-[#183B7A] " +
+                    "border-2 border-white shadow-sm z-50"
+                  }
+                />
                 <View className="flex-1 h-[2px] bg-[#183B7A] rounded-full z-40 -ml-[1px]" />
               </View>
             )}
@@ -1163,7 +1259,15 @@ const SectionAccordion = ({
   }, [sections]);
 
 
-  const setSelectedViewSection = ({ id, travelId, isDefaultSection }: { id: string; travelId?: string, isDefaultSection?: boolean }) => {
+  const setSelectedViewSection = ({
+    id,
+    travelId,
+    isDefaultSection,
+  }: {
+    id: string;
+    travelId?: string;
+    isDefaultSection?: boolean;
+  }) => {
     setSelectedSectionId(id);
 
     // Expand the section if it is an accordion
@@ -1211,7 +1315,11 @@ const SectionAccordion = ({
                   accessibilityLabel={`View section ${section.title}`}
                   onPress={() => {
                     if (section.id) {
-                      setSelectedViewSection({ id: section.id, travelId: section.travelId, isDefaultSection: section.isDefaultSection });
+                      setSelectedViewSection({
+                        id: section.id,
+                        travelId: section.travelId,
+                        isDefaultSection: section.isDefaultSection,
+                      });
                     }
                   }}
                   className="ml-4 py-1.5 px-3 flex-col items-center justify-center"
@@ -1259,7 +1367,11 @@ const SectionAccordion = ({
         scrollEventThrottle={16}
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
-        scrollEnabled={!sectionDragState?.isDragging && !masterDragState.isDragging && !isSettingsExpanded}
+        scrollEnabled={
+          !sectionDragState?.isDragging &&
+          !masterDragState.isDragging &&
+          !isSettingsExpanded
+        }
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -1270,7 +1382,10 @@ const SectionAccordion = ({
         }
       >
 
-        {sections.length === 0 || (sections.length === 1 && sections[0].isDefaultSection && sections[0].itineraryActivity.length === 0) ? (
+        {sections.length === 0 ||
+          (sections.length === 1 &&
+            sections[0].isDefaultSection &&
+            sections[0].itineraryActivity.length === 0) ? (
           <View className="flex-1 py-8 gap-4 justify-center items-center">
             <FadeInView type="up" delay={50} duration={350}>
               <View className="items-center">
@@ -1278,7 +1393,9 @@ const SectionAccordion = ({
                 <Text className="text-xl font-medium text-secondary text-center mb-sm">
                   No Plans Yet
                 </Text>
-                <Text className="text-lg font-normal text-tertiary/60 text-center px-4xl leading-[28px]">
+                <Text
+                  className="text-lg font-normal text-tertiary/60 text-center px-4xl leading-[28px]"
+                >
                   Start by adding an activity or create a section to organize your itinerary.
                 </Text>
               </View>
@@ -1317,7 +1434,13 @@ const SectionAccordion = ({
             </FadeInView>
           </View>
         ) : (
-          <View className={`flex-1 p-3 ${!hasAtleastOneActivityDate && sections.filter((section) => !section.isDefaultSection).length === 0 ? "-ml-4xl" : ""}`}>
+          <View
+            className={`flex-1 p-3 ${!hasAtleastOneActivityDate &&
+              sections.filter((section) => !section.isDefaultSection).length === 0
+              ? "-ml-4xl"
+              : ""
+              }`}
+          >
             {viewMode !== 'plain' && (
               <View
                 style={{ marginLeft: viewMode === "narrow" ? 58 : 64 }}
@@ -1328,7 +1451,10 @@ const SectionAccordion = ({
             )}
             {sections.map((section, index) => {
               const isDefaultSection = section.isDefaultSection;
-              const hasDefaultSectionWithActivity = sections.filter((section) => section.isDefaultSection && section.itineraryActivity?.length > 0).length > 0;
+              const hasDefaultSectionWithActivity =
+                sections.filter(
+                  (s) => s.isDefaultSection && s.itineraryActivity?.length > 0
+                ).length > 0;
               if (isDefaultSection) {
                 if (!section.itineraryActivity || section.itineraryActivity.length === 0) {
                   return null;
@@ -1354,7 +1480,10 @@ const SectionAccordion = ({
                     {section.itineraryActivity &&
                       renderActivityCards(section, section.itineraryActivity)}
                     {viewMode !== 'plain' && (
-                      <View className={`absolute top-5 h-full w-md pb-lg ${viewMode === 'narrow' ? 'left-[60px]' : 'left-[66px] '} z-0`}>
+                      <View
+                        className={`absolute top-5 h-full w-md pb-lg ${viewMode === "narrow" ? "left-[60px]" : "left-[66px] "
+                          } z-0`}
+                      >
                         <Svg
                           key={`${section.id}-${section.itineraryActivity?.length}`}
                           height={viewMode === 'narrow' ? '103%' : '100%'} >
@@ -1382,7 +1511,9 @@ const SectionAccordion = ({
                     <View
                       collapsable={false}
                       onLayout={(e) => {
-                        if (section.id) sectionPositions.current[section.id] = e.nativeEvent.layout.y;
+                        if (section.id) {
+                          sectionPositions.current[section.id] = e.nativeEvent.layout.y;
+                        }
                       }}
                       ref={(ref) => {
                         if (ref && section.id) sectionRefs.current[section.id] = ref;
@@ -1408,7 +1539,10 @@ const SectionAccordion = ({
                                   if (openViewActivity) {
                                     openViewActivity(eventActivity.id);
                                   } else {
-                                    setSelectedViewActivity({ id: eventActivity.id, travelId: section.travelId });
+                                    setSelectedViewActivity({
+                                      id: eventActivity.id,
+                                      travelId: section.travelId,
+                                    });
                                   }
                                 }
                               }}
@@ -1416,7 +1550,9 @@ const SectionAccordion = ({
                             >
                               {/* <Ionicons name="location-outline" size={16} color="#dc3545" /> */}
                               <Ionicons name="chevron-forward" size={16} color="#999" />
-                              <Text className="text-md font-medium text-secondary/80">{eventActivity.title}</Text>
+                              <Text className="text-md font-medium text-secondary/80">
+                                {eventActivity.title}
+                              </Text>
                             </TouchableOpacity>
                           );
                         }
@@ -1436,10 +1572,21 @@ const SectionAccordion = ({
                     onLayout={(e) => {
                       if (section.id) sectionPositions.current[section.id] = e.nativeEvent.layout.y;
                     }}
-                    style={{ marginTop: index === 1 ? hasDefaultSectionWithActivity ? 6 : 24 : 0 }}>
-                    <View className={`absolute top-9px h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
-                      <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
-                      <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
+                    style={{
+                      marginTop:
+                        index === 1 ? (hasDefaultSectionWithActivity ? 6 : 24) : 0,
+                    }}
+                  >
+                    <View
+                      className={`absolute top-9px h-full w-md  py-lg z-0 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"
+                        }`}
+                    >
+                      <View
+                        className="absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full"
+                      />
+                      <View
+                        className="absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full"
+                      />
                     </View>
 
                     <StaggerItem index={mapIndex}>
@@ -1497,10 +1644,26 @@ const SectionAccordion = ({
                     )}
 
 
-                    <View style={{ marginBottom: viewMode === "narrow" && subSectionsLength > 0 && index === subSectionsLength ? 16 : 0 }}>
-                      <View className={`absolute top-9px h-full w-md  py-lg z-1 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"}`}>
-                        <View className={`absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
-                        <View className={`absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full`} />
+                    <View
+                      style={{
+                        marginBottom:
+                          viewMode === "narrow" &&
+                            subSectionsLength > 0 &&
+                            index === subSectionsLength
+                            ? 16
+                            : 0,
+                      }}
+                    >
+                      <View
+                        className={`absolute top-9px h-full w-md  py-lg z-1 ${viewMode === "narrow" ? "left-[60px]" : "left-[66px]"
+                          }`}
+                      >
+                        <View
+                          className="absolute -top-xl bg-[#e4e2e2] w-[5px] h-[5px] rounded-full"
+                        />
+                        <View
+                          className="absolute -top-sm bg-[#e4e2e2] w-[5px] h-[5px] rounded-full"
+                        />
                       </View>
                     </View>
                   </View>
@@ -1626,7 +1789,9 @@ const SectionAccordion = ({
             {/* View Mode Selection Row */}
             <View className="flex-row items-center justify-between mb-6">
               <View>
-                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>View style</Text>
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>
+                  View style
+                </Text>
                 <Text className="text-base text-tertiary">Choose layout style for activities</Text>
               </View>
               <View
@@ -1673,8 +1838,12 @@ const SectionAccordion = ({
             {/* Reordering Permission Row */}
             <View className="flex-row items-center justify-between mb-6">
               <View className="pr-8 flex-1">
-                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>Allow Drag & Drop reordering</Text>
-                <Text className="text-base text-tertiary">Allow reordering of Sections and Activities that don't have dates</Text>
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>
+                  Allow Drag & Drop reordering
+                </Text>
+                <Text className="text-base text-tertiary">
+                  Allow reordering of Sections and Activities that don't have dates
+                </Text>
               </View>
               <Switch
                 value={allowItemReordering}
@@ -1691,8 +1860,12 @@ const SectionAccordion = ({
             {/* Top Section Tab Navigation Row */}
             <View className="flex-row items-center justify-between mb-6">
               <View className="pr-8 flex-1">
-                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>Top section tab navigation</Text>
-                <Text className="text-base text-tertiary">Show horizontal section tabs at the top of the itinerary</Text>
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>
+                  Top section tab navigation
+                </Text>
+                <Text className="text-base text-tertiary">
+                  Show horizontal section tabs at the top of the itinerary
+                </Text>
               </View>
               <Switch
                 value={showSectionTabNavigation}
@@ -1709,8 +1882,12 @@ const SectionAccordion = ({
             {/* Show Activity Pins in Trip Map Row */}
             <View className="flex-row items-center justify-between mb-6">
               <View className="pr-8 flex-1">
-                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>Show activity pins in Trip map</Text>
-                <Text className="text-base text-tertiary">Display activity pins and markers on the trip map</Text>
+                <Text className="text-lg font-semibold" style={{ color: colors.onSurface }}>
+                  Show activity pins in Trip map
+                </Text>
+                <Text className="text-base text-tertiary">
+                  Display activity pins and markers on the trip map
+                </Text>
               </View>
               <Switch
                 value={showActivityPinsInTripMap}

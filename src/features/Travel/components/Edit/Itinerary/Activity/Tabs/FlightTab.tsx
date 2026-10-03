@@ -43,6 +43,10 @@ export default function FlightTab({
   const depParsed = parseAirport(departureAirport);
   const arrParsed = parseAirport(arrivalAirport);
 
+  const assignRef = (field: string) => (el: View | null) => {
+    if (fieldRefs) fieldRefs.current[field] = el;
+  };
+
   return (
     <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
       <View className="flex-row gap-2 justify-start items-center mb-5">
@@ -56,19 +60,29 @@ export default function FlightTab({
         Departure & Arrival Airport
       </Text>
       {/* Departure Airport */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureAirport"] = el; }} className=" flex-row">
+      <View ref={assignRef("flightDetails.departureAirport")} className=" flex-row">
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel={departureAirport ? `Departure airport: ${departureAirport}` : "Select departure airport"}
+          accessibilityLabel={
+            departureAirport
+              ? `Departure airport: ${departureAirport}`
+              : "Select departure airport"
+          }
           activeOpacity={0.7}
           onPress={() => onOpenAirportLookup?.("departure")}
           className="bg-white border border-primary/60 px-4 py-4 rounded-t-3xl w-full border-b-0"
         >
           <View className="flex-row gap-2 items-center">
             <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
-              <Icon name="flight-takeoff" size={24} color={depParsed.code ? "#0EA5E9" : "#98A2B3"} />
+              <Icon
+                name="flight-takeoff"
+                size={24}
+                color={depParsed.code ? "#0EA5E9" : "#98A2B3"}
+              />
               <Text
-                className={`text-2xl  font-semibold ${depParsed.code ? "text-secondary/60" : "text-secondary/40"}`}
+                className={`text-2xl  font-semibold ${
+                  depParsed.code ? "text-secondary/60" : "text-secondary/40"
+                }`}
               >
                 {depParsed.code || "---"}
               </Text>
@@ -76,7 +90,11 @@ export default function FlightTab({
 
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
               <Text
-                className={`text-xl font-semibold ${depParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                className={`text-xl font-semibold ${
+                  depParsed.name
+                    ? "text-secondary/80"
+                    : "text-secondary/40 font-normal text-lg"
+                }`}
               >
                 {depParsed.name || "Select Departure Airport"}
               </Text>
@@ -86,8 +104,14 @@ export default function FlightTab({
       </View>
 
       <View className="relative">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureDate"] = el; }} className="flex-row gap-4 ">
-          <View className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4" pointerEvents="box-none">
+        <View
+          ref={assignRef("flightDetails.departureDate")}
+          className="flex-row gap-4 "
+        >
+          <View
+            className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4"
+            pointerEvents="box-none"
+          >
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Swap departure and arrival airports"
@@ -98,7 +122,10 @@ export default function FlightTab({
                 setFieldValue("flightDetails.departureAirport", currentArr);
                 setFieldValue("flightDetails.arrivalAirport", currentDep);
               }}
-              className="border-2 border-primary/60 bg-primary w-14 h-14 rounded-full p-3 items-center justify-center"
+              className={
+                "border-2 border-primary/60 bg-primary w-14 h-14 " +
+                "rounded-full p-3 items-center justify-center"
+              }
             >
               <Icon name="swap-vert" size={24} color={"#ffffff"} />
             </TouchableOpacity>
@@ -107,19 +134,32 @@ export default function FlightTab({
 
 
         {/* Arrival Airport */}
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalAirport"] = el; }} className="mb-5 flex-row">
+        <View
+          ref={assignRef("flightDetails.arrivalAirport")}
+          className="mb-5 flex-row"
+        >
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel={arrivalAirport ? `Arrival airport: ${arrivalAirport}` : "Select arrival airport"}
+            accessibilityLabel={
+              arrivalAirport
+                ? `Arrival airport: ${arrivalAirport}`
+                : "Select arrival airport"
+            }
             activeOpacity={0.7}
             onPress={() => onOpenAirportLookup?.("arrival")}
             className="bg-white border border-primary/60 px-4 py-4 rounded-b-3xl w-full"
           >
             <View className="flex-row gap-2 items-center">
               <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
-                <Icon name="flight-land" size={24} color={arrParsed.code ? "#0EA5E9" : "#98A2B3"} />
+                <Icon
+                  name="flight-land"
+                  size={24}
+                  color={arrParsed.code ? "#0EA5E9" : "#98A2B3"}
+                />
                 <Text
-                  className={`text-2xl font-semibold ${arrParsed.code ? "text-secondary/60" : "text-secondary/40"}`}
+                  className={`text-2xl font-semibold ${
+                    arrParsed.code ? "text-secondary/60" : "text-secondary/40"
+                  }`}
                 >
                   {arrParsed.code || "---"}
                 </Text>
@@ -127,7 +167,11 @@ export default function FlightTab({
 
               <View className="flex-1 justify-center gap-0 px-sm pr-14">
                 <Text
-                  className={`text-xl font-semibold ${arrParsed.name ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                  className={`text-xl font-semibold ${
+                    arrParsed.name
+                      ? "text-secondary/80"
+                      : "text-secondary/40 font-normal text-lg"
+                  }`}
                 >
                   {arrParsed.name || "Select Arrival Airport"}
                 </Text>
@@ -140,10 +184,17 @@ export default function FlightTab({
 
 
       {/* Departure Date & Time */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.departureDate"] = el; }} className="flex-row gap-4 mb-5">
+      <View
+        ref={assignRef("flightDetails.departureDate")}
+        className="flex-row gap-4 mb-5"
+      >
         <FloatingLabelInput
           label="Departure Date & Time"
-          value={values.flightDetails?.departureDate ? formatFlightDateTime(values.flightDetails.departureDate) : ""}
+          value={
+            values.flightDetails?.departureDate
+              ? formatFlightDateTime(values.flightDetails.departureDate)
+              : ""
+          }
           editable={false}
           right={
             values.flightDetails?.departureDate ? (
@@ -162,13 +213,17 @@ export default function FlightTab({
 
       {/* Arrival Date & Time */}
       <View
-        ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.arrivalDate"] = el; }}
+        ref={assignRef("flightDetails.arrivalDate")}
         className="flex-col mb-10"
       >
         <View className="flex-row gap-4">
           <FloatingLabelInput
             label="Arrival Date & Time"
-            value={values.flightDetails?.arrivalDate ? formatFlightDateTime(values.flightDetails.arrivalDate) : ""}
+            value={
+              values.flightDetails?.arrivalDate
+                ? formatFlightDateTime(values.flightDetails.arrivalDate)
+                : ""
+            }
             editable={false}
             right={
               values.flightDetails?.arrivalDate ? (
@@ -184,7 +239,11 @@ export default function FlightTab({
             onPress={() => setShowFlightDatePickerFor("arrivalDate")}
           />
         </View>
-        <Text className={`text-xs text-[#DC6803] mt-1 ml-2 font-medium ${showArrivalPrefillNotice ? "" : "hidden"}`}>
+        <Text
+          className={`text-xs text-[#DC6803] mt-1 ml-2 font-medium ${
+            showArrivalPrefillNotice ? "" : "hidden"
+          }`}
+        >
           Please check the actual date of your flight arrival and update accordingly.
         </Text>
       </View>
@@ -194,7 +253,10 @@ export default function FlightTab({
       </Text>
 
       {/* Flight Number & Airline */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.airline"] = el; }} className="flex-row gap-4 mb-6">
+      <View
+        ref={assignRef("flightDetails.airline")}
+        className="flex-row gap-4 mb-6"
+      >
         <FloatingLabelInput
           label="Airline"
           value={values.flightDetails?.airline || ""}
@@ -203,7 +265,10 @@ export default function FlightTab({
         />
       </View>
 
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.flightNumber"] = el; }} className="flex-row gap-4 mb-6">
+      <View
+        ref={assignRef("flightDetails.flightNumber")}
+        className="flex-row gap-4 mb-6"
+      >
         <FloatingLabelInput
           label="Flight Number"
           value={values.flightDetails?.flightNumber || ""}
@@ -214,14 +279,20 @@ export default function FlightTab({
       </View>
 
       {/* Gate & Terminal */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.gate"] = el; }} className="flex-row gap-4 mb-6">
+      <View
+        ref={assignRef("flightDetails.gate")}
+        className="flex-row gap-4 mb-6"
+      >
         <FloatingLabelInput
           label="Gate"
           value={values.flightDetails?.gate || ""}
           onChangeText={handleChange("flightDetails.gate")}
           onBlur={handleBlur("flightDetails.gate")}
         />
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.terminal"] = el; }} style={{ flex: 1 }}>
+        <View
+          ref={assignRef("flightDetails.terminal")}
+          style={{ flex: 1 }}
+        >
           <FloatingLabelInput
             label="Terminal"
             value={values.flightDetails?.terminal || ""}
@@ -232,14 +303,20 @@ export default function FlightTab({
       </View>
 
       {/* Seat Number & Booking Reference */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.seatNumber"] = el; }} className="flex-row gap-4 mb-6">
+      <View
+        ref={assignRef("flightDetails.seatNumber")}
+        className="flex-row gap-4 mb-6"
+      >
         <FloatingLabelInput
           label="Seat Number"
           value={values.flightDetails?.seatNumber || ""}
           onChangeText={handleChange("flightDetails.seatNumber")}
           onBlur={handleBlur("flightDetails.seatNumber")}
         />
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["flightDetails.bookingReference"] = el; }} style={{ flex: 1 }}>
+        <View
+          ref={assignRef("flightDetails.bookingReference")}
+          style={{ flex: 1 }}
+        >
           <FloatingLabelInput
             label="Booking Reference"
             value={values.flightDetails?.bookingReference || ""}

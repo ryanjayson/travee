@@ -14,7 +14,13 @@ import { TravelMenuAction, TripPlanType } from "../../../../types/enums";
 import TravelMenuNavigation from "../../../Travel/components/TravelMenuNavigation";
 import CreateTripModal from "../CreateOrEdit/Modal";
 import TravelActionFAB from "./TravelActionFAB";
-import { useArchiveTravel, useCancelTravel, useDeleteTravel, useTravelPlan, useUnarchiveTravel } from "../../hooks/useTravel";
+import {
+  useArchiveTravel,
+  useCancelTravel,
+  useDeleteTravel,
+  useTravelPlan,
+  useUnarchiveTravel,
+} from "../../hooks/useTravel";
 
 interface ViewTripModalProps {
   travelId: string;
@@ -158,7 +164,8 @@ const ViewTripModal = ({
     } else if (menuAction === TravelMenuAction.Delete) {
       const isConfirmed = await confirm({
         title: "Delete Trip",
-        message: "Are you sure you want to permanently delete this trip? This action cannot be undone.",
+        message:
+          "Are you sure you want to permanently delete this trip? This action cannot be undone.",
         confirmText: "Delete",
         cancelText: "Cancel",
         type: "danger",
@@ -218,7 +225,12 @@ const ViewTripModal = ({
       <StatusBar style="dark" />
       <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
         {/* Content Container filling the entire screen with top inset padding */}
-        <View style={[StyleSheet.absoluteFill, { paddingTop: insets.top + 48, backgroundColor: "#ffffff" }]}>
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            { paddingTop: insets.top + 48, backgroundColor: "#ffffff" },
+          ]}
+        >
           {travelPlan && (
             <ViewTravel
               travelPlan={travelPlan}
@@ -268,9 +280,13 @@ const ViewTripModal = ({
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityRole="button"
-            accessibilityLabel={expanded ? "Collapse trip details sheet" : "Close travel plan details"}
+            accessibilityLabel={
+              expanded ? "Collapse trip details sheet" : "Close travel plan details"
+            }
           >
-            <Animated.View style={{ width: 32, height: 32, justifyContent: 'center', alignItems: 'center' }}>
+            <Animated.View
+              style={{ width: 32, height: 32, justifyContent: 'center', alignItems: 'center' }}
+            >
               <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
                 <Icon name="close" size={32} color={iconColor} />
               </Animated.View>
@@ -281,7 +297,12 @@ const ViewTripModal = ({
           </TouchableOpacity>
 
           <View style={{ opacity: titleOpacity, marginLeft: 8, flex: 1 }}>
-            <Text className="text-xl font-medium" style={{ color: "#111827" }} ellipsizeMode="tail" numberOfLines={1}>
+            <Text
+              className="text-xl font-medium"
+              style={{ color: "#111827" }}
+              ellipsizeMode="tail"
+              numberOfLines={1}
+            >
               {travelPlan && `${travelPlan.travel.title}`}
             </Text>
           </View>
@@ -309,7 +330,9 @@ const ViewTripModal = ({
               accessibilityRole="button"
               accessibilityLabel="More options"
             >
-              <Animated.View style={{ width: 28, height: 28, justifyContent: 'center', alignItems: 'center' }}>
+              <Animated.View
+                style={{ width: 28, height: 28, justifyContent: 'center', alignItems: 'center' }}
+              >
                 <Animated.View style={{ position: 'absolute', opacity: closeOpacity }}>
                   <Icon name="more-horiz" size={28} color={iconColor} />
                 </Animated.View>
@@ -362,7 +385,12 @@ const ViewTripModal = ({
                 travelPlan.travel.tripDestinations && travelPlan.travel.tripDestinations.length > 0
                   ? travelPlan.travel.tripDestinations
                   : travelPlan.travel.destination
-                    ? [{ destination: travelPlan.travel.destination, destinationData: travelPlan.travel.destinationData }]
+                    ? [
+                        {
+                          destination: travelPlan.travel.destination,
+                          destinationData: travelPlan.travel.destinationData,
+                        },
+                      ]
                     : [];
 
               openGoogleSearchModal(

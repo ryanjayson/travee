@@ -1,69 +1,19 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { Text, View } from "react-native";
-import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateTimeUtils";
-import { DestinationDto, TransportationDetailsDto } from "../../../../../types/TravelDto";
+import {
+  safeFormatDate,
+  safeFormatTime,
+} from "../../../../../../../utils/dateTimeUtils";
+import { TransportationDetailsDto } from "../../../../../types/TravelDto";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
-
-const parseLocObject = (loc?: any): DestinationDto | null => {
-  if (!loc) return null;
-  if (typeof loc === "object" && (loc.name || loc.address || loc.city)) {
-    return loc as DestinationDto;
-  }
-  if (typeof loc === "string" && loc.trim().startsWith("{")) {
-    try {
-      const parsed = JSON.parse(loc);
-      if (parsed && typeof parsed === "object") {
-        return parsed as DestinationDto;
-      }
-    } catch { }
-  }
-  return null;
-};
-
-const getLocationTitle = (loc?: any): string => {
-  if (!loc) return "";
-  const obj = parseLocObject(loc);
-  if (obj) {
-    return obj.name || obj.city || obj.address || "";
-  }
-  if (typeof loc === "string") {
-    const commaIndex = loc.indexOf(",");
-    if (commaIndex > 0) {
-      return loc.substring(0, commaIndex).trim();
-    }
-    return loc.trim();
-  }
-  return "";
-};
-
-const getLocationAddress = (loc?: any): string => {
-  if (!loc) return "";
-  const obj = parseLocObject(loc);
-  if (obj) {
-    if (obj.address && (!obj.name || obj.address.toLowerCase() !== obj.name.toLowerCase())) {
-      return obj.address;
-    }
-    const regionParts = [
-      obj.city && obj.name && obj.city.toLowerCase() !== obj.name.toLowerCase() ? obj.city : (!obj.name ? obj.city : null),
-      obj.regionOrState,
-      obj.country,
-    ].filter(Boolean);
-    if (regionParts.length > 0) {
-      return regionParts.join(", ");
-    }
-    return obj.address || "";
-  }
-  if (typeof loc === "string") {
-    const commaIndex = loc.indexOf(",");
-    if (commaIndex > 0) {
-      return loc.substring(commaIndex + 1).trim();
-    }
-    return "";
-  }
-  return "";
-};
+import {
+  formatPrice,
+  getLocationAddress,
+  getLocationTitle,
+  parseLocObject,
+} from "./activityDetailUtils";
 
 interface TransportationDetailsCardProps {
   data: TransportationDetailsDto & { destinationData?: any };
@@ -73,13 +23,7 @@ interface TransportationDetailsCardProps {
 export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps> = ({
   data,
 }) => {
-  const formattedPrice = data.price
-    ? data.price.startsWith("₱") || data.price.startsWith("$")
-      ? data.price
-      : !isNaN(Number(data.price))
-        ? `₱${Number(data.price).toLocaleString()}`
-        : data.price
-    : null;
+  const formattedPrice = formatPrice(data.price);
 
   const destData = (data as any).destinationData;
   const pickLocObj = parseLocObject(data.pickupLocation);
@@ -133,20 +77,24 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
   const themeColor = "#018091";
 
   return (
-    <View className="mt-4 px-2 overflow-hidden">
+    <View className="mt-4 px-2">
       {/* Main Details Body */}
-      <FadeInView type="down" delay={180} duration={200}>
-        <View
-          className="p-2xl rounded-3xl flex-1 mb-2 gap-4"
-          style={{ backgroundColor: `${themeColor}30` }}
-        >
+      <View
+        className="p-2xl rounded-3xl mb-2 gap-4"
+        style={{ backgroundColor: `${themeColor}30` }}
+      >
           <View className="flex-row items-start w-full mb-2">
             <View className="flex-col gap-2 flex-1">
               {data.operatorProvider ? (
                 <View className="flex flex-col gap-3">
                   <View className="flex flex-row gap-3 items-start flex-1">
                     <View className="flex-1">
-                      <Text className="text-2xl leading-xl font-semibold text-secondary tracking-tight">
+                      <Text
+                        className={
+                          "text-2xl leading-xl font-semibold " +
+                          "text-secondary tracking-tight"
+                        }
+                      >
                         {data.operatorProvider}
                       </Text>
                       {locationText ? (
@@ -162,7 +110,12 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
                   <View className="flex flex-col flex-1">
                     <View className="flex flex-row gap-3 items-start flex-1">
                       <View className="flex-1">
-                        <Text className="text-[10px] font-semibold text-secondary uppercase tracking-wide">
+                        <Text
+                          className={
+                            "text-[10px] font-semibold text-secondary " +
+                            "uppercase tracking-wide"
+                          }
+                        >
                           Route
                         </Text>
                         <Text className="text-secondary/60 font-normal leading-2xl text-lg">
@@ -176,68 +129,84 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
             </View>
           </View>
 
-          <View className="flex-row gap-4">
-            <View className="mb-3">
-              <Icon name="timer" size={38} color={themeColor} />
+          {/* Departure Info Block */}
+          <View className="flex-row gap-6">
+            <View className="mb-2">
+              <Icon name="flight-takeoff" size={34} color={themeColor} />
             </View>
-            <View className="mb-3 flex-1">
-              <Text className="text-sm font-semibold text-secondary/50  tracking-wide">
+            <View className="mb-2 flex-1">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
                 Departure
               </Text>
-              {pickupTitle ? (
-                <Text className="text-xl font-semibold text-secondary">
-                  {pickupTitle}
-                </Text>
-              ) : null}
-              {pickupSubtitle && pickupSubtitle !== pickupTitle ? (
-                <Text className="text-lg leading-2xl text-secondary/50 mt-1">
-                  {pickupSubtitle}
-                </Text>
-              ) : null}
-
-              <Text className="text-lg font-semibold text-secondary/40 mt-1">
-                {data.departureDateTime ? safeFormatTime(data.departureDateTime) : "--:--"}{data.departureDateTime ? `, ${safeFormatDate(data.departureDateTime)}` : ""}
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {data.departureDateTime
+                  ? safeFormatTime(data.departureDateTime)
+                  : "--:--"}
               </Text>
+              <Text className="text-base font-medium text-secondary/50">
+                {data.departureDateTime
+                  ? safeFormatDate(data.departureDateTime)
+                  : ""}
+              </Text>
+              {pickupTitle ? (
+                <View className="mt-1">
+                  <Text className="text-sm font-semibold text-secondary">
+                    {pickupTitle}
+                  </Text>
+                  {pickupSubtitle && pickupSubtitle !== pickupTitle ? (
+                    <Text className="text-xs text-secondary/60">
+                      {pickupSubtitle}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
             </View>
           </View>
 
-          <View className="flex-row gap-4
-          ">
-            <View className="mb-3">
-              <Icon name="timer" size={38} color={themeColor} />
+          {/* Arrival Info Block */}
+          <View className="flex-row gap-6">
+            <View className="mb-2">
+              <Icon name="flight-land" size={34} color={themeColor} />
             </View>
-            <View className="mb-3 flex-1">
-              <Text className="text-sm font-semibold text-secondary/50  tracking-wide">
+            <View className="mb-2 flex-1">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
                 Arrival
               </Text>
-              {dropoffTitle ? (
-                <Text className="text-xl font-semibold text-secondary">
-                  {dropoffTitle}
-                </Text>
-              ) : null}
-              {dropoffSubtitle && dropoffSubtitle !== dropoffTitle ? (
-                <Text className="text-lg leading-2xl text-secondary/50">
-                  {dropoffSubtitle}
-                </Text>
-              ) : null}
-              <Text className="text-lg font-semibold text-secondary/40 mt-1">
-                {data.arrivalDateTime ? safeFormatTime(data.arrivalDateTime) : "--:--"}{data.arrivalDateTime ? `, ${safeFormatDate(data.arrivalDateTime)}` : ""}
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {data.arrivalDateTime
+                  ? safeFormatTime(data.arrivalDateTime)
+                  : "--:--"}
               </Text>
+              <Text className="text-base font-medium text-secondary/50">
+                {data.arrivalDateTime
+                  ? safeFormatDate(data.arrivalDateTime)
+                  : ""}
+              </Text>
+              {dropoffTitle ? (
+                <View className="mt-1">
+                  <Text className="text-sm font-semibold text-secondary">
+                    {dropoffTitle}
+                  </Text>
+                  {dropoffSubtitle && dropoffSubtitle !== dropoffTitle ? (
+                    <Text className="text-xs text-secondary/60">
+                      {dropoffSubtitle}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
             </View>
           </View>
         </View>
-      </FadeInView>
 
       <FadeInView delay={180} duration={400}>
         <View
-          className="px-md my-lg"
+          className="px-md mt-sm"
           style={{ display: hasTransitInfo ? "flex" : "none" }}
         >
-          <Text className="text-xl font-semibold text-secondary">
+          <Text className="text-xl font-semibold text-secondary mt-lg">
             Transit Info
           </Text>
           <View className="rounded-2xl flex-col p-2 pl-0">
-
             <Field
               label="Booking Ref"
               value={data.bookingReference}

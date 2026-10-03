@@ -240,7 +240,7 @@ const TravelActionFAB = ({
       {
         id: 'activity-plan',
         icon: 'pin',
-        label: 'Add Plan',
+        label: 'Add Activity',
         labelTextColor: 'white',
         style: {
           elevation: 0,

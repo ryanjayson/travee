@@ -33,11 +33,23 @@ interface TransportationTabProps {
   handleBlur: any;
   setFieldValue: any;
   colors?: any;
-  setShowTransportationDatePickerFor?: (field: "departureDateTime" | "arrivalDateTime" | null) => void;
+  setShowTransportationDatePickerFor?: (
+    field: "departureDateTime" | "arrivalDateTime" | null
+  ) => void;
   formatTransportationDateTime?: (dateVal: any) => string;
-  onOpenPoiModal?: (category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => void;
+  onOpenPoiModal?: (
+    category:
+      | "accommodation"
+      | "cafeRestaurant"
+      | "nature"
+      | "shopppingAndService"
+      | "entertainmentAndRecreation"
+      | "hikeOrCamp"
+  ) => void;
   onOpenMapPinModal?: (field: string, initialValue?: string) => void;
-  onOpenGoogleSearch?: (target: "operatorProvider" | "pickupLocation" | "dropoffLocation") => void;
+  onOpenGoogleSearch?: (
+    target: "operatorProvider" | "pickupLocation" | "dropoffLocation"
+  ) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
 
@@ -101,13 +113,22 @@ export default function TransportationTab({
   const currentMode = values.transportationDetails?.mode || null;
   const activityColor =
     activityIcons.find(
-      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === TripPlanType.transit
-    )?.color || colors.primary || "#02899a";
+      (icon) =>
+        icon.activityType === values.type ||
+        icon.name === values.type ||
+        icon.activityType === TripPlanType.transit
+    )?.color ||
+    colors.primary ||
+    "#02899a";
 
   const pickupTitle = getLocationTitle(values.transportationDetails?.pickupLocation);
   const pickupSubtitle = getLocationSubtitle(values.transportationDetails?.pickupLocation);
   const dropoffTitle = getLocationTitle(values.transportationDetails?.dropoffLocation);
   const dropoffSubtitle = getLocationSubtitle(values.transportationDetails?.dropoffLocation);
+
+  const assignRef = (field: string) => (el: View | null) => {
+    if (fieldRefs) fieldRefs.current[field] = el;
+  };
 
   return (
     <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
@@ -124,10 +145,17 @@ export default function TransportationTab({
       </Text>
 
       {/* Pickup / Departure Location */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.pickupLocation"] = el; }} className="flex-row relative">
+      <View
+        ref={assignRef("transportationDetails.pickupLocation")}
+        className="flex-row relative"
+      >
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel={pickupTitle ? `Pickup location: ${pickupTitle}` : "Select pickup location"}
+          accessibilityLabel={
+            pickupTitle
+              ? `Pickup location: ${pickupTitle}`
+              : "Select pickup location"
+          }
           activeOpacity={0.7}
           onPress={() => onOpenGoogleSearch?.("pickupLocation")}
           className="bg-white border  px-4 py-4 rounded-t-3xl w-full border-b-0"
@@ -135,9 +163,15 @@ export default function TransportationTab({
         >
           <View className="flex-row gap-2 items-center">
             <View className="border-r border-secondary/10 items-center min-w-[56px]">
-              <Icon name="departure-board" size={26} color={pickupTitle ? activityColor : "#98A2B3"} />
+              <Icon
+                name="departure-board"
+                size={26}
+                color={pickupTitle ? activityColor : "#98A2B3"}
+              />
               <Text
-                className={`text-xs font-bold tracking-wider mt-1 ${pickupTitle ? "text-secondary/70" : "text-secondary/40"}`}
+                className={`text-xs font-bold tracking-wider mt-1 ${
+                  pickupTitle ? "text-secondary/70" : "text-secondary/40"
+                }`}
               >
                 DEPART
               </Text>
@@ -146,7 +180,11 @@ export default function TransportationTab({
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
               {/* <Text className="text-sm text-secondary/80">From</Text> */}
               <Text
-                className={`text-xl font-semibold leading-10px ${pickupTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                className={`text-xl font-semibold leading-10px ${
+                  pickupTitle
+                    ? "text-secondary/80"
+                    : "text-secondary/40 font-normal text-lg"
+                }`}
               >
                 {pickupTitle || "Select departure location"}
               </Text>
@@ -185,7 +223,10 @@ export default function TransportationTab({
 
       <View className="flex-1">
         <View className="flex-row gap-4">
-          <View className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4" pointerEvents="box-none">
+          <View
+            className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4"
+            pointerEvents="box-none"
+          >
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Swap pickup and drop-off locations"
@@ -197,10 +238,22 @@ export default function TransportationTab({
                 setFieldValue("transportationDetails.dropoffLocation", currentPick);
 
                 const destData = (values.destinationData || {}) as any;
-                const pickLoc = destData?.pickupLocation || (typeof currentPick === "object" ? currentPick : null);
-                const dropLoc = destData?.dropoffLocation || (typeof currentDrop === "object" ? currentDrop : null);
-                const pickCoords = destData?.pickupCoordinates || (typeof currentPick === "object" ? currentPick?.coordinates : null);
-                const dropCoords = destData?.dropoffCoordinates || (typeof currentDrop === "object" ? currentDrop?.coordinates : null);
+                const pickLoc =
+                  destData?.pickupLocation ||
+                  (typeof currentPick === "object" ? currentPick : null);
+                const dropLoc =
+                  destData?.dropoffLocation ||
+                  (typeof currentDrop === "object" ? currentDrop : null);
+                const pickCoords =
+                  destData?.pickupCoordinates ||
+                  (typeof currentPick === "object"
+                    ? currentPick?.coordinates
+                    : null);
+                const dropCoords =
+                  destData?.dropoffCoordinates ||
+                  (typeof currentDrop === "object"
+                    ? currentDrop?.coordinates
+                    : null);
 
                 setFieldValue("destinationData", {
                   ...destData,
@@ -219,10 +272,17 @@ export default function TransportationTab({
         </View>
 
         {/* Drop-off / Arrival Location */}
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.dropoffLocation"] = el; }} className="mb-5 flex-row relative">
+        <View
+          ref={assignRef("transportationDetails.dropoffLocation")}
+          className="mb-5 flex-row relative"
+        >
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel={dropoffTitle ? `Drop-off location: ${dropoffTitle}` : "Select drop-off location"}
+            accessibilityLabel={
+              dropoffTitle
+                ? `Drop-off location: ${dropoffTitle}`
+                : "Select drop-off location"
+            }
             activeOpacity={0.7}
             onPress={() => onOpenGoogleSearch?.("dropoffLocation")}
             className="bg-white border px-4 py-4 rounded-b-3xl w-full"
@@ -230,9 +290,15 @@ export default function TransportationTab({
           >
             <View className="flex-row gap-2 items-center">
               <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
-                <Icon name="place" size={26} color={dropoffTitle ? activityColor : "#98A2B3"} />
+                <Icon
+                  name="place"
+                  size={26}
+                  color={dropoffTitle ? activityColor : "#98A2B3"}
+                />
                 <Text
-                  className={`text-xs font-bold tracking-wider mt-1 ${dropoffTitle ? "text-secondary/70" : "text-secondary/40"}`}
+                  className={`text-xs font-bold tracking-wider mt-1 ${
+                    dropoffTitle ? "text-secondary/70" : "text-secondary/40"
+                  }`}
                 >
                   ARRIVE
                 </Text>
@@ -240,7 +306,11 @@ export default function TransportationTab({
 
               <View className="flex-1 justify-center gap-0 px-sm pr-14">
                 <Text
-                  className={`text-xl font-semibold leading-10px ${dropoffTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                  className={`text-xl font-semibold leading-10px ${
+                    dropoffTitle
+                      ? "text-secondary/80"
+                      : "text-secondary/40 font-normal text-lg"
+                  }`}
                 >
                   {dropoffTitle || "Select arrival location"}
                 </Text>
@@ -270,7 +340,10 @@ export default function TransportationTab({
                   dropoffLocation: null,
                 });
               }}
-              className="absolute right-4 bottom-4 z-20 p-2 rounded-full items-center justify-center "
+              className={
+                "absolute right-4 bottom-4 z-20 p-2 rounded-full " +
+                "items-center justify-center"
+              }
             >
               <Icon name="close" size={18} color="#667085" style={{ opacity: 0.5 }} />
             </TouchableOpacity>
@@ -317,7 +390,12 @@ export default function TransportationTab({
                   key={item.label}
                   accessibilityRole="button"
                   accessibilityLabel={`Select ${item.label} mode`}
-                  onPress={() => setFieldValue("transportationDetails.mode", isSelected ? null : item.label)}
+                  onPress={() =>
+                    setFieldValue(
+                      "transportationDetails.mode",
+                      isSelected ? null : item.label
+                    )
+                  }
                   activeOpacity={0.7}
                   style={{
                     width: 88,
@@ -367,7 +445,7 @@ export default function TransportationTab({
 
       {/* Seat / Coach / Vehicle Number & Booking Reference */}
       <View className="mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.seatOrVehicleNumber"] = el; }}>
+        <View ref={assignRef("transportationDetails.seatOrVehicleNumber")}>
           <FloatingLabelInput
             label="Seat / Coach / Vehicle #"
             value={values.transportationDetails?.seatOrVehicleNumber || ""}
@@ -378,7 +456,10 @@ export default function TransportationTab({
       </View>
 
       {/* Booking Status & Price */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.bookingStatus"] = el; }} className="mb-5">
+      <View
+        ref={assignRef("transportationDetails.bookingStatus")}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Booking Reference"
           value={values.transportationDetails?.bookingReference || ""}
@@ -389,7 +470,10 @@ export default function TransportationTab({
 
 
       {/* Website Address / Ticket Link */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.websiteAddress"] = el; }} className="mb-5">
+      <View
+        ref={assignRef("transportationDetails.websiteAddress")}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Website Address / Ticket Link"
           value={values.transportationDetails?.websiteAddress || ""}
@@ -413,7 +497,12 @@ export default function TransportationTab({
                     open
                   </Text>
                 )}
-                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                style={{
+                  width: 60,
+                  height: 30,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
                 onPress={() => {
                   let url = values.transportationDetails.websiteAddress;
                   if (url) {
@@ -432,7 +521,10 @@ export default function TransportationTab({
       </View>
 
       {/* Contact Number */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["transportationDetails.contactNumber"] = el; }} className="mb-8">
+      <View
+        ref={assignRef("transportationDetails.contactNumber")}
+        className="mb-8"
+      >
         <FloatingLabelInput
           label="Contact Number"
           value={values.transportationDetails?.contactNumber || ""}

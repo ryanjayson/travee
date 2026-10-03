@@ -194,7 +194,10 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
         });
       }
     } else if (destinationAddress) {
-      Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destinationAddress)}`);
+      const query = encodeURIComponent(destinationAddress);
+      Linking.openURL(
+        `https://www.google.com/maps/search/?api=1&query=${query}`
+      );
     }
   };
 
@@ -320,14 +323,24 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
                   {(destData?.city || destData?.regionOrState || destData?.country) && (
                     <View className="flex-row flex-wrap gap-1.5 mt-3 pt-2.5">
                       {Boolean(destData?.city) && (
-                        <View className="px-2 py-1 rounded-lg border border-blue-100 flex-row items-center">
+                        <View
+                          className={
+                            "px-2 py-1 rounded-lg border border-blue-100 " +
+                            "flex-row items-center"
+                          }
+                        >
                           <Text className="text-xs font-medium text-secondary ml-1">
                             {destData.city}
                           </Text>
                         </View>
                       )}
                       {Boolean(destData?.regionOrState) && (
-                        <View className="bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-100 flex-row items-center">
+                        <View
+                          className={
+                            "bg-purple-50 px-2.5 py-1 rounded-lg " +
+                            "border border-purple-100 flex-row items-center"
+                          }
+                        >
                           <Icon name="map" size={13} color="#7A5AF8" />
                           <Text className="text-xs font-medium text-purple-700 ml-1">
                             {destData.regionOrState}
@@ -335,7 +348,12 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
                         </View>
                       )}
                       {Boolean(destData?.country) && (
-                        <View className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 flex-row items-center">
+                        <View
+                          className={
+                            "bg-emerald-50 px-2.5 py-1 rounded-lg " +
+                            "border border-emerald-100 flex-row items-center"
+                          }
+                        >
                           <Icon name="public" size={13} color="#039855" />
                           <Text className="text-xs font-medium text-emerald-700 ml-1">
                             {destData.country}
@@ -351,11 +369,18 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
                   <View className="bg-[#F8FAFC] rounded-2xl p-4 border border-gray-100 mb-3">
                     <View className="flex-row items-center gap-1.5 mb-2">
                       <Icon name="my-location" size={15} color="#64748B" />
-                      <Text className="text-[11px] uppercase tracking-wider font-bold text-secondary/60">
+                      <Text
+                        className="text-[11px] uppercase tracking-wider font-bold text-secondary/60"
+                      >
                         Coordinates
                       </Text>
                     </View>
-                    <View className="bg-white p-3 rounded-xl border border-gray-200/60 flex-row items-center justify-between">
+                    <View
+                      className={
+                        "bg-white p-3 rounded-xl border " +
+                        "border-gray-200/60 flex-row items-center justify-between"
+                      }
+                    >
                       <View className="flex-1">
                         <Text className="text-[10px] text-gray-400 uppercase">
                           Latitude
@@ -385,7 +410,10 @@ export const DestinationDetailsBottomSheet: React.FC<DestinationDetailsBottomShe
                       accessibilityRole="button"
                       accessibilityLabel="Open destination in external map app"
                       onPress={handleOpenInMap}
-                      className="flex-row items-center justify-center gap-2 p-3.5 rounded-2xl bg-white border border-gray-200"
+                      className={
+                        "flex-row items-center justify-center gap-2 p-3.5 " +
+                        "rounded-2xl bg-white border border-gray-200"
+                      }
                     >
                       <Icon name="directions" size={18} color={activityColor} />
                       <Text

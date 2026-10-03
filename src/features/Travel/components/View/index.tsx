@@ -102,7 +102,8 @@ const ViewTravel = ({
     } else if (menuAction === TravelMenuAction.Delete) {
       const isConfirmed = await confirm({
         title: "Delete Trip",
-        message: "Are you sure you want to permanently delete this trip? This action cannot be undone.",
+        message:
+          "Are you sure you want to permanently delete this trip? This action cannot be undone.",
         confirmText: "Delete",
         cancelText: "Cancel",
         type: "danger",
@@ -428,7 +429,9 @@ const ViewTravel = ({
                   </View>
                 )}
                 <Text
-                  className={`${isMinimized ? "text-2xl  mt-lg!" : "text-[30px] pr-2xl "} mt-md font-semibold text-secondary flex-1`}
+                  className={`${
+                    isMinimized ? "text-2xl  mt-lg!" : "text-[30px] pr-2xl "
+                  } mt-md font-semibold text-secondary flex-1`}
                   numberOfLines={isMinimized ? 1 : undefined}
                 >
                   {travelPlan.travel.title}
@@ -477,7 +480,11 @@ const ViewTravel = ({
           </Animated.View>
 
           {/* Action buttons: Share & More Options */}
-          <View className={`flex-row items-center absolute top-sm right-lg ${isMinimized ? "hidden" : ""}`}>
+          <View
+            className={`flex-row items-center absolute top-sm right-lg ${
+              isMinimized ? "hidden" : ""
+            }`}
+          >
             <TouchableOpacity
               style={{ padding: 6 }}
               onPress={() => setShowTravelNavigationModal(true)}
@@ -502,8 +509,9 @@ const ViewTravel = ({
               type="default"
               onTabChange={setActiveTabId}
               expanded={true}
-              wrapperStyle={`bg-white px-1 pb-4 ${activeTabId === "itinerary" ? "border-b border-[#e0e0e0]" : ""
-                }`}
+              wrapperStyle={`bg-white px-1 pb-4 ${
+                activeTabId === "itinerary" ? "border-b border-[#e0e0e0]" : ""
+              }`}
             />
           </FadeInView>
         </Animated.View>

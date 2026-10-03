@@ -433,7 +433,6 @@ const TripChecklist = ({ activities = [], travelId: propTravelId }: TripChecklis
         {ungroupedItems.length > 0 && (
           <View className="mb-5">
             <View className="flex-row items-center gap-2 mb-2">
-              <Icon name="list" size={18} color="#888" />
               <Text className="text-sm font-bold text-gray-500 uppercase tracking-wider">General</Text>
               <Text className="text-xs text-gray-400 ml-auto">
                 {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}

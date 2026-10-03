@@ -50,11 +50,13 @@ const ActivityModal = ({
   travelId,
   initialType,
 }: ActivityModalProps) => {
-  const [currentActivity, setCurrentActivity] = useState<ItineraryActivity | null>(propItineraryActivity);
+  const [currentActivity, setCurrentActivity] =
+    useState<ItineraryActivity | null>(propItineraryActivity);
   const [isAddMode, setIsAddMode] = useState(!propItineraryActivity?.id);
 
   const activeId = !isAddMode ? (currentActivity?.id || propItineraryActivity?.id || "") : "";
-  const { data: fetchedDbActivity, refetch: refetchActivity } = useItineraryActivity(visible && activeId ? activeId : "");
+  const { data: fetchedDbActivity, refetch: refetchActivity } =
+    useItineraryActivity(visible && activeId ? activeId : "");
 
   const { data: travelPlan } = useTravelPlan(travelId || "");
 
@@ -132,19 +134,29 @@ const ActivityModal = ({
 
   const [sections, setSections] = useState<any[]>([]);
   const [selectedSectionId, setSelectedSectionId] = useState<string | undefined>(undefined);
-  const [onSelectSectionCallback, setOnSelectSectionCallback] = useState<((id?: string) => void) | null>(null);
+  const [onSelectSectionCallback, setOnSelectSectionCallback] =
+    useState<((id?: string) => void) | null>(null);
 
-  const [selectedActivityType, setSelectedActivityType] = useState<TripPlanType | undefined>(undefined);
-  const [onSelectActivityTypeCallback, setOnSelectActivityTypeCallback] = useState<((type: TripPlanType) => void) | null>(null);
+  const [selectedActivityType, setSelectedActivityType] =
+    useState<TripPlanType | undefined>(undefined);
+  const [onSelectActivityTypeCallback, setOnSelectActivityTypeCallback] =
+    useState<((type: TripPlanType) => void) | null>(null);
 
-  const handleOpenSectionModal = (sectionsList: any[], currentId?: string, onSelect?: (id?: string) => void) => {
+  const handleOpenSectionModal = (
+    sectionsList: any[],
+    currentId?: string,
+    onSelect?: (id?: string) => void
+  ) => {
     setSections(sectionsList);
     setSelectedSectionId(currentId);
     setOnSelectSectionCallback(() => onSelect || null);
     setShowSectionModal(true);
   };
 
-  const handleOpenPrimaryTypeModal = (currentType?: TripPlanType, onSelect?: (type: TripPlanType) => void) => {
+  const handleOpenPrimaryTypeModal = (
+    currentType?: TripPlanType,
+    onSelect?: (type: TripPlanType) => void
+  ) => {
     setSelectedActivityType(currentType);
     setOnSelectActivityTypeCallback(() => onSelect || null);
     setShowPrimaryTypeModal(true);
@@ -320,7 +332,12 @@ const ActivityModal = ({
     // 1. PRIVACY CONFIRMATION (Explicitly verifying that ML Kit runs 100% on-device offline)
     const isConfirmed = await confirm({
       title: "Secure Local Scan",
-      message: "Travelled values your privacy. Text extraction from documents, screenshots, and receipts is performed 100% locally and offline on your device using Google ML Kit. We do not upload your personal documents to any external server.\n\nWould you like to select a booking screenshot or receipt to extract details?",
+      message:
+        "Travelled values your privacy. Text extraction from documents, " +
+        "screenshots, and receipts is performed 100% locally and offline on your " +
+        "device using Google ML Kit. We do not upload your personal documents to " +
+        "any external server.\n\nWould you like to select a booking screenshot " +
+        "or receipt to extract details?",
       confirmText: "Select Image",
       cancelText: "Cancel",
       type: "default",
@@ -339,8 +356,9 @@ const ActivityModal = ({
       // 3. Launch Image Picker
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true, // Enable cropping to isolate relevant text blocks and maximize accuracy
-        quality: 0.8,        // Optimize size to improve on-device memory and processing efficiency
+        // Enable cropping to isolate relevant text blocks and maximize accuracy
+        allowsEditing: true,
+        quality: 0.8, // Optimize size to improve on-device memory and processing efficiency
       });
 
       if (result.canceled || !result.assets || result.assets.length === 0) {
@@ -358,13 +376,20 @@ const ActivityModal = ({
         recognizedText = ocrResult.text || "";
       } catch (ocrError) {
         console.error("Local ML Kit OCR failed:", ocrError);
-        throw new Error("Local on-device OCR native modules not fully linked in the active application binary. Please compile with native ML Kit libraries using 'npx expo run:android' to enable text extraction.");
+        throw new Error(
+          "Local on-device OCR native modules not fully linked in the active " +
+          "application binary. Please compile with native ML Kit libraries using " +
+          "'npx expo run:android' to enable text extraction."
+        );
       }
 
       setIsOcrPending(false);
 
       if (!recognizedText.trim()) {
-        alert("No clear text could be extracted from this image. Please ensure the booking screenshot is sharp and legible.");
+        alert(
+          "No clear text could be extracted from this image. Please ensure " +
+          "the booking screenshot is sharp and legible."
+        );
         return;
       }
 
@@ -524,7 +549,10 @@ const ActivityModal = ({
                 <View className="w-10 h-1 bg-gray-300 rounded-full" />
               </View> */}
 
-              <View className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200" style={{ paddingTop: keyboardVisible ? 0 : 0 }}>
+              <View
+                className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200"
+                style={{ paddingTop: keyboardVisible ? 0 : 0 }}
+              >
                 <View className="flex-row items-center gap-2">
                   <TouchableOpacity
                     onPress={handleCancel}
@@ -577,9 +605,17 @@ const ActivityModal = ({
                           </Text>
                         </>
                       ) : (
-                        <View className="flex-row items-center gap-1.5 bg-primary/10 py-1.5 px-3 rounded-full">
+                        <View
+                          className={
+                            "flex-row items-center gap-1.5 bg-primary/10 " +
+                            "py-1.5 px-3 rounded-full"
+                          }
+                        >
                           <Icon name="check" size={20} color={colors.primary} />
-                          <Text className="text-lg px-sm font-medium" style={{ color: colors.primary }}>
+                          <Text
+                            className="text-lg px-sm font-medium"
+                            style={{ color: colors.primary }}
+                          >
                             {latestActivity?.id ? "Save" : "Add"}
                           </Text>
                         </View>
@@ -591,10 +627,20 @@ const ActivityModal = ({
 
               <View className="flex-1">
                 <EditActivity
-                  key={propItineraryActivity ? `${propItineraryActivity.id || 'new'}-${propItineraryActivity.title || ''}-${propItineraryActivity.destination || ''}` : "new-activity"}
+                  key={
+                    propItineraryActivity
+                      ? `${propItineraryActivity.id || "new"}-${
+                          propItineraryActivity.title || ""
+                        }-${propItineraryActivity.destination || ""}`
+                      : "new-activity"
+                  }
                   initialType={initialType}
                   itinerarySectionId={itinerarySectionId}
-                  itineraryActivity={extractedData ? { ...latestActivity, ...extractedData } as any : latestActivity}
+                  itineraryActivity={
+                    extractedData
+                      ? ({ ...latestActivity, ...extractedData } as any)
+                      : latestActivity
+                  }
                   travelId={travelId}
                   onClose={onClose}
                   onSubmitRef={submitFormRef}

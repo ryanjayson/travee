@@ -1,5 +1,20 @@
 import React, { useState } from "react";
-import { View, Animated, Text, FlatList, TouchableOpacity, Image, Dimensions, Linking, Modal, Pressable, Platform, ActivityIndicator, Alert, AlertButton } from "react-native";
+import {
+  View,
+  Animated,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+  Linking,
+  Modal,
+  Pressable,
+  Platform,
+  ActivityIndicator,
+  Alert,
+  AlertButton,
+} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme, Button } from "react-native-paper";
 import WebView from "react-native-webview";
@@ -11,6 +26,13 @@ import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import { useUpdateActivityMutation } from "../../../../hooks/useActivity";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
+import {
+  formatFileSize,
+  getFileIcon,
+  isLocalUrl,
+  isPdf,
+} from "./fileTabUtils";
+import { logger } from "../../../../../../services/errorLogger";
 
 interface FilesTabProps {
   itineraryActivity?: ItineraryActivity;
@@ -20,52 +42,10 @@ interface FilesTabProps {
 const { width: screenWidth } = Dimensions.get("window");
 const IMAGE_SIZE = (screenWidth - 48) / 3; // 3 columns with padding
 
-const formatFileSize = (bytes?: number): string => {
-  if (!bytes) return "Unknown size";
-  if (bytes < 1024) return `${bytes} B`;
-  const kb = bytes / 1024;
-  if (kb < 1024) return `${kb.toFixed(1)} KB`;
-  const mb = kb / 1024;
-  return `${mb.toFixed(2)} MB`;
-};
-
-const getFileIcon = (fileName: string): string => {
-  const ext = fileName.split(".").pop()?.toLowerCase();
-  switch (ext) {
-    case "pdf":
-      return "picture-as-pdf";
-    case "doc":
-    case "docx":
-      return "description";
-    case "xls":
-    case "xlsx":
-      return "table-chart";
-    case "ppt":
-    case "pptx":
-      return "slideshow";
-    case "zip":
-    case "rar":
-    case "tar":
-      return "inventory";
-    case "png":
-    case "jpg":
-    case "jpeg":
-    case "gif":
-      return "image";
-    default:
-      return "insert-drive-file";
-  }
-};
-
-const isPdf = (fileName: string) => {
-  return fileName.toLowerCase().endsWith(".pdf");
-};
-
-const isLocalUrl = (url: string) => {
-  return url.startsWith("file://") || url.startsWith("content://") || !url.startsWith("http");
-};
-
-const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => {
+const FilesTab = ({
+  itineraryActivity,
+  onImageViewerToggle,
+}: FilesTabProps) => {
   const { colors } = useTheme();
   const { confirm } = useConfirm();
   const updateMutation = useUpdateActivityMutation();
@@ -84,7 +64,10 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
       if (mediaType === "camera") {
         const { status } = await ImagePicker.requestCameraPermissionsAsync();
         if (status !== "granted") {
-          Alert.alert("Permission required", "Camera permission is needed to take photos.");
+          Alert.alert(
+            "Permission required",
+            "Camera permission is needed to take photos."
+          );
           return;
         }
         result = await ImagePicker.launchCameraAsync({
@@ -92,9 +75,13 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
           quality: 0.8,
         });
       } else {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        const { status } =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== "granted") {
-          Alert.alert("Permission required", "Gallery permission is needed to upload images.");
+          Alert.alert(
+            "Permission required",
+            "Gallery permission is needed to upload images."
+          );
           return;
         }
         result = await ImagePicker.launchImageLibraryAsync({
@@ -105,93 +92,49 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
       }
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const newImages = result.assets.map((asset) => ({
-          title: "",
+        const newImages: Images[] = result.assets.map((asset) => ({
           url: asset.uri,
+          title: asset.fileName || "Uploaded Image",
         }));
 
+        const updatedImages = [...images, ...newImages];
         if (itineraryActivity) {
-          const updatedActivity: ItineraryActivity = {
+          updateMutation.mutate({
             ...itineraryActivity,
-            images: [...images, ...newImages],
-          };
-          await updateMutation.mutateAsync(updatedActivity);
+            images: updatedImages,
+          });
         }
       }
     } catch (error) {
-      console.error("Error adding image:", error);
-      Alert.alert("Error", "Failed to add image to the activity.");
+      logger.service(error, { screen: "FilesTab", action: "addImage" });
+      Alert.alert("Error", "Failed to select image.");
     }
   };
 
   const handleAddImagePress = () => {
-    Alert.alert(
-      "Add Image",
-      "Choose how you want to select an image:",
-      [
-        {
-          text: "Take Photo",
-          onPress: () => handleAddImage("camera"),
-        },
-        {
-          text: "Choose from Gallery",
-          onPress: () => handleAddImage("gallery"),
-        },
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-      ]
-    );
+    Alert.alert("Add Image", "Choose an option", [
+      { text: "Take Photo", onPress: () => handleAddImage("camera") },
+      { text: "Choose from Gallery", onPress: () => handleAddImage("gallery") },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
-  const handleDeleteImage = async (imageIndex: number) => {
-    try {
-      const isConfirmed = await confirm({
-        title: "Delete Image",
-        message: "Are you sure you want to delete this image?",
-        confirmText: "Yes",
-        cancelText: "No",
-        type: "danger",
+  const handleDeleteImage = async (indexToDelete: number) => {
+    const isConfirmed = await confirm({
+      title: "Delete Image",
+      message: "Are you sure you want to delete this image?",
+      confirmText: "Delete",
+      type: "danger",
+    });
+
+    if (!isConfirmed) return;
+
+    const updatedImages = images.filter((_, idx) => idx !== indexToDelete);
+    if (itineraryActivity) {
+      updateMutation.mutate({
+        ...itineraryActivity,
+        images: updatedImages,
       });
-
-      if (isConfirmed && itineraryActivity) {
-        const updatedImages = images.filter((_, idx) => idx !== imageIndex);
-        const updatedActivity: ItineraryActivity = {
-          ...itineraryActivity,
-          images: updatedImages,
-        };
-        await updateMutation.mutateAsync(updatedActivity);
-      }
-    } catch (error) {
-      console.error("Error deleting image:", error);
-      Alert.alert("Error", "Failed to delete image.");
-    }
-  };
-
-  const handleDeleteAttachment = async (attachmentIndex: number, fileName?: string) => {
-    try {
-      const isConfirmed = await confirm({
-        title: "Delete File",
-        message: fileName
-          ? `Are you sure you want to delete "${fileName}"?`
-          : "Are you sure you want to delete this file?",
-        confirmText: "Yes",
-        cancelText: "No",
-        type: "danger",
-      });
-
-      if (isConfirmed && itineraryActivity) {
-        const updatedAttachments = attachments.filter((_, idx) => idx !== attachmentIndex);
-        const updatedActivity: ItineraryActivity = {
-          ...itineraryActivity,
-          attachments: updatedAttachments,
-        };
-        await updateMutation.mutateAsync(updatedActivity);
-      }
-    } catch (error) {
-      console.error("Error deleting attachment:", error);
-      Alert.alert("Error", "Failed to delete file.");
     }
   };
 
@@ -207,66 +150,73 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
           "application/vnd.ms-powerpoint",
           "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         ],
+        copyToCacheDirectory: true,
         multiple: true,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const newAttachments = result.assets.map((asset) => ({
+        const newAttachments: Attachment[] = result.assets.map((asset) => ({
           name: asset.name,
           url: asset.uri,
-          size: asset.size || undefined,
-          type: asset.mimeType || undefined,
+          size: asset.size,
         }));
 
+        const updatedAttachments = [...attachments, ...newAttachments];
         if (itineraryActivity) {
-          const updatedActivity: ItineraryActivity = {
+          updateMutation.mutate({
             ...itineraryActivity,
-            attachments: [...attachments, ...newAttachments],
-          };
-          await updateMutation.mutateAsync(updatedActivity);
+            attachments: updatedAttachments,
+          });
         }
       }
     } catch (error) {
-      console.error("Error adding attachment:", error);
-      Alert.alert("Error", "Failed to add attachment to the activity.");
+      logger.service(error, { screen: "FilesTab", action: "addAttachment" });
+      Alert.alert("Error", "Failed to select attachment.");
     }
   };
 
-  const openInAppWebView = (item: Attachment) => {
-    setSelectedFileName(item.name);
-    setSelectedFileUrl(item.url);
-    onImageViewerToggle?.(true); // Disable parent swipe gestures
+  const handleDeleteAttachment = async (
+    indexToDelete: number,
+    fileName: string
+  ) => {
+    const isConfirmed = await confirm({
+      title: "Delete Attachment",
+      message: `Are you sure you want to delete "${fileName}"?`,
+      confirmText: "Delete",
+      type: "danger",
+    });
+
+    if (!isConfirmed) return;
+
+    const updatedAttachments = attachments.filter(
+      (_, idx) => idx !== indexToDelete
+    );
+    if (itineraryActivity) {
+      updateMutation.mutate({
+        ...itineraryActivity,
+        attachments: updatedAttachments,
+      });
+    }
   };
 
-  const handleOpenLocalFile = async (url: string, name: string) => {
+  const handleOpenLocalFile = async (item: Attachment) => {
     try {
-      let shareUrl = url;
-
-      // Try to copy to cache directory with original name to maintain filename in share sheet
-      try {
-        const sourceFile = new File(url);
-        const targetFile = new File(Paths.cache, name);
-        if (targetFile.exists) {
-          targetFile.delete();
-        }
-        sourceFile.copy(targetFile);
-        shareUrl = targetFile.uri;
-      } catch (copyError) {
-        console.warn("Could not copy local file to cache with original name:", copyError);
-        // Fallback to original url
-      }
-
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
-        await Sharing.shareAsync(shareUrl);
+        await Sharing.shareAsync(item.url);
       } else {
-        Alert.alert(
-          "Not Supported",
-          "Sharing and viewing local files is not supported on this device."
-        );
+        const supported = await Linking.canOpenURL(item.url);
+        if (supported) {
+          await Linking.openURL(item.url);
+        } else {
+          Alert.alert(
+            "Cannot Open File",
+            "There is no default application installed to view this file type."
+          );
+        }
       }
     } catch (error) {
-      console.error("Error opening local file with expo-sharing:", error);
+      logger.service(error, { screen: "FilesTab", action: "openLocalFile" });
       Alert.alert(
         "Error",
         "An error occurred while trying to open this local file."
@@ -277,11 +227,12 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
   const handleOpenRemoteFile = async (item: Attachment) => {
     setIsDownloading(true);
     try {
-      // Create a target File instance with the exact original filename to maintain name
       const targetFile = new File(Paths.cache, item.name);
-
-      // Download remote file to the specific file location, overwriting if exists
-      const downloadedFile = await File.downloadFileAsync(item.url, targetFile, { idempotent: true });
+      const downloadedFile = await File.downloadFileAsync(
+        item.url,
+        targetFile,
+        { idempotent: true }
+      );
       setIsDownloading(false);
 
       const canShare = await Sharing.isAvailableAsync();
@@ -292,13 +243,13 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
       }
     } catch (error) {
       setIsDownloading(false);
-      console.error("Error downloading and previewing remote file:", error);
+      logger.service(error, { screen: "FilesTab", action: "openRemoteFile" });
       Alert.alert(
         "Preview Failed",
-        "Could not load the preview natively. Would you like to open it in your browser instead?",
+        "Could not load the preview natively. Open in browser instead?",
         [
           { text: "Open in Browser", onPress: () => Linking.openURL(item.url) },
-          { text: "Cancel", style: "cancel" }
+          { text: "Cancel", style: "cancel" },
         ]
       );
     }
@@ -309,32 +260,35 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
 
     const options: AlertButton[] = [
       {
-        text: "View Natively (System Viewer)",
+        text: "Native App / Share",
         onPress: () => {
           if (isLocal) {
-            handleOpenLocalFile(item.url, item.name);
+            handleOpenLocalFile(item);
           } else {
             handleOpenRemoteFile(item);
           }
-        }
-      }
+        },
+      },
     ];
 
     if (!isLocal) {
       options.push({
-        text: "View In-App (Web View)",
-        onPress: () => openInAppWebView(item)
+        text: "In-App Viewer",
+        onPress: () => {
+          setSelectedFileUrl(item.url);
+          setSelectedFileName(item.name);
+          onImageViewerToggle?.(true);
+        },
       });
       options.push({
-        text: "Open in External Browser",
-        onPress: () => Linking.openURL(item.url)
+        text: "External Browser",
+        onPress: () => {
+          Linking.openURL(item.url);
+        },
       });
     }
 
-    options.push({
-      text: "Cancel",
-      style: "cancel"
-    });
+    options.push({ text: "Cancel", style: "cancel" });
 
     Alert.alert(
       "Attachment Options",
@@ -350,17 +304,27 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
       <FlatList
         key="images-grid-list"
         data={data}
-        keyExtractor={(item, index) => (item.isAddButton ? "add-image-button" : `${item.url}-${index}`)}
+        keyExtractor={(item, index) =>
+          item.isAddButton ? "add-image-button" : `${item.url}-${index}`
+        }
         numColumns={3}
         className="flex-1"
         contentContainerStyle={{ padding: 16 }}
-        columnWrapperStyle={{ justifyContent: "flex-start", gap: 8, marginBottom: 8 }}
+        columnWrapperStyle={{
+          justifyContent: "flex-start",
+          gap: 8,
+          marginBottom: 8,
+        }}
         renderItem={({ item, index }) => {
           if (item.isAddButton) {
             return (
               <TouchableOpacity
                 style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
-                className="rounded-lg overflow-hidden bg-gray-100 justify-center items-center border-[1.5px] border-dashed border-[#263F69] p-2"
+                className={
+                  "rounded-lg overflow-hidden bg-gray-100 justify-center " +
+                  "items-center border-[1.5px] border-dashed " +
+                  "border-[#263F69] p-2"
+                }
                 onPress={handleAddImagePress}
                 disabled={updateMutation.isPending}
                 activeOpacity={0.7}
@@ -371,8 +335,18 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                   <ActivityIndicator size="small" color="#263F69" />
                 ) : (
                   <>
-                    <MaterialIcons name="add-a-photo" size={24} color="#263F69" />
-                    <Text className="text-[11px] font-semibold mt-1.5 text-center text-[#263F69]" numberOfLines={1}>
+                    <MaterialIcons
+                      name="add-a-photo"
+                      size={24}
+                      color="#263F69"
+                    />
+                    <Text
+                      className={
+                        "text-[11px] font-semibold mt-1.5 " +
+                        "text-center text-[#263F69]"
+                      }
+                      numberOfLines={1}
+                    >
                       Add Image
                     </Text>
                   </>
@@ -381,7 +355,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
             );
           }
 
-          const actualIndex = index - 1; // map back to original images array
+          const actualIndex = index - 1;
           return (
             <View
               style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
@@ -397,10 +371,17 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                 accessibilityRole="button"
                 accessibilityLabel={`View image ${item.title || ""}`}
               >
-                <Image source={{ uri: item.url }} className="w-full h-full" resizeMode="cover" />
+                <Image
+                  source={{ uri: item.url }}
+                  className="w-full h-full"
+                  resizeMode="cover"
+                />
               </TouchableOpacity>
               <TouchableOpacity
-                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full justify-center items-center z-10"
+                className={
+                  "absolute top-1.5 right-1.5 w-6 h-6 rounded-full " +
+                  "justify-center items-center z-10"
+                }
                 style={{
                   backgroundColor: "rgba(0,0,0,0.50)",
                 }}
@@ -423,8 +404,16 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
     if (attachments.length === 0) {
       return (
         <View className="flex-1 justify-center items-center px-8 py-12">
-          <MaterialIcons name="attach-file" size={48} color={colors.outline} style={{ marginBottom: 16, opacity: 0.6 }} />
-          <Text className="text-lg font-semibold text-center" style={{ color: colors.outline }}>
+          <MaterialIcons
+            name="attach-file"
+            size={48}
+            color={colors.outline}
+            style={{ marginBottom: 16, opacity: 0.6 }}
+          />
+          <Text
+            className="text-lg font-semibold text-center"
+            style={{ color: colors.outline }}
+          >
             No attachments uploaded yet
           </Text>
           <Button
@@ -434,13 +423,20 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
             disabled={updateMutation.isPending}
             textColor="#0EA5E9"
             className="self-center"
-            labelStyle={{ fontSize: 14, fontWeight: "600", textDecorationLine: "underline" }}
+            labelStyle={{
+              fontSize: 14,
+              fontWeight: "600",
+              textDecorationLine: "underline",
+            }}
             accessibilityRole="button"
             accessibilityLabel="Add attachment"
           >
             {updateMutation.isPending ? "Adding..." : "Add Attachment"}
           </Button>
-          <Text className="text-xs text-center" style={{ color: colors.onSurfaceVariant }}>
+          <Text
+            className="text-xs text-center"
+            style={{ color: colors.onSurfaceVariant }}
+          >
             Supported formats: PDF, Word, Excel, PowerPoint
           </Text>
         </View>
@@ -453,7 +449,9 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
       <FlatList
         key="attachments-list-view"
         data={data}
-        keyExtractor={(item, index) => (item.isAddButton ? "add-attachment-button" : `${item.url}-${index}`)}
+        keyExtractor={(item, index) =>
+          item.isAddButton ? "add-attachment-button" : `${item.url}-${index}`
+        }
         className="flex-1"
         contentContainerStyle={{ padding: 16, gap: 10 }}
         renderItem={({ item, index }) => {
@@ -467,13 +465,20 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                   disabled={updateMutation.isPending}
                   textColor="#263F69"
                   className="self-start -ml-2"
-                  labelStyle={{ fontSize: 14, fontWeight: "600", textDecorationLine: "underline" }}
+                  labelStyle={{
+                    fontSize: 14,
+                    fontWeight: "600",
+                    textDecorationLine: "underline",
+                  }}
                   accessibilityRole="button"
                   accessibilityLabel="Add attachment"
                 >
                   {updateMutation.isPending ? "Adding..." : "Add Attachment"}
                 </Button>
-                <Text className="text-xs ml-2 -mt-1 mb-2" style={{ color: colors.onSurfaceVariant }}>
+                <Text
+                  className="text-xs ml-2 -mt-1 mb-2"
+                  style={{ color: colors.onSurfaceVariant }}
+                >
                   Supported formats: PDF, Word, Excel, PowerPoint
                 </Text>
               </View>
@@ -483,7 +488,12 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
           const actualIndex = index - 1;
           const iconName = getFileIcon(item.name);
           return (
-            <View className="flex-row items-center p-3 rounded-xl border border-[#DDD] bg-[#F3F4F6]">
+            <View
+              className={
+                "flex-row items-center p-3 rounded-xl border " +
+                "border-[#DDD] bg-[#F3F4F6]"
+              }
+            >
               <TouchableOpacity
                 className="flex-1 flex-row items-center"
                 onPress={() => handleOpenAttachment(item)}
@@ -492,17 +502,31 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                 accessibilityLabel={`Open file ${item.name}`}
               >
                 <View className="w-11 h-11 rounded-lg justify-center items-center mr-3">
-                  <MaterialIcons name={iconName as any} size={24} color="#263F69" />
+                  <MaterialIcons
+                    name={iconName as any}
+                    size={24}
+                    color="#263F69"
+                  />
                 </View>
                 <View className="flex-1 pr-lg">
-                  <Text className="text-base leading-5 font-semibold mb-0.5 text-black" numberOfLines={2}>
+                  <Text
+                    className={
+                      "text-base leading-5 font-semibold " +
+                      "mb-0.5 text-black"
+                    }
+                    numberOfLines={2}
+                  >
                     {item.name}
                   </Text>
                   <Text className="text-xs text-[#999999]">
                     {formatFileSize(item.size)}
                   </Text>
                 </View>
-                <MaterialIcons name="open-in-new" size={20} color={colors.outline} />
+                <MaterialIcons
+                  name="open-in-new"
+                  size={20}
+                  color={colors.outline}
+                />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleDeleteAttachment(actualIndex, item.name)}
@@ -512,7 +536,11 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
                 accessibilityLabel={`Delete file ${item.name}`}
                 className="p-1.5 ml-2 rounded-lg justify-center items-center"
               >
-                <MaterialIcons name="delete-outline" size={20} color="#D32F2F" />
+                <MaterialIcons
+                  name="delete-outline"
+                  size={20}
+                  color="#D32F2F"
+                />
               </TouchableOpacity>
             </View>
           );
@@ -538,15 +566,20 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
   const getWebViewSourceUrl = () => {
     if (!selectedFileUrl) return "";
     if (isPdf(selectedFileName) && Platform.OS === "android") {
-      // Android WebView doesn't render PDF naturally, use Google Docs viewer proxy
-      return `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(selectedFileUrl)}`;
+      const encoded = encodeURIComponent(selectedFileUrl);
+      return `https://docs.google.com/gview?embedded=true&url=${encoded}`;
     }
     return selectedFileUrl;
   };
 
   return (
     <View className="flex-1">
-      <Tabs tabs={subTabs} initialActiveTabId="images" type="secondary" expanded={true} />
+      <Tabs
+        tabs={subTabs}
+        initialActiveTabId="images"
+        type="secondary"
+        expanded={true}
+      />
 
       {/* Full-screen Image Viewer Modal */}
       <Modal
@@ -559,7 +592,7 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
         }}
       >
         <Animated.View
-          className="flex-1justify-center items-center"
+          className="flex-1 justify-center items-center"
           style={{
             backgroundColor: "rgba(0,0,0,0.99)",
           }}
@@ -600,7 +633,10 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
 
           {/* Floating Close Button */}
           <TouchableOpacity
-            className="absolute top-12 right-5 w-10 h-10 rounded-full bg-white/20 justify-center items-center z-10"
+            className={
+              "absolute top-12 right-5 w-10 h-10 rounded-full " +
+              "bg-white/20 justify-center items-center z-10"
+            }
             onPress={() => {
               setViewerActiveIndex(null);
               onImageViewerToggle?.(false);
@@ -624,7 +660,10 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
           onImageViewerToggle?.(false);
         }}
       >
-        <View className="flex-1" style={{ backgroundColor: colors.background }}>
+        <View
+          className="flex-1"
+          style={{ backgroundColor: colors.background }}
+        >
           {/* Header */}
           <View
             className="flex-row items-center px-4 h-14 border-b"
@@ -644,9 +683,17 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
               accessibilityRole="button"
               accessibilityLabel="Back to activity details"
             >
-              <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
+              <MaterialIcons
+                name="arrow-back"
+                size={24}
+                color={colors.onSurface}
+              />
             </TouchableOpacity>
-            <Text className="text-lg font-semibold flex-1" style={{ color: colors.onSurface }} numberOfLines={1}>
+            <Text
+              className="text-lg font-semibold flex-1"
+              style={{ color: colors.onSurface }}
+              numberOfLines={1}
+            >
               {selectedFileName}
             </Text>
           </View>
@@ -689,7 +736,10 @@ const FilesTab = ({ itineraryActivity, onImageViewerToggle }: FilesTabProps) => 
             })}
           >
             <ActivityIndicator size="large" color={colors.primary} />
-            <Text className="text-sm font-semibold" style={{ color: colors.onSurface }}>
+            <Text
+              className="text-sm font-semibold"
+              style={{ color: colors.onSurface }}
+            >
               Downloading file...
             </Text>
           </View>

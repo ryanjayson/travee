@@ -238,6 +238,10 @@ const HomeScreen: React.FC = () => {
           setShowNotificationsModal(false);
           return true;
         }
+        if (showProfileModal) {
+          setShowProfileModal(false);
+          return true;
+        }
         if (showOnboarding) {
           return true;
         }
@@ -250,7 +254,7 @@ const HomeScreen: React.FC = () => {
 
         lastBackPressedRef.current = now;
         if (Platform.OS === 'android') {
-          ToastAndroid.show('Swipe again to close the app', ToastAndroid.SHORT);
+          ToastAndroid.show('Press back again to close the app', ToastAndroid.SHORT);
         }
         return true;
       };
@@ -268,6 +272,7 @@ const HomeScreen: React.FC = () => {
       showTravelViewModal,
       showCreateModal,
       showNotificationsModal,
+      showProfileModal,
       showOnboarding,
     ])
   );

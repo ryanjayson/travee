@@ -22,6 +22,9 @@
 - **No hardcoded colors:** use React Native Paper `useTheme()` or NativeWind tokens. See design-system skill.
 - **Buttons:** custom layouts use `TouchableOpacity`; standard actions use Paper `Button` (see `appendices/style-guide.md`).
 - **Accessibility:** every touch target needs `accessibilityRole="button"`; icon-only controls need `accessibilityLabel`.
+- **Cross-platform parity:** every screen, modal, and gesture must support both Android (hardware `BackHandler`, `elevation`, windowSoftInputMode) and iOS (edge swipe `beforeRemove`, `shadow*`, `KeyboardAvoidingView` padding).
+- **UI/UX performance & libraries:** use `expo-image` for images (caching, downsampling); animations must run on the UI thread (`useNativeDriver: true` or `react-native-reanimated` worklets); trigger tactile feedback via `expo-haptics` on key interactions.
+- **Edge cases & state resilience:** handle 4 states (Data, Empty with CTA, Loading skeleton/spinner, Error with retry); sanitize (0,0) coordinates and invalid dates.
 - **JSON columns:** always parse with `src/utils/safeJsonParse.ts`; never raw `JSON.parse` on DB fields.
 - **Network:** use `src/utils/fetchWithTimeout.ts`; API responses follow the `{ isSuccess, data, errorMessage }` envelope (`useApi`).
 - **Errors:** log via `errorLogger.logError` with a `category` and `severity`. No bare `console.log` in production code paths.
@@ -56,6 +59,7 @@ npx tsc --noEmit         # typecheck
 npm start                # Expo dev server
 npm run android          # native Android build
 npm run ios              # native iOS build
+npm run web              # web build / preview
 ```
 
 ## 6. Definition of Done

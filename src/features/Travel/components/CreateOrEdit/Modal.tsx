@@ -9,7 +9,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  PanResponder,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import Create, { CreateOrEditRef } from ".";
@@ -18,7 +17,6 @@ import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { TravelStatus } from "../../../../types/enums";
 import { Travel } from "../../types/TravelDto";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useTheme } from "react-native-paper";
 import TripStatusBottomSheet from "./TripStatusBottomSheet";
 
 interface AddTripModalProps {
@@ -40,20 +38,17 @@ const CreateTripModal = ({
   onCreated,
   autoFocusSearch,
 }: AddTripModalProps) => {
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [modalHeight, setModalHeight] = useState(screenHeight * 0.75);
-  const { keyboardVisible, isFloating } = useKeyboardVisible();
+  const [isSaving] = useState(false);
+  const { keyboardVisible } = useKeyboardVisible();
   const [tripStatus, setTripStatus] = useState(TravelStatus.Draft);
   const insets = useSafeAreaInsets();
-  const { colors } = useTheme();
   const [showStatusExplainModal, setShowStatusExplainModal] = useState(false);
   const translateY = useRef(new Animated.Value(screenHeight)).current;
   const isAtTop = useRef(true);
-  const dragStartDy = useRef(0);
   const createRef = useRef<CreateOrEditRef>(null);
 
-  const shouldAutoFocus = autoFocusSearch !== undefined ? autoFocusSearch : mode === "create";
+  const shouldAutoFocus =
+    autoFocusSearch !== undefined ? autoFocusSearch : mode === "create";
 
   const triggerFocus = useCallback(() => {
     if (shouldAutoFocus) {
@@ -64,7 +59,7 @@ const CreateTripModal = ({
   // Slide up transition on opening
   useEffect(() => {
     if (showModal) {
-      isAtTop.current = true; // Reset scroll position tracker
+      isAtTop.current = true;
       translateY.setValue(screenHeight);
       Animated.spring(translateY, {
         toValue: 0,
@@ -75,7 +70,6 @@ const CreateTripModal = ({
         triggerFocus();
       });
 
-      // Scheduled fallback in case animation completion is delayed or onShow fires
       const timer = setTimeout(() => {
         triggerFocus();
       }, 250);
@@ -84,9 +78,7 @@ const CreateTripModal = ({
     }
   }, [showModal, triggerFocus]);
 
-
   const handleCancel = () => {
-    // Smoothly slide down first, then dismiss
     Animated.timing(translateY, {
       toValue: screenHeight,
       duration: 220,
@@ -96,7 +88,7 @@ const CreateTripModal = ({
     });
   };
 
-  // Interpolate backdrop opacity based on translateY position for smooth fading
+  // Interpolate backdrop opacity based on translateY for smooth fading
   const backdropOpacity = translateY.interpolate({
     inputRange: [0, screenHeight],
     outputRange: [1, 0],
@@ -104,7 +96,8 @@ const CreateTripModal = ({
   });
 
   return (
-    <Modal visible={showModal}
+    <Modal
+      visible={showModal}
       transparent
       animationType="none"
       onRequestClose={handleCancel}
@@ -112,14 +105,14 @@ const CreateTripModal = ({
     >
       <StatusBar style="dark" />
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : keyboardVisible ? "padding" : undefined}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
         <Animated.View
           className="flex-1 justify-end"
           style={{
             backgroundColor: "rgba(0,0,0,0.5)",
-            opacity: backdropOpacity
+            opacity: backdropOpacity,
           }}
         >
           <Animated.View

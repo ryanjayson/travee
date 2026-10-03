@@ -2,10 +2,18 @@ import { MAPBOX_ACCESS_TOKEN } from "@env";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useFormik } from "formik";
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Animated,
-  Image, ScrollView,
+  Image,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -17,12 +25,19 @@ import FloatingLabelInput from "../../../../components/atoms/FloatingLabelInput"
 import DescriptionInput from "../../../../components/molecules/DescriptionInput";
 import TripIcon from "../../../../components/TripIcon";
 import { TravelStatus, TripType, getTripTypeLabel } from "../../../../types/enums";
-import { useTravels, useUpdateTravel } from "../../hooks/useTravel";
+import { useUpdateTravel } from "../../hooks/useTravel";
 import { DestinationDto, Travel, TripDestinationDto } from "../../types/TravelDto";
 import TripTypeLookupModal from "../Lookups/TripTypeLookupModal";
 import TravelDateModal from "./TravelDateModal";
-import TripDestinationSearchBox, { TripDestinationSearchBoxRef } from "./TripDestinationSearchBox";
+import TripDestinationSearchBox, {
+  TripDestinationSearchBoxRef,
+} from "./TripDestinationSearchBox";
 import { getDestinationZoom } from "../../../../utils/mapUtils";
+import { logger, ErrorSeverity } from "../../../../services/errorLogger";
+import {
+  generateTitleSuggestion,
+  computeEffectiveTripStatus,
+} from "./createOrEditUtils";
 
 export interface CreateOrEditProps {
   onClose: () => void;
@@ -42,12 +57,25 @@ export interface CreateOrEditRef {
   focusSearch: () => void;
 }
 
-const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, onStatusChange, tripData, mode = "create", hideSubmitButton, onScroll, onCreated, autoFocusSearch }, ref) => {
-  const { colors } = useTheme();
-  const navigation = useNavigation<any>();
-  const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
-  const scrollViewRef = useRef<ScrollView>(null);
-  const destinationSearchRef = useRef<TripDestinationSearchBoxRef>(null);
+const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(
+  (
+    {
+      onClose,
+      onStatusChange,
+      tripData,
+      mode = "create",
+      hideSubmitButton,
+      onScroll,
+      onCreated,
+      autoFocusSearch,
+    },
+    ref
+  ) => {
+    const { colors } = useTheme();
+    const navigation = useNavigation<any>();
+    const { mutate: createTravel, isPending: isSaving } = useUpdateTravel();
+    const scrollViewRef = useRef<ScrollView>(null);
+    const destinationSearchRef = useRef<TripDestinationSearchBoxRef>(null);
 
   useImperativeHandle(ref, () => ({
     submit: () => {
@@ -83,8 +111,12 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       return {
         ...prevValues,
         tripDestinations: nextList,
-        destination: nextList.length > 0 ? nextList[0].destination : prevValues.destination,
-        destinationData: nextList.length > 0 ? nextList[0].destinationData : prevValues.destinationData,
+        destination:
+          nextList.length > 0 ? nextList[0].destination : prevValues.destination,
+        destinationData:
+          nextList.length > 0
+            ? nextList[0].destinationData
+            : prevValues.destinationData,
       };
     });
   };
@@ -104,23 +136,8 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
   const [error, setError] = useState<string | null>(null);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-
-  const destinationTypeOptions = [
-    { id: "1", label: "Local", selected: false },
-    { id: "2", label: "Domestic", selected: false },
-    { id: "3", label: "International", selected: false },
-  ];
-
   const [showTripTypeModal, setShowTripTypeModal] = useState(false);
   const [suggestionApplied, setSuggestionApplied] = useState(false);
-
-  const activityOptions = Object.keys(TripType)
-    .filter((key) => isNaN(Number(key)) && key !== "none")
-    .map((key) => {
-      const typeVal = TripType[key as keyof typeof TripType];
-      const displayName = getTripTypeLabel(typeVal);
-      return { id: String(typeVal), label: displayName, selected: false };
-    });
 
   const CreateTripSchema = Yup.object().shape({
     title: Yup.string()
@@ -139,13 +156,23 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       description: tripData?.description || "",
       destination: tripData?.destination || "",
       destinationData: tripData?.destinationData || null as DestinationDto | null,
-      tripDestinations: (tripData?.tripDestinations && tripData.tripDestinations.length > 0)
-        ? tripData.tripDestinations
-        : (tripData?.destination
-          ? [{ destination: tripData.destination, destinationData: tripData.destinationData || null }]
-          : [] as TripDestinationDto[]),
-      startOrDepartureDate: tripData?.startOrDepartureDate ? new Date(tripData.startOrDepartureDate) : null as Date | null,
-      endOrReturnDate: tripData?.endOrReturnDate ? new Date(tripData.endOrReturnDate) : null as Date | null,
+      tripDestinations:
+        tripData?.tripDestinations && tripData.tripDestinations.length > 0
+          ? tripData.tripDestinations
+          : tripData?.destination
+          ? [
+              {
+                destination: tripData.destination,
+                destinationData: tripData.destinationData || null,
+              },
+            ]
+          : ([] as TripDestinationDto[]),
+      startOrDepartureDate: tripData?.startOrDepartureDate
+        ? new Date(tripData.startOrDepartureDate)
+        : (null as Date | null),
+      endOrReturnDate: tripData?.endOrReturnDate
+        ? new Date(tripData.endOrReturnDate)
+        : (null as Date | null),
       budget: tripData?.budget || "",
       notes: tripData?.notes || "",
       createSectionsBasedOnDates: false,
@@ -157,8 +184,12 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       setError(null);
 
       const tripDestinations = values.tripDestinations || [];
-      const primaryDestination = tripDestinations[0]?.destination || values.destination.trim();
-      const primaryDestinationData = tripDestinations[0]?.destinationData || values.destinationData || undefined;
+      const primaryDestination =
+        tripDestinations[0]?.destination || values.destination.trim();
+      const primaryDestinationData =
+        tripDestinations[0]?.destinationData ||
+        values.destinationData ||
+        undefined;
 
       const payload = {
         title: values.title.trim(),
@@ -185,21 +216,35 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
       };
 
       if (mode === "create") {
-        createTravel({ data: { ...payload, isOffline: true, createSectionsBasedOnDates: values.createSectionsBasedOnDates } as any }, {
-          onSuccess: (result: any) => {
-            formik.resetForm();
-            onClose();
-            const createdId = result?.data?.id || result?.id;
-            if (createdId) {
-              if (onCreated) {
-                onCreated(String(createdId));
-              } else {
-                navigation.navigate("EditTravelPlan", { travelId: String(createdId) });
-              }
-            }
+        createTravel(
+          {
+            data: {
+              ...payload,
+              isOffline: true,
+              createSectionsBasedOnDates: values.createSectionsBasedOnDates,
+            } as any,
           },
+          {
+            onSuccess: (result: any) => {
+              formik.resetForm();
+              onClose();
+              const createdId = result?.data?.id || result?.id;
+              if (createdId) {
+                if (onCreated) {
+                  onCreated(String(createdId));
+                } else {
+                  navigation.navigate("EditTravelPlan", {
+                    travelId: String(createdId),
+                  });
+                }
+              }
+            },
           onError: (err: any) => {
-            console.error("Failed to save travel:", err);
+            logger.service(err, {
+              severity: ErrorSeverity.Medium,
+              screen: "CreateOrEdit",
+              action: "createTravel",
+            });
             setError("Failed to save travel. Please try again.");
           },
         });
@@ -210,7 +255,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             onClose();
           },
           onError: (err: any) => {
-            console.error("Failed to update travel:", err);
+            logger.service(err, {
+              severity: ErrorSeverity.Medium,
+              screen: "CreateOrEdit",
+              action: "updateTravel",
+            });
             setError("Failed to update travel. Please try again.");
           },
         });
@@ -218,7 +267,13 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     },
   });
 
-  const words = ['Quick weekend getaway', 'My International trip 2026', 'Travel with friends', 'Travel to home province', 'My Solo Trip to Japan'];
+  const words = [
+    "Quick weekend getaway",
+    "My International trip 2026",
+    "Travel with friends",
+    "Travel to home province",
+    "My Solo Trip to Japan",
+  ];
   const [currentWord, setCurrentWord] = useState(words[0]);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -243,8 +298,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     return () => clearInterval(interval);
   }, []);
 
-  const { data: travels } = useTravels();
-
   const isDayTour = useMemo(() => {
     const start = formik.values.startOrDepartureDate;
     const end = formik.values.endOrReturnDate;
@@ -255,42 +308,35 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     return startDate.toDateString() === endDate.toDateString();
   }, [formik.values.startOrDepartureDate, formik.values.endOrReturnDate]);
 
-  const formattedStartDate = formik.values.startOrDepartureDate ? formik.values.startOrDepartureDate.toLocaleDateString() : "";
-  const formattedEndDate = formik.values.endOrReturnDate ? formik.values.endOrReturnDate.toLocaleDateString() : "";
-
   const formattedTripDates = useMemo(() => {
     const start = formik.values.startOrDepartureDate;
     const end = formik.values.endOrReturnDate;
     if (!start) return "";
-    const startStr = (start instanceof Date ? start : new Date(start)).toLocaleDateString();
+    const startStr = (
+      start instanceof Date ? start : new Date(start)
+    ).toLocaleDateString();
     if (end && !isDayTour) {
-      const endStr = (end instanceof Date ? end : new Date(end)).toLocaleDateString();
+      const endStr = (
+        end instanceof Date ? end : new Date(end)
+      ).toLocaleDateString();
       return `${startStr} - ${endStr}`;
     }
     return startStr;
   }, [formik.values.startOrDepartureDate, formik.values.endOrReturnDate, isDayTour]);
 
-  const getEffectiveStatus = (): TravelStatus => {
-    if (tripData && (tripData.status === TravelStatus.Past ||
-      tripData.status === TravelStatus.Archieved ||
-      tripData.status === TravelStatus.Cancelled)) {
-      return tripData.status;
-    }
-    if (!formik.values.startOrDepartureDate) return TravelStatus.Draft;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const startOrDepartureDate = new Date(formik.values.startOrDepartureDate);
-    startOrDepartureDate.setHours(0, 0, 0, 0);
-
-    const endOrReturnDate = formik.values.endOrReturnDate ? new Date(formik.values.endOrReturnDate) : startOrDepartureDate;
-    endOrReturnDate.setHours(0, 0, 0, 0);
-
-    if (endOrReturnDate < today) return TravelStatus.Past;
-    return startOrDepartureDate > today ? TravelStatus.Upcoming : TravelStatus.Travelling;
-  };
-
-  const effectiveStatus = getEffectiveStatus();
+  const effectiveStatus = useMemo(
+    () =>
+      computeEffectiveTripStatus(
+        formik.values.startOrDepartureDate,
+        formik.values.endOrReturnDate,
+        tripData?.status
+      ),
+    [
+      formik.values.startOrDepartureDate,
+      formik.values.endOrReturnDate,
+      tripData?.status,
+    ]
+  );
 
   React.useEffect(() => {
     if (onStatusChange) {
@@ -298,62 +344,37 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
     }
   }, [effectiveStatus, onStatusChange]);
 
-  const getCityOnly = (destination?: string): string => {
-    if (!destination) return "";
-    return destination.split(',')[0].trim();
-  };
-
-  const getTripTypeName = (type: TripType) => {
-    if (type === undefined || type === null || type === TripType.none) return "";
-    return getTripTypeLabel(type) || String(TripType[type]).replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-  };
-
-  const formatDepartureDate = (date: Date | null | undefined) => {
-    if (!date) return "";
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return "";
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = String(d.getFullYear()).slice(-2);
-    return `${day}.${month}.${year}`;
-  };
-
   const primaryDest =
-    (formik.values.tripDestinations && formik.values.tripDestinations[0]?.destination) ||
+    (formik.values.tripDestinations &&
+      formik.values.tripDestinations[0]?.destination) ||
     formik.values.destination ||
     "";
-  const cityName = getCityOnly(primaryDest);
-  const tripTypeName = getTripTypeName(formik.values.type);
-  const dateStr = formatDepartureDate(formik.values.startOrDepartureDate);
 
-  // Progressive suggestion format:
-  // 1. Destination + Type + Date: [Event name] in [Destination name] [DD.MM.YY]
-  // 2. Destination + Type:        [Event name] in [Destination name]
-  // 3. Destination + Date:        [Destination name] Trip [DD.MM.YY]
-  // 4. Destination only:          [Destination name] Trip
-  let suggestion = "";
-  if (cityName) {
-    if (tripTypeName && dateStr) {
-      suggestion = `${tripTypeName} in ${cityName} [${dateStr}]`;
-    } else if (tripTypeName) {
-      suggestion = `${tripTypeName} in ${cityName}`;
-    } else if (dateStr) {
-      suggestion = `${cityName} Trip [${dateStr}]`;
-    } else {
-      suggestion = `${cityName} Trip`;
-    }
-  }
+  const suggestion = useMemo(
+    () =>
+      generateTitleSuggestion(
+        primaryDest,
+        formik.values.type,
+        formik.values.startOrDepartureDate
+      ),
+    [primaryDest, formik.values.type, formik.values.startOrDepartureDate]
+  );
 
   const prevSuggestionRef = useRef<string>("");
 
   useEffect(() => {
     if (suggestion && suggestion !== prevSuggestionRef.current) {
-      const isTitleEmpty = !formik.values.title || formik.values.title.trim() === "";
-      const wasPreviousSuggestion = formik.values.title === prevSuggestionRef.current;
+      const isTitleEmpty =
+        !formik.values.title || formik.values.title.trim() === "";
+      const wasPreviousSuggestion =
+        formik.values.title === prevSuggestionRef.current;
 
       prevSuggestionRef.current = suggestion;
 
-      if ((isTitleEmpty || wasPreviousSuggestion) && formik.values.title !== suggestion) {
+      if (
+        (isTitleEmpty || wasPreviousSuggestion) &&
+        formik.values.title !== suggestion
+      ) {
         formik.setFieldValue("title", suggestion);
         setSuggestionApplied(true);
       }
@@ -404,7 +425,13 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   ? "Add another destination..."
                   : "Search place, city, or country"
             }
-            disabled={isSaving || Boolean(formik.values.tripDestinations && formik.values.tripDestinations.length >= 5)}
+            disabled={
+              isSaving ||
+              Boolean(
+                formik.values.tripDestinations &&
+                  formik.values.tripDestinations.length >= 5
+              )
+            }
           />
 
           {/* Validation error */}
@@ -425,9 +452,17 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               {formik.values.tripDestinations.map((item: TripDestinationDto, index: number) => (
                 <View
                   key={`${item.destination}-${index}`}
-                  className="flex-row items-center bg-primary/20 border border-accent/10 rounded-full py-2 pl-2 pr-1 shadow-xs"
+                  className={
+                    "flex-row items-center bg-primary/20 border " +
+                    "border-accent/10 rounded-full py-2 pl-2 pr-1 shadow-xs"
+                  }
                 >
-                  <Icon name="place" size={15} color={colors.error} style={{ marginRight: 4, opacity: 0.8 }} />
+                  <Icon
+                    name="place"
+                    size={15}
+                    color={colors.error}
+                    style={{ marginRight: 4, opacity: 0.8 }}
+                  />
                   <Text className="text-base font-semibold text-accent mr-2" numberOfLines={1}>
                     {item.destination}
                   </Text>
@@ -448,10 +483,13 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
           {/* Multi-destination Map Preview */}
           {(() => {
-            const validDestinations = (formik.values.tripDestinations || []).filter(
+            const validDestinations = (
+              formik.values.tripDestinations || []
+            ).filter(
               (d: TripDestinationDto) =>
                 d.destinationData?.coordinates &&
-                (d.destinationData.coordinates.latitude !== 0 || d.destinationData.coordinates.longitude !== 0)
+                (d.destinationData.coordinates.latitude !== 0 ||
+                  d.destinationData.coordinates.longitude !== 0)
             );
 
             if (validDestinations.length === 0) return null;
@@ -459,9 +497,17 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             let mapUrl: string;
             if (validDestinations.length === 1) {
               const destObj = validDestinations[0];
-              const { longitude, latitude } = destObj.destinationData!.coordinates;
-              const zoom = getDestinationZoom(destObj.destination, destObj.destinationData);
-              mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s+F04438(${longitude},${latitude})/${longitude},${latitude},${zoom},0/600x260?access_token=${MAPBOX_ACCESS_TOKEN}`;
+              const { longitude, latitude } =
+                destObj.destinationData!.coordinates;
+              const zoom = getDestinationZoom(
+                destObj.destination,
+                destObj.destinationData
+              );
+              mapUrl =
+                `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/` +
+                `pin-s+F04438(${longitude},${latitude})/` +
+                `${longitude},${latitude},${zoom},0/600x260` +
+                `?access_token=${MAPBOX_ACCESS_TOKEN}`;
             } else {
               const pins = validDestinations
                 .slice(0, 5)
@@ -470,7 +516,10 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                   return `pin-s+F04438(${c.longitude},${c.latitude})`;
                 })
                 .join(",");
-              mapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/${pins}/auto/600x260?padding=40,40,40,40&access_token=${MAPBOX_ACCESS_TOKEN}`;
+              mapUrl =
+                `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/` +
+                `${pins}/auto/600x260?padding=40,40,40,40` +
+                `&access_token=${MAPBOX_ACCESS_TOKEN}`;
             }
 
             return (
@@ -512,8 +561,20 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             </Text>
 
             {isDayTour && (
-              <View className="bg-blue-50 border border-accent/80 rounded-full px-2 mr-2 opacity-50">
-                <Text className="text-accent text-[10px] font-bold uppercase tracking-wider">Day Trip</Text>
+              <View
+                className={
+                  "bg-blue-50 border border-accent/80 rounded-full " +
+                  "px-2 mr-2 opacity-50"
+                }
+              >
+                <Text
+                  className={
+                    "text-accent text-[10px] font-bold uppercase " +
+                    "tracking-wider"
+                  }
+                >
+                  Day Trip
+                </Text>
               </View>
             )}
           </View>
@@ -579,18 +640,46 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
         </View>
 
         {!tripData && (
-          <View className="flex-row items-start mb-6 mr-5"
-            style={{ opacity: !formik.values.startOrDepartureDate || !formik.values.endOrReturnDate ? 0.5 : 1 }}>
+          <View
+            className="flex-row items-start mb-6 mr-5"
+            style={{
+              opacity:
+                !formik.values.startOrDepartureDate ||
+                !formik.values.endOrReturnDate
+                  ? 0.5
+                  : 1,
+            }}
+          >
             <Checkbox
-              status={formik.values.createSectionsBasedOnDates ? 'checked' : 'unchecked'}
-              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
-              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
+              status={
+                formik.values.createSectionsBasedOnDates
+                  ? "checked"
+                  : "unchecked"
+              }
+              onPress={() =>
+                formik.setFieldValue(
+                  "createSectionsBasedOnDates",
+                  !formik.values.createSectionsBasedOnDates
+                )
+              }
+              disabled={
+                !formik.values.startOrDepartureDate ||
+                !formik.values.endOrReturnDate
+              }
               color="#263F69"
             />
             <TouchableOpacity
               activeOpacity={0.7}
-              disabled={!formik.values.startOrDepartureDate || !formik.values.endOrReturnDate}
-              onPress={() => formik.setFieldValue('createSectionsBasedOnDates', !formik.values.createSectionsBasedOnDates)}
+              disabled={
+                !formik.values.startOrDepartureDate ||
+                !formik.values.endOrReturnDate
+              }
+              onPress={() =>
+                formik.setFieldValue(
+                  "createSectionsBasedOnDates",
+                  !formik.values.createSectionsBasedOnDates
+                )
+              }
             >
               <Text className={`mt-2 text-lg text-gray-700`}>
                 Generate sections
@@ -638,9 +727,13 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             const isOtherSelected =
               formik.values.type != null &&
               formik.values.type !== TripType.none &&
-              ![TripType.vacation, TripType.business, TripType.event, TripType.roadtrip, TripType.weekendGetaway].includes(
-                formik.values.type
-              );
+              ![
+                TripType.vacation,
+                TripType.business,
+                TripType.event,
+                TripType.roadtrip,
+                TripType.weekendGetaway,
+              ].includes(formik.values.type);
 
             const renderCard = (item: { type: TripType; label: string }) => {
               const isSelected = formik.values.type === item.type;
@@ -648,16 +741,24 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                 <TouchableOpacity
                   key={item.type}
                   onPress={() => {
-                    formik.setFieldValue("type", isSelected ? TripType.none : item.type);
+                    formik.setFieldValue(
+                      "type",
+                      isSelected ? TripType.none : item.type
+                    );
                   }}
                   activeOpacity={0.7}
                   accessibilityRole="button"
                   accessibilityLabel={`Select ${item.label} trip type`}
-                  className="flex-1 min-h-[96px] py-3 px-1.5 rounded-2xl items-center justify-center border"
+                  className={
+                    "flex-1 min-h-[96px] py-3 px-1.5 rounded-2xl " +
+                    "items-center justify-center border"
+                  }
                   style={[
                     {
                       borderColor: isSelected ? colors.primary : "#E5E7EB",
-                      backgroundColor: isSelected ? `${colors.primary}12` : "#FFFFFF",
+                      backgroundColor: isSelected
+                        ? `${colors.primary}12`
+                        : "#FFFFFF",
                     },
                   ]}
                 >
@@ -692,11 +793,16 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
                     activeOpacity={0.7}
                     accessibilityRole="button"
                     accessibilityLabel="See more trip types"
-                    className="flex-1 min-h-[96px] py-3 px-1.5 rounded-2xl items-center justify-center border"
+                    className={
+                      "flex-1 min-h-[96px] py-3 px-1.5 rounded-2xl " +
+                      "items-center justify-center border"
+                    }
                     style={[
                       {
                         borderColor: isOtherSelected ? colors.primary : "#E5E7EB",
-                        backgroundColor: isOtherSelected ? `${colors.primary}12` : "#FFFFFF",
+                        backgroundColor: isOtherSelected
+                          ? `${colors.primary}12`
+                          : "#FFFFFF",
                       },
                     ]}
                   >
@@ -746,7 +852,11 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
             You may give your trip a custom name and describe it to help you stay organized.
           </Text>
 
-          {/* <Text className="text-xs font-semibold tracking-wider uppercase">Title <Text className="text-red-500 text-lg">*</Text></Text> */}
+          {/* 
+            <Text className="text-xs font-semibold tracking-wider uppercase">
+              Title <Text className="text-red-500 text-lg">*</Text>
+            </Text> 
+          */}
           <View className="relative justify-center flex-1">
             <FloatingLabelInput
               label="Title *"
@@ -774,9 +884,12 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
               }
             />
             <Text
-              className={`absolute ${formik.values.title ? "right-6" : "right-6"} bottom-2 text-xs`}
+              className={
+                `absolute ${formik.values.title ? "right-6" : "right-6"} ` +
+                "bottom-2 text-xs"
+              }
               pointerEvents="none"
-              style={{ color: '#98A2B3' }}
+              style={{ color: "#98A2B3" }}
             >
               {(formik.values.title || "").length}/40
             </Text>
@@ -785,14 +898,19 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           {formik.touched.title && formik.errors.title && (
             <View className="flex flex-row items-center mt-1">
               <Icon name="info-outline" size={14} color="#fb2c36" />
-              <Text className="text-red-500 text-xs ml-1" >{formik.errors.title as string}</Text>
+              <Text className="text-red-500 text-xs ml-1">
+                {formik.errors.title as string}
+              </Text>
             </View>
           )}
         </View>
 
-
         <View className="mb-6">
-          {/* <Text className="text-xs font-semibold tracking-wider uppercase">Description</Text> */}
+          {/* 
+            <Text className="text-xs font-semibold tracking-wider uppercase">
+              Description
+            </Text> 
+          */}
           <DescriptionInput
             value={formik.values.description}
             onChange={(text) => formik.setFieldValue("description", text)}
@@ -841,7 +959,13 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
 
         <View className="mb-8 mt-2 mx-4 bg-red-50">
           <TouchButton
-            buttonText={isSaving ? "Saving..." : mode === "create" ? "Create Trip" : "Update Changes"}
+            buttonText={
+              isSaving
+                ? "Saving..."
+                : mode === "create"
+                ? "Create Trip"
+                : "Update Changes"
+            }
             icon={mode === "create" ? "add" : ""}
             onPress={() => formik.handleSubmit()}
             disabled={!formik.values.title.trim() || isSaving}
@@ -850,10 +974,6 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(({ onClose, 
           />
         </View>
       </ScrollView>
-      {/* 
-      {!hideSubmitButton && (
-       
-      )} */}
     </View>
   );
 });

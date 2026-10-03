@@ -204,7 +204,11 @@ export default function PlanTab({
             {/* Label and description */}
             <View className="flex-1 justify-center">
               <Text
-                className={`text-lg ${selectedPlanType ? "text-[#1D2939] font-semibold" : "text-[#98A2B3] font-normal"}`}
+                className={`text-lg ${
+                  selectedPlanType
+                    ? "text-[#1D2939] font-semibold"
+                    : "text-[#98A2B3] font-normal"
+                }`}
               >
                 {selectedPlanType ? selectedPlanType.label : "Select Activity Type"}
               </Text>
@@ -327,7 +331,9 @@ export default function PlanTab({
 
               {fieldId === "priority" && (
                 <View>
-                  <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
+                  <Text
+                    className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5"
+                  >
                     {fieldMeta.label}
                   </Text>
                   <View className="flex-row gap-2 mt-1">
@@ -375,10 +381,17 @@ export default function PlanTab({
 
               {fieldId === "checklist" && (
                 <View>
-                  <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
+                  <Text
+                    className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5"
+                  >
                     {fieldMeta.label}
                   </Text>
-                  <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
+                  <View
+                    className={
+                      "border border-dashed border-gray-300 rounded-[16px] " +
+                      "bg-gray-50/50 p-4 items-center justify-center"
+                    }
+                  >
                     <Icon name="checklist" size={24} color="#98A2B3" />
                     <Text className="text-xs text-gray-500 mt-1">
                       Checklist items can be added here
@@ -389,10 +402,17 @@ export default function PlanTab({
 
               {fieldId === "attachments" && (
                 <View>
-                  <Text className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5">
+                  <Text
+                    className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5"
+                  >
                     {fieldMeta.label}
                   </Text>
-                  <View className="border border-dashed border-gray-300 rounded-[16px] bg-gray-50/50 p-4 items-center justify-center">
+                  <View
+                    className={
+                      "border border-dashed border-gray-300 rounded-[16px] " +
+                      "bg-gray-50/50 p-4 items-center justify-center"
+                    }
+                  >
                     <Icon name="cloud-upload" size={24} color="#98A2B3" />
                     <Text className="text-xs text-gray-500 mt-1">
                       Upload files, tickets, or photos

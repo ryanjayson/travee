@@ -29,9 +29,19 @@ interface RideRentalTabProps {
   handleBlur: any;
   setFieldValue: any;
   colors?: any;
-  onOpenPoiModal?: (category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => void;
+  onOpenPoiModal?: (
+    category:
+      | "accommodation"
+      | "cafeRestaurant"
+      | "nature"
+      | "shopppingAndService"
+      | "entertainmentAndRecreation"
+      | "hikeOrCamp"
+  ) => void;
   onOpenMapPinModal?: (field: string, initialValue?: string) => void;
-  onOpenGoogleSearch?: (target: "providerName" | "pickupLocation" | "dropoffLocation") => void;
+  onOpenGoogleSearch?: (
+    target: "providerName" | "pickupLocation" | "dropoffLocation"
+  ) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
 
@@ -88,13 +98,22 @@ export default function RideRentalTab({
   const currentVehicle = values.rideRentalDetails?.vehicleType || null;
   const activityColor =
     activityIcons.find(
-      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === TripPlanType.rideRental
-    )?.color || colors.primary || "#02899a";
+      (icon) =>
+        icon.activityType === values.type ||
+        icon.name === values.type ||
+        icon.activityType === TripPlanType.rideRental
+    )?.color ||
+    colors.primary ||
+    "#02899a";
 
   const pickupTitle = getLocationTitle(values.rideRentalDetails?.pickupLocation);
   const pickupSubtitle = getLocationSubtitle(values.rideRentalDetails?.pickupLocation);
   const dropoffTitle = getLocationTitle(values.rideRentalDetails?.dropoffLocation);
   const dropoffSubtitle = getLocationSubtitle(values.rideRentalDetails?.dropoffLocation);
+
+  const assignRef = (field: string) => (el: View | null) => {
+    if (fieldRefs) fieldRefs.current[field] = el;
+  };
 
   return (
     <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
@@ -111,10 +130,17 @@ export default function RideRentalTab({
       </Text>
 
       {/* Pick-up Location */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.pickupLocation"] = el; }} className="flex-row">
+      <View
+        ref={assignRef("rideRentalDetails.pickupLocation")}
+        className="flex-row"
+      >
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel={pickupTitle ? `Pick-up location: ${pickupTitle}` : "Select pick-up location"}
+          accessibilityLabel={
+            pickupTitle
+              ? `Pick-up location: ${pickupTitle}`
+              : "Select pick-up location"
+          }
           activeOpacity={0.7}
           onPress={() => onOpenGoogleSearch?.("pickupLocation")}
           className="bg-white border px-4 py-4 rounded-t-3xl w-full border-b-0"
@@ -122,9 +148,15 @@ export default function RideRentalTab({
         >
           <View className="flex-row gap-2 items-center">
             <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
-              <Icon name="car-rental" size={26} color={pickupTitle ? activityColor : "#98A2B3"} />
+              <Icon
+                name="car-rental"
+                size={26}
+                color={pickupTitle ? activityColor : "#98A2B3"}
+              />
               <Text
-                className={`text-xs font-bold tracking-wider mt-1 ${pickupTitle ? "text-secondary/70" : "text-secondary/40"}`}
+                className={`text-xs font-bold tracking-wider mt-1 ${
+                  pickupTitle ? "text-secondary/70" : "text-secondary/40"
+                }`}
               >
                 PICK-UP
               </Text>
@@ -132,7 +164,11 @@ export default function RideRentalTab({
 
             <View className="flex-1 justify-center gap-0 px-sm pr-14">
               <Text
-                className={`text-2xl font-semibold leading-10px ${pickupTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                className={`text-2xl font-semibold leading-10px ${
+                  pickupTitle
+                    ? "text-secondary/80"
+                    : "text-secondary/40 font-normal text-lg"
+                }`}
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
@@ -153,7 +189,10 @@ export default function RideRentalTab({
 
       <View className="flex-1">
         <View className="flex-row gap-4">
-          <View className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4" pointerEvents="box-none">
+          <View
+            className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4"
+            pointerEvents="box-none"
+          >
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Swap pick-up and drop-off locations"
@@ -173,10 +212,17 @@ export default function RideRentalTab({
         </View>
 
         {/* Drop-off Location */}
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.dropoffLocation"] = el; }} className="mb-2 flex-row">
+        <View
+          ref={assignRef("rideRentalDetails.dropoffLocation")}
+          className="mb-2 flex-row"
+        >
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel={dropoffTitle ? `Drop-off location: ${dropoffTitle}` : "Select drop-off location"}
+            accessibilityLabel={
+              dropoffTitle
+                ? `Drop-off location: ${dropoffTitle}`
+                : "Select drop-off location"
+            }
             activeOpacity={0.7}
             onPress={() => onOpenGoogleSearch?.("dropoffLocation")}
             className="bg-white border  px-4 py-4 rounded-b-3xl w-full"
@@ -184,9 +230,15 @@ export default function RideRentalTab({
           >
             <View className="flex-row gap-2 items-center">
               <View className="border-r border-secondary/10 pr-3 items-center min-w-[56px]">
-                <Icon name="place" size={26} color={dropoffTitle ? activityColor : "#98A2B3"} />
+                <Icon
+                  name="place"
+                  size={26}
+                  color={dropoffTitle ? activityColor : "#98A2B3"}
+                />
                 <Text
-                  className={`text-xs font-bold tracking-wider mt-1 ${dropoffTitle ? "text-secondary/70" : "text-secondary/40"}`}
+                  className={`text-xs font-bold tracking-wider mt-1 ${
+                    dropoffTitle ? "text-secondary/70" : "text-secondary/40"
+                  }`}
                 >
                   RETURN
                 </Text>
@@ -194,7 +246,11 @@ export default function RideRentalTab({
 
               <View className="flex-1 justify-center gap-0 px-sm pr-14">
                 <Text
-                  className={`text-2xl font-semibold leading-10px ${dropoffTitle ? "text-secondary/80" : "text-secondary/40 font-normal text-lg"}`}
+                  className={`text-2xl font-semibold leading-10px ${
+                    dropoffTitle
+                      ? "text-secondary/80"
+                      : "text-secondary/40 font-normal text-lg"
+                  }`}
                   numberOfLines={1}
                   ellipsizeMode="tail"
                 >
@@ -331,7 +387,10 @@ export default function RideRentalTab({
       </View>
 
       {/* 5. Vehicle Model / Details */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.vehicleModel"] = el; }} className="mb-5">
+      <View
+        ref={assignRef("rideRentalDetails.vehicleModel")}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Vehicle Model / Make"
           value={values.rideRentalDetails?.vehicleModel || ""}
@@ -341,7 +400,10 @@ export default function RideRentalTab({
       </View>
 
       {/* 7. Booking Reference */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.bookingReference"] = el; }} className="mb-5">
+      <View
+        ref={assignRef("rideRentalDetails.bookingReference")}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Booking Reference"
           value={values.rideRentalDetails?.bookingReference || ""}
@@ -351,7 +413,10 @@ export default function RideRentalTab({
       </View>
 
       {/* 8. Website Link */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.websiteAddress"] = el; }} className="mb-5">
+      <View
+        ref={assignRef("rideRentalDetails.websiteAddress")}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Website / Link"
           value={values.rideRentalDetails?.websiteAddress || ""}
@@ -375,7 +440,12 @@ export default function RideRentalTab({
                     open
                   </Text>
                 )}
-                style={{ width: 60, height: 30, justifyContent: "center", alignItems: "center" }}
+                style={{
+                  width: 60,
+                  height: 30,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
                 onPress={() => {
                   let url = values.rideRentalDetails.websiteAddress;
                   if (url) {
@@ -402,7 +472,10 @@ export default function RideRentalTab({
 
 
       {/* Contact Name */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactName"] = el; }} className="mb-5">
+      <View
+        ref={assignRef("rideRentalDetails.contactName")}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Contact Name"
           value={values.rideRentalDetails?.contactName || ""}
@@ -412,7 +485,10 @@ export default function RideRentalTab({
       </View>
 
       {/* Contact Number & Email Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.contactNumber"] = el; }} className="mb-5">
+      <View
+        ref={assignRef("rideRentalDetails.contactNumber")}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Contact Number"
           value={values.rideRentalDetails?.contactNumber || ""}
@@ -421,7 +497,10 @@ export default function RideRentalTab({
           keyboardType="phone-pad"
         />
       </View>
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["rideRentalDetails.emailAddress"] = el; }} className="mb-5">
+      <View
+        ref={assignRef("rideRentalDetails.emailAddress")}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Email Address"
           value={values.rideRentalDetails?.emailAddress || ""}

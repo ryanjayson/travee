@@ -36,7 +36,15 @@ interface AccomodationTabProps {
   colors?: any;
   setShowAccomodationDatePickerFor: any;
   formatAccomodationDateTime: any;
-  onOpenPoiModal: (category: "accommodation" | "cafeRestaurant" | "nature" | "shopppingAndService" | "entertainmentAndRecreation" | "hikeOrCamp") => void;
+  onOpenPoiModal: (
+    category:
+      | "accommodation"
+      | "cafeRestaurant"
+      | "nature"
+      | "shopppingAndService"
+      | "entertainmentAndRecreation"
+      | "hikeOrCamp"
+  ) => void;
   noPadding?: boolean;
   fieldRefs?: React.RefObject<{ [key: string]: any }>;
 
@@ -84,8 +92,13 @@ export default function AccomodationTab({
   const currentSubType = values.accomodationDetails?.subType || null;
   const activityColor =
     activityIcons.find(
-      (icon) => icon.activityType === values.type || icon.name === values.type || icon.activityType === TripPlanType.stay
-    )?.color || colors.primary || "#02899a";
+      (icon) =>
+        icon.activityType === values.type ||
+        icon.name === values.type ||
+        icon.activityType === TripPlanType.stay
+    )?.color ||
+    colors.primary ||
+    "#02899a";
 
   return (
     <View className={`pt-2 ${noPadding ? "" : "px-5"}`}>
@@ -121,10 +134,19 @@ export default function AccomodationTab({
         </Text>
       </View>
       <View className="flex-row justify-center items-center mb-5">
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkinDateTime"] = el; }} className="flex-1 gap-4 ">
+        <View
+          ref={(el) => {
+            if (fieldRefs) fieldRefs.current["accomodationDetails.checkinDateTime"] = el;
+          }}
+          className="flex-1 gap-4 "
+        >
           <FloatingLabelInput
             label="Check-in"
-            value={values.accomodationDetails?.checkinDateTime ? formatAccomodationDateTime(values.accomodationDetails.checkinDateTime) : ""}
+            value={
+              values.accomodationDetails?.checkinDateTime
+                ? formatAccomodationDateTime(values.accomodationDetails.checkinDateTime)
+                : ""
+            }
             editable={false}
             right={
               values.accomodationDetails?.checkinDateTime ? (
@@ -134,18 +156,30 @@ export default function AccomodationTab({
                   onPress={() => setFieldValue("accomodationDetails.checkinDateTime", null)}
                 />
               ) : (
-                <TextInput.Icon icon="calendar" color="#999"
-                  onPress={() => setShowAccomodationDatePickerFor("checkinDateTime")} />
+                <TextInput.Icon
+                  icon="calendar"
+                  color="#999"
+                  onPress={() => setShowAccomodationDatePickerFor("checkinDateTime")}
+                />
               )
             }
             onPress={() => setShowAccomodationDatePickerFor("checkinDateTime")}
           />
         </View>
         <Icon name="arrow-forward" size={16} color="#999" className="mt-sm" />
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.checkoutDateTime"] = el; }} className="flex-1 gap-4">
+        <View
+          ref={(el) => {
+            if (fieldRefs) fieldRefs.current["accomodationDetails.checkoutDateTime"] = el;
+          }}
+          className="flex-1 gap-4"
+        >
           <FloatingLabelInput
             label="Check-out"
-            value={values.accomodationDetails?.checkoutDateTime ? formatAccomodationDateTime(values.accomodationDetails.checkoutDateTime) : ""}
+            value={
+              values.accomodationDetails?.checkoutDateTime
+                ? formatAccomodationDateTime(values.accomodationDetails.checkoutDateTime)
+                : ""
+            }
             editable={false}
             right={
               values.accomodationDetails?.checkoutDateTime ? (
@@ -155,8 +189,11 @@ export default function AccomodationTab({
                   onPress={() => setFieldValue("accomodationDetails.checkoutDateTime", null)}
                 />
               ) : (
-                <TextInput.Icon icon="calendar" color="#999"
-                  onPress={() => setShowAccomodationDatePickerFor("checkoutDateTime")} />
+                <TextInput.Icon
+                  icon="calendar"
+                  color="#999"
+                  onPress={() => setShowAccomodationDatePickerFor("checkoutDateTime")}
+                />
               )
             }
             onPress={() => setShowAccomodationDatePickerFor("checkoutDateTime")}
@@ -239,7 +276,12 @@ export default function AccomodationTab({
 
 
       {/* Website Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.websiteAddress"] = el; }} className="mb-5">
+      <View
+        ref={(el) => {
+          if (fieldRefs) fieldRefs.current["accomodationDetails.websiteAddress"] = el;
+        }}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Website Address"
           value={values.accomodationDetails?.websiteAddress || ""}
@@ -282,14 +324,24 @@ export default function AccomodationTab({
       </View>
 
       {/* Booking Reference & Booking Status */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.bookingReference"] = el; }} className="flex-row gap-4 mb-5">
+      <View
+        ref={(el) => {
+          if (fieldRefs) fieldRefs.current["accomodationDetails.bookingReference"] = el;
+        }}
+        className="flex-row gap-4 mb-5"
+      >
         <FloatingLabelInput
           label="Booking Reference"
           value={values.accomodationDetails?.bookingReference || ""}
           onChangeText={handleChange("accomodationDetails.bookingReference")}
           onBlur={handleBlur("accomodationDetails.bookingReference")}
         />
-        {/* <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.bookingStatus"] = el; }} style={{ flex: 1 }}>
+        {/* <View
+          ref={(el) => {
+            if (fieldRefs) fieldRefs.current["accomodationDetails.bookingStatus"] = el;
+          }}
+          style={{ flex: 1 }}
+        >
           <FloatingLabelInput
             label="Booking Status"
             value={values.accomodationDetails?.bookingStatus || ""}
@@ -306,7 +358,12 @@ export default function AccomodationTab({
       </View>
 
       {/* Contact Name */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.contactName"] = el; }} className="mb-5">
+      <View
+        ref={(el) => {
+          if (fieldRefs) fieldRefs.current["accomodationDetails.contactName"] = el;
+        }}
+        className="mb-5"
+      >
         <FloatingLabelInput
           label="Contact Name"
           value={values.accomodationDetails?.contactName || ""}
@@ -316,14 +373,24 @@ export default function AccomodationTab({
       </View>
 
       {/* Contact Number & Email Address */}
-      <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.contactNumber"] = el; }} className="flex-row gap-4 mb-5">
+      <View
+        ref={(el) => {
+          if (fieldRefs) fieldRefs.current["accomodationDetails.contactNumber"] = el;
+        }}
+        className="flex-row gap-4 mb-5"
+      >
         <FloatingLabelInput
           label="Contact Number"
           value={values.accomodationDetails?.contactNumber || ""}
           onChangeText={handleChange("accomodationDetails.contactNumber")}
           onBlur={handleBlur("accomodationDetails.contactNumber")}
         />
-        <View ref={(el) => { if (fieldRefs) fieldRefs.current["accomodationDetails.emailAddress"] = el; }} style={{ flex: 1 }}>
+        <View
+          ref={(el) => {
+            if (fieldRefs) fieldRefs.current["accomodationDetails.emailAddress"] = el;
+          }}
+          style={{ flex: 1 }}
+        >
           <FloatingLabelInput
             label="Email Address"
             value={values.accomodationDetails?.emailAddress || ""}
