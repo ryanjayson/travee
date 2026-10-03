@@ -27,6 +27,32 @@ camp=7, hike=8, rest=9, ride=10, meetup=11, walk=12, preparation=13
 ```
 Labels via `getActivityTypeLabel()`. Alias: `getActivityPlanTypeLabel`.
 
+### Activity Plan Types Palette (`src/features/Travel/constants/activityPlanTypes.ts`)
+
+Sub-types of `TripPlanType.activity` are registered in `ACTIVITY_PLAN_TYPES`.
+
+**Palette Rules:**
+1. **Never collide with top-level `TripPlanType` colors:**
+   - Activity: `#c10003` | Flight: `#2196F3` | Stay: `#a659ee` | Transit: `#02899a` | Tour: `#429862` | Rental: `#384690`
+2. **Never repeat:** Each of the 13 types has a distinct color.
+3. **Themed & Light:** Colors are light, soft tones tailored to each type's domain:
+
+| Type | Key | Label | Icon (`MaterialIcons`) | Color | Theme Meaning |
+|------|-----|-------|------------------------|-------|---------------|
+| `cafe` | `cafe` | Cafe | `local-cafe` | `#B56F3B` | Warm caramel latte / roasted coffee |
+| `restaurant` | `restaurant` | Restaurant | `restaurant` | `#E76F51` | Warm terracotta / appetizing coral dining |
+| `sightseeing` | `sightseeing` | Sightseeing | `photo-camera` | `#F59E0B` | Sunny amber gold / landmarks |
+| `entertainment` | `entertainment` | Entertainment | `local-play` | `#A855F7` | Vibrant amusement purple / nightlife |
+| `shopping` | `shopping` | Shopping | `shopping-bag` | `#EC4899` | Soft rose / boutique pink |
+| `nature` | `nature` | Nature | `terrain` | `#10B981` | Fresh light emerald / natural wonder |
+| `hike` | `hike` | Hike | `hiking` | `#52B788` | Alpine sage / mountain trails |
+| `camp` | `camp` | Camp | `night-shelter` | `#D97706` | Warm campfire amber / outdoor canvas |
+| `walk` | `walk` | Walk | `directions-walk` | `#84CC16` | Breezy lime pear / casual stroll |
+| `rest` | `rest` | Rest | `hotel` | `#8DA4C4` | Calm powder slate / quiet downtime |
+| `ride` | `ride` | Ride | `directions-bike` | `#0284C7` | Bright scenic azure / open road |
+| `meetup` | `meetup` | Meetup | `people` | `#14B8A6` | Friendly seafoam teal / socializing |
+| `preparation` | `preparation` | Preparation | `build` | `#64748B` | Cool steel slate / gear & checklists |
+
 ## Detail Tables → Forms
 
 Each type can persist extra fields in a dedicated `*_details` table keyed by `activity_id`.
@@ -59,6 +85,7 @@ Fetchers: the 15 `fetchLocal*Details(activityId)` helpers in `src/services/local
 | Path | Purpose |
 |------|---------|
 | `src/types/enums.ts` | Enums + label helpers |
+| `src/features/Travel/constants/activityPlanTypes.ts` | `ACTIVITY_PLAN_TYPES` config, icons, and color palette |
 | `src/db/schema.ts` | Detail + core activity tables |
 | `src/db/migrations.ts` | Versioned changes |
 | `src/db/index.ts` | Model registry |

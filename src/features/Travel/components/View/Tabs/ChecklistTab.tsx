@@ -38,7 +38,7 @@ interface FilterOptionItem {
 
 const FILTER_OPTIONS: FilterOptionItem[] = [
   { id: 'All', label: 'All', icon: 'grid-view' },
-  { id: 'General', label: 'General', icon: 'list' },
+  { id: 'General', label: 'Trip To-do\'s', icon: 'list' },
   { id: 'Activity', label: 'Activity', icon: 'local-activity' },
   { id: 'Custom', label: 'Custom', icon: 'folder' },
 ];
@@ -265,42 +265,44 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           </FadeInView>
           {/* Ungrouped / General */}
           {(selectedFilter === 'All' || selectedFilter === 'General') && (
-            <View className="rounded-4xl overflow-hidden mb-4">
-              <FadeInView
-                type="up"
-                delay={100}
-                duration={350}
-              >
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel="Open General checklist"
-                  onPress={() =>
-                    setActiveChecklist({
-                      type: "general",
-                      title: "General",
-                    })
-                  }
-                  className="flex-row items-center gap-3 px-5 bg-gray-50"
+            <View className="mb-4">
+              <View className="rounded-4xl overflow-hidden mb-1">
+                <FadeInView
+                  type="up"
+                  delay={100}
+                  duration={350}
                 >
-                  <View className="flex-row items-center py-xl flex-1">
-                    <Text className="text-lg font-normal text-gray-600 flex-1 pr-2xl">
-                      General
-                    </Text>
-                    <Text className="text-base text-gray-400 mr-1 rounded-full">
-                      {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
-                    </Text>
-                    <Icon name="chevron-right" size={24} color="#999" style={{ opacity: 0.6 }} />
-                  </View>
-                </TouchableOpacity>
-              </FadeInView>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="Open General checklist"
+                    onPress={() =>
+                      setActiveChecklist({
+                        type: "general",
+                        title: "General",
+                      })
+                    }
+                    className="flex-row items-center gap-3 px-5 bg-gray-50"
+                  >
+                    <View className="flex-row items-center py-xl flex-1">
+                      <Text className="text-lg font-normal text-gray-600 flex-1 pr-2xl">
+                        Trip To-do's
+                      </Text>
+                      <Text className="text-base text-gray-400 mr-1 rounded-full">
+                        {ungroupedItems.filter((i) => i.isDone).length}/{ungroupedItems.length}
+                      </Text>
+                      <Icon name="chevron-right" size={24} color="#999" style={{ opacity: 0.6 }} />
+                    </View>
+                  </TouchableOpacity>
+                </FadeInView>
+              </View>
             </View>
           )}
 
           {/* Custom Group Header & Items */}
-          {(selectedFilter === 'All' || selectedFilter === 'Custom') && groups.length > 0 && (
+          {(selectedFilter === 'All' || selectedFilter === 'Custom') && (
             <View className="flex-row items-center justify-between mt-2xl px-4">
-              <Text className="text-2xl font-semibold text-secondary">My List</Text>
+              <Text className="text-2xl font-semibold text-secondary">My Custom List</Text>
               <TouchableOpacity
                 onPress={() => setShowGroupModal(true)}
                 activeOpacity={0.7}
@@ -425,18 +427,11 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           </View>
 
           {/* Empty state when current filter has no items */}
-          {filteredTotal === 0 && (
+          {/* {filteredTotal === 0 && (
             <FadeInView type="up" delay={50} duration={300} className="py-12 items-center justify-center">
-              <View className="w-14 h-14 rounded-full bg-gray-100 items-center justify-center mb-3">
-                <Icon
-                  name={(FILTER_OPTIONS.find((o) => o.id === selectedFilter)?.icon || 'playlist-add-check') as any}
-                  size={28}
-                  color="#94A3B8"
-                />
-              </View>
               <Text className="text-base font-semibold text-gray-700 text-center mb-1">
                 No {selectedFilter} Items
-              </Text>
+              </Text> 
               <Text className="text-sm text-gray-400 text-center px-8">
                 {selectedFilter === 'General'
                   ? 'There are no ungrouped to-do items in this checklist.'
@@ -447,7 +442,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                       : 'No checklist items found.'}
               </Text>
             </FadeInView>
-          )}
+          )}  */}
         </View>
       </ScrollView>
 

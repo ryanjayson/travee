@@ -22,7 +22,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
     "";
 
   return (
-    <View className="mt-2 px-2 overflow-hidden">
+    <View className="mt-4 px-2 overflow-hidden">
       {/* Main Details Body */}
 
       <FadeInView type="down" delay={180} duration={200}>
@@ -102,7 +102,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
 
       <FadeInView delay={180} duration={400}>
 
-        <View className="px-md mt-xl"
+        <View className="px-md "
           style={{ display: data.subType || data.bookingReference || data.websiteAddress ? "flex" : "none" }}>
           <Text className="text-xl font-semibold text-secondary mt-lg">
             Booking Info

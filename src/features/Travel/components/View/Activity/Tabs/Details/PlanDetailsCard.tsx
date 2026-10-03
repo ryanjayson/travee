@@ -5,7 +5,7 @@ import { safeFormatDate, safeFormatTime } from "../../../../../../../utils/dateT
 import { ItineraryActivity } from "../../../../../types/TravelDto";
 import { ActivityCardDisplayField as Field } from "./ActivityCardDisplayField";
 import { FadeInView } from "../../../../../../../components/animations";
-import { ACTIVITY_PLAN_TYPES } from "../../../../Lookups/ActivityPlanTypeLookupModal";
+import { ACTIVITY_PLAN_TYPES } from "../../../../../constants/activityPlanTypes";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTravelContext } from "../../../../../../../context/TravelContext";
 
@@ -62,7 +62,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
   const hasNotes = Boolean(activity.notes || activity.description);
 
   return (
-    <View className="mt-2 px-2 overflow-hidden"
+    <View className="mt-4 px-2 overflow-hidden"
     >
       <FadeInView type="down" delay={180} duration={200}>
         <View

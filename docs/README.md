@@ -40,6 +40,7 @@ Skills maintained in `.agents/skills/`:
 | [`vercel-react-best-practices`](../.agents/skills/vercel-react-best-practices/SKILL.md) | UI & Design | React / RN performance optimization guidelines |
 | [`testing-rn`](../.agents/skills/testing-rn/SKILL.md) | Quality & Ops | Jest, jest-expo, RNTL, mock conventions, coverage strategy |
 | [`code-review`](../.agents/skills/code-review/SKILL.md) | Quality & Ops | Standards and specification code review workflow |
+| [`clean-code`](../.agents/skills/clean-code/SKILL.md) | Quality & Ops | Clean code, formatting, BKM, production refactoring, and line discipline |
 | [`expo-deployment`](../.agents/skills/expo-deployment/SKILL.md) | Quality & Ops | Expo deployment to App Store, Play Store, web |
 | [`skill-creator`](../.agents/skills/skill-creator/SKILL.md) | Workflows | Create, benchmark, and evaluate skills |
 | [`to-spec`](../.agents/skills/to-spec/SKILL.md) | Workflows | Turn conversation into project tracker spec |

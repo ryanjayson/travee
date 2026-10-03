@@ -85,6 +85,39 @@ gray-800 #182230    gray-900 #101828    gray-950 #0C111D
 | background | `#F8FAFC` |
 | surface | `#FFFFFF` |
 
+### Activity & Plan Type Colors
+
+Travee maintains two complementary color palettes for travel activities:
+
+#### 1. Top-Level TripPlanType (`src/components/ActivityIcon/index.tsx`)
+| Type | Color | Description |
+|------|-------|-------------|
+| Activity | `#c10003` | Primary crimson |
+| Flight | `#2196F3` | Sky blue |
+| Stay | `#a659ee` | Lavender purple |
+| Transit | `#02899a` | Deep cyan |
+| Tour | `#429862` | Forest green |
+| Rental | `#384690` | Indigo |
+
+#### 2. Sub-Level ActivityType (`src/features/Travel/constants/activityPlanTypes.ts`)
+*Rules: Colors are light, pleasant, related to the type, must never repeat, and must never collide with `TripPlanType` colors.*
+
+| Activity Type | Color | Hex | Theme Concept |
+|---------------|-------|-----|---------------|
+| Cafe | Caramel Latte | `#B56F3B` | Coffee, warm beverages |
+| Restaurant | Terracotta Coral | `#E76F51` | Dining, meals |
+| Sightseeing | Amber Gold | `#F59E0B` | Landmarks, photography |
+| Entertainment | Amusement Violet | `#A855F7` | Shows, cinema, parks |
+| Shopping | Soft Rose | `#EC4899` | Boutiques, markets |
+| Nature | Emerald Leaf | `#10B981` | Lakes, parks, greenery |
+| Hike | Alpine Sage | `#52B788` | Mountain trails, trekking |
+| Camp | Campfire Amber | `#D97706` | Campgrounds, outdoor canvas |
+| Walk | Lime Pear | `#84CC16` | City strolls, walking |
+| Rest | Powder Slate | `#8DA4C4` | Calm downtime, relaxation |
+| Ride | Scenic Azure | `#0284C7` | Biking, motorcycling |
+| Meetup | Seafoam Teal | `#14B8A6` | Social, gatherings |
+| Preparation | Cool Steel | `#64748B` | Packing, checklists |
+
 ---
 
 ## Typography

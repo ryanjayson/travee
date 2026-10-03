@@ -10,7 +10,7 @@
    - Data & Storage: [`feature-offline-data`](../.agents/skills/feature-offline-data/SKILL.md), [`feature-backup-restore`](../.agents/skills/feature-backup-restore/SKILL.md)
    - Features: [`feature-activity-sorting`](../.agents/skills/feature-activity-sorting/SKILL.md), [`feature-activity-types`](../.agents/skills/feature-activity-types/SKILL.md), [`feature-expenses-and-splitting`](../.agents/skills/feature-expenses-and-splitting/SKILL.md), [`feature-map-sharing`](../.agents/skills/feature-map-sharing/SKILL.md)
    - UI & Styling: [`design-system`](../.agents/skills/design-system/SKILL.md), [`expo-tailwind-setup`](../.agents/skills/expo-tailwind-setup/SKILL.md), [`vercel-react-best-practices`](../.agents/skills/vercel-react-best-practices/SKILL.md)
-   - Testing & Review: [`testing-rn`](../.agents/skills/testing-rn/SKILL.md), [`code-review`](../.agents/skills/code-review/SKILL.md)
+   - Testing, Review & Refactoring: [`testing-rn`](../.agents/skills/testing-rn/SKILL.md), [`code-review`](../.agents/skills/code-review/SKILL.md), [`clean-code`](../.agents/skills/clean-code/SKILL.md)
    - Deployment & Workflows: [`expo-deployment`](../.agents/skills/expo-deployment/SKILL.md), [`skill-creator`](../.agents/skills/skill-creator/SKILL.md), [`to-spec`](../.agents/skills/to-spec/SKILL.md), [`to-tickets`](../.agents/skills/to-tickets/SKILL.md)
 4. Read the actual target files before editing.
 
@@ -83,6 +83,7 @@ See `TRD.md` §6. In short: in scope, typed, tested, themed, accessible, errors 
 - Testing & Quality:
   - Unit & component testing: [`testing-rn`](../.agents/skills/testing-rn/SKILL.md)
   - Code review standards: [`code-review`](../.agents/skills/code-review/SKILL.md)
+  - Clean code & production refactoring: [`clean-code`](../.agents/skills/clean-code/SKILL.md)
 - UI & Platform:
   - Universal styling & Tailwind v4: [`expo-tailwind-setup`](../.agents/skills/expo-tailwind-setup/SKILL.md)
   - React & RN performance guidelines: [`vercel-react-best-practices`](../.agents/skills/vercel-react-best-practices/SKILL.md)

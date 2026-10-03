@@ -20,124 +20,12 @@ import { ActivityType } from "../../../../types/enums";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export interface PlanTypeItem {
-  type: ActivityType;
-  key: string;
-  label: string;
-  subtext: string;
-  iconName: string;
-  color: string;
-}
+import {
+  ACTIVITY_PLAN_TYPES,
+  PlanTypeItem,
+} from "../../constants/activityPlanTypes";
 
-export const ACTIVITY_PLAN_TYPES: PlanTypeItem[] = [
-
-
-  {
-    type: ActivityType.cafe,
-    key: "cafe",
-    label: "Cafe",
-    subtext: "Coffee, drinks, snacks, cafes, lounges, and bars",
-    iconName: "local-cafe",
-    color: "#ea580c",
-  },
-  {
-    type: ActivityType.restaurant,
-    key: "restaurant",
-    label: "Restaurant",
-    subtext: "Dining, meals, and food spots",
-    iconName: "restaurant",
-    color: "#e03e3e",
-  },
-  {
-    type: ActivityType.sightseeing,
-    key: "sightseeing",
-    label: "Sightseeing",
-    subtext: "Landmarks, attractions, and photo spots",
-    iconName: "photo-camera",
-    color: "#f0a505",
-  },
-  {
-    type: ActivityType.entertainment,
-    key: "entertainment",
-    label: "Entertainment",
-    subtext: "Museums, parks, shows, cinema, and sports",
-    iconName: "local-play",
-    color: "#0891b2",
-  },
-  {
-    type: ActivityType.shopping,
-    key: "shopping",
-    label: "Shopping",
-    subtext: "Markets, stores, spas, banks, and essentials",
-    iconName: "shopping-bag",
-    color: "#db2777",
-  },
-  {
-    type: ActivityType.nature,
-    key: "nature",
-    label: "Nature",
-    subtext: "Beaches, lakes, parks, and natural wonders",
-    iconName: "terrain",
-    color: "#165135",
-  },
-  {
-    type: ActivityType.hike,
-    key: "hike",
-    label: "Hike",
-    subtext: "Hiking trails, trekking, and camping",
-    iconName: "hiking",
-    color: "#429862",
-  },
-  {
-    type: ActivityType.camp,
-    key: "camp",
-    label: "Camp",
-    subtext: "Camping, hiking trails, trekking, and camping",
-    iconName: "night-shelter",
-    color: "#429862",
-  },
-  {
-    type: ActivityType.walk,
-    key: "walk",
-    label: "Walk",
-    subtext: "City strolls, walking tours, and exploration",
-    iconName: "directions-walk",
-    color: "#8BC34A",
-  },
-
-  {
-    type: ActivityType.rest,
-    key: "rest",
-    label: "Rest",
-    subtext: "Relaxation, downtime, and rest",
-    iconName: "hotel",
-    color: "#9E9E9E",
-  },
-  {
-    type: ActivityType.ride,
-    key: "ride",
-    label: "Ride",
-    subtext: "Motorbike, Biking, and scenic rides",
-    iconName: "directions-bike",
-    color: "#156994",
-  },
-  {
-    type: ActivityType.meetup,
-    key: "meetup",
-    label: "Meetup",
-    subtext: "Gatherings, meetups, and socializing",
-    iconName: "people",
-    color: "#26A69A",
-  },
-  {
-    type: ActivityType.preparation,
-    key: "preparation",
-    label: "Preparation",
-    subtext: "Packing, checklists, and pre-trip tasks",
-    iconName: "build",
-    color: "#607D8B",
-  },
-];
+export { ACTIVITY_PLAN_TYPES, PlanTypeItem };
 
 interface ActivityPlanTypeLookupModalProps {
   visible: boolean;

@@ -3,9 +3,8 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, LayoutAnimation } from "react-native";
 import { useTheme, TextInput } from "react-native-paper";
 import DateTime from "../DateTime";
-import ActivityPlanTypeLookupModal, {
-  ACTIVITY_PLAN_TYPES,
-} from "../../../../Lookups/ActivityPlanTypeLookupModal";
+import ActivityPlanTypeLookupModal from "../../../../Lookups/ActivityPlanTypeLookupModal";
+import { ACTIVITY_PLAN_TYPES } from "../../../../../constants/activityPlanTypes";
 import AddFieldModal, {
   APPLICABLE_PLAN_FIELDS,
 } from "../../../../Lookups/AddFieldModal";

@@ -51,7 +51,7 @@ export const RideRentalDetailsCard: React.FC<RideRentalDetailsCardProps> = ({
   const themeColor = "#384690";
 
   return (
-    <View className="mt-2 px-2 overflow-hidden">
+    <View className="mt-4 px-2 overflow-hidden">
       {/* Main Details Body */}
 
       <FadeInView type="down" delay={180} duration={200}>

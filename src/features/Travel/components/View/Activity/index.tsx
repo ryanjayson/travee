@@ -23,7 +23,7 @@ import NotesTab from "./Tabs/NotesTab";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 
 import { TripPlanType, getTripPlanTypeLabel, ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
-import { ACTIVITY_PLAN_TYPES } from "../../Lookups/ActivityPlanTypeLookupModal";
+import { ACTIVITY_PLAN_TYPES } from "../../../constants/activityPlanTypes";
 import { ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 
 interface ViewTripActivityProps {

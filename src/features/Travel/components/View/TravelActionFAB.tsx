@@ -245,7 +245,7 @@ const TravelActionFAB = ({
         style: {
           elevation: 0,
           borderRadius: 50,
-          padding: 1,
+          padding: 6,
           backgroundColor: '#c10003',
           marginRight: -6,
           marginBottom: 0

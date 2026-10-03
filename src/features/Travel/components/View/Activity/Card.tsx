@@ -15,7 +15,7 @@ import { useConfirm } from "../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../context/TravelContext";
 import { TripPlanType, getTripPlanTypeLabel, ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
-import { ACTIVITY_PLAN_TYPES } from "../../Lookups/ActivityPlanTypeLookupModal";
+import { ACTIVITY_PLAN_TYPES } from "../../../constants/activityPlanTypes";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { ChecklistItem, ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import { parseAirport } from "../../../../../utils/airportUtils";
@@ -655,7 +655,7 @@ const ActivityItemCard = ({
                 )}
 
                 {/* show departure and arrival airport */}
-                {itineraryEventActivity.type === TripPlanType.flight && Boolean(itineraryEventActivity.flightDetails?.departureAirport) && (
+                {!isNarrow && itineraryEventActivity.type === TripPlanType.flight && Boolean(itineraryEventActivity.flightDetails?.departureAirport) && (
                   <View
                     className="flex-row items-start text-ellipsis rounded-sm pr-xl gap-1 "
                   >
@@ -673,7 +673,7 @@ const ActivityItemCard = ({
                   </View>
                 )}
 
-                {itineraryEventActivity.type === TripPlanType.transit && (Boolean(itineraryEventActivity.transportationDetails?.pickupLocation) || Boolean(itineraryEventActivity.transportationDetails?.dropoffLocation)) && (
+                {!isNarrow && itineraryEventActivity.type === TripPlanType.transit && (Boolean(itineraryEventActivity.transportationDetails?.pickupLocation) || Boolean(itineraryEventActivity.transportationDetails?.dropoffLocation)) && (
                   <View
                     className="flex-row items-start text-ellipsis rounded-sm pr-xl gap-1 "
                   >

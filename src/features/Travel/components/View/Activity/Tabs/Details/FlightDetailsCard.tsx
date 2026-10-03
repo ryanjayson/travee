@@ -79,7 +79,7 @@ export const FlightDetailsCard: React.FC<FlightDetailsCardProps> = ({ data }) =>
 
 
   return (
-    <View className="rounded-3xl border-gray-150 mb-6 shadow-md overflow-hidden bg-accent mt-2">
+    <View className="rounded-3xl border-gray-150 mb-6 shadow-md overflow-hidden bg-accent mt-4">
       {/* Header Banner */}
       <View
         className="flex-row items-center justify-between rounded-t-3xl px-5 py-4 border-2 border-b-0 border-gray-500 "

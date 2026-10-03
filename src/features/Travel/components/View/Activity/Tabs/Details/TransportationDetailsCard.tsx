@@ -195,7 +195,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
                 </Text>
               ) : null}
 
-              <Text className="text-lg font-semibold text-secondary/40">
+              <Text className="text-lg font-semibold text-secondary/40 mt-1">
                 {data.departureDateTime ? safeFormatTime(data.departureDateTime) : "--:--"}{data.departureDateTime ? `, ${safeFormatDate(data.departureDateTime)}` : ""}
               </Text>
             </View>
@@ -220,7 +220,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
                   {dropoffSubtitle}
                 </Text>
               ) : null}
-              <Text className="text-lg font-semibold text-secondary/40">
+              <Text className="text-lg font-semibold text-secondary/40 mt-1">
                 {data.arrivalDateTime ? safeFormatTime(data.arrivalDateTime) : "--:--"}{data.arrivalDateTime ? `, ${safeFormatDate(data.arrivalDateTime)}` : ""}
               </Text>
             </View>
