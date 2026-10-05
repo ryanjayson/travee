@@ -269,4 +269,84 @@ describe("GoogleMapView Component", () => {
       <GoogleMapView pins={mockPins} bottomOffset={500} />
     );
   });
+
+  it("implements smoothPanTo for smooth transitions without zoom jumps", () => {
+    const { getByTestId } = render(<GoogleMapView pins={mockPins} />);
+    const webview = getByTestId("webview");
+    const html = webview.props.source.html;
+
+    expect(html).toContain("function smoothPanTo(targetLatLng, duration)");
+    expect(html).toContain("easeInOutCubic");
+    expect(html).toContain("smoothPanTo(target, 600)");
+  });
+
+  it("does not call fitBounds inside setBottomOffset on snap height changes", () => {
+    const { getByTestId } = render(<GoogleMapView pins={mockPins} />);
+    const webview = getByTestId("webview");
+    const html = webview.props.source.html;
+
+    const setBottomOffsetCode = html
+      .split("window.setBottomOffset = function")[1]
+      .split("window.centerOnLocation")[0];
+    expect(setBottomOffsetCode).not.toContain("fitBounds");
+  });
+
+  it("positions pin label at the top of the pin with custom-pin-label styling", () => {
+    const pinsWithTitles = [
+      {
+        id: "pin-label-1",
+        latitude: 35.6895,
+        longitude: 139.6917,
+        title: "Tokyo City Tour",
+        subType: "sightseeing",
+      },
+    ];
+    const { getByTestId } = render(<GoogleMapView pins={pinsWithTitles} />);
+    const webview = getByTestId("webview");
+    const html = webview.props.source.html;
+
+    expect(html).toContain("labelOrigin: new google.maps.Point(16, -10)");
+    expect(html).toContain("markerOptions.label = {");
+    expect(html).toContain("text: pin.title");
+    expect(html).toContain("className: 'custom-pin-label'");
+    expect(html).toContain(".custom-pin-label {");
+    expect(html).toContain("transform: translate(-50%, -50%)");
+  });
+
+  it("renders specialized SVG icon inside pin circle based on activity subtype", () => {
+    const pinsWithSubtypes = [
+      {
+        id: "pin-hotel",
+        latitude: 35.6895,
+        longitude: 139.6917,
+        title: "Tokyo Hotel",
+        subType: "Hotel",
+      },
+      {
+        id: "pin-default",
+        latitude: 35.6762,
+        longitude: 139.6503,
+        title: "Default Pin",
+      },
+    ];
+    const { getByTestId } = render(<GoogleMapView pins={pinsWithSubtypes} />);
+    const webview = getByTestId("webview");
+    const html = webview.props.source.html;
+
+    expect(html).toContain("function getSubtypeIconPath(subType)");
+    expect(html).toContain("const iconUrl = createSvgPin(pin.color, pin.subType);");
+    expect(html).toContain("s.includes('hotel')");
+    expect(html).toContain("s.includes('flight')");
+    expect(html).toContain("s.includes('cafe')");
+    expect(html).toContain("s.includes('restaurant')");
+  });
+
+  it("checks title and subType changes inside window.updatePins", () => {
+    const { getByTestId } = render(<GoogleMapView pins={mockPins} />);
+    const webview = getByTestId("webview");
+    const html = webview.props.source.html;
+
+    expect(html).toContain("incoming[i].title !== currentPins[i].title");
+    expect(html).toContain("incoming[i].subType !== currentPins[i].subType");
+  });
 });

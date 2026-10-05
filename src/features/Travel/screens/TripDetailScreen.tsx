@@ -160,6 +160,43 @@ export const getLocationLabel = (raw: any, fallback: string): string => {
   return raw.name || raw.city || raw.address || fallback;
 };
 
+export const getActivityAddressString = (act: any): string => {
+  if (!act) return '';
+  const detailKey = Object.keys(act).find((k) => k.endsWith('Details'));
+  const details = detailKey ? act[detailKey] : null;
+
+  return (
+    getAddressString(act.destinationAddressData) ||
+    getAddressString(act.destinationData) ||
+    getAddressString(details?.destinationAddressData) ||
+    getAddressString(details?.destinationData) ||
+    getAddressString(act.address) ||
+    getAddressString(act.location) ||
+    getAddressString(act.destination) ||
+    ''
+  );
+};
+
+export const getActivitySubType = (act: any): string => {
+  if (!act) return '';
+  return (
+    act.subType ||
+    act.accomodationDetails?.subType ||
+    act.natureDetails?.subType ||
+    act.shoppingDetails?.subType ||
+    act.entertainmentDetails?.subType ||
+    act.hikeOrCampDetails?.subType ||
+    act.transportationDetails?.mode ||
+    act.rideRentalDetails?.vehicleType ||
+    act.cafeRestaurantDetails?.cuisine ||
+    act.sightseeingDetails?.subType ||
+    act.destinationData?.subType ||
+    act.destinationData?.category ||
+    act.category ||
+    ''
+  );
+};
+
 export const getActivityCoordinates = (
   act: any
 ): { latitude: number; longitude: number } | null => {
@@ -174,16 +211,28 @@ export const getActivityCoordinates = (
     extractCoordinates(act.destinationData?.dropoffCoordinates) ||
     extractCoordinates(act.accomodationDetails?.destinationAddressData) ||
     extractCoordinates(act.accomodationDetails?.destinationData) ||
+    extractCoordinates(act.sightseeingDetails?.destinationAddressData) ||
     extractCoordinates(act.sightseeingDetails?.destinationData) ||
+    extractCoordinates(act.hikeOrCampDetails?.destinationAddressData) ||
     extractCoordinates(act.hikeOrCampDetails?.destinationData) ||
+    extractCoordinates(act.natureDetails?.destinationAddressData) ||
     extractCoordinates(act.natureDetails?.destinationData) ||
+    extractCoordinates(act.cafeRestaurantDetails?.destinationAddressData) ||
     extractCoordinates(act.cafeRestaurantDetails?.destinationData) ||
+    extractCoordinates(act.entertainmentDetails?.destinationAddressData) ||
     extractCoordinates(act.entertainmentDetails?.destinationData) ||
+    extractCoordinates(act.shoppingDetails?.destinationAddressData) ||
     extractCoordinates(act.shoppingDetails?.destinationData) ||
+    extractCoordinates(act.walkDetails?.destinationAddressData) ||
     extractCoordinates(act.walkDetails?.destinationData) ||
+    extractCoordinates(act.rideRentalDetails?.destinationAddressData) ||
     extractCoordinates(act.rideRentalDetails?.destinationData) ||
+    extractCoordinates(act.motorcycleRideDetails?.destinationAddressData) ||
     extractCoordinates(act.motorcycleRideDetails?.destinationData) ||
+    extractCoordinates(act.meetupDetails?.destinationAddressData) ||
     extractCoordinates(act.meetupDetails?.destinationData) ||
+    extractCoordinates(act.flightDetails?.departureAirportCoordinates) ||
+    extractCoordinates(act.flightDetails?.arrivalAirportCoordinates) ||
     extractCoordinates(act.coordinates) ||
     extractCoordinates(act)
   );
@@ -237,6 +286,7 @@ const buildFlightMapState = (
       longitude: depCoords.longitude,
       title: `Departure: ${depParsed.name || depParsed.code || 'Departure Airport'}`,
       type: TripPlanType.flight,
+      subType: 'flight',
       color: actColor,
     });
   }
@@ -248,6 +298,7 @@ const buildFlightMapState = (
       longitude: arrCoords.longitude,
       title: `Arrival: ${arrParsed.name || arrParsed.code || 'Arrival Airport'}`,
       type: TripPlanType.flight,
+      subType: 'flight',
       color: actColor,
     });
   }
@@ -338,6 +389,11 @@ const buildTransitMapState = (
     }
   }
 
+  const transitSubType =
+    activeActivity.transportationDetails?.mode ||
+    activeActivity.rideRentalDetails?.vehicleType ||
+    (actType === TripPlanType.transit ? 'transit' : 'rental');
+
   if (pickupCoords && dropoffCoords) {
     let finalDropoffCoords = dropoffCoords;
     if (
@@ -356,6 +412,7 @@ const buildTransitMapState = (
       longitude: pickupCoords.longitude,
       title: `Pickup: ${pickupLabel}`,
       type: actType,
+      subType: transitSubType,
       color: actColor,
     });
 
@@ -365,6 +422,7 @@ const buildTransitMapState = (
       longitude: finalDropoffCoords.longitude,
       title: `Dropoff: ${dropoffLabel}`,
       type: actType,
+      subType: transitSubType,
       color: actColor,
     });
   } else if (pickupCoords || dropoffCoords) {
@@ -377,6 +435,7 @@ const buildTransitMapState = (
         activeActivity.title ||
         (pickupCoords ? `Pickup: ${pickupLabel}` : `Dropoff: ${dropoffLabel}`),
       type: actType,
+      subType: transitSubType,
       color: actColor,
     });
   }
@@ -439,6 +498,7 @@ const buildDefaultTripPins = (
             longitude: coords.longitude,
             title: act.title || 'Activity',
             type: act.type,
+            subType: getActivitySubType(act),
             color: getActivityPinColor(act.type),
             sortOrder: act.sortOrder,
           });
@@ -449,15 +509,16 @@ const buildDefaultTripPins = (
 
   const hasConnectablePins =
     showActivityPinsInTripMap &&
-    (() => {
-      const typeCounts: Record<string, number> = {};
-      defaultPins.forEach((p) => {
-        if (p.type !== undefined && p.type !== null) {
-          typeCounts[String(p.type)] = (typeCounts[String(p.type)] || 0) + 1;
-        }
-      });
-      return Object.values(typeCounts).some((c) => c > 1);
-    })();
+    (defaultPins.length > 1 ||
+      (() => {
+        const typeCounts: Record<string, number> = {};
+        defaultPins.forEach((p) => {
+          if (p.type !== undefined && p.type !== null) {
+            typeCounts[String(p.type)] = (typeCounts[String(p.type)] || 0) + 1;
+          }
+        });
+        return Object.values(typeCounts).some((c) => c > 1);
+      })());
 
   return {
     pins: defaultPins,
@@ -523,13 +584,20 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
   const activeActivityId = viewActivityId || localActivityId;
 
+  const [selectedPinCoords, setSelectedPinCoords] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+
   const handleCloseActivity = useCallback(() => {
     closeViewActivity?.();
     setLocalActivityId(null);
+    setSelectedPinCoords(null);
   }, [closeViewActivity]);
 
   const handleOpenActivity = useCallback(
-    (id: string) => {
+    (id: string, pinCoords?: { latitude: number; longitude: number } | null) => {
+      setSelectedPinCoords(pinCoords ?? null);
       if (openViewActivity) {
         openViewActivity(id);
       } else {
@@ -902,6 +970,56 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     };
   }, [activeActivity, travelPlan]);
 
+  const [asyncActivityCoords, setAsyncActivityCoords] = useState<{
+    activityId: string;
+    coords?: { latitude: number; longitude: number } | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (
+      !activeActivity ||
+      activeActivity.type === TripPlanType.flight ||
+      activeActivity.type === TripPlanType.transit ||
+      activeActivity.type === TripPlanType.rideRental
+    ) {
+      setAsyncActivityCoords(null);
+      return;
+    }
+
+    const existingCoords = getActivityCoordinates(activeActivity);
+    if (existingCoords) {
+      setAsyncActivityCoords(null);
+      return;
+    }
+
+    const addrStr = getActivityAddressString(activeActivity);
+    if (!addrStr) {
+      setAsyncActivityCoords(null);
+      return;
+    }
+
+    let isMounted = true;
+    const bias =
+      travelPlan?.travel?.destinationData?.coordinates ||
+      extractCoordinates(travelPlan?.travel);
+
+    geocodeAddress(addrStr, bias).then((resolved) => {
+      if (isMounted && resolved) {
+        setAsyncActivityCoords({
+          activityId: String(activeActivity.id),
+          coords: {
+            latitude: resolved.latitude,
+            longitude: resolved.longitude,
+          },
+        });
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeActivity, travelPlan]);
+
   // Extract Pins for Google Maps using modular pure builders
   const {
     pins,
@@ -909,57 +1027,92 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     effectiveRouteMode,
     effectiveShowConnectors,
   } = useMemo(() => {
+    const defaultState = buildDefaultTripPins(
+      travelPlan,
+      showActivityPinsInTripMap,
+      connectorColor
+    );
+
     if (activeActivity) {
       const actType = activeActivity.type;
       const actColor = getActivityPinColor(actType);
 
+      let activityPinsResult: MapStateResult | null = null;
       if (actType === TripPlanType.flight) {
-        return buildFlightMapState(activeActivity, asyncFlightCoords, actColor);
-      }
-
-      if (
+        activityPinsResult = buildFlightMapState(
+          activeActivity,
+          asyncFlightCoords,
+          actColor
+        );
+      } else if (
         actType === TripPlanType.transit ||
         actType === TripPlanType.rideRental
       ) {
-        return buildTransitMapState(
+        activityPinsResult = buildTransitMapState(
           activeActivity,
           asyncTransitCoords,
           actColor,
           actType
         );
+      } else {
+        const coords =
+          getActivityCoordinates(activeActivity) ||
+          (asyncActivityCoords?.activityId === String(activeActivity.id)
+            ? asyncActivityCoords.coords
+            : null);
+        if (coords) {
+          activityPinsResult = {
+            pins: [
+              {
+                id: activeActivity.id,
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                title: activeActivity.title || 'Activity',
+                type: activeActivity.type,
+                subType: getActivitySubType(activeActivity),
+                color: actColor,
+              },
+            ],
+            effectiveConnectorColor: actColor,
+            effectiveRouteMode: 'DRIVING' as GoogleMapRouteMode,
+            effectiveShowConnectors: true,
+          };
+        }
       }
 
-      const coords = getActivityCoordinates(activeActivity);
-      const activityPins: GoogleMapPin[] = [];
+      if (activityPinsResult && activityPinsResult.pins.length > 0) {
+        const existingPinIds = new Set(
+          activityPinsResult.pins.map((p) => String(p.id))
+        );
+        const combinedPins = [
+          ...activityPinsResult.pins,
+          ...defaultState.pins.filter(
+            (p) => !existingPinIds.has(String(p.id))
+          ),
+        ];
 
-      if (coords) {
-        activityPins.push({
-          id: activeActivity.id,
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          title: activeActivity.title || 'Activity',
-          type: activeActivity.type,
-          color: actColor,
-        });
+        return {
+          pins: combinedPins,
+          effectiveConnectorColor:
+            activityPinsResult.effectiveConnectorColor ||
+            defaultState.effectiveConnectorColor,
+          effectiveRouteMode:
+            activityPinsResult.effectiveRouteMode ||
+            defaultState.effectiveRouteMode,
+          effectiveShowConnectors: combinedPins.length > 1,
+        };
       }
-
-      return {
-        pins: activityPins,
-        effectiveConnectorColor: actColor,
-        effectiveRouteMode: 'DRIVING' as GoogleMapRouteMode,
-        effectiveShowConnectors: activityPins.length > 1,
-      };
     }
 
-    return buildDefaultTripPins(
-      travelPlan,
-      showActivityPinsInTripMap,
-      connectorColor
-    );
+    return {
+      ...defaultState,
+      effectiveShowConnectors: defaultState.pins.length > 1,
+    };
   }, [
     activeActivity,
     asyncFlightCoords,
     asyncTransitCoords,
+    asyncActivityCoords,
     travelPlan,
     connectorColor,
     showActivityPinsInTripMap,
@@ -968,50 +1121,43 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
   const selectedActivityCoords = useMemo(() => {
     if (!activeActivityId || !activeActivity) return null;
 
-    if (activeActivity.type === TripPlanType.flight && pins.length > 1) {
-      return null;
+    const matchingPin = pins.find(
+      (p) =>
+        String(p.id) === String(activeActivity.id) ||
+        String(p.id).startsWith(`${activeActivity.id}-`)
+    );
+    if (matchingPin) {
+      return {
+        latitude: matchingPin.latitude,
+        longitude: matchingPin.longitude,
+      };
     }
 
-    if (
-      (activeActivity.type === TripPlanType.transit ||
-        activeActivity.type === TripPlanType.rideRental) &&
-      pins.length > 1
-    ) {
-      return null;
-    }
-
-    if (pins.length > 0) {
-      return { latitude: pins[0].latitude, longitude: pins[0].longitude };
-    }
-
-    const coords = getActivityCoordinates(activeActivity);
+    const coords =
+      getActivityCoordinates(activeActivity) ||
+      (asyncActivityCoords?.activityId === String(activeActivity.id)
+        ? asyncActivityCoords.coords
+        : null);
     if (coords) return coords;
 
     return null;
-  }, [activeActivityId, activeActivity, pins]);
+  }, [activeActivityId, activeActivity, pins, asyncActivityCoords]);
 
   const isExpanded = currentSnap === SNAP_EXPANDED;
 
-  const activityZoom = useMemo(() => {
-    if (currentSnap === SNAP_COLLAPSED) return 14;
-    if (currentSnap === SNAP_MID) return 16;
-    return undefined;
-  }, [currentSnap, SNAP_COLLAPSED, SNAP_MID]);
-
-  const tripZoom = useMemo(() => {
-    if (currentSnap === SNAP_COLLAPSED) return 13;
-    if (currentSnap === SNAP_MID) return 12;
-    return undefined;
-  }, [currentSnap, SNAP_COLLAPSED, SNAP_MID]);
-
   const mapCenterCoordinates = useMemo(() => {
+    if (selectedPinCoords) {
+      return {
+        latitude: selectedPinCoords.latitude,
+        longitude: selectedPinCoords.longitude,
+      };
+    }
     if (!selectedActivityCoords) return null;
     return {
       latitude: selectedActivityCoords.latitude,
       longitude: selectedActivityCoords.longitude,
-      zoom: activityZoom,
     };
-  }, [selectedActivityCoords, activityZoom]);
+  }, [selectedPinCoords, selectedActivityCoords]);
 
   const initialCoordinates = useMemo(() => {
     if (pins.length > 0) {
@@ -1029,12 +1175,20 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
   const handlePinPress = useCallback(
     (pin: GoogleMapPin) => {
+      const pinCoords =
+        typeof pin.latitude === 'number' &&
+        typeof pin.longitude === 'number'
+          ? { latitude: pin.latitude, longitude: pin.longitude }
+          : null;
+      if (pinCoords) {
+        setSelectedPinCoords(pinCoords);
+      }
       if (pin.id && !pin.id.startsWith('dest-')) {
         const cleanId = pin.id.replace(
           /-(pickup|dropoff|dep|arr|departure|arrival)$/,
           ''
         );
-        handleOpenActivity(cleanId);
+        handleOpenActivity(cleanId, pinCoords);
         snapTo(SNAP_MID);
       }
     },
@@ -1139,11 +1293,10 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
           bottomOffset={bottomOffset}
           isExpanded={isExpanded}
           onPinPress={handlePinPress}
-          zoom={tripZoom}
           showConnectors={effectiveShowConnectors}
           connectorColor={effectiveConnectorColor}
           routeMode={effectiveRouteMode}
-          connectByType={!activeActivityId}
+          connectByType={true}
           testID="trip-google-map"
         />
       </View>

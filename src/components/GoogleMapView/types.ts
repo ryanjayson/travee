@@ -7,6 +7,7 @@ export interface GoogleMapPin {
   title?: string;
   description?: string;
   type?: string | number;
+  subType?: string;
   color?: string;
   sortOrder?: string;
   image?: string;

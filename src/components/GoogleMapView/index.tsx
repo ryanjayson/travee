@@ -102,15 +102,21 @@ export const GoogleMapView = ({
     }
     .custom-pin-label {
       background: #FFFFFF;
-      border: 1px solid rgba(0,0,0,0.15);
-      border-radius: 4px;
-      padding: 2px 6px;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: 6px;
+      padding: 2px 8px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       font-size: 11px;
       font-weight: 600;
       color: #1F2937;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
       white-space: nowrap;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 16px;
     }
   </style>
   <script src="https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry" async defer></script>
@@ -130,13 +136,280 @@ export const GoogleMapView = ({
     let pendingCenter = null;
     let currentCenterTarget = null;
     let currentBottomOffset = ${typeof bottomOffset === 'number' ? bottomOffset : 0};
+    let currentPanAnimation = null;
 
-    function createSvgPin(color) {
+    function smoothPanTo(targetLatLng, duration) {
+      if (!map) return;
+      if (currentPanAnimation) {
+        cancelAnimationFrame(currentPanAnimation);
+        currentPanAnimation = null;
+      }
+
+      const startCenter = map.getCenter();
+      if (!startCenter) {
+        map.setCenter(targetLatLng);
+        return;
+      }
+
+      const startLat = startCenter.lat();
+      const startLng = startCenter.lng();
+      const targetLat = typeof targetLatLng.lat === 'function'
+        ? targetLatLng.lat()
+        : targetLatLng.lat;
+      const targetLng = typeof targetLatLng.lng === 'function'
+        ? targetLatLng.lng()
+        : targetLatLng.lng;
+
+      let deltaLng = targetLng - startLng;
+      if (deltaLng > 180) deltaLng -= 360;
+      if (deltaLng < -180) deltaLng += 360;
+      const deltaLat = targetLat - startLat;
+
+      if (Math.abs(deltaLat) < 0.000001 && Math.abs(deltaLng) < 0.000001) {
+        return;
+      }
+
+      const animDuration = typeof duration === 'number' ? duration : 600;
+      const startTime = performance.now();
+
+      function easeInOutCubic(x) {
+        return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+      }
+
+      function step(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / animDuration, 1);
+        const ease = easeInOutCubic(progress);
+
+        const curLat = startLat + deltaLat * ease;
+        const curLng = startLng + deltaLng * ease;
+
+        map.setCenter({ lat: curLat, lng: curLng });
+
+        if (progress < 1) {
+          currentPanAnimation = requestAnimationFrame(step);
+        } else {
+          currentPanAnimation = null;
+          map.setCenter({ lat: targetLat, lng: targetLng });
+        }
+      }
+
+      currentPanAnimation = requestAnimationFrame(step);
+    }
+
+    function getSubtypeIconPath(subType) {
+      if (!subType || typeof subType !== 'string') return null;
+      const s = subType.toLowerCase().trim();
+      if (!s) return null;
+
+      if (s.includes('flight') || s.includes('plane') || s.includes('airport')) {
+        return (
+          'M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2' +
+          'l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z'
+        );
+      }
+      if (
+        s.includes('hotel') || s.includes('resort') || s.includes('hostel') ||
+        s.includes('motel') || s.includes('accommodation') || s.includes('stay')
+      ) {
+        return (
+          'M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8' +
+          'v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z'
+        );
+      }
+      if (
+        s.includes('villa') || s.includes('apartment') || s.includes('airbnb') ||
+        s.includes('homestay') || s.includes('house') || s.includes('guesthouse') ||
+        s.includes('cabin')
+      ) {
+        return 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z';
+      }
+      if (s.includes('camp') || s.includes('glamp')) {
+        return 'M4 19h16l-7-14h-2L4 19zm8-10.3l3.65 7.3H8.35L12 8.7z';
+      }
+      if (
+        s.includes('hike') || s.includes('mountain') || s.includes('volcano') ||
+        s.includes('canyon') || s.includes('desert') || s.includes('cave')
+      ) {
+        return 'M14 6l-3.75 5 2.85 3.8-1.6 1.2C9.8 13.7 7 10 7 10l-6 8h22L14 6z';
+      }
+      if (
+        s.includes('beach') || s.includes('lake') || s.includes('river') ||
+        s.includes('waterfall') || s.includes('water')
+      ) {
+        return (
+          'M12 2C6.48 2 2 6.48 2 12c0 .35.03.68.06 1.02L11 13v6c0 .55.45 1 1 1' +
+          's1-.45 1-1v-6l8.94.02c.03-.34.06-.67.06-1.02 0-5.52-4.48-10-10-10z'
+        );
+      }
+      if (
+        s.includes('forest') || s.includes('jungle') || s.includes('park') ||
+        s.includes('nature')
+      ) {
+        return 'M12 2L4 14h3v6h10v-6h3L12 2zm0 3.8l4 6.2h-2v4h-4v-4H8l4-6.2z';
+      }
+      if (
+        s.includes('cafe') || s.includes('coffee') || s.includes('breakfast') ||
+        s.includes('tea')
+      ) {
+        return (
+          'M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.1 0 2-.9 2-2' +
+          'V5c0-1.1-.9-2-2-2zm0 5h-2V5h2v3zM2 21h18v-2H2v2z'
+        );
+      }
+      if (s.includes('bar') || s.includes('pub')) {
+        return (
+          'M21 5V3H3v2l8 9v5H6v2h12v-2h-5v-5l8-9zM7.43 7L5.66 5h12.69' +
+          'l-1.78 2H7.43z'
+        );
+      }
+      if (
+        s.includes('restaurant') || s.includes('food') || s.includes('bistro') ||
+        s.includes('bakery') || s.includes('dining') || s.includes('cuisine')
+      ) {
+        return (
+          'M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03' +
+          'C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z'
+        );
+      }
+      if (
+        s.includes('mall') || s.includes('market') || s.includes('store') ||
+        s.includes('shop') || s.includes('clothes') || s.includes('grocer')
+      ) {
+        return (
+          'M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2' +
+          'h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2z' +
+          'm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z'
+        );
+      }
+      if (
+        s.includes('pharmacy') || s.includes('drug') || s.includes('spa') ||
+        s.includes('health') || s.includes('beauty')
+      ) {
+        return 'M19 10.5h-5.5V5h-3v5.5H5v3h5.5V19h3v-5.5H19v-3z';
+      }
+      if (s.includes('atm') || s.includes('bank')) {
+        return (
+          'M4 10v7h3v-7H4zm6 0v7h3v-7h-3zM2 22h19v-3H2v3zm14-12v7h3v-7h-3z' +
+          'm-4.5-9L2 6v2h19V6l-9.5-5z'
+        );
+      }
+      if (
+        s.includes('cinema') || s.includes('theater') || s.includes('theatre') ||
+        s.includes('movie') || s.includes('entertainment')
+      ) {
+        return (
+          'M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2' +
+          'L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z'
+        );
+      }
+      if (s.includes('museum')) {
+        return (
+          'M12 2L2 7v2h20V7L12 2zm8 17H4v2h16v-2zm-9-8h2v6h-2v-6zm-4 0h2v6H7v-6z' +
+          'm8 0h2v6h-2v-6z'
+        );
+      }
+      if (
+        s.includes('gym') || s.includes('stadium') || s.includes('fitness') ||
+        s.includes('sport')
+      ) {
+        return (
+          'M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14' +
+          ' 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43' +
+          'L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22' +
+          'l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29l-1.43-1.43z'
+        );
+      }
+      if (s.includes('train') || s.includes('subway') || s.includes('metro')) {
+        return (
+          'M12 2c-4 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5' +
+          'L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-4-4-8-4zM7.5 17c-.83 0' +
+          '-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0' +
+          'c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5' +
+          ' 1.5zm1.5-6H6V7h12v4z'
+        );
+      }
+      if (s.includes('bus') || s.includes('transit')) {
+        return (
+          'M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1' +
+          'h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22' +
+          'V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67' +
+          ' 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5' +
+          's.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z'
+        );
+      }
+      if (
+        s.includes('bike') || s.includes('bicycle') || s.includes('motorcycle') ||
+        s.includes('scooter')
+      ) {
+        return (
+          'M15.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM5 12c-2.8 0' +
+          '-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8.5c-1.9 0-3.5-1.6' +
+          '-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5zm14-8.5' +
+          'c-2.8 0-5 2.2-5 5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5zm0 8.5c-1.9 0-3.5' +
+          '-1.6-3.5-3.5s1.6-3.5 3.5-3.5 3.5 1.6 3.5 3.5-1.6 3.5-3.5 3.5zm-8.2-7' +
+          'l2.2-3.3 2 2h3.5v-2h-2.5l-1.5-1.5c-.4-.4-1-.6-1.5-.6s-1.1.2-1.5.6' +
+          'L9.6 11.2l-2.8-1.4V7H5v4.2l3.8 1.9 2 5.9h2l-2-6z'
+        );
+      }
+      if (s.includes('boat') || s.includes('ferry') || s.includes('ship')) {
+        return (
+          'M20 21c-1.39 0-2.78-.47-4-1.32-2.44 1.71-5.56 1.71-8 0C6.78 20.53' +
+          ' 5.39 21 4 21H2v2h2c1.38 0 2.74-.35 4-.99 2.52 1.29 5.48 1.29 8 0' +
+          ' 1.26.65 2.62.99 4 .99h2v-2h-2zM3.95 19H4c1.6 0 3.02-.88 4-2 .98' +
+          ' 1.12 2.4 2 4 2s3.02-.88 4-2c.98 1.12 2.4 2 4 2h.05l1.89-6.68c.08' +
+          '-.26.06-.54-.06-.78s-.34-.42-.6-.47L19 11V6c0-1.1-.9-2-2-2h-3V1h-4' +
+          'v3H7c-1.1 0-2 .9-2 2v5l-2.28.07c-.26.05-.48.23-.6.47s-.14.52-.06' +
+          '.78L3.95 19zM7 6h10v5.03l-5-.17-5 .17V6z'
+        );
+      }
+      if (
+        s.includes('car') || s.includes('taxi') || s.includes('rental') ||
+        s.includes('vehicle') || s.includes('drive')
+      ) {
+        return (
+          'M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42' +
+          ' 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1' +
+          ' 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77' +
+          'L6.85 7zM19 17H5v-4.66l.12-.34h13.77l.11.34V17z'
+        );
+      }
+      if (
+        s.includes('sight') || s.includes('attraction') || s.includes('tour') ||
+        s.includes('photo') || s.includes('camera') || s.includes('monument')
+      ) {
+        return (
+          'M12 12c1.65 0 3-1.35 3-3s-1.35-3-3-3-3 1.35-3 3 1.35 3 3 3zm0-4' +
+          'c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm8-4h-3.17l-1.83-2' +
+          'H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0' +
+          '-1.1-.9-2-2-2zm0 14H4V6h4.05l1.83-2h4.24l1.83 2H20v12z'
+        );
+      }
+
+      return (
+        'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2' +
+        ' 9.24l5.46 4.73L5.82 21z'
+      );
+    }
+
+    function createSvgPin(color, subType) {
       const pinColor = color || '#263F69';
-      const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="46" viewBox="0 0 36 46">' +
+      const iconPath = getSubtypeIconPath(subType);
+      let innerContent = '<circle cx="18" cy="17" r="7" fill="#FFFFFF"/>';
+
+      if (iconPath) {
+        innerContent =
+          '<circle cx="18" cy="17" r="8.5" fill="#FFFFFF"/>' +
+          '<g transform="translate(18, 17) scale(0.48) translate(-12, -12)">' +
+          '<path fill="' + pinColor + '" d="' + iconPath + '"/>' +
+          '</g>';
+      }
+
+      const svg =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="46" viewBox="0 0 36 46">' +
         '<path fill="' + pinColor + '" stroke="#FFFFFF" stroke-width="2" ' +
         'd="M18 0C8.059 0 0 8.059 0 18c0 12.375 16.2 27.225 16.875 27.825a1.5 1.5 0 0 0 2.25 0C19.8 45.225 36 30.375 36 18 36 8.059 27.941 0 18 0z"/>' +
-        '<circle cx="18" cy="17" r="7" fill="#FFFFFF"/>' +
+        innerContent +
         '</svg>';
       return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
     }
@@ -183,6 +456,13 @@ export const GoogleMapView = ({
       map.addListener('click', function() {
         if (window.ReactNativeWebView) {
           window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'MAP_PRESS' }));
+        }
+      });
+
+      map.addListener('dragstart', function() {
+        if (currentPanAnimation) {
+          cancelAnimationFrame(currentPanAnimation);
+          currentPanAnimation = null;
         }
       });
 
@@ -625,9 +905,9 @@ export const GoogleMapView = ({
         bounds.extend(position);
         pathCoordinates.push(position);
 
-        const iconUrl = createSvgPin(pin.color);
+        const iconUrl = createSvgPin(pin.color, pin.subType);
 
-        const marker = new google.maps.Marker({
+        const markerOptions = {
           position: position,
           map: map,
           title: pin.title || '',
@@ -635,8 +915,21 @@ export const GoogleMapView = ({
             url: iconUrl,
             scaledSize: new google.maps.Size(32, 40),
             anchor: new google.maps.Point(16, 40),
+            labelOrigin: new google.maps.Point(16, -10),
           },
-        });
+        };
+
+        if (pin.title) {
+          markerOptions.label = {
+            text: pin.title,
+            className: 'custom-pin-label',
+            color: '#1F2937',
+            fontSize: '11px',
+            fontWeight: '600',
+          };
+        }
+
+        const marker = new google.maps.Marker(markerOptions);
 
         marker.addListener('click', function() {
           if (window.ReactNativeWebView) {
@@ -667,9 +960,11 @@ export const GoogleMapView = ({
             typeGroups[typeKey].coords.push({ lat: pin.latitude, lng: pin.longitude });
           });
 
+          let anyGroupConnected = false;
           Object.keys(typeGroups).forEach(function(typeKey) {
             const group = typeGroups[typeKey];
             if (group.coords.length > 1) {
+              anyGroupConnected = true;
               const reqId = ++activeRouteRequestId;
               try {
                 calculateRoadRoute(group.coords, currentRouteMode, reqId, group.color);
@@ -678,6 +973,15 @@ export const GoogleMapView = ({
               }
             }
           });
+
+          if (!anyGroupConnected && pathCoordinates.length > 1) {
+            const reqId = ++activeRouteRequestId;
+            try {
+              calculateRoadRoute(pathCoordinates, currentRouteMode, reqId, currentConnectorColor);
+            } catch (err) {
+              console.warn('Error initiating road route calculation:', err);
+            }
+          }
         } else if (pathCoordinates.length > 1) {
           const reqId = ++activeRouteRequestId;
           try {
@@ -692,7 +996,12 @@ export const GoogleMapView = ({
         if (pinsList.length > 1) {
           map.fitBounds(bounds, { top: 60, right: 40, bottom: currentBottomOffset + 40, left: 40 });
         } else if (pinsList.length === 1) {
-          const centerLatLng = getCenterWithOffset(pinsList[0].latitude, pinsList[0].longitude, currentBottomOffset / 2, ${zoom});
+          const centerLatLng = getCenterWithOffset(
+            pinsList[0].latitude,
+            pinsList[0].longitude,
+            currentBottomOffset / 2,
+            ${zoom}
+          );
           map.setCenter(centerLatLng);
           map.setZoom(${zoom});
         }
@@ -700,7 +1009,27 @@ export const GoogleMapView = ({
     }
 
     window.updatePins = function(newPins) {
-      currentPins = newPins || [];
+      const incoming = newPins || [];
+      if (currentPins && currentPins.length === incoming.length) {
+        let isSame = true;
+        for (let i = 0; i < incoming.length; i++) {
+          if (
+            String(incoming[i].id) !== String(currentPins[i].id) ||
+            incoming[i].latitude !== currentPins[i].latitude ||
+            incoming[i].longitude !== currentPins[i].longitude ||
+            incoming[i].title !== currentPins[i].title ||
+            incoming[i].subType !== currentPins[i].subType ||
+            incoming[i].color !== currentPins[i].color
+          ) {
+            isSame = false;
+            break;
+          }
+        }
+        if (isSame) {
+          return;
+        }
+      }
+      currentPins = incoming;
       if (map) {
         renderPins(currentPins);
       }
@@ -715,31 +1044,19 @@ export const GoogleMapView = ({
     window.setBottomOffset = function(newOffset) {
       currentBottomOffset = typeof newOffset === 'number' ? newOffset : 0;
       const isExp = arguments[1];
-      if (!map) return;
-      if (isExp) {
-        return;
-      }
+      if (!map || isExp) return;
       if (currentCenterTarget) {
-        const offset = (typeof currentCenterTarget.offsetY === 'number' && currentCenterTarget.offsetY !== 0)
+        const offset = (typeof currentCenterTarget.offsetY === 'number' &&
+          currentCenterTarget.offsetY !== 0)
           ? currentCenterTarget.offsetY
           : (currentBottomOffset / 2);
-        const targetZoom = (typeof currentCenterTarget.zoom === 'number' && currentCenterTarget.zoom > 0) ? currentCenterTarget.zoom : map.getZoom();
-        const centerLatLng = getCenterWithOffset(currentCenterTarget.lat, currentCenterTarget.lng, offset, targetZoom);
-        map.panTo(centerLatLng);
-      } else if (currentPins && currentPins.length > 1) {
-        const bounds = new google.maps.LatLngBounds();
-        currentPins.forEach(function(pin) {
-          if (typeof pin.latitude === 'number' && typeof pin.longitude === 'number') {
-            bounds.extend({ lat: pin.latitude, lng: pin.longitude });
-          }
-        });
-        if (!bounds.isEmpty()) {
-          map.fitBounds(bounds, { top: 60, right: 40, bottom: currentBottomOffset + 40, left: 40 });
-        }
-      } else if (currentPins && currentPins.length === 1) {
-        const pin = currentPins[0];
-        const centerLatLng = getCenterWithOffset(pin.latitude, pin.longitude, currentBottomOffset / 2, map.getZoom());
-        map.panTo(centerLatLng);
+        const centerLatLng = getCenterWithOffset(
+          currentCenterTarget.lat,
+          currentCenterTarget.lng,
+          offset,
+          map.getZoom()
+        );
+        map.setCenter(centerLatLng);
       }
     };
 
@@ -749,19 +1066,33 @@ export const GoogleMapView = ({
         return;
       }
       const animate = arguments[5];
-      const effectiveOffset = (typeof offsetY === 'number' && offsetY !== 0) ? offsetY : (currentBottomOffset / 2);
-      currentCenterTarget = { lat: lat, lng: lng, zoom: zoomLevel, pinId: pinId, offsetY: effectiveOffset };
+      const effectiveOffset = (typeof offsetY === 'number' && offsetY !== 0)
+        ? offsetY
+        : (currentBottomOffset / 2);
+      currentCenterTarget = {
+        lat: lat,
+        lng: lng,
+        zoom: zoomLevel,
+        pinId: pinId,
+        offsetY: effectiveOffset,
+      };
 
-      if (typeof zoomLevel === 'number' && zoomLevel > 0 && map.getZoom() !== zoomLevel) {
-        map.setZoom(zoomLevel);
-      }
-
-      const targetZoom = (typeof zoomLevel === 'number' && zoomLevel > 0) ? zoomLevel : map.getZoom();
+      const targetZoom = (typeof zoomLevel === 'number' && zoomLevel > 0)
+        ? zoomLevel
+        : map.getZoom();
       const target = getCenterWithOffset(lat, lng, effectiveOffset, targetZoom);
+
       if (animate === false) {
+        if (typeof zoomLevel === 'number' && zoomLevel > 0 && map.getZoom() !== zoomLevel) {
+          map.setZoom(zoomLevel);
+        }
         map.setCenter(target);
       } else {
-        map.panTo(target);
+        if (typeof smoothPanTo === 'function') {
+          smoothPanTo(target, 600);
+        } else {
+          map.panTo(target);
+        }
       }
 
       if (!map.getProjection() && effectiveOffset !== 0) {
@@ -905,6 +1236,8 @@ export const GoogleMapView = ({
     }
   }, [connectorColor]);
 
+  const prevPinsJsonRef = useRef("");
+
   // Update pins in webview dynamically when pins change
   useEffect(() => {
     if (
@@ -912,8 +1245,12 @@ export const GoogleMapView = ({
       typeof webViewRef.current.injectJavaScript === "function" &&
       Array.isArray(pins)
     ) {
-      const code = `if (window.updatePins) { window.updatePins(${JSON.stringify(pins)}); } true;`;
-      webViewRef.current.injectJavaScript(code);
+      const pinsJson = JSON.stringify(pins);
+      if (pinsJson !== prevPinsJsonRef.current) {
+        prevPinsJsonRef.current = pinsJson;
+        const code = `if (window.updatePins) { window.updatePins(${pinsJson}); } true;`;
+        webViewRef.current.injectJavaScript(code);
+      }
     }
   }, [pins]);
 
@@ -940,6 +1277,12 @@ export const GoogleMapView = ({
     }
   }, [bottomOffset, isExpanded]);
 
+  const prevCenterRef = useRef<{
+    lat?: number;
+    lng?: number;
+    pinId?: string | null;
+  }>({});
+
   // Center on coordinates when centerCoordinates prop changes
   useEffect(() => {
     if (
@@ -950,15 +1293,43 @@ export const GoogleMapView = ({
       webViewRef.current &&
       typeof webViewRef.current.injectJavaScript === "function"
     ) {
-      isCenteredRef.current = true;
-      const targetZoom = isExpanded ? null : (typeof centerCoordinates.zoom === "number" && centerCoordinates.zoom > 0 ? centerCoordinates.zoom : null);
       const pinId = selectedPinId || "";
-      const offsetY = typeof centerCoordinates.offsetY === "number" ? centerCoordinates.offsetY : (bottomOffset ? bottomOffset / 2 : 0);
-      const zoomParam = targetZoom !== null ? targetZoom : "null";
-      const code = `if (window.centerOnLocation) { window.centerOnLocation(${centerCoordinates.latitude}, ${centerCoordinates.longitude}, ${zoomParam}, ${JSON.stringify(pinId)}, ${offsetY}); } true;`;
-      webViewRef.current.injectJavaScript(code);
+      const prev = prevCenterRef.current;
+      const coordsChanged =
+        prev.lat !== centerCoordinates.latitude ||
+        prev.lng !== centerCoordinates.longitude ||
+        prev.pinId !== pinId;
+
+      if (coordsChanged) {
+        prevCenterRef.current = {
+          lat: centerCoordinates.latitude,
+          lng: centerCoordinates.longitude,
+          pinId: pinId,
+        };
+        isCenteredRef.current = true;
+        const targetZoom = isExpanded
+          ? null
+          : typeof centerCoordinates.zoom === "number" && centerCoordinates.zoom > 0
+            ? centerCoordinates.zoom
+            : null;
+        const offsetY =
+          typeof centerCoordinates.offsetY === "number"
+            ? centerCoordinates.offsetY
+            : bottomOffset
+              ? bottomOffset / 2
+              : 0;
+        const zoomParam = targetZoom !== null ? targetZoom : "null";
+        const serializedPinId = JSON.stringify(pinId);
+        const { latitude: lat, longitude: lng } = centerCoordinates;
+        const code =
+          `if (window.centerOnLocation) { ` +
+          `window.centerOnLocation(${lat}, ${lng}, ${zoomParam}, ` +
+          `${serializedPinId}, ${offsetY}); } true;`;
+        webViewRef.current.injectJavaScript(code);
+      }
     } else if (!centerCoordinates && !selectedPinId && isCenteredRef.current) {
       isCenteredRef.current = false;
+      prevCenterRef.current = {};
       if (
         webViewRef.current &&
         typeof webViewRef.current.injectJavaScript === "function"
@@ -986,11 +1357,24 @@ export const GoogleMapView = ({
         typeof targetPin.longitude === "number" &&
         (targetPin.latitude !== 0 || targetPin.longitude !== 0)
       ) {
-        isCenteredRef.current = true;
-        const targetZoom = isExpanded ? "null" : 15;
-        const offsetY = bottomOffset ? bottomOffset / 2 : 0;
-        const code = `if (window.centerOnLocation) { window.centerOnLocation(${targetPin.latitude}, ${targetPin.longitude}, ${targetZoom}, ${JSON.stringify(selectedPinId)}, ${offsetY}); } true;`;
-        webViewRef.current.injectJavaScript(code);
+        const prev = prevCenterRef.current;
+        if (prev.pinId !== selectedPinId) {
+          prevCenterRef.current = {
+            lat: targetPin.latitude,
+            lng: targetPin.longitude,
+            pinId: selectedPinId,
+          };
+          isCenteredRef.current = true;
+          const targetZoom = isExpanded ? "null" : 15;
+          const offsetY = bottomOffset ? bottomOffset / 2 : 0;
+          const serializedPinId = JSON.stringify(selectedPinId);
+          const code =
+            `if (window.centerOnLocation) { ` +
+            `window.centerOnLocation(${targetPin.latitude}, ` +
+            `${targetPin.longitude}, ${targetZoom}, ${serializedPinId}, ` +
+            `${offsetY}); } true;`;
+          webViewRef.current.injectJavaScript(code);
+        }
       }
     }
   }, [selectedPinId, centerCoordinates, pins, bottomOffset, isExpanded]);

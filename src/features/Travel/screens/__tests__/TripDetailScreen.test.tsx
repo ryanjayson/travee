@@ -1,6 +1,10 @@
 import React from "react";
 import { render, fireEvent, waitFor } from "@testing-library/react-native";
-import { TripDetailScreen, getActivityCoordinates } from "../TripDetailScreen";
+import {
+  TripDetailScreen,
+  getActivityCoordinates,
+  getActivitySubType,
+} from "../TripDetailScreen";
 import { useTravelPlan } from "../../hooks/useTravel";
 import { TripPlanType } from "../../../../types/enums";
 
@@ -377,7 +381,68 @@ describe("TripDetailScreen", () => {
       expect(getActivityCoordinates({})).toBeNull();
       expect(getActivityCoordinates({ destinationData: null })).toBeNull();
       expect(getActivityCoordinates({ destinationData: { latitude: 0, longitude: 0 } })).toBeNull();
-      expect(getActivityCoordinates({ destinationData: { coordinates: { latitude: 0, longitude: 0 } } })).toBeNull();
+      expect(getActivityCoordinates({
+        destinationData: { coordinates: { latitude: 0, longitude: 0 } },
+      })).toBeNull();
+    });
+  });
+
+  describe("getActivitySubType", () => {
+    it("extracts subtype from direct subType property", () => {
+      expect(getActivitySubType({ subType: "Beach" })).toBe("Beach");
+    });
+
+    it("extracts subtype from accomodationDetails.subType", () => {
+      const act = { accomodationDetails: { subType: "Resort" } };
+      expect(getActivitySubType(act)).toBe("Resort");
+    });
+
+    it("extracts subtype from natureDetails.subType", () => {
+      const act = { natureDetails: { subType: "Mountain" } };
+      expect(getActivitySubType(act)).toBe("Mountain");
+    });
+
+    it("extracts subtype from shoppingDetails.subType", () => {
+      const act = { shoppingDetails: { subType: "Mall" } };
+      expect(getActivitySubType(act)).toBe("Mall");
+    });
+
+    it("extracts subtype from entertainmentDetails.subType", () => {
+      const act = { entertainmentDetails: { subType: "Cinema" } };
+      expect(getActivitySubType(act)).toBe("Cinema");
+    });
+
+    it("extracts mode from transportationDetails.mode", () => {
+      const act = { transportationDetails: { mode: "bus" } };
+      expect(getActivitySubType(act)).toBe("bus");
+    });
+
+    it("extracts vehicleType from rideRentalDetails.vehicleType", () => {
+      const act = { rideRentalDetails: { vehicleType: "scooter" } };
+      expect(getActivitySubType(act)).toBe("scooter");
+    });
+
+    it("extracts cuisine from cafeRestaurantDetails.cuisine", () => {
+      const act = { cafeRestaurantDetails: { cuisine: "Japanese" } };
+      expect(getActivitySubType(act)).toBe("Japanese");
+    });
+
+    it("extracts subtype from hikeOrCampDetails.subType", () => {
+      const act = { hikeOrCampDetails: { subType: "camp" } };
+      expect(getActivitySubType(act)).toBe("camp");
+    });
+
+    it("extracts subtype or category from destinationData", () => {
+      const actWithSub = { destinationData: { subType: "lake" } };
+      expect(getActivitySubType(actWithSub)).toBe("lake");
+
+      const actWithCat = { destinationData: { category: "sightseeing" } };
+      expect(getActivitySubType(actWithCat)).toBe("sightseeing");
+    });
+
+    it("returns empty string when activity has no subtype", () => {
+      expect(getActivitySubType(null)).toBe("");
+      expect(getActivitySubType({})).toBe("");
     });
   });
 
@@ -602,6 +667,99 @@ describe("TripDetailScreen", () => {
       });
 
       expect(webview.props.source.html).toBeTruthy();
+    });
+
+    it("centers on specific pin coordinates when a pin is pressed (e.g. arrival pin)", () => {
+      (useTravelPlan as jest.Mock).mockReturnValue({
+        data: mockTravelPlan,
+        isLoading: false,
+        refetch: jest.fn(),
+      });
+
+      const { getByTestId } = render(
+        <TripDetailScreen travelId="trip-123" />
+      );
+
+      const webview = getByTestId("webview");
+      // Simulate pressing the arrival pin of the flight
+      fireEvent(webview, "message", {
+        nativeEvent: {
+          data: JSON.stringify({
+            type: "PIN_PRESS",
+            pin: {
+              id: "act-flight-arr",
+              latitude: 35.5494,
+              longitude: 139.7798,
+            },
+          }),
+        },
+      });
+
+      const googleMap = getByTestId("trip-google-map");
+      expect(googleMap.props.accessibilityValue?.text).toBe("35.5494,139.7798");
+    });
+
+    it("centers on transit activity pins when transit activity is opened", () => {
+      (useTravelPlan as jest.Mock).mockReturnValue({
+        data: mockTravelPlan,
+        isLoading: false,
+        refetch: jest.fn(),
+      });
+
+      const { getByTestId } = render(
+        <TripDetailScreen travelId="trip-123" />
+      );
+
+      const webview = getByTestId("webview");
+      fireEvent(webview, "message", {
+        nativeEvent: {
+          data: JSON.stringify({
+            type: "PIN_PRESS",
+            pin: {
+              id: "act-transit",
+              latitude: 35.6812,
+              longitude: 139.7671,
+            },
+          }),
+        },
+      });
+
+      const googleMap = getByTestId("trip-google-map");
+      expect(googleMap.props.accessibilityValue?.text).toBe("35.6812,139.7671");
+    });
+
+    it("maintains connectors and trip pins when an activity pin is selected or changed", () => {
+      (useTravelPlan as jest.Mock).mockReturnValue({
+        data: mockTravelPlan,
+        isLoading: false,
+        refetch: jest.fn(),
+      });
+
+      const { getByTestId } = render(
+        <TripDetailScreen travelId="trip-123" />
+      );
+
+      const webview = getByTestId("webview");
+
+      // Press activity 1 pin
+      fireEvent(webview, "message", {
+        nativeEvent: {
+          data: JSON.stringify({
+            type: "PIN_PRESS",
+            pin: {
+              id: "act-1",
+              latitude: 35.7148,
+              longitude: 139.7967,
+            },
+          }),
+        },
+      });
+
+      // Verify webview HTML still contains other pins and connectors logic
+      const html = webview.props.source.html;
+      expect(html).toContain("dest-1");
+      expect(html).toContain("act-1");
+      expect(html).toContain("typeGroups[typeKey]");
     });
   });
 });
