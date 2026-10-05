@@ -321,15 +321,35 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           {(selectedFilter === 'All' || selectedFilter === 'Custom') && (
             <View className="flex-row items-center justify-between mt-2xl px-4">
               <Text className="text-2xl font-semibold text-secondary">My Custom Checklist</Text>
+              {groups.length !== 0 && (
+                <TouchableOpacity
+                  onPress={() => setShowGroupModal(true)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="Create new checklist group"
+                  className="flex-row py-md"
+                >
+                  <Icon name="add" size={28} color="#94A3B8" />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+
+          {groups.length == 0 && (selectedFilter === 'All' || selectedFilter === 'Custom') && (
+            <View className="rounded-4xl w-full items-center justify-center bg-gray-50 h-36 mt-3">
               <TouchableOpacity
                 onPress={() => setShowGroupModal(true)}
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 accessibilityLabel="Create new checklist group"
-                className="flex-row py-md"
+                className="flex-row items-center gap-1 py-md px-xl rounded-xl bg-gray-100 mb-md"
               >
-                <Icon name="add" size={28} color="#94A3B8" />
+                <Icon name="add" size={18} color="#94A3B8" />
+                <Text className="text-md font-semibold text-gray-400">Add Custom List</Text>
               </TouchableOpacity>
+
+              <Text className="text-md font-normal text-gray-400">You can create your custom checklist for your trip</Text>
+
             </View>
           )}
 

@@ -42,7 +42,7 @@ const Itinerary = ({
       location: activity.location || "",
     }))
   );
-  
+
   const [sections, setSections] = useState<Section[]>(
     initialSections.map((section) => ({
       id: section.id,
@@ -55,7 +55,7 @@ const Itinerary = ({
       isCollapsed: section.isCollapsed || false,
     }))
   );
-  
+
   const [menuVisible, setMenuVisible] = useState(false);
   const [sectionMenuVisible, setSectionMenuVisible] = useState(false);
   const [currentSectionForMenu, setCurrentSectionForMenu] = useState<Section | null>(null);

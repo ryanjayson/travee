@@ -325,8 +325,8 @@ describe("TripDetailScreen", () => {
       <TripDetailScreen travelId="trip-123" onBack={handleBack} />
     );
 
-    const backButton = getByLabelText("Go back");
-    fireEvent.press(backButton);
+    const closeButton = getByLabelText("Close");
+    fireEvent.press(closeButton);
 
     expect(handleBack).toHaveBeenCalledTimes(1);
   });

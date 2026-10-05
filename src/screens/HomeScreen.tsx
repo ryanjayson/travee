@@ -38,7 +38,6 @@ import {
 
 import Hero from '../components/Home/Hero';
 import UpcomingTrips from '../components/Home/UpcomingTrips';
-import ViewTravelModal from '../features/Travel/components/View/Modal';
 import CreateTripModal from '../features/Travel/components/CreateOrEdit/Modal';
 import OnboardingModal from '../components/OnboardingModal';
 import { ProfileScreen } from './ProfileScreen';
@@ -113,9 +112,6 @@ const HomeScreen: React.FC = () => {
   const { data: allActivities } = useAllActivities();
   const { data: profile, isLoading: isProfileLoading } = useUserProfile();
 
-  const [showTravelViewModal, setShowTravelViewModal] = useState(false);
-  const [selectedTravelForModal, setSelectedTravelForModal] =
-    useState<Travel | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [prefilledTripData, setPrefilledTripData] = useState<any>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -212,10 +208,14 @@ const HomeScreen: React.FC = () => {
     setShowCreateModal(true);
   }, []);
 
-  const handleTripCreated = useCallback((createdId: string) => {
-    setSelectedTravelForModal({ id: createdId } as Travel);
-    setShowTravelViewModal(true);
-  }, []);
+  const handleTripCreated = useCallback(
+    (createdId: string) => {
+      if (createdId) {
+        navigation.navigate('TravelDetail', { travelId: createdId });
+      }
+    },
+    [navigation]
+  );
 
   // Hardware back press handler on Android
   useFocusEffect(
@@ -224,11 +224,6 @@ const HomeScreen: React.FC = () => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
 
       const onBackPress = () => {
-        if (showTravelViewModal) {
-          setShowTravelViewModal(false);
-          setSelectedTravelForModal(null);
-          return true;
-        }
         if (showCreateModal) {
           setShowCreateModal(false);
           setPrefilledTripData(null);
@@ -269,7 +264,6 @@ const HomeScreen: React.FC = () => {
       };
     }, [
       refetch,
-      showTravelViewModal,
       showCreateModal,
       showNotificationsModal,
       showProfileModal,
@@ -615,12 +609,6 @@ const HomeScreen: React.FC = () => {
           </View> */}
         </View>
       </ScrollView>
-
-      <ViewTravelModal
-        travelId={selectedTravelForModal?.id || ''}
-        showModal={showTravelViewModal}
-        setShowModal={setShowTravelViewModal}
-      />
 
       <CreateTripModal
         showModal={showCreateModal}

@@ -8,12 +8,13 @@ import {
   Keyboard, Modal,
   ScrollView,
   StatusBar,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { TextInput, useTheme } from "react-native-paper";
+import { ActivityIndicator, TextInput, useTheme } from "react-native-paper";
 import * as Yup from "yup";
 import SimpleAccordion from "../../../../../../components/Accordion/Simple";
 import ActivityIcon, { activityIcons } from "../../../../../../components/ActivityIcon";
@@ -1052,8 +1053,8 @@ const EditActivity = ({
     sectionId?: string
   ) => {
     const targetSectionId =
-      sectionId || itineraryActivity?.sectionId || itinerarySectionId;
-    if (targetSectionId && activityId) {
+      sectionId || itineraryActivity?.sectionId || itinerarySectionId || "";
+    if (activityId) {
       const isConfirmed = await confirm({
         title: "Delete Activity",
         message:
@@ -1075,12 +1076,18 @@ const EditActivity = ({
           {
             onSuccess: () => {
               refetchTravelPlan();
-              showToast({ type: "success", message: "Activity deleted successfully" });
+              showToast({
+                type: "success",
+                message: "Activity deleted successfully",
+              });
               setActiveTripViewTab("itinerary");
               onClose();
             },
             onError: () => {
-              onClose();
+              showToast({
+                type: "error",
+                message: "Failed to delete activity",
+              });
             },
           }
         );
@@ -1908,6 +1915,51 @@ const EditActivity = ({
                       />
                     </View> */}
                 </SimpleAccordion>
+
+                {/* Delete Activity Button (only when editing existing activity) */}
+                {values.id ? (
+                  <View className="mt-8 mb-6">
+                    <TouchableOpacity
+                      onPress={() => handleDeleteActivity(values.id!, values.sectionId)}
+                      disabled={isPending || updateMutation.isPending}
+                      accessibilityRole="button"
+                      accessibilityLabel="Delete Activity"
+                      activeOpacity={0.7}
+                      style={[
+                        styles.deleteButton,
+                        {
+                          borderColor: colors.error || "#DC2626",
+                          backgroundColor: `${colors.error || "#DC2626"}10`,
+                        },
+                      ]}
+                    >
+                      <View style={styles.deleteButtonContent}>
+                        {isPending ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={colors.error || "#DC2626"}
+                          />
+                        ) : (
+                          <>
+                            <Icon
+                              name="delete-outline"
+                              size={22}
+                              color={colors.error || "#DC2626"}
+                            />
+                            <Text
+                              style={[
+                                styles.deleteButtonLabel,
+                                { color: colors.error || "#DC2626" },
+                              ]}
+                            >
+                              Delete Activity
+                            </Text>
+                          </>
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
               </View>
             </ScrollView>
 
@@ -3117,6 +3169,26 @@ const FormikErrorScroller = ({
 
   return null;
 };
+
+const styles = StyleSheet.create({
+  deleteButton: {
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  deleteButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  deleteButtonLabel: {
+    fontWeight: "600",
+    fontSize: 16,
+  },
+});
 
 
 

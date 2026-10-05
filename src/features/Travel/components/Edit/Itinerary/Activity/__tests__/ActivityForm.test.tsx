@@ -187,12 +187,12 @@ describe("ActivityForm (EditActivity) Integration", () => {
   });
 
   it("renders Stay tab when initialType is stay", () => {
-    const { getByText } = renderWithProviders(
+    const { getByText, getAllByText } = renderWithProviders(
       <EditActivity {...defaultProps} initialType={TripPlanType.stay} />
     );
 
-    expect(getByText(/stay details/i)).toBeTruthy();
-    expect(getByText(/check-in date & time/i)).toBeTruthy();
+    expect(getByText(/accomodation details/i)).toBeTruthy();
+    expect(getAllByText(/check-in/i).length).toBeGreaterThan(0);
   });
 
   it("renders Rental tab when initialType is rideRental", () => {
@@ -211,4 +211,50 @@ describe("ActivityForm (EditActivity) Integration", () => {
 
     expect(getByText(/transit details/i)).toBeTruthy();
   });
+
+  it("does not render Delete Activity button when creating a new activity", () => {
+    const { queryByLabelText } = renderWithProviders(
+      <EditActivity {...defaultProps} itineraryActivity={null} />
+    );
+
+    expect(queryByLabelText("Delete Activity")).toBeNull();
+  });
+
+  it("renders Delete Activity button and handles deletion on confirm", async () => {
+    mockConfirm.mockResolvedValueOnce(true);
+
+    const existingActivity = {
+      id: "activity-existing-1",
+      title: "Existing Museum Tour",
+      type: TripPlanType.activity,
+      sectionId: "section-1",
+    } as any;
+
+    const { getByLabelText, getByText } = renderWithProviders(
+      <EditActivity {...defaultProps} itineraryActivity={existingActivity} />
+    );
+
+    const deleteBtn = getByLabelText("Delete Activity");
+    expect(deleteBtn).toBeTruthy();
+    expect(getByText("Delete Activity")).toBeTruthy();
+
+    fireEvent.press(deleteBtn);
+
+    await waitFor(() => {
+      expect(mockConfirm).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: "Delete Activity",
+          type: "danger",
+        })
+      );
+      expect(mockDeleteActivityMutation).toHaveBeenCalledWith(
+        expect.objectContaining({
+          activityId: "activity-existing-1",
+          sectionId: "section-1",
+        }),
+        expect.any(Object)
+      );
+    });
+  });
 });
+

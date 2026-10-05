@@ -250,3 +250,13 @@ export const checkAndRunScheduledBackup = async (profile: UserProfileDto): Promi
     }
   }
 };
+
+/**
+ * Unsafely resets all local database tables in WatermelonDB.
+ * Used for development or complete data purge workflows.
+ */
+export const resetDatabase = async (): Promise<void> => {
+  await database.write(async () => {
+    await database.unsafeResetDatabase();
+  });
+};

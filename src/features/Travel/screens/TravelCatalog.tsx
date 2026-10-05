@@ -71,11 +71,11 @@ const TravelCardItem: React.FC<TravelCardItemProps> = React.memo(
     const dateRange =
       travel.startOrDepartureDate && travel.endOrReturnDate
         ? `${formatDate(travel.startOrDepartureDate)} - ${formatDate(
-            travel.endOrReturnDate
-          )}`
+          travel.endOrReturnDate
+        )}`
         : travel.startOrDepartureDate
-        ? formatDate(travel.startOrDepartureDate)
-        : 'Travel dates not set';
+          ? formatDate(travel.startOrDepartureDate)
+          : 'Travel dates not set';
 
     const tripIconConfig =
       travel.type != null
@@ -197,18 +197,18 @@ const SingleTravellingTripCard: React.FC<SingleTravellingTripCardProps> =
 
     const endDateFormatted = trip.endOrReturnDate
       ? new Date(trip.endOrReturnDate).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
       : '';
 
     return (
       <View
         key={trip.id}
         className={
-          'rounded-[44px] mb-2 bg-white shadow-sm shadow-black/10 ' +
-          'elevation-xl mx-4 overflow-hidden'
+          'rounded-4xl mb-2 bg-primary  ' +
+          'mx-4 overflow-hidden'
         }
       >
         <TouchableOpacity
@@ -216,15 +216,15 @@ const SingleTravellingTripCard: React.FC<SingleTravellingTripCardProps> =
           accessibilityRole="button"
           activeOpacity={0.7}
         >
-          <View className="p-10 border border-success-500/50 rounded-[44px]">
+          <View className="p-8 rounded-3xl">
             <View className="flex-row justify-between items-start mb-3">
               <View className="flex-1">
-                <Text className="text-3xl font-medium">{trip.title}</Text>
-                <Text className="text-lg text-secondary">
+                <Text className="text-3xl text-white font-semibold">{trip.title}</Text>
+                <Text className="text-lg text-white">
                   Travelling to {trip.destination}
                 </Text>
                 {endDateFormatted ? (
-                  <Text className="text-lg text-secondary">
+                  <Text className="text-lg text-white">
                     Until {endDateFormatted}
                   </Text>
                 ) : null}
@@ -242,29 +242,14 @@ const SingleTravellingTripCard: React.FC<SingleTravellingTripCardProps> =
                   onPress={() => onPress(trip)}
                   accessibilityRole="button"
                   activeOpacity={0.7}
-                  className="flex-row items-center gap-1 py-3 px-4 rounded-full bg-gray-100/50"
+                  className="flex-row items-center gap-1 py-3 px-4 rounded-full bg-white/50"
                 >
-                  <Icon name="map" size={20} color="#344054" />
-                  <Text className="font-medium text-xl text-secondary">
-                    View trip
+                  <Icon name="flight-takeoff" size={20} color="#263F69" />
+                  <Text className="font-medium text-xl text-accent">
+                    View current trip
                   </Text>
                 </TouchableOpacity>
               </View>
-
-              {trip.destination ? (
-                <View className="absolute right-0 opacity-50">
-                  <CountryOutline
-                    countryName={destCountryName}
-                    width={180}
-                    height={180}
-                    strokeColor="#FFFFFF"
-                    strokeWidth={1}
-                    fillColor={assignedColor + '50'}
-                    hideShadows={true}
-                    showCountryTitle={true}
-                  />
-                </View>
-              ) : null}
             </View>
           </View>
         </TouchableOpacity>
@@ -471,27 +456,45 @@ const TravelCatalog: React.FC = () => {
             ))
           ) : (
             <View className="flex-1 justify-center items-center w-full">
-              <Text className="text-5xl mb-4 text-primary/60 h-[50px]">
-                {emptyIcon}
-              </Text>
-              <Text className="text-2xl text-tertiary mb-1">
-                {emptyTitle}
-              </Text>
-              <Text className="text-base text-tertiary text-center px-10 tracking-wide">
-                {emptySubtitle}
-              </Text>
-
-              <View className="absolute -bottom-6 right-10">
-                <Text className="text-lg text-red-600 font-bold">
-                  Add a trip now
-                </Text>
-                <Text className="text-7xl mb-4 ml-4xl text-red-600 -mt-1 rotate-90">
-                  ⤳
-                </Text>
-              </View>
+              <FadeInView type="up" delay={50} duration={350} className="w-full items-center">
+                <View className="items-center">
+                  {/* <Ionicons name="briefcase-outline" size={42} color={"#d1d5db"} /> */}
+                  <Text className="text-5xl  text-primary/60 h-[50px]">
+                    {emptyIcon}
+                  </Text>
+                  <Text className="text-2xl font-semibold text-secondary text-center mt-3 mb-1">
+                    {emptyTitle}
+                  </Text>
+                  <Text className="text-md font-normal text-tertiary/70 text-center px-4 leading-5">
+                    {emptySubtitle}
+                  </Text>
+                </View>
+              </FadeInView>
             </View>
-          )}
-        </ScrollView>
+
+            // <View className="flex-1 justify-center items-center w-full">
+            //   <Text className="text-5xl mb-4 text-primary/60 h-[50px]">
+            //     {emptyIcon}
+            //   </Text>
+            //   <Text className="text-2xl text-tertiary mb-1">
+            //     {emptyTitle}
+            //   </Text>
+            //   <Text className="text-base text-tertiary text-center px-10 tracking-wide">
+            //     {emptySubtitle}
+            //   </Text>
+
+            //   <View className="absolute -bottom-6 right-10">
+            //     <Text className="text-lg text-red-600 font-bold">
+            //       Add a trip now
+            //     </Text>
+            //     <Text className="text-7xl mb-4 ml-4xl text-red-600 -mt-1 rotate-90">
+            //       ⤳
+            //     </Text>
+            //   </View>
+            // </View>
+          )
+          }
+        </ScrollView >
       );
     },
     [
@@ -553,8 +556,6 @@ const TravelCatalog: React.FC = () => {
                     marginBottom: 0,
                     flexDirection: 'row',
                     justifyContent: 'space-around',
-                    borderBottomWidth: 1,
-                    borderBottomColor: '#f0f0f0',
                     height: 88,
                   },
                 },
@@ -586,13 +587,13 @@ const TravelCatalog: React.FC = () => {
                 <View
                   style={{
                     borderRadius: 6,
-                    margin: 4,
+                    margin: 1,
                     backgroundColor: '#f2f4f7',
                     height: 80,
                     flex: 1,
-                    width: '90%',
+                    width: '96%',
                     padding: 4,
-                    paddingTop: 4,
+                    paddingTop: 2,
                   }}
                 >
                   <Text
@@ -604,27 +605,27 @@ const TravelCatalog: React.FC = () => {
                         state === 'disabled'
                           ? '#d9e1e8'
                           : state === 'today'
-                          ? '#0EA5E9'
-                          : '#2d4150',
+                            ? '#0EA5E9'
+                            : '#2d4150',
                       marginBottom: 2,
                     }}
                   >
                     {date.day}
                   </Text>
-                  <View style={{ gap: 2 }}>
+                  <View style={{ gap: 1 }}>
                     {tripsOnDay.map((trip, index) => {
                       const status = getEffectiveStatus(trip);
                       const { bg: bgColor, text: textColor } =
                         getStatusColors(status);
                       const startStr = trip.startOrDepartureDate
                         ? new Date(trip.startOrDepartureDate)
-                            .toISOString()
-                            .split('T')[0]
+                          .toISOString()
+                          .split('T')[0]
                         : '';
                       const endStr = trip.endOrReturnDate
                         ? new Date(trip.endOrReturnDate)
-                            .toISOString()
-                            .split('T')[0]
+                          .toISOString()
+                          .split('T')[0]
                         : startStr;
                       const isStart = dayStr === startStr;
                       const isEnd = dayStr === endStr;
@@ -640,7 +641,7 @@ const TravelCatalog: React.FC = () => {
                               backgroundColor: bgColor,
                               paddingVertical: 2,
                               paddingHorizontal: 4,
-                              borderRadius: 3,
+                              borderRadius: 6,
                               borderWidth:
                                 status === TravelStatus.Past ? 0 : 0.5,
                               borderColor: textColor,
@@ -655,9 +656,10 @@ const TravelCatalog: React.FC = () => {
                                 color: textColor,
                                 fontSize: 10,
                                 fontWeight: '600',
+                                overflow: 'hidden',
+                                flexWrap: 'wrap',
+                                lineHeight: 10,
                               }}
-                              numberOfLines={1}
-                              ellipsizeMode="tail"
                             >
                               {trip.title}
                             </Text>

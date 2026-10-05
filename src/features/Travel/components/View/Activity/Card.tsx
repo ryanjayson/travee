@@ -15,7 +15,10 @@ import { useConfirm } from "../../../../../context/ConfirmContext";
 import { useToast } from "../../../../../context/ToastContext";
 import { useTravelContext } from "../../../../../context/TravelContext";
 import { TripPlanType, getTripPlanTypeLabel, ActivityType, getActivityTypeLabel } from "../../../../../types/enums";
-import { ACTIVITY_PLAN_TYPES } from "../../../constants/activityPlanTypes";
+import {
+  ACTIVITY_PLAN_TYPES,
+  getActivityPlanTypeConfig,
+} from "../../../constants/activityPlanTypes";
 import { useUpdateActivityMutation } from "../../../hooks/useActivity";
 import { ChecklistItem, ItineraryActivity, ItineraryExpense, ItineraryNote } from "../../../types/TravelDto";
 import { parseAirport } from "../../../../../utils/airportUtils";
@@ -522,10 +525,18 @@ const ActivityItemCard = ({
               }}
               accessibilityRole="button"
               accessibilityLabel="Drag activity"
-              className="z-999 items-center justify-center bg-gray-200 border-3 border-gray-100 rounded-full "
+              className={
+                'z-999 items-center justify-center bg-gray-200 ' +
+                'border-3 border-gray-100 rounded-full'
+              }
             >
               <ActivityIcon
                 type={itineraryEventActivity.type!}
+                planType={
+                  itineraryEventActivity.type === TripPlanType.activity
+                    ? itineraryEventActivity.planType
+                    : undefined
+                }
                 size={viewMode === 'narrow' ? 14 : 19}
                 isViewModeNarrow={viewMode === 'narrow'}
               />
@@ -575,27 +586,51 @@ const ActivityItemCard = ({
             ${isNarrow ? "my-2 p-2" : (viewMode === 'expanded' ? "mt-4 mb-0 p-2.5" : "my-4 p-2.5")}  
             ${isDragActive ? "opacity-100 shadow-2xl" : ""}`}>
             <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
-              {itineraryEventActivity.type !== undefined && itineraryEventActivity.type !== null && (
-                <View
-                  className="items-center flex-row">
-                  <Text
-                    // style={{ color: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                    style={{ backgroundColor: getActivityTypeDetails(itineraryEventActivity.type).color + '10' }}
-                    // style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                    className="text-[8px] rounded-xs px-1 py-0.5 tracking-wider uppercase font-extrabold text-gray/60 ">
-                    {getActivityTypeDetails(itineraryEventActivity.type).text}
+              {itineraryEventActivity.type !== undefined &&
+                itineraryEventActivity.type !== null && (
+                <View className="items-center flex-row">
+                  {(() => {
+                    const typeDetails = getActivityTypeDetails(
+                      itineraryEventActivity.type
+                    );
+                    const planTypeConfig =
+                      itineraryEventActivity.type === TripPlanType.activity &&
+                      itineraryEventActivity.planType != null
+                        ? getActivityPlanTypeConfig(
+                            itineraryEventActivity.planType
+                          )
+                        : undefined;
+                    const badgeBgColor =
+                      (planTypeConfig?.color ?? typeDetails.color) + '10';
 
-                    {itineraryEventActivity.type === TripPlanType.activity && !!getPlanTypeLabel(itineraryEventActivity.planType) && (
+                    return (
                       <Text
-                        style={{ borderColor: getActivityTypeDetails(itineraryEventActivity.type).color }}
-                        className="text-[8px] font-normal text-gray/60 px-xxs"
+                        style={{ backgroundColor: badgeBgColor }}
+                        className={
+                          'text-[8px] rounded-xs px-1 py-0.5 tracking-wider ' +
+                          'uppercase font-extrabold text-gray/60'
+                        }
                       >
-                        / {getPlanTypeLabel(itineraryEventActivity.planType)}
+                        {typeDetails.text}
+
+                        {itineraryEventActivity.type ===
+                          TripPlanType.activity &&
+                          !!getPlanTypeLabel(
+                            itineraryEventActivity.planType
+                          ) && (
+                            <Text
+                              style={{
+                                borderColor:
+                                  planTypeConfig?.color ?? typeDetails.color,
+                              }}
+                              className="text-[8px] font-normal text-gray/60 px-xxs"
+                            >
+                              / {getPlanTypeLabel(itineraryEventActivity.planType)}
+                            </Text>
+                          )}
                       </Text>
-                    )}
-
-                  </Text>
-
+                    );
+                  })()}
                 </View>
               )}
               {/* {itineraryEventActivity.startDate ? (

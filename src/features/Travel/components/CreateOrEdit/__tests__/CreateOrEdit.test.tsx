@@ -77,7 +77,7 @@ describe("CreateOrEdit (Trip Form) Component", () => {
       <CreateOrEdit {...defaultProps} />
     );
 
-    expect(getByText(/where to go\?/i)).toBeTruthy();
+    expect(getByText(/where to\?/i)).toBeTruthy();
     expect(getByText(/describe your trip/i)).toBeTruthy();
     expect(getByTestId("mock-destination-search-box")).toBeTruthy();
     expect(getByText("Create Trip")).toBeTruthy();

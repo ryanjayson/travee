@@ -17,18 +17,15 @@ import {
 import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useConfirm } from "../../../../../../context/ConfirmContext";
-import { useToast } from "../../../../../../context/ToastContext";
 import { useKeyboardVisible } from "../../../../../../hooks/useKeyboardVisible";
 import { TripPlanType } from "../../../../../../types/enums";
-import { useDeleteActivityMutation, useItineraryActivity } from "../../../../hooks/useActivity";
+import { useItineraryActivity } from "../../../../hooks/useActivity";
 import { useTravelPlan } from "../../../../hooks/useTravel";
 import { ItineraryActivity } from "../../../../types/TravelDto";
 import { parseExtractedText } from "../../../../utils/ocrParser";
 import ActivityTypeLookupModal from "../../../Lookups/ActivityTypeLookupModal";
 import SectionLookupModal from "../../../Lookups/SectionLookupModal";
 import EditActivity from "../Activity";
-
-import { useTravelContext } from "../../../../../../context/TravelContext";
 
 interface ActivityModalProps {
   visible: boolean;
@@ -53,8 +50,11 @@ const ActivityModal = ({
   const [currentActivity, setCurrentActivity] =
     useState<ItineraryActivity | null>(propItineraryActivity);
   const [isAddMode, setIsAddMode] = useState(!propItineraryActivity?.id);
+  const [addModeCount, setAddModeCount] = useState(0);
 
-  const activeId = !isAddMode ? (currentActivity?.id || propItineraryActivity?.id || "") : "";
+  const activeId = !isAddMode
+    ? (currentActivity?.id || propItineraryActivity?.id || "")
+    : "";
   const { data: fetchedDbActivity, refetch: refetchActivity } =
     useItineraryActivity(visible && activeId ? activeId : "");
 
@@ -68,7 +68,7 @@ const ActivityModal = ({
   }, [isAddMode, travelPlan, currentActivity?.id]);
 
   const latestActivity = isAddMode
-    ? (currentActivity || propItineraryActivity)
+    ? (currentActivity || (!propItineraryActivity?.id ? propItineraryActivity : null))
     : (fetchedDbActivity || dbActivity || currentActivity || propItineraryActivity);
 
   useEffect(() => {
@@ -86,15 +86,22 @@ const ActivityModal = ({
       setError(null);
       setExtractedData(null);
       setIsOcrPending(false);
+      setAddModeCount(0);
+      unsavedActionTargetRef.current = "close";
+      setUnsavedActionTarget("close");
     }
-  }, [visible, propItineraryActivity, refetchActivity]);
+    // Only re-initialize when modal opens or target activity identity changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, propItineraryActivity?.id]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const isDirtyRef = useRef(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
-  const [unsavedActionTarget, setUnsavedActionTarget] = useState<"close" | "addNew">("close");
+  const [unsavedActionTarget, setUnsavedActionTarget] =
+    useState<"close" | "addNew">("close");
+  const unsavedActionTargetRef = useRef<"close" | "addNew">("close");
   const submitFormRef = useRef<(() => void) | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<Partial<ItineraryActivity> | null>(null);
@@ -169,45 +176,6 @@ const ActivityModal = ({
 
   const { confirm } = useConfirm();
   const { colors } = useTheme();
-  const { showToast } = useToast();
-  const { setActiveTripViewTab } = useTravelContext();
-  const { mutate: deleteActivityMutation, isPending: isDeleting } = useDeleteActivityMutation();
-
-  const handleDeleteActivity = async () => {
-    if (latestActivity?.id) {
-      const isConfirmed = await confirm({
-        title: "Delete Activity",
-        message: "Are you sure you want to delete this activity?",
-        confirmText: "Delete",
-        cancelText: "Cancel",
-        type: "danger",
-      });
-
-      if (isConfirmed) {
-        try {
-          deleteActivityMutation(
-            {
-              activityId: latestActivity.id,
-              sectionId: latestActivity.sectionId || itinerarySectionId || "",
-              travelId: travelId,
-            },
-            {
-              onSuccess: () => {
-                showToast({ type: "success", message: "Activity deleted successfully" });
-                setActiveTripViewTab("itinerary");
-                handleCancel();
-              },
-              onError: () => {
-                showToast({ type: "error", message: "Failed to delete activity" });
-              },
-            }
-          );
-        } catch (err) {
-          showToast({ type: "error", message: "Failed to delete activity" });
-        }
-      }
-    }
-  };
 
   const { keyboardVisible } = useKeyboardVisible();
   const keyboardVisibleRef = useRef(false);
@@ -479,15 +447,27 @@ const ActivityModal = ({
     setCurrentActivity(null);
     setExtractedData(null);
     setShowUnsavedDialog(false);
+    setAddModeCount((prev) => prev + 1);
   };
 
   const handleAddNewActivityPress = () => {
     if (isDirtyRef.current) {
+      unsavedActionTargetRef.current = "addNew";
       setUnsavedActionTarget("addNew");
       setShowUnsavedDialog(true);
       return;
     }
     switchToAddModeDirectly();
+  };
+
+  const handleEditActivityClose = () => {
+    if (unsavedActionTargetRef.current === "addNew") {
+      unsavedActionTargetRef.current = "close";
+      setUnsavedActionTarget("close");
+      switchToAddModeDirectly();
+      return;
+    }
+    closeDirectly();
   };
 
   const handleCancel = () => {
@@ -550,7 +530,10 @@ const ActivityModal = ({
               </View> */}
 
               <View
-                className="flex-row justify-between items-center px-5 pb-5 border-b border-gray-200"
+                className={
+                  "flex-row justify-between items-center px-5 pb-5 " +
+                  "border-b border-gray-200"
+                }
                 style={{ paddingTop: keyboardVisible ? 0 : 0 }}
               >
                 <View className="flex-row items-center gap-2">
@@ -569,24 +552,14 @@ const ActivityModal = ({
 
                 <View className="flex-row items-center gap-8">
                   {latestActivity?.id && (
-                    <View className="flex-row items-center gap-5">
-                      <TouchableOpacity
-                        onPress={handleDeleteActivity}
-                        disabled={isSaving || isDeleting}
-                        accessibilityRole="button"
-                        accessibilityLabel="Delete activity"
-                      >
-                        <Icon name="delete-outline" size={24} color="#c93030" />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        onPress={handleAddNewActivityPress}
-                        disabled={isSaving}
-                        accessibilityRole="button"
-                        accessibilityLabel="Switch to add activity"
-                      >
-                        <Icon name="add" size={26} color={colors.primary} />
-                      </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity
+                      onPress={handleAddNewActivityPress}
+                      disabled={isSaving}
+                      accessibilityRole="button"
+                      accessibilityLabel="Switch to add activity"
+                    >
+                      <Icon name="add" size={26} color={colors.primary} />
+                    </TouchableOpacity>
                   )}
                   <TouchableOpacity
                     onPress={() => {
@@ -594,7 +567,9 @@ const ActivityModal = ({
                     }}
                     disabled={isSaving || isSubmitting}
                     accessibilityRole="button"
-                    accessibilityLabel={latestActivity?.id ? "Save activity" : "Add activity"}
+                    accessibilityLabel={
+                      latestActivity?.id ? "Save activity" : "Add activity"
+                    }
                   >
                     <View className="flex-row items-center gap-1">
                       {isSaving || isSubmitting ? (
@@ -628,21 +603,23 @@ const ActivityModal = ({
               <View className="flex-1">
                 <EditActivity
                   key={
-                    propItineraryActivity
-                      ? `${propItineraryActivity.id || "new"}-${
-                          propItineraryActivity.title || ""
-                        }-${propItineraryActivity.destination || ""}`
-                      : "new-activity"
+                    isAddMode
+                      ? `new-activity-${addModeCount}`
+                      : (latestActivity?.id || propItineraryActivity?.id || "activity")
                   }
                   initialType={initialType}
-                  itinerarySectionId={itinerarySectionId}
+                  itinerarySectionId={
+                    itinerarySectionId || propItineraryActivity?.sectionId
+                  }
                   itineraryActivity={
-                    extractedData
-                      ? ({ ...latestActivity, ...extractedData } as any)
-                      : latestActivity
+                    isAddMode
+                      ? (extractedData ? ({ ...extractedData } as any) : null)
+                      : (extractedData
+                          ? ({ ...latestActivity, ...extractedData } as any)
+                          : latestActivity)
                   }
                   travelId={travelId}
-                  onClose={onClose}
+                  onClose={handleEditActivityClose}
                   onSubmitRef={submitFormRef}
                   onSubmittingChange={setIsSubmitting}
                   onDirtyChange={(dirty) => {
@@ -653,8 +630,14 @@ const ActivityModal = ({
                   onSaveSuccess={(saved) => {
                     setIsDirty(false);
                     isDirtyRef.current = false;
-                    setIsAddMode(false);
-                    setCurrentActivity(saved);
+                    if (unsavedActionTargetRef.current === "addNew") {
+                      unsavedActionTargetRef.current = "close";
+                      setUnsavedActionTarget("close");
+                      switchToAddModeDirectly();
+                    } else {
+                      setIsAddMode(false);
+                      setCurrentActivity(saved);
+                    }
                   }}
                   onSwitchToAddMode={handleAddNewActivityPress}
                   onOpenSectionModal={handleOpenSectionModal}
@@ -724,7 +707,8 @@ const ActivityModal = ({
 
             <Text className="text-base text-gray-600 mb-6 leading-5">
               {unsavedActionTarget === "addNew"
-                ? "You have unsaved changes. Do you want to save them before adding a new activity?"
+                ? "You have unsaved changes. Do you want to save them " +
+                  "before adding a new activity?"
                 : "You have unsaved changes. Do you want to save them before leaving?"}
             </Text>
 

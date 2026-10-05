@@ -82,27 +82,27 @@ export const extractCoordinates = (
     typeof c.latitude === 'number'
       ? c.latitude
       : typeof c.latitude === 'string'
-      ? parseFloat(c.latitude)
-      : typeof c.lat === 'number'
-      ? c.lat
-      : typeof c.lat === 'string'
-      ? parseFloat(c.lat)
-      : NaN;
+        ? parseFloat(c.latitude)
+        : typeof c.lat === 'number'
+          ? c.lat
+          : typeof c.lat === 'string'
+            ? parseFloat(c.lat)
+            : NaN;
 
   const lng =
     typeof c.longitude === 'number'
       ? c.longitude
       : typeof c.longitude === 'string'
-      ? parseFloat(c.longitude)
-      : typeof c.lon === 'number'
-      ? c.lon
-      : typeof c.lon === 'string'
-      ? parseFloat(c.lon)
-      : typeof c.lng === 'number'
-      ? c.lng
-      : typeof c.lng === 'string'
-      ? parseFloat(c.lng)
-      : NaN;
+        ? parseFloat(c.longitude)
+        : typeof c.lon === 'number'
+          ? c.lon
+          : typeof c.lon === 'string'
+            ? parseFloat(c.lon)
+            : typeof c.lng === 'number'
+              ? c.lng
+              : typeof c.lng === 'string'
+                ? parseFloat(c.lng)
+                : NaN;
 
   if (!isNaN(lat) && !isNaN(lng) && (lat !== 0 || lng !== 0)) {
     return { latitude: lat, longitude: lng };
@@ -296,18 +296,18 @@ const buildTransitMapState = (
     extractPickupCoordinates(destData, transDetails, rideDetails) ||
     (isAsyncForThis && asyncTransitCoords?.pickupCoords
       ? {
-          latitude: asyncTransitCoords.pickupCoords.latitude,
-          longitude: asyncTransitCoords.pickupCoords.longitude,
-        }
+        latitude: asyncTransitCoords.pickupCoords.latitude,
+        longitude: asyncTransitCoords.pickupCoords.longitude,
+      }
       : null);
 
   let dropoffCoords =
     extractDropoffCoordinates(destData, transDetails, rideDetails) ||
     (isAsyncForThis && asyncTransitCoords?.dropoffCoords
       ? {
-          latitude: asyncTransitCoords.dropoffCoords.latitude,
-          longitude: asyncTransitCoords.dropoffCoords.longitude,
-        }
+        latitude: asyncTransitCoords.dropoffCoords.latitude,
+        longitude: asyncTransitCoords.dropoffCoords.longitude,
+      }
       : null);
 
   if (pickupCoords && !dropoffCoords) {
@@ -569,6 +569,8 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     [translateY]
   );
 
+  const isClosingScreenRef = useRef(false);
+
   // Intercept back gesture / hardware back button with platform parity
   useEffect(() => {
     const onBackPress = () => {
@@ -595,6 +597,9 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     const unsubscribeBeforeRemove = navigation.addListener(
       'beforeRemove',
       (e: any) => {
+        if (isClosingScreenRef.current) {
+          return;
+        }
         if (activeActivityId) {
           e.preventDefault();
           handleCloseActivity();
@@ -617,17 +622,14 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     navigation,
   ]);
 
-  const handleBack = useCallback(() => {
-    if (activeActivityId) {
-      handleCloseActivity();
-      return;
-    }
+  const handleClose = useCallback(() => {
+    isClosingScreenRef.current = true;
     if (propOnBack) {
       propOnBack();
     } else if (navigation.canGoBack()) {
       navigation.goBack();
     }
-  }, [activeActivityId, handleCloseActivity, propOnBack, navigation]);
+  }, [propOnBack, navigation]);
 
   const isScrollAtTopRef = useRef(true);
   const handleScrollAtTopChange = useCallback((isAtTop: boolean) => {
@@ -1071,16 +1073,16 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
       if (type === TripPlanType.activity) {
         const allTripDestinations =
           travelPlan.travel.tripDestinations &&
-          travelPlan.travel.tripDestinations.length > 0
+            travelPlan.travel.tripDestinations.length > 0
             ? travelPlan.travel.tripDestinations
             : travelPlan.travel.destination
-            ? [
+              ? [
                 {
                   destination: travelPlan.travel.destination,
                   destinationData: travelPlan.travel.destinationData,
                 },
               ]
-            : [];
+              : [];
 
         openGoogleSearchModal(
           undefined,
@@ -1146,19 +1148,19 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
         />
       </View>
 
-      {/* Floating Back Navigation Button */}
+      {/* Floating Close Button */}
       <View className="absolute left-4 z-20" style={{ top: insets.top + 8 }}>
         <TouchableOpacity
-          onPress={handleBack}
+          onPress={handleClose}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel="Close"
           className={
             'w-10 h-10 rounded-full justify-center items-center ' +
             'bg-white shadow-md elevation-4'
           }
         >
-          <Icon name="arrow-back" size={24} color={theme.colors.onSurface} />
+          <Icon name="close" size={24} color={theme.colors.onSurface} />
         </TouchableOpacity>
       </View>
 
@@ -1185,7 +1187,7 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
             >
               <ViewTravel
                 travelPlan={travelPlan}
-                onClose={handleBack}
+                onClose={handleClose}
                 onRefresh={refetch}
                 expanded={currentSnap === SNAP_EXPANDED}
                 currentSnap={currentSnap}

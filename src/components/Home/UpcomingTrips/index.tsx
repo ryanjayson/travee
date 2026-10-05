@@ -152,13 +152,13 @@ const UpcomingTrips = ({ upcomingTrips, isLoading, onPressTrip, onAddTripPress }
                     <View className="pr-8">
                       {getDaysUntil(item.startOrDepartureDate) ? (
                         <View className="opacity-80 flex-row">
-                          <Text className="text-[12px] text-secondary bg-white/50 px-2.5 rounded-full" >
+                          <Text className="text-[10px] text-secondary bg-white/40 px-2 rounded-full" >
                             {getDaysUntil(item.startOrDepartureDate)}
                           </Text>
                         </View>
                       ) : null}
 
-                      <Text className="text-2xl font-bold text-secondary " numberOfLines={1}>
+                      <Text className="text-2xl font-semibold text-secondary " numberOfLines={1}>
                         {item.title}
                       </Text>
 

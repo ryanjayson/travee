@@ -1360,6 +1360,7 @@ const SectionAccordion = ({
           if (e.nativeEvent.contentOffset.y > 5) {
             collapseSettings();
           }
+
         }}
         onTouchStart={() => {
           collapseSettings();
@@ -1368,13 +1369,15 @@ const SectionAccordion = ({
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         scrollEnabled={
-          !sectionDragState?.isDragging &&
-          !masterDragState.isDragging &&
-          !isSettingsExpanded
+          (!sectionDragState?.isDragging &&
+            !masterDragState.isDragging &&
+            !isSettingsExpanded) ||
+          !isAtTop
         }
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
+            enabled={!masterDragState.isDragging && !sectionDragState?.isDragging}
             onRefresh={handleRefresh}
             colors={["#263F69"]}
             tintColor="#263F69"
@@ -1691,32 +1694,34 @@ const SectionAccordion = ({
       </ScrollView>
 
       {/* Settings Accordion Header */}
-      {!isMinimized && (
-        <Animated.View
-          pointerEvents="auto"
-          style={{
-            zIndex: 999999,
-            position: "absolute",
-            top: -62,
-            right: -4,
-          }}
-        >
-          <TouchableOpacity
-            onPress={toggleSettings}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Open Display Settings"
+      {
+        !isMinimized && (
+          <Animated.View
+            pointerEvents="auto"
             style={{
-              paddingVertical: 10,
-              paddingHorizontal: 12,
-              alignItems: "center",
-              justifyContent: "center",
+              zIndex: 999999,
+              position: "absolute",
+              top: -62,
+              right: 0,
             }}
           >
-            <MaterialIcons name="settings" size={24} color={"#263F69"} />
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+            <TouchableOpacity
+              onPress={toggleSettings}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Open Display Settings"
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MaterialIcons name="settings" size={24} color={"#263F69"} />
+            </TouchableOpacity>
+          </Animated.View>
+        )
+      }
 
       {/* Settings Accordion Body */}
       {/* Settings Bottom Form Sheet */}
@@ -1920,21 +1925,23 @@ const SectionAccordion = ({
       />
 
       {/* View Activity Modal */}
-      {!openViewActivity && selectedViewActivity && (
-        <ViewActivityModal
-          id={selectedViewActivity.id}
-          travelId={selectedViewActivity.travelId}
-          showModal={!!selectedViewActivity}
-          setShowModal={(val) => {
-            if (typeof val === "function") {
-              setSelectedViewActivity((prev) => (val(!!prev) ? prev : null));
-            } else if (!val) {
-              setSelectedViewActivity(null);
-            }
-          }}
-        />
-      )}
-    </View>
+      {
+        !openViewActivity && selectedViewActivity && (
+          <ViewActivityModal
+            id={selectedViewActivity.id}
+            travelId={selectedViewActivity.travelId}
+            showModal={!!selectedViewActivity}
+            setShowModal={(val) => {
+              if (typeof val === "function") {
+                setSelectedViewActivity((prev) => (val(!!prev) ? prev : null));
+              } else if (!val) {
+                setSelectedViewActivity(null);
+              }
+            }}
+          />
+        )
+      }
+    </View >
   );
 };
 

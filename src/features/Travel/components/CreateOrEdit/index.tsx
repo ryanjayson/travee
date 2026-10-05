@@ -233,7 +233,7 @@ const CreateOrEdit = forwardRef<CreateOrEditRef, CreateOrEditProps>(
                 if (onCreated) {
                   onCreated(String(createdId));
                 } else {
-                  navigation.navigate("EditTravelPlan", {
+                  navigation.navigate("TravelDetail", {
                     travelId: String(createdId),
                   });
                 }

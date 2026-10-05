@@ -1,12 +1,14 @@
 import React from "react";
 import { View } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { IconSetProvider, TripPlanType } from "../../types/enums";
+import { IconSetProvider, TripPlanType, ActivityType } from "../../types/enums";
+import { getActivityPlanTypeConfig } from "../../features/Travel/constants/activityPlanTypes";
 // eslint-disable-next-line
 import Icon from "react-native-vector-icons/MaterialIcons";
 
-type ActivityTypeProps = {
+export type ActivityTypeProps = {
   type: TripPlanType;
+  planType?: ActivityType | string | number | null;
   size?: number;
   color?: string;
   showIconOnly?: boolean;
@@ -149,41 +151,103 @@ const getIcon = (type: number): ActivityIcon => {
 
 const ActivityIcon = ({
   type,
+  planType,
   size = 20,
   color,
   showIconOnly = false,
   isViewModeNarrow = false,
 }: ActivityTypeProps) => {
+  const planTypeConfig =
+    type === TripPlanType.activity && planType != null
+      ? getActivityPlanTypeConfig(planType)
+      : undefined;
+
   const activityIcon = getIcon(type);
+  const iconName = planTypeConfig?.iconName ?? activityIcon.iconName;
+  const iconSet = planTypeConfig ? IconSetProvider.material : activityIcon.iconSet;
+  const resolvedColor = color ?? (planTypeConfig?.color || activityIcon.color);
 
-  // Use the per-type hue color if no override was provided
-  const resolvedColor = color ?? activityIcon.color;
-
-  const getIconDisplay = (activityIcon: ActivityIcon) => {
+  const getIconDisplay = () => {
     if (showIconOnly) {
-      if (activityIcon.iconSet == IconSetProvider.feather) {
-        return <Feather name={activityIcon.iconName as any} size={size} color={resolvedColor} />;
-      } else if (activityIcon.iconSet == IconSetProvider.ionic) {
-        return <Ionicons name={activityIcon.iconName as any} size={size} color={resolvedColor} />;
-      } else if (activityIcon.iconSet == IconSetProvider.material) {
-        return <Icon name={activityIcon.iconName as any} size={size} color={resolvedColor} />;
+      if (iconSet === IconSetProvider.feather) {
+        return (
+          <Feather
+            name={iconName as any}
+            size={size}
+            color={resolvedColor}
+          />
+        );
+      } else if (iconSet === IconSetProvider.ionic) {
+        return (
+          <Ionicons
+            name={iconName as any}
+            size={size}
+            color={resolvedColor}
+          />
+        );
+      } else if (iconSet === IconSetProvider.material) {
+        return (
+          <Icon
+            name={iconName as any}
+            size={size}
+            color={resolvedColor}
+          />
+        );
       }
     }
 
-    if (activityIcon.iconSet == IconSetProvider.feather) {
-      return <View style={{ borderColor: resolvedColor + '20', borderWidth: 1, borderRadius: 50, backgroundColor: resolvedColor + '20' }} className={`rounded-full ${isViewModeNarrow ? 'p-1' : 'p-2'}`}><Feather name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
-    } else if (activityIcon.iconSet == IconSetProvider.ionic) {
-      return <View style={{ borderColor: resolvedColor + '20', borderWidth: 1, borderRadius: 50, backgroundColor: resolvedColor + '20' }} className={`rounded-full ${isViewModeNarrow ? 'p-1' : 'p-2'}`}><Ionicons name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
-    } else if (activityIcon.iconSet == IconSetProvider.material) {
-      return <View style={{ borderColor: resolvedColor + '20', borderWidth: 1, borderRadius: 50, backgroundColor: resolvedColor + '20' }} className={`rounded-full ${isViewModeNarrow ? 'p-1' : 'p-2'}`}><Icon name={activityIcon.iconName as any} size={size} color={resolvedColor} /></View>;
+    const containerStyle = {
+      borderColor: resolvedColor + '20',
+      borderWidth: 1,
+      borderRadius: 50,
+      backgroundColor: resolvedColor + '20',
+    };
+    const paddingClass = isViewModeNarrow ? 'p-1' : 'p-2';
+
+    if (iconSet === IconSetProvider.feather) {
+      return (
+        <View
+          style={containerStyle}
+          className={`rounded-full ${paddingClass}`}
+        >
+          <Feather
+            name={iconName as any}
+            size={size}
+            color={resolvedColor}
+          />
+        </View>
+      );
+    } else if (iconSet === IconSetProvider.ionic) {
+      return (
+        <View
+          style={containerStyle}
+          className={`rounded-full ${paddingClass}`}
+        >
+          <Ionicons
+            name={iconName as any}
+            size={size}
+            color={resolvedColor}
+          />
+        </View>
+      );
+    } else if (iconSet === IconSetProvider.material) {
+      return (
+        <View
+          style={containerStyle}
+          className={`rounded-full ${paddingClass}`}
+        >
+          <Icon
+            name={iconName as any}
+            size={size}
+            color={resolvedColor}
+          />
+        </View>
+      );
     }
+    return null;
   };
 
-  return (
-    <View>
-      {activityIcon && getIconDisplay(activityIcon)}
-    </View>
-  );
+  return <View>{getIconDisplay()}</View>;
 };
 
 export default ActivityIcon;

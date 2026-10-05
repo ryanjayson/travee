@@ -2,15 +2,24 @@ import React, { useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQueryClient } from "@tanstack/react-query";
-import { database } from "../../../db";
+import { useTheme } from "react-native-paper";
+import { resetDatabase } from "../../../services/local/backupService";
 import { seedTestNotifications } from "../../../services/local/notificationService";
+import {
+  logger,
+  ErrorCategory,
+  ErrorSeverity,
+} from "../../../services/errorLogger";
 import OnboardingModal from "../../../components/OnboardingModal";
 
 export interface DeveloperActionsProps {
   onCloseParentModal?: () => void;
 }
 
-export const DeveloperActions: React.FC<DeveloperActionsProps> = ({ onCloseParentModal }) => {
+export const DeveloperActions: React.FC<DeveloperActionsProps> = ({
+  onCloseParentModal,
+}) => {
+  const { colors } = useTheme();
   const queryClient = useQueryClient();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
@@ -22,7 +31,13 @@ export const DeveloperActions: React.FC<DeveloperActionsProps> = ({ onCloseParen
         "Sample notifications seeded successfully! Check the notifications panel on Home."
       );
     } catch (error) {
-      console.error("Failed to seed notifications:", error);
+      logger.service(
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          severity: ErrorSeverity.Medium,
+          action: "seedNotifications",
+        }
+      );
       Alert.alert("Error", "Failed to seed sample notifications.");
     }
   };
@@ -30,7 +45,8 @@ export const DeveloperActions: React.FC<DeveloperActionsProps> = ({ onCloseParen
   const handleDeleteAllData = () => {
     Alert.alert(
       "Delete All Data",
-      "Are you sure you want to delete all database entries, user profiles, and reset the application?",
+      "Are you sure you want to delete all database entries, user profiles, " +
+        "and reset the application?",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -38,22 +54,29 @@ export const DeveloperActions: React.FC<DeveloperActionsProps> = ({ onCloseParen
           style: "destructive",
           onPress: async () => {
             try {
-              // Reset WatermelonDB
-              await database.write(async () => {
-                await database.unsafeResetDatabase();
-              });
+              // Reset local database via service layer
+              await resetDatabase();
               // Clear AsyncStorage
               await AsyncStorage.clear();
               // Clear React Query cache
               queryClient.clear();
 
-              Alert.alert("Success", "All application data has been successfully deleted.");
+              Alert.alert(
+                "Success",
+                "All application data has been successfully deleted."
+              );
 
               if (onCloseParentModal) {
                 onCloseParentModal();
               }
             } catch (error) {
-              console.error("Failed to delete all data:", error);
+              logger.db(
+                error instanceof Error ? error : new Error(String(error)),
+                {
+                  severity: ErrorSeverity.Critical,
+                  action: "deleteAllData",
+                }
+              );
               Alert.alert("Error", "Failed to delete all application data.");
             }
           },
@@ -64,19 +87,26 @@ export const DeveloperActions: React.FC<DeveloperActionsProps> = ({ onCloseParen
 
   return (
     <>
-      <View className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6]">
-        <Text className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1">
+      <View
+        className="bg-white rounded-2xl p-4 gap-3 shadow-sm elevation-2 border border-[#F3F4F6]"
+      >
+        <Text
+          className="text-[11px] font-bold text-[#6B7280] uppercase tracking-widest mb-1"
+        >
           Developer Actions
         </Text>
 
         <TouchableOpacity
           onPress={() => setShowOnboarding(true)}
-          className="bg-primary py-3.5 rounded-xl items-center"
+          style={{ backgroundColor: colors.primary }}
+          className="py-3.5 rounded-xl items-center"
           accessibilityRole="button"
           accessibilityLabel="Launch Onboarding Flow"
           activeOpacity={0.7}
         >
-          <Text className="text-white font-bold text-base">Launch Onboarding Flow</Text>
+          <Text className="text-white font-bold text-base">
+            Launch Onboarding Flow
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -86,17 +116,22 @@ export const DeveloperActions: React.FC<DeveloperActionsProps> = ({ onCloseParen
           accessibilityLabel="Seed Sample Notifications"
           activeOpacity={0.7}
         >
-          <Text className="text-white font-bold text-base">Seed Sample Notifications</Text>
+          <Text className="text-white font-bold text-base">
+            Seed Sample Notifications
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={handleDeleteAllData}
-          className="bg-[#D92D20] py-3.5 rounded-xl items-center mt-2"
+          style={{ backgroundColor: colors.error }}
+          className="py-3.5 rounded-xl items-center mt-2"
           accessibilityRole="button"
           accessibilityLabel="Delete All Data"
           activeOpacity={0.7}
         >
-          <Text className="text-white font-bold text-base">Delete All Data</Text>
+          <Text className="text-white font-bold text-base">
+            Delete All Data
+          </Text>
         </TouchableOpacity>
       </View>
 

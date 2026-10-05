@@ -450,29 +450,25 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
           <Modal
             visible={showItineraryTab}
             transparent={false}
-            animationType="none"
+            animationType="slide"
             onRequestClose={() => setShowItineraryTab(false)}>
             <View className="flex-row justify-between items-center px-5 py-2 border-b border-gray-200 pt-14">
-              <View className="flex-col flex-1 ">
-                <Text className="text-sm text-gray-400 font-medium">
+              <TouchableOpacity className='p-2' onPress={() => setShowItineraryTab(false)} >
+                <Icon name="chevron-left" size={36} color={"#999"} />
+              </TouchableOpacity>
+              <View className="flex-col flex-1">
+                <Text className="text-base text-gray-400 font-medium" numberOfLines={1}>
                   {travelPlan.travel.title}
                 </Text>
-                <Text className="text-2xl text-gray-700 font-medium">
+                <Text className="text-2xl text-gray-700 font-medium -mt-1">
                   Itinerary
                 </Text>
               </View>
-              {/* <TouchableOpacity onPress={() => setPlainMode(p => !p)} >
-                    <Icon name={plainMode ? "format-list-bulleted" : "list"} size={32} color={plainMode ? "#263F69" : "#333"} />
-                </TouchableOpacity> */}
-              <TouchableOpacity onPress={() => setShowItineraryTab(false)} >
-                <Icon name="clear" size={36} color={"#333"} />
-              </TouchableOpacity>
             </View>
 
             <View className="flex-1">
               <ItineraryTab
                 travelPlan={travelPlan}
-              // plainMode={plainMode}
               />
             </View>
           </Modal>

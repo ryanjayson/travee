@@ -5,14 +5,16 @@ import type { BottomTabNavigationOptions } from "@react-navigation/bottom-tabs";
 import { TravelProvider, useTravelContext } from "../context/TravelContext";
 import { Text } from "react-native";
 
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import TravelCatalog from "../features/Travel/screens/TravelCatalog";
 import { ExploreScreen } from "../screens/MapScreen";
 import HomeScreen from "../screens/HomeScreen";
 import { ProfileScreen } from "../screens/ProfileScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
 import CreateTravelModal from "../features/Travel/components/CreateOrEdit/Modal";
-import ViewTravelModal from "../features/Travel/components/View/Modal";
 import TravelModals from "../features/Travel/components/TravelModals";
+import type { RootStackParamList } from "./navigation.types";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Dimensions } from 'react-native';
@@ -63,9 +65,8 @@ const HomeTabScreen = () => {
 // Tab screens can be used directly or wrapped if needed. We mount TravelCatalog directly.
 
 function RootTabsComponent() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [visibleCreateTravelModal, setVisibleCreateTravelModal] = React.useState(false);
-  const [showTravelViewModal, setShowTravelViewModal] = React.useState(false);
-  const [selectedTravelId, setSelectedTravelId] = React.useState("");
   const insets = useSafeAreaInsets();
 
   return (
@@ -109,7 +110,15 @@ function RootTabsComponent() {
                       color: isAddTab ? '#fff' : '#0EA5E9',
                     }}
                   />
-                  {!isAddTab && <Text className={`text-xs font-bold  ${focused ? 'text-primary' : 'text-gray-400'}`}>{route.name}</Text>}
+                  {!isAddTab && (
+                    <Text
+                      className={`text-xs font-bold ${
+                        focused ? 'text-primary' : 'text-gray-400'
+                      }`}
+                    >
+                      {route.name}
+                    </Text>
+                  )}
                 </View>
               );
             },
@@ -161,7 +170,11 @@ function RootTabsComponent() {
           //   ),
           // }}
           />
-          {/* <Tab.Screen name="Maps" component={ExploreScreen} options={{ headerShown: false }} /> */}
+          {/* <Tab.Screen
+            name="Maps"
+            component={ExploreScreen}
+            options={{ headerShown: false }}
+          /> */}
         </Tab.Navigator>
 
         {/* Floating Add Button on the right side */}
@@ -195,14 +208,10 @@ function RootTabsComponent() {
           showModal={visibleCreateTravelModal}
           setShowModal={setVisibleCreateTravelModal}
           onCreated={(createdId) => {
-            setSelectedTravelId(createdId);
-            setShowTravelViewModal(true);
+            if (createdId) {
+              navigation.navigate("TravelDetail", { travelId: createdId });
+            }
           }}
-        />
-        <ViewTravelModal
-          travelId={selectedTravelId}
-          showModal={showTravelViewModal}
-          setShowModal={setShowTravelViewModal}
         />
         <TravelModals />
       </View>
