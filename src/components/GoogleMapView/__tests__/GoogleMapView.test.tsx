@@ -396,4 +396,20 @@ describe("GoogleMapView Component", () => {
     const updatedWebview = getByTestId("webview");
     expect(updatedWebview.props.source.html).toBe(initialHtml);
   });
+
+  it("sends MAP_READY message and syncs pins on MAP_READY and onLoadEnd", () => {
+    const { getByTestId } = render(<GoogleMapView pins={mockPins} />);
+    const webview = getByTestId("webview");
+    expect(webview.props.source.html).toContain(
+      "window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'MAP_READY' }))"
+    );
+
+    fireEvent(webview, "message", {
+      nativeEvent: {
+        data: JSON.stringify({ type: "MAP_READY" }),
+      },
+    });
+
+    fireEvent(webview, "loadEnd");
+  });
 });

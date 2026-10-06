@@ -498,11 +498,22 @@ export const GoogleMapView = ({
         }
       });
 
-      renderPins(initialPins);
+      renderPins(currentPins || initialPins);
 
       if (pendingCenter) {
-        window.centerOnLocation(pendingCenter.lat, pendingCenter.lng, pendingCenter.zoom, pendingCenter.pinId, pendingCenter.offsetY, false);
+        window.centerOnLocation(
+          pendingCenter.lat,
+          pendingCenter.lng,
+          pendingCenter.zoom,
+          pendingCenter.pinId,
+          pendingCenter.offsetY,
+          false
+        );
         pendingCenter = null;
+      }
+
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'MAP_READY' }));
       }
 
       if (typeof ResizeObserver !== 'undefined') {
@@ -1273,6 +1284,7 @@ export const GoogleMapView = ({
   }, [connectorColor]);
 
   const prevPinsJsonRef = useRef("");
+  const isMapReadyRef = useRef<boolean>(false);
 
   // Update pins in webview dynamically when pins change
   useEffect(() => {
@@ -1419,7 +1431,20 @@ export const GoogleMapView = ({
     (event: any) => {
       try {
         const data = JSON.parse(event.nativeEvent.data);
-        if (data.type === "PIN_PRESS" && onPinPress) {
+        if (data.type === "MAP_READY") {
+          isMapReadyRef.current = true;
+          if (
+            webViewRef.current &&
+            typeof webViewRef.current.injectJavaScript === "function" &&
+            Array.isArray(pins) &&
+            pins.length > 0
+          ) {
+            const pinsJson = JSON.stringify(pins);
+            const code =
+              `if (window.updatePins) { window.updatePins(${pinsJson}); } true;`;
+            webViewRef.current.injectJavaScript(code);
+          }
+        } else if (data.type === "PIN_PRESS" && onPinPress) {
           if (
             data.pin &&
             typeof data.pin.latitude === "number" &&
@@ -1459,6 +1484,19 @@ export const GoogleMapView = ({
         source={{ html: htmlContent }}
         style={styles.webview}
         onMessage={handleMessage}
+        onLoadEnd={() => {
+          if (
+            webViewRef.current &&
+            typeof webViewRef.current.injectJavaScript === "function" &&
+            Array.isArray(pins) &&
+            pins.length > 0
+          ) {
+            const pinsJson = JSON.stringify(pins);
+            const code =
+              `if (window.updatePins) { window.updatePins(${pinsJson}); } true;`;
+            webViewRef.current.injectJavaScript(code);
+          }
+        }}
         javaScriptEnabled={true}
         domStorageEnabled={true}
         startInLoadingState={true}

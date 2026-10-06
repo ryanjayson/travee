@@ -114,13 +114,13 @@ export default function DateTime({
 
       {description !== undefined ? (
         description ? (
-          <Text className="text-base text-tertiary mb-2">
+          <Text className="text-base text-tertiary ">
             {description}
           </Text>
         ) : null
       ) : (
         defaultDescription && (
-          <Text className="text-base text-tertiary mb-2 px-xs">
+          <Text className="text-base text-tertiary  px-xs">
             {defaultDescription}
           </Text>
         )
@@ -133,9 +133,8 @@ export default function DateTime({
         <View className={inputContainerClass} style={{ minHeight: 64, flexShrink: 0 }}>
           <TouchableOpacity
             onPress={onPressDate}
-            className={`flex-1 flex-row items-center p-3 gap-2 ${
-              !finalAllowedClear ? "opacity-30" : ""
-            }`}
+            className={`flex-1 flex-row items-center p-3 gap-2 ${!finalAllowedClear ? "opacity-30" : ""
+              }`}
             accessibilityRole="button"
             accessibilityLabel="Select date"
             disabled={!finalAllowedClear}
@@ -179,9 +178,8 @@ export default function DateTime({
         <View className={inputContainerClass} style={{ minHeight: 64, flexShrink: 0 }}>
           <TouchableOpacity
             onPress={onPressTime}
-            className={`flex-1 flex-row items-center p-3 gap-2 ${
-              !finalAllowedClear ? "opacity-30" : ""
-            }`}
+            className={`flex-1 flex-row items-center p-3 gap-2 ${!finalAllowedClear ? "opacity-30" : ""
+              }`}
             accessibilityRole="button"
             accessibilityLabel="Select time"
             disabled={!finalAllowedClear}
@@ -287,9 +285,8 @@ export default function DateTime({
                 ) : null}
                 <TouchableOpacity
                   onPress={onPressEndTime}
-                  className={`flex-1 flex-row items-center p-3 gap-2 ${
-                    !onPressEndTime ? "opacity-30" : ""
-                  }`}
+                  className={`flex-1 flex-row items-center p-3 gap-2 ${!onPressEndTime ? "opacity-30" : ""
+                    }`}
                   accessibilityRole="button"
                   accessibilityLabel="Select end time"
                   disabled={!onPressEndTime}
@@ -327,7 +324,7 @@ export default function DateTime({
           activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel="Add End date & time"
-          className="flex-row items-center self-start mt-3 py-1  gap-1.5"
+          className="flex-row items-center self-start mt-3 py-1 gap-1.5"
         >
           <Icon name="add" size={20} color={"#0EA5E9"} />
           <Text

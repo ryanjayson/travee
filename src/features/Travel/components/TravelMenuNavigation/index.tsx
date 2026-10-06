@@ -190,7 +190,7 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
               onPress={() => handleAction(TravelMenuAction.EditTravel)}
             >
               <View className="w-10 h-10 justify-center items-center mr-3.5">
-                <Icon name="edit-note" size={32} color="#344054" />
+                <Icon name="edit-note" size={28} color="#344054" />
               </View>
               <Text className="flex-1 text-lg font-semibold text-secondary">
                 Edit Trip
@@ -206,7 +206,7 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
                 onPress={() => handleAction(TravelMenuAction.Unarchive)}
               >
                 <View className="w-10 h-10 justify-center items-center mr-3.5">
-                  <Icon name="unarchive" size={32} color="#344054" />
+                  <Icon name="unarchive" size={28} color="#344054" />
                 </View>
                 <Text className="flex-1 text-lg font-semibold text-secondary">
                   Unarchive Trip
@@ -221,7 +221,7 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
                 onPress={() => handleAction(TravelMenuAction.Archive)}
               >
                 <View className="w-10 h-10 justify-center items-center mr-3.5">
-                  <Icon name="archive" size={32} color="#344054" />
+                  <Icon name="archive" size={28} color="#344054" />
                 </View>
                 <Text className="flex-1 text-lg font-semibold text-secondary">
                   Archive
@@ -241,7 +241,7 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
               onPress={() => handleAction(TravelMenuAction.Cancel)}
             >
               <View className="w-10 h-10  justify-center items-center mr-3.5">
-                <Icon name="cancel" size={32} color="#C62828" />
+                <Icon name="cancel" size={28} color="#C62828" />
               </View>
               <Text className="flex-1 text-lg font-semibold text-[#C62828]">
                 Cancel
@@ -256,7 +256,7 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
               onPress={() => handleAction(TravelMenuAction.Delete)}
             >
               <View className="w-10 h-10 justify-center items-center mr-3.5">
-                <Icon name="delete-outline" size={32} color="#C62828" />
+                <Icon name="delete-outline" size={28} color="#C62828" />
               </View>
               <Text className="flex-1 text-lg font-semibold text-[#C62828]">
                 Delete

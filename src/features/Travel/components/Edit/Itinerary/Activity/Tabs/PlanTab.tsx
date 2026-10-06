@@ -164,7 +164,7 @@ export default function PlanTab({
         }}
         className="mb-5 mt-4"
       >
-        <Text className="text-lg text-secondary/80 font-semibold mb-2">
+        <Text className="text-lg text-secondary/80 font-semibold mb-2 px-xs">
           Type of Activity
         </Text>
 

@@ -47,6 +47,7 @@ interface SectionAccordionProps {
   travelPlan: TravelPlan;
   onRefresh?: () => Promise<any>;
   isMinimized?: boolean;
+  isMidSnap?: boolean;
 }
 
 // Tactile spring layout animation configuration
@@ -464,6 +465,7 @@ const SectionAccordion = ({
   travelPlan,
   onRefresh,
   isMinimized,
+  isMidSnap = false,
 }: SectionAccordionProps) => {
   const { generateSortOrder } = useLexicographicSort();
   const queryClient = useQueryClient();
@@ -752,6 +754,14 @@ const SectionAccordion = ({
 
   const masterHoverStateRef = useRef(masterHoverState);
   useEffect(() => { masterHoverStateRef.current = masterHoverState; }, [masterHoverState]);
+
+  useEffect(() => {
+    if (isMidSnap || isMinimized) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      scrollOffset.current = 0;
+      setIsAtTop(true);
+    }
+  }, [isMidSnap, isMinimized]);
 
   // --- Master Section Drag handlers ---
   const handleMasterSectionDragStart = (index: number) => {
@@ -1369,10 +1379,12 @@ const SectionAccordion = ({
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         scrollEnabled={
-          (!sectionDragState?.isDragging &&
-            !masterDragState.isDragging &&
-            !isSettingsExpanded) ||
-          !isAtTop
+          isMidSnap
+            ? false
+            : (!sectionDragState?.isDragging &&
+                !masterDragState.isDragging &&
+                !isSettingsExpanded) ||
+              !isAtTop
         }
         refreshControl={
           <RefreshControl

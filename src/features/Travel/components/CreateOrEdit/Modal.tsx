@@ -105,7 +105,13 @@ const CreateTripModal = ({
     >
       <StatusBar style="dark" />
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={
+          Platform.OS === "ios"
+            ? "padding"
+            : keyboardVisible
+              ? "padding"
+              : undefined
+        }
         style={{ flex: 1 }}
       >
         <Animated.View
@@ -163,7 +169,7 @@ const CreateTripModal = ({
                 tripData={tripData}
                 mode={mode}
                 onCreated={onCreated}
-                hideSubmitButton={keyboardVisible}
+                hideSubmitButton={false}
                 autoFocusSearch={showModal && shouldAutoFocus}
                 onScroll={(e) => {
                   const y = e.nativeEvent.contentOffset.y;

@@ -7,12 +7,14 @@ interface ItineraryTabProps {
   travelPlan: TravelPlan;
   onRefresh?: () => Promise<any>;
   isMinimized?: boolean;
+  isMidSnap?: boolean;
 }
 
 const ItineraryTab = ({
   travelPlan,
   onRefresh,
   isMinimized,
+  isMidSnap = false,
 }: ItineraryTabProps) => {
   return (
     <View className="flex-1 bg-gray-100 px-3">
@@ -20,6 +22,7 @@ const ItineraryTab = ({
         travelPlan={travelPlan}
         onRefresh={onRefresh}
         isMinimized={isMinimized}
+        isMidSnap={isMidSnap}
       />
     </View>
   );

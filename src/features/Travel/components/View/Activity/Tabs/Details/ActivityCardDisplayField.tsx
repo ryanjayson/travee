@@ -135,17 +135,17 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
   const isUnderlined = Boolean(isLink || isPhone || isContactNumber || isCall || isEmail);
 
   return (
-    <View className="flex-row items-start gap-6 my-md">
+    <View className="flex-row items-start gap-5 my-md">
       {icon ? (
         <View
-          className="rounded-full border-tertiary/10"
+          className="rounded-full border-tertiary/10 mt-1"
           style={{ alignItems: "center", justifyContent: "center" }}
         >
           <Icon name={icon as any} size={28} color="#344054" />
         </View>
       ) : null}
       <View className={`flex-1 ${borderClass} ${showBorder ? "pb-3" : ""}`}>
-        <Text className="text-xl font-medium text-secondary">
+        <Text className="text-lg  font-medium text-secondary">
           {label}
         </Text>
         {isInteractive ? (

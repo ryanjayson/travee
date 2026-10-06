@@ -176,6 +176,7 @@ const ViewTravel = ({
   const [localCurrentSnap, setLocalCurrentSnap] = useState(SNAP_MID);
   const currentSnap = propCurrentSnap !== undefined ? propCurrentSnap : localCurrentSnap;
   const isMinimized = currentSnap === SNAP_MIN || Math.abs(currentSnap - SNAP_MIN) < 2;
+  const isMidSnap = currentSnap === SNAP_MID || Math.abs(currentSnap - SNAP_MID) < 2;
 
   const snapTo = (toValue: number) => {
     snappedY.current = toValue;
@@ -354,6 +355,7 @@ const ViewTravel = ({
             travelPlan={travelPlan}
             onRefresh={onRefresh}
             isMinimized={isMinimized}
+            isMidSnap={isMidSnap}
           />
         ),
       },
@@ -378,6 +380,8 @@ const ViewTravel = ({
           <ChecklistTab
             travelPlan={travelPlan}
             activities={allActivitiesList}
+            isMidSnap={isMidSnap}
+            isMinimized={isMinimized}
           />
         ),
       },
@@ -406,6 +410,7 @@ const ViewTravel = ({
       setActiveTabId,
       onRefresh,
       isMinimized,
+      isMidSnap,
       openExpenseModal,
       openNoteModal,
       allActivitiesList,

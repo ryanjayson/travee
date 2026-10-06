@@ -36,28 +36,35 @@ jest.mock("../TripDestinationSearchBox", () => {
   const { TouchableOpacity, Text } = require("react-native");
   return {
     __esModule: true,
-    default: React.forwardRef(({ onSelect, placeholder, disabled }: any, ref: any) => {
-      React.useImperativeHandle(ref, () => ({
-        focus: mockSearchFocus,
-        clear: jest.fn(),
-      }));
-      return React.createElement(
-        TouchableOpacity,
-        {
-          testID: "mock-destination-search-box",
-          accessibilityLabel: "Select mock destination",
-          disabled,
-          onPress: () =>
-            onSelect({
-              destination: "Tokyo, Japan",
-              destinationData: {
-                coordinates: { latitude: 35.6762, longitude: 139.6503 },
-              },
-            }),
-        },
-        React.createElement(Text, null, placeholder || "Search place, city, or country")
-      );
-    }),
+    default: React.forwardRef(
+      ({ onSelect, placeholder, disabled, tags, children }: any, ref: any) => {
+        React.useImperativeHandle(ref, () => ({
+          focus: mockSearchFocus,
+          clear: jest.fn(),
+        }));
+        return React.createElement(
+          TouchableOpacity,
+          {
+            testID: "mock-destination-search-box",
+            accessibilityLabel: "Select mock destination",
+            disabled,
+            onPress: () =>
+              onSelect({
+                destination: "Tokyo, Japan",
+                destinationData: {
+                  coordinates: { latitude: 35.6762, longitude: 139.6503 },
+                },
+              }),
+          },
+          React.createElement(
+            Text,
+            null,
+            placeholder || "Search place, city, or country"
+          ),
+          tags || children
+        );
+      }
+    ),
   };
 });
 
@@ -81,9 +88,10 @@ describe("CreateOrEdit (Trip Form) Component", () => {
     expect(getByText(/describe your trip/i)).toBeTruthy();
     expect(getByTestId("mock-destination-search-box")).toBeTruthy();
     expect(getByText("Create Trip")).toBeTruthy();
+    expect(getByText("0/50")).toBeTruthy();
   });
 
-  it("fails validation when submitting with too short title and no destination", async () => {
+  it("fails validation when submitting with empty title and no destination", async () => {
     const ref = React.createRef<CreateOrEditRef>();
     const { findByText } = renderWithProviders(
       <CreateOrEdit {...defaultProps} ref={ref} />
@@ -97,6 +105,31 @@ describe("CreateOrEdit (Trip Form) Component", () => {
     expect(titleError).toBeTruthy();
     const destError = await findByText(/add your destination/i);
     expect(destError).toBeTruthy();
+    expect(mockMutate).not.toHaveBeenCalled();
+  });
+
+  it("fails validation when title is fewer than 3 characters", async () => {
+    const ref = React.createRef<CreateOrEditRef>();
+    const { findByText } = renderWithProviders(
+      <CreateOrEdit
+        {...defaultProps}
+        ref={ref}
+        tripData={{
+          id: "trip-1",
+          title: "Hi",
+          tripDestinations: [{ destination: "Tokyo" }],
+        } as any}
+      />
+    );
+
+    await act(async () => {
+      ref.current?.submit();
+    });
+
+    const shortError = await findByText(
+      /trip title is too short, make it more descriptive/i
+    );
+    expect(shortError).toBeTruthy();
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
@@ -243,5 +276,31 @@ describe("CreateOrEdit (Trip Form) Component", () => {
 
     expect(mockSearchFocus).toHaveBeenCalled();
     jest.useRealTimers();
+  });
+
+  it("respects hideSubmitButton prop", () => {
+    const { queryByText: queryHidden } = renderWithProviders(
+      <CreateOrEdit {...defaultProps} hideSubmitButton={true} />
+    );
+    expect(queryHidden("Create Trip")).toBeNull();
+
+    const { getByText: getVisible } = renderWithProviders(
+      <CreateOrEdit {...defaultProps} hideSubmitButton={false} />
+    );
+    expect(getVisible("Create Trip")).toBeTruthy();
+  });
+
+  it("handles title focus without crashing", () => {
+    const { getAllByTestId } = renderWithProviders(
+      <CreateOrEdit {...defaultProps} />
+    );
+
+    const titleInput = getAllByTestId("text-input-outlined")[0];
+    act(() => {
+      fireEvent(titleInput, "focus");
+    });
+    act(() => {
+      fireEvent(titleInput, "blur");
+    });
   });
 });

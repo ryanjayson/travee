@@ -1538,23 +1538,19 @@ const EditActivity = ({
                       }
                       onPress={() => setShowDestinationSheet(true)}
                       className={
-                        "flex-row items-center self-start mt-2.5 py-1 px-1 " +
-                        "gap-1.5 opacity-60"
+                        "flex-row items-center self-start mt-2.5 py-1 px-1 gap-1.5"
                       }
                     >
-                      <Ionicons name="location-outline" size={17} color={activityColor} />
-                      <Text className="text-base font-semibold text-secondary/80">
-                        Place Details
-                      </Text>
+                      <Ionicons name="location-outline" size={16} color={"#0EA5E9"} />
                       <Text
-                        className={`text-base  max-w-[200px] ${hasLocation ? "text-secondary/80" : "text-secondary/50"
+                        className={`text-sm font-semibold text-primary max-w-[200]
                           }`}
                         ellipsizeMode="tail"
                         numberOfLines={1}
                       >
                         {placeTitle || destinationAddress || ""}
                       </Text>
-                      <Ionicons name="chevron-forward" size={15} color="#98A2B3" />
+                      <Ionicons name="chevron-forward" size={15} color="#0EA5E9" />
                     </TouchableOpacity>
                   )}
                 </View>

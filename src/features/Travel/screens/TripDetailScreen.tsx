@@ -499,8 +499,9 @@ const buildTransitMapState = (
 
 const buildDefaultTripPins = (
   travelPlan: any,
-  showActivityPinsInTripMap: boolean,
-  connectorColor: string = '#c10003'
+  showActivityPinsInTripMap: boolean = true,
+  connectorColor: string = '#c10003',
+  asyncActivitiesMap?: Record<string, { latitude: number; longitude: number }>
 ): MapStateResult => {
   if (!travelPlan) {
     return {
@@ -530,13 +531,15 @@ const buildDefaultTripPins = (
     });
   }
 
-  if (showActivityPinsInTripMap) {
+  if (showActivityPinsInTripMap !== false) {
     travelPlan.itinerarySection?.forEach((section: any) => {
       section.itineraryActivity?.forEach((act: any) => {
         if (EXCLUDED_DEFAULT_TYPES.includes(act.type as any)) {
           return;
         }
-        const coords = getActivityCoordinates(act);
+        const coords =
+          getActivityCoordinates(act) ||
+          (asyncActivitiesMap ? asyncActivitiesMap[String(act.id)] : null);
         if (coords) {
           defaultPins.push({
             id: act.id,
@@ -554,7 +557,7 @@ const buildDefaultTripPins = (
   }
 
   const hasConnectablePins =
-    showActivityPinsInTripMap &&
+    showActivityPinsInTripMap !== false &&
     (defaultPins.length > 1 ||
       (() => {
         const typeCounts: Record<string, number> = {};
@@ -602,7 +605,65 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     openSectionModal,
     activeTripViewTab,
     showActivityPinsInTripMap = true,
+    setShowActivityPinsInTripMap,
   } = useTravelContext();
+
+  useEffect(() => {
+    setShowActivityPinsInTripMap?.(true);
+  }, [setShowActivityPinsInTripMap]);
+
+  const [asyncActivitiesMap, setAsyncActivitiesMap] = useState<
+    Record<string, { latitude: number; longitude: number }>
+  >({});
+
+  useEffect(() => {
+    if (!travelPlan?.itinerarySection) return;
+    let isMounted = true;
+    const bias =
+      travelPlan?.travel?.destinationData?.coordinates ||
+      extractCoordinates(travelPlan?.travel);
+
+    const toGeocode: { id: string; address: string }[] = [];
+    travelPlan.itinerarySection.forEach((section: any) => {
+      section.itineraryActivity?.forEach((act: any) => {
+        if (EXCLUDED_DEFAULT_TYPES.includes(act.type as any)) return;
+        const coords = getActivityCoordinates(act);
+        if (!coords) {
+          const addr = getActivityAddressString(act);
+          if (addr) {
+            toGeocode.push({ id: String(act.id), address: addr });
+          }
+        }
+      });
+    });
+
+    if (toGeocode.length === 0) return;
+
+    Promise.all(
+      toGeocode.map(async ({ id, address }) => {
+        const resolved = await geocodeAddress(address, bias);
+        return resolved ? { id, coords: resolved } : null;
+      })
+    ).then((results) => {
+      if (!isMounted) return;
+      const newMap: Record<string, { latitude: number; longitude: number }> = {};
+      results.forEach((r) => {
+        if (r) {
+          newMap[r.id] = {
+            latitude: r.coords.latitude,
+            longitude: r.coords.longitude,
+          };
+        }
+      });
+      if (Object.keys(newMap).length > 0) {
+        setAsyncActivitiesMap((prev) => ({ ...prev, ...newMap }));
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [travelPlan]);
 
   const [localActivityId, setLocalActivityId] = useState<string | null>(null);
   const [fabOpen, setFabOpen] = useState<boolean>(false);
@@ -1080,7 +1141,8 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     const defaultState = buildDefaultTripPins(
       travelPlan,
       showActivityPinsInTripMap,
-      connectorColor
+      connectorColor,
+      asyncActivitiesMap
     );
 
     if (activeActivity) {
@@ -1167,6 +1229,7 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     travelPlan,
     connectorColor,
     showActivityPinsInTripMap,
+    asyncActivitiesMap,
   ]);
 
   const selectedActivityCoords = useMemo(() => {

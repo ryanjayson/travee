@@ -63,6 +63,7 @@ export interface TripDestinationSearchBoxProps {
   placeholder?: string;
   disabled?: boolean;
   autoFocus?: boolean;
+  tags?: React.ReactNode;
 }
 
 export const TripDestinationSearchBox = React.forwardRef<
@@ -73,6 +74,7 @@ export const TripDestinationSearchBox = React.forwardRef<
   placeholder = "Search place, city, or country",
   disabled = false,
   autoFocus = false,
+  tags,
 }, ref) => {
   const { colors } = useTheme();
   const inputRef = useRef<TextInput>(null);
@@ -91,6 +93,7 @@ export const TripDestinationSearchBox = React.forwardRef<
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSelectingId, setIsSelectingId] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [containerHeight, setContainerHeight] = useState<number>(76);
 
   const sessionTokenRef = useRef<string>(generateSessionToken());
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -564,65 +567,78 @@ export const TripDestinationSearchBox = React.forwardRef<
 
   return (
     <View className="w-full relative z-30" style={{ zIndex: 100 }}>
-      {/* Search Bar Input */}
+      {/* Search Bar Input Container */}
       <View
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          if (h > 0) setContainerHeight(h);
+        }}
         className={
-          "flex-row items-center h-19 px-3.5 bg-white " +
-          "rounded-2xl border-2 border-primary/20"
+          "w-full bg-white rounded-2xl border-2 border-primary/20 " +
+          (tags ? "p-3" : "px-3.5 h-19 justify-center")
         }
       >
-        <Icon
-          name="search"
-          size={20}
-          color={colors.primary}
-          style={{ marginRight: 8 }}
-        />
-        <TextInput
-          ref={inputRef}
-          value={query}
-          onChangeText={handleQueryChange}
-          placeholder={placeholder}
-          placeholderTextColor="#98A2B3"
-          autoFocus={autoFocus}
-          onFocus={() => {
-            if (predictions.length > 0 || query.trim().length >= 2) {
-              setIsExpanded(true);
-            }
-          }}
-          editable={!disabled}
-          autoCorrect={false}
-          returnKeyType="search"
-          onSubmitEditing={() => performSearch(query)}
-          className="flex-1 text-lg py-0 text-gray-900 font-semibold"
-          style={{ color: "#101828" }}
-        />
-        {isLoading && (
-          <ActivityIndicator
-            size="small"
+        {tags ? (
+          <View className="mb-2.5">
+            {tags}
+          </View>
+        ) : null}
+
+        <View className="flex-row items-center">
+          <Icon
+            name="search"
+            size={20}
             color={colors.primary}
-            className="mr-2"
+            style={{ marginRight: 8 }}
           />
-        )}
-        {query.length > 0 && (
-          <TouchableOpacity
-            onPress={handleClear}
-            activeOpacity={0.7}
-            className="p-1"
-            accessibilityRole="button"
-            accessibilityLabel="Clear search input"
-          >
-            <View className="w-5 h-5 rounded-full bg-gray-200 items-center justify-center">
-              <Icon name="close" size={13} color="#475467" />
-            </View>
-          </TouchableOpacity>
-        )}
+          <TextInput
+            ref={inputRef}
+            value={query}
+            onChangeText={handleQueryChange}
+            placeholder={placeholder}
+            placeholderTextColor="#98A2B3"
+            autoFocus={autoFocus}
+            onFocus={() => {
+              if (predictions.length > 0 || query.trim().length >= 2) {
+                setIsExpanded(true);
+              }
+            }}
+            editable={!disabled}
+            autoCorrect={false}
+            returnKeyType="search"
+            onSubmitEditing={() => performSearch(query)}
+            className="flex-1 text-lg py-0 text-gray-900 font-semibold"
+            style={{ color: "#101828" }}
+          />
+          {isLoading && (
+            <ActivityIndicator
+              size="small"
+              color={colors.primary}
+              className="mr-2"
+            />
+          )}
+          {query.length > 0 && (
+            <TouchableOpacity
+              onPress={handleClear}
+              activeOpacity={0.7}
+              className="p-1"
+              accessibilityRole="button"
+              accessibilityLabel="Clear search input"
+            >
+              <View className="w-5 h-5 rounded-full bg-gray-200 items-center justify-center">
+                <Icon name="close" size={13} color="#475467" />
+              </View>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Results List Rendered Below the SearchBox */}
       {isExpanded && query.trim().length >= 2 && (
         <View
-          className="absolute top-20 left-0 right-0 bg-white rounded-2xl"
+          className="absolute left-0 right-0 bg-white rounded-2xl"
           style={{
+            top: containerHeight + 6,
             elevation: 12,
             zIndex: 999,
             shadowColor: "#000",

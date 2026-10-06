@@ -35,7 +35,10 @@ interface TripDetailProps {
 }
 
 const TravelSchema = Yup.object().shape({
-  title: Yup.string().required("Title is required"),
+  title: Yup.string()
+    .required("Title is required")
+    .min(3, "Title is too short, make it more descriptive")
+    .max(50, "Title must be at most 50 characters"),
   destination: Yup.string().required("Destination is required"),
 });
 
@@ -265,6 +268,7 @@ const TripDetail = ({ tripData, mode = "edit", onClose, onStatusChange }: TripDe
           onBlur={formik.handleBlur("title")}
           error={formik.touched.title && Boolean(formik.errors.title)}
           disabled={isSaving}
+          maxLength={50}
           outlineColor="#E0E0E0"
           activeOutlineColor="#263F69"
           theme={{ colors: { onSurfaceVariant: '#888' } }}

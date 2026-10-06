@@ -46,14 +46,27 @@ const FILTER_OPTIONS: FilterOptionItem[] = [
 interface ChecklistTabProps {
   travelPlan: TravelPlan;
   activities?: ItineraryActivity[];
+  isMidSnap?: boolean;
+  isMinimized?: boolean;
 }
 
-const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
+const ChecklistTab = ({
+  travelPlan,
+  activities,
+  isMidSnap = false,
+  isMinimized = false,
+}: ChecklistTabProps) => {
   const { colors } = useTheme();
   const { userToken } = useAuth();
   const { openChecklistModal } = useTravelContext();
   const travelId = travelPlan.travel.id || "";
   const scrollViewRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (isMidSnap || isMinimized) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    }
+  }, [isMidSnap, isMinimized]);
 
   const { data: groups = [], isLoading: groupsLoading } = useChecklistGroups(travelId);
   const { data: items = [], isLoading: itemsLoading } = useChecklistItems(travelId);
@@ -206,6 +219,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
       <ScrollView
         ref={scrollViewRef}
         className="flex-1"
+        scrollEnabled={isMidSnap ? false : true}
         contentContainerStyle={{
           paddingBottom: 60,
         }}
@@ -221,12 +235,12 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
             duration={350}
           >
             <View className="flex-row items-center justify-between">
-              <Text className="text-2xl tracking-tight font-medium  text-secondary mb-0">
+              <Text className="text-2xl font-medium  text-secondary mb-0">
                 Trip checklist
               </Text>
             </View>
             <View className="flex-row items-center justify-between mb-2">
-              <Text className="text-lg tracking-tight text-tertiary/60 mb-0 leading-xl">
+              <Text className="text-md tracking-normal text-tertiary/60 mb-0 leading-xl">
                 Track your travel essentials, custom lists, and itinerary tasks
               </Text>
             </View>
@@ -300,7 +314,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                         title: "General",
                       })
                     }
-                    className="flex-row items-center gap-3 px-5 bg-gray-50"
+                    className="flex-row items-center gap-3 px-5 bg-gray-100"
                   >
                     <View className="flex-row items-center py-xl flex-1">
                       <Text className="text-lg font-normal text-gray-600 flex-1 pr-2xl">
@@ -320,7 +334,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           {/* Custom Group Header & Items */}
           {(selectedFilter === 'All' || selectedFilter === 'Custom') && (
             <View className="flex-row items-center justify-between mt-2xl px-4">
-              <Text className="text-2xl font-semibold text-secondary">My Custom Checklist</Text>
+              <Text className="text-xl font-semibold text-secondary">My Custom Checklist</Text>
               {groups.length !== 0 && (
                 <TouchableOpacity
                   onPress={() => setShowGroupModal(true)}
@@ -378,19 +392,19 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                           description: group.description,
                         })
                       }
-                      className="flex-row items-center gap-3 px-5 bg-gray-50"
+                      className="flex-row items-center gap-3 px-5 bg-gray-100"
                     >
                       <View
                         className={`flex-row items-center py-xl flex-1 
-                          ${index < groups.length - 1 ? "border-b border-gray-200" : ""
+                          ${index < groups.length - 1 ? "border-b-2 border-gray-200" : ""
                           }`}
                       >
                         <View className="flex-1 pr-2xl">
-                          <Text className="text-lg font-normal text-gray-600">
+                          <Text className="text-lg font-normal text-secondary">
                             {group.title}
                           </Text>
                           {group.description ? (
-                            <Text className="text-xs text-gray-600 pt-1">{group.description}</Text>
+                            <Text className="text-xs text-secondary/50 pt-1">{group.description}</Text>
                           ) : null}
                         </View>
                         <Text className="text-base text-gray-400 mr-1 rounded-full">
@@ -412,7 +426,7 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
           {/* Activity Header & Items */}
           {(selectedFilter === 'All' || selectedFilter === 'Activity') && hasActivityItems && (
             <View className="flex-row items-center justify-between mt-2xl px-4">
-              <Text className="text-2xl font-semibold mb-2 text-secondary">Activity To-do's</Text>
+              <Text className="text-xl font-semibold mb-2 text-secondary">Activity To-do's</Text>
             </View>
           )}
 
@@ -422,7 +436,6 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
               allActivities.map((activity, index) => {
                 const activityItems = items.filter((i) => i.activityId === activity.id);
                 if (activityItems.length === 0) return null;
-                const counter = index + 1;
                 const doneCt = activityItems.filter((i) => i.isDone).length;
                 return (
                   <FadeInView
@@ -444,22 +457,21 @@ const ChecklistTab = ({ travelPlan, activities }: ChecklistTabProps) => {
                             TripPlanType.activity) as TripPlanType,
                         })
                       }
-                      className="flex-row items-center gap-3 px-5 bg-gray-50"
+                      className="flex-row items-center gap-3 px-5 bg-gray-100"
                     >
                       <ActivityIcon
                         type={(activity.type ?? TripPlanType.activity) as TripPlanType}
                         size={16}
                       />
-
                       <View
                         className={`flex-row items-center py-xl flex-1 
-                          ${index < counter ? "border-b border-gray-200" : ""
+                          ${index < allActivities.length - 1 && index !== 1 ? "border-t-2 border-gray-200" : ""
                           }`}
                       >
-                        <Text className="text-lg font-normal text-gray-600 flex-1 pr-2xl">
+                        <Text className="text-lg  text-secondary flex-1 pr-2xl">
                           {activity.title}
                         </Text>
-                        <Text className="text-base text-gray-400 mr-1 rounded-full">
+                        <Text className="text-base  text-gray-400 mr-1 rounded-full">
                           {doneCt}/{activityItems.length}
                         </Text>
                         <Icon
