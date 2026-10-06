@@ -39,8 +39,9 @@ import ViewTravel from '../components/View';
 import Activity from '../components/View/Activity';
 import TravelModals from '../components/TravelModals';
 import TravelActionFAB from '../components/View/TravelActionFAB';
-import { TripPlanType } from '../../../types/enums';
+import { ActivityType, TripPlanType } from '../../../types/enums';
 import { activityIcons } from '../../../components/ActivityIcon';
+import { getActivityPlanTypeConfig } from '../constants/activityPlanTypes';
 import type { RootStackParamList } from '../../../navigation/navigation.types';
 
 type TripDetailRouteProp = RouteProp<RootStackParamList, 'TravelDetail'>;
@@ -60,7 +61,14 @@ const EXCLUDED_DEFAULT_TYPES: readonly TripPlanType[] = [
 
 // ─── Pure Utility Helpers (Exported for Testing & Cross-Component Use) ─────────
 
-export const getActivityPinColor = (type?: TripPlanType | number): string => {
+export const getActivityPinColor = (
+  type?: TripPlanType | number,
+  planType?: ActivityType | number | string
+): string => {
+  if (planType != null) {
+    const planConfig = getActivityPlanTypeConfig(planType);
+    if (planConfig?.color) return planConfig.color;
+  }
   if (type == null) return '#263F69';
   const iconConfig = activityIcons.find((item) => item.activityType === type);
   return iconConfig ? iconConfig.color : '#263F69';
@@ -179,22 +187,57 @@ export const getActivityAddressString = (act: any): string => {
 
 export const getActivitySubType = (act: any): string => {
   if (!act) return '';
-  return (
+
+  const parseJsonField = (field: any) => {
+    if (!field) return null;
+    if (typeof field === 'string') {
+      return safeJsonParse(field, null);
+    }
+    return typeof field === 'object' ? field : null;
+  };
+
+  const parsedDest = parseJsonField(act.destinationData);
+  const parsedAddress = parseJsonField(act.destinationAddressData);
+  const accom = parseJsonField(act.accomodationDetails);
+  const nature = parseJsonField(act.natureDetails);
+  const shopping = parseJsonField(act.shoppingDetails);
+  const entertainment = parseJsonField(act.entertainmentDetails);
+  const hikeOrCamp = parseJsonField(act.hikeOrCampDetails);
+  const trans = parseJsonField(act.transportationDetails);
+  const ride = parseJsonField(act.rideRentalDetails);
+  const cafe = parseJsonField(act.cafeRestaurantDetails);
+  const sight = parseJsonField(act.sightseeingDetails);
+
+  const rawSub =
     act.subType ||
-    act.accomodationDetails?.subType ||
-    act.natureDetails?.subType ||
-    act.shoppingDetails?.subType ||
-    act.entertainmentDetails?.subType ||
-    act.hikeOrCampDetails?.subType ||
-    act.transportationDetails?.mode ||
-    act.rideRentalDetails?.vehicleType ||
-    act.cafeRestaurantDetails?.cuisine ||
-    act.sightseeingDetails?.subType ||
-    act.destinationData?.subType ||
-    act.destinationData?.category ||
-    act.category ||
-    ''
-  );
+    accom?.subType ||
+    nature?.subType ||
+    shopping?.subType ||
+    entertainment?.subType ||
+    hikeOrCamp?.subType ||
+    trans?.mode ||
+    ride?.vehicleType ||
+    cafe?.cuisine ||
+    sight?.subType ||
+    parsedDest?.subType ||
+    parsedDest?.category ||
+    parsedAddress?.subType ||
+    act.category;
+
+  if (rawSub) return String(rawSub);
+
+  if (act.planType != null) {
+    const config = getActivityPlanTypeConfig(act.planType);
+    if (config?.key) return config.key;
+  }
+
+  if (act.type === TripPlanType.flight || act.type === 'flight') return 'flight';
+  if (act.type === TripPlanType.stay || act.type === 'stay') return 'hotel';
+  if (act.type === TripPlanType.transit || act.type === 'transit') return 'transit';
+  if (act.type === TripPlanType.rideRental || act.type === 'rideRental') return 'car';
+  if (act.type === TripPlanType.tour || act.type === 'tour') return 'hike';
+
+  return '';
 };
 
 export const getActivityCoordinates = (
@@ -499,7 +542,7 @@ const buildDefaultTripPins = (
             title: act.title || 'Activity',
             type: act.type,
             subType: getActivitySubType(act),
-            color: getActivityPinColor(act.type),
+            color: getActivityPinColor(act.type, act.planType),
             sortOrder: act.sortOrder,
           });
         }
@@ -621,7 +664,11 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
   const dragStartY = useRef(0);
   const translateY = useRef(new Animated.Value(SNAP_MID)).current;
   const [currentSnap, setCurrentSnap] = useState(SNAP_MID);
-  const bottomOffset = Math.max(0, screenHeight - currentSnap);
+  const animatedMapHeight = translateY.interpolate({
+    inputRange: [SNAP_EXPANDED, SNAP_MID, SNAP_COLLAPSED],
+    outputRange: [SNAP_MID, SNAP_MID, SNAP_COLLAPSED],
+    extrapolate: 'clamp',
+  });
 
   const snapTo = useCallback(
     (toValue: number) => {
@@ -1035,7 +1082,7 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
     if (activeActivity) {
       const actType = activeActivity.type;
-      const actColor = getActivityPinColor(actType);
+      const actColor = getActivityPinColor(actType, activeActivity.planType);
 
       let activityPinsResult: MapStateResult | null = null;
       if (actType === TripPlanType.flight) {
@@ -1177,7 +1224,7 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
     (pin: GoogleMapPin) => {
       const pinCoords =
         typeof pin.latitude === 'number' &&
-        typeof pin.longitude === 'number'
+          typeof pin.longitude === 'number'
           ? { latitude: pin.latitude, longitude: pin.longitude }
           : null;
       if (pinCoords) {
@@ -1284,13 +1331,16 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
       <StatusBar barStyle="dark-content" />
 
       {/* 1. Google Map in the background with pins */}
-      <View className="absolute inset-0">
+      <Animated.View
+        style={[styles.mapContainer, { height: animatedMapHeight }]}
+        testID="trip-map-container"
+      >
         <GoogleMapView
           pins={pins}
           initialCoordinates={initialCoordinates}
           centerCoordinates={mapCenterCoordinates}
           selectedPinId={selectedActivityCoords ? activeActivityId : null}
-          bottomOffset={bottomOffset}
+          bottomOffset={0}
           isExpanded={isExpanded}
           onPinPress={handlePinPress}
           showConnectors={effectiveShowConnectors}
@@ -1299,7 +1349,7 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
           connectByType={true}
           testID="trip-google-map"
         />
-      </View>
+      </Animated.View>
 
       {/* Floating Close Button */}
       <View className="absolute left-4 z-20" style={{ top: insets.top + 8 }}>
@@ -1430,6 +1480,12 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 };
 
 const styles = StyleSheet.create({
+  mapContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
   bottomSheet: {
     position: 'absolute',
     left: 0,

@@ -99,7 +99,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
                       >
                         Address
                       </Text>
-                      <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                      <Text className="text-secondary/60 font-normal leading-2xl text-xl">
                         {locationText}
                       </Text>
                     </View>
@@ -110,39 +110,43 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
           </View>
         </View>
 
-        <View className="flex-row gap-6">
-          <View className="mb-3">
-            <Icon name="timer" size={38} color={themeColor} />
+        {activity.startDate && (
+          <View className="flex-row gap-6">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
+            </View>
+            <View className="mb-3">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                {activity.endDate ? "Start" : "Date"}
+              </Text>
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {safeFormatTime(activity.startDate)}
+              </Text>
+              <Text className="text-base font-medium text-secondary/40">
+                {safeFormatDate(activity.startDate)}
+              </Text>
+            </View>
           </View>
-          <View className="mb-3">
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
-              {activity.endDate ? "Start" : "Date"}
-            </Text>
-            <Text className="text-2xl font-semibold text-secondary/40">
-              {safeFormatTime(activity.startDate)}
-            </Text>
-            <Text className="text-base font-medium text-secondary/40">
-              {safeFormatDate(activity.startDate)}
-            </Text>
-          </View>
-        </View>
+        )}
 
-        <View className="flex-row gap-6">
-          <View className="mb-3">
-            <Icon name="timer" size={38} color={themeColor} />
+        {activity.endDate && (
+          <View className="flex-row gap-6">
+            <View className="mb-3">
+              <Icon name="timer" size={38} color={themeColor} />
+            </View>
+            <View className="mb-3">
+              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+                End
+              </Text>
+              <Text className="text-2xl font-semibold text-secondary/40">
+                {safeFormatTime(activity.endDate)}
+              </Text>
+              <Text className="text-base font-medium text-secondary/40">
+                {safeFormatDate(activity.endDate)}
+              </Text>
+            </View>
           </View>
-          <View className="mb-3">
-            <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
-              End
-            </Text>
-            <Text className="text-2xl font-semibold text-secondary/40">
-              {activity.endDate ? safeFormatTime(activity.endDate) : "--:--"}
-            </Text>
-            <Text className="text-base font-medium text-secondary/40">
-              {activity.endDate ? safeFormatDate(activity.endDate) : ""}
-            </Text>
-          </View>
-        </View>
+        )}
       </View>
 
       <FadeInView type="down" delay={180} duration={400}>

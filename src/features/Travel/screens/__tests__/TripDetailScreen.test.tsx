@@ -4,9 +4,10 @@ import {
   TripDetailScreen,
   getActivityCoordinates,
   getActivitySubType,
+  getActivityPinColor,
 } from "../TripDetailScreen";
 import { useTravelPlan } from "../../hooks/useTravel";
-import { TripPlanType } from "../../../../types/enums";
+import { ActivityType, TripPlanType } from "../../../../types/enums";
 
 // Mock hooks
 jest.mock("../../hooks/useTravel", () => ({
@@ -760,6 +761,79 @@ describe("TripDetailScreen", () => {
       expect(html).toContain("dest-1");
       expect(html).toContain("act-1");
       expect(html).toContain("typeGroups[typeKey]");
+    });
+
+    it("renders GoogleMapView inside trip-map-container with animated height", () => {
+      (useTravelPlan as jest.Mock).mockReturnValue({
+        data: mockTravelPlan,
+        isLoading: false,
+        refetch: jest.fn(),
+      });
+
+      const { getByTestId } = render(
+        <TripDetailScreen travelId="trip-123" />
+      );
+
+      const mapContainer = getByTestId("trip-map-container");
+      expect(mapContainer).toBeTruthy();
+      expect(getByTestId("trip-google-map")).toBeTruthy();
+    });
+  });
+
+  describe("Subtype and Pin Color Extraction", () => {
+    it("extracts subType from planType when act.subType is not set", () => {
+      expect(getActivitySubType({ planType: ActivityType.cafe })).toBe("cafe");
+      expect(getActivitySubType({ planType: ActivityType.walk })).toBe("walk");
+      expect(getActivitySubType({ planType: ActivityType.meetup })).toBe("meetup");
+      expect(
+        getActivitySubType({ planType: ActivityType.restaurant })
+      ).toBe("restaurant");
+      expect(
+        getActivitySubType({ planType: ActivityType.sightseeing })
+      ).toBe("sightseeing");
+      expect(
+        getActivitySubType({ planType: ActivityType.preparation })
+      ).toBe("preparation");
+    });
+
+    it("extracts subType from top-level type fallback", () => {
+      expect(getActivitySubType({ type: TripPlanType.flight })).toBe("flight");
+      expect(getActivitySubType({ type: TripPlanType.stay })).toBe("hotel");
+      expect(getActivitySubType({ type: TripPlanType.transit })).toBe("transit");
+      expect(getActivitySubType({ type: TripPlanType.rideRental })).toBe("car");
+      expect(getActivitySubType({ type: TripPlanType.tour })).toBe("hike");
+    });
+
+    it("parses subType from JSON string destinationData", () => {
+      const act = {
+        destinationData: JSON.stringify({ subType: "cafe", category: "food" }),
+      };
+      expect(getActivitySubType(act)).toBe("cafe");
+    });
+
+    it("parses subType from JSON string details object", () => {
+      const act = {
+        accomodationDetails: JSON.stringify({ subType: "resort" }),
+      };
+      expect(getActivitySubType(act)).toBe("resort");
+    });
+
+    it("returns color based on planType when provided", () => {
+      expect(
+        getActivityPinColor(TripPlanType.activity, ActivityType.cafe)
+      ).toBe("#B56F3B");
+      expect(
+        getActivityPinColor(TripPlanType.activity, ActivityType.restaurant)
+      ).toBe("#E76F51");
+      expect(
+        getActivityPinColor(TripPlanType.activity, ActivityType.nature)
+      ).toBe("#10B981");
+    });
+
+    it("returns default color based on type when planType is not provided", () => {
+      expect(getActivityPinColor(TripPlanType.flight)).toBe("#2196F3");
+      expect(getActivityPinColor(TripPlanType.stay)).toBe("#a659ee");
+      expect(getActivityPinColor(undefined)).toBe("#263F69");
     });
   });
 });

@@ -198,8 +198,8 @@ export const GoogleMapView = ({
     }
 
     function getSubtypeIconPath(subType) {
-      if (!subType || typeof subType !== 'string') return null;
-      const s = subType.toLowerCase().trim();
+      if (subType === undefined || subType === null) return null;
+      const s = String(subType).toLowerCase().trim();
       if (!s) return null;
 
       if (s.includes('flight') || s.includes('plane') || s.includes('airport')) {
@@ -210,7 +210,8 @@ export const GoogleMapView = ({
       }
       if (
         s.includes('hotel') || s.includes('resort') || s.includes('hostel') ||
-        s.includes('motel') || s.includes('accommodation') || s.includes('stay')
+        s.includes('motel') || s.includes('accommodation') || s.includes('stay') ||
+        s.includes('lodging') || s === '9' || s.includes('rest')
       ) {
         return (
           'M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8' +
@@ -224,12 +225,13 @@ export const GoogleMapView = ({
       ) {
         return 'M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z';
       }
-      if (s.includes('camp') || s.includes('glamp')) {
+      if (s.includes('camp') || s.includes('glamp') || s === '7') {
         return 'M4 19h16l-7-14h-2L4 19zm8-10.3l3.65 7.3H8.35L12 8.7z';
       }
       if (
         s.includes('hike') || s.includes('mountain') || s.includes('volcano') ||
-        s.includes('canyon') || s.includes('desert') || s.includes('cave')
+        s.includes('canyon') || s.includes('desert') || s.includes('cave') ||
+        s.includes('trek') || s === '8'
       ) {
         return 'M14 6l-3.75 5 2.85 3.8-1.6 1.2C9.8 13.7 7 10 7 10l-6 8h22L14 6z';
       }
@@ -244,13 +246,13 @@ export const GoogleMapView = ({
       }
       if (
         s.includes('forest') || s.includes('jungle') || s.includes('park') ||
-        s.includes('nature')
+        s.includes('nature') || s.includes('terrain') || s === '6'
       ) {
         return 'M12 2L4 14h3v6h10v-6h3L12 2zm0 3.8l4 6.2h-2v4h-4v-4H8l4-6.2z';
       }
       if (
         s.includes('cafe') || s.includes('coffee') || s.includes('breakfast') ||
-        s.includes('tea')
+        s.includes('tea') || s.includes('bakery') || s === '1'
       ) {
         return (
           'M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.1 0 2-.9 2-2' +
@@ -265,7 +267,8 @@ export const GoogleMapView = ({
       }
       if (
         s.includes('restaurant') || s.includes('food') || s.includes('bistro') ||
-        s.includes('bakery') || s.includes('dining') || s.includes('cuisine')
+        s.includes('dining') || s.includes('cuisine') || s.includes('meal') ||
+        s === '2'
       ) {
         return (
           'M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03' +
@@ -274,7 +277,8 @@ export const GoogleMapView = ({
       }
       if (
         s.includes('mall') || s.includes('market') || s.includes('store') ||
-        s.includes('shop') || s.includes('clothes') || s.includes('grocer')
+        s.includes('shop') || s.includes('clothes') || s.includes('grocer') ||
+        s.includes('supermarket') || s === '5'
       ) {
         return (
           'M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2' +
@@ -296,7 +300,7 @@ export const GoogleMapView = ({
       }
       if (
         s.includes('cinema') || s.includes('theater') || s.includes('theatre') ||
-        s.includes('movie') || s.includes('entertainment')
+        s.includes('movie') || s.includes('entertainment') || s === '4'
       ) {
         return (
           'M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2' +
@@ -338,9 +342,34 @@ export const GoogleMapView = ({
           's.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z'
         );
       }
+      if (s.includes('walk') || s.includes('stroll') || s === '12') {
+        return (
+          'M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7' +
+          ' 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2' +
+          'c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6' +
+          ' 8.3V13h2V9.6l1.8-.7z'
+        );
+      }
+      if (s.includes('meetup') || s.includes('people') || s.includes('social') || s === '11') {
+        return (
+          'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3' +
+          ' 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34' +
+          ' 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5z'
+        );
+      }
+      if (
+        s.includes('preparation') || s.includes('pack') || s.includes('build') ||
+        s.includes('tool') || s === '13'
+      ) {
+        return (
+          'M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6' +
+          ' 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4' +
+          ' 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z'
+        );
+      }
       if (
         s.includes('bike') || s.includes('bicycle') || s.includes('motorcycle') ||
-        s.includes('scooter')
+        s.includes('scooter') || s === '10' || s.includes('ride')
       ) {
         return (
           'M15.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM5 12c-2.8 0' +
@@ -376,7 +405,8 @@ export const GoogleMapView = ({
       }
       if (
         s.includes('sight') || s.includes('attraction') || s.includes('tour') ||
-        s.includes('photo') || s.includes('camera') || s.includes('monument')
+        s.includes('photo') || s.includes('camera') || s.includes('monument') ||
+        s.includes('landmark') || s === '3'
       ) {
         return (
           'M12 12c1.65 0 3-1.35 3-3s-1.35-3-3-3-3 1.35-3 3 1.35 3 3 3zm0-4' +

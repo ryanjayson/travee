@@ -204,11 +204,10 @@ export default function PlanTab({
             {/* Label and description */}
             <View className="flex-1 justify-center">
               <Text
-                className={`text-lg ${
-                  selectedPlanType
+                className={`text-lg ${selectedPlanType
                     ? "text-[#1D2939] font-semibold"
                     : "text-[#98A2B3] font-normal"
-                }`}
+                  }`}
               >
                 {selectedPlanType ? selectedPlanType.label : "Select Activity Type"}
               </Text>

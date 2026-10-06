@@ -80,8 +80,8 @@ export default function DateTime({
 
   const defaultDescription =
     effectiveActivityType === TripPlanType.stay ||
-    effectiveActivityType === TripPlanType.transit ||
-    effectiveActivityType === TripPlanType.rideRental
+      effectiveActivityType === TripPlanType.transit ||
+      effectiveActivityType === TripPlanType.rideRental
       ? null
       : "Plans with date & time are sorted based on their scheduled and cannot be reordered.";
 
@@ -129,9 +129,8 @@ export default function DateTime({
         <View className={inputContainerClass}>
           <TouchableOpacity
             onPress={onPressDate}
-            className={`flex-1 flex-row items-center p-3 gap-2 ${
-              !finalAllowedClear ? "opacity-30" : ""
-            }`}
+            className={`flex-1 flex-row items-center p-3 gap-2 ${!finalAllowedClear ? "opacity-30" : ""
+              }`}
             accessibilityRole="button"
             accessibilityLabel="Select date"
             disabled={!finalAllowedClear}
@@ -142,15 +141,14 @@ export default function DateTime({
               color="#98A2B3"
             />
             <Text
-              className={`text-xl  ${
-                startDate ? "text-gray-800 top-2 " : "text-[#98A2B3]"
-              }`}
+              className={`text-xl  ${startDate ? "text-gray-800 top-2 " : "text-[#98A2B3]"
+                }`}
             >
               {startDate
                 ? String(startDate)
                 : showEndDateTime
-                ? startDateLabel
-                : defaultTitle.split(" ")[0]}
+                  ? startDateLabel
+                  : defaultTitle.split(" ")[0]}
             </Text>
           </TouchableOpacity>
 
@@ -176,9 +174,8 @@ export default function DateTime({
         <View className={inputContainerClass}>
           <TouchableOpacity
             onPress={onPressTime}
-            className={`flex-1 flex-row items-center p-3 gap-2 ${
-              !finalAllowedClear ? "opacity-30" : ""
-            }`}
+            className={`flex-1 flex-row items-center p-3 gap-2 ${!finalAllowedClear ? "opacity-30" : ""
+              }`}
             accessibilityRole="button"
             accessibilityLabel="Select time"
             disabled={!finalAllowedClear}
@@ -247,9 +244,8 @@ export default function DateTime({
                     color="#98A2B3"
                   />
                   <Text
-                    className={`text-xl ${
-                      endDate ? "text-gray-800 top-2" : "text-[#98A2B3]"
-                    }`}
+                    className={`text-xl ${endDate ? "text-gray-800 top-2" : "text-[#98A2B3]"
+                      }`}
                   >
                     {endDate ? String(endDate) : endDateLabel}
                   </Text>
@@ -282,18 +278,16 @@ export default function DateTime({
                 ) : null}
                 <TouchableOpacity
                   onPress={onPressEndTime}
-                  className={`flex-1 flex-row items-center p-3 gap-2 ${
-                    !onPressEndTime ? "opacity-30" : ""
-                  }`}
+                  className={`flex-1 flex-row items-center p-3 gap-2 ${!onPressEndTime ? "opacity-30" : ""
+                    }`}
                   accessibilityRole="button"
                   accessibilityLabel="Select end time"
                   disabled={!onPressEndTime}
                 >
                   <Icon name="access-time" size={24} color="#98A2B3" />
                   <Text
-                    className={`text-xl ${
-                      endTime ? "text-gray-800 top-2" : "text-[#98A2B3]"
-                    }`}
+                    className={`text-xl ${endTime ? "text-gray-800 top-2" : "text-[#98A2B3]"
+                      }`}
                   >
                     {endTime ? String(endTime) : "Time"}
                   </Text>
@@ -327,7 +321,7 @@ export default function DateTime({
         >
           <Icon name="add" size={20} color={"#0EA5E9"} />
           <Text
-            className="text-base font-semibold"
+            className="text-sm font-semibold"
             style={{ color: "#0EA5E9" }}
           >
             Add End date & time

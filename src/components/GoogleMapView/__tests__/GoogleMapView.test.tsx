@@ -339,6 +339,11 @@ describe("GoogleMapView Component", () => {
     expect(html).toContain("s.includes('flight')");
     expect(html).toContain("s.includes('cafe')");
     expect(html).toContain("s.includes('restaurant')");
+    expect(html).toContain("s.includes('walk')");
+    expect(html).toContain("s.includes('meetup')");
+    expect(html).toContain("s.includes('preparation')");
+    expect(html).toContain("s === '1'");
+    expect(html).toContain("s === '12'");
   });
 
   it("checks title and subType changes inside window.updatePins", () => {
