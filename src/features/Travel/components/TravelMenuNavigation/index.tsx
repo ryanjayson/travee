@@ -189,10 +189,10 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
               accessibilityLabel="Edit Trip"
               onPress={() => handleAction(TravelMenuAction.EditTravel)}
             >
-              <View className="w-10 h-10 rounded-full bg-slate-100 justify-center items-center mr-3.5">
-                <Icon name="edit-note" size={26} color="#344054" />
+              <View className="w-10 h-10 justify-center items-center mr-3.5">
+                <Icon name="edit-note" size={32} color="#344054" />
               </View>
-              <Text className="flex-1 text-base font-semibold text-secondary">
+              <Text className="flex-1 text-lg font-semibold text-secondary">
                 Edit Trip
               </Text>
             </TouchableOpacity>
@@ -205,10 +205,10 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
                 accessibilityLabel="Unarchive Trip"
                 onPress={() => handleAction(TravelMenuAction.Unarchive)}
               >
-                <View className="w-10 h-10 rounded-full bg-slate-100 justify-center items-center mr-3.5">
-                  <Icon name="unarchive" size={24} color="#344054" />
+                <View className="w-10 h-10 justify-center items-center mr-3.5">
+                  <Icon name="unarchive" size={32} color="#344054" />
                 </View>
-                <Text className="flex-1 text-base font-semibold text-secondary">
+                <Text className="flex-1 text-lg font-semibold text-secondary">
                   Unarchive Trip
                 </Text>
               </TouchableOpacity>
@@ -220,10 +220,10 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
                 accessibilityLabel="Archive Trip"
                 onPress={() => handleAction(TravelMenuAction.Archive)}
               >
-                <View className="w-10 h-10 rounded-full bg-slate-100 justify-center items-center mr-3.5">
-                  <Icon name="archive" size={24} color="#344054" />
+                <View className="w-10 h-10 justify-center items-center mr-3.5">
+                  <Icon name="archive" size={32} color="#344054" />
                 </View>
-                <Text className="flex-1 text-base font-semibold text-secondary">
+                <Text className="flex-1 text-lg font-semibold text-secondary">
                   Archive
                 </Text>
               </TouchableOpacity>
@@ -240,10 +240,10 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
               accessibilityLabel="Cancel Trip"
               onPress={() => handleAction(TravelMenuAction.Cancel)}
             >
-              <View className="w-10 h-10 rounded-full bg-red-50 justify-center items-center mr-3.5">
-                <Icon name="cancel" size={22} color="#C62828" />
+              <View className="w-10 h-10  justify-center items-center mr-3.5">
+                <Icon name="cancel" size={32} color="#C62828" />
               </View>
-              <Text className="flex-1 text-base font-semibold text-[#C62828]">
+              <Text className="flex-1 text-lg font-semibold text-[#C62828]">
                 Cancel
               </Text>
             </TouchableOpacity>
@@ -255,10 +255,10 @@ export const TravelMenuNavigation: React.FC<TravelMenuNavigationProps> = ({
               accessibilityLabel="Delete Trip"
               onPress={() => handleAction(TravelMenuAction.Delete)}
             >
-              <View className="w-10 h-10 rounded-full bg-red-50 justify-center items-center mr-3.5">
-                <Icon name="delete-outline" size={22} color="#C62828" />
+              <View className="w-10 h-10 justify-center items-center mr-3.5">
+                <Icon name="delete-outline" size={32} color="#C62828" />
               </View>
-              <Text className="flex-1 text-base font-semibold text-[#C62828]">
+              <Text className="flex-1 text-lg font-semibold text-[#C62828]">
                 Delete
               </Text>
             </TouchableOpacity>

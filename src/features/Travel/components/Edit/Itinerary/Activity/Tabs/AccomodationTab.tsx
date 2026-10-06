@@ -61,6 +61,7 @@ interface AccomodationTabProps {
 
 const FloatingLabelInput = (props: any) => (
   <FloatingLabelInputAtom
+    containerStyle={[{ minHeight: 64, flexShrink: 0 }, props.containerStyle]}
     {...props}
   />
 );
@@ -202,7 +203,7 @@ export default function AccomodationTab({
       </View> */}
 
       {/* Accommodation Type (Sub-type) */}
-      <View className="mb-5">
+      <View className="mb-5" style={{ flexShrink: 0 }}>
         <Text className="text-lg text-secondary/80 font-semibold mb-2 px-xs">
           Booking Details
         </Text>
@@ -281,6 +282,7 @@ export default function AccomodationTab({
           if (fieldRefs) fieldRefs.current["accomodationDetails.websiteAddress"] = el;
         }}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Website Address"
@@ -329,6 +331,7 @@ export default function AccomodationTab({
           if (fieldRefs) fieldRefs.current["accomodationDetails.bookingReference"] = el;
         }}
         className="flex-row gap-4 mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Booking Reference"
@@ -363,6 +366,7 @@ export default function AccomodationTab({
           if (fieldRefs) fieldRefs.current["accomodationDetails.contactName"] = el;
         }}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Contact Name"
@@ -378,6 +382,7 @@ export default function AccomodationTab({
           if (fieldRefs) fieldRefs.current["accomodationDetails.contactNumber"] = el;
         }}
         className="flex-row gap-4 mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Contact Number"
@@ -389,7 +394,7 @@ export default function AccomodationTab({
           ref={(el) => {
             if (fieldRefs) fieldRefs.current["accomodationDetails.emailAddress"] = el;
           }}
-          style={{ flex: 1 }}
+          style={{ flex: 1, minHeight: 64, flexShrink: 0 }}
         >
           <FloatingLabelInput
             label="Email Address"

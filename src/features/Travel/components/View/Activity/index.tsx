@@ -270,54 +270,71 @@ const ViewItineraryActivity = ({
                 {sectionName && (
                   <View className="flex-row items-center ">
                     <View className="bg-accent mr-0.5 px-2 py-0.5 rounded-xs">
-                      <Text className="text-[8px] tracking-wider font-semibold text-white">
+                      <Text className="text-[10px] font-bold text-white">
                         {sectionName}
                       </Text>
                     </View>
-                    <Text className="text-base text-tertiary/50 mx-0.5">
+                    <Text className="text-base text-tertiary/50 ">
                       /
                     </Text>
                   </View>
                 )}
-                <View
-                  style={{
-                    backgroundColor:
-                      getActivityTypeDetails(itineraryActivity.type).color + "20",
-                  }}
-                  className="items-end rounded-xs px-2 py-0.5 mr-0.5"
-                >
-                  <Text
-                    style={{
-                      color: getActivityTypeDetails(itineraryActivity.type).color,
-                    }}
-                    className="text-[8px] tracking-wider uppercase font-extrabold"
-                  >
-                    {getActivityTypeDetails(itineraryActivity.type).text}
-                  </Text>
-                </View>
 
-                {itineraryActivity.type == TripPlanType.activity &&
-                  itineraryActivity.planType && (
-                  <View className="flex-row items-center ml-0.5">
-                    <Text className="text-base text-tertiary/50 mr-0.5">
-                      /
+                {itineraryActivity.type !== TripPlanType.activity && (
+                  <View
+                    style={{
+                      backgroundColor:
+                        getActivityTypeDetails(itineraryActivity.type).color + "20",
+                    }}
+                    className="items-end rounded-xs px-2 py-0.5 mr-0.5"
+                  >
+                    <Text
+                      style={{
+                        color: getActivityTypeDetails(itineraryActivity.type).color,
+                      }}
+                      className="text-[8px] tracking-wider uppercase font-extrabold"
+                    >
+                      {getActivityTypeDetails(itineraryActivity.type).text}
                     </Text>
+                  </View>
+                )}
+
+                {itineraryActivity.type == TripPlanType.activity && (
+                  <View className="flex-row items-center ml-0.5">
                     <View
                       style={{
-                        backgroundColor:
+                        backgroundColor: itineraryActivity.planType ?
                           getPlanTypeDetails(itineraryActivity.planType).color +
+                          "20" : getActivityTypeDetails(itineraryActivity.type).color +
                           "20",
                       }}
-                      className="items-end rounded-xs px-2 py-0.5 mr-0.5"
+                      className="items-center rounded-xs px-2 py-0.5 mr-0.5 flex-row gap-1"
                     >
-                      <Text
+                      <Text className="text-[10px] font-bold"
                         style={{
-                          color: getPlanTypeDetails(itineraryActivity.planType).color,
-                        }}
-                        className="text-[8px] font-semibold"
-                      >
-                        {getPlanTypeDetails(itineraryActivity.planType).text}
+                          color: itineraryActivity.planType
+                            ? getPlanTypeDetails(itineraryActivity.planType).color
+                            : getActivityTypeDetails(itineraryActivity.type).color +
+                            '80',
+                        }}>
+                        {getActivityTypeDetails(itineraryActivity.type).text}
                       </Text>
+
+                      {itineraryActivity.planType && (
+                        <View className="flex-row items-center gap-1">
+                          <Text className="text-[8px] text-tertiary/80">
+                            /
+                          </Text>
+                          <Text
+                            style={{
+                              color: getPlanTypeDetails(itineraryActivity.planType).color,
+                            }}
+                            className="text-[10px]"
+                          >
+                            {getPlanTypeDetails(itineraryActivity.planType).text}
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   </View>
                 )}
@@ -441,8 +458,8 @@ const ViewItineraryActivity = ({
             color="white"
           />
         </Portal>
-      </Animated.View>
-    </Provider>
+      </Animated.View >
+    </Provider >
   );
 };
 

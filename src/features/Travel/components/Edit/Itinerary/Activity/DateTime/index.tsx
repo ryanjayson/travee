@@ -50,7 +50,9 @@ export default function DateTime({
   const travelId = formik?.values?.travelId || "";
   const { data: travelPlan } = useTravelPlan(travelId);
   const currentSectionId = formik?.values?.sectionId || "";
-  const selectedSection = travelPlan?.itinerarySection?.find((s: any) => s.id === currentSectionId);
+  const selectedSection = travelPlan?.itinerarySection?.find(
+    (s: any) => s.id === currentSectionId
+  );
   const isSectionDateSet = !!selectedSection?.startDate;
 
   const finalAllowedClear = allowedClear && !isSectionDateSet;
@@ -105,7 +107,7 @@ export default function DateTime({
     "border border-[#E0E0E0] rounded-[16px] bg-white flex-1 flex-row items-center h-7xl";
 
   return (
-    <View className="mb-5">
+    <View className="mb-5" style={{ flexShrink: 0 }}>
       <Text className="text-lg text-secondary/80 font-semibold mb-1 px-xs">
         {title || defaultTitle}
       </Text>
@@ -124,13 +126,16 @@ export default function DateTime({
         )
       )}
 
-
-      <View className={`flex-row items-center gap-4 mt-2`}>
-        <View className={inputContainerClass}>
+      <View
+        className="flex-row items-center gap-4 mt-2"
+        style={{ minHeight: 64, flexShrink: 0 }}
+      >
+        <View className={inputContainerClass} style={{ minHeight: 64, flexShrink: 0 }}>
           <TouchableOpacity
             onPress={onPressDate}
-            className={`flex-1 flex-row items-center p-3 gap-2 ${!finalAllowedClear ? "opacity-30" : ""
-              }`}
+            className={`flex-1 flex-row items-center p-3 gap-2 ${
+              !finalAllowedClear ? "opacity-30" : ""
+            }`}
             accessibilityRole="button"
             accessibilityLabel="Select date"
             disabled={!finalAllowedClear}
@@ -171,11 +176,12 @@ export default function DateTime({
             </TouchableOpacity>
           )}
         </View>
-        <View className={inputContainerClass}>
+        <View className={inputContainerClass} style={{ minHeight: 64, flexShrink: 0 }}>
           <TouchableOpacity
             onPress={onPressTime}
-            className={`flex-1 flex-row items-center p-3 gap-2 ${!finalAllowedClear ? "opacity-30" : ""
-              }`}
+            className={`flex-1 flex-row items-center p-3 gap-2 ${
+              !finalAllowedClear ? "opacity-30" : ""
+            }`}
             accessibilityRole="button"
             accessibilityLabel="Select time"
             disabled={!finalAllowedClear}
@@ -230,8 +236,11 @@ export default function DateTime({
                 </TouchableOpacity>
               )}
             </View>
-            <View className="flex-row items-center gap-4">
-              <View className={inputContainerClass}>
+            <View
+              className="flex-row items-center gap-4"
+              style={{ minHeight: 64, flexShrink: 0 }}
+            >
+              <View className={inputContainerClass} style={{ minHeight: 64, flexShrink: 0 }}>
                 <TouchableOpacity
                   onPress={onPressEndDate || onPressDate}
                   className="flex-1 flex-row items-center p-3 gap-2"
@@ -268,7 +277,7 @@ export default function DateTime({
                 </Text>
               ) : null}
 
-              <View className={inputContainerClass}>
+              <View className={inputContainerClass} style={{ minHeight: 64, flexShrink: 0 }}>
 
                 {/* Start Date & Time Label (when date range is present or revealed) */}
                 {endTime ? (
@@ -278,8 +287,9 @@ export default function DateTime({
                 ) : null}
                 <TouchableOpacity
                   onPress={onPressEndTime}
-                  className={`flex-1 flex-row items-center p-3 gap-2 ${!onPressEndTime ? "opacity-30" : ""
-                    }`}
+                  className={`flex-1 flex-row items-center p-3 gap-2 ${
+                    !onPressEndTime ? "opacity-30" : ""
+                  }`}
                   accessibilityRole="button"
                   accessibilityLabel="Select end time"
                   disabled={!onPressEndTime}
@@ -321,8 +331,7 @@ export default function DateTime({
         >
           <Icon name="add" size={20} color={"#0EA5E9"} />
           <Text
-            className="text-sm font-semibold"
-            style={{ color: "#0EA5E9" }}
+            className="text-sm font-semibold text-primary"
           >
             Add End date & time
           </Text>

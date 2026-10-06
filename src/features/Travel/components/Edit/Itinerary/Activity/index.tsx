@@ -795,74 +795,74 @@ const EditActivity = ({
         destination: values.destination,
         destinationData:
           values.type === TripPlanType.flight &&
-          (departureAirportCoordsRef.current || arrivalAirportCoordsRef.current)
+            (departureAirportCoordsRef.current || arrivalAirportCoordsRef.current)
             ? {
-                ...(values.destinationData || {}),
-                departureCoordinates: departureAirportCoordsRef.current
-                  ? {
-                      latitude: departureAirportCoordsRef.current.lat,
-                      longitude: departureAirportCoordsRef.current.lon,
-                    }
-                  : (values.destinationData as any)?.departureCoordinates,
-                arrivalCoordinates: arrivalAirportCoordsRef.current
-                  ? {
-                      latitude: arrivalAirportCoordsRef.current.lat,
-                      longitude: arrivalAirportCoordsRef.current.lon,
-                    }
-                  : (values.destinationData as any)?.arrivalCoordinates,
-              }
-          : (values.type === TripPlanType.transit || values.type === TripPlanType.rideRental)
-            ? (() => {
-              const isTransit = values.type === TripPlanType.transit;
-              const pickLoc = isTransit
-                ? values.transportationDetails?.pickupLocation &&
-                  typeof values.transportationDetails.pickupLocation === "object"
-                  ? values.transportationDetails.pickupLocation
-                  : (values.destinationData as any)?.pickupLocation || null
-                : values.rideRentalDetails?.pickupLocation &&
-                  typeof values.rideRentalDetails.pickupLocation === "object"
-                ? values.rideRentalDetails.pickupLocation
-                : (values.destinationData as any)?.pickupLocation || null;
+              ...(values.destinationData || {}),
+              departureCoordinates: departureAirportCoordsRef.current
+                ? {
+                  latitude: departureAirportCoordsRef.current.lat,
+                  longitude: departureAirportCoordsRef.current.lon,
+                }
+                : (values.destinationData as any)?.departureCoordinates,
+              arrivalCoordinates: arrivalAirportCoordsRef.current
+                ? {
+                  latitude: arrivalAirportCoordsRef.current.lat,
+                  longitude: arrivalAirportCoordsRef.current.lon,
+                }
+                : (values.destinationData as any)?.arrivalCoordinates,
+            }
+            : (values.type === TripPlanType.transit || values.type === TripPlanType.rideRental)
+              ? (() => {
+                const isTransit = values.type === TripPlanType.transit;
+                const pickLoc = isTransit
+                  ? values.transportationDetails?.pickupLocation &&
+                    typeof values.transportationDetails.pickupLocation === "object"
+                    ? values.transportationDetails.pickupLocation
+                    : (values.destinationData as any)?.pickupLocation || null
+                  : values.rideRentalDetails?.pickupLocation &&
+                    typeof values.rideRentalDetails.pickupLocation === "object"
+                    ? values.rideRentalDetails.pickupLocation
+                    : (values.destinationData as any)?.pickupLocation || null;
 
-              const dropLoc = isTransit
-                ? values.transportationDetails?.dropoffLocation &&
-                  typeof values.transportationDetails.dropoffLocation === "object"
-                  ? values.transportationDetails.dropoffLocation
-                  : (values.destinationData as any)?.dropoffLocation || null
-                : values.rideRentalDetails?.dropoffLocation &&
-                  typeof values.rideRentalDetails.dropoffLocation === "object"
-                ? values.rideRentalDetails.dropoffLocation
-                : (values.destinationData as any)?.dropoffLocation || null;
+                const dropLoc = isTransit
+                  ? values.transportationDetails?.dropoffLocation &&
+                    typeof values.transportationDetails.dropoffLocation === "object"
+                    ? values.transportationDetails.dropoffLocation
+                    : (values.destinationData as any)?.dropoffLocation || null
+                  : values.rideRentalDetails?.dropoffLocation &&
+                    typeof values.rideRentalDetails.dropoffLocation === "object"
+                    ? values.rideRentalDetails.dropoffLocation
+                    : (values.destinationData as any)?.dropoffLocation || null;
 
-              const existingDestData = (values.destinationData || {}) as any;
-              const primaryLoc = dropLoc || pickLoc;
+                const existingDestData = (values.destinationData || {}) as any;
+                const primaryLoc = dropLoc || pickLoc;
 
-              return {
-                ...existingDestData,
-                id: existingDestData.id || primaryLoc?.id || primaryLoc?.placeId || undefined,
-                name: existingDestData.name || primaryLoc?.name || undefined,
-                city: existingDestData.city || primaryLoc?.city || undefined,
-                country: existingDestData.country || primaryLoc?.country || undefined,
-                regionOrState:
-                  existingDestData.regionOrState ||
-                  primaryLoc?.regionOrState ||
-                  undefined,
-                address: existingDestData.address || primaryLoc?.address || undefined,
-                placeId: existingDestData.placeId || primaryLoc?.placeId || undefined,
-                coordinates:
-                  existingDestData.coordinates?.latitude &&
-                  existingDestData.coordinates?.latitude !== 0
-                    ? existingDestData.coordinates
-                    : primaryLoc?.coordinates || { latitude: 0, longitude: 0 },
-                pickupCoordinates:
-                  pickLoc?.coordinates || existingDestData.pickupCoordinates || null,
-                dropoffCoordinates:
-                  dropLoc?.coordinates || existingDestData.dropoffCoordinates || null,
-                pickupLocation: pickLoc,
-                dropoffLocation: dropLoc,
-              };
-            })()
-            : values.destinationData,
+                return {
+                  ...existingDestData,
+                  id: existingDestData.id || primaryLoc?.id || primaryLoc?.placeId || undefined,
+                  name: existingDestData.name || primaryLoc?.name || undefined,
+                  city: existingDestData.city || primaryLoc?.city || undefined,
+                  country: existingDestData.country || primaryLoc?.country || undefined,
+                  regionOrState:
+                    existingDestData.regionOrState ||
+                    primaryLoc?.regionOrState ||
+                    undefined,
+                  address: existingDestData.address || primaryLoc?.address || undefined,
+                  placeId: existingDestData.placeId || primaryLoc?.placeId || undefined,
+                  coordinates:
+                    existingDestData.coordinates?.latitude &&
+                      existingDestData.coordinates?.latitude !== 0
+                      ? existingDestData.coordinates
+                      : primaryLoc?.coordinates || { latitude: 0, longitude: 0 },
+                  pickupCoordinates:
+                    pickLoc?.coordinates || existingDestData.pickupCoordinates || null,
+                  dropoffCoordinates:
+                    dropLoc?.coordinates || existingDestData.dropoffCoordinates || null,
+                  pickupLocation: pickLoc,
+                  dropoffLocation: dropLoc,
+                };
+              })()
+              : values.destinationData,
         customTags: values.customTags || [],
         images: values.images,
         isOffline: true,
@@ -874,12 +874,12 @@ const EditActivity = ({
             arrivalAirport: values.flightDetails.arrivalAirport,
             departureDate:
               values.flightDetails.departureDate &&
-              new Date(values.flightDetails.departureDate).getTime() > 0
+                new Date(values.flightDetails.departureDate).getTime() > 0
                 ? new Date(values.flightDetails.departureDate)
                 : null,
             arrivalDate:
               values.flightDetails.arrivalDate &&
-              new Date(values.flightDetails.arrivalDate).getTime() > 0
+                new Date(values.flightDetails.arrivalDate).getTime() > 0
                 ? new Date(values.flightDetails.arrivalDate)
                 : null,
             flightNumber: values.flightDetails.flightNumber || null,
@@ -906,14 +906,14 @@ const EditActivity = ({
               ? finalStartDate
               : values.accomodationDetails.checkinDateTime &&
                 new Date(values.accomodationDetails.checkinDateTime).getTime() > 0
-              ? new Date(values.accomodationDetails.checkinDateTime)
-              : null,
+                ? new Date(values.accomodationDetails.checkinDateTime)
+                : null,
             checkoutDateTime: finalEndDate
               ? finalEndDate
               : values.accomodationDetails.checkoutDateTime &&
                 new Date(values.accomodationDetails.checkoutDateTime).getTime() > 0
-              ? new Date(values.accomodationDetails.checkoutDateTime)
-              : null,
+                ? new Date(values.accomodationDetails.checkoutDateTime)
+                : null,
             websiteAddress: values.accomodationDetails.websiteAddress || null,
             bookingReference: values.accomodationDetails.bookingReference || null,
             bookingStatus: values.accomodationDetails.bookingStatus || null,
@@ -948,14 +948,14 @@ const EditActivity = ({
                 ? finalStartDate
                 : values.transportationDetails.departureDateTime &&
                   new Date(values.transportationDetails.departureDateTime).getTime() > 0
-                ? new Date(values.transportationDetails.departureDateTime)
-                : null,
+                  ? new Date(values.transportationDetails.departureDateTime)
+                  : null,
               arrivalDateTime: finalEndDate
                 ? finalEndDate
                 : values.transportationDetails.arrivalDateTime &&
                   new Date(values.transportationDetails.arrivalDateTime).getTime() > 0
-                ? new Date(values.transportationDetails.arrivalDateTime)
-                : null,
+                  ? new Date(values.transportationDetails.arrivalDateTime)
+                  : null,
               seatOrVehicleNumber: values.transportationDetails.seatOrVehicleNumber || null,
               bookingReference: values.transportationDetails.bookingReference || null,
               bookingStatus: values.transportationDetails.bookingStatus || null,
@@ -989,13 +989,13 @@ const EditActivity = ({
               rentalStartDateTime:
                 finalStartDate ||
                 (values.rideRentalDetails.rentalStartDateTime &&
-                new Date(values.rideRentalDetails.rentalStartDateTime).getTime() > 0
+                  new Date(values.rideRentalDetails.rentalStartDateTime).getTime() > 0
                   ? new Date(values.rideRentalDetails.rentalStartDateTime)
                   : null),
               rentalEndDateTime:
                 finalEndDate ||
                 (values.rideRentalDetails.rentalEndDateTime &&
-                new Date(values.rideRentalDetails.rentalEndDateTime).getTime() > 0
+                  new Date(values.rideRentalDetails.rentalEndDateTime).getTime() > 0
                   ? new Date(values.rideRentalDetails.rentalEndDateTime)
                   : null),
               bookingReference: values.rideRentalDetails.bookingReference || null,
@@ -1134,12 +1134,12 @@ const EditActivity = ({
         itineraryActivity?.flightDetails?.arrivalAirport || "",
       departureDate:
         itineraryActivity?.flightDetails?.departureDate &&
-        new Date(itineraryActivity.flightDetails.departureDate).getTime() > 0
+          new Date(itineraryActivity.flightDetails.departureDate).getTime() > 0
           ? new Date(itineraryActivity.flightDetails.departureDate)
           : null,
       arrivalDate:
         itineraryActivity?.flightDetails?.arrivalDate &&
-        new Date(itineraryActivity.flightDetails.arrivalDate).getTime() > 0
+          new Date(itineraryActivity.flightDetails.arrivalDate).getTime() > 0
           ? new Date(itineraryActivity.flightDetails.arrivalDate)
           : null,
       flightNumber: itineraryActivity?.flightDetails?.flightNumber || "",
@@ -1173,16 +1173,16 @@ const EditActivity = ({
       subType: itineraryActivity?.accomodationDetails?.subType || null,
       checkinDateTime:
         itineraryActivity?.accomodationDetails?.checkinDateTime &&
-        new Date(
-          itineraryActivity.accomodationDetails.checkinDateTime
-        ).getTime() > 0
+          new Date(
+            itineraryActivity.accomodationDetails.checkinDateTime
+          ).getTime() > 0
           ? new Date(itineraryActivity.accomodationDetails.checkinDateTime)
           : null,
       checkoutDateTime:
         itineraryActivity?.accomodationDetails?.checkoutDateTime &&
-        new Date(
-          itineraryActivity.accomodationDetails.checkoutDateTime
-        ).getTime() > 0
+          new Date(
+            itineraryActivity.accomodationDetails.checkoutDateTime
+          ).getTime() > 0
           ? new Date(itineraryActivity.accomodationDetails.checkoutDateTime)
           : null,
       websiteAddress:
@@ -1301,11 +1301,9 @@ const EditActivity = ({
     <Formik<ActivityFormValues>
       key={
         itineraryActivity?.id
-          ? `${itineraryActivity.id}-${itineraryActivity.type}-${
-            itineraryActivity.updatedAt || ""
+          ? `${itineraryActivity.id}-${itineraryActivity.type}-${itineraryActivity.updatedAt || ""
           }`
-          : `new-activity-${itineraryActivity?.title || ""}-${
-            itineraryActivity?.destination || ""
+          : `new-activity-${itineraryActivity?.title || ""}-${itineraryActivity?.destination || ""
           }-${itineraryActivity?.type || ""}`
       }
       enableReinitialize={true}
@@ -1417,16 +1415,8 @@ const EditActivity = ({
                 {/* Title */}
                 <View ref={(el) => { fieldRefs.current["title"] = el; }} className="mt-md mb-8">
                   <View className="flex-row justify-between items-center mb-1">
-                    <Text className="text-lg text-secondary/80 font-semibold">
-                      {values.type === TripPlanType.activity
-                        ? "Plan Name"
-                        : values.type === TripPlanType.stay
-                          ? "Stay or Accomodation Name"
-                          : values.type === TripPlanType.transit
-                            ? "Transit Name"
-                            : values.type === TripPlanType.rideRental
-                              ? "Rental Name"
-                              : "Activity Name"}{" "}
+                    <Text className="text-lg text-secondary/80 font-semibold px-xs">
+                      Title
                       <Text className="text-red-500 text-lg">*</Text>
                     </Text>
 
@@ -1477,9 +1467,9 @@ const EditActivity = ({
                         backgroundColor: "transparent",
                         paddingRight:
                           values.type === TripPlanType.activity ||
-                          values.type === TripPlanType.stay ||
-                          values.type === TripPlanType.transit ||
-                          values.type === TripPlanType.rideRental
+                            values.type === TripPlanType.stay ||
+                            values.type === TripPlanType.transit ||
+                            values.type === TripPlanType.rideRental
                             ? (values.title ? 95 : 55)
                             : 16,
                       }}
@@ -1497,7 +1487,7 @@ const EditActivity = ({
                               if (
                                 values.type === TripPlanType.stay &&
                                 values.accomodationDetails?.accomodationName ===
-                                  values.title
+                                values.title
                               ) {
                                 setFieldValue(
                                   "accomodationDetails.accomodationName",
@@ -1557,9 +1547,8 @@ const EditActivity = ({
                         Place Details
                       </Text>
                       <Text
-                        className={`text-base  max-w-[200px] ${
-                          hasLocation ? "text-secondary/80" : "text-secondary/50"
-                        }`}
+                        className={`text-base  max-w-[200px] ${hasLocation ? "text-secondary/80" : "text-secondary/50"
+                          }`}
                         ellipsizeMode="tail"
                         numberOfLines={1}
                       >
@@ -1776,7 +1765,7 @@ const EditActivity = ({
                 >
                   {/* Activity Type */}
                   <View ref={(el) => { fieldRefs.current["type"] = el; }} className="mb-6">
-                    <Text className="text-lg text-secondary/80 font-semibold mb-3">
+                    <Text className="text-lg text-secondary/80 font-semibold mb-3  px-xs">
                       Activity Type
                     </Text>
                     {(() => {
@@ -1823,11 +1812,10 @@ const EditActivity = ({
 
                   {/* Itinerary Section */}
                   <View ref={(el) => { fieldRefs.current["sectionId"] = el; }} className="mb-6">
-                    <Text className="text-xl text-secondary/80 font-semibold ">
+                    <Text className="text-lg text-secondary/80 font-semibold mb-0.5 px-xs">
                       Section
                     </Text>
-
-                    <Text className={`text-base text-tertiary mb-2`}>
+                    <Text className={`text-base text-tertiary mb-2 px-xs`}>
                       Select the Section to add this activity.
                     </Text>
 
@@ -1857,9 +1845,8 @@ const EditActivity = ({
                       >
                         <Icon name="folder" size={24} color="#263F69" />
                         <Text
-                          className={`text-base flex-1 font-medium ${
-                            selectedSectionName ? "text-gray-800" : "text-gray-400"
-                          }`}
+                          className={`text-base flex-1 font-medium ${selectedSectionName ? "text-gray-800" : "text-gray-400"
+                            }`}
                         >
                           {selectedSectionName || "Select Section"}
                         </Text>
@@ -1882,13 +1869,6 @@ const EditActivity = ({
 
                   {/* Description */}
                   <View ref={(el) => { fieldRefs.current["description"] = el; }} className="">
-                    <View className="flex-row gap-2 justify-start items-center px-xs">
-                      <Text
-                        className="text-xs font-bold tracking-wider uppercase text-secondary/40"
-                      >
-                        Description
-                      </Text>
-                    </View>
                     <DescriptionInput
                       value={values.description}
                       onChange={(text) => setFieldValue("description", text)}
@@ -2297,7 +2277,7 @@ const EditActivity = ({
                     const destDataAny = values.destinationData as any;
                     const coords =
                       destDataAny?.coordinates?.latitude &&
-                      destDataAny?.coordinates?.latitude !== 0
+                        destDataAny?.coordinates?.latitude !== 0
                         ? destDataAny.coordinates
                         : destLocation.coordinates;
                     setFieldValue("destinationData", {
@@ -2333,7 +2313,7 @@ const EditActivity = ({
                     const destDataAny = values.destinationData as any;
                     const coords =
                       destDataAny?.coordinates?.latitude &&
-                      destDataAny?.coordinates?.latitude !== 0
+                        destDataAny?.coordinates?.latitude !== 0
                         ? destDataAny.coordinates
                         : destLocation.coordinates;
                     setFieldValue("destinationData", {
@@ -2507,7 +2487,7 @@ const EditActivity = ({
               initialCoordinates={values.destinationData?.coordinates}
               destinations={
                 travelPlan?.travel?.tripDestinations &&
-                travelPlan.travel.tripDestinations.length > 0
+                  travelPlan.travel.tripDestinations.length > 0
                   ? travelPlan.travel.tripDestinations
                   : travelPlan?.travel?.destination
                     ? [
@@ -2548,7 +2528,7 @@ const EditActivity = ({
                   const destDataAny = values.destinationData as any;
                   const coords =
                     destDataAny?.coordinates?.latitude &&
-                    destDataAny?.coordinates?.latitude !== 0
+                      destDataAny?.coordinates?.latitude !== 0
                       ? destDataAny.coordinates
                       : destLocation.coordinates;
                   setFieldValue("destinationData", {
@@ -2588,7 +2568,7 @@ const EditActivity = ({
                   const destDataAny = values.destinationData as any;
                   const coords =
                     destDataAny?.coordinates?.latitude &&
-                    destDataAny?.coordinates?.latitude !== 0
+                      destDataAny?.coordinates?.latitude !== 0
                       ? destDataAny.coordinates
                       : destLocation.coordinates;
                   setFieldValue("destinationData", {

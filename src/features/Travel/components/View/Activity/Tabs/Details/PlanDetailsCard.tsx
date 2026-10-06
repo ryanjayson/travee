@@ -61,7 +61,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
   const hasNotes = Boolean(activity.notes || activity.description);
 
   return (
-    <View className="mt-6 px-2">
+    <View className="mt-4 px-2">
       <View
         className="p-2xl rounded-3xl mb-4 gap-6"
         style={{ backgroundColor: `${themeColor}30` }}
@@ -252,9 +252,9 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
             accessibilityLabel="Edit or add more details"
             className="flex-row items-center self-start mt-2 py-1 px-xs gap-1.5"
           >
-            <Icon name="edit" size={20} color={"#0EA5E9"} />
+            <Icon name="edit" size={16} color={"#0EA5E9"} />
             <Text
-              className="text-base font-semibold"
+              className="text-sm font-semibold"
               style={{ color: "#0EA5E9" }}
             >
               Edit or Add more detail

@@ -109,7 +109,7 @@ describe("GoogleMapView Component", () => {
     expect(html).toContain("google.maps.DirectionsService");
     expect(html).toContain("new google.maps.Polyline");
     expect(html).toContain("geodesic: true");
-    expect(html).toContain("let currentConnectorColor = '#0EA5E9';");
+    expect(html).toContain("let currentConnectorColor = '#c10003';");
     expect(html).toContain("strokeColor: currentConnectorColor");
     expect(html).toContain("strokeWeight: 3");
     expect(html).toContain("travelMode: google.maps.TravelMode['DRIVING']");
@@ -353,5 +353,47 @@ describe("GoogleMapView Component", () => {
 
     expect(html).toContain("incoming[i].title !== currentPins[i].title");
     expect(html).toContain("incoming[i].subType !== currentPins[i].subType");
+  });
+
+  it("centers pin marker directly on marker click without reloading map", () => {
+    const handlePinPress = jest.fn();
+    const { getByTestId, rerender } = render(
+      <GoogleMapView pins={mockPins} onPinPress={handlePinPress} />
+    );
+    const webview = getByTestId("webview");
+    const initialHtml = webview.props.source.html;
+
+    expect(initialHtml).toContain("window.centerOnLocation");
+    expect(initialHtml).toContain("pin.latitude,");
+    expect(initialHtml).toContain("pin.longitude,");
+
+    // Simulate pin press message
+    fireEvent(webview, "message", {
+      nativeEvent: {
+        data: JSON.stringify({
+          type: "PIN_PRESS",
+          pin: mockPins[1],
+        }),
+      },
+    });
+
+    expect(handlePinPress).toHaveBeenCalledWith(mockPins[1]);
+
+    // Re-render with new selectedPinId and centerCoordinates (mimicking parent state update)
+    rerender(
+      <GoogleMapView
+        pins={mockPins}
+        selectedPinId={mockPins[1].id}
+        centerCoordinates={{
+          latitude: mockPins[1].latitude,
+          longitude: mockPins[1].longitude,
+        }}
+        onPinPress={handlePinPress}
+      />
+    );
+
+    // HTML content must remain identical (no map reload or rerender)
+    const updatedWebview = getByTestId("webview");
+    expect(updatedWebview.props.source.html).toBe(initialHtml);
   });
 });

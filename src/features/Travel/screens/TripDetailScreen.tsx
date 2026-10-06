@@ -61,6 +61,9 @@ const EXCLUDED_DEFAULT_TYPES: readonly TripPlanType[] = [
 
 // ─── Pure Utility Helpers (Exported for Testing & Cross-Component Use) ─────────
 
+export const DEFAULT_PIN_COLOR = '#c10003';
+export const LIGHT_FOCUSED_PIN_COLOR = '#ea5455';
+
 export const getActivityPinColor = (
   type?: TripPlanType | number,
   planType?: ActivityType | number | string
@@ -348,7 +351,7 @@ const buildFlightMapState = (
 
   return {
     pins: flightPins,
-    effectiveConnectorColor: actColor,
+    effectiveConnectorColor: '#c10003',
     effectiveRouteMode: 'FLIGHT',
     effectiveShowConnectors: flightPins.length > 1,
   };
@@ -488,7 +491,7 @@ const buildTransitMapState = (
 
   return {
     pins: transitPins,
-    effectiveConnectorColor: actColor,
+    effectiveConnectorColor: '#c10003',
     effectiveRouteMode: routeMode,
     effectiveShowConnectors: transitPins.length > 1,
   };
@@ -497,12 +500,12 @@ const buildTransitMapState = (
 const buildDefaultTripPins = (
   travelPlan: any,
   showActivityPinsInTripMap: boolean,
-  connectorColor: string
+  connectorColor: string = '#c10003'
 ): MapStateResult => {
   if (!travelPlan) {
     return {
       pins: [],
-      effectiveConnectorColor: connectorColor,
+      effectiveConnectorColor: '#c10003',
       effectiveRouteMode: 'DRIVING',
       effectiveShowConnectors: false,
     };
@@ -521,7 +524,7 @@ const buildDefaultTripPins = (
           latitude: Number(td.latitude),
           longitude: Number(td.longitude),
           title: td.destination || 'Destination',
-          color: '#263F69',
+          color: DEFAULT_PIN_COLOR,
         });
       }
     });
@@ -542,7 +545,7 @@ const buildDefaultTripPins = (
             title: act.title || 'Activity',
             type: act.type,
             subType: getActivitySubType(act),
-            color: getActivityPinColor(act.type, act.planType),
+            color: DEFAULT_PIN_COLOR,
             sortOrder: act.sortOrder,
           });
         }
@@ -565,7 +568,7 @@ const buildDefaultTripPins = (
 
   return {
     pins: defaultPins,
-    effectiveConnectorColor: connectorColor,
+    effectiveConnectorColor: '#c10003',
     effectiveRouteMode: 'DRIVING',
     effectiveShowConnectors: Boolean(hasConnectablePins),
   };
@@ -576,7 +579,7 @@ const buildDefaultTripPins = (
 export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
   travelId: propTravelId,
   onBack: propOnBack,
-  connectorColor = '#fb2c36',
+  connectorColor = '#c10003',
 }) => {
   const route = useRoute<TripDetailRouteProp>();
   const navigation =
@@ -1108,6 +1111,8 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
             ? asyncActivityCoords.coords
             : null);
         if (coords) {
+          const subType = getActivitySubType(activeActivity);
+          const pinColor = subType ? actColor : LIGHT_FOCUSED_PIN_COLOR;
           activityPinsResult = {
             pins: [
               {
@@ -1116,11 +1121,11 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
                 longitude: coords.longitude,
                 title: activeActivity.title || 'Activity',
                 type: activeActivity.type,
-                subType: getActivitySubType(activeActivity),
-                color: actColor,
+                subType: subType,
+                color: pinColor,
               },
             ],
-            effectiveConnectorColor: actColor,
+            effectiveConnectorColor: '#c10003',
             effectiveRouteMode: 'DRIVING' as GoogleMapRouteMode,
             effectiveShowConnectors: true,
           };
@@ -1140,9 +1145,7 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
         return {
           pins: combinedPins,
-          effectiveConnectorColor:
-            activityPinsResult.effectiveConnectorColor ||
-            defaultState.effectiveConnectorColor,
+          effectiveConnectorColor: '#c10003',
           effectiveRouteMode:
             activityPinsResult.effectiveRouteMode ||
             defaultState.effectiveRouteMode,
@@ -1153,6 +1156,7 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
     return {
       ...defaultState,
+      effectiveConnectorColor: '#c10003',
       effectiveShowConnectors: defaultState.pins.length > 1,
     };
   }, [
@@ -1344,7 +1348,7 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
           isExpanded={isExpanded}
           onPinPress={handlePinPress}
           showConnectors={effectiveShowConnectors}
-          connectorColor={effectiveConnectorColor}
+          connectorColor="#c10003"
           routeMode={effectiveRouteMode}
           connectByType={true}
           testID="trip-google-map"
@@ -1420,9 +1424,6 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
                         style={{ opacity: 0.5 }}
                       />
                     </View>
-                    <Text className="text-sm font-semibold uppercase text-tertiary/50">
-                      Back to Trip
-                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity

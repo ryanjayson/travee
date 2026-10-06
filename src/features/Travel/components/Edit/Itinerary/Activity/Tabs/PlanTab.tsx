@@ -1,6 +1,6 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, LayoutAnimation } from "react-native";
+import { View, Text, TouchableOpacity, LayoutAnimation, StyleSheet } from "react-native";
 import { useTheme, TextInput } from "react-native-paper";
 import DateTime from "../DateTime";
 import ActivityPlanTypeLookupModal from "../../../../Lookups/ActivityPlanTypeLookupModal";
@@ -10,7 +10,6 @@ import AddFieldModal, {
 } from "../../../../Lookups/AddFieldModal";
 import { ActivityType } from "../../../../../../../types/enums";
 import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
-import { FadeInView } from "../../../../../../../components/animations";
 
 const PRIORITIES = ["High", "Medium", "Low"];
 
@@ -205,8 +204,8 @@ export default function PlanTab({
             <View className="flex-1 justify-center">
               <Text
                 className={`text-lg ${selectedPlanType
-                    ? "text-[#1D2939] font-semibold"
-                    : "text-[#98A2B3] font-normal"
+                  ? "text-[#1D2939] font-semibold"
+                  : "text-[#98A2B3] font-normal"
                   }`}
               >
                 {selectedPlanType ? selectedPlanType.label : "Select Activity Type"}
@@ -242,190 +241,214 @@ export default function PlanTab({
         const fieldMeta = APPLICABLE_PLAN_FIELDS.find((f) => f.id === fieldId);
         if (!fieldMeta) return null;
 
+        const isStandardInput =
+          fieldId !== "priority" &&
+          fieldId !== "checklist" &&
+          fieldId !== "attachments";
+
         return (
-          <View key={fieldId} className="mb-5">
-            <FadeInView type="zoom" delay={200} duration={500} >
+          <View
+            key={fieldId}
+            className="mb-5 w-full"
+            style={
+              isStandardInput
+                ? styles.fieldContainer
+                : styles.autoFieldContainer
+            }
+          >
+            {fieldId === "location" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("location")}
+                onChangeText={(text) => handleCustomFieldChange("location", text)}
+                containerStyle={styles.fieldInputContainer}
+                right={
+                  <TextInput.Icon
+                    icon="map-marker-outline"
+                    color="#98A2B3"
+                    onPress={onPressLocationMap}
+                  />
+                }
+              />
+            )}
 
-              {fieldId === "location" && (
-                <FloatingLabelInput
-                  label={fieldMeta.label}
-                  value={getFieldValue("location")}
-                  onChangeText={(text) => handleCustomFieldChange("location", text)}
-                  right={
-                    <TextInput.Icon
-                      icon="map-marker-outline"
-                      color="#98A2B3"
-                      onPress={onPressLocationMap}
-                    />
-                  }
-                />
-              )}
+            {fieldId === "website" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("website")}
+                onChangeText={(text) => handleCustomFieldChange("website", text)}
+                keyboardType="url"
+                containerStyle={styles.fieldInputContainer}
+                right={<TextInput.Icon icon="web" color="#98A2B3" />}
+              />
+            )}
 
-              {fieldId === "website" && (
-                <FloatingLabelInput
-                  label={fieldMeta.label}
-                  value={getFieldValue("website")}
-                  onChangeText={(text) => handleCustomFieldChange("website", text)}
-                  keyboardType="url"
-                  right={<TextInput.Icon icon="web" color="#98A2B3" />}
-                />
-              )}
+            {fieldId === "budget" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("budget")}
+                onChangeText={(text) => handleCustomFieldChange("budget", text)}
+                keyboardType="numeric"
+                containerStyle={styles.fieldInputContainer}
+                right={<TextInput.Icon icon="cash" color="#98A2B3" />}
+              />
+            )}
 
-              {fieldId === "budget" && (
-                <FloatingLabelInput
-                  label={fieldMeta.label}
-                  value={getFieldValue("budget")}
-                  onChangeText={(text) => handleCustomFieldChange("budget", text)}
-                  keyboardType="numeric"
-                  right={<TextInput.Icon icon="cash" color="#98A2B3" />}
-                />
-              )}
+            {fieldId === "bookingReference" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("bookingReference")}
+                onChangeText={(text) =>
+                  handleCustomFieldChange("bookingReference", text)
+                }
+                containerStyle={styles.fieldInputContainer}
+                right={<TextInput.Icon icon="ticket-outline" color="#98A2B3" />}
+              />
+            )}
 
-              {fieldId === "bookingReference" && (
-                <FloatingLabelInput
-                  label={fieldMeta.label}
-                  value={getFieldValue("bookingReference")}
-                  onChangeText={(text) => handleCustomFieldChange("bookingReference", text)}
-                  right={<TextInput.Icon icon="ticket-outline" color="#98A2B3" />}
-                />
-              )}
+            {fieldId === "contactName" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("contactName")}
+                onChangeText={(text) => handleCustomFieldChange("contactName", text)}
+                containerStyle={styles.fieldInputContainer}
+                right={<TextInput.Icon icon="account-outline" color="#98A2B3" />}
+              />
+            )}
 
-              {fieldId === "contactName" && (
-                <FloatingLabelInput
-                  label={fieldMeta.label}
-                  value={getFieldValue("contactName")}
-                  onChangeText={(text) => handleCustomFieldChange("contactName", text)}
-                  right={<TextInput.Icon icon="account-outline" color="#98A2B3" />}
-                />
-              )}
+            {fieldId === "contactNumber" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("contactNumber")}
+                onChangeText={(text) =>
+                  handleCustomFieldChange("contactNumber", text)
+                }
+                keyboardType="phone-pad"
+                containerStyle={styles.fieldInputContainer}
+                right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
+              />
+            )}
 
-              {fieldId === "contactNumber" && (
-                <FloatingLabelInput
-                  label={fieldMeta.label}
-                  value={getFieldValue("contactNumber")}
-                  onChangeText={(text) => handleCustomFieldChange("contactNumber", text)}
-                  keyboardType="phone-pad"
-                  right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
-                />
-              )}
+            {fieldId === "contactEmail" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("contactEmail")}
+                onChangeText={(text) => handleCustomFieldChange("contactEmail", text)}
+                keyboardType="email-address"
+                containerStyle={styles.fieldInputContainer}
+                right={<TextInput.Icon icon="email-outline" color="#98A2B3" />}
+              />
+            )}
 
-              {fieldId === "contactEmail" && (
-                <FloatingLabelInput
-                  label={fieldMeta.label}
-                  value={getFieldValue("contactEmail")}
-                  onChangeText={(text) => handleCustomFieldChange("contactEmail", text)}
-                  keyboardType="email-address"
-                  right={<TextInput.Icon icon="email-outline" color="#98A2B3" />}
-                />
-              )}
+            {fieldId === "contact" && (
+              <FloatingLabelInput
+                label={fieldMeta.label}
+                value={getFieldValue("contact")}
+                onChangeText={(text) => handleCustomFieldChange("contact", text)}
+                containerStyle={styles.fieldInputContainer}
+                right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
+              />
+            )}
 
-              {fieldId === "contact" && (
-                <FloatingLabelInput
-                  label={fieldMeta.label}
-                  value={getFieldValue("contact")}
-                  onChangeText={(text) => handleCustomFieldChange("contact", text)}
-                  right={<TextInput.Icon icon="phone-outline" color="#98A2B3" />}
-                />
-              )}
-
-              {fieldId === "priority" && (
-                <View>
-                  <Text
-                    className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5"
-                  >
-                    {fieldMeta.label}
-                  </Text>
-                  <View className="flex-row gap-2 mt-1">
-                    {PRIORITIES.map((p) => {
-                      const pColor =
-                        p === "High"
-                          ? "#EF4444"
-                          : p === "Medium"
-                            ? "#F59E0B"
-                            : "#22C55E";
-                      const isSelected = selectedPriority === p;
-                      return (
-                        <TouchableOpacity
-                          key={p}
-                          onPress={() => {
-                            const nextVal = isSelected ? null : p;
-                            setFieldValue?.("priority", nextVal);
-                          }}
-                          accessibilityRole="button"
-                          accessibilityLabel={`Priority ${p}`}
+            {fieldId === "priority" && (
+              <View className="w-full" style={styles.autoFieldContainer}>
+                <Text
+                  className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5"
+                >
+                  {fieldMeta.label}
+                </Text>
+                <View className="flex-row gap-2 mt-1">
+                  {PRIORITIES.map((p) => {
+                    const pColor =
+                      p === "High"
+                        ? "#EF4444"
+                        : p === "Medium"
+                          ? "#F59E0B"
+                          : "#22C55E";
+                    const isSelected = selectedPriority === p;
+                    return (
+                      <TouchableOpacity
+                        key={p}
+                        onPress={() => {
+                          const nextVal = isSelected ? null : p;
+                          setFieldValue?.("priority", nextVal);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Priority ${p}`}
+                        style={{
+                          borderRadius: 12,
+                          borderWidth: 1,
+                          paddingHorizontal: 16,
+                          paddingVertical: 10,
+                          borderColor: isSelected ? pColor : "#EAECF0",
+                          backgroundColor: isSelected ? `${pColor}18` : "#FFF",
+                        }}
+                      >
+                        <Text
                           style={{
-                            borderRadius: 12,
-                            borderWidth: 1,
-                            paddingHorizontal: 16,
-                            paddingVertical: 10,
-                            borderColor: isSelected ? pColor : "#EAECF0",
-                            backgroundColor: isSelected ? `${pColor}18` : "#FFF",
+                            fontSize: 13,
+                            fontWeight: isSelected ? "700" : "600",
+                            color: pColor,
                           }}
                         >
-                          <Text
-                            style={{
-                              fontSize: 13,
-                              fontWeight: isSelected ? "700" : "600",
-                              color: pColor,
-                            }}
-                          >
-                            {p}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
+                          {p}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
-              )}
+              </View>
+            )}
 
-              {fieldId === "checklist" && (
-                <View>
-                  <Text
-                    className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5"
-                  >
-                    {fieldMeta.label}
+            {fieldId === "checklist" && (
+              <View className="w-full" style={styles.autoFieldContainer}>
+                <Text
+                  className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5"
+                >
+                  {fieldMeta.label}
+                </Text>
+                <View
+                  className={
+                    "border border-dashed border-gray-300 rounded-[16px] " +
+                    "bg-gray-50/50 p-4 items-center justify-center min-h-[64px]"
+                  }
+                  style={styles.fieldContainer}
+                >
+                  <Icon name="checklist" size={24} color="#98A2B3" />
+                  <Text className="text-xs text-gray-500 mt-1">
+                    Checklist items can be added here
                   </Text>
-                  <View
-                    className={
-                      "border border-dashed border-gray-300 rounded-[16px] " +
-                      "bg-gray-50/50 p-4 items-center justify-center"
-                    }
-                  >
-                    <Icon name="checklist" size={24} color="#98A2B3" />
-                    <Text className="text-xs text-gray-500 mt-1">
-                      Checklist items can be added here
-                    </Text>
-                  </View>
                 </View>
-              )}
+              </View>
+            )}
 
-              {fieldId === "attachments" && (
-                <View>
-                  <Text
-                    className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5"
-                  >
-                    {fieldMeta.label}
+            {fieldId === "attachments" && (
+              <View className="w-full" style={styles.autoFieldContainer}>
+                <Text
+                  className="text-xs font-semibold tracking-wider uppercase text-gray-700 mb-1.5"
+                >
+                  {fieldMeta.label}
+                </Text>
+                <View
+                  className={
+                    "border border-dashed border-gray-300 rounded-[16px] " +
+                    "bg-gray-50/50 p-4 items-center justify-center min-h-[64px]"
+                  }
+                  style={styles.fieldContainer}
+                >
+                  <Icon name="cloud-upload" size={24} color="#98A2B3" />
+                  <Text className="text-xs text-gray-500 mt-1">
+                    Upload files, tickets, or photos
                   </Text>
-                  <View
-                    className={
-                      "border border-dashed border-gray-300 rounded-[16px] " +
-                      "bg-gray-50/50 p-4 items-center justify-center"
-                    }
-                  >
-                    <Icon name="cloud-upload" size={24} color="#98A2B3" />
-                    <Text className="text-xs text-gray-500 mt-1">
-                      Upload files, tickets, or photos
-                    </Text>
-                  </View>
                 </View>
-              )}
-            </FadeInView>
+              </View>
+            )}
           </View>
         );
       })}
 
       {/* Button below plan detail section: Title "Add Field" / "Add or remove Field" */}
-      <View className="mt-1 mb-12">
+      <View className=" mb-12">
         <TouchableOpacity
           onPress={() => setShowAddFieldModal(true)}
           className="items-start justify-start"
@@ -435,11 +458,11 @@ export default function PlanTab({
             selectedFieldIds.length > 0 ? "Add or remove Field" : "Add Field"
           }
         >
-          <View className="flex-row items-center justify-center gap-2">
+          <View className="flex-row items-center justify-center gap-1.5">
+
             <Icon name="add" size={20} color={colors.primary || "#263F69"} />
             <Text
-              className="text-[15px] font-semibold tracking-[0.3px]"
-              style={{ color: colors.primary || "#263F69" }}
+              className="text-sm font-semibold text-primary"
             >
               {selectedFieldIds.length > 0
                 ? "Add or remove Field"
@@ -469,3 +492,22 @@ export default function PlanTab({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  fieldContainer: {
+    width: "100%",
+    minHeight: 64,
+    flexShrink: 0,
+  },
+  fieldInputContainer: {
+    width: "100%",
+    minHeight: 64,
+    flex: 0,
+    flexGrow: 0,
+    flexShrink: 0,
+  },
+  autoFieldContainer: {
+    width: "100%",
+    flexShrink: 0,
+  },
+});

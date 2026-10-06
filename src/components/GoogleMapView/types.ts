@@ -25,12 +25,14 @@ export type GoogleMapRouteMode =
   | "bicycling"
   | "flight";
 
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
 export interface GoogleMapViewProps {
   pins?: GoogleMapPin[];
-  initialCoordinates?: {
-    latitude: number;
-    longitude: number;
-  };
+  initialCoordinates?: Coordinates;
   centerCoordinates?: {
     latitude: number;
     longitude: number;

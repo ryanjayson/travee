@@ -91,7 +91,16 @@ export default function FloatingLabelInput({
   };
 
   return (
-    <View className="relative flex-1" style={containerStyle}>
+    <View
+      className="relative flex-1 w-full"
+      style={[
+        {
+          minHeight: multiline ? undefined : 64,
+          flexShrink: 0,
+        },
+        containerStyle,
+      ]}
+    >
       <Animated.Text
         style={animatedLabelStyle}
         pointerEvents="none"
@@ -124,9 +133,21 @@ export default function FloatingLabelInput({
         outlineColor="#E0E0E0"
         activeOutlineColor="#263F69"
         theme={{ colors: { onSurfaceVariant: '#98A2B3' } }}
-        outlineStyle={outlineStyle || { borderWidth: 1, backgroundColor: "#FFF", borderRadius: 16 }}
-        style={style || (multiline ? undefined : { height: 64 })}
-        contentStyle={[{ backgroundColor: "transparent", paddingTop: multiline ? 8 : 16 }, contentStyle]}
+        outlineStyle={
+          outlineStyle || {
+            borderWidth: 1,
+            backgroundColor: "#FFF",
+            borderRadius: 16,
+          }
+        }
+        style={[
+          multiline ? undefined : { height: 64, minHeight: 64 },
+          style,
+        ]}
+        contentStyle={[
+          { backgroundColor: "transparent", paddingTop: multiline ? 8 : 16 },
+          contentStyle,
+        ]}
         right={right}
         left={left}
       />

@@ -474,7 +474,7 @@ const ActivityItemCard = ({
       <View className={`px-2 flex-row justify-between items-center relative  pl-6xl   `}>
         {!isDragActive && (
           <>
-            {/* {isLastItem ? (
+            {/* {isLastItem ? ( TODO
               <View className="w-1.5 items-center h-full absolute">
                 {isFirstItem ? (
                   <View className={`absolute h-1/2 w-1px top-1/2 ${viewMode === 'narrow' ? 'left-[29px]' : 'left-4xl'} z-0 border-l border-dashed border-gray-300`}></View>
@@ -588,51 +588,51 @@ const ActivityItemCard = ({
             <View className={`flex-row items-center  ${itineraryEventActivity.startDate ? 'gap-2' : ''}`}>
               {itineraryEventActivity.type !== undefined &&
                 itineraryEventActivity.type !== null && (
-                <View className="items-center flex-row">
-                  {(() => {
-                    const typeDetails = getActivityTypeDetails(
-                      itineraryEventActivity.type
-                    );
-                    const planTypeConfig =
-                      itineraryEventActivity.type === TripPlanType.activity &&
-                      itineraryEventActivity.planType != null
-                        ? getActivityPlanTypeConfig(
+                  <View className="items-center flex-row">
+                    {(() => {
+                      const typeDetails = getActivityTypeDetails(
+                        itineraryEventActivity.type
+                      );
+                      const planTypeConfig =
+                        itineraryEventActivity.type === TripPlanType.activity &&
+                          itineraryEventActivity.planType != null
+                          ? getActivityPlanTypeConfig(
                             itineraryEventActivity.planType
                           )
-                        : undefined;
-                    const badgeBgColor =
-                      (planTypeConfig?.color ?? typeDetails.color) + '10';
+                          : undefined;
+                      const badgeBgColor =
+                        (planTypeConfig?.color ?? typeDetails.color) + '10';
 
-                    return (
-                      <Text
-                        style={{ backgroundColor: badgeBgColor }}
-                        className={
-                          'text-[8px] rounded-xs px-1 py-0.5 tracking-wider ' +
-                          'uppercase font-extrabold text-gray/60'
-                        }
-                      >
-                        {typeDetails.text}
+                      return (
+                        <Text
+                          style={{ backgroundColor: badgeBgColor }}
+                          className={
+                            'text-[8px] rounded-xs px-1 py-0.5 tracking-wider ' +
+                            'uppercase font-extrabold text-gray/60'
+                          }
+                        >
+                          {typeDetails.text}
 
-                        {itineraryEventActivity.type ===
-                          TripPlanType.activity &&
-                          !!getPlanTypeLabel(
-                            itineraryEventActivity.planType
-                          ) && (
-                            <Text
-                              style={{
-                                borderColor:
-                                  planTypeConfig?.color ?? typeDetails.color,
-                              }}
-                              className="text-[8px] font-normal text-gray/60 px-xxs"
-                            >
-                              / {getPlanTypeLabel(itineraryEventActivity.planType)}
-                            </Text>
-                          )}
-                      </Text>
-                    );
-                  })()}
-                </View>
-              )}
+                          {itineraryEventActivity.type ===
+                            TripPlanType.activity &&
+                            !!getPlanTypeLabel(
+                              itineraryEventActivity.planType
+                            ) && (
+                              <Text
+                                style={{
+                                  borderColor:
+                                    planTypeConfig?.color ?? typeDetails.color,
+                                }}
+                                className="text-[8px] font-normal text-gray/60 px-xxs"
+                              >
+                                / {getPlanTypeLabel(itineraryEventActivity.planType)}
+                              </Text>
+                            )}
+                        </Text>
+                      );
+                    })()}
+                  </View>
+                )}
               {/* {itineraryEventActivity.startDate ? (
                   <View className="flex-row gap-1">
                     <Text className="text-xs font-bold text-[#000] ">

@@ -2,8 +2,15 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import React from "react";
 import { View, TouchableOpacity, Text } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
-import FloatingLabelInput from "../../../../../../../components/atoms/FloatingLabelInput";
+import FloatingLabelInputAtom from "../../../../../../../components/atoms/FloatingLabelInput";
 import { parseAirport } from "../../../../../../../utils";
+
+const FloatingLabelInput = (props: any) => (
+  <FloatingLabelInputAtom
+    containerStyle={[{ minHeight: 64, flexShrink: 0 }, props.containerStyle]}
+    {...props}
+  />
+);
 
 interface FlightTabProps {
   values: any;
@@ -60,7 +67,11 @@ export default function FlightTab({
         Departure & Arrival Airport
       </Text>
       {/* Departure Airport */}
-      <View ref={assignRef("flightDetails.departureAirport")} className=" flex-row">
+      <View
+        ref={assignRef("flightDetails.departureAirport")}
+        className="flex-row"
+        style={{ flexShrink: 0 }}
+      >
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel={
@@ -103,7 +114,7 @@ export default function FlightTab({
         </TouchableOpacity>
       </View>
 
-      <View className="relative">
+      <View className="relative" style={{ flexShrink: 0 }}>
         <View
           ref={assignRef("flightDetails.departureDate")}
           className="flex-row gap-4 "
@@ -137,6 +148,7 @@ export default function FlightTab({
         <View
           ref={assignRef("flightDetails.arrivalAirport")}
           className="mb-5 flex-row"
+          style={{ flexShrink: 0 }}
         >
           <TouchableOpacity
             accessibilityRole="button"
@@ -187,6 +199,7 @@ export default function FlightTab({
       <View
         ref={assignRef("flightDetails.departureDate")}
         className="flex-row gap-4 mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Departure Date & Time"
@@ -215,8 +228,12 @@ export default function FlightTab({
       <View
         ref={assignRef("flightDetails.arrivalDate")}
         className="flex-col mb-10"
+        style={{ flexShrink: 0 }}
       >
-        <View className="flex-row gap-4">
+        <View
+          className="flex-row gap-4"
+          style={{ minHeight: 64, flexShrink: 0 }}
+        >
           <FloatingLabelInput
             label="Arrival Date & Time"
             value={
@@ -256,6 +273,7 @@ export default function FlightTab({
       <View
         ref={assignRef("flightDetails.airline")}
         className="flex-row gap-4 mb-6"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Airline"
@@ -268,6 +286,7 @@ export default function FlightTab({
       <View
         ref={assignRef("flightDetails.flightNumber")}
         className="flex-row gap-4 mb-6"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Flight Number"
@@ -282,6 +301,7 @@ export default function FlightTab({
       <View
         ref={assignRef("flightDetails.gate")}
         className="flex-row gap-4 mb-6"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Gate"
@@ -291,7 +311,7 @@ export default function FlightTab({
         />
         <View
           ref={assignRef("flightDetails.terminal")}
-          style={{ flex: 1 }}
+          style={{ flex: 1, minHeight: 64, flexShrink: 0 }}
         >
           <FloatingLabelInput
             label="Terminal"
@@ -306,6 +326,7 @@ export default function FlightTab({
       <View
         ref={assignRef("flightDetails.seatNumber")}
         className="flex-row gap-4 mb-6"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Seat Number"
@@ -315,7 +336,7 @@ export default function FlightTab({
         />
         <View
           ref={assignRef("flightDetails.bookingReference")}
-          style={{ flex: 1 }}
+          style={{ flex: 1, minHeight: 64, flexShrink: 0 }}
         >
           <FloatingLabelInput
             label="Booking Reference"

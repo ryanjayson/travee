@@ -65,7 +65,10 @@ interface TransportationTabProps {
 }
 
 const FloatingLabelInput = (props: any) => (
-  <FloatingLabelInputAtom {...props} />
+  <FloatingLabelInputAtom
+    containerStyle={[{ minHeight: 64, flexShrink: 0 }, props.containerStyle]}
+    {...props}
+  />
 );
 
 const getLocationTitle = (loc?: any): string => {
@@ -148,6 +151,7 @@ export default function TransportationTab({
       <View
         ref={assignRef("transportationDetails.pickupLocation")}
         className="flex-row relative"
+        style={{ flexShrink: 0 }}
       >
         <TouchableOpacity
           accessibilityRole="button"
@@ -221,7 +225,7 @@ export default function TransportationTab({
         )}
       </View>
 
-      <View className="flex-1">
+      <View style={{ flexShrink: 0 }}>
         <View className="flex-row gap-4">
           <View
             className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4"
@@ -275,6 +279,7 @@ export default function TransportationTab({
         <View
           ref={assignRef("transportationDetails.dropoffLocation")}
           className="mb-5 flex-row relative"
+          style={{ flexShrink: 0 }}
         >
           <TouchableOpacity
             accessibilityRole="button"
@@ -371,7 +376,7 @@ export default function TransportationTab({
       />
 
       {/* Transit Mode Cards */}
-      <View className="mb-5 mt-3">
+      <View className="mb-5 mt-3" style={{ flexShrink: 0 }}>
         <Text className="text-lg text-secondary/80 font-semibold mb-2 px-xs">
           Booking Details
         </Text>
@@ -444,8 +449,11 @@ export default function TransportationTab({
 
 
       {/* Seat / Coach / Vehicle Number & Booking Reference */}
-      <View className="mb-5">
-        <View ref={assignRef("transportationDetails.seatOrVehicleNumber")}>
+      <View className="mb-5" style={{ minHeight: 64, flexShrink: 0 }}>
+        <View
+          ref={assignRef("transportationDetails.seatOrVehicleNumber")}
+          style={{ minHeight: 64, flexShrink: 0 }}
+        >
           <FloatingLabelInput
             label="Seat / Coach / Vehicle #"
             value={values.transportationDetails?.seatOrVehicleNumber || ""}
@@ -459,6 +467,7 @@ export default function TransportationTab({
       <View
         ref={assignRef("transportationDetails.bookingStatus")}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Booking Reference"
@@ -473,6 +482,7 @@ export default function TransportationTab({
       <View
         ref={assignRef("transportationDetails.websiteAddress")}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Website Address / Ticket Link"
@@ -524,6 +534,7 @@ export default function TransportationTab({
       <View
         ref={assignRef("transportationDetails.contactNumber")}
         className="mb-8"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Contact Number"

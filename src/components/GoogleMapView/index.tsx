@@ -9,7 +9,7 @@ import {
 import { WebView } from "react-native-webview";
 // @ts-ignore
 import { GOOGLE_MAPS_API_KEY as ENV_GOOGLE_KEY } from "@env";
-import { GoogleMapPin, GoogleMapViewProps } from "./types";
+import { GoogleMapPin, GoogleMapViewProps, Coordinates } from "./types";
 
 export * from "./types";
 
@@ -43,8 +43,8 @@ export const GoogleMapView = ({
   customMapStyles,
   showConnectors = false,
   routeMode = "DRIVING",
-  connectorColor = "#0EA5E9",
-  connectorWidth = 6,
+  connectorColor = "#c10003",
+  connectorWidth = 4,
   connectorOpacity = 1,
   connectorDashed = false,
   connectorGeodesic = false,
@@ -58,18 +58,19 @@ export const GoogleMapView = ({
     return (routeMode || "DRIVING").toUpperCase();
   }, [routeMode]);
 
-  const centerCoord = useMemo(() => {
+  const initialCenterRef = useRef<Coordinates | null>(null);
+  if (!initialCenterRef.current) {
     if (initialCoordinates) {
-      return initialCoordinates;
-    }
-    if (pins.length > 0) {
-      return {
+      initialCenterRef.current = initialCoordinates;
+    } else if (pins && pins.length > 0) {
+      initialCenterRef.current = {
         latitude: pins[0].latitude,
         longitude: pins[0].longitude,
       };
     }
-    return DEFAULT_CENTER;
-  }, [initialCoordinates, pins]);
+  }
+
+  const centerCoord = initialCenterRef.current || DEFAULT_CENTER;
 
   const htmlContent = useMemo(() => {
     const pinsJson = JSON.stringify(pins);
@@ -113,7 +114,7 @@ export const GoogleMapView = ({
       white-space: nowrap;
       pointer-events: none;
       transform: translate(-50%, -50%);
-      max-width: 140px;
+      max-width: 110px;
       overflow: hidden;
       text-overflow: ellipsis;
       line-height: 16px;
@@ -423,15 +424,16 @@ export const GoogleMapView = ({
     }
 
     function createSvgPin(color, subType) {
-      const pinColor = color || '#263F69';
+      const pinColor = color || '#c10003';
       const iconPath = getSubtypeIconPath(subType);
       let innerContent = '<circle cx="18" cy="17" r="7" fill="#FFFFFF"/>';
 
       if (iconPath) {
         innerContent =
-          '<circle cx="18" cy="17" r="8.5" fill="#FFFFFF"/>' +
-          '<g transform="translate(18, 17) scale(0.48) translate(-12, -12)">' +
-          '<path fill="' + pinColor + '" d="' + iconPath + '"/>' +
+          // '<circle cx="18" cy="17" r="8.5" fill="#FFFFFF"/>' +
+          '<g transform="translate(18, 17) scale(0.80) translate(-12, -12)">' +
+          // '<path fill="' + pinColor + '" d="' + iconPath + '"/>' +
+          '<path fill="' + '#FFFFFF' + '" d="' + iconPath + '"/>' +
           '</g>';
       }
 
@@ -962,6 +964,15 @@ export const GoogleMapView = ({
         const marker = new google.maps.Marker(markerOptions);
 
         marker.addListener('click', function() {
+          if (typeof window.centerOnLocation === 'function') {
+            window.centerOnLocation(
+              pin.latitude,
+              pin.longitude,
+              null,
+              pin.id,
+              currentBottomOffset / 2
+            );
+          }
           if (window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'PIN_PRESS',
@@ -983,7 +994,7 @@ export const GoogleMapView = ({
             const typeKey = String(pin.type);
             if (!typeGroups[typeKey]) {
               typeGroups[typeKey] = {
-                color: pin.color || currentConnectorColor,
+                color: currentConnectorColor || '#c10003',
                 coords: [],
               };
             }
@@ -1225,9 +1236,6 @@ export const GoogleMapView = ({
 `;
   }, [
     apiKey,
-    centerCoord.latitude,
-    centerCoord.longitude,
-    zoom,
     mapType,
     showTraffic,
     showZoomControls,
@@ -1235,8 +1243,6 @@ export const GoogleMapView = ({
     customMapStyles,
     showConnectors,
     connectByType,
-    normalizedRouteMode,
-    connectorColor,
     connectorWidth,
     connectorOpacity,
     connectorDashed,
@@ -1414,6 +1420,18 @@ export const GoogleMapView = ({
       try {
         const data = JSON.parse(event.nativeEvent.data);
         if (data.type === "PIN_PRESS" && onPinPress) {
+          if (
+            data.pin &&
+            typeof data.pin.latitude === "number" &&
+            typeof data.pin.longitude === "number"
+          ) {
+            prevCenterRef.current = {
+              lat: data.pin.latitude,
+              lng: data.pin.longitude,
+              pinId: String(data.pin.id || ""),
+            };
+            isCenteredRef.current = true;
+          }
           onPinPress(data.pin);
         } else if (data.type === "MAP_PRESS" && onMapPress) {
           onMapPress();

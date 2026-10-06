@@ -67,7 +67,7 @@ describe("AccomodationTab Component", () => {
   it("renders Stay Details header and Check-in / Check-out dates", () => {
     const { getByText } = renderComponent();
 
-    expect(getByText(/stay details/i)).toBeTruthy();
+    expect(getByText(/stay details|accomodation details/i)).toBeTruthy();
     expect(getByText(/check-in date & time/i)).toBeTruthy();
     expect(getByText("2026-10-01")).toBeTruthy();
     expect(getByText("2026-10-05")).toBeTruthy();

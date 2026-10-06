@@ -283,7 +283,7 @@ describe("TripDetailScreen", () => {
       refetch: jest.fn(),
     });
 
-    const { getByTestId, getByText, queryByTestId } = render(
+    const { getByTestId, getByText, getByLabelText, queryByTestId } = render(
       <TripDetailScreen travelId="trip-123" />
     );
 
@@ -310,10 +310,11 @@ describe("TripDetailScreen", () => {
     // Now activity detail container should be loaded inside the bottom sheet
     expect(getByTestId("activity-detail-container")).toBeTruthy();
     expect(getByText("Activity Detail: act-1")).toBeTruthy();
-    expect(getByText("Back to Trip")).toBeTruthy();
+    const backBtn = getByLabelText("Back to Trip Details");
+    expect(backBtn).toBeTruthy();
 
-    // Clicking "Back to Trip" returns to trip view
-    fireEvent.press(getByText("Back to Trip"));
+    // Clicking "Back to Trip Details" returns to trip view
+    fireEvent.press(backBtn);
     expect(getByTestId("trip-view-container")).toBeTruthy();
     expect(queryByTestId("activity-detail-container")).toBeNull();
   });

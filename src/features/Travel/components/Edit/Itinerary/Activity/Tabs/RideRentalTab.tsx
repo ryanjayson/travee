@@ -57,7 +57,10 @@ interface RideRentalTabProps {
 }
 
 const FloatingLabelInput = (props: any) => (
-  <FloatingLabelInputAtom {...props} />
+  <FloatingLabelInputAtom
+    containerStyle={[{ minHeight: 64, flexShrink: 0 }, props.containerStyle]}
+    {...props}
+  />
 );
 
 const getLocationTitle = (loc?: any): string => {
@@ -133,6 +136,7 @@ export default function RideRentalTab({
       <View
         ref={assignRef("rideRentalDetails.pickupLocation")}
         className="flex-row"
+        style={{ flexShrink: 0 }}
       >
         <TouchableOpacity
           accessibilityRole="button"
@@ -187,7 +191,7 @@ export default function RideRentalTab({
         </TouchableOpacity>
       </View>
 
-      <View className="flex-1">
+      <View style={{ flexShrink: 0 }}>
         <View className="flex-row gap-4">
           <View
             className="flex-1 flex-row justify-end -mb-lg z-50 -mt-3xl absolute right-4"
@@ -215,6 +219,7 @@ export default function RideRentalTab({
         <View
           ref={assignRef("rideRentalDetails.dropoffLocation")}
           className="mb-2 flex-row"
+          style={{ flexShrink: 0 }}
         >
           <TouchableOpacity
             accessibilityRole="button"
@@ -312,7 +317,7 @@ export default function RideRentalTab({
       />
 
       {/* 4. Vehicle Type Cards */}
-      <View className="mb-3">
+      <View className="mb-3" style={{ flexShrink: 0 }}>
         <Text className="text-lg text-secondary/80 font-semibold mb-2 px-xs">
           Booking Details
         </Text>
@@ -390,6 +395,7 @@ export default function RideRentalTab({
       <View
         ref={assignRef("rideRentalDetails.vehicleModel")}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Vehicle Model / Make"
@@ -403,6 +409,7 @@ export default function RideRentalTab({
       <View
         ref={assignRef("rideRentalDetails.bookingReference")}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Booking Reference"
@@ -416,6 +423,7 @@ export default function RideRentalTab({
       <View
         ref={assignRef("rideRentalDetails.websiteAddress")}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Website / Link"
@@ -475,6 +483,7 @@ export default function RideRentalTab({
       <View
         ref={assignRef("rideRentalDetails.contactName")}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Contact Name"
@@ -488,6 +497,7 @@ export default function RideRentalTab({
       <View
         ref={assignRef("rideRentalDetails.contactNumber")}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Contact Number"
@@ -500,6 +510,7 @@ export default function RideRentalTab({
       <View
         ref={assignRef("rideRentalDetails.emailAddress")}
         className="mb-5"
+        style={{ minHeight: 64, flexShrink: 0 }}
       >
         <FloatingLabelInput
           label="Email Address"
