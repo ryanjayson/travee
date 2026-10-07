@@ -997,17 +997,31 @@ export const GoogleMapView = ({
       });
 
       if (${Boolean(showConnectors)}) {
+        function isTransitRentalOrFlight(p) {
+          if (!p) return false;
+          var t = String(p.type != null ? p.type : '').toLowerCase();
+          var st = String(p.subType != null ? p.subType : '').toLowerCase();
+          if (p.type === 1 || t === '1' || t === 'flight' || st === 'flight') return true;
+          if (p.type === 3 || t === '3' || t === 'transit' || t === 'transportation' || st === 'transit' || st === 'transportation') return true;
+          if (p.type === 4 || t === '4' || t === 'rental' || t === 'riderental' || t === 'ride_rental' || st === 'rental' || st === 'riderental') return true;
+          return false;
+        }
+
         if (${Boolean(connectByType)}) {
           const typeGroups = {};
           pinsList.forEach(function(pin) {
             if (pin.type === undefined || pin.type === null || pin.type === '') return;
             if (typeof pin.latitude !== 'number' || typeof pin.longitude !== 'number') return;
             const typeKey = String(pin.type);
+            const canChangeColor = isTransitRentalOrFlight(pin);
+            const groupColor = canChangeColor && pin.color ? pin.color : (currentConnectorColor || '#c10003');
             if (!typeGroups[typeKey]) {
               typeGroups[typeKey] = {
-                color: currentConnectorColor || '#c10003',
+                color: groupColor,
                 coords: [],
               };
+            } else if (canChangeColor && pin.color && (!typeGroups[typeKey].color || typeGroups[typeKey].color === currentConnectorColor || typeGroups[typeKey].color === '#c10003')) {
+              typeGroups[typeKey].color = pin.color;
             }
             typeGroups[typeKey].coords.push({ lat: pin.latitude, lng: pin.longitude });
           });
@@ -1026,18 +1040,40 @@ export const GoogleMapView = ({
             }
           });
 
+          let fallbackColor = currentConnectorColor || '#c10003';
+          for (let i = 0; i < pinsList.length; i++) {
+            const p = pinsList[i];
+            if (isTransitRentalOrFlight(p) && p.color) {
+              if (!currentConnectorColor || currentConnectorColor === '#c10003') {
+                fallbackColor = p.color;
+              }
+              break;
+            }
+          }
+
           if (!anyGroupConnected && pathCoordinates.length > 1) {
             const reqId = ++activeRouteRequestId;
             try {
-              calculateRoadRoute(pathCoordinates, currentRouteMode, reqId, currentConnectorColor);
+              calculateRoadRoute(pathCoordinates, currentRouteMode, reqId, fallbackColor);
             } catch (err) {
               console.warn('Error initiating road route calculation:', err);
             }
           }
         } else if (pathCoordinates.length > 1) {
+          let fallbackColor = currentConnectorColor || '#c10003';
+          for (let i = 0; i < pinsList.length; i++) {
+            const p = pinsList[i];
+            if (isTransitRentalOrFlight(p) && p.color) {
+              if (!currentConnectorColor || currentConnectorColor === '#c10003') {
+                fallbackColor = p.color;
+              }
+              break;
+            }
+          }
+
           const reqId = ++activeRouteRequestId;
           try {
-            calculateRoadRoute(pathCoordinates, currentRouteMode, reqId, currentConnectorColor);
+            calculateRoadRoute(pathCoordinates, currentRouteMode, reqId, fallbackColor);
           } catch (err) {
             console.warn('Error initiating road route calculation:', err);
           }
@@ -1225,6 +1261,11 @@ export const GoogleMapView = ({
         currentConnectorColor = newColor;
         if (connectorPolyline) {
           connectorPolyline.setOptions({ strokeColor: currentConnectorColor });
+        }
+        if (connectorPolylines && connectorPolylines.length > 0) {
+          connectorPolylines.forEach(function(p) {
+            p.setOptions({ strokeColor: currentConnectorColor });
+          });
         }
       }
     };

@@ -351,7 +351,7 @@ const buildFlightMapState = (
 
   return {
     pins: flightPins,
-    effectiveConnectorColor: '#c10003',
+    effectiveConnectorColor: actColor || '#c10003',
     effectiveRouteMode: 'FLIGHT',
     effectiveShowConnectors: flightPins.length > 1,
   };
@@ -491,7 +491,7 @@ const buildTransitMapState = (
 
   return {
     pins: transitPins,
-    effectiveConnectorColor: '#c10003',
+    effectiveConnectorColor: actColor || '#c10003',
     effectiveRouteMode: routeMode,
     effectiveShowConnectors: transitPins.length > 1,
   };
@@ -506,7 +506,7 @@ const buildDefaultTripPins = (
   if (!travelPlan) {
     return {
       pins: [],
-      effectiveConnectorColor: '#c10003',
+      effectiveConnectorColor: connectorColor || '#c10003',
       effectiveRouteMode: 'DRIVING',
       effectiveShowConnectors: false,
     };
@@ -571,7 +571,7 @@ const buildDefaultTripPins = (
 
   return {
     pins: defaultPins,
-    effectiveConnectorColor: '#c10003',
+    effectiveConnectorColor: connectorColor || '#c10003',
     effectiveRouteMode: 'DRIVING',
     effectiveShowConnectors: Boolean(hasConnectablePins),
   };
@@ -1207,7 +1207,9 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
         return {
           pins: combinedPins,
-          effectiveConnectorColor: '#c10003',
+          effectiveConnectorColor:
+            activityPinsResult.effectiveConnectorColor ||
+            defaultState.effectiveConnectorColor,
           effectiveRouteMode:
             activityPinsResult.effectiveRouteMode ||
             defaultState.effectiveRouteMode,
@@ -1218,7 +1220,8 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
 
     return {
       ...defaultState,
-      effectiveConnectorColor: '#c10003',
+      effectiveConnectorColor:
+        defaultState.effectiveConnectorColor || connectorColor || '#c10003',
       effectiveShowConnectors: defaultState.pins.length > 1,
     };
   }, [
@@ -1411,7 +1414,7 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
           isExpanded={isExpanded}
           onPinPress={handlePinPress}
           showConnectors={effectiveShowConnectors}
-          connectorColor="#c10003"
+          connectorColor={effectiveConnectorColor}
           routeMode={effectiveRouteMode}
           connectByType={true}
           testID="trip-google-map"

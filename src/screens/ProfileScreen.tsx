@@ -63,9 +63,8 @@ const AccountTypeBadge = ({ type }: { type: AccountType }) => {
   const isPremium = type === AccountType.Premium;
   return (
     <View
-      className={`flex-row items-center gap-1 px-3 py-1 rounded-full ${
-        isPremium ? "bg-[#FEF3C7]" : "bg-[#F3F4F6]"
-      }`}
+      className={`flex-row items-center gap-1 px-3 py-1 rounded-full ${isPremium ? "bg-[#FEF3C7]" : "bg-[#F3F4F6]"
+        }`}
     >
       <Ionicons
         name={isPremium ? "star" : "person"}
@@ -73,9 +72,8 @@ const AccountTypeBadge = ({ type }: { type: AccountType }) => {
         color={isPremium ? "#F59E0B" : "#6B7280"}
       />
       <Text
-        className={`text-xs font-semibold ${
-          isPremium ? "text-[#D97706]" : "text-[#6B7280]"
-        }`}
+        className={`text-xs font-semibold ${isPremium ? "text-[#D97706]" : "text-[#6B7280]"
+          }`}
       >
         {isPremium ? "Premium" : "Free"}
       </Text>
@@ -272,7 +270,7 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
     Alert.alert(
       "Rate & Feedback",
       "Thank you for using Travee! Would you like to rate the app on the store " +
-        "or send us your feedback?",
+      "or send us your feedback?",
       [
         {
           text: "Send Feedback",
@@ -280,7 +278,7 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
             setAboutModalTitle("Send Feedback");
             setAboutModalContent(
               "Please send your suggestions, bug reports, and ideas to " +
-                "support@travee.example.com. We appreciate your input!"
+              "support@travee.example.com. We appreciate your input!"
             );
             setShowAboutModal(true);
           },
@@ -435,13 +433,13 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
                       )}
                     </View>
                   </TouchableOpacity>
-                  <AccountTypeBadge
+                  {/* <AccountTypeBadge
                     type={form.accountType ?? AccountType.Free}
-                  />
+                  /> */}
                 </FadeInView>
 
                 {/* Account Type Card */}
-                <FadeInView type="up" delay={150} duration={400}>
+                {/* <FadeInView type="up" delay={150} duration={400}>
                   <View className="bg-white rounded-2xl p-4 gap-3 border border-[#F3F4F6]">
                     <Text
                       className={[
@@ -479,11 +477,10 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
                           }
                         />
                         <Text
-                          className={`text-base font-bold ${
-                            form.accountType === AccountType.Free
-                              ? "text-primary"
-                              : "text-[#9CA3AF]"
-                          }`}
+                          className={`text-base font-bold ${form.accountType === AccountType.Free
+                            ? "text-primary"
+                            : "text-[#9CA3AF]"
+                            }`}
                         >
                           Free
                         </Text>
@@ -519,11 +516,10 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
                           }
                         />
                         <Text
-                          className={`text-base font-bold ${
-                            form.accountType === AccountType.Premium
-                              ? "text-[#D97706]"
-                              : "text-[#9CA3AF]"
-                          }`}
+                          className={`text-base font-bold ${form.accountType === AccountType.Premium
+                            ? "text-[#D97706]"
+                            : "text-[#9CA3AF]"
+                            }`}
                         >
                           Premium
                         </Text>
@@ -533,7 +529,7 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
                       </TouchableOpacity>
                     </View>
                   </View>
-                </FadeInView>
+                </FadeInView> */}
 
                 {/* Settings Section */}
                 <FadeInView type="up" delay={200} duration={400}>
@@ -553,29 +549,26 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
                       accessibilityLabel="Open profile settings"
                     />
 
-                    <View className="h-[1px] bg-[#E5E7EB]" />
-
-                    <SettingsRowItem
+                    {/* TODO: next version will be released soon */}
+                    {/* <SettingsRowItem
                       title="Notification"
                       onPress={() => setActiveSettingsModal("notifications")}
                       accessibilityLabel="Open notification settings"
-                    />
+                    /> */}
 
-                    <View className="h-[1px] bg-[#E5E7EB]" />
-
+                    {/* 
                     <SettingsRowItem
                       title="Security PIN Lock"
                       onPress={() => setActiveSettingsModal("security")}
                       accessibilityLabel="Open security PIN lock settings"
-                    />
+                    /> */}
 
-                    <View className="h-[1px] bg-[#E5E7EB]" />
-
-                    <SettingsRowItem
+                    {/* TODO: next version will be released soon */}
+                    {/* <SettingsRowItem
                       title="Database"
                       onPress={() => setActiveSettingsModal("database")}
                       accessibilityLabel="Open database backup settings"
-                    />
+                    /> */}
                   </View>
                 </FadeInView>
 

@@ -22,7 +22,7 @@ const ItineraryTab = ({
         travelPlan={travelPlan}
         onRefresh={onRefresh}
         isMinimized={isMinimized}
-        isMidSnap={isMidSnap}
+        isMidSnap={false}
       />
     </View>
   );

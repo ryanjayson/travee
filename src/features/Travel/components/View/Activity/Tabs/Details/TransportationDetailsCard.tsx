@@ -56,7 +56,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
 
   const locationText =
     pickupTitle && dropoffTitle && pickupTitle !== dropoffTitle
-      ? `${pickupTitle} ➠ ${dropoffTitle}`
+      ? `${pickupTitle} → ${dropoffTitle}`
       : pickupTitle || dropoffTitle || "";
 
   const hasTransitInfo = Boolean(
@@ -80,123 +80,126 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
     <View className="mt-4 px-2">
       {/* Main Details Body */}
       <View
-        className="p-2xl rounded-3xl mb-2 gap-4"
-        style={{ backgroundColor: `${themeColor}30` }}
+        className="py-xl px-2xl rounded-3xl mb-2 gap-4"
+        style={{ backgroundColor: `${themeColor}40` }}
       >
-          <View className="flex-row items-start w-full mb-2">
-            <View className="flex-col gap-2 flex-1">
-              {data.operatorProvider ? (
-                <View className="flex flex-col gap-3">
-                  <View className="flex flex-row gap-3 items-start flex-1">
-                    <View className="flex-1">
+        <View className="flex-row items-start w-full mb-4">
+          <View className="flex-col gap-2 flex-1">
+            {data.operatorProvider ? (
+              <View className="flex flex-col gap-3">
+                <View className="flex flex-row gap-3 items-start flex-1">
+                  <View className="flex-1">
+                    <Text
+                      className={
+                        "text-2xl leading-xl font-semibold " +
+                        "text-secondary tracking-tight"
+                      }
+                    >
+                      {data.operatorProvider}
+                    </Text>
+                    {locationText ? (
+                      <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                        {locationText}
+                      </Text>
+                    ) : null}
+                  </View>
+                </View>
+              </View>
+            ) : (
+              locationText && (
+                <View className="flex flex-col flex-1">
+                  <View className="flex flex-row gap-1 items-start flex-1">
+                    <View className="flex-1 gap-0">
                       <Text
                         className={
-                          "text-2xl leading-xl font-semibold " +
-                          "text-secondary tracking-tight"
+                          "text-xl font-semibold text-secondary "
                         }
                       >
-                        {data.operatorProvider}
+                        Route
                       </Text>
-                      {locationText ? (
-                        <Text className="text-secondary/60 font-normal leading-2xl text-lg">
-                          {locationText}
-                        </Text>
-                      ) : null}
+                      <Text className="text-secondary/60 font-normal leading-relaxed text-xl">
+                        {locationText}
+                      </Text>
                     </View>
                   </View>
                 </View>
-              ) : (
-                locationText && (
-                  <View className="flex flex-col flex-1">
-                    <View className="flex flex-row gap-3 items-start flex-1">
-                      <View className="flex-1">
-                        <Text
-                          className={
-                            "text-[10px] font-semibold text-secondary " +
-                            "uppercase tracking-wide"
-                          }
-                        >
-                          Route
-                        </Text>
-                        <Text className="text-secondary/60 font-normal leading-2xl text-lg">
-                          {locationText}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                )
-              )}
-            </View>
-          </View>
-
-          {/* Departure Info Block */}
-          <View className="flex-row gap-6">
-            <View className="mb-2">
-              <Icon name="flight-takeoff" size={34} color={themeColor} />
-            </View>
-            <View className="mb-2 flex-1">
-              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
-                Departure
-              </Text>
-              <Text className="text-2xl font-semibold text-secondary/40">
-                {data.departureDateTime
-                  ? safeFormatTime(data.departureDateTime)
-                  : "--:--"}
-              </Text>
-              <Text className="text-base font-medium text-secondary/50">
-                {data.departureDateTime
-                  ? safeFormatDate(data.departureDateTime)
-                  : ""}
-              </Text>
-              {pickupTitle ? (
-                <View className="mt-1">
-                  <Text className="text-sm font-semibold text-secondary">
-                    {pickupTitle}
-                  </Text>
-                  {pickupSubtitle && pickupSubtitle !== pickupTitle ? (
-                    <Text className="text-xs text-secondary/60">
-                      {pickupSubtitle}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
-            </View>
-          </View>
-
-          {/* Arrival Info Block */}
-          <View className="flex-row gap-6">
-            <View className="mb-2">
-              <Icon name="flight-land" size={34} color={themeColor} />
-            </View>
-            <View className="mb-2 flex-1">
-              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
-                Arrival
-              </Text>
-              <Text className="text-2xl font-semibold text-secondary/40">
-                {data.arrivalDateTime
-                  ? safeFormatTime(data.arrivalDateTime)
-                  : "--:--"}
-              </Text>
-              <Text className="text-base font-medium text-secondary/50">
-                {data.arrivalDateTime
-                  ? safeFormatDate(data.arrivalDateTime)
-                  : ""}
-              </Text>
-              {dropoffTitle ? (
-                <View className="mt-1">
-                  <Text className="text-sm font-semibold text-secondary">
-                    {dropoffTitle}
-                  </Text>
-                  {dropoffSubtitle && dropoffSubtitle !== dropoffTitle ? (
-                    <Text className="text-xs text-secondary/60">
-                      {dropoffSubtitle}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
-            </View>
+              )
+            )}
           </View>
         </View>
+
+        {/* Departure Info Block */}
+        <View className="flex-row gap-6 pl-xl">
+          <View className="mb-2">
+            <Icon name="departure-board" size={34} color={themeColor} />
+          </View>
+          <View className="mb-1 flex-1">
+            <Text className="text-xl font-semibold text-secondary">
+              Departure
+            </Text>
+
+            {pickupTitle ? (
+              <View className="">
+                <Text className="text-lg font-semibold text-secondary/60 leading-relaxed">
+                  {pickupTitle}
+                </Text>
+                {pickupSubtitle && pickupSubtitle !== pickupTitle ? (
+                  <Text className="text-lg text-secondary/60">
+                    {pickupSubtitle}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
+
+            {data.departureDateTime && (
+              <View className="flex-row items-end gap-2">
+                <Text className="text-xl font-semibold text-secondary/40">
+                  {safeFormatTime(data.departureDateTime)}
+                </Text>
+                <Text className="text-base text-secondary/50">
+                  {safeFormatDate(data.departureDateTime)}
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Arrival Info Block */}
+        <View className="flex-row gap-6 px-xl">
+          <View className="mb-2">
+            <Icon name="place" size={34} color={themeColor} />
+          </View>
+          <View className="mb-1 flex-1">
+            <Text className="text-xl font-semibold text-secondary ">
+              Arrival
+            </Text>
+            {dropoffTitle ? (
+              <View className="">
+                <Text className="text-lg font-semibold text-secondary/60 leading-relaxed">
+                  {dropoffTitle}
+                </Text>
+                {dropoffSubtitle && dropoffSubtitle !== dropoffTitle ? (
+                  <Text className="text-lg text-secondary/60 leading-relaxed">
+                    {dropoffSubtitle}
+                  </Text>
+                ) : null}
+              </View>
+            ) : null}
+
+            {data.arrivalDateTime && (
+              <View className="flex-row items-end gap-2">
+                <Text className="text-xl font-semibold text-secondary/40">
+                  {safeFormatTime(data.arrivalDateTime)}
+                </Text>
+                <Text className="text-base font-medium text-secondary/50">
+                  {safeFormatDate(data.arrivalDateTime)}
+                </Text>
+              </View>
+            )}
+
+          </View>
+        </View>
+      </View>
 
       <FadeInView delay={180} duration={400}>
         <View
@@ -258,7 +261,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
 
       <FadeInView delay={180} duration={400}>
         <View
-          className="px-md"
+          className="px-md mt-xl"
           style={{
             display: hasContactInfo ? "flex" : "none",
           }}

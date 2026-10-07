@@ -634,22 +634,22 @@ const ActivityItemCard = ({
                   </View>
                 )}
               {/* {itineraryEventActivity.startDate ? (
-                  <View className="flex-row gap-1">
-                    <Text className="text-xs font-bold text-[#000] ">
-                        {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { weekday: 'long' })}
-                    </Text> 
-                    <Text className="text-xs font-bold text-[#000] ">
-                        {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })} |
-                    </Text>
-                    <Text className="text-xs font-semibold text-[#606060] ">
-                        {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute:   '2-digit' })}
-                    </Text>
-                  </View>
-                ) : (
-                  <Text className="text-xs font-semibold text-tertiary/50 ">
-                    Date not set
+                <View className="flex-row gap-1">
+                  <Text className="text-xs font-bold text-[#000] ">
+                    {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { weekday: 'long' })}
                   </Text>
-                )} */}
+                  <Text className="text-xs font-bold text-[#000] ">
+                    {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleDateString([], { day: 'numeric', month: 'short' })} |
+                  </Text>
+                  <Text className="text-xs font-semibold text-[#606060] ">
+                    {itineraryEventActivity.startDate && new Date(itineraryEventActivity.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </View>
+              ) : (
+                <Text className="text-xs font-semibold text-tertiary/50 ">
+                  Date not set
+                </Text>
+              )} */}
             </View>
 
             <View className="flex-row justify-between items-start gap-x-2">
@@ -671,7 +671,7 @@ const ActivityItemCard = ({
 
               <View className="flex-2">
                 <View className="flex-row justify-between items-start mb-1 gap-x-2">
-                  <Text className={`font-medium mt-1 text-secondary leading-18px flex-1 wrap-break-word ${isNarrow ? 'pr-3xl text-lg ' : 'text-[20px] '}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
+                  <Text className={`font-medium  text-secondary leading-18px pr-xl flex-1 wrap-break-word ${isNarrow ? 'pr-3xl text-lg mt-1' : 'text-[20px] '}`} numberOfLines={isNarrow || itineraryEventActivity.isDone ? 1 : 0}>
                     {itineraryEventActivity.title}
                   </Text>
                 </View>

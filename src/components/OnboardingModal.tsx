@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Modal,
   View,
@@ -6,13 +6,15 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  StyleSheet,
   SafeAreaView,
-  Image,
   Animated,
   Switch,
   Vibration,
   Alert,
+  BackHandler,
+  Keyboard,
+  Dimensions,
+  Easing,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
@@ -28,8 +30,10 @@ import {
   setBiometricsEnabled as saveBiometricsEnabled,
   clearPin,
 } from "../services/local/securityService";
+import { logger } from "../services/errorLogger";
 
-// Traveler type options with emojis
+// --- Constants & Pure Helpers ---------------------------------------------
+
 export const TRAVELER_TYPES = [
   { id: "solo", label: "Solo Traveler", emoji: "🚶" },
   { id: "backpacker", label: "Backpacker", emoji: "🎒" },
@@ -41,42 +45,1117 @@ export const TRAVELER_TYPES = [
   { id: "foodie", label: "Foodie", emoji: "🍕" },
 ];
 
-const COUNTRIES = [
+export const COUNTRIES = [
   "Philippines", "United States", "United Kingdom", "Australia",
   "Canada", "Japan", "South Korea", "Singapore", "Germany",
   "France", "Italy", "Spain", "Thailand", "Malaysia", "Indonesia",
   "Vietnam", "China", "India", "Brazil", "Mexico",
 ];
 
-interface OnboardingModalProps {
+export const validateNickname = (name: string): string | null => {
+  if (!name) return null;
+  if (name.includes(" ")) {
+    return "Spaces are not allowed";
+  }
+  if (name.length < 5) {
+    return "Nickname must be at least 5 characters";
+  }
+  if (name.length > 20) {
+    return "Nickname cannot exceed 20 characters";
+  }
+  return null;
+};
+
+export type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6;
+
+export interface OnboardingModalProps {
   visible: boolean;
   onClose: () => void;
 }
+
+// --- Subcomponents --------------------------------------------------------
+
+interface HeaderProps {
+  step: OnboardingStep;
+  topInset: number;
+  colors: any;
+  onBack: () => void;
+  onClose: () => void;
+}
+
+const OnboardingHeader: React.FC<HeaderProps> = ({
+  step,
+  topInset,
+  colors,
+  onBack,
+  onClose,
+}) => {
+  if (step > 1 && step <= 5) {
+    return (
+      <View
+        className="flex-row items-center justify-between px-5 h-14"
+        style={{ marginTop: topInset }}
+      >
+        <TouchableOpacity
+          onPress={onBack}
+          className="p-1"
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="arrow-back" size={24} color="#374151" />
+        </TouchableOpacity>
+        <View className="flex-row gap-2">
+          {[2, 3, 4, 5].map((s) => (
+            <View
+              key={s}
+              className="w-5 h-1 rounded-sm"
+              style={{
+                backgroundColor:
+                  step === s
+                    ? colors.primary
+                    : step > s
+                      ? `${colors.primary}80`
+                      : "#E5E7EB",
+              }}
+            />
+          ))}
+        </View>
+        <View className="w-6" />
+      </View>
+    );
+  }
+
+  return (
+    <View
+      className="flex-row items-center justify-between px-5 h-14"
+      style={{ marginTop: topInset }}
+    >
+      <View className="flex-1" />
+      {step === 1 && (
+        <TouchableOpacity
+          onPress={onClose}
+          className="p-1"
+          accessibilityRole="button"
+          accessibilityLabel="Close onboarding"
+        >
+          <Ionicons name="close" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
+interface WelcomeStepProps {
+  opacityAnim: Animated.Value;
+  scaleAnim: Animated.Value;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+}
+
+const WelcomeStep: React.FC<WelcomeStepProps> = ({
+  opacityAnim,
+  scaleAnim,
+  textFadeAnim,
+  textSlideAnim,
+}) => (
+  <View className="flex-1 items-center justify-center px-4 pt-10">
+    <Animated.Image
+      source={require("../../assets/icon.png")}
+      className="w-32 h-32 rounded-4xl mb-7"
+      style={{
+        width: 128,
+        height: 128,
+        borderRadius: 32,
+        opacity: opacityAnim,
+        transform: [{ scale: scaleAnim }],
+      }}
+      resizeMode="contain"
+    />
+    <Animated.View
+      className="items-center"
+      style={{
+        opacity: textFadeAnim,
+        transform: [{ translateY: textSlideAnim }],
+      }}
+    >
+      <Text className="text-3xl font-bold text-center text-white mb-3">
+        travelled
+      </Text>
+      <Text className="text-[15px] text-gray-400 text-center leading-[22px] px-3">
+        Your ultimate companion for planning and organizing trips, keeping
+        track of checklists, and building detailed itineraries.
+      </Text>
+    </Animated.View>
+  </View>
+);
+
+interface NicknameStepProps {
+  nickname: string;
+  nicknameError: string | null;
+  colors: any;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+  onChangeNickname: (val: string) => void;
+  onSubmitEditing: () => void;
+}
+
+const NicknameStep: React.FC<NicknameStepProps> = ({
+  nickname,
+  nicknameError,
+  colors,
+  textFadeAnim,
+  textSlideAnim,
+  onChangeNickname,
+  onSubmitEditing,
+}) => (
+  <Animated.View
+    className="flex-1"
+    style={{
+      opacity: textFadeAnim,
+      transform: [{ translateY: textSlideAnim }],
+    }}
+  >
+    <Text
+      className="text-3xl font-bold mb-2"
+      style={{ color: colors.primary }}
+    >
+      Choose your nickname
+    </Text>
+    <Text className="text-base text-gray-500 leading-5 mb-7">
+      What should we call you? Pick a unique nickname to get started.
+    </Text>
+
+    <View
+      className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-16"
+      style={nicknameError ? { borderColor: colors.error } : null}
+    >
+      <Text className="text-lg text-gray-400 mr-1 font-semibold">@</Text>
+      <TextInput
+        className="flex-1 text-base text-gray-900 h-full"
+        value={nickname}
+        onChangeText={onChangeNickname}
+        placeholder="nickname"
+        placeholderTextColor="#9CA3AF"
+        autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="next"
+        onSubmitEditing={onSubmitEditing}
+      />
+      <Text
+        className="text-xs text-gray-400 ml-2"
+        style={nickname.length > 20 ? { color: colors.error } : null}
+      >
+        {nickname.length}/20
+      </Text>
+    </View>
+    {nicknameError ? (
+      <Text
+        className="text-xs mt-2 ml-1 font-medium"
+        style={{ color: colors.error }}
+      >
+        {nicknameError}
+      </Text>
+    ) : null}
+  </Animated.View>
+);
+
+interface TravelStyleStepProps {
+  selectedTypes: string[];
+  styleCardAnims: Animated.Value[];
+  colors: any;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+  onToggleType: (id: string) => void;
+}
+
+const TravelStyleStep: React.FC<TravelStyleStepProps> = ({
+  selectedTypes,
+  styleCardAnims,
+  colors,
+  textFadeAnim,
+  textSlideAnim,
+  onToggleType,
+}) => (
+  <View className="flex-1">
+    <Animated.View
+      style={{
+        opacity: textFadeAnim,
+        transform: [{ translateY: textSlideAnim }],
+      }}
+    >
+      <Text
+        className="text-3xl font-bold mb-2"
+        style={{ color: colors.primary }}
+      >
+        What's your travel style?
+      </Text>
+      <Text className="text-base text-gray-500 leading-5 mb-7">
+        Select all that apply. We'll use this to suggest ideas.
+      </Text>
+    </Animated.View>
+
+    <ScrollView
+      contentContainerClassName="flex-row flex-wrap justify-between gap-3 pb-6"
+      showsVerticalScrollIndicator={false}
+    >
+      {TRAVELER_TYPES.map((type, index) => {
+        const isSelected = selectedTypes.includes(type.id);
+        const cardAnim = styleCardAnims[index];
+
+        return (
+          <Animated.View
+            key={type.id}
+            className="w-[48%] aspect-[1.1]"
+            style={{
+              opacity: cardAnim,
+              transform: [
+                {
+                  translateY: cardAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  }),
+                },
+              ],
+            }}
+          >
+            <TouchableOpacity
+              onPress={() => onToggleType(type.id)}
+              className={
+                "w-full h-full bg-gray-50 border-2 border-gray-200 " +
+                "rounded-[20px] p-4 justify-center relative"
+              }
+              style={
+                isSelected
+                  ? {
+                    borderColor: colors.primary,
+                    backgroundColor: `${colors.primary}0D`,
+                  }
+                  : null
+              }
+              accessibilityRole="button"
+              activeOpacity={0.7}
+            >
+              <Text className="text-[28px] mb-2">{type.emoji}</Text>
+              <Text
+                className="text-[13px] font-semibold text-gray-600"
+                style={
+                  isSelected
+                    ? { color: colors.primary, fontWeight: "bold" }
+                    : null
+                }
+              >
+                {type.label}
+              </Text>
+              {isSelected && (
+                <View
+                  className={
+                    "absolute top-3 right-3 w-[18px] h-[18px] " +
+                    "rounded-full items-center justify-center"
+                  }
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  <Ionicons name="checkmark" size={10} color="#fff" />
+                </View>
+              )}
+            </TouchableOpacity>
+          </Animated.View>
+        );
+      })}
+    </ScrollView>
+  </View>
+);
+
+interface CountryStepProps {
+  searchQuery: string;
+  selectedCountry: string;
+  filteredCountries: string[];
+  colors: any;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+  onChangeSearchQuery: (val: string) => void;
+  onSelectCountry: (val: string) => void;
+}
+
+const CountryStep: React.FC<CountryStepProps> = ({
+  searchQuery,
+  selectedCountry,
+  filteredCountries,
+  colors,
+  textFadeAnim,
+  textSlideAnim,
+  onChangeSearchQuery,
+  onSelectCountry,
+}) => (
+  <Animated.View
+    className="flex-1"
+    style={{
+      opacity: textFadeAnim,
+      transform: [{ translateY: textSlideAnim }],
+    }}
+  >
+    <Text
+      className="text-3xl font-bold mb-2"
+      style={{ color: colors.primary }}
+    >
+      Where are you from?
+    </Text>
+    <Text className="text-base text-gray-500 leading-5 mb-7">
+      Select your primary home country.
+    </Text>
+
+    <View
+      className={
+        "flex-row items-center bg-gray-50 border border-gray-200 " +
+        "rounded-2xl px-4  mb-4 h-16"
+      }
+    >
+      <Ionicons
+        name="search"
+        size={20}
+        color="#9CA3AF"
+        style={{ marginRight: 8 }}
+      />
+      <TextInput
+        className="flex-1 text-base text-gray-900"
+        value={searchQuery}
+        onChangeText={onChangeSearchQuery}
+        placeholder="Search countries"
+        placeholderTextColor="#9CA3AF"
+      />
+    </View>
+
+    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      {filteredCountries.map((c) => {
+        const isSelected = selectedCountry === c;
+        return (
+          <TouchableOpacity
+            key={c}
+            onPress={() => onSelectCountry(c)}
+            className="flex-row items-center justify-between py-3.5 px-4 rounded-xl mb-1"
+            style={
+              isSelected ? { backgroundColor: `${colors.primary}0D` } : null
+            }
+            accessibilityRole="button"
+          >
+            <Text
+              className="text-[15px] text-gray-700"
+              style={
+                isSelected
+                  ? { color: colors.primary, fontWeight: "bold" }
+                  : null
+              }
+            >
+              {c}
+            </Text>
+            {isSelected && (
+              <Ionicons name="checkmark" size={20} color={colors.primary} />
+            )}
+          </TouchableOpacity>
+        );
+      })}
+    </ScrollView>
+  </Animated.View>
+);
+
+/*
+// --- Commented out: Notification & Security steps (to be added in next release) ---
+
+interface NotificationStepProps {
+  notificationsEnabled: boolean;
+  notifyDaysBeforeTrip: number;
+  notifyHoursBeforeActivity: number;
+  colors: any;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+  onToggleNotifications: (val: boolean) => void;
+  onChangeDays: (delta: number) => void;
+  onChangeHours: (delta: number) => void;
+}
+
+const NotificationStep: React.FC<NotificationStepProps> = ({
+  notificationsEnabled,
+  notifyDaysBeforeTrip,
+  notifyHoursBeforeActivity,
+  colors,
+  textFadeAnim,
+  textSlideAnim,
+  onToggleNotifications,
+  onChangeDays,
+  onChangeHours,
+}) => (
+  <Animated.View
+    className="flex-1"
+    style={{
+      opacity: textFadeAnim,
+      transform: [{ translateY: textSlideAnim }],
+    }}
+  >
+    <Text
+      className="text-2xl font-bold mb-2"
+      style={{ color: colors.primary }}
+    >
+      Turn on notifications
+    </Text>
+    <Text className="text-sm text-gray-500 leading-5 mb-7">
+      Never miss an update. Customize when you want to get notified about your
+      upcoming trips and activities.
+    </Text>
+
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerClassName="pb-5"
+    >
+      <View
+        className={
+          "flex-row items-center mb-6 p-4 border-[1.5px] " +
+          "border-gray-200 rounded-2xl bg-gray-50"
+        }
+      >
+        <View className="flex-1 mr-4">
+          <Text className="text-base font-semibold text-gray-900 mb-1">
+            Enable Push Notifications
+          </Text>
+          <Text className="text-xs text-gray-500">
+            Get reminders on your device for trip planning.
+          </Text>
+        </View>
+        <Switch
+          value={notificationsEnabled}
+          onValueChange={onToggleNotifications}
+          trackColor={{ false: "#D1D5DB", true: `${colors.primary}80` }}
+          thumbColor={notificationsEnabled ? colors.primary : "#F3F4F6"}
+        />
+      </View>
+
+      <View
+        className="bg-gray-50 border-[1.5px] border-gray-200 rounded-2xl p-4"
+        style={!notificationsEnabled ? { opacity: 0.5 } : null}
+        pointerEvents={notificationsEnabled ? "auto" : "none"}
+      >
+        <Text
+          className={
+            "text-xs font-bold text-gray-400 uppercase tracking-widest mb-4"
+          }
+        >
+          Notification Settings
+        </Text>
+
+        <View className="flex-row items-center justify-between py-2">
+          <View className="flex-1 mr-4">
+            <Text className="text-[15px] font-semibold text-gray-700 mb-1">
+              Before trip starts
+            </Text>
+            <Text className="text-xs text-gray-500 leading-4">
+              How many days in advance should we notify you?
+            </Text>
+          </View>
+          <View
+            className={
+              "flex-row items-center bg-white border border-gray-200 " +
+              "rounded-[20px] p-1"
+            }
+          >
+            <TouchableOpacity
+              onPress={() => onChangeDays(-1)}
+              className="w-8 h-8 rounded-full items-center justify-center bg-gray-100"
+              disabled={!notificationsEnabled || notifyDaysBeforeTrip <= 1}
+              accessibilityRole="button"
+              accessibilityLabel="Decrease days"
+            >
+              <Ionicons
+                name="remove"
+                size={18}
+                color={
+                  !notificationsEnabled || notifyDaysBeforeTrip <= 1
+                    ? "#9CA3AF"
+                    : colors.primary
+                }
+              />
+            </TouchableOpacity>
+            <Text className="text-sm font-semibold text-gray-900 px-3 min-w-[70px] text-center">
+              {notifyDaysBeforeTrip}{" "}
+              {notifyDaysBeforeTrip === 1 ? "day" : "days"}
+            </Text>
+            <TouchableOpacity
+              onPress={() => onChangeDays(1)}
+              className="w-8 h-8 rounded-full items-center justify-center bg-gray-100"
+              disabled={!notificationsEnabled || notifyDaysBeforeTrip >= 30}
+              accessibilityRole="button"
+              accessibilityLabel="Increase days"
+            >
+              <Ionicons
+                name="add"
+                size={18}
+                color={
+                  !notificationsEnabled || notifyDaysBeforeTrip >= 30
+                    ? "#9CA3AF"
+                    : colors.primary
+                }
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View className="h-[1px] bg-gray-200 my-4" />
+
+        <View className="flex-row items-center justify-between py-2">
+          <View className="flex-1 mr-4">
+            <Text className="text-[15px] font-semibold text-gray-700 mb-1">
+              Before activity starts
+            </Text>
+            <Text className="text-xs text-gray-500 leading-4">
+              How many hours in advance should we notify you?
+            </Text>
+          </View>
+          <View
+            className={
+              "flex-row items-center bg-white border border-gray-200 " +
+              "rounded-[20px] p-1"
+            }
+          >
+            <TouchableOpacity
+              onPress={() => onChangeHours(-1)}
+              className="w-8 h-8 rounded-full items-center justify-center bg-gray-100"
+              disabled={!notificationsEnabled || notifyHoursBeforeActivity <= 1}
+              accessibilityRole="button"
+              accessibilityLabel="Decrease hours"
+            >
+              <Ionicons
+                name="remove"
+                size={18}
+                color={
+                  !notificationsEnabled || notifyHoursBeforeActivity <= 1
+                    ? "#9CA3AF"
+                    : colors.primary
+                }
+              />
+            </TouchableOpacity>
+            <Text className="text-sm font-semibold text-gray-900 px-3 min-w-[70px] text-center">
+              {notifyHoursBeforeActivity}{" "}
+              {notifyHoursBeforeActivity === 1 ? "hour" : "hours"}
+            </Text>
+            <TouchableOpacity
+              onPress={() => onChangeHours(1)}
+              className="w-8 h-8 rounded-full items-center justify-center bg-gray-100"
+              disabled={
+                !notificationsEnabled || notifyHoursBeforeActivity >= 24
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Increase hours"
+            >
+              <Ionicons
+                name="add"
+                size={18}
+                color={
+                  !notificationsEnabled || notifyHoursBeforeActivity >= 24
+                    ? "#9CA3AF"
+                    : colors.primary
+                }
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
+  </Animated.View>
+);
+
+interface SecurityStepProps {
+  pinEnabled: boolean;
+  pinCode: string;
+  pinStage: "enter" | "confirm" | "done";
+  pinError: string;
+  pinInputRef: React.RefObject<TextInput | null>;
+  hasBiometricsSupport: boolean;
+  biometricsEnabled: boolean;
+  colors: any;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+  onTogglePin: (val: boolean) => void;
+  onPinChange: (text: string) => void;
+  onToggleBiometrics: (val: boolean) => void;
+}
+
+const SecurityStep: React.FC<SecurityStepProps> = ({
+  pinEnabled,
+  pinCode,
+  pinStage,
+  pinError,
+  pinInputRef,
+  hasBiometricsSupport,
+  biometricsEnabled,
+  colors,
+  textFadeAnim,
+  textSlideAnim,
+  onTogglePin,
+  onPinChange,
+  onToggleBiometrics,
+}) => (
+  <Animated.View
+    className="flex-1"
+    style={{
+      opacity: textFadeAnim,
+      transform: [{ translateY: textSlideAnim }],
+    }}
+  >
+    <Text
+      className="text-2xl font-bold mb-2"
+      style={{ color: colors.primary }}
+    >
+      Secure your travel plan
+    </Text>
+    <Text className="text-sm text-gray-500 leading-5 mb-7">
+      Enable app locking to keep your travel itineraries and personal details
+      private.
+    </Text>
+
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerClassName="pb-5"
+    >
+      <View
+        className={
+          "flex-row items-center mb-6 p-4 border-[1.5px] " +
+          "border-gray-200 rounded-2xl bg-gray-50"
+        }
+      >
+        <View className="flex-1 mr-4">
+          <Text className="text-base font-semibold text-gray-900 mb-1">
+            Enable PIN Lock
+          </Text>
+          <Text className="text-xs text-gray-500">
+            Require a 4-digit code to open the app.
+          </Text>
+        </View>
+        <Switch
+          value={pinEnabled}
+          onValueChange={onTogglePin}
+          trackColor={{ false: "#D1D5DB", true: `${colors.primary}80` }}
+          thumbColor={pinEnabled ? colors.primary : "#F3F4F6"}
+        />
+      </View>
+
+      {pinEnabled && (
+        <View className="bg-gray-50 border-[1.5px] border-gray-200 rounded-2xl p-4 mb-5">
+          <Text className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
+            {pinStage === "enter"
+              ? "Create PIN code"
+              : pinStage === "confirm"
+                ? "Confirm PIN code"
+                : "PIN Code Saved"}
+          </Text>
+
+          <Text className="text-sm text-gray-600 mb-3">
+            {pinStage === "enter"
+              ? "Type a 4-digit passcode:"
+              : pinStage === "confirm"
+                ? "Type the passcode again to confirm:"
+                : "Passcode successfully verified and setup."}
+          </Text>
+
+          {pinStage !== "done" && (
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => pinInputRef.current?.focus()}
+              className="items-center my-3"
+              accessibilityRole="button"
+              accessibilityLabel="Enter PIN Code"
+            >
+              <View className="flex-row gap-4">
+                {[0, 1, 2, 3].map((idx) => {
+                  const isFilled = pinCode.length > idx;
+                  return (
+                    <View
+                      key={idx}
+                      className="w-12 h-12 rounded-xl border-2 items-center justify-center"
+                      style={{
+                        borderColor: isFilled ? colors.primary : "#D1D5DB",
+                        backgroundColor: isFilled
+                          ? `${colors.primary}10`
+                          : "#FFFFFF",
+                      }}
+                    >
+                      {isFilled && (
+                        <View
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: colors.primary }}
+                        />
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+              <TextInput
+                ref={pinInputRef}
+                value={pinCode}
+                onChangeText={onPinChange}
+                keyboardType="number-pad"
+                maxLength={4}
+                style={{
+                  position: "absolute",
+                  width: 0,
+                  height: 0,
+                  opacity: 0,
+                }}
+                caretHidden
+              />
+            </TouchableOpacity>
+          )}
+
+          {pinStage === "done" && (
+            <View className="flex-row items-center gap-2 my-2">
+              <Ionicons name="checkmark-circle" size={24} color="#10B981" />
+              <Text className="text-emerald-500 font-semibold">
+                PIN setup complete
+              </Text>
+            </View>
+          )}
+
+          {pinError ? (
+            <Text
+              className="text-xs text-center mt-2 font-medium"
+              style={{ color: colors.error }}
+            >
+              {pinError}
+            </Text>
+          ) : null}
+        </View>
+      )}
+
+      {pinEnabled && hasBiometricsSupport && (
+        <View
+          className={
+            "flex-row items-center mb-6 p-4 border-[1.5px] " +
+            "border-gray-200 rounded-2xl bg-gray-50"
+          }
+        >
+          <View className="flex-1 mr-4">
+            <Text className="text-base font-semibold text-gray-900 mb-1">
+              Use Finger Scanner
+            </Text>
+            <Text className="text-xs text-gray-500">
+              Unlock using fingerprint authentication.
+            </Text>
+          </View>
+          <Switch
+            value={biometricsEnabled}
+            onValueChange={onToggleBiometrics}
+            disabled={pinStage !== "done"}
+            trackColor={{ false: "#D1D5DB", true: `${colors.primary}80` }}
+            thumbColor={biometricsEnabled ? colors.primary : "#F3F4F6"}
+          />
+        </View>
+      )}
+    </ScrollView>
+  </Animated.View>
+);
+*/
+
+interface DemoDataStepProps {
+  createDemoData: boolean;
+  colors: any;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+  onToggleDemoData: () => void;
+}
+
+const DemoDataStep: React.FC<DemoDataStepProps> = ({
+  createDemoData,
+  colors,
+  textFadeAnim,
+  textSlideAnim,
+  onToggleDemoData,
+}) => (
+  <Animated.View
+    className="flex-1"
+    style={{
+      opacity: textFadeAnim,
+      transform: [{ translateY: textSlideAnim }],
+    }}
+  >
+    <Text
+      className="text-3xl font-bold mb-2"
+      style={{ color: colors.primary }}
+    >
+      Demo Travel Plan
+    </Text>
+    <Text className="text-base text-gray-500 leading-6 mb-7">
+      Would you like to import simulated travel data to explore Travelled's
+      features?
+    </Text>
+
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerClassName="pb-5"
+    >
+      <TouchableOpacity
+        onPress={onToggleDemoData}
+        className={
+          "flex-row items-center mb-3 p-4 border-[1.5px] " +
+          "border-gray-200 rounded-2xl bg-gray-50"
+        }
+        style={
+          createDemoData
+            ? {
+              borderColor: colors.primary,
+              backgroundColor: `${colors.primary}08`,
+            }
+            : null
+        }
+        activeOpacity={0.7}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: createDemoData }}
+      >
+        <View
+          className="w-[22px] h-[22px] rounded-md border-2 items-center justify-center mr-3"
+          style={[
+            { borderColor: colors.primary },
+            createDemoData && { backgroundColor: colors.primary },
+          ]}
+        >
+          {createDemoData && (
+            <Ionicons name="checkmark" size={16} color="#fff" />
+          )}
+        </View>
+        <Text className="text-[15px] font-semibold text-gray-700">
+          Yes, create demo travel data
+        </Text>
+      </TouchableOpacity>
+    </ScrollView>
+  </Animated.View>
+);
+
+const CONFETTI_COLORS = [
+  "#3B82F6",
+  "#10B981",
+  "#F59E0B",
+  "#EC4899",
+  "#8B5CF6",
+  "#EF4444",
+  "#06B6D4",
+  "#FBBF24",
+];
+
+interface Particle {
+  id: number;
+  startX: number;
+  width: number;
+  height: number;
+  color: string;
+  isCircle: boolean;
+  swayDistance: number;
+  rotation: number;
+  duration: number;
+  delay: number;
+}
+
+const generateParticles = (count = 35): Particle[] => {
+  const { width } = Dimensions.get("window");
+  return Array.from({ length: count }, (_, i) => ({
+    id: i,
+    startX: Math.random() * width,
+    width: Math.floor(Math.random() * 6) + 6,
+    height: Math.floor(Math.random() * 8) + 8,
+    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+    isCircle: i % 4 === 0,
+    swayDistance: (Math.random() - 0.5) * 60,
+    rotation: Math.floor(Math.random() * 720) - 360,
+    duration: Math.floor(Math.random() * 1000) + 2200,
+    delay: Math.floor(Math.random() * 800),
+  }));
+};
+
+const ConfettiBackground: React.FC = () => {
+  const { height } = Dimensions.get("window");
+  const particles = useRef(generateParticles(35)).current;
+  const animValues = useRef(
+    particles.map(() => new Animated.Value(0))
+  ).current;
+
+  useEffect(() => {
+    const animations = animValues.map((anim, index) => {
+      const p = particles[index];
+      return Animated.loop(
+        Animated.sequence([
+          Animated.delay(p.delay),
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: p.duration,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    });
+
+    Animated.parallel(animations).start();
+
+    return () => {
+      animValues.forEach((anim) => anim.stopAnimation());
+    };
+  }, [animValues, particles]);
+
+  return (
+    <View
+      className="absolute inset-0 overflow-hidden"
+      pointerEvents="none"
+    >
+      {particles.map((p, index) => {
+        const anim = animValues[index];
+        const translateY = anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [-30, height + 40],
+        });
+        const translateX = anim.interpolate({
+          inputRange: [0, 0.5, 1],
+          outputRange: [0, p.swayDistance, 0],
+        });
+        const rotate = anim.interpolate({
+          inputRange: [0, 1],
+          outputRange: ["0deg", `${p.rotation}deg`],
+        });
+        const opacity = anim.interpolate({
+          inputRange: [0, 0.1, 0.85, 1],
+          outputRange: [0, 1, 1, 0],
+        });
+
+        return (
+          <Animated.View
+            key={p.id}
+            style={{
+              position: "absolute",
+              left: p.startX,
+              top: 0,
+              width: p.width,
+              height: p.height,
+              backgroundColor: p.color,
+              borderRadius: p.isCircle ? p.width / 2 : 2,
+              opacity,
+              transform: [
+                { translateY },
+                { translateX },
+                { rotate },
+              ],
+            }}
+          />
+        );
+      })}
+    </View>
+  );
+};
+
+interface SuccessStepProps {
+  countdown: number;
+  colors: any;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+}
+
+const SuccessStep: React.FC<SuccessStepProps> = ({
+  countdown,
+  colors,
+  textFadeAnim,
+  textSlideAnim,
+}) => (
+  <View className="flex-1 items-center justify-center relative">
+    <ConfettiBackground />
+    <Animated.View
+      className="items-center justify-center pt-10"
+      style={{
+        opacity: textFadeAnim,
+        transform: [{ translateY: textSlideAnim }],
+      }}
+    >
+      <View
+        className="w-[120px] h-[120px] rounded-full items-center justify-center mb-6"
+        style={{ backgroundColor: `${colors.primary}1A` }}
+      >
+        <Ionicons name="checkmark-circle" size={80} color={colors.primary} />
+      </View>
+      <Text
+        className="text-4xl font-bold text-center mb-2"
+        style={{ color: colors.primary }}
+      >
+        You're all set!
+      </Text>
+      <Text className="text-base text-gray-500 text-center leading-5 px-4 mb-8">
+        Welcome to Travelled! Prepare to start planning your perfect trips.
+      </Text>
+      <Text className="text-base text-gray-400 text-center mt-5xl leading-5">
+        Entering the dashboard in
+        <Text style={{ color: colors.primary, fontWeight: "bold" }}>
+          {countdown}
+        </Text>
+        seconds...
+      </Text>
+    </Animated.View>
+  </View>
+);
+
+interface FooterProps {
+  step: OnboardingStep;
+  bottomInset: number;
+  disabled: boolean;
+  colors: any;
+  onNext: () => void;
+}
+
+const OnboardingFooter: React.FC<FooterProps> = ({
+  step,
+  bottomInset,
+  disabled,
+  colors,
+  onNext,
+}) => {
+  if (step > 5) return null;
+
+  const buttonLabel =
+    step === 1 ? "Get Started" : step === 5 ? "Start the Adventure!" : "Next";
+
+  return (
+    <View
+      className="px-6 pt-3"
+      style={{ paddingBottom: Math.max(bottomInset, 16) }}
+    >
+      <TouchableOpacity
+        onPress={onNext}
+        disabled={disabled}
+        className="h-[52px] rounded-[26px] items-center justify-center shadow-sm elevation-2"
+        style={[
+          { backgroundColor: step === 1 ? "#FFFFFF" : colors.primary },
+          disabled && { opacity: 0.5 },
+        ]}
+        accessibilityRole="button"
+      >
+        <Text
+          className="text-xl font-bold"
+          style={{ color: step === 1 ? "#111827" : colors.onPrimary }}
+        >
+          {buttonLabel}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+// --- Main Component --------------------------------------------------------
 
 const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { data: profile } = useUserProfile();
   const { mutate: saveProfile } = useSaveProfile();
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
+
+  const [step, setStep] = useState<OnboardingStep>(1);
 
   // Form State
   const [nickname, setNickname] = useState("");
+  const nicknameError = validateNickname(nickname);
 
-  const nicknameError = (() => {
-    if (!nickname) return null;
-    if (nickname.includes(" ")) {
-      return "Spaces are not allowed";
-    }
-    if (nickname.length > 20) {
-      return "Nickname cannot exceed 20 characters";
-    }
-    return null;
-  })();
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("Philippines");
-  
+
   // Notification State
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [notifyDaysBeforeTrip, setNotifyDaysBeforeTrip] = useState(3);
@@ -95,10 +1174,16 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   const [createDemoData, setCreateDemoData] = useState(true);
   const [countdown, setCountdown] = useState(5);
 
-  // Animations for welcome logo
+  // Animations
   const scaleAnim = useRef(new Animated.Value(0.3)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const textFadeAnim = useRef(new Animated.Value(0)).current;
+  const textSlideAnim = useRef(new Animated.Value(20)).current;
+  const styleCardAnims = useRef(
+    TRAVELER_TYPES.map(() => new Animated.Value(0))
+  ).current;
 
+  // Step 1 welcome animation
   useEffect(() => {
     if (visible && step === 1) {
       scaleAnim.setValue(0.3);
@@ -119,11 +1204,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     }
   }, [visible, step]);
 
-  // Staggered animations for travel style cards
-  const styleCardAnims = useRef(
-    TRAVELER_TYPES.map(() => new Animated.Value(0))
-  ).current;
-
+  // Step 3 traveler types stagger animation
   useEffect(() => {
     if (visible && step === 3) {
       styleCardAnims.forEach((anim) => anim.setValue(0));
@@ -139,10 +1220,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     }
   }, [visible, step]);
 
-  // Animations for step transition (applies to titles/texts)
-  const textFadeAnim = useRef(new Animated.Value(0)).current;
-  const textSlideAnim = useRef(new Animated.Value(20)).current;
-
+  // Step title/content transition animation
   useEffect(() => {
     if (visible) {
       textFadeAnim.setValue(0);
@@ -163,65 +1241,71 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     }
   }, [visible, step]);
 
-  // Check biometric support on visibility
-  useEffect(() => {
-    if (visible) {
-      const checkBiometrics = async () => {
-        const { hasHardware, isEnrolled } = await isBiometricsSupported();
-        setHasBiometricsSupport(hasHardware && isEnrolled);
-      };
-      checkBiometrics();
+  const handleNext = useCallback(() => {
+    if (step < 6) {
+      setStep((prev) => (prev + 1) as OnboardingStep);
     }
-  }, [visible]);
+  }, [step]);
 
-  // PIN validation handler
-  const handlePinTextChange = (text: string) => {
-    const numericText = text.replace(/[^0-9]/g, "");
-    setPinCode(numericText);
+  const handleBack = useCallback(() => {
+    if (step > 1) {
+      setStep((prev) => (prev - 1) as OnboardingStep);
+    }
+  }, [step]);
 
-    if (numericText.length === 4) {
-      if (pinStage === "enter") {
-        setTempConfirmPin(numericText);
-        setPinCode("");
-        setPinStage("confirm");
-        setTimeout(() => {
-          pinInputRef.current?.focus();
-        }, 100);
-      } else if (pinStage === "confirm") {
-        if (numericText === tempConfirmPin) {
-          setPinStage("done");
-          setPinError("");
-        } else {
-          Vibration.vibrate(200);
-          setPinCode("");
-          setTempConfirmPin("");
-          setPinStage("enter");
-          setPinError("PINs do not match. Please try again.");
-          setTimeout(() => {
-            pinInputRef.current?.focus();
-          }, 100);
-        }
+  const handleFinish = useCallback(async () => {
+    // Disable PIN & biometrics in local security storage for this release
+    await clearPin();
+    await savePinEnabled(false);
+    await saveBiometricsEnabled(false);
+
+    // Set notificationsEnabled config to false in profile backend
+    saveProfile({
+      ...(profile ?? {}),
+      nickname: nickname || undefined,
+      username: nickname || undefined,
+      defaultCountry: selectedCountry,
+      travelStyle: selectedTypes.join(","),
+      notificationsEnabled: false,
+      notifyDaysBeforeTrip: 3,
+      notifyHoursBeforeActivity: 2,
+    });
+
+    if (createDemoData) {
+      try {
+        await seedDemoTravelData();
+        // seedTestNotifications omitted while notifications are disabled
+      } catch (err) {
+        logger.service(err, {
+          screen: "OnboardingModal",
+          action: "seedDemoData",
+        });
       }
     }
-  };
 
-  const handleBiometricsToggle = async (val: boolean) => {
-    if (val) {
-      const success = await authenticateWithBiometrics("Verify your biometrics configuration");
-      if (success) {
-        setBiometricsEnabledState(true);
-      } else {
-        setBiometricsEnabledState(false);
-        Alert.alert("Authentication Failed", "Could not enroll biometrics.");
-      }
-    } else {
-      setBiometricsEnabledState(false);
-    }
-  };
+    onClose();
 
-  // Auto-close Step 8 with countdown
+    setTimeout(() => {
+      setStep(1);
+      setNickname("");
+      setSelectedTypes([]);
+      setSearchQuery("");
+      setSelectedCountry("Philippines");
+      setCreateDemoData(true);
+    }, 500);
+  }, [
+    saveProfile,
+    profile,
+    nickname,
+    selectedCountry,
+    selectedTypes,
+    createDemoData,
+    onClose,
+  ]);
+
+  // Step 6 auto-finish countdown
   useEffect(() => {
-    if (visible && step === 8) {
+    if (visible && step === 6) {
       setCountdown(3);
       const interval = setInterval(() => {
         setCountdown((prev) => {
@@ -235,1019 +1319,189 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [visible, step]);
+  }, [visible, step, handleFinish]);
 
-  // Step 2 toggle selection
-  const toggleTravelerType = (typeId: string) => {
+  // Android hardware back button handler
+  useEffect(() => {
+    if (!visible) return;
+
+    const onBackPress = () => {
+      if (step > 1 && step <= 5) {
+        handleBack();
+        return true;
+      }
+      if (step === 1) {
+        onClose();
+        return true;
+      }
+      return true;
+    };
+
+    const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+    return () => sub.remove();
+  }, [visible, step, handleBack, onClose]);
+
+  const toggleTravelerType = useCallback((typeId: string) => {
     setSelectedTypes((prev) =>
       prev.includes(typeId)
         ? prev.filter((id) => id !== typeId)
         : [...prev, typeId]
     );
-  };
+  }, []);
 
-  const handleNext = () => {
-    if (step < 8) {
-      setStep((prev) => (prev + 1) as any);
-    }
-  };
-
-  const handleBack = () => {
-    if (step > 1) {
-      setStep((prev) => (prev - 1) as any);
-    }
-  };
-
-  const handleFinish = async () => {
-    // Save security configurations
-    if (pinEnabled && pinStage === "done" && tempConfirmPin) {
-      await setPin(tempConfirmPin);
-      await savePinEnabled(true);
-      await saveBiometricsEnabled(biometricsEnabled);
-    } else {
-      await clearPin();
-    }
-
-    // Save profile details to database
-    saveProfile({
-      ...(profile ?? {}),
-      nickname: nickname || undefined,
-      username: nickname || undefined,
-      defaultCountry: selectedCountry,
-      travelStyle: selectedTypes.join(","),
-      notificationsEnabled,
-      notifyDaysBeforeTrip,
-      notifyHoursBeforeActivity,
-    });
-
-    // Seed demo travel and notification data if requested
-    if (createDemoData) {
-      try {
-        await seedDemoTravelData();
-        await seedTestNotifications();
-      } catch (err) {
-        console.error("Failed to seed demo travel or notification data:", err);
-      }
-    }
-
-    // Reset state and close modal
-    onClose();
-    // Wait a brief moment before resetting step back to 1
-    setTimeout(() => {
-      setStep(1);
-      setNickname("");
-      setSelectedTypes([]);
-      setSearchQuery("");
-      setSelectedCountry("Philippines");
-      setNotificationsEnabled(true);
-      setNotifyDaysBeforeTrip(3);
-      setNotifyHoursBeforeActivity(2);
-      setPinEnabledState(false);
-      setBiometricsEnabledState(false);
-      setPinCode("");
-      setTempConfirmPin("");
-      setPinStage("enter");
-      setPinError("");
-      setCreateDemoData(true);
-    }, 500);
-  };
-
-  // Filter countries for step 3 search
   const filteredCountries = COUNTRIES.filter((c) =>
     c.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const isNextDisabled =
+    step === 2 && (!nickname.trim() || !!nicknameError);
+
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
-      <SafeAreaView style={[styles.safeArea, step === 1 && { backgroundColor: "#111827" }]}>
-        {/* Progress Header */}
-        <View style={[styles.header, 
-          {marginTop: insets.top + 0 }
-        ]}>
-          {step > 1 && step <= 7 ? (
-            <>
-              <TouchableOpacity
-                onPress={handleBack}
-                style={styles.backButton}
-                accessibilityRole="button"
-                accessibilityLabel="Go back"
-              >
-                <Ionicons name="arrow-back" size={24} color="#374151" />
-              </TouchableOpacity>
-              <View style={styles.progressContainer}>
-                {[2, 3, 4, 5, 6, 7].map((s) => (
-                  <View
-                    key={s}
-                    style={[
-                      styles.progressDot,
-                      {
-                        backgroundColor:
-                          step === s
-                            ? colors.primary
-                            : step > s
-                            ? `${colors.primary}80`
-                            : "#E5E7EB",
-                      },
-                    ]}
-                  />
-                ))}
-              </View>
-              <View style={{ width: 24 }} />
-              {/* <TouchableOpacity
-                onPress={onClose}
-                style={styles.closeButton}
-                accessibilityRole="button"
-                accessibilityLabel="Close onboarding"
-              >
-                <Ionicons name="close" size={24} color="#374151" />
-              </TouchableOpacity> */}
-            </>
-          ) : (
-            <>
-              <View style={{ flex: 1 }} />
-              {step === 1 && (
-                <TouchableOpacity
-                  onPress={onClose}
-                  style={styles.closeButton}
-                  accessibilityRole="button"
-                  accessibilityLabel="Close onboarding"
-                >
-                  <Ionicons name="close" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-        </View>
+      <SafeAreaView
+        className="flex-1 bg-white"
+        style={step === 1 ? { backgroundColor: "#111827" } : null}
+      >
+        <OnboardingHeader
+          step={step}
+          topInset={insets.top}
+          colors={colors}
+          onBack={handleBack}
+          onClose={onClose}
+        />
 
-        {/* Form Body */}
-        <View style={styles.container}>
+        <View className="flex-1 px-6 pt-4">
           {step === 1 && (
-            <View style={styles.welcomeContainer}>
-              <Animated.Image
-                source={require("../../assets/icon.png")}
-                style={[
-                  styles.welcomeImage,
-                  {
-                    opacity: opacityAnim,
-                    transform: [{ scale: scaleAnim }],
-                  }
-                ]}
-                resizeMode="contain"
-              />
-              <Animated.View style={{
-                opacity: textFadeAnim,
-                transform: [{ translateY: textSlideAnim }],
-                alignItems: "center"
-              }}>
-                <Text style={[styles.welcomeTitle, { color: "#FFFFFF" }]}>
-                  travelled
-                </Text>
-                <Text style={[styles.welcomeSubtitle, { color: "#9CA3AF" }]}>
-                  Your ultimate companion for planning and organizing trips, keeping track of checklists, and building detailed itineraries.
-                </Text>
-              </Animated.View>
-            </View>
+            <WelcomeStep
+              scaleAnim={scaleAnim}
+              opacityAnim={opacityAnim}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+            />
           )}
 
           {step === 2 && (
-            <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
-              <Text style={[styles.title, { color: colors.primary }]}>
-                Choose your nickname
-              </Text>
-              <Text style={styles.subtitle}>
-                What should we call you? Pick a unique nickname to get started.
-              </Text>
-
-              <View style={[
-                styles.inputContainer,
-                nicknameError ? { borderColor: colors.error } : null
-              ]}>
-                <Text style={styles.atSymbol}>@</Text>
-                <TextInput
-                  style={styles.input}
-                  value={nickname}
-                  onChangeText={setNickname}
-                  placeholder="nickname"
-                  placeholderTextColor="#9CA3AF"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <Text style={[styles.charCount, nickname.length > 20 && { color: colors.error }]}>
-                  {nickname.length}/20
-                </Text>
-              </View>
-              {nicknameError ? (
-                <Text style={[styles.errorText, { color: colors.error }]}>
-                  {nicknameError}
-                </Text>
-              ) : null}
-            </Animated.View>
+            <NicknameStep
+              nickname={nickname}
+              nicknameError={nicknameError}
+              colors={colors}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+              onChangeNickname={setNickname}
+              onSubmitEditing={() => {
+                if (nickname.trim() && !nicknameError) {
+                  Keyboard.dismiss();
+                  handleNext();
+                }
+              }}
+            />
           )}
 
           {step === 3 && (
-            <View style={styles.stepContent}>
-              <Animated.View style={{ opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }}>
-                <Text style={[styles.title, { color: colors.primary }]}>
-                  What's your travel style?
-                </Text>
-                <Text style={styles.subtitle}>
-                  Select all that apply. We'll use this to suggest ideas.
-                </Text>
-              </Animated.View>
-
-              <ScrollView
-                contentContainerStyle={styles.gridContainer}
-                showsVerticalScrollIndicator={false}
-              >
-                {TRAVELER_TYPES.map((type, index) => {
-                  const isSelected = selectedTypes.includes(type.id);
-                  const cardAnim = styleCardAnims[index];
-                  
-                  return (
-                    <Animated.View
-                      key={type.id}
-                      style={{
-                        width: "48%",
-                        aspectRatio: 1.1,
-                        opacity: cardAnim,
-                        transform: [
-                          {
-                            translateY: cardAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [20, 0],
-                            }),
-                          },
-                        ],
-                      }}
-                    >
-                      <TouchableOpacity
-                        onPress={() => toggleTravelerType(type.id)}
-                        style={[
-                          styles.gridItem,
-                          { width: "100%", height: "100%", aspectRatio: undefined },
-                          isSelected && {
-                            borderColor: colors.primary,
-                            backgroundColor: `${colors.primary}0D`,
-                          },
-                        ]}
-                        accessibilityRole="button"
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.itemEmoji}>{type.emoji}</Text>
-                        <Text
-                          style={[
-                            styles.itemLabel,
-                            isSelected && {
-                              color: colors.primary,
-                              fontWeight: "bold",
-                            },
-                          ]}
-                        >
-                          {type.label}
-                        </Text>
-                        {isSelected && (
-                          <View
-                            style={[
-                              styles.checkmarkBadge,
-                              { backgroundColor: colors.primary },
-                            ]}
-                          >
-                            <Ionicons name="checkmark" size={10} color="#fff" />
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    </Animated.View>
-                  );
-                })}
-              </ScrollView>
-            </View>
+            <TravelStyleStep
+              selectedTypes={selectedTypes}
+              styleCardAnims={styleCardAnims}
+              colors={colors}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+              onToggleType={toggleTravelerType}
+            />
           )}
 
           {step === 4 && (
-            <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
-              <Text style={[styles.title, { color: colors.primary }]}>
-                Where are you from?
-              </Text>
-              <Text style={styles.subtitle}>
-                Select your primary home country.
-              </Text>
-
-              {/* Country Selection UI */}
-              <View style={styles.searchContainer}>
-                <Ionicons name="search" size={20} color="#9CA3AF" style={{ marginRight: 8 }} />
-                <TextInput
-                  style={styles.searchInput}
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder="Search countries..."
-                  placeholderTextColor="#9CA3AF"
-                />
-              </View>
-
-              <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
-                {filteredCountries.map((c) => {
-                  const isSelected = selectedCountry === c;
-                  return (
-                    <TouchableOpacity
-                      key={c}
-                      onPress={() => setSelectedCountry(c)}
-                      style={[
-                        styles.listItem,
-                        isSelected && { backgroundColor: `${colors.primary}0D` },
-                      ]}
-                      accessibilityRole="button"
-                    >
-                      <Text
-                        style={[
-                          styles.listItemText,
-                          isSelected && { color: colors.primary, fontWeight: "bold" },
-                        ]}
-                      >
-                        {c}
-                      </Text>
-                      {isSelected && (
-                        <Ionicons name="checkmark" size={20} color={colors.primary} />
-                      )}
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </Animated.View>
+            <CountryStep
+              searchQuery={searchQuery}
+              selectedCountry={selectedCountry}
+              filteredCountries={filteredCountries}
+              colors={colors}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+              onChangeSearchQuery={setSearchQuery}
+              onSelectCountry={setSelectedCountry}
+            />
           )}
 
+          {/*
+          // --- Commented out: To be re-enabled in next release ---
           {step === 5 && (
-            <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
-              <Text style={[styles.title, { color: colors.primary }]}>
-                Turn on notifications
-              </Text>
-              <Text style={styles.subtitle}>
-                Never miss an update. Customize when you want to get notified about your upcoming trips and activities.
-              </Text>
-
-              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-                {/* Enable notifications switch container */}
-                <View style={styles.notificationToggleContainer}>
-                  <View style={{ flex: 1, marginRight: 16 }}>
-                    <Text style={styles.notificationToggleTitle}>Enable Push Notifications</Text>
-                    <Text style={styles.notificationToggleSubtitle}>
-                      Get reminders on your device for trip planning.
-                    </Text>
-                  </View>
-                  <Switch
-                    value={notificationsEnabled}
-                    onValueChange={setNotificationsEnabled}
-                    trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
-                    thumbColor={notificationsEnabled ? colors.primary : "#F3F4F6"}
-                  />
-                </View>
-
-                {/* Sub-settings */}
-                <View style={[styles.settingsContainer, !notificationsEnabled && { opacity: 0.5 }]} pointerEvents={notificationsEnabled ? "auto" : "none"}>
-                  <Text style={styles.sectionHeader}>Notification Settings</Text>
-
-                  {/* Trip start notification configuration */}
-                  <View style={styles.settingRow}>
-                    <View style={{ flex: 1, marginRight: 16 }}>
-                      <Text style={styles.settingLabel}>Before trip starts</Text>
-                      <Text style={styles.settingSubtext}>How many days in advance should we notify you?</Text>
-                    </View>
-                    <View style={styles.stepperContainer}>
-                      <TouchableOpacity
-                        onPress={() => setNotifyDaysBeforeTrip(prev => Math.max(1, prev - 1))}
-                        style={styles.stepperButton}
-                        disabled={!notificationsEnabled || notifyDaysBeforeTrip <= 1}
-                        accessibilityRole="button"
-                        accessibilityLabel="Decrease days"
-                      >
-                        <Ionicons name="remove" size={18} color={!notificationsEnabled || notifyDaysBeforeTrip <= 1 ? "#9CA3AF" : colors.primary} />
-                      </TouchableOpacity>
-                      <Text style={styles.stepperValue}>
-                        {notifyDaysBeforeTrip} {notifyDaysBeforeTrip === 1 ? "day" : "days"}
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => setNotifyDaysBeforeTrip(prev => Math.min(30, prev + 1))}
-                        style={styles.stepperButton}
-                        disabled={!notificationsEnabled || notifyDaysBeforeTrip >= 30}
-                        accessibilityRole="button"
-                        accessibilityLabel="Increase days"
-                      >
-                        <Ionicons name="add" size={18} color={!notificationsEnabled || notifyDaysBeforeTrip >= 30 ? "#9CA3AF" : colors.primary} />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View style={styles.divider} />
-
-                  {/* Activity start notification configuration */}
-                  <View style={styles.settingRow}>
-                    <View style={{ flex: 1, marginRight: 16 }}>
-                      <Text style={styles.settingLabel}>Before activity starts</Text>
-                      <Text style={styles.settingSubtext}>How many hours in advance should we notify you?</Text>
-                    </View>
-                    <View style={styles.stepperContainer}>
-                      <TouchableOpacity
-                        onPress={() => setNotifyHoursBeforeActivity(prev => Math.max(1, prev - 1))}
-                        style={styles.stepperButton}
-                        disabled={!notificationsEnabled || notifyHoursBeforeActivity <= 1}
-                        accessibilityRole="button"
-                        accessibilityLabel="Decrease hours"
-                      >
-                        <Ionicons name="remove" size={18} color={!notificationsEnabled || notifyHoursBeforeActivity <= 1 ? "#9CA3AF" : colors.primary} />
-                      </TouchableOpacity>
-                      <Text style={styles.stepperValue}>
-                        {notifyHoursBeforeActivity} {notifyHoursBeforeActivity === 1 ? "hour" : "hours"}
-                      </Text>
-                      <TouchableOpacity
-                        onPress={() => setNotifyHoursBeforeActivity(prev => Math.min(24, prev + 1))}
-                        style={styles.stepperButton}
-                        disabled={!notificationsEnabled || notifyHoursBeforeActivity >= 24}
-                        accessibilityRole="button"
-                        accessibilityLabel="Increase hours"
-                      >
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
-              </ScrollView>
-            </Animated.View>
+            <NotificationStep
+              notificationsEnabled={notificationsEnabled}
+              notifyDaysBeforeTrip={notifyDaysBeforeTrip}
+              notifyHoursBeforeActivity={notifyHoursBeforeActivity}
+              colors={colors}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+              onToggleNotifications={setNotificationsEnabled}
+              onChangeDays={(d) =>
+                setNotifyDaysBeforeTrip((prev) =>
+                  Math.max(1, Math.min(30, prev + d))
+                )
+              }
+              onChangeHours={(h) =>
+                setNotifyHoursBeforeActivity((prev) =>
+                  Math.max(1, Math.min(24, prev + h))
+                )
+              }
+            />
           )}
 
           {step === 6 && (
-            <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
-              <Text style={[styles.title, { color: colors.primary }]}>
-                Secure your travel plan
-              </Text>
-              <Text style={styles.subtitle}>
-                Enable app locking to keep your travel itineraries and personal details private.
-              </Text>
-
-              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-                {/* PIN Code Switch */}
-                <View style={styles.notificationToggleContainer}>
-                  <View style={{ flex: 1, marginRight: 16 }}>
-                    <Text style={styles.notificationToggleTitle}>Enable PIN Lock</Text>
-                    <Text style={styles.notificationToggleSubtitle}>
-                      Require a 4-digit code to open the app.
-                    </Text>
-                  </View>
-                  <Switch
-                    value={pinEnabled}
-                    onValueChange={(val) => {
-                      setPinEnabledState(val);
-                      if (!val) {
-                        setPinCode("");
-                        setPinStage("enter");
-                        setTempConfirmPin("");
-                        setPinError("");
-                      }
-                    }}
-                    trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
-                    thumbColor={pinEnabled ? colors.primary : "#F3F4F6"}
-                  />
-                </View>
-
-                {/* Inline PIN Input (if enabled) */}
-                {pinEnabled && (
-                  <View style={[styles.settingsContainer, { marginBottom: 20 }]}>
-                    <Text style={styles.sectionHeader}>
-                      {pinStage === "enter"
-                        ? "Create PIN code"
-                        : pinStage === "confirm"
-                        ? "Confirm PIN code"
-                        : "PIN Code Saved"}
-                    </Text>
-
-                    <Text style={{ fontSize: 14, color: "#4B5563", marginBottom: 12 }}>
-                      {pinStage === "enter"
-                        ? "Type a 4-digit passcode:"
-                        : pinStage === "confirm"
-                        ? "Type the passcode again to confirm:"
-                        : "Passcode successfully verified and setup."}
-                    </Text>
-
-                    {pinStage !== "done" && (
-                      <TouchableOpacity
-                        activeOpacity={0.9}
-                        onPress={() => pinInputRef.current?.focus()}
-                        style={{ alignItems: "center", marginVertical: 12 }}
-                        accessibilityRole="button"
-                        accessibilityLabel="Enter PIN Code"
-                      >
-                        <View style={{ flexDirection: "row", gap: 16 }}>
-                          {[0, 1, 2, 3].map((idx) => {
-                            const isFilled = pinCode.length > idx;
-                            return (
-                              <View
-                                key={idx}
-                                style={{
-                                  width: 48,
-                                  height: 48,
-                                  borderRadius: 12,
-                                  borderWidth: 2,
-                                  borderColor: isFilled ? colors.primary : "#D1D5DB",
-                                  backgroundColor: isFilled ? `${colors.primary}10` : "#FFFFFF",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                }}
-                              >
-                                {isFilled && (
-                                  <View
-                                    style={{
-                                      width: 12,
-                                      height: 12,
-                                      borderRadius: 6,
-                                      backgroundColor: colors.primary,
-                                    }}
-                                  />
-                                )}
-                              </View>
-                            );
-                          })}
-                        </View>
-                        <TextInput
-                          ref={pinInputRef}
-                          value={pinCode}
-                          onChangeText={handlePinTextChange}
-                          keyboardType="number-pad"
-                          maxLength={4}
-                          style={{ position: "absolute", width: 0, height: 0, opacity: 0 }}
-                          caretHidden
-                        />
-                      </TouchableOpacity>
-                    )}
-
-                    {pinStage === "done" && (
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginVertical: 8 }}>
-                        <Ionicons name="checkmark-circle" size={24} color="#10B981" />
-                        <Text style={{ color: "#10B981", fontWeight: "600" }}>PIN setup complete</Text>
-                      </View>
-                    )}
-
-                    {pinError ? (
-                      <Text style={{ color: colors.error, fontSize: 13, textAlign: "center", marginTop: 8, fontWeight: "500" }}>
-                        {pinError}
-                      </Text>
-                    ) : null}
-                  </View>
-                )}
-
-                {/* Finger Scanner Switch (only shown if PIN enabled and hardware supported) */}
-                {pinEnabled && hasBiometricsSupport && (
-                  <View style={styles.notificationToggleContainer}>
-                    <View style={{ flex: 1, marginRight: 16 }}>
-                      <Text style={styles.notificationToggleTitle}>Use Finger Scanner</Text>
-                      <Text style={styles.notificationToggleSubtitle}>
-                        Unlock using fingerprint authentication.
-                      </Text>
-                    </View>
-                    <Switch
-                      value={biometricsEnabled}
-                      onValueChange={handleBiometricsToggle}
-                      disabled={pinStage !== "done"}
-                      trackColor={{ false: "#D1D5DB", true: colors.primary + "80" }}
-                      thumbColor={biometricsEnabled ? colors.primary : "#F3F4F6"}
-                    />
-                  </View>
-                )}
-              </ScrollView>
-            </Animated.View>
-          )}
-
-          {step === 7 && (
-            <Animated.View style={[styles.stepContent, { opacity: textFadeAnim, transform: [{ translateY: textSlideAnim }] }]}>
-              <Text style={[styles.title, { color: colors.primary }]}>
-                Demo Travel Plan
-              </Text>
-              <Text style={styles.subtitle}>
-                Would you like to import simulated travel data to explore Travelled's features?
-              </Text>
-
-              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-                <TouchableOpacity
-                  onPress={() => setCreateDemoData(!createDemoData)}
-                  style={[
-                    styles.checkboxContainer,
-                    createDemoData && { borderColor: colors.primary, backgroundColor: `${colors.primary}08` }
-                  ]}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityState={{ checked: createDemoData }}
-                >
-                  <View style={[
-                    styles.checkbox,
-                    { borderColor: colors.primary },
-                    createDemoData && { backgroundColor: colors.primary }
-                  ]}>
-                    {createDemoData && <Ionicons name="checkmark" size={16} color="#fff" />}
-                  </View>
-                  <Text style={styles.checkboxLabel}>Yes, create demo travel data</Text>
-                </TouchableOpacity>
-              </ScrollView>
-            </Animated.View>
-          )}
-
-          {step === 8 && (
-            <Animated.View
-              style={[
-                styles.stepContent,
-                styles.successContainer,
-                {
-                  opacity: textFadeAnim,
-                  transform: [{ translateY: textSlideAnim }],
+            <SecurityStep
+              pinEnabled={pinEnabled}
+              pinCode={pinCode}
+              pinStage={pinStage}
+              pinError={pinError}
+              pinInputRef={pinInputRef}
+              hasBiometricsSupport={hasBiometricsSupport}
+              biometricsEnabled={biometricsEnabled}
+              colors={colors}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+              onTogglePin={(val) => {
+                setPinEnabledState(val);
+                if (!val) {
+                  setPinCode("");
+                  setPinStage("enter");
+                  setTempConfirmPin("");
+                  setPinError("");
                 }
-              ]}
-            >
-              <View style={[styles.successIconContainer, { backgroundColor: `${colors.primary}1A` }]}>
-                <Ionicons name="checkmark-circle" size={80} color={colors.primary} />
-              </View>
-              <Text style={[styles.successTitle, { color: colors.primary }]}>
-                You're all set!
-              </Text>
-              <Text style={styles.successSubtitle}>
-                Welcome to Travelled! Prepare to start planning your perfect trips.
-              </Text>
+              }}
+              onPinChange={handlePinTextChange}
+              onToggleBiometrics={handleBiometricsToggle}
+            />
+          )}
+          */}
 
-              <Text style={styles.countdownText}>
-                Entering the dashboard in <Text style={{ color: colors.primary, fontWeight: "bold" }}>{countdown}</Text> seconds...
-              </Text>
-            </Animated.View>
+          {step === 5 && (
+            <DemoDataStep
+              createDemoData={createDemoData}
+              colors={colors}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+              onToggleDemoData={() => setCreateDemoData(!createDemoData)}
+            />
+          )}
+
+          {step === 6 && (
+            <SuccessStep
+              countdown={countdown}
+              colors={colors}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+            />
           )}
         </View>
 
-         {/* Sticky Action Footer - safe inset padding */}
-        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-          {step <= 7 ? (
-            <TouchableOpacity
-              onPress={handleNext}
-              disabled={
-                (step === 2 && (!nickname.trim() || !!nicknameError)) ||
-                (step === 6 && pinEnabled && pinStage !== "done")
-              }
-              style={[
-                styles.primaryButton,
-                { backgroundColor: step === 1 ? "#FFFFFF" : colors.primary },
-                ((step === 2 && (!nickname.trim() || !!nicknameError)) || (step === 6 && pinEnabled && pinStage !== "done")) && { opacity: 0.5 },
-              ]}
-              accessibilityRole="button"
-            >
-              <Text style={[
-                styles.primaryButtonText,
-                { color: step === 1 ? "#111827" : colors.onPrimary }
-              ]}>
-                {step === 1 ? "Get Started" : step === 7 ? "Start the Adventure!" : "Next"}
-              </Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
+        <OnboardingFooter
+          step={step}
+          bottomInset={insets.bottom}
+          disabled={isNextDisabled}
+          colors={colors}
+          onNext={handleNext}
+        />
       </SafeAreaView>
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    height: 56,
-  },
-  backButton: {
-    padding: 4,
-  },
-  progressContainer: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  progressDot: {
-    width: 20,
-    height: 4,
-    borderRadius: 2,
-  },
-  closeButton: {
-    padding: 4,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 16,
-  },
-  stepContent: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-    lineHeight: 20,
-    marginBottom: 28,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F9FAFB",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 56,
-  },
-  atSymbol: {
-    fontSize: 18,
-    color: "#9CA3AF",
-    marginRight: 4,
-    fontWeight: "600",
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: "#111827",
-    height: "100%",
-  },
-  fieldContainer: {
-    gap: 8,
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#374151",
-  },
-  gridContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 12,
-    paddingBottom: 24,
-  },
-  gridItem: {
-    width: "48%",
-    aspectRatio: 1.1,
-    backgroundColor: "#F9FAFB",
-    borderWidth: 2,
-    borderColor: "#EAECF0",
-    borderRadius: 20,
-    padding: 16,
-    justifyContent: "center",
-    position: "relative",
-  },
-  itemEmoji: {
-    fontSize: 28,
-    marginBottom: 8,
-  },
-  itemLabel: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#475467",
-  },
-  checkmarkBadge: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F9FAFB",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 48,
-    marginBottom: 16,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: "#111827",
-  },
-  listContainer: {
-    flex: 1,
-  },
-  listItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 4,
-  },
-  listItemText: {
-    fontSize: 15,
-    color: "#374151",
-  },
-  successContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingTop: 40,
-  },
-  successIconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-  },
-  successTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  successSubtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-    textAlign: "center",
-    lineHeight: 20,
-    paddingHorizontal: 16,
-    marginBottom: 32,
-  },
-  countdownText: {
-    fontSize: 10,
-    color: "#4B5563",
-    textAlign: "center",
-    marginTop: 16,
-  },
-  summaryDivider: {
-    height: 1,
-    backgroundColor: "#EAECF0",
-  },
-  footer: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-  },
-  primaryButton: {
-    height: 52,
-    borderRadius: 26,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  welcomeContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 16,
-    paddingTop: 40,
-  },
-  welcomeImage: {
-    width: 140,
-    height: 140,
-    borderRadius: 32,
-    marginBottom: 28,
-  },
-  welcomeTitle: {
-    fontSize: 32,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 12,
-  },
-  welcomeSubtitle: {
-    fontSize: 15,
-    color: "#6B7280",
-    textAlign: "center",
-    lineHeight: 22,
-    paddingHorizontal: 12,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    padding: 16,
-    borderWidth: 1.5,
-    borderColor: "#EAECF0",
-    borderRadius: 16,
-    backgroundColor: "#F9FAFB",
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  checkboxLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#374151",
-  },
-  errorText: {
-    fontSize: 13,
-    marginTop: 8,
-    marginLeft: 4,
-    fontWeight: "500",
-  },
-  charCount: {
-    fontSize: 12,
-    color: "#98A2B3",
-    marginLeft: 8,
-  },
-  notificationToggleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 24,
-    padding: 16,
-    borderWidth: 1.5,
-    borderColor: "#EAECF0",
-    borderRadius: 16,
-    backgroundColor: "#F9FAFB",
-  },
-  notificationToggleTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
-    marginBottom: 4,
-  },
-  notificationToggleSubtitle: {
-    fontSize: 13,
-    color: "#6B7280",
-  },
-  settingsContainer: {
-    backgroundColor: "#F9FAFB",
-    borderWidth: 1.5,
-    borderColor: "#EAECF0",
-    borderRadius: 16,
-    padding: 16,
-  },
-  sectionHeader: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#9CA3AF",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 16,
-  },
-  settingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-  },
-  settingLabel: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#374151",
-    marginBottom: 4,
-  },
-  settingSubtext: {
-    fontSize: 12,
-    color: "#6B7280",
-    lineHeight: 16,
-  },
-  stepperContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 20,
-    padding: 4,
-  },
-  stepperButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F3F4F6",
-  },
-  stepperValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#111827",
-    paddingHorizontal: 12,
-    minWidth: 70,
-    textAlign: "center",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: "#E5E7EB",
-    marginVertical: 16,
-  },
-});
 
 export default OnboardingModal;

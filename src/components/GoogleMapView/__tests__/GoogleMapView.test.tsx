@@ -257,6 +257,22 @@ describe("GoogleMapView Component", () => {
     expect(html).toContain("calculateRoadRoute(group.coords, currentRouteMode, reqId, group.color)");
   });
 
+  it("maintains connectorColor to #c10003 for activity type and changes it for transit, rental, and flight only", () => {
+    const transitPins = [
+      { id: "1", latitude: 35.68, longitude: 139.76, type: 3, color: "#02899a" },
+      { id: "2", latitude: 35.69, longitude: 139.77, type: 3, color: "#02899a" },
+    ];
+    const { getByTestId } = render(
+      <GoogleMapView pins={transitPins} showConnectors={true} />
+    );
+    const webview = getByTestId("webview");
+    const html = webview.props.source.html;
+
+    expect(html).toContain("isTransitRentalOrFlight");
+    expect(html).toContain("canChangeColor && pin.color ? pin.color : (currentConnectorColor || '#c10003')");
+    expect(html).toContain("calculateRoadRoute(pathCoordinates, currentRouteMode, reqId, fallbackColor)");
+  });
+
   it("adapts map centering and exposes window.setBottomOffset when bottomOffset changes", () => {
     const { getByTestId, rerender } = render(
       <GoogleMapView pins={mockPins} bottomOffset={300} />
