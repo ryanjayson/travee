@@ -120,6 +120,10 @@ export const hasActivityData = (data: any): boolean => {
     "_status",
     "_changed",
     "isOffline",
+    "sectionId",
+    "sortOrder",
+    "type",
+    "travelId"
   ]);
 
   for (const [key, value] of Object.entries(data)) {

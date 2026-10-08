@@ -428,7 +428,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
 
               <TouchableOpacity
                 onPress={() => onOpenCreateTripModal && onOpenCreateTripModal(null)}
-                className="flex-row items-center bg-white rounded-4xl p-5 shadow-lg elevation-5"
+                className="flex-row items-center bg-white rounded-4xl p-5 shadow-lg elevation-5 border-2 border-primary/20"
                 activeOpacity={0.8}
                 accessibilityRole="button"
                 accessibilityLabel="Create a new trip"

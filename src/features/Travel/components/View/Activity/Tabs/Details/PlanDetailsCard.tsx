@@ -57,16 +57,16 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
     activity.contactNumber ||
     activity.contactEmail
   );
-
   const hasNotes = Boolean(activity.notes || activity.description);
 
   return (
     <View className="mt-4 px-2">
+      {/* Main Details Body */}
       <View
-        className="p-2xl rounded-3xl mb-4 gap-6"
-        style={{ backgroundColor: `${themeColor}30` }}
+        className="py-xl px-2xl rounded-3xl mb-2 gap-4"
+        style={{ backgroundColor: `${themeColor}40` }}
       >
-        <View className="flex-row items-start w-full ">
+        <View className="flex-row items-start w-full mb-4">
           <View className="flex-col gap-2 flex-1">
             {hasNameMismatch ? (
               <View className="flex flex-col gap-3">
@@ -80,26 +80,23 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
                     >
                       {activity.destinationData?.name}
                     </Text>
-                    <Text className="text-secondary/60 font-normal leading-2xl text-lg">
-                      {locationText}
-                    </Text>
+                    {locationText ? (
+                      <Text className="text-secondary/60 font-normal leading-2xl text-lg">
+                        {locationText}
+                      </Text>
+                    ) : null}
                   </View>
                 </View>
               </View>
             ) : (
               locationText && (
                 <View className="flex flex-col flex-1">
-                  <View className="flex flex-row gap-3 items-start flex-1">
-                    <View className="flex-1">
-                      <Text
-                        className={
-                          "text-xs font-semibold text-secondary " +
-                          "uppercase tracking-widest"
-                        }
-                      >
+                  <View className="flex flex-row gap-1 items-start flex-1">
+                    <View className="flex-1 gap-0">
+                      <Text className="text-xl font-semibold text-secondary">
                         Address
                       </Text>
-                      <Text className="text-secondary/60 font-normal leading-2xl text-xl">
+                      <Text className="text-secondary/60 font-normal leading-relaxed text-xl">
                         {locationText}
                       </Text>
                     </View>
@@ -111,39 +108,43 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
         </View>
 
         {activity.startDate && (
-          <View className="flex-row gap-6">
-            <View className="mb-3">
-              <Icon name="timer" size={38} color={themeColor} />
+          <View className="flex-row gap-6 pl-xl">
+            <View className="mb-2">
+              <Icon name="timer" size={34} color={themeColor} />
             </View>
-            <View className="mb-3">
-              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+            <View className="mb-1 flex-1">
+              <Text className="text-xl font-semibold text-secondary">
                 {activity.endDate ? "Start" : "Date"}
               </Text>
-              <Text className="text-2xl font-semibold text-secondary/40">
-                {safeFormatTime(activity.startDate)}
-              </Text>
-              <Text className="text-base font-medium text-secondary/40">
-                {safeFormatDate(activity.startDate)}
-              </Text>
+              <View className="flex-row items-end gap-2">
+                <Text className="text-xl font-semibold text-secondary/40">
+                  {safeFormatTime(activity.startDate)}
+                </Text>
+                <Text className="text-base text-secondary/50">
+                  {safeFormatDate(activity.startDate)}
+                </Text>
+              </View>
             </View>
           </View>
         )}
 
         {activity.endDate && (
-          <View className="flex-row gap-6">
-            <View className="mb-3">
-              <Icon name="timer" size={38} color={themeColor} />
+          <View className="flex-row gap-6 px-xl">
+            <View className="mb-2">
+              <Icon name="timer" size={34} color={themeColor} />
             </View>
-            <View className="mb-3">
-              <Text className="text-xs font-semibold text-secondary uppercase tracking-widest">
+            <View className="mb-1 flex-1">
+              <Text className="text-xl font-semibold text-secondary">
                 End
               </Text>
-              <Text className="text-2xl font-semibold text-secondary/40">
-                {safeFormatTime(activity.endDate)}
-              </Text>
-              <Text className="text-base font-medium text-secondary/40">
-                {safeFormatDate(activity.endDate)}
-              </Text>
+              <View className="flex-row items-end gap-2">
+                <Text className="text-xl font-semibold text-secondary/40">
+                  {safeFormatTime(activity.endDate)}
+                </Text>
+                <Text className="text-base font-medium text-secondary/50">
+                  {safeFormatDate(activity.endDate)}
+                </Text>
+              </View>
             </View>
           </View>
         )}

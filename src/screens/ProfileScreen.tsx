@@ -604,49 +604,50 @@ export function ProfileScreen({ visible, onClose }: ProfileScreenProps) {
                 </FadeInView>
 
                 {/* About Section */}
-                <View
-                  className={[
-                    "bg-white rounded-2xl p-4 gap-3 shadow-sm",
-                    "elevation-2 border border-[#F3F4F6]",
-                  ].join(" ")}
-                >
-                  <Text className="text-xl font-semibold text-secondary">
-                    About
-                  </Text>
+                <FadeInView type="up" delay={150} duration={400}>
+                  <View
+                    className={[
+                      "bg-white rounded-2xl p-4 gap-3 shadow-sm",
+                      "elevation-2 border border-[#F3F4F6]",
+                    ].join(" ")}
+                  >
+                    <Text className="text-xl font-semibold text-secondary">
+                      About
+                    </Text>
 
-                  <View className="flex-row justify-between items-center py-2">
-                    <Text className="text-base font-semibold text-tertiary">
-                      App Version
-                    </Text>
-                    <Text className="text-sm text-gray-500 font-medium">
-                      {appVersion} (Build {buildVersion})
-                    </Text>
+                    <SettingsRowItem
+                      title="Privacy Policy"
+                      onPress={() => setActiveSettingsModal("privacy")}
+                      accessibilityLabel="Open privacy policy"
+                    />
+
+                    <View className="h-[1px] bg-[#E5E7EB]" />
+
+                    <SettingsRowItem
+                      title="Terms and Conditions"
+                      onPress={() => setActiveSettingsModal("terms")}
+                      accessibilityLabel="Open terms and conditions"
+                    />
+
+                    <View className="h-[1px] bg-[#E5E7EB]" />
+
+                    <SettingsRowItem
+                      title="Rate and Feedback"
+                      onPress={handleRateAndFeedback}
+                      accessibilityLabel="Rate and feedback"
+                    />
+                    <View className="h-[1px] bg-[#E5E7EB]" />
+
+                    <View className="flex-row justify-between items-center py-2">
+                      <Text className="text-base font-semibold text-tertiary">
+                        App Version
+                      </Text>
+                      <Text className="text-sm text-gray-500 font-medium">
+                        {appVersion} (Build {buildVersion})
+                      </Text>
+                    </View>
                   </View>
-
-                  <View className="h-[1px] bg-[#E5E7EB]" />
-
-                  <SettingsRowItem
-                    title="Privacy Policy"
-                    onPress={() => setActiveSettingsModal("privacy")}
-                    accessibilityLabel="Open privacy policy"
-                  />
-
-                  <View className="h-[1px] bg-[#E5E7EB]" />
-
-                  <SettingsRowItem
-                    title="Terms and Conditions"
-                    onPress={() => setActiveSettingsModal("terms")}
-                    accessibilityLabel="Open terms and conditions"
-                  />
-
-                  <View className="h-[1px] bg-[#E5E7EB]" />
-
-                  <SettingsRowItem
-                    title="Rate and Feedback"
-                    onPress={handleRateAndFeedback}
-                    accessibilityLabel="Rate and feedback"
-                  />
-                </View>
+                </FadeInView>
 
                 {/* Developer Actions */}
                 <DeveloperActions onCloseParentModal={onClose} />

@@ -677,7 +677,7 @@ const ActivityItemCard = ({
                 </View>
                 {!isNarrow && !itineraryEventActivity.isDone && itineraryEventActivity && itineraryEventActivity.destination && itineraryEventActivity.destinationData?.coordinates && itineraryEventActivity.type !== TripPlanType.flight && itineraryEventActivity.type !== TripPlanType.transit && (
                   <View
-                    className="flex-row items-start text-ellipsis rounded-sm pr-xl "
+                    className="flex-row items-start text-ellipsis rounded-sm pr-xl -mt-1"
                   >
                     <Icon name="location-pin" size={12} color={"#B42318"} style={{ top: 2, opacity: 0.6 }} />
                     <Text className="text-sm pl-xs leading-md  text-tertiary "
@@ -692,7 +692,7 @@ const ActivityItemCard = ({
                 {/* show departure and arrival airport */}
                 {!isNarrow && itineraryEventActivity.type === TripPlanType.flight && Boolean(itineraryEventActivity.flightDetails?.departureAirport) && (
                   <View
-                    className="flex-row items-start text-ellipsis rounded-sm pr-xl gap-1 "
+                    className="flex-row items-start text-ellipsis rounded-sm pr-xl gap-1 -mt-1"
                   >
                     <Text className="text-sm leading-md font-semibold text-tertiary ">
                       {parseAirport(itineraryEventActivity.flightDetails?.departureAirport).code || itineraryEventActivity.flightDetails?.departureAirport}
@@ -710,10 +710,12 @@ const ActivityItemCard = ({
 
                 {!isNarrow && itineraryEventActivity.type === TripPlanType.transit && (Boolean(itineraryEventActivity.transportationDetails?.pickupLocation) || Boolean(itineraryEventActivity.transportationDetails?.dropoffLocation)) && (
                   <View
-                    className="flex-row items-start text-ellipsis rounded-sm pr-xl gap-1 "
+                    className="flex-row items-start text-ellipsis rounded-sm pr-xl gap-1 -mt-1"
                   >
-                    <Text className="text-sm leading-md  text-tertiary ">
-                      {getDisplayLocation(itineraryEventActivity.transportationDetails?.pickupLocation)} ➠ {getDisplayLocation(itineraryEventActivity.transportationDetails?.dropoffLocation)}
+                    <Text className="text-sm leading-md  text-tertiary flex-row ">
+                      {getDisplayLocation(itineraryEventActivity.transportationDetails?.pickupLocation)}
+                      {" "}<Icon name="arrow-forward" size={12} color={"#858585"} style={{ paddingHorizontal: 4 }} />{" "}
+                      {getDisplayLocation(itineraryEventActivity.transportationDetails?.dropoffLocation)}
                     </Text>
                   </View>
                 )}

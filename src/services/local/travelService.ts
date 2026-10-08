@@ -20,6 +20,10 @@ import MeetupDetails from "../../db/models/MeetupDetails";
 import RideRentalDetails from "../../db/models/RideRentalDetails";
 import TripDestination from "../../db/models/TripDestination";
 import TripSetting from "../../db/models/TripSetting";
+import ChecklistGroup from "../../db/models/ChecklistGroup";
+import ChecklistItem from "../../db/models/ChecklistItem";
+import Expense from "../../db/models/Expense";
+import Note from "../../db/models/Note";
 import { ActivityType, TripPlanType, TravelStatus } from "../../types/enums";
 import { safeJsonParse } from "../../utils/safeJsonParse";
 
@@ -1403,7 +1407,13 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
     }
 
     // Save associated hike or camp details
-    if ((activityData.planType === ActivityType.hikeOrCamp || (activityData.type as any) === ActivityType.hikeOrCamp) && activityData.hikeOrCampDetails) {
+    if (
+      (activityData.planType === ActivityType.hike ||
+        activityData.planType === ActivityType.camp ||
+        (activityData.type as any) === ActivityType.hike ||
+        (activityData.type as any) === ActivityType.camp) &&
+      activityData.hikeOrCampDetails
+    ) {
       const hikeOrCampDetailsCollection = database.get<HikeOrCampDetails>("hike_or_camp_details");
       const existingDetails = await hikeOrCampDetailsCollection.query(
         Q.where("activity_id", activity.id)
@@ -1456,7 +1466,13 @@ export const saveActivityLocally = async (activityData: any, id?: string) => {
     }
 
     // Save associated cafe restaurant details
-    if ((activityData.planType === ActivityType.restaurant || activityData.planType === ActivityType.cafeOrBar || (activityData.type as any) === ActivityType.restaurant || (activityData.type as any) === ActivityType.cafeOrBar) && activityData.cafeRestaurantDetails) {
+    if (
+      (activityData.planType === ActivityType.restaurant ||
+        activityData.planType === ActivityType.cafe ||
+        (activityData.type as any) === ActivityType.restaurant ||
+        (activityData.type as any) === ActivityType.cafe) &&
+      activityData.cafeRestaurantDetails
+    ) {
       const cafeRestaurantDetailsCollection = database.get<CafeRestaurantDetails>("cafe_restaurant_details");
       const existingDetails = await cafeRestaurantDetailsCollection.query(
         Q.where("activity_id", activity.id)
@@ -2228,37 +2244,94 @@ export const seedDemoTravelData = async (): Promise<void> => {
   tomorrow.setHours(0, 0, 0, 0);
 
   const endTrip = new Date(tomorrow);
-  endTrip.setDate(tomorrow.getDate() + 3);
+  endTrip.setDate(tomorrow.getDate() + 2);
+  endTrip.setHours(23, 59, 59, 999);
+
+  const createDateTime = (dayOffset: number, hours: number, minutes = 0) => {
+    const d = new Date(tomorrow);
+    d.setDate(tomorrow.getDate() + dayOffset);
+    d.setHours(hours, minutes, 0, 0);
+    return d;
+  };
 
   await database.write(async () => {
-    // 1. Create the travel plan
+    // 1. Create the travel plan (Tokyo, Japan)
     const newTravel = await database.get<Travel>("travels").create((t) => {
       Object.assign(t, {
-        title: "🌴 Boracay Island Getaway",
-        description: "A fun-filled weekend trip with friends exploring the beaches of Boracay",
-        destination: "Boracay, Philippines",
-        destinationData: JSON.stringify({ latitude: 11.9774, longitude: 121.9248 }),
+        title: "🌸 Tokyo Explorer: 3-Day Highlights",
+        description:
+          "A curated 3-day adventure through Tokyo featuring historic temples, " +
+          "culinary hotspots, digital art, and neon-lit districts.",
+        destination: "Tokyo, Japan",
+        destinationData: JSON.stringify({
+          name: "Tokyo, Japan",
+          address: "Tokyo, Japan",
+          country: "Japan",
+          countryCode: "JP",
+          coordinates: { latitude: 35.6762, longitude: 139.6503 },
+          latitude: 35.6762,
+          longitude: 139.6503,
+        }),
         startOrDepartureDate: tomorrow,
         endOrReturnDate: endTrip,
         status: TravelStatus.Upcoming,
-        budget: "15000",
-        notes: "Remember to bring sunscreen, swimsuits, and dry bags for island hopping.",
+        budget: "120000",
+        notes:
+          "• Pick up pocket Wi-Fi router at Haneda Airport T3.\n" +
+          "• Add Suica or Pasmo IC card to Apple Wallet / Google Wallet for train transit.\n" +
+          "• Carry JPY cash for temples, market stalls, and ramen ticket machines.\n" +
+          "• Wear comfortable slip-on walking shoes (expect 15k-20k daily steps).",
         isOffline: true,
         isArchived: false,
         type: 1,
       });
     });
 
-    // 2. Create the sections (Days 1 to 4)
+    // 2. Create Trip Destination & Settings
+    await database.get<TripDestination>("trip_destinations").create((td) => {
+      td.travel.id = newTravel.id;
+      td.destination = "Tokyo, Japan";
+      td.destinationData = JSON.stringify({
+        name: "Tokyo, Japan",
+        address: "Tokyo, Japan",
+        country: "Japan",
+        countryCode: "JP",
+        coordinates: { latitude: 35.6762, longitude: 139.6503 },
+        latitude: 35.6762,
+        longitude: 139.6503,
+      });
+    });
+
+    await database.get<TripSetting>("trip_settings").create((ts) => {
+      ts.travel.id = newTravel.id;
+      ts.currency = "JPY";
+      ts.timezone = "Asia/Tokyo";
+      ts.itineraryView = "day";
+      ts.allowItemReordering = true;
+      ts.showSectionTabNavigation = true;
+    });
+
+    // 3. Create 3 Day Sections
+    const dayTitles = [
+      "Day 1 - Arrival, Shinjuku & Shibuya Sky",
+      "Day 2 - Historic Asakusa, Tsukiji & teamLab",
+      "Day 3 - Meiji Shrine, Harajuku & Return Flight",
+    ];
+
     const sections: Section[] = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 3; i++) {
       const currentDate = new Date(tomorrow);
       currentDate.setDate(tomorrow.getDate() + i);
 
       const section = await database.get<Section>("itinerary_sections").create((s) => {
         s.travel.id = newTravel.id;
-        s.title = `Day ${i + 1}`;
-        s.description = currentDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        s.title = dayTitles[i];
+        s.description = currentDate.toLocaleDateString(undefined, {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
         s.startDate = currentDate;
         s.endDate = currentDate;
         s.sortOrder = String(i + 1);
@@ -2267,26 +2340,107 @@ export const seedDemoTravelData = async (): Promise<void> => {
       sections.push(section);
     }
 
-    // 3. Create activities for Day 1 (Arrival)
-    const day1Date = new Date(tomorrow);
-    
-    // Flight activity
-    const flightStart = new Date(day1Date);
-    flightStart.setHours(8, 0, 0, 0);
-    const flightEnd = new Date(day1Date);
-    flightEnd.setHours(9, 15, 0, 0);
-    
-    await database.get<Activity>("itinerary_activities").create((a) => {
+    // 4. Create Checklist Groups & Common Items (Packing List & Essentials)
+    const packingGroup = await database.get<ChecklistGroup>("checklist_groups").create((g) => {
+      g.travel.id = newTravel.id;
+      g.title = "🎒 Packing List";
+      g.description = "Essential clothing, footwear, and accessories to pack for Tokyo";
+      g.sortOrder = "1";
+      g.isOffline = true;
+    });
+
+    const essentialsGroup = await database.get<ChecklistGroup>("checklist_groups").create((g) => {
+      g.travel.id = newTravel.id;
+      g.title = "📋 Travel Essentials & Docs";
+      g.description = "Passports, transit cards, connectivity, and ticket confirmations";
+      g.sortOrder = "2";
+      g.isOffline = true;
+    });
+
+    const packingItems = [
+      { title: "Passport & Visit Japan Web immigration QR code", isDone: true },
+      { title: "Comfortable slip-on walking shoes (15k-20k daily steps)", isDone: true },
+      { title: "Universal Type-A plug adapter & 20,000mAh power bank", isDone: true },
+      { title: "Compact coin purse (essential for 100¥ & 500¥ coins)", isDone: true },
+      { title: "Small hand towel / handkerchief (public restrooms lack paper towels)", isDone: false },
+      { title: "Weather-appropriate layers & light foldable umbrella", isDone: false },
+      { title: "Prescription medications & mini first aid travel pouch", isDone: false },
+      { title: "Foldable tote duffel bag for souvenirs and tax-free shopping", isDone: false },
+    ];
+
+    for (let p = 0; p < packingItems.length; p++) {
+      await database.get<ChecklistItem>("checklist_items").create((ci) => {
+        ci.travel.id = newTravel.id;
+        ci.checklistGroup.id = packingGroup.id;
+        ci.title = packingItems[p].title;
+        ci.sortOrder = String(p + 1);
+        ci.isDone = packingItems[p].isDone;
+        ci.isOffline = true;
+      });
+    }
+
+    const essentialsItems = [
+      { title: "Reserve Pocket Wi-Fi router for terminal pickup at Haneda", isDone: true },
+      { title: "Add digital Suica or Pasmo IC card to Apple/Google Wallet", isDone: true },
+      { title: "Withdraw ¥30,000 - ¥50,000 JPY cash from 7-Bank ATM", isDone: false },
+      { title: "Download offline Tokyo area map on Google Maps", isDone: true },
+      { title: "Confirm Shibuya Sky & teamLab Planets timed entrance tickets", isDone: true },
+      { title: "Save offline PDFs of hotel reservation and flight e-tickets", isDone: false },
+    ];
+
+    for (let e = 0; e < essentialsItems.length; e++) {
+      await database.get<ChecklistItem>("checklist_items").create((ci) => {
+        ci.travel.id = newTravel.id;
+        ci.checklistGroup.id = essentialsGroup.id;
+        ci.title = essentialsItems[e].title;
+        ci.sortOrder = String(e + 1);
+        ci.isDone = essentialsItems[e].isDone;
+        ci.isOffline = true;
+      });
+    }
+
+    // Ungrouped General Trip To-do's
+    const generalItems = [
+      { title: "Notify credit card bank of travel in Japan", isDone: true },
+      { title: "Activate international carrier data roaming plan", isDone: true },
+    ];
+
+    for (let g = 0; g < generalItems.length; g++) {
+      await database.get<ChecklistItem>("checklist_items").create((ci) => {
+        ci.travel.id = newTravel.id;
+        ci.title = generalItems[g].title;
+        ci.sortOrder = String(g + 1);
+        ci.isDone = generalItems[g].isDone;
+        ci.isOffline = true;
+      });
+    }
+
+    // ─── DAY 1 ACTIVITIES ───────────────────────────────────────────────
+
+    // Day 1 Activity 1: Inbound Flight
+    const flight1Start = createDateTime(0, 6, 0);
+    const flight1End = createDateTime(0, 9, 30);
+    const actFlight1 = await database.get<Activity>("itinerary_activities").create((a) => {
       a.section.id = sections[0].id;
       Object.assign(a, {
-        title: "✈️ Flight to Caticlan (MPH)",
-        description: "PR 2039 - Terminal 3, check in 2 hours prior",
-        destination: "Manila to Caticlan",
-        destinationData: JSON.stringify({}),
-        startDate: flightStart,
-        endDate: flightEnd,
-        budget: "4500",
-        notes: "Keep boarding passes handy. QR codes saved in files.",
+        title: "✈️ Flight JL 078 to Tokyo Haneda (HND)",
+        description: "Japan Airlines JL 078 - Direct flight arriving at Haneda Airport Terminal 3.",
+        destination: "Tokyo Haneda Airport (HND), Terminal 3",
+        destinationData: JSON.stringify({
+          name: "Haneda Airport International Terminal 3",
+          address: "Hanedakuko, Ota City, Tokyo 144-0041, Japan",
+          coordinates: { latitude: 35.5494, longitude: 139.7798 },
+          latitude: 35.5494,
+          longitude: 139.7798,
+          departureCoordinates: { latitude: 37.6188, longitude: -122.3758 },
+          arrivalCoordinates: { latitude: 35.5494, longitude: 139.7798 },
+        }),
+        startDate: flight1Start,
+        endDate: flight1End,
+        budget: "45000",
+        notes:
+          "Clear immigration, collect baggage, pick up Pocket Wi-Fi at Ninja Wi-Fi counter (T3 2F), " +
+          "and load Suica IC card at the Tokyo Monorail ticket gate.",
         isOffline: true,
         sortOrder: "1",
         type: TripPlanType.flight,
@@ -2294,168 +2448,604 @@ export const seedDemoTravelData = async (): Promise<void> => {
         images: JSON.stringify([]),
         isDone: false,
         attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Flight", "JAL", "Inbound"]),
+        website: "https://www.jal.co.jp/en/",
+        bookingReference: "JAL-TK7892",
+        contactName: "Japan Airlines Haneda Support",
+        contactNumber: "+81 3-5460-0511",
+        contactEmail: "support@jal.co.jp",
+        priority: "High",
       });
     });
 
-    // Accommodation activity
-    const checkinStart = new Date(day1Date);
-    checkinStart.setHours(14, 0, 0, 0);
-    const checkinEnd = new Date(day1Date);
-    checkinEnd.setHours(14, 30, 0, 0);
+    await database.get<FlightDetails>("flight_details").create((f) => {
+      f.activity.id = actFlight1.id;
+      Object.assign(f, {
+        departureAirport: "San Francisco International Airport (SFO)",
+        arrivalAirport: "Tokyo Haneda Airport (HND)",
+        departureDate: flight1Start,
+        arrivalDate: flight1End,
+        flightNumber: "JL 078",
+        airline: "Japan Airlines",
+        gate: "114",
+        terminal: "Terminal 3",
+        seatNumber: "23K",
+        bookingReference: "JAL-TK7892",
+        price: 45000,
+      });
+    });
 
-    await database.get<Activity>("itinerary_activities").create((a) => {
+    // Activity-specific checklist item
+    await database.get<ChecklistItem>("checklist_items").create((ci) => {
+      ci.travel.id = newTravel.id;
+      ci.activity.id = actFlight1.id;
+      ci.title = "Show Visit Japan Web customs QR code at Haneda electronic gate";
+      ci.sortOrder = "1";
+      ci.isDone = true;
+      ci.isOffline = true;
+    });
+
+    // Day 1 Activity 2: Transit (Tokyo Monorail to Shinjuku)
+    const transit1Start = createDateTime(0, 10, 15);
+    const transit1End = createDateTime(0, 11, 0);
+    const actTransit1 = await database.get<Activity>("itinerary_activities").create((a) => {
       a.section.id = sections[0].id;
       Object.assign(a, {
-        title: "🏨 Check-in at Henann Prime Beach Resort",
-        description: "Station 1 beachfront, Deluxe Room, Booking Ref: HNN-90210",
-        destination: "Henann Prime Beach Resort, Station 1, Boracay",
-        destinationData: JSON.stringify({ latitude: 11.9723, longitude: 121.9189 }),
-        startDate: checkinStart,
-        endDate: checkinEnd,
-        budget: "12000",
-        notes: "Show booking confirmation at the front desk.",
+        title: "🚝 Tokyo Monorail & Yamanote Line to Shinjuku",
+        description:
+          "Rapid Monorail from Haneda T3 to Hamamatsucho, transfer to JR Yamanote line to Shinjuku.",
+        destination: "Hamamatsucho & Shinjuku Station",
+        destinationData: JSON.stringify({
+          name: "Haneda Airport Terminal 3 Station",
+          address: "Hanedakuko, Ota City, Tokyo 144-0041, Japan",
+          coordinates: { latitude: 35.5447, longitude: 139.7681 },
+          latitude: 35.5447,
+          longitude: 139.7681,
+          pickupCoordinates: { latitude: 35.5447, longitude: 139.7681 },
+          dropoffCoordinates: { latitude: 35.6909, longitude: 139.7003 },
+          pickupLocation: {
+            name: "Haneda Airport Terminal 3 Station",
+            address: "Hanedakuko, Ota City, Tokyo",
+          },
+          dropoffLocation: {
+            name: "JR Shinjuku Station (East Exit)",
+            address: "Shinjuku City, Tokyo",
+          },
+        }),
+        startDate: transit1Start,
+        endDate: transit1End,
+        budget: "650",
+        notes: "Tap Suica card at gates. Board green Yamanote Line clockwise platform at Hamamatsucho.",
         isOffline: true,
         sortOrder: "2",
+        type: TripPlanType.transit,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Transit", "Monorail", "JR"]),
+        website: "https://www.tokyo-monorail.co.jp/english/",
+        bookingReference: "SUICA-IC",
+        contactNumber: "+81 3-3374-4062",
+        priority: "Medium",
+      });
+    });
+
+    await database.get<TransportationDetails>("transportation_details").create((td) => {
+      td.activity.id = actTransit1.id;
+      Object.assign(td, {
+        mode: "Monorail & Train",
+        operatorProvider: "Tokyo Monorail & JR East",
+        pickupLocation: "Haneda Airport Terminal 3 Station",
+        dropoffLocation: "JR Shinjuku Station (East Exit)",
+        departureDateTime: transit1Start,
+        arrivalDateTime: transit1End,
+        seatOrVehicleNumber: "Haneda Express Rapid",
+        bookingReference: "SUICA-IC",
+        bookingStatus: "Confirmed",
+        price: "650",
+        websiteAddress: "https://www.tokyo-monorail.co.jp/english/",
+        contactNumber: "+81 3-3374-4062",
+        notes: "Fastest route into central Tokyo with scenic panoramic views of Tokyo Bay.",
+      });
+    });
+
+    // Day 1 Activity 3: Stay Check-in (Hotel Gracery Shinjuku)
+    const hotelCheckin = createDateTime(0, 14, 0);
+    const hotelCheckinEnd = createDateTime(0, 14, 30);
+    const hotelCheckout = createDateTime(2, 10, 0);
+    const actHotel = await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[0].id;
+      Object.assign(a, {
+        title: "🏨 Check-in at Hotel Gracery Shinjuku",
+        description:
+          "Modern hotel in Kabukicho featuring the iconic Godzilla Head terrace, " +
+          "comfortable high-floor rooms, and prime location.",
+        destination: "Hotel Gracery Shinjuku, Tokyo",
+        destinationData: JSON.stringify({
+          name: "Hotel Gracery Shinjuku",
+          address: "1 Chome-19-1 Kabukicho, Shinjuku City, Tokyo 160-8466, Japan",
+          coordinates: { latitude: 35.6953, longitude: 139.702 },
+          latitude: 35.6953,
+          longitude: 139.702,
+        }),
+        startDate: hotelCheckin,
+        endDate: hotelCheckinEnd,
+        budget: "48000",
+        notes:
+          "Drop off luggage if arriving before official 14:00 check-in. " +
+          "Godzilla terrace on 8F open exclusively to hotel guests. 5-min walk to Shinjuku Station.",
+        isOffline: true,
+        sortOrder: "3",
         type: TripPlanType.stay,
         secondaryType: JSON.stringify([]),
         images: JSON.stringify([]),
         isDone: false,
         attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Hotel", "Shinjuku", "Accommodation"]),
+        website: "https://gracery.com/shinjuku/",
+        bookingReference: "HGS-88204",
+        contactName: "Front Desk Concierge",
+        contactNumber: "+81 3-6833-1111",
+        contactEmail: "shinjuku@gracery.com",
+        priority: "High",
       });
     });
 
-    // Dining activity
-    const dinnerStart = new Date(day1Date);
-    dinnerStart.setHours(18, 0, 0, 0);
-    const dinnerEnd = new Date(day1Date);
-    dinnerEnd.setHours(20, 0, 0, 0);
+    await database.get<AccomodationDetails>("accomodation_details").create((ad) => {
+      ad.activity.id = actHotel.id;
+      Object.assign(ad, {
+        accomodationName: "Hotel Gracery Shinjuku",
+        address: "1 Chome-19-1 Kabukicho, Shinjuku City, Tokyo 160-8466, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.6953,
+          longitude: 139.702,
+        }),
+        subType: "Hotel",
+        checkinDateTime: hotelCheckin,
+        checkoutDateTime: hotelCheckout,
+        websiteAddress: "https://gracery.com/shinjuku/",
+        bookingReference: "HGS-88204",
+        bookingStatus: "Confirmed",
+        contactNumber: "+81 3-6833-1111",
+        emailAddress: "shinjuku@gracery.com",
+        contactName: "Front Desk Concierge",
+      });
+    });
 
-    await database.get<Activity>("itinerary_activities").create((a) => {
+    // Day 1 Activity 4: Restaurant (Ichiran Ramen Shinjuku)
+    const dinner1Start = createDateTime(0, 15, 0);
+    const dinner1End = createDateTime(0, 16, 0);
+    const actDinner1 = await database.get<Activity>("itinerary_activities").create((a) => {
       a.section.id = sections[0].id;
       Object.assign(a, {
-        title: "🌅 Sunset Dinner at Sunny Side Cafe",
-        description: "Famous beachside cafe with great views and Filipino-fusion breakfast/dinner",
-        destination: "The Sunny Side Cafe, Station 1, Boracay",
-        destinationData: JSON.stringify({ latitude: 11.9712, longitude: 121.9192 }),
-        startDate: dinnerStart,
-        endDate: dinnerEnd,
-        budget: "1500",
-        notes: "Try their famous Bacon Mango grilled cheese and pancakes.",
+        title: "🍜 Tonkotsu Ramen at Ichiran Shinjuku Chuo-Higashiguchi",
+        description:
+          "Classic solo-dining booth serving rich Hakata-style tonkotsu broth, " +
+          "customizable firmness, and secret spicy red sauce.",
+        destination: "Ichiran Shinjuku Chuo-Higashiguchi",
+        destinationData: JSON.stringify({
+          name: "Ichiran Shinjuku Chuo-Higashiguchi",
+          address: "3 Chome-34-11 Shinjuku, Shinjuku City, Tokyo 160-0022, Japan",
+          coordinates: { latitude: 35.6901, longitude: 139.7028 },
+          latitude: 35.6901,
+          longitude: 139.7028,
+        }),
+        startDate: dinner1Start,
+        endDate: dinner1End,
+        budget: "1600",
+        notes:
+          "Buy meal ticket at entrance vending machine. Fill custom order sheet: " +
+          "rich broth, half-clove garlic, green onions, medium spicy red sauce.",
         isOffline: true,
-        sortOrder: "3",
+        sortOrder: "4",
         type: TripPlanType.activity,
         planType: ActivityType.restaurant,
         secondaryType: JSON.stringify([]),
         images: JSON.stringify([]),
         isDone: false,
         attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Food", "Ramen", "Shinjuku"]),
+        website: "https://en.ichiran.com/shop/tokyo/shinjuku-chuo-higashiguchi/",
+        contactNumber: "+81 3-3225-5518",
+        priority: "Medium",
       });
     });
 
-    // Day 2 activities (Island Hopping & Beach)
-    const day2Date = new Date(tomorrow);
-    day2Date.setDate(tomorrow.getDate() + 1);
+    await database.get<CafeRestaurantDetails>("cafe_restaurant_details").create((crd) => {
+      crd.activity.id = actDinner1.id;
+      Object.assign(crd, {
+        restaurantName: "Ichiran Shinjuku Chuo-Higashiguchi",
+        address: "3 Chome-34-11 Shinjuku, Shinjuku City, Tokyo 160-0022, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.6901,
+          longitude: 139.7028,
+        }),
+        cuisine: "Japanese Tonkotsu Ramen",
+        priceRange: "¥1,000 - ¥2,000",
+        reservationLink: "https://en.ichiran.com",
+        websiteAddress: "https://en.ichiran.com/shop/tokyo/shinjuku-chuo-higashiguchi/",
+        contactNumber: "+81 3-3225-5518",
+      });
+    });
 
-    const tourStart = new Date(day2Date);
-    tourStart.setHours(9, 0, 0, 0);
-    const tourEnd = new Date(day2Date);
-    tourEnd.setHours(13, 0, 0, 0);
-
-    await database.get<Activity>("itinerary_activities").create((a) => {
-      a.section.id = sections[1].id;
+    // Day 1 Activity 5: Sightseeing (Shibuya Sky Observation Deck)
+    const sunsetStart = createDateTime(0, 17, 30);
+    const sunsetEnd = createDateTime(0, 19, 30);
+    const actSunset = await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[0].id;
       Object.assign(a, {
-        title: "⛵ Island Hopping Tour & Snorkeling",
-        description: "Shared boat tour including Crystal Cove, Magic Island, Puka Shell Beach, and lunch",
-        destination: "Station 3 Boat Station, Boracay",
-        destinationData: JSON.stringify({ latitude: 11.9545, longitude: 121.9298 }),
-        startDate: tourStart,
-        endDate: tourEnd,
-        budget: "1000",
-        notes: "Bring snorkeling gear, waterproof bags, and cash for crystal cove entrance.",
+        title: "🌆 Sunset at Shibuya Sky & Shibuya Crossing",
+        description:
+          "360-degree open-air rooftop observation deck atop Shibuya Scramble Square at 229m height, " +
+          "overlooking the famous Scramble Crossing and Mount Fuji.",
+        destination: "Shibuya Sky, Shibuya Scramble Square",
+        destinationData: JSON.stringify({
+          name: "Shibuya Sky",
+          address: "2 Chome-24-12 Shibuya, Shibuya City, Tokyo 150-6145, Japan",
+          coordinates: { latitude: 35.6585, longitude: 139.7023 },
+          latitude: 35.6585,
+          longitude: 139.7023,
+        }),
+        startDate: sunsetStart,
+        endDate: sunsetEnd,
+        budget: "2200",
+        notes:
+          "Timed admission slot: 17:40. Bags and loose hats must be stored in 46F lockers. " +
+          "Cameras must have neck straps on the outdoor sky deck.",
         isOffline: true,
-        sortOrder: "1",
-        type: TripPlanType.tour,
+        sortOrder: "5",
+        type: TripPlanType.activity,
+        planType: ActivityType.sightseeing,
         secondaryType: JSON.stringify([]),
         images: JSON.stringify([]),
         isDone: false,
         attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Sightseeing", "Shibuya", "Viewpoint"]),
+        website: "https://www.shibuya-scramble-square.com/sky/",
+        bookingReference: "SHIBSKY-90412",
+        contactNumber: "+81 3-4221-0229",
+        contactEmail: "info@shibuya-sky.jp",
+        priority: "High",
       });
     });
 
-    const juiceStart = new Date(day2Date);
-    juiceStart.setHours(15, 30, 0, 0);
-    const juiceEnd = new Date(day2Date);
-    juiceEnd.setHours(16, 30, 0, 0);
+    await database.get<SightseeingDetails>("sightseeing_details").create((sd) => {
+      sd.activity.id = actSunset.id;
+      Object.assign(sd, {
+        attractionName: "Shibuya Sky Observation Deck",
+        address: "2 Chome-24-12 Shibuya, Shibuya City, Tokyo 150-6145, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.6585,
+          longitude: 139.7023,
+        }),
+        entryFee: "¥2,200",
+        websiteAddress: "https://www.shibuya-scramble-square.com/sky/",
+        bookingReference: "SHIBSKY-90412",
+        contactNumber: "+81 3-4221-0229",
+        emailAddress: "info@shibuya-sky.jp",
+      });
+    });
 
-    await database.get<Activity>("itinerary_activities").create((a) => {
+    // ─── DAY 2 ACTIVITIES ───────────────────────────────────────────────
+
+    // Day 2 Activity 1: Sightseeing (Senso-ji Temple & Asakusa)
+    const templeStart = createDateTime(1, 8, 30);
+    const templeEnd = createDateTime(1, 10, 30);
+    const actTemple = await database.get<Activity>("itinerary_activities").create((a) => {
       a.section.id = sections[1].id;
       Object.assign(a, {
-        title: "🥭 Mango Shakes at Jonah's Fruit Shake",
-        description: "Iconic mango shake spot on White Beach Station 1",
-        destination: "Jonah's Fruit Shake, Station 1, Boracay",
-        destinationData: JSON.stringify({ latitude: 11.9688, longitude: 121.9214 }),
-        startDate: juiceStart,
-        endDate: juiceEnd,
-        budget: "250",
-        notes: "Best mango shakes in Boracay! Try the Mango Milk shake.",
+        title: "⛩️ Senso-ji Temple & Nakamise Shopping Street",
+        description:
+          "Tokyo's oldest and most renowned Buddhist temple. Walk through the Kaminarimon Gate " +
+          "and browse traditional craft and snack stalls along Nakamise-dori.",
+        destination: "Senso-ji Temple, Asakusa",
+        destinationData: JSON.stringify({
+          name: "Senso-ji Temple",
+          address: "2 Chome-3-1 Asakusa, Taito City, Tokyo 111-0032, Japan",
+          coordinates: { latitude: 35.7148, longitude: 139.7967 },
+          latitude: 35.7148,
+          longitude: 139.7967,
+        }),
+        startDate: templeStart,
+        endDate: templeEnd,
+        budget: "1000",
+        notes:
+          "Arrive early before tour groups arrive. Draw an Omikuji fortune stick (100 JPY coin). " +
+          "Try freshly baked Ningyo-yaki doll cakes and melon pan along Nakamise.",
+        isOffline: true,
+        sortOrder: "1",
+        type: TripPlanType.activity,
+        planType: ActivityType.sightseeing,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Culture", "Temple", "Asakusa"]),
+        website: "https://www.senso-ji.jp/english/",
+        contactNumber: "+81 3-3842-0181",
+        contactEmail: "info@senso-ji.jp",
+        priority: "High",
+      });
+    });
+
+    await database.get<SightseeingDetails>("sightseeing_details").create((sd) => {
+      sd.activity.id = actTemple.id;
+      Object.assign(sd, {
+        attractionName: "Senso-ji Temple & Kaminarimon",
+        address: "2 Chome-3-1 Asakusa, Taito City, Tokyo 111-0032, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.7148,
+          longitude: 139.7967,
+        }),
+        entryFee: "Free admission",
+        websiteAddress: "https://www.senso-ji.jp/english/",
+        contactNumber: "+81 3-3842-0181",
+        emailAddress: "info@senso-ji.jp",
+      });
+    });
+
+    // Day 2 Activity 2: Restaurant (Tsukiji Outer Market)
+    const sushiStart = createDateTime(1, 11, 15);
+    const sushiEnd = createDateTime(1, 13, 0);
+    const actSushi = await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[1].id;
+      Object.assign(a, {
+        title: "🍣 Fresh Sushi & Street Food at Tsukiji Outer Market",
+        description:
+          "Vibrant food market packed with fresh sushi counters, grilled seafood skewers, " +
+          "sweet rolled tamagoyaki omelets, and premium matcha tea.",
+        destination: "Tsukiji Outer Market, Chuo City",
+        destinationData: JSON.stringify({
+          name: "Tsukiji Outer Market",
+          address: "4 Chome-16-2 Tsukiji, Chuo City, Tokyo 104-0045, Japan",
+          coordinates: { latitude: 35.6655, longitude: 139.7708 },
+          latitude: 35.6655,
+          longitude: 139.7708,
+        }),
+        startDate: sushiStart,
+        endDate: sushiEnd,
+        budget: "3500",
+        notes:
+          "Eat at designated stall tables or standing areas. " +
+          "Must-try: Yamachou warm tamagoyaki (150 JPY) and fresh bluefin tuna nigiri bowl.",
         isOffline: true,
         sortOrder: "2",
         type: TripPlanType.activity,
-        planType: ActivityType.cafeOrBar,
+        planType: ActivityType.restaurant,
         secondaryType: JSON.stringify([]),
         images: JSON.stringify([]),
         isDone: false,
         attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Food", "Sushi", "Market"]),
+        website: "https://www.tsukiji.or.jp/english/",
+        contactNumber: "+81 3-3541-9444",
+        priority: "High",
       });
     });
 
-    // Day 3 activities (Shopping & Activities)
-    const day3Date = new Date(tomorrow);
-    day3Date.setDate(tomorrow.getDate() + 2);
+    await database.get<CafeRestaurantDetails>("cafe_restaurant_details").create((crd) => {
+      crd.activity.id = actSushi.id;
+      Object.assign(crd, {
+        restaurantName: "Tsukiji Outer Market & Sushi Daiwa",
+        address: "4 Chome-16-2 Tsukiji, Chuo City, Tokyo 104-0045, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.6655,
+          longitude: 139.7708,
+        }),
+        cuisine: "Fresh Sashimi, Sushi Donburi & Seafood",
+        priceRange: "¥2,000 - ¥4,000",
+        websiteAddress: "https://www.tsukiji.or.jp/english/",
+        contactNumber: "+81 3-3541-9444",
+      });
+    });
 
-    const shoppingStart = new Date(day3Date);
-    shoppingStart.setHours(10, 0, 0, 0);
-    const shoppingEnd = new Date(day3Date);
-    shoppingEnd.setHours(12, 0, 0, 0);
-
-    await database.get<Activity>("itinerary_activities").create((a) => {
-      a.section.id = sections[2].id;
+    // Day 2 Activity 3: Entertainment (teamLab Planets TOKYO)
+    const teamlabStart = createDateTime(1, 14, 0);
+    const teamlabEnd = createDateTime(1, 16, 30);
+    const actTeamlab = await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[1].id;
       Object.assign(a, {
-        title: "🛍️ D'Mall Walking & Souvenir Shopping",
-        description: "Explore the local shops, boutiques, and buy souvenirs (keychains, shirts, local sweets)",
-        destination: "D'Mall, Station 2, Boracay",
-        destinationData: JSON.stringify({ latitude: 11.9628, longitude: 121.9242 }),
-        startDate: shoppingStart,
-        endDate: shoppingEnd,
-        budget: "2000",
-        notes: "Be prepared to haggle for souvenirs. Many shops only accept cash.",
+        title: "✨ teamLab Planets TOKYO Immersive Digital Art",
+        description:
+          "Renowned body-immersive digital museum where visitors walk barefoot through water, " +
+          "crystal universes, and real hanging floating orchid gardens.",
+        destination: "teamLab Planets TOKYO, Toyosu",
+        destinationData: JSON.stringify({
+          name: "teamLab Planets TOKYO",
+          address: "6 Chome-1-16 Toyosu, Koto City, Tokyo 135-0061, Japan",
+          coordinates: { latitude: 35.6491, longitude: 139.7898 },
+          latitude: 35.6491,
+          longitude: 139.7898,
+        }),
+        startDate: teamlabStart,
+        endDate: teamlabEnd,
+        budget: "3800",
+        notes:
+          "Timed admission slot: 14:00. Wear pants that easily roll up past knees (water depth ~30cm). " +
+          "Free lockers provided on-site for shoes and bags.",
         isOffline: true,
-        sortOrder: "1",
+        sortOrder: "3",
+        type: TripPlanType.activity,
+        planType: ActivityType.entertainment,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Art", "Museum", "teamLab"]),
+        website: "https://planets.teamlab.art/tokyo/",
+        bookingReference: "TLP-2026-X88",
+        contactName: "teamLab Planets Visitor Services",
+        contactNumber: "+81 3-3520-9977",
+        contactEmail: "contact@planets.teamlab.art",
+        priority: "High",
+      });
+    });
+
+    await database.get<EntertainmentDetails>("entertainment_details").create((ed) => {
+      ed.activity.id = actTeamlab.id;
+      Object.assign(ed, {
+        venueName: "teamLab Planets TOKYO",
+        address: "6 Chome-1-16 Toyosu, Koto City, Tokyo 135-0061, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.6491,
+          longitude: 139.7898,
+        }),
+        subType: "Digital Art Museum",
+        websiteAddress: "https://planets.teamlab.art/tokyo/",
+        ticketPrice: "¥3,800",
+        bookingReference: "TLP-2026-X88",
+        contactName: "teamLab Planets Visitor Services",
+        contactNumber: "+81 3-3520-9977",
+        emailAddress: "contact@planets.teamlab.art",
+      });
+    });
+
+    // Day 2 Activity 4: Shopping (Akihabara Electric Town)
+    const akibaStart = createDateTime(1, 17, 30);
+    const akibaEnd = createDateTime(1, 20, 0);
+    const actAkiba = await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[1].id;
+      Object.assign(a, {
+        title: "🎮 Gadget & Anime Shopping in Akihabara",
+        description:
+          "Explore multi-floor mega electronic stores, retro video game shops, " +
+          "hobby complexes, and neon-drenched streets of Electric Town.",
+        destination: "Akihabara Electric Town, Tokyo",
+        destinationData: JSON.stringify({
+          name: "Akihabara Electric Town",
+          address: "1 Chome-1-1 Kanda Hanaoka-cho, Chiyoda City, Tokyo 101-0028, Japan",
+          coordinates: { latitude: 35.6983, longitude: 139.7731 },
+          latitude: 35.6983,
+          longitude: 139.7731,
+        }),
+        startDate: akibaStart,
+        endDate: akibaEnd,
+        budget: "8000",
+        notes:
+          "Show passport for 10% tax-free discount on purchases over ¥5,000 at Yodobashi Camera, " +
+          "Radio Kaikan, and Mandarake.",
+        isOffline: true,
+        sortOrder: "4",
         type: TripPlanType.activity,
         planType: ActivityType.shopping,
         secondaryType: JSON.stringify([]),
         images: JSON.stringify([]),
         isDone: false,
         attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Shopping", "Gaming", "Akihabara"]),
+        website: "https://www.yodobashi-akiba.com",
+        bookingReference: "TAXFREE-JP",
+        contactNumber: "+81 3-5209-1010",
+        contactEmail: "info@yodobashi-akiba.com",
+        priority: "Medium",
       });
     });
 
-    const paddleStart = new Date(day3Date);
-    paddleStart.setHours(16, 30, 0, 0);
-    const paddleEnd = new Date(day3Date);
-    paddleEnd.setHours(18, 0, 0, 0);
+    await database.get<ShoppingDetails>("shopping_details").create((sd) => {
+      sd.activity.id = actAkiba.id;
+      Object.assign(sd, {
+        venueName: "Yodobashi Akiba & Akihabara Radio Kaikan",
+        address: "1 Chome-1-1 Kanda Hanaoka-cho, Chiyoda City, Tokyo 101-0028, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.6983,
+          longitude: 139.7731,
+        }),
+        subType: "Electronics & Anime Specialty",
+        websiteAddress: "https://www.yodobashi-akiba.com",
+        bookingReferenceOrLink: "TAXFREE-JP",
+        promoCodeOrLink: "VISA-SPECIAL-5OFF",
+        contactNumber: "+81 3-5209-1010",
+        emailAddress: "info@yodobashi-akiba.com",
+      });
+    });
 
-    await database.get<Activity>("itinerary_activities").create((a) => {
+    // ─── DAY 3 ACTIVITIES ───────────────────────────────────────────────
+
+    // Day 3 Activity 1: Stay Check-out (Hotel Gracery Shinjuku)
+    const checkoutStart = createDateTime(2, 9, 30);
+    const checkoutEnd = createDateTime(2, 10, 0);
+    const actCheckout = await database.get<Activity>("itinerary_activities").create((a) => {
       a.section.id = sections[2].id;
       Object.assign(a, {
-        title: "🏄 Sunset Paddleboarding",
-        description: "Rent standup paddleboards on Station 1 and paddle during the golden hour sunset",
-        destination: "Station 1 White Beach, Boracay",
-        destinationData: JSON.stringify({ latitude: 11.9705, longitude: 121.9198 }),
-        startDate: paddleStart,
-        endDate: paddleEnd,
-        budget: "600",
-        notes: "Rent directly from local guides on the beach. Average rate is 500-600 PHP/hour.",
+        title: "🔑 Hotel Check-out & Luggage Storage",
+        description:
+          "Check out of Hotel Gracery Shinjuku, settle incidental room charges, " +
+          "and leave bags with concierge until airport departure.",
+        destination: "Hotel Gracery Shinjuku, Tokyo",
+        destinationData: JSON.stringify({
+          name: "Hotel Gracery Shinjuku",
+          address: "1 Chome-19-1 Kabukicho, Shinjuku City, Tokyo 160-8466, Japan",
+          coordinates: { latitude: 35.6953, longitude: 139.702 },
+          latitude: 35.6953,
+          longitude: 139.702,
+        }),
+        startDate: checkoutStart,
+        endDate: checkoutEnd,
+        budget: "0",
+        notes:
+          "Express checkout available via 8F automated kiosk. " +
+          "Concierge will issue claim tag for luggage storage.",
+        isOffline: true,
+        sortOrder: "1",
+        type: TripPlanType.stay,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Hotel", "Checkout"]),
+        website: "https://gracery.com/shinjuku/",
+        bookingReference: "HGS-88204",
+        contactNumber: "+81 3-6833-1111",
+        priority: "High",
+      });
+    });
+
+    await database.get<AccomodationDetails>("accomodation_details").create((ad) => {
+      ad.activity.id = actCheckout.id;
+      Object.assign(ad, {
+        accomodationName: "Hotel Gracery Shinjuku",
+        address: "1 Chome-19-1 Kabukicho, Shinjuku City, Tokyo 160-8466, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.6953,
+          longitude: 139.702,
+        }),
+        subType: "Hotel",
+        checkinDateTime: hotelCheckin,
+        checkoutDateTime: checkoutEnd,
+        websiteAddress: "https://gracery.com/shinjuku/",
+        bookingReference: "HGS-88204",
+        bookingStatus: "Confirmed",
+        contactNumber: "+81 3-6833-1111",
+        emailAddress: "shinjuku@gracery.com",
+        contactName: "Front Desk Concierge",
+      });
+    });
+
+    // Day 3 Activity 2: Nature / Walk (Meiji Jingu Shrine & Yoyogi Park)
+    const shrineStart = createDateTime(2, 10, 30);
+    const shrineEnd = createDateTime(2, 12, 30);
+    const actShrine = await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[2].id;
+      Object.assign(a, {
+        title: "🌲 Peaceful Forest Walk at Meiji Jingu Shrine",
+        description:
+          "Tranquil morning walk through 170 acres of evergreen sacred forest " +
+          "surrounding Tokyo's grandest Shinto shrine.",
+        destination: "Meiji Jingu Shrine, Shibuya",
+        destinationData: JSON.stringify({
+          name: "Meiji Jingu Shrine",
+          address: "1-1 Yoyogikamizonocho, Shibuya City, Tokyo 151-8557, Japan",
+          coordinates: { latitude: 35.6764, longitude: 139.6993 },
+          latitude: 35.6764,
+          longitude: 139.6993,
+        }),
+        startDate: shrineStart,
+        endDate: shrineEnd,
+        budget: "500",
+        notes:
+          "Walk beneath the 1,500-year-old wooden Torii gate. " +
+          "Photograph the wall of decorative sake barrels (Kazaridaru) and cleanse hands at Temizuya fountain.",
         isOffline: true,
         sortOrder: "2",
         type: TripPlanType.activity,
@@ -2464,37 +3054,247 @@ export const seedDemoTravelData = async (): Promise<void> => {
         images: JSON.stringify([]),
         isDone: false,
         attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Nature", "Shrine", "Walk"]),
+        website: "https://www.meijijingu.or.jp/en/",
+        contactName: "Meiji Jingu Administration",
+        contactNumber: "+81 3-3379-5511",
+        contactEmail: "info@meijijingu.or.jp",
+        priority: "Medium",
       });
     });
 
-    // Day 4 activities (Checkout & Return)
-    const day4Date = new Date(tomorrow);
-    day4Date.setDate(tomorrow.getDate() + 3);
+    await database.get<NatureDetails>("nature_details").create((nd) => {
+      nd.activity.id = actShrine.id;
+      Object.assign(nd, {
+        spotName: "Meiji Jingu Sacred Forest & Shrine",
+        address: "1-1 Yoyogikamizonocho, Shibuya City, Tokyo 151-8557, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.6764,
+          longitude: 139.6993,
+        }),
+        subType: "Forest Shrine & Botanical Park",
+        entryFee: "Free (¥500 for Inner Garden)",
+        websiteAddress: "https://www.meijijingu.or.jp/en/",
+        contactName: "Meiji Jingu Administration",
+        contactNumber: "+81 3-3379-5511",
+        emailAddress: "info@meijijingu.or.jp",
+      });
+    });
 
-    const checkoutStart = new Date(day4Date);
-    checkoutStart.setHours(11, 0, 0, 0);
-    const checkoutEnd = new Date(day4Date);
-    checkoutEnd.setHours(12, 0, 0, 0);
-
-    await database.get<Activity>("itinerary_activities").create((a) => {
-      a.section.id = sections[3].id;
+    // Day 3 Activity 3: Cafe (Matcha Sweets & Crepes in Harajuku)
+    const cafeStart = createDateTime(2, 13, 0);
+    const cafeEnd = createDateTime(2, 14, 15);
+    const actCafe = await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[2].id;
       Object.assign(a, {
-        title: "🔑 Hotel Check-out",
-        description: "Settle any incidental expenses and pack luggage",
-        destination: "Henann Prime Beach Resort, Boracay",
-        destinationData: JSON.stringify({ latitude: 11.9723, longitude: 121.9189 }),
-        startDate: checkoutStart,
-        endDate: checkoutEnd,
-        budget: "0",
-        notes: "Double check all drawers and closets for belongings before leaving.",
+        title: "🍵 Matcha Sweets & Crepes in Harajuku",
+        description:
+          "Stroll down Takeshita Street and treat yourself to hot Japanese crepes " +
+          "and chilled ceremonial Uji matcha parfaits.",
+        destination: "Takeshita Street & Marion Crepes, Harajuku",
+        destinationData: JSON.stringify({
+          name: "Marion Crepes Harajuku",
+          address: "1 Chome-6-15 Jingumae, Shibuya City, Tokyo 150-0001, Japan",
+          coordinates: { latitude: 35.6711, longitude: 139.7042 },
+          latitude: 35.6711,
+          longitude: 139.7042,
+        }),
+        startDate: cafeStart,
+        endDate: cafeEnd,
+        budget: "1200",
+        notes:
+          "Order at the street window. The Custard Strawberry Brownie crepe " +
+          "and Nana's Green Tea iced matcha latte are classic Harajuku staples.",
         isOffline: true,
-        sortOrder: "1",
-        type: TripPlanType.stay,
+        sortOrder: "3",
+        type: TripPlanType.activity,
+        planType: ActivityType.cafe,
         secondaryType: JSON.stringify([]),
         images: JSON.stringify([]),
         isDone: false,
         attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Cafe", "Dessert", "Matcha"]),
+        website: "https://www.marion.co.jp",
+        contactNumber: "+81 3-3401-7297",
+        priority: "Low",
       });
+    });
+
+    await database.get<CafeRestaurantDetails>("cafe_restaurant_details").create((crd) => {
+      crd.activity.id = actCafe.id;
+      Object.assign(crd, {
+        restaurantName: "Marion Crepes & Nana's Green Tea",
+        address: "1 Chome-6-15 Jingumae, Shibuya City, Tokyo 150-0001, Japan",
+        destinationAddressData: JSON.stringify({
+          latitude: 35.6711,
+          longitude: 139.7042,
+        }),
+        cuisine: "Japanese Crepes, Sweets & Matcha",
+        priceRange: "¥600 - ¥1,500",
+        websiteAddress: "https://www.marion.co.jp",
+        contactNumber: "+81 3-3401-7297",
+      });
+    });
+
+    // Day 3 Activity 4: Transit (Keikyu Airport Express to Haneda)
+    const transit2Start = createDateTime(2, 15, 30);
+    const transit2End = createDateTime(2, 16, 15);
+    const actTransit2 = await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[2].id;
+      Object.assign(a, {
+        title: "🚆 Keikyu Airport Express to Haneda Airport",
+        description: "Direct rapid train service from Shinagawa Station to Haneda Airport Terminal 3.",
+        destination: "Shinagawa to Haneda Airport Terminal 3",
+        destinationData: JSON.stringify({
+          name: "Shinagawa Station to Haneda Airport",
+          address: "Shinagawa Station, Minato City, Tokyo 108-0074, Japan",
+          coordinates: { latitude: 35.6284, longitude: 139.7387 },
+          latitude: 35.6284,
+          longitude: 139.7387,
+          pickupCoordinates: { latitude: 35.6284, longitude: 139.7387 },
+          dropoffCoordinates: { latitude: 35.5494, longitude: 139.7798 },
+          pickupLocation: {
+            name: "JR / Keikyu Shinagawa Station",
+            address: "Minato City, Tokyo",
+          },
+          dropoffLocation: {
+            name: "Haneda Airport Terminal 3 Station",
+            address: "Ota City, Tokyo",
+          },
+        }),
+        startDate: transit2Start,
+        endDate: transit2End,
+        budget: "450",
+        notes: "Board Keikyu Airport Limited Express from Platform 1. Takes 15 minutes direct into Haneda T3.",
+        isOffline: true,
+        sortOrder: "4",
+        type: TripPlanType.transit,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Transit", "Train", "Airport"]),
+        website: "https://www.keikyu.co.jp/visit/taxifree/en/",
+        bookingReference: "PASMO-KEIKYU",
+        contactNumber: "+81 3-5789-8686",
+        priority: "High",
+      });
+    });
+
+    await database.get<TransportationDetails>("transportation_details").create((td) => {
+      td.activity.id = actTransit2.id;
+      Object.assign(td, {
+        mode: "Airport Express Train",
+        operatorProvider: "Keikyu Electric Railway",
+        pickupLocation: "JR / Keikyu Shinagawa Station",
+        dropoffLocation: "Haneda Airport Terminal 3 Station",
+        departureDateTime: transit2Start,
+        arrivalDateTime: transit2End,
+        seatOrVehicleNumber: "Keikyu Airport Rapid Ltd Exp",
+        bookingReference: "PASMO-KEIKYU",
+        bookingStatus: "Confirmed",
+        price: "450",
+        websiteAddress: "https://www.keikyu.co.jp/visit/taxifree/en/",
+        contactNumber: "+81 3-5789-8686",
+        notes: "Arrive at Haneda Airport 3 hours prior to international departure.",
+      });
+    });
+
+    // Day 3 Activity 5: Outbound Flight
+    const flight2Start = createDateTime(2, 19, 45);
+    const flight2End = createDateTime(2, 23, 30);
+    const actFlight2 = await database.get<Activity>("itinerary_activities").create((a) => {
+      a.section.id = sections[2].id;
+      Object.assign(a, {
+        title: "✈️ Flight JL 002 Return from Tokyo Haneda (HND)",
+        description: "Japan Airlines JL 002 - Evening flight departing Haneda Airport Terminal 3 returning home.",
+        destination: "Haneda Airport (HND) to San Francisco (SFO)",
+        destinationData: JSON.stringify({
+          name: "Haneda Airport International Terminal 3",
+          address: "Hanedakuko, Ota City, Tokyo 144-0041, Japan",
+          coordinates: { latitude: 35.5494, longitude: 139.7798 },
+          latitude: 35.5494,
+          longitude: 139.7798,
+          departureCoordinates: { latitude: 35.5494, longitude: 139.7798 },
+          arrivalCoordinates: { latitude: 37.6188, longitude: -122.3758 },
+        }),
+        startDate: flight2Start,
+        endDate: flight2End,
+        budget: "45000",
+        notes:
+          "Drop off pocket Wi-Fi router in Terminal 3 departures return box before security check. " +
+          "Shop for souvenir sweets (Tokyo Banana, Shiroi Koibito) in 3F Edo Market.",
+        isOffline: true,
+        sortOrder: "5",
+        type: TripPlanType.flight,
+        secondaryType: JSON.stringify([]),
+        images: JSON.stringify([]),
+        isDone: false,
+        attachments: JSON.stringify([]),
+        customTags: JSON.stringify(["Flight", "JAL", "Return"]),
+        website: "https://www.jal.co.jp/en/",
+        bookingReference: "JAL-TK7893",
+        contactName: "Japan Airlines Haneda Operations",
+        contactNumber: "+81 3-5460-0511",
+        priority: "High",
+      });
+    });
+
+    await database.get<FlightDetails>("flight_details").create((f) => {
+      f.activity.id = actFlight2.id;
+      Object.assign(f, {
+        departureAirport: "Tokyo Haneda Airport (HND)",
+        arrivalAirport: "San Francisco International Airport (SFO)",
+        departureDate: flight2Start,
+        arrivalDate: flight2End,
+        flightNumber: "JL 002",
+        airline: "Japan Airlines",
+        gate: "148",
+        terminal: "Terminal 3",
+        seatNumber: "23K",
+        bookingReference: "JAL-TK7893",
+        price: 45000,
+      });
+    });
+
+    // 5. Create Sample Expenses & Etiquette Note
+    await database.get<Expense>("itinerary_expenses").create((exp) => {
+      exp.travel.id = newTravel.id;
+      exp.activity.id = actFlight1.id;
+      exp.title = "Pocket Wi-Fi 3-Day Unlimited Rental";
+      exp.amount = 2800;
+      exp.dateTime = flight1Start;
+      exp.currency = "JPY";
+      exp.category = "Transportation";
+      exp.notes = "Picked up at Ninja Wi-Fi counter Haneda T3";
+      exp.isOffline = true;
+      exp.isIncludeInBill = true;
+    });
+
+    await database.get<Expense>("itinerary_expenses").create((exp) => {
+      exp.travel.id = newTravel.id;
+      exp.activity.id = actTransit1.id;
+      exp.title = "Suica IC Card Initial Card & Rail Credit";
+      exp.amount = 5000;
+      exp.dateTime = transit1Start;
+      exp.currency = "JPY";
+      exp.category = "Transportation";
+      exp.notes = "Loaded into digital wallet";
+      exp.isOffline = true;
+      exp.isIncludeInBill = true;
+    });
+
+    await database.get<Note>("itinerary_notes").create((n) => {
+      n.travel.id = newTravel.id;
+      n.title = "💡 Tokyo Travel Etiquette & Local Tips";
+      n.content =
+        "1. Escalator manners: Stand on the LEFT in Tokyo (walk on right).\n" +
+        "2. No tipping anywhere in Japan: hospitality (omotenashi) is included in the bill.\n" +
+        "3. Trash bins are rare: always carry a small plastic bag in your daypack for trash.\n" +
+        "4. Remove shoes when entering fitting rooms, temples, and tatami restaurant booths.\n" +
+        "5. Keep voice down and silence phones on trains and subways.";
+      n.images = JSON.stringify([]);
+      n.isOffline = true;
     });
   });
 };

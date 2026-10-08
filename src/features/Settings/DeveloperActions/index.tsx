@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "react-native-paper";
 import { resetDatabase } from "../../../services/local/backupService";
 import { seedTestNotifications } from "../../../services/local/notificationService";
+import { seedDemoTravelData } from "../../../services/local/travelService";
 import {
   logger,
   ErrorCategory,
@@ -85,6 +86,26 @@ export const DeveloperActions: React.FC<DeveloperActionsProps> = ({
     );
   };
 
+  const handleSeedDemoTravel = async () => {
+    try {
+      await seedDemoTravelData();
+      queryClient.invalidateQueries({ queryKey: ["travels"] });
+      Alert.alert(
+        "Success",
+        "Japan 3-day demo travel data seeded successfully! Check the Trips tab on Home."
+      );
+    } catch (error) {
+      logger.service(
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          severity: ErrorSeverity.Medium,
+          action: "seedDemoTravelData",
+        }
+      );
+      Alert.alert("Error", "Failed to seed demo travel data.");
+    }
+  };
+
   return (
     <>
       <View
@@ -106,6 +127,18 @@ export const DeveloperActions: React.FC<DeveloperActionsProps> = ({
         >
           <Text className="text-white font-bold text-base">
             Launch Onboarding Flow
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={handleSeedDemoTravel}
+          className="bg-[#02899a] py-3.5 rounded-xl items-center mt-2"
+          accessibilityRole="button"
+          accessibilityLabel="Seed Demo Travel Data (Japan)"
+          activeOpacity={0.7}
+        >
+          <Text className="text-white font-bold text-base">
+            Seed Demo Travel Data (Japan)
           </Text>
         </TouchableOpacity>
 

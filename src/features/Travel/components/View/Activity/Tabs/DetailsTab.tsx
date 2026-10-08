@@ -67,12 +67,20 @@ const DetailsTab = ({
   const renderDetails = () => {
     switch (itineraryActivity.type) {
       case TripPlanType.flight:
-        return <FlightDetails data={itineraryActivity.flightDetails} />;
+        return (
+          <FlightDetails
+            data={itineraryActivity.flightDetails}
+            activity={itineraryActivity}
+            onEditActivity={onEditActivity}
+          />
+        );
       case TripPlanType.stay:
         return (
           <AccomodationDetails
             data={itineraryActivity.accomodationDetails}
+            activity={itineraryActivity}
             onFullScreenChange={onFullScreenChange}
+            onEditActivity={onEditActivity}
           />
         );
       case TripPlanType.transit:
@@ -86,7 +94,9 @@ const DetailsTab = ({
                   }
                 : null
             }
+            activity={itineraryActivity}
             onFullScreenChange={onFullScreenChange}
+            onEditActivity={onEditActivity}
           />
         );
       case TripPlanType.rideRental:
@@ -100,7 +110,9 @@ const DetailsTab = ({
                   }
                 : null
             }
+            activity={itineraryActivity}
             onFullScreenChange={onFullScreenChange}
+            onEditActivity={onEditActivity}
           />
         );
       case TripPlanType.activity:

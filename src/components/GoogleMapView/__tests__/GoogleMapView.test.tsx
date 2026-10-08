@@ -428,4 +428,15 @@ describe("GoogleMapView Component", () => {
 
     fireEvent(webview, "loadEnd");
   });
+
+  it("hides Google Maps bottom text controls and disables keyboard shortcuts", () => {
+    const { getByTestId } = render(<GoogleMapView pins={mockPins} />);
+    const webview = getByTestId("webview");
+    const html = webview.props.source.html;
+
+    expect(html).toContain(".gm-style-cc");
+    expect(html).toContain('button[title*="Keyboard shortcuts"]');
+    expect(html).toContain('a[href*="terms_maps"]');
+    expect(html).toContain("keyboardShortcuts: false");
+  });
 });

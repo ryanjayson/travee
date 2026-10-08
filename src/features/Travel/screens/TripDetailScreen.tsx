@@ -728,9 +728,14 @@ export const TripDetailScreen: React.FC<TripDetailScreenProps> = ({
   const dragStartY = useRef(0);
   const translateY = useRef(new Animated.Value(SNAP_MID)).current;
   const [currentSnap, setCurrentSnap] = useState(SNAP_MID);
+  const BOTTOM_SHEET_CORNER_RADIUS = 28;
   const animatedMapHeight = translateY.interpolate({
     inputRange: [SNAP_EXPANDED, SNAP_MID, SNAP_COLLAPSED],
-    outputRange: [SNAP_MID, SNAP_MID, SNAP_COLLAPSED],
+    outputRange: [
+      SNAP_MID + BOTTOM_SHEET_CORNER_RADIUS,
+      SNAP_MID + BOTTOM_SHEET_CORNER_RADIUS,
+      SNAP_COLLAPSED + BOTTOM_SHEET_CORNER_RADIUS,
+    ],
     extrapolate: 'clamp',
   });
 

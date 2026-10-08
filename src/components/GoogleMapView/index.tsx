@@ -119,6 +119,45 @@ export const GoogleMapView = ({
       text-overflow: ellipsis;
       line-height: 16px;
     }
+    /* Hide Google Maps bottom text controls: keyboard shortcuts, map data, terms */
+    .gm-style-cc,
+    .gm-style-cc *,
+    .gm-style .gm-style-cc,
+    button[title*="Keyboard shortcuts"],
+    button[aria-label*="Keyboard shortcuts"],
+    .gm-style button[title*="Keyboard shortcuts"],
+    .gm-style button[aria-label*="Keyboard shortcuts"],
+    div[aria-label*="Keyboard shortcuts"],
+    a[href*="terms_maps"],
+    a[href*="google.com/intl"],
+    a[title*="Terms of Use"],
+    a[title*="Report a map error"] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      height: 0 !important;
+      width: 0 !important;
+      overflow: hidden !important;
+    }
+    /* Hide Google Maps control icon buttons */
+    .gm-bundled-control,
+    .gm-bundled-control-top,
+    .gm-control-active,
+    button.gm-control-active,
+    .gm-svpc,
+    button[aria-label*="Zoom"],
+    button[aria-label*="Rotate"],
+    button[aria-label*="compass"],
+    button[aria-label*="Fullscreen"],
+    button[aria-label*="fullscreen"],
+    a[aria-label*="Google Maps"],
+    a[href*="maps.google.com/maps"] {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
   </style>
   <script src="https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry" async defer></script>
 </head>
@@ -470,11 +509,14 @@ export const GoogleMapView = ({
         center: center,
         zoom: ${zoom},
         mapTypeId: '${mapType}',
-        disableDefaultUI: false,
+        disableDefaultUI: true,
+        keyboardShortcuts: false,
         zoomControl: ${showZoomControls},
         streetViewControl: false,
         mapTypeControl: false,
         fullscreenControl: false,
+        rotateControl: false,
+        scaleControl: false,
         gestureHandling: 'greedy',
         clickableIcons: false,
         styles: ${mapStylesJson},

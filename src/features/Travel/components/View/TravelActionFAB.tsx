@@ -319,7 +319,7 @@ const TravelActionFAB = ({
         />
         {open && (
           <TouchableOpacity
-            className='bg-brand-50'
+            className='bg-brand-50 hidden'
             style={[styles.editTripButton, { borderColor: "#263F69", borderWidth: 1 }]}
             onPress={() => {
               setOpen(false);
