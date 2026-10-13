@@ -47,8 +47,6 @@ export const ChecklistItemRow: React.FC<ChecklistItemRowProps> = ({
   onDelete,
   isLast = false,
 }) => {
-  const { colors } = useTheme();
-  const primaryColor = colors.primary || "#263F69";
   const saveItemMutation = useSaveChecklistItemMutation();
   const { scrollToRef } = useChecklistScroll();
   const swipeableRef = useRef<Swipeable>(null);
@@ -289,8 +287,8 @@ export const ChecklistItemRow: React.FC<ChecklistItemRowProps> = ({
               onPress={() => onToggle(item)}
               activeOpacity={0.7}
               style={[
-                { borderColor: primaryColor },
-                item.isDone ? { backgroundColor: primaryColor } : undefined,
+                { borderColor: '#0EA5E9' },
+                item.isDone ? { backgroundColor: '#0EA5E9' } : undefined,
               ]}
               className="w-6 h-6 rounded-full border-2 items-center justify-center shrink-0 mt-1"
             >
@@ -351,7 +349,7 @@ export const ChecklistItemRow: React.FC<ChecklistItemRowProps> = ({
 
             {isSavingEdit && (
               <View className="items-center justify-center mt-1 mr-1">
-                <ActivityIndicator size="small" color={primaryColor} />
+                <ActivityIndicator size="small" color={"#0EA5E9"} />
               </View>
             )}
           </View>
@@ -378,8 +376,9 @@ export const ChecklistItemRow: React.FC<ChecklistItemRowProps> = ({
         onPress={() => onToggle(item)}
         activeOpacity={0.7}
         style={[
-          { borderColor: primaryColor },
-          item.isDone ? { backgroundColor: primaryColor } : undefined,
+          { borderColor: '#0EA5E9' },
+          item.isDone ? { backgroundColor: '#0EA5E9' } : undefined,
+
         ]}
         className="w-6 h-6 rounded-full border-2 items-center justify-center shrink-0"
       >

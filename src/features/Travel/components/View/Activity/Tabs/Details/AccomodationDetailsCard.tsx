@@ -44,7 +44,7 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
         className="py-xl px-2xl rounded-3xl mb-2 gap-4"
         style={{ backgroundColor: `${themeColor}40` }}
       >
-        <View className="flex-row items-start w-full mb-4">
+        <View className="flex-row items-start w-full mb-1">
           <View className="flex-col gap-2 flex-1">
             {hasNameMismatch ? (
               <View className="flex flex-col gap-3">
@@ -71,10 +71,10 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
                 <View className="flex flex-col flex-1">
                   <View className="flex flex-row gap-1 items-start flex-1">
                     <View className="flex-1 gap-0">
-                      <Text className="text-xl font-semibold text-secondary ">
+                      <Text className="text-lg font-semibold text-secondary ">
                         Address
                       </Text>
-                      <Text className="text-secondary/60 font-normal leading-relaxed text-xl">
+                      <Text className="text-secondary/60 font-normal leading-relaxed text-lg">
                         {locationText}
                       </Text>
                     </View>
@@ -91,15 +91,15 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
             <Icon name="timer" size={34} color={themeColor} />
           </View>
           <View className="mb-1 flex-1">
-            <Text className="text-xl font-semibold text-secondary">
+            <Text className="text-lg font-semibold text-secondary">
               Check-in
             </Text>
             {data.checkinDateTime ? (
               <View className="flex-row items-end gap-2">
-                <Text className="text-xl font-semibold text-secondary/40">
+                <Text className="text-lg font-semibold text-secondary/40">
                   {safeFormatTime(data.checkinDateTime)}
                 </Text>
-                <Text className="text-base text-secondary/50">
+                <Text className="text-lg  text-secondary/50">
                   {safeFormatDate(data.checkinDateTime)}
                 </Text>
               </View>
@@ -113,15 +113,15 @@ export const AccomodationDetailsCard: React.FC<AccomodationDetailsCardProps> = (
             <Icon name="timer" size={34} color={themeColor} />
           </View>
           <View className="mb-1 flex-1">
-            <Text className="text-xl font-semibold text-secondary">
+            <Text className="text-lg font-semibold text-secondary">
               Check-out
             </Text>
             {data.checkoutDateTime ? (
               <View className="flex-row items-end gap-2">
-                <Text className="text-xl font-semibold text-secondary/40">
+                <Text className="text-lg font-semibold text-secondary/40">
                   {safeFormatTime(data.checkoutDateTime)}
                 </Text>
-                <Text className="text-base font-medium text-secondary/50">
+                <Text className="text-lg  text-secondary/50">
                   {safeFormatDate(data.checkoutDateTime)}
                 </Text>
               </View>

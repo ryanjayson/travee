@@ -83,7 +83,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
         className="py-xl px-2xl rounded-3xl mb-2 gap-4"
         style={{ backgroundColor: `${themeColor}40` }}
       >
-        <View className="flex-row items-start w-full mb-4">
+        <View className="flex-row items-start w-full mb-1">
           <View className="flex-col gap-2 flex-1">
             {data.operatorProvider ? (
               <View className="flex flex-col gap-3">
@@ -91,7 +91,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
                   <View className="flex-1">
                     <Text
                       className={
-                        "text-2xl leading-xl font-semibold " +
+                        "text-lg leading-xl font-semibold " +
                         "text-secondary tracking-tight"
                       }
                     >
@@ -112,12 +112,12 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
                     <View className="flex-1 gap-0">
                       <Text
                         className={
-                          "text-xl font-semibold text-secondary "
+                          "text-lg font-semibold text-secondary "
                         }
                       >
                         Route
                       </Text>
-                      <Text className="text-secondary/60 font-normal leading-relaxed text-xl">
+                      <Text className="text-secondary/60 font-normal leading-relaxed text-lg">
                         {locationText}
                       </Text>
                     </View>
@@ -134,7 +134,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
             <Icon name="departure-board" size={34} color={themeColor} />
           </View>
           <View className="mb-1 flex-1">
-            <Text className="text-xl font-semibold text-secondary">
+            <Text className="text-lg font-semibold text-secondary">
               Departure
             </Text>
 
@@ -153,10 +153,10 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
 
             {data.departureDateTime && (
               <View className="flex-row items-end gap-2">
-                <Text className="text-xl font-semibold text-secondary/40">
+                <Text className="text-lg font-semibold text-secondary/40">
                   {safeFormatTime(data.departureDateTime)}
                 </Text>
-                <Text className="text-base text-secondary/50">
+                <Text className="text-lg text-secondary/50">
                   {safeFormatDate(data.departureDateTime)}
                 </Text>
               </View>
@@ -170,7 +170,7 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
             <Icon name="place" size={34} color={themeColor} />
           </View>
           <View className="mb-1 flex-1">
-            <Text className="text-xl font-semibold text-secondary ">
+            <Text className="text-lg font-semibold text-secondary ">
               Arrival
             </Text>
             {dropoffTitle ? (
@@ -188,10 +188,10 @@ export const TransportationDetailsCard: React.FC<TransportationDetailsCardProps>
 
             {data.arrivalDateTime && (
               <View className="flex-row items-end gap-2">
-                <Text className="text-xl font-semibold text-secondary/40">
+                <Text className="text-lg font-semibold text-secondary/40">
                   {safeFormatTime(data.arrivalDateTime)}
                 </Text>
-                <Text className="text-base font-medium text-secondary/50">
+                <Text className="text-lg  text-secondary/50">
                   {safeFormatDate(data.arrivalDateTime)}
                 </Text>
               </View>

@@ -104,18 +104,18 @@ const Tabs: FC<TabsProps> = ({
         : (tab.disabled ? "text-gray-300 font-medium text-base" : "text-gray-500 font-medium text-base");
     } else if (type === "secondary") {
       buttonClass = isActive
-        ? "px-4 py-3 border-b-2 border-[#263F69] items-center justify-center "
-        : "px-4 py-3 border-b-2 border-transparent items-center justify-center ";
+        ? "px-4 py-1 border-b-2 border-[#263F69] items-center justify-center "
+        : "px-4 py-1 border-b-2 border-transparent items-center justify-center ";
       textClass = isActive
         ? "text-[#263F69] font-bold text-base"
         : (tab.disabled ? "text-gray-300 font-medium text-base opacity-50" : "text-gray-500 font-medium text-base");
     } else { // "default"
       buttonClass = isActive
-        ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center"
-          : "bg-primary/30 border border-primary/20 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center")
+        ? (isOngoingWithActiveTrip ? "bg-success-100 border border-success-500 rounded-4xl py-1 px-4 mr-3 my-2 items-center justify-center"
+          : "bg-primary/30 border border-primary/20 rounded-4xl py-1 px-4 mr-3 my-2 items-center justify-center")
         : (tab.disabled
-          ? "bg-gray-50 border border-gray-300 rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center opacity-30"
-          : "bg-white border border-[#E0E0E0] rounded-4xl py-2 px-4 mr-3 my-2 items-center justify-center");
+          ? "bg-gray-50 border border-gray-300 rounded-4xl py-1 px-3 mr-3 my-2 items-center justify-center opacity-30"
+          : "bg-white border border-[#E0E0E0] rounded-4xl py-1 px-3 mr-3 my-2 items-center justify-center");
       textClass = isActive
         ? (isOngoingWithActiveTrip ? "text-success-500 text-lg " : "text-accent font-semibold text-lg")
         : (tab.disabled ? "text-gray-800 font-medium text-lg" : "text-tertiary font-medium text-lg");

@@ -356,10 +356,10 @@ const ChecklistTab = ({
                 activeOpacity={0.7}
                 accessibilityRole="button"
                 accessibilityLabel="Create new checklist group"
-                className="flex-row items-center gap-1 py-md px-xl rounded-xl bg-gray-100 mb-md"
+                className="flex-row items-center gap-1 py-md px-xl mb-md"
               >
-                <Icon name="add" size={18} color="#94A3B8" />
-                <Text className="text-md font-semibold text-gray-400">Add Custom List</Text>
+                <Icon name="add" size={18} color="#344054" />
+                <Text className="text-md font-semibold text-secondary">Add Custom List</Text>
               </TouchableOpacity>
 
               <Text className="text-md font-normal text-gray-400">You can create your custom checklist for your trip</Text>
@@ -404,7 +404,7 @@ const ChecklistTab = ({
                             {group.title}
                           </Text>
                           {group.description ? (
-                            <Text className="text-xs text-secondary/50 pt-1">{group.description}</Text>
+                            <Text className="text-base leading-5 text-secondary/50 pt-1">{group.description}</Text>
                           ) : null}
                         </View>
                         <Text className="text-base text-gray-400 mr-1 rounded-full">

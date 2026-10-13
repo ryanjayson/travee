@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { TextInput, useTheme } from "react-native-paper";
-import { TRAVELER_TYPES } from "../../../components/OnboardingModal";
+import { TRAVELER_TYPES, COUNTRIES } from "../../../components/OnboardingModal";
 import { useKeyboardVisible } from "../../../hooks/useKeyboardVisible";
 import { useToast } from "../../../context/ToastContext";
 import { UserProfileDto } from "../../../types/UserProfileDto";
@@ -12,17 +12,7 @@ import {
   CountryPickerModalProps,
 } from "./CountryPickerModal";
 
-export { CountryPickerModal, CountryPickerModalProps };
-
-export const COUNTRIES = [
-  "Philippines", "Japan", "South Korea", "Thailand", "Vietnam", "Singapore",
-  "Malaysia", "Indonesia", "Taiwan", "Hong Kong", "Australia", "New Zealand",
-  "United States", "Canada", "United Kingdom", "France", "Germany", "Italy",
-  "Spain", "Switzerland", "Netherlands", "United Arab Emirates", "Saudi Arabia",
-  "Qatar", "India", "Maldives", "China", "Brazil", "Mexico", "South Africa",
-  "Norway", "Sweden", "Iceland", "Greece", "Portugal", "Austria", "Turkey",
-  "Egypt", "Morocco", "Cambodia",
-];
+export { CountryPickerModal, CountryPickerModalProps, COUNTRIES };
 
 export const getNicknameValidationError = (
   nickname?: string

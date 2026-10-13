@@ -1,11 +1,9 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Animated,
   Dimensions,
   Modal,
-  PanResponder,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -13,6 +11,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "react-native-paper";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import ActivityIcon from "../../../../components/ActivityIcon";
 import { TripPlanType } from "../../../../types/enums";
 import { ChecklistItem } from "../../types/TravelDto";
@@ -22,8 +22,6 @@ import ChecklistItemRow, {
   closeActiveChecklistSwipeable,
 } from "./ChecklistItemRow";
 import { useKeyboardVisible } from "../../../../hooks/useKeyboardVisible";
-import { StatusBar } from "expo-status-bar";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -44,6 +42,42 @@ export interface ChecklistItemsBottomSheetProps {
   onToggle: (item: ChecklistItem) => void;
   onDelete: (item: ChecklistItem) => void;
 }
+
+interface TargetIconProps {
+  type?: "general" | "group" | "activity";
+  activityType?: TripPlanType;
+  primaryColor: string;
+}
+
+const ChecklistTargetIcon: React.FC<TargetIconProps> = ({
+  type,
+  activityType,
+  primaryColor,
+}) => {
+  if (type === "activity") {
+    return (
+      <ActivityIcon
+        type={activityType || TripPlanType.activity}
+        size={28}
+        showIconOnly
+      />
+    );
+  }
+
+  if (type === "group") {
+    return (
+      <View className="w-9 h-9 rounded-xl bg-primary/10 items-center justify-center">
+        <Icon name="folder" size={20} color={primaryColor} />
+      </View>
+    );
+  }
+
+  return (
+    <View className="w-9 h-9 rounded-xl bg-primary/10 items-center justify-center">
+      <Icon name="playlist-add-check" size={20} color={primaryColor} />
+    </View>
+  );
+};
 
 export const ChecklistItemsBottomSheet: React.FC<ChecklistItemsBottomSheetProps> = ({
   visible,
@@ -73,9 +107,9 @@ export const ChecklistItemsBottomSheet: React.FC<ChecklistItemsBottomSheetProps>
         useNativeDriver: true,
       }).start();
     }
-  }, [visible]);
+  }, [visible, translateY]);
 
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     closeActiveChecklistSwipeable();
     Animated.timing(translateY, {
       toValue: screenHeight,
@@ -84,35 +118,9 @@ export const ChecklistItemsBottomSheet: React.FC<ChecklistItemsBottomSheetProps>
     }).start(() => {
       onClose();
     });
-  };
+  }, [onClose, translateY]);
 
-  const dragPanResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return gestureState.dy > 4 && Math.abs(gestureState.dy) > Math.abs(gestureState.dx);
-      },
-      onPanResponderMove: (_, gestureState) => {
-        if (gestureState.dy > 0) {
-          translateY.setValue(gestureState.dy);
-        }
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 80 || gestureState.vy > 0.4) {
-          handleDismiss();
-        } else {
-          Animated.spring(translateY, {
-            toValue: 0,
-            tension: 80,
-            friction: 12,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
-
-  const scrollToRef = (target: any) => {
+  const scrollToRef = useCallback((target: any) => {
     if (!target) return;
     activeTargetRef.current = target;
     const targetNode = target.current || target;
@@ -136,45 +144,28 @@ export const ChecklistItemsBottomSheet: React.FC<ChecklistItemsBottomSheetProps>
 
     setTimeout(performScroll, 50);
     setTimeout(performScroll, 200);
-  };
+  }, []);
+
+  const scrollContextValue = useMemo(() => ({ scrollToRef }), [scrollToRef]);
 
   useEffect(() => {
     if (keyboardVisible && activeTargetRef.current) {
       scrollToRef(activeTargetRef.current);
     }
-  }, [keyboardVisible, keyboardHeight]);
+  }, [keyboardVisible, keyboardHeight, scrollToRef]);
 
   const totalCount = items.length;
-  const doneCount = items.filter((i) => i.isDone).length;
-  const progressPercent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+  const doneCount = useMemo(
+    () => items.filter((item) => item.isDone).length,
+    [items]
+  );
+  const progressPercent = totalCount > 0
+    ? Math.round((doneCount / totalCount) * 100)
+    : 0;
 
   if (!activeChecklist && !visible) {
     return null;
   }
-
-  const renderIcon = () => {
-    if (activeChecklist?.type === "activity") {
-      return (
-        <ActivityIcon
-          type={activeChecklist.activityType || TripPlanType.activity}
-          size={28}
-          showIconOnly
-        />
-      );
-    }
-    if (activeChecklist?.type === "group") {
-      return (
-        <View className="w-9 h-9 rounded-xl bg-[#263F69]/10 items-center justify-center">
-          <Icon name="folder" size={20} color="#263F69" />
-        </View>
-      );
-    }
-    return (
-      <View className="w-9 h-9 rounded-xl bg-primary/10 items-center justify-center">
-        <Icon name="playlist-add-check" size={20} color={primaryColor} />
-      </View>
-    );
-  };
 
   return (
     <Modal
@@ -185,20 +176,21 @@ export const ChecklistItemsBottomSheet: React.FC<ChecklistItemsBottomSheetProps>
       statusBarTranslucent
     >
       <StatusBar style="dark" backgroundColor="#ffffff" />
-      <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <GestureHandlerRootView
+        className="flex-1 bg-white"
+        style={{ flex: 1, backgroundColor: "#ffffff" }}
+      >
         <Animated.View
           className="flex-1 bg-white overflow-hidden"
           style={{
             transform: [{ translateY }],
-            backgroundColor: "#ffffff",
             paddingBottom: Math.max(insets.bottom, 16),
           }}
         >
+          {/* Header */}
           <View
-            className="w-full bg-white  px-5"
-            style={{
-              paddingTop: Math.max(insets.top + 8, 16),
-            }}
+            className="w-full bg-white px-5"
+            style={{ paddingTop: Math.max(insets.top + 8, 16) }}
           >
             <TouchableOpacity
               accessibilityRole="button"
@@ -210,19 +202,23 @@ export const ChecklistItemsBottomSheet: React.FC<ChecklistItemsBottomSheetProps>
               <Icon name="chevron-left" size={28} color="#64748B" />
             </TouchableOpacity>
 
-            <View className="flex-row items-center justify-between mt-2xl">
+            <View className="flex-row items-center justify-between mt-6">
               <View className="flex-row items-start gap-3 flex-1 mr-3">
-                {renderIcon()}
+                {activeChecklist?.type === 'activity' && (
+                  <ChecklistTargetIcon
+                    type={activeChecklist?.type}
+                    activityType={activeChecklist?.activityType}
+                    primaryColor={primaryColor}
+                  />
+                )}
+
                 <View className="flex-1">
-                  <Text
-                    className="text-3xl font-bold text-secondary"
-                  >
+                  <Text className="text-3xl font-bold text-secondary leading-4">
                     {activeChecklist?.title || "Checklist"}
                   </Text>
                   {activeChecklist?.description ? (
                     <Text
-                      numberOfLines={1}
-                      className="text-xs text-gray-500 mt-0.5"
+                      className="text-base text-gray-500 leading-5 mt-1"
                     >
                       {activeChecklist.description}
                     </Text>
@@ -231,12 +227,11 @@ export const ChecklistItemsBottomSheet: React.FC<ChecklistItemsBottomSheetProps>
               </View>
 
               <View className="flex-row items-center gap-2">
-                <View className="px-2.5 py-1 ">
+                <View className="px-2.5 py-1">
                   <Text className="text-base font-semibold text-tertiary">
                     {doneCount}/{totalCount}
                   </Text>
                 </View>
-
               </View>
             </View>
 
@@ -252,7 +247,7 @@ export const ChecklistItemsBottomSheet: React.FC<ChecklistItemsBottomSheetProps>
           </View>
 
           {/* List Content */}
-          <ChecklistScrollContext.Provider value={{ scrollToRef }}>
+          <ChecklistScrollContext.Provider value={scrollContextValue}>
             <ScrollView
               ref={scrollViewRef}
               className="flex-1"
@@ -266,8 +261,7 @@ export const ChecklistItemsBottomSheet: React.FC<ChecklistItemsBottomSheetProps>
               keyboardDismissMode="on-drag"
               onScrollBeginDrag={closeActiveChecklistSwipeable}
             >
-              <View className=" overflow-hidden "
-              >
+              <View className="overflow-hidden">
                 {items.map((item, index) => (
                   <ChecklistItemRow
                     key={item.id}

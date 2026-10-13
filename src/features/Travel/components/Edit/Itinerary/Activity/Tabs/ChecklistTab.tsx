@@ -191,7 +191,6 @@ export default function ChecklistTab({
         <AddChecklistItemRow
           travelId={effectiveTravelId}
           activityId={effectiveActivityId}
-          hasBottomBorder
         />
       </View>
     </View>

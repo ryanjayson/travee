@@ -229,7 +229,7 @@ const SingleTravellingTripCard: React.FC<SingleTravellingTripCardProps> =
                   </Text>
                 ) : null}
                 {trip.description ? (
-                  <Text className="text-base mt-4 text-tertiary">
+                  <Text className="text-base mt-4 text-white">
                     {trip.description}
                   </Text>
                 ) : null}

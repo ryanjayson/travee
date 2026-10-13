@@ -113,14 +113,14 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
               <Icon name="timer" size={34} color={themeColor} />
             </View>
             <View className="mb-1 flex-1">
-              <Text className="text-xl font-semibold text-secondary">
+              <Text className="text-lg font-semibold text-secondary">
                 {activity.endDate ? "Start" : "Date"}
               </Text>
               <View className="flex-row items-end gap-2">
-                <Text className="text-xl font-semibold text-secondary/40">
+                <Text className="text-lg font-semibold text-secondary/40">
                   {safeFormatTime(activity.startDate)}
                 </Text>
-                <Text className="text-base text-secondary/50">
+                <Text className="text-lg text-secondary/50">
                   {safeFormatDate(activity.startDate)}
                 </Text>
               </View>
@@ -134,14 +134,14 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
               <Icon name="timer" size={34} color={themeColor} />
             </View>
             <View className="mb-1 flex-1">
-              <Text className="text-xl font-semibold text-secondary">
+              <Text className="text-lg font-semibold text-secondary">
                 End
               </Text>
               <View className="flex-row items-end gap-2">
-                <Text className="text-xl font-semibold text-secondary/40">
+                <Text className="text-lg font-semibold text-secondary/40">
                   {safeFormatTime(activity.endDate)}
                 </Text>
-                <Text className="text-base font-medium text-secondary/50">
+                <Text className="text-lg text-secondary/50">
                   {safeFormatDate(activity.endDate)}
                 </Text>
               </View>

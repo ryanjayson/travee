@@ -20,6 +20,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
+import { TERMS_AND_CONDITIONS_TEXT } from "../features/Settings/About/Terms";
+import { PRIVACY_POLICY_TEXT } from "../features/Settings/About/Privacy";
+import { setAnalyticsOptOut } from "../services/analytics/posthogService";
 import { seedTestNotifications } from "../services/local/notificationService";
 import { seedDemoTravelData } from "../services/local/travelService";
 import {
@@ -46,10 +49,14 @@ export const TRAVELER_TYPES = [
 ];
 
 export const COUNTRIES = [
-  "Philippines", "United States", "United Kingdom", "Australia",
-  "Canada", "Japan", "South Korea", "Singapore", "Germany",
-  "France", "Italy", "Spain", "Thailand", "Malaysia", "Indonesia",
-  "Vietnam", "China", "India", "Brazil", "Mexico",
+  "Australia",
+  "Canada",
+  "Ireland",
+  "New Zealand",
+  "Philippines",
+  "Singapore",
+  "United Kingdom",
+  "United States",
 ];
 
 export const validateNickname = (name: string): string | null => {
@@ -66,7 +73,7 @@ export const validateNickname = (name: string): string | null => {
   return null;
 };
 
-export type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6;
+export type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export interface OnboardingModalProps {
   visible: boolean;
@@ -90,7 +97,7 @@ const OnboardingHeader: React.FC<HeaderProps> = ({
   onBack,
   onClose,
 }) => {
-  if (step > 1 && step <= 5) {
+  if (step > 1 && step <= 7) {
     return (
       <View
         className="flex-row items-center justify-between px-5 h-14"
@@ -104,11 +111,11 @@ const OnboardingHeader: React.FC<HeaderProps> = ({
         >
           <Ionicons name="arrow-back" size={24} color="#374151" />
         </TouchableOpacity>
-        <View className="flex-row gap-2">
-          {[2, 3, 4, 5].map((s) => (
+        <View className="flex-row gap-1.5">
+          {[2, 3, 4, 5, 6, 7].map((s) => (
             <View
               key={s}
-              className="w-5 h-1 rounded-sm"
+              className="w-4 h-1 rounded-sm"
               style={{
                 backgroundColor:
                   step === s
@@ -187,6 +194,267 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({
       </Text>
     </Animated.View>
   </View>
+);
+
+interface TermsStepProps {
+  termsAccepted: boolean;
+  colors: any;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+  onToggleTerms: () => void;
+}
+
+const TermsStep: React.FC<TermsStepProps> = ({
+  termsAccepted,
+  colors,
+  textFadeAnim,
+  textSlideAnim,
+  onToggleTerms,
+}) => (
+  <Animated.View
+    className="flex-1"
+    style={{
+      opacity: textFadeAnim,
+      transform: [{ translateY: textSlideAnim }],
+    }}
+  >
+    <Text
+      className="text-3xl font-bold mb-2"
+      style={{ color: colors.primary }}
+    >
+      Terms and Conditions
+    </Text>
+    <Text className="text-base text-gray-500 leading-5 mb-4">
+      Please review and accept our terms of service to continue using Travee.
+    </Text>
+
+    {/* Highlights Summary Badges */}
+    <View className="flex-row gap-2 mb-3">
+      <View className="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 items-center">
+        <Ionicons name="document-text-outline" size={20} color={colors.primary} />
+        <Text className="text-[11px] font-semibold text-gray-700 text-center mt-1">
+          Personal Use
+        </Text>
+      </View>
+      <View className="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 items-center">
+        <Ionicons name="shield-checkmark-outline" size={20} color={colors.primary} />
+        <Text className="text-[11px] font-semibold text-gray-700 text-center mt-1">
+          Data Ownership
+        </Text>
+      </View>
+      <View className="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 items-center">
+        <Ionicons name="sparkles-outline" size={20} color={colors.primary} />
+        <Text className="text-[11px] font-semibold text-gray-700 text-center mt-1">
+          Service Rules
+        </Text>
+      </View>
+    </View>
+
+    {/* Scrollable Terms Content */}
+    <View className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-3">
+      <ScrollView
+        showsVerticalScrollIndicator={true}
+        className="flex-1"
+      >
+        <Text className="text-xs text-gray-600 leading-5 whitespace-pre-wrap">
+          {TERMS_AND_CONDITIONS_TEXT}
+        </Text>
+      </ScrollView>
+    </View>
+
+    {/* Checkbox row */}
+    <TouchableOpacity
+      onPress={onToggleTerms}
+      className={
+        "flex-row items-center p-3.5 border-[1.5px] " +
+        "border-gray-200 rounded-2xl bg-gray-50 mb-1"
+      }
+      style={
+        termsAccepted
+          ? {
+            borderColor: colors.primary,
+            backgroundColor: `${colors.primary}08`,
+          }
+          : null
+      }
+      activeOpacity={0.7}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: termsAccepted }}
+      accessibilityLabel="I have read and agree to the Terms and Conditions"
+    >
+      <View
+        className="w-[22px] h-[22px] rounded-md border-2 items-center justify-center mr-3"
+        style={[
+          { borderColor: termsAccepted ? colors.primary : "#9CA3AF" },
+          termsAccepted && { backgroundColor: colors.primary },
+        ]}
+      >
+        {termsAccepted && (
+          <Ionicons name="checkmark" size={16} color="#fff" />
+        )}
+      </View>
+      <Text className="text-[14px] font-semibold text-gray-700 flex-1">
+        I have read and agree to the Terms and Conditions
+      </Text>
+    </TouchableOpacity>
+    {!termsAccepted && (
+      <Text className="text-xs text-gray-400 ml-1 mb-1">
+        You must accept the terms and conditions to proceed.
+      </Text>
+    )}
+  </Animated.View>
+);
+
+interface PrivacyStepProps {
+  privacyAccepted: boolean;
+  shareAnalytics: boolean;
+  colors: any;
+  textFadeAnim: Animated.Value;
+  textSlideAnim: Animated.Value;
+  onTogglePrivacy: () => void;
+  onToggleAnalytics: (val: boolean) => void;
+}
+
+const PrivacyStep: React.FC<PrivacyStepProps> = ({
+  privacyAccepted,
+  shareAnalytics,
+  colors,
+  textFadeAnim,
+  textSlideAnim,
+  onTogglePrivacy,
+  onToggleAnalytics,
+}) => (
+  <Animated.View
+    className="flex-1"
+    style={{
+      opacity: textFadeAnim,
+      transform: [{ translateY: textSlideAnim }],
+    }}
+  >
+    <Text
+      className="text-3xl font-bold mb-2"
+      style={{ color: colors.primary }}
+    >
+      Privacy & Analytics
+    </Text>
+    <Text className="text-base text-gray-500 leading-5 mb-4">
+      Your privacy matters to us. Learn how Travee protects your information and manage your analytics preferences.
+    </Text>
+
+    {/* Privacy Highlights */}
+    <View className="flex-row gap-2 mb-3">
+      <View className="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 items-center">
+        <Ionicons name="phone-portrait-outline" size={20} color={colors.primary} />
+        <Text className="text-[11px] font-semibold text-gray-700 text-center mt-1">
+          100% On-Device
+        </Text>
+      </View>
+      <View className="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 items-center">
+        <Ionicons name="eye-off-outline" size={20} color={colors.primary} />
+        <Text className="text-[11px] font-semibold text-gray-700 text-center mt-1">
+          Zero Tracking
+        </Text>
+      </View>
+      <View className="flex-1 bg-gray-50 border border-gray-200 rounded-xl p-2.5 items-center">
+        <Ionicons name="lock-closed-outline" size={20} color={colors.primary} />
+        <Text className="text-[11px] font-semibold text-gray-700 text-center mt-1">
+          No Data Selling
+        </Text>
+      </View>
+    </View>
+
+    {/* Scrollable Privacy Policy Content */}
+    <View className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-3">
+      <ScrollView
+        showsVerticalScrollIndicator={true}
+        className="flex-1"
+      >
+        <Text className="text-xs text-gray-600 leading-5 whitespace-pre-wrap">
+          {PRIVACY_POLICY_TEXT}
+        </Text>
+      </ScrollView>
+    </View>
+
+    {/* Checkbox 1: Privacy Policy Acceptance - True by default */}
+    <TouchableOpacity
+      onPress={onTogglePrivacy}
+      className={
+        "flex-row items-center p-3.5 border-[1.5px] " +
+        "border-gray-200 rounded-2xl bg-gray-50 mb-2"
+      }
+      style={
+        privacyAccepted
+          ? {
+            borderColor: colors.primary,
+            backgroundColor: `${colors.primary}08`,
+          }
+          : null
+      }
+      activeOpacity={0.7}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: privacyAccepted }}
+      accessibilityLabel="I have read and agree to the Privacy Policy"
+    >
+      <View
+        className="w-[22px] h-[22px] rounded-md border-2 items-center justify-center mr-3"
+        style={[
+          { borderColor: privacyAccepted ? colors.primary : "#9CA3AF" },
+          privacyAccepted && { backgroundColor: colors.primary },
+        ]}
+      >
+        {privacyAccepted && (
+          <Ionicons name="checkmark" size={16} color="#fff" />
+        )}
+      </View>
+      <View className="flex-1">
+        <Text className="text-[14px] font-semibold text-gray-700">
+          I have read and agree to the Privacy Policy
+        </Text>
+        <Text className="text-[12px] leading-5 text-gray-400 mt-0.5">
+          Pre-selected for a streamlined onboarding experience
+        </Text>
+      </View>
+    </TouchableOpacity>
+
+    {/* Setting 2: Share Usage Analytics - True by default */}
+    <View
+      className={
+        "flex-row items-center justify-between p-3.5 border-[1.5px] " +
+        "border-gray-200 rounded-2xl bg-gray-50 mb-1"
+      }
+      style={
+        shareAnalytics
+          ? {
+            borderColor: colors.primary,
+            backgroundColor: `${colors.primary}08`,
+          }
+          : null
+      }
+    >
+      <View className="flex-1 mr-3">
+        <Text className="text-[14px] font-semibold text-gray-900">
+          Share Usage Analytics
+        </Text>
+        <Text className="text-[12px] text-gray-500 mt-0.5 leading-5">
+          Help improve Travee by sharing anonymous usage metrics and crash diagnostics.
+        </Text>
+      </View>
+      <Switch
+        value={shareAnalytics}
+        onValueChange={onToggleAnalytics}
+        trackColor={{ false: "#D1D5DB", true: `${colors.primary}80` }}
+        thumbColor={shareAnalytics ? colors.primary : "#F3F4F6"}
+        accessibilityRole="switch"
+        accessibilityLabel="Share Usage Analytics"
+      />
+    </View>
+
+    {!privacyAccepted && (
+      <Text className="text-xs text-gray-400 ml-1 mb-1">
+        You must accept the privacy policy to proceed.
+      </Text>
+    )}
+  </Animated.View>
 );
 
 interface NicknameStepProps {
@@ -1082,11 +1350,7 @@ const SuccessStep: React.FC<SuccessStepProps> = ({
         Welcome to Travelled! Prepare to start planning your perfect trips.
       </Text>
       <Text className="text-base text-gray-400 text-center mt-5xl leading-5">
-        Entering the dashboard in
-        <Text style={{ color: colors.primary, fontWeight: "bold" }}>
-          {countdown}
-        </Text>
-        seconds...
+        Entering the dashboard in {countdown} seconds
       </Text>
     </Animated.View>
   </View>
@@ -1107,10 +1371,10 @@ const OnboardingFooter: React.FC<FooterProps> = ({
   colors,
   onNext,
 }) => {
-  if (step > 5) return null;
+  if (step > 7) return null;
 
   const buttonLabel =
-    step === 1 ? "Get Started" : step === 5 ? "Start the Adventure!" : "Next";
+    step === 1 ? "Get Started" : step === 7 ? "Start the Adventure!" : "Next";
 
   return (
     <View
@@ -1147,6 +1411,11 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   const { mutate: saveProfile } = useSaveProfile();
 
   const [step, setStep] = useState<OnboardingStep>(1);
+
+  // Legal Acceptance & Analytics State
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(true);
+  const [shareAnalytics, setShareAnalytics] = useState(true);
 
   // Form State
   const [nickname, setNickname] = useState("");
@@ -1204,9 +1473,9 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     }
   }, [visible, step]);
 
-  // Step 3 traveler types stagger animation
+  // Step 5 traveler types stagger animation
   useEffect(() => {
-    if (visible && step === 3) {
+    if (visible && step === 5) {
       styleCardAnims.forEach((anim) => anim.setValue(0));
       const animations = styleCardAnims.map((anim) =>
         Animated.spring(anim, {
@@ -1242,7 +1511,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   }, [visible, step]);
 
   const handleNext = useCallback(() => {
-    if (step < 6) {
+    if (step < 8) {
       setStep((prev) => (prev + 1) as OnboardingStep);
     }
   }, [step]);
@@ -1258,6 +1527,16 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     await clearPin();
     await savePinEnabled(false);
     await saveBiometricsEnabled(false);
+
+    // Persist analytics preference (shareAnalytics: true -> optOut: false)
+    try {
+      await setAnalyticsOptOut(!shareAnalytics);
+    } catch (err) {
+      logger.service(err, {
+        screen: "OnboardingModal",
+        action: "setAnalyticsOptOut",
+      });
+    }
 
     // Set notificationsEnabled config to false in profile backend
     saveProfile({
@@ -1287,6 +1566,9 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
 
     setTimeout(() => {
       setStep(1);
+      setTermsAccepted(false);
+      setPrivacyAccepted(true);
+      setShareAnalytics(true);
       setNickname("");
       setSelectedTypes([]);
       setSearchQuery("");
@@ -1303,9 +1585,9 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     onClose,
   ]);
 
-  // Step 6 auto-finish countdown
+  // Step 8 auto-finish countdown
   useEffect(() => {
-    if (visible && step === 6) {
+    if (visible && step === 8) {
       setCountdown(3);
       const interval = setInterval(() => {
         setCountdown((prev) => {
@@ -1326,7 +1608,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
     if (!visible) return;
 
     const onBackPress = () => {
-      if (step > 1 && step <= 5) {
+      if (step > 1 && step <= 7) {
         handleBack();
         return true;
       }
@@ -1354,7 +1636,9 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
   );
 
   const isNextDisabled =
-    step === 2 && (!nickname.trim() || !!nicknameError);
+    (step === 2 && !termsAccepted) ||
+    (step === 3 && !privacyAccepted) ||
+    (step === 4 && (!nickname.trim() || !!nicknameError));
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
@@ -1381,6 +1665,28 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
           )}
 
           {step === 2 && (
+            <TermsStep
+              termsAccepted={termsAccepted}
+              colors={colors}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+              onToggleTerms={() => setTermsAccepted((prev) => !prev)}
+            />
+          )}
+
+          {step === 3 && (
+            <PrivacyStep
+              privacyAccepted={privacyAccepted}
+              shareAnalytics={shareAnalytics}
+              colors={colors}
+              textFadeAnim={textFadeAnim}
+              textSlideAnim={textSlideAnim}
+              onTogglePrivacy={() => setPrivacyAccepted((prev) => !prev)}
+              onToggleAnalytics={setShareAnalytics}
+            />
+          )}
+
+          {step === 4 && (
             <NicknameStep
               nickname={nickname}
               nicknameError={nicknameError}
@@ -1397,7 +1703,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
             />
           )}
 
-          {step === 3 && (
+          {step === 5 && (
             <TravelStyleStep
               selectedTypes={selectedTypes}
               styleCardAnims={styleCardAnims}
@@ -1408,7 +1714,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
             />
           )}
 
-          {step === 4 && (
+          {step === 6 && (
             <CountryStep
               searchQuery={searchQuery}
               selectedCountry={selectedCountry}
@@ -1421,58 +1727,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
             />
           )}
 
-          {/*
-          // --- Commented out: To be re-enabled in next release ---
-          {step === 5 && (
-            <NotificationStep
-              notificationsEnabled={notificationsEnabled}
-              notifyDaysBeforeTrip={notifyDaysBeforeTrip}
-              notifyHoursBeforeActivity={notifyHoursBeforeActivity}
-              colors={colors}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
-              onToggleNotifications={setNotificationsEnabled}
-              onChangeDays={(d) =>
-                setNotifyDaysBeforeTrip((prev) =>
-                  Math.max(1, Math.min(30, prev + d))
-                )
-              }
-              onChangeHours={(h) =>
-                setNotifyHoursBeforeActivity((prev) =>
-                  Math.max(1, Math.min(24, prev + h))
-                )
-              }
-            />
-          )}
-
-          {step === 6 && (
-            <SecurityStep
-              pinEnabled={pinEnabled}
-              pinCode={pinCode}
-              pinStage={pinStage}
-              pinError={pinError}
-              pinInputRef={pinInputRef}
-              hasBiometricsSupport={hasBiometricsSupport}
-              biometricsEnabled={biometricsEnabled}
-              colors={colors}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
-              onTogglePin={(val) => {
-                setPinEnabledState(val);
-                if (!val) {
-                  setPinCode("");
-                  setPinStage("enter");
-                  setTempConfirmPin("");
-                  setPinError("");
-                }
-              }}
-              onPinChange={handlePinTextChange}
-              onToggleBiometrics={handleBiometricsToggle}
-            />
-          )}
-          */}
-
-          {step === 5 && (
+          {step === 7 && (
             <DemoDataStep
               createDemoData={createDemoData}
               colors={colors}
@@ -1482,7 +1737,7 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
             />
           )}
 
-          {step === 6 && (
+          {step === 8 && (
             <SuccessStep
               countdown={countdown}
               colors={colors}

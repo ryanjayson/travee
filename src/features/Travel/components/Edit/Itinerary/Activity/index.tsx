@@ -1522,37 +1522,36 @@ const EditActivity = ({
                     </View>
                   )}
 
-                  {/* <Text className="text-sm text-tertiary p-sm">
-                      You may give your Plan a custom name to help you stay organized.
-                    </Text> */}
+
 
                   {/* Tertiary Button for Destination Details */}
-                  {shouldShowDestinationButton && (placeTitle || destinationAddress) && (
-                    <TouchableOpacity
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
-                      accessibilityLabel={
-                        hasLocation
-                          ? `View destination details: ${placeTitle || destinationAddress}`
-                          : "View destination details"
-                      }
-                      onPress={() => setShowDestinationSheet(true)}
-                      className={
-                        "flex-row items-center self-start mt-2.5 py-1 px-1 gap-1.5"
-                      }
-                    >
-                      <Ionicons name="location-outline" size={16} color={"#0EA5E9"} />
-                      <Text
-                        className={`text-sm font-semibold text-primary max-w-[200]
-                          }`}
-                        ellipsizeMode="tail"
-                        numberOfLines={1}
+                  {shouldShowDestinationButton && (placeTitle || destinationAddress) &&
+                    (values.type === TripPlanType.activity || values.type === TripPlanType.stay) && (
+                      <TouchableOpacity
+                        activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel={
+                          hasLocation
+                            ? `View destination details: ${placeTitle || destinationAddress}`
+                            : "View destination details"
+                        }
+                        onPress={() => setShowDestinationSheet(true)}
+                        className={
+                          "flex-row items-center self-start mt-2.5 py-1 px-1 gap-1.5"
+                        }
                       >
-                        {placeTitle || destinationAddress || ""}
-                      </Text>
-                      <Ionicons name="chevron-forward" size={15} color="#0EA5E9" />
-                    </TouchableOpacity>
-                  )}
+                        <Ionicons name="location-outline" size={16} color={"#0EA5E9"} />
+                        <Text
+                          className={`text-sm font-semibold text-primary max-w-[200]
+                          }`}
+                          ellipsizeMode="tail"
+                          numberOfLines={1}
+                        >
+                          {placeTitle || destinationAddress || ""}
+                        </Text>
+                        <Ionicons name="chevron-forward" size={15} color="#0EA5E9" />
+                      </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* Plan Details */}

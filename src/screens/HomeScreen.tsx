@@ -79,14 +79,16 @@ const EXCLUDED_UPCOMING_STATUSES = new Set<TravelStatus>([
 ]);
 
 const COUNTRY_CODES: Record<string, string> = {
-  Philippines: 'PH',
-  'United States': 'US',
-  'United Kingdom': 'GB',
   Australia: 'AU',
   Canada: 'CA',
+  Ireland: 'IE',
+  'New Zealand': 'NZ',
+  Philippines: 'PH',
+  Singapore: 'SG',
+  'United Kingdom': 'GB',
+  'United States': 'US',
   Japan: 'JP',
   'South Korea': 'KR',
-  Singapore: 'SG',
   Germany: 'DE',
   France: 'FR',
   Italy: 'IT',

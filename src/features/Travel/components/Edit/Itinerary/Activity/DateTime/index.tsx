@@ -85,7 +85,7 @@ export default function DateTime({
       effectiveActivityType === TripPlanType.transit ||
       effectiveActivityType === TripPlanType.rideRental
       ? null
-      : "Plans with date & time are sorted based on their scheduled and cannot be reordered.";
+      : "Activity with date & time are sorted based on their scheduled and cannot be reordered.";
 
   const startDateLabel = effectiveActivityType === TripPlanType.stay
     ? "Check-In"
