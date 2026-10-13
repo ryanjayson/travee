@@ -110,7 +110,7 @@ const Accordion: FC<AccordionProps> = ({
       {onPressMore && (
         <TouchableOpacity
           onPress={onPressMore}
-          className="absolute right-[85px] top-5 z-10"
+          className="absolute right-[90px] top-5 z-10"
           accessibilityRole="button"
         >
           <Animated.View>
@@ -122,7 +122,7 @@ const Accordion: FC<AccordionProps> = ({
       {!disabled && (
         <TouchableOpacity
           onPress={toggleFullscreenAccordion}
-          className="absolute right-[45px] top-5 z-10"
+          className="absolute right-[50px] top-5 z-10"
           accessibilityRole="button"
         >
           <Animated.View>
@@ -160,7 +160,7 @@ const Accordion: FC<AccordionProps> = ({
         )}
 
         {!disabled && (
-          <Animated.View style={{ transform: [{ rotate: arrowAngle }] }} className={`absolute right-3 `} >
+          <Animated.View style={{ transform: [{ rotate: arrowAngle }] }} className={`absolute right-3 top-0`} >
             <Icon name="keyboard-arrow-down" size={iconSize} color={iconColor} />
           </Animated.View>
         )}
@@ -188,30 +188,27 @@ const Accordion: FC<AccordionProps> = ({
         transparent={false}
         onRequestClose={() => setFullscreen(false)}
       >
-
-
-        <View style={[headerStyle, { paddingTop: insets.top }]} className="flex-row justify-between items-center py-0 px-3 bg-[#f9f9f9]">
+        <View style={[headerStyle, { paddingTop: insets.top + 20 }]} className="flex-row justify-between items-center py-sm px-3 bg-[#f9f9f9]">
           {typeof title === "string" ? (
             <Text style={titleStyle} className="text-xl font-semibold text-[#333]">{title}</Text>
           ) : typeof title === "function" ? (
-            title({ expanded })
+            title({ expanded: true })
           ) : (
             title
           )}
 
-          <TouchableOpacity
-            onPress={() => setFullscreen(false)}
-            style={headerStyle}
-            className="flex-row justify-between items-center py-18px px-3 bg-[#f9f9f9]"
-            activeOpacity={0.8}
-          >
-            <Animated.View>
-              <Icon name="fullscreen-exit" size={30} color={iconColor} />
-            </Animated.View>
-          </TouchableOpacity>
         </View>
-
-        <ScrollView>{children}</ScrollView>
+        <TouchableOpacity
+          onPress={() => setFullscreen(false)}
+          style={{ paddingTop: insets.top + 18 }}
+          className=" absolute right-3xl top-0 z-10"
+          activeOpacity={0.8}
+        >
+          <Animated.View>
+            <Icon name="fullscreen-exit" size={30} color={iconColor} />
+          </Animated.View>
+        </TouchableOpacity>
+        <ScrollView className="px-md">{children}</ScrollView>
 
       </Modal>
     </View>

@@ -312,10 +312,13 @@ const DraggableSectionItem = ({
                           allowItemReordering && !isValidStartDate(section.startDate) ? 16 : 0,
                       }}
                       className={
-                        "flex-row items-center text-xl font-bold " +
-                        "text-white bg-accent/90 rounded-xs px-2 "
+                        "flex-row items-center text-xl font-bold leading-1px py-1 " +
+                        "text-white bg-accent/90 rounded-xs px-2 mr-7xl"
                       }
+                      numberOfLines={expanded ? undefined : 1}
                     >
+
+                      {isExpanded ? "true " : "false "}
                       {section?.title}
                       {isValidStartDate(section.startDate) ? (
                         <Text className="text-white/70 font-semibold text-sm">
@@ -345,7 +348,6 @@ const DraggableSectionItem = ({
                   : undefined
               }
             >
-
               <View
                 style={{ backgroundColor: "#FFF", paddingBottom: 20, paddingEnd: 5, }}
                 collapsable={false}
@@ -432,7 +434,7 @@ const DraggableSectionItem = ({
                     className={`absolute h-full w-md pb-lg ${viewMode === "narrow" ? "left-[59px]" : "left-[65px] "
                       } z-0`}
                   >
-                    <Svg height={'130%'}
+                    <Svg height={'110%'}
                       width="5"
                     >
                       <Line
@@ -1382,9 +1384,9 @@ const SectionAccordion = ({
           isMidSnap
             ? false
             : (!sectionDragState?.isDragging &&
-                !masterDragState.isDragging &&
-                !isSettingsExpanded) ||
-              !isAtTop
+              !masterDragState.isDragging &&
+              !isSettingsExpanded) ||
+            !isAtTop
         }
         refreshControl={
           <RefreshControl

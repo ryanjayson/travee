@@ -156,7 +156,7 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
             className="flex-row items-center gap-1.5 pr-xl"
           >
             <Text
-              className="text-xl font-normal text-secondary/50 "
+              className="text-lg font-normal text-secondary/50 "
               numberOfLines={isLink ? 1 : numberOfLines}
               style={{
                 textDecorationLine: isUnderlined ? "underline" : "none",
@@ -175,7 +175,7 @@ export const ActivityCardDisplayField: React.FC<ActivityCardDisplayFieldProps> =
           </TouchableOpacity>
         ) : (
           <Text
-            className="text-xl font-normal text-secondary/50"
+            className="text-lg font-normal text-secondary/50"
             numberOfLines={numberOfLines}
           >
             {value}

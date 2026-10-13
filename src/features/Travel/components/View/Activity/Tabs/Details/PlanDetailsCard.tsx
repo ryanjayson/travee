@@ -66,7 +66,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
         className="py-xl px-2xl rounded-3xl mb-2 gap-4"
         style={{ backgroundColor: `${themeColor}40` }}
       >
-        <View className="flex-row items-start w-full mb-4">
+        <View className="flex-row items-start w-full ">
           <View className="flex-col gap-2 flex-1">
             {hasNameMismatch ? (
               <View className="flex flex-col gap-3">
@@ -74,7 +74,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
                   <View className="flex-1">
                     <Text
                       className={
-                        "text-2xl leading-xl font-semibold " +
+                        "text-xl leading-xl font-semibold " +
                         "text-secondary tracking-tight"
                       }
                     >
@@ -270,7 +270,7 @@ export const PlanDetailsCard: React.FC<PlanDetailsCardProps> = ({
             <Text className="text-xl font-semibold text-secondary mt-lg">
               Notes
             </Text>
-            <View className="rounded-2xl flex-col gap-3 p-2">
+            <View className="rounded-2xl flex-col gap-3 ">
               <Text className="text-base text-secondary/60 leading-6">
                 {activity.notes || activity.description}
               </Text>
