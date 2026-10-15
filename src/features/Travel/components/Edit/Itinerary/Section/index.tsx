@@ -1,6 +1,6 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useFormik } from "formik";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Alert,
   Modal,
@@ -35,13 +35,25 @@ interface EditSectionProps {
   onClose: () => void;
   onScroll?: (event: any) => void;
   onSaveSuccess?: (section: ItinerarySection) => void;
+  onSubmitRef?: React.MutableRefObject<(() => void) | null>;
+  onSubmittingChange?: (isSubmitting: boolean) => void;
+  hideSubmitButton?: boolean;
 }
 
 const TravelSchema = Yup.object().shape({
   title: Yup.string().required("Title is required").max(40, "Title cannot exceed 40 characters"),
 });
 
-const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScroll, onSaveSuccess }: EditSectionProps) => {
+const EditSection = ({
+  itinerarySection,
+  travelId: propTravelId,
+  onClose,
+  onScroll,
+  onSaveSuccess,
+  onSubmitRef,
+  onSubmittingChange,
+  hideSubmitButton = false,
+}: EditSectionProps) => {
   const paperTheme = useTheme();
   const [showDestinationModal, setShowDestinationModal] =
     useState<boolean>(false);
@@ -55,6 +67,10 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
   const { generateSortOrder } = useLexicographicSort();
 
   const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
+
+  useEffect(() => {
+    onSubmittingChange?.(isUpdating);
+  }, [isUpdating, onSubmittingChange]);
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -215,6 +231,12 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
       }
     },
   });
+
+  useEffect(() => {
+    if (onSubmitRef) {
+      onSubmitRef.current = formik.handleSubmit;
+    }
+  }, [onSubmitRef, formik.handleSubmit]);
 
   const formattedStartDate = formik.values.startDate ? formik.values.startDate.toLocaleDateString() : "";
 
@@ -448,14 +470,16 @@ const EditSection = ({ itinerarySection, travelId: propTravelId, onClose, onScro
         <View className="mb-5"></View>
       </ScrollView>
 
-      <View className="mb-8 mx-4 bg-transparent">
-        <TouchButton
-          buttonText={itinerarySection?.id ? "Update Section" : "Create Section"}
-          onPress={() => formik.handleSubmit()}
-          disabled={!formik.values.title.trim() || isUpdating}
-          className="h-7xl p-6"
-        />
-      </View>
+      {!hideSubmitButton && (
+        <View className="mb-8 mx-4 bg-transparent">
+          <TouchButton
+            buttonText={itinerarySection?.id ? "Update Section" : "Create Section"}
+            onPress={() => formik.handleSubmit()}
+            disabled={!formik.values.title.trim() || isUpdating}
+            className="h-7xl p-6"
+          />
+        </View>
+      )}
 
     </View>
   );

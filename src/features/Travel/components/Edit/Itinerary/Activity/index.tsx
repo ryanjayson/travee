@@ -1781,7 +1781,7 @@ const EditActivity = ({
                             "flex-row items-center justify-between border " +
                             "rounded-2xl h-7xl border-[#E0E0E0] px-4 py-4 gap-3 " +
                             (isTypeDisabled
-                              ? "bg-gray-100 opacity-60"
+                              ? "bg-white opacity-60"
                               : "bg-white")
                           }
                         >
@@ -1799,7 +1799,10 @@ const EditActivity = ({
                               ? getTripPlanTypeLabel(values.type)
                               : "Select Type..."}
                           </Text>
-                          <Icon name="keyboard-arrow-down" size={24} color="#999" />
+
+                          {!isTypeDisabled && (
+                            <Icon name="keyboard-arrow-down" size={24} color="#999" />
+                          )}
                         </TouchableOpacity>
                       );
                     })()}
@@ -1840,7 +1843,7 @@ const EditActivity = ({
                       >
                         <Icon name="folder" size={24} color="#263F69" />
                         <Text
-                          className={`text-base flex-1 font-medium ${selectedSectionName ? "text-gray-800" : "text-gray-400"
+                          className={`text-base leading-5 flex-1 font-medium ${selectedSectionName ? "text-gray-800" : "text-gray-400"
                             }`}
                         >
                           {selectedSectionName || "Select Section"}

@@ -1,5 +1,5 @@
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ScrollView, TouchableOpacity, View, Text } from "react-native";
 import { useTheme } from "react-native-paper";
 import Svg, { Circle, G } from "react-native-svg";
@@ -60,11 +60,11 @@ const StatCard = ({
     </View>
 
     <Text className="text-4xl font-bold text-white mt-2">{value}</Text>
-    <Text className="text-base font-semibold text-gray-100 uppercase tracking-wider">
+    <Text className="text-base font-semibold text-gray-100 uppercase tracking-wider mt-2">
       {label}
     </Text>
 
-    {sub ? <Text className="text-base text-gray-200 -mt-1">{sub}</Text> : null}
+    {sub ? <Text className="text-sm text-gray-200 -mt-1">{sub}</Text> : null}
   </AnimatedPressable>
 );
 
@@ -182,6 +182,40 @@ const DetailsTab = ({
   const [isNoteDescriptionExpanded, setIsNoteDescriptionExpanded] =
     useState<boolean>(false);
   const [showNoteMoreButton, setShowNoteMoreButton] = useState<boolean>(false);
+
+  const description = travelPlan.travel.description?.trim() || "";
+
+  useEffect(() => {
+    if (!description) {
+      setShowMoreButton(false);
+      setIsDescriptionExpanded(false);
+      return;
+    }
+    // If text explicitly has more than 2 lines via line breaks, enable show more
+    if (description.split(/\r?\n/).length > 2) {
+      setShowMoreButton(true);
+    } else {
+      setShowMoreButton(false);
+    }
+    setIsDescriptionExpanded(false);
+  }, [description]);
+
+  const notes = travelPlan.travel.notes?.trim() || "";
+
+  useEffect(() => {
+    if (!notes) {
+      setShowNoteMoreButton(false);
+      setIsNoteDescriptionExpanded(false);
+      return;
+    }
+    // If text explicitly has more than 2 lines via line breaks, enable show more
+    if (notes.split(/\r?\n/).length > 2) {
+      setShowNoteMoreButton(true);
+    } else {
+      setShowNoteMoreButton(false);
+    }
+    setIsNoteDescriptionExpanded(false);
+  }, [notes]);
 
   const { data: expenses = [] } = useItineraryExpenses(travelId);
   const { data: checklistGroups = [] } = useChecklistGroups(travelId);
@@ -314,7 +348,7 @@ const DetailsTab = ({
           <FadeInView type="up" delay={200} duration={400}>
             <View
               className={
-                "bg-white rounded-3xl border border-[#e0e0e0] p-4 " +
+                "bg-white p-2 " +
                 "mb-3 flex-row items-start gap-4 mb-4"
               }
             >
@@ -331,21 +365,34 @@ const DetailsTab = ({
                         size={34}
                         showIconOnly
                       />
-                      <Text className="text-base font-bold text-[#1A1A1A]">
+                      <Text className="text-lg font-bold text-[#1A1A1A]">
                         {getTripTypeLabel(travelPlan.travel.type)}
                       </Text>
                     </View>
                   )}
 
-                <View>
+                <View className="w-full">
+                  {/* Hidden text element for un-truncated line measurement */}
+                  <Text
+                    style={{
+                      position: "absolute",
+                      opacity: 0,
+                      zIndex: -1000,
+                      left: 0,
+                      right: 0,
+                    }}
+                    className="text-base leading-6 text-tertiary"
+                    onTextLayout={(e) => {
+                      const isMoreThanTwoLines = e.nativeEvent.lines.length > 2;
+                      setShowMoreButton(isMoreThanTwoLines);
+                    }}
+                  >
+                    {travelPlan.travel.description || null}
+                  </Text>
+
                   <Text
                     className="text-base leading-6 text-tertiary"
-                    numberOfLines={isDescriptionExpanded ? undefined : 3}
-                    onTextLayout={(e) => {
-                      if (!showMoreButton && e.nativeEvent.lines.length >= 3) {
-                        setShowMoreButton(true);
-                      }
-                    }}
+                    numberOfLines={isDescriptionExpanded ? undefined : 2}
                   >
                     {travelPlan.travel.description || null}
                   </Text>
@@ -356,8 +403,9 @@ const DetailsTab = ({
                         setIsDescriptionExpanded(!isDescriptionExpanded)
                       }
                       accessibilityRole="button"
+                      activeOpacity={0.7}
                     >
-                      <Text className="text-sm font-black text-[#555] mt-1 underline">
+                      <Text className="text-sm font-medium text-[#555] mt-1 underline">
                         {isDescriptionExpanded ? "Show less" : "Show more"}
                       </Text>
                     </TouchableOpacity>
@@ -370,18 +418,29 @@ const DetailsTab = ({
 
         {travelPlan.travel.notes ? (
           <FadeInView type="up" delay={300} duration={400}>
-            <View className="px-4">
+            <Text className="px-2 text-sm font-semibold">Notes</Text>
+            <View className="px-3 w-full">
+              {/* Hidden text element for un-truncated line measurement */}
+              <Text
+                style={{
+                  position: "absolute",
+                  opacity: 0,
+                  zIndex: -1000,
+                  left: 0,
+                  right: 0,
+                }}
+                className="text-md text-tertiary leading-6"
+                onTextLayout={(e) => {
+                  const isMoreThanTwoLines = e.nativeEvent.lines.length > 2;
+                  setShowNoteMoreButton(isMoreThanTwoLines);
+                }}
+              >
+                {travelPlan.travel.notes || null}
+              </Text>
+
               <Text
                 className="text-md text-tertiary leading-6"
                 numberOfLines={isNoteDescriptionExpanded ? undefined : 2}
-                onTextLayout={(e) => {
-                  if (
-                    !showNoteMoreButton &&
-                    e.nativeEvent.lines.length >= 3
-                  ) {
-                    setShowNoteMoreButton(true);
-                  }
-                }}
               >
                 {travelPlan.travel.notes || null}
               </Text>
@@ -392,6 +451,7 @@ const DetailsTab = ({
                     setIsNoteDescriptionExpanded(!isNoteDescriptionExpanded)
                   }
                   accessibilityRole="button"
+                  activeOpacity={0.7}
                 >
                   <Text className="text-sm font-medium text-[#555] mt-1 underline">
                     {isNoteDescriptionExpanded ? "Show less" : "Show more"}
@@ -462,8 +522,8 @@ const DetailsTab = ({
                 <View
                   key={currency}
                   className={`flex-row items-center px-4 py-4 ${idx < currencyBreakdown.length - 1
-                      ? "border-b border-gray-50"
-                      : ""
+                    ? "border-b border-gray-50"
+                    : ""
                     }`}
                 >
                   <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center">
@@ -536,8 +596,8 @@ const DetailsTab = ({
                 <View
                   key={group.id}
                   className={`flex-row items-center px-4 py-3 ${idx < groupBreakdown.length - 1
-                      ? "border-b border-gray-50"
-                      : ""
+                    ? "border-b border-gray-50"
+                    : ""
                     }`}
                 >
                   <Icon name="folder" size={24} color="#263F69" />

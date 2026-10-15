@@ -15,8 +15,11 @@ import {
   Keyboard,
   Dimensions,
   Easing,
+  ImageBackground,
+  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUserProfile, useSaveProfile } from "../hooks/useUserProfile";
@@ -479,7 +482,7 @@ const NicknameStep: React.FC<NicknameStepProps> = ({
   <Animated.View
     className="flex-1"
     style={{
-      opacity: textFadeAnim,
+      // opacity: textFadeAnim,
       transform: [{ translateY: textSlideAnim }],
     }}
   >
@@ -489,17 +492,17 @@ const NicknameStep: React.FC<NicknameStepProps> = ({
     >
       Choose your nickname
     </Text>
-    <Text className="text-base text-gray-500 leading-5 mb-7">
+    <Text className="text-base text-gray-600 leading-5 mb-7">
       What should we call you? Pick a unique nickname to get started.
     </Text>
 
     <View
-      className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-16"
+      className="flex-row items-center bg-white border border-gray-200 rounded-full px-4 h-18 shadow-sm"
       style={nicknameError ? { borderColor: colors.error } : null}
     >
       <Text className="text-lg text-gray-400 mr-1 font-semibold">@</Text>
       <TextInput
-        className="flex-1 text-base text-gray-900 h-full"
+        className="flex-1 text-lg text-gray-900 h-full"
         value={nickname}
         onChangeText={onChangeNickname}
         placeholder="nickname"
@@ -1384,9 +1387,17 @@ const OnboardingFooter: React.FC<FooterProps> = ({
       <TouchableOpacity
         onPress={onNext}
         disabled={disabled}
-        className="h-[52px] rounded-[26px] items-center justify-center shadow-sm elevation-2"
+        activeOpacity={0.7}
+        className="h-[52px] rounded-[26px] items-center justify-center"
         style={[
-          { backgroundColor: step === 1 ? "#FFFFFF" : colors.primary },
+          {
+            backgroundColor: step === 1 ? "#FFFFFF" : colors.primary,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 6 },
+            shadowOpacity: 0.35,
+            shadowRadius: 10,
+            elevation: 8,
+          },
           disabled && { opacity: 0.5 },
         ]}
         accessibilityRole="button"
@@ -1642,119 +1653,148 @@ const OnboardingModal = ({ visible, onClose }: OnboardingModalProps) => {
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false}>
-      <SafeAreaView
+      <View
         className="flex-1 bg-white"
         style={step === 1 ? { backgroundColor: "#111827" } : null}
       >
-        <OnboardingHeader
-          step={step}
-          topInset={insets.top}
-          colors={colors}
-          onBack={handleBack}
-          onClose={onClose}
-        />
-
-        <View className="flex-1 px-6 pt-4">
-          {step === 1 && (
-            <WelcomeStep
-              scaleAnim={scaleAnim}
-              opacityAnim={opacityAnim}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
+        {step === 4 && (
+          <View
+            style={StyleSheet.absoluteFillObject}
+            pointerEvents="none"
+            testID="nickname-step-background"
+          >
+            <ImageBackground
+              source={require("../assets/images/onboarding.png")}
+              style={StyleSheet.absoluteFillObject}
+              resizeMode="cover"
             />
-          )}
-
-          {step === 2 && (
-            <TermsStep
-              termsAccepted={termsAccepted}
-              colors={colors}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
-              onToggleTerms={() => setTermsAccepted((prev) => !prev)}
+            <LinearGradient
+              colors={[
+                "rgba(255, 255, 255, 0.98)",
+                "rgba(255, 255, 255, 0.90)",
+                "rgba(255, 255, 255, 0.60)",
+                "rgba(255, 255, 255, 0)",
+              ]}
+              locations={[0, 0.20, 0.40, 0.58]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={StyleSheet.absoluteFillObject}
+              pointerEvents="none"
             />
-          )}
+          </View>
+        )}
 
-          {step === 3 && (
-            <PrivacyStep
-              privacyAccepted={privacyAccepted}
-              shareAnalytics={shareAnalytics}
-              colors={colors}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
-              onTogglePrivacy={() => setPrivacyAccepted((prev) => !prev)}
-              onToggleAnalytics={setShareAnalytics}
-            />
-          )}
+        <SafeAreaView className="flex-1 bg-transparent">
+          <OnboardingHeader
+            step={step}
+            topInset={insets.top}
+            colors={colors}
+            onBack={handleBack}
+            onClose={onClose}
+          />
 
-          {step === 4 && (
-            <NicknameStep
-              nickname={nickname}
-              nicknameError={nicknameError}
-              colors={colors}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
-              onChangeNickname={setNickname}
-              onSubmitEditing={() => {
-                if (nickname.trim() && !nicknameError) {
-                  Keyboard.dismiss();
-                  handleNext();
-                }
-              }}
-            />
-          )}
+          <View className="flex-1 px-6 pt-4">
+            {step === 1 && (
+              <WelcomeStep
+                scaleAnim={scaleAnim}
+                opacityAnim={opacityAnim}
+                textFadeAnim={textFadeAnim}
+                textSlideAnim={textSlideAnim}
+              />
+            )}
 
-          {step === 5 && (
-            <TravelStyleStep
-              selectedTypes={selectedTypes}
-              styleCardAnims={styleCardAnims}
-              colors={colors}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
-              onToggleType={toggleTravelerType}
-            />
-          )}
+            {step === 2 && (
+              <TermsStep
+                termsAccepted={termsAccepted}
+                colors={colors}
+                textFadeAnim={textFadeAnim}
+                textSlideAnim={textSlideAnim}
+                onToggleTerms={() => setTermsAccepted((prev) => !prev)}
+              />
+            )}
 
-          {step === 6 && (
-            <CountryStep
-              searchQuery={searchQuery}
-              selectedCountry={selectedCountry}
-              filteredCountries={filteredCountries}
-              colors={colors}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
-              onChangeSearchQuery={setSearchQuery}
-              onSelectCountry={setSelectedCountry}
-            />
-          )}
+            {step === 3 && (
+              <PrivacyStep
+                privacyAccepted={privacyAccepted}
+                shareAnalytics={shareAnalytics}
+                colors={colors}
+                textFadeAnim={textFadeAnim}
+                textSlideAnim={textSlideAnim}
+                onTogglePrivacy={() => setPrivacyAccepted((prev) => !prev)}
+                onToggleAnalytics={setShareAnalytics}
+              />
+            )}
 
-          {step === 7 && (
-            <DemoDataStep
-              createDemoData={createDemoData}
-              colors={colors}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
-              onToggleDemoData={() => setCreateDemoData(!createDemoData)}
-            />
-          )}
+            {step === 4 && (
+              <NicknameStep
+                nickname={nickname}
+                nicknameError={nicknameError}
+                colors={colors}
+                textFadeAnim={textFadeAnim}
+                textSlideAnim={textSlideAnim}
+                onChangeNickname={setNickname}
+                onSubmitEditing={() => {
+                  if (nickname.trim() && !nicknameError) {
+                    Keyboard.dismiss();
+                    handleNext();
+                  }
+                }}
+              />
+            )}
 
-          {step === 8 && (
-            <SuccessStep
-              countdown={countdown}
-              colors={colors}
-              textFadeAnim={textFadeAnim}
-              textSlideAnim={textSlideAnim}
-            />
-          )}
-        </View>
+            {step === 5 && (
+              <TravelStyleStep
+                selectedTypes={selectedTypes}
+                styleCardAnims={styleCardAnims}
+                colors={colors}
+                textFadeAnim={textFadeAnim}
+                textSlideAnim={textSlideAnim}
+                onToggleType={toggleTravelerType}
+              />
+            )}
 
-        <OnboardingFooter
-          step={step}
-          bottomInset={insets.bottom}
-          disabled={isNextDisabled}
-          colors={colors}
-          onNext={handleNext}
-        />
-      </SafeAreaView>
+            {step === 6 && (
+              <CountryStep
+                searchQuery={searchQuery}
+                selectedCountry={selectedCountry}
+                filteredCountries={filteredCountries}
+                colors={colors}
+                textFadeAnim={textFadeAnim}
+                textSlideAnim={textSlideAnim}
+                onChangeSearchQuery={setSearchQuery}
+                onSelectCountry={setSelectedCountry}
+              />
+            )}
+
+            {step === 7 && (
+              <DemoDataStep
+                createDemoData={createDemoData}
+                colors={colors}
+                textFadeAnim={textFadeAnim}
+                textSlideAnim={textSlideAnim}
+                onToggleDemoData={() => setCreateDemoData(!createDemoData)}
+              />
+            )}
+
+            {step === 8 && (
+              <SuccessStep
+                countdown={countdown}
+                colors={colors}
+                textFadeAnim={textFadeAnim}
+                textSlideAnim={textSlideAnim}
+              />
+            )}
+          </View>
+
+          <OnboardingFooter
+            step={step}
+            bottomInset={insets.bottom}
+            disabled={isNextDisabled}
+            colors={colors}
+            onNext={handleNext}
+          />
+        </SafeAreaView>
+      </View>
     </Modal>
   );
 };

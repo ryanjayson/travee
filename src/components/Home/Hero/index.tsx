@@ -1,6 +1,6 @@
 import { MaterialIcons as Icon, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Image, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { useTravelContext } from "../../../context/TravelContext";
 
@@ -10,6 +10,9 @@ import { useTravelPlan } from '../../../features/Travel/hooks/useTravel';
 import { Travel } from '../../../features/Travel/types/TravelDto';
 import { useUserProfile } from '../../../hooks/useUserProfile';
 import { FadeInView } from '../../../components/animations';
+import DestinationsBottomSheet from '../../../features/Travel/components/DestinationsBottomSheet';
+import { useExchangeRate } from '../../../hooks/useExchangeRate';
+import { useChecklistItems } from '../../../features/Travel/hooks/useChecklist';
 
 export const fetchWeatherInfo = async (destination?: string, coords?: { latitude?: number; longitude?: number }) => {
   if (!destination && (!coords || coords.latitude === undefined || coords.longitude === undefined)) {
@@ -71,7 +74,37 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
   const { openExpenseModal, openNoteModal, openActivityModal, openActivityTypeModal } = useTravelContext();
   const { data: profile } = useUserProfile();
   const [showItineraryTab, setShowItineraryTab] = useState<boolean>(false);
+  const [showDestinationsSheet, setShowDestinationsSheet] = useState<boolean>(false);
   const [plainMode, setPlainMode] = useState<boolean>(false);
+
+  const {
+    data: travelPlan,
+  } = useTravelPlan(ongoingTrip?.id);
+
+  const { data: checklistItems = [], isLoading: isChecklistLoading } =
+    useChecklistItems(ongoingTrip?.id || "");
+
+  const totalChecklist = checklistItems.length;
+  const doneChecklist = useMemo(
+    () => checklistItems.filter((i) => i.isDone).length,
+    [checklistItems]
+  );
+  const checklistPercentage =
+    totalChecklist > 0
+      ? Math.round((doneChecklist / totalChecklist) * 100)
+      : 0;
+
+  const {
+    formattedRate,
+    isLoading: isExchangeLoading,
+    userCurrency,
+    visitingCurrency,
+    shouldShow: shouldShowExchangeRate,
+  } = useExchangeRate({
+    profile,
+    trip: ongoingTrip,
+    tripSettingCurrency: travelPlan?.tripSetting?.currency,
+  });
 
   const adjustedRef = useRef(false);
   const [titleIsLong, setTitleIsLong] = useState(false);
@@ -120,10 +153,6 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
     pulse.start();
     return () => pulse.stop();
   }, []);
-
-  const {
-    data: travelPlan,
-  } = useTravelPlan(ongoingTrip?.id);
 
   const formatDate = (v?: Date | string) =>
     v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
@@ -242,7 +271,7 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
             onPress={onOpenNotifications}
             accessibilityRole="button"
             accessibilityLabel="Notifications"
-            className="relative p-1"
+            className="relative p-1 hidden"
           >
             <Ionicons name="notifications" size={28} color="#263F69" />
             {unreadNotifications > 0 && (
@@ -281,10 +310,17 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                 </Text>
 
                 <View className="flex-row items-center gap-3 mb-6">
-                  <Text className="text-white/90 text-xl " numberOfLines={1}>
-                    <Ionicons name="location-outline" size={18} color="#ffffff" />
-                    {ongoingTrip.destination}
-                  </Text>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`View destinations for ${ongoingTrip.title}`}
+                    onPress={() => setShowDestinationsSheet(true)}
+                  >
+                    <Text className="text-white/90 text-xl " numberOfLines={1}>
+                      <Ionicons name="location-outline" size={18} color="#ffffff" />
+                      {ongoingTrip.destination}
+                    </Text>
+                  </TouchableOpacity>
                   <Text className="text-white/60 text-xl " numberOfLines={1}>
                     ❘  Until {formatDate(ongoingTrip.endOrReturnDate)}
                   </Text>
@@ -308,37 +344,38 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                 </View>
               </View> */}
 
-                <View className="flex-row items-center gap-4 mb-1 px-2">
+                <View className="flex-row items-center justify-between gap-4 mb-1 px-2">
 
-                  <View className="flex-1 items-start mb-1">
-                    <Text className="text-white/70 text-[10px] uppercase">
+                  <View className="flex-1  mb-1">
+                    {/* <Text className="text-white/70 text-[10px] uppercase">
                       Weather Forecast
-                    </Text>
+                    </Text> */}
                     {weather.loading ? (
-                      <>
-                        <Ionicons name="cloud-outline" size={28} color="#263F69" />
+                      <View className="items-center">
+                        <Ionicons name="cloud-outline" size={22} color="#263F69" style={{ opacity: .5 }} />
                         <Text className="text-white/70 text-sm">--</Text>
                         <Text className="text-white/70 text-[10px] uppercase">Loading...</Text>
-                      </>
+                      </View>
                     ) : weather.temp !== undefined ? (
-                      <>
+                      <View className="items-center">
+                        <Ionicons
+                          name={getWeatherIcon(weather.code) as any}
+                          size={22}
+                          color="#263F69"
+                          style={{ opacity: .5 }}
+                        />
                         <View className="flex-row items-center">
-                          <Ionicons
-                            name={getWeatherIcon(weather.code) as any}
-                            size={28}
-                            color="#263F69"
-                          />
-                          <Text className="text-white/80 text-3xl font-semibold ml-2">
+                          <Text className="text-white/80 text-3xl font-semibold">
                             {weather.temp}°
                           </Text>
                           <Text className="text-white/80 text-sm font-semibold">
                             C
                           </Text>
                         </View>
-                        <Text className="text-white/50 text-[10px] uppercase">
+                        <Text className="text-white/80 text-[10px] text-center uppercase">
                           {getWeatherDescription(weather.code)}
                         </Text>
-                      </>
+                      </View>
                     ) : (
                       <>
                         <Ionicons name="sunny-outline" size={28} color="#ffffff" />
@@ -348,68 +385,87 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
                     )}
                   </View>
 
-                  <View className="flex-1 items-center mb-1">
-                    <Text className="text-white/70 text-[10px] uppercase">
-                      Planned
-                    </Text>
-                    {weather.loading ? (
-                      <>
-                        <Ionicons name="walk-outline" size={28} color="#263F69" />
-                        <Text className="text-white/80 text-sm">--</Text>
-                        <Text className="text-white/50 text-[10px] uppercase">Loading...</Text>
-                      </>
-                    ) : weather.temp !== undefined ? (
-                      <>
-                        <View className="flex-row items-center">
-                          <Ionicons name="walk-outline" size={28} color="#263F69" />
-                          <Text className="text-white/80 text-2xl font-semibold">
-                            14
+                  {shouldShowExchangeRate && (
+                    <View className="flex-1 items-center mb-1">
+                      {isExchangeLoading ? (
+                        <>
+                          <Ionicons
+                            name="cash-outline"
+                            size={22}
+                            color="#263F69"
+                            style={{ opacity: 0.5 }}
+                          />
+                          <Text className="text-white/80 text-sm">--</Text>
+                          <Text className="text-white/50 text-[10px] uppercase">
+                            Loading...
+                          </Text>
+                        </>
+                      ) : (
+                        <View className="items-center">
+                          <Ionicons
+                            name="cash-outline"
+                            size={22}
+                            color="#263F69"
+                            style={{ opacity: 0.5 }}
+                          />
+                          <View className="flex-row items-center">
+
+                            <Text
+                              className="text-white/80 text-3xl font-semibold ml-1"
+                              numberOfLines={1}
+                            >
+                              {formattedRate}
+                            </Text>
+                          </View>
+                          <Text
+                            className="text-white/80 text-[10px] text-center uppercase"
+                            numberOfLines={1}
+                          >
+                            1 {userCurrency} = {visitingCurrency}
                           </Text>
                         </View>
-                        <Text className="text-white/50 text-[10px] uppercase">
-                          activities
+                      )}
+                    </View>
+                  )}
+
+                  <View className="flex-1 items-center mb-1">
+                    {isChecklistLoading ? (
+                      <>
+                        <Ionicons
+                          name="checkmark-done-circle-sharp"
+                          size={22}
+                          color="#263F69"
+                          style={{ opacity: 0.5 }}
+                        />
+                        <Text className="text-white/80 text-3xl">--</Text>
+                        <Text className="text-white/80 text-[10px] uppercase">
+                          Loading...
                         </Text>
                       </>
                     ) : (
-                      <>
-                        <Ionicons name="sunny-outline" size={28} color="#263F69" />
-                        <Text className="text-white/80 text-sm">N/A</Text>
-                        <Text className="text-white/50 text-[10px] uppercase">Unavailable</Text>
-                      </>
-                    )}
-                  </View>
+                      <View className="items-center">
+                        <Ionicons
+                          name="checkmark-done-circle-sharp"
+                          size={22}
+                          color="#263F69"
+                          style={{ opacity: 0.5 }}
+                        />
+                        <View className="flex-row items-center justify-items-start">
 
-
-                  <View className="flex-1 items-center mb-1">
-                    <Text className="text-white/70 text-[10px] uppercase">
-                      Checklist
-                    </Text>
-                    {weather.loading ? (
-                      <>
-                        <Ionicons name="list-outline" size={28} color="#263F69" />
-                        <Text className="text-white/80 text-sm">--</Text>
-                        <Text className="text-white/50 text-[10px] uppercase">Loading...</Text>
-                      </>
-                    ) : weather.temp !== undefined ? (
-                      <>
-                        <View className="flex-row items-center">
-                          <Ionicons name="list-outline" size={28} color="#263F69" />
-                          <Text className="text-white/80 text-2xl font-semibold">
-                            100
+                          <Text className="text-white/80 text-3xl font-semibold">
+                            {doneChecklist}
+                          </Text>
+                          <Text className="text-white/50 text-sm font-semibold">
+                            /{totalChecklist}
                           </Text>
                         </View>
-                        <Text className="text-white/50 text-[10px] uppercase">
-                          items
+                        <Text className="text-white/80 text-[10px] uppercase text-center">
+                          {checklistPercentage}% Completed
                         </Text>
-                      </>
-                    ) : (
-                      <>
-                        <Ionicons name="sunny-outline" size={28} color="rgba(255,255,255,0.65)" />
-                        <Text className="text-white/80 text-sm">N/A</Text>
-                        <Text className="text-white/50 text-[10px] uppercase">Unavailable</Text>
-                      </>
+                      </View>
                     )}
                   </View>
+
                 </View>
               </View>
             </FadeInView>
@@ -476,9 +532,9 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
       </View>
 
       {ongoingTrip && (
-        <View className="mx-5 my-3 py-2 rounded-4x ">
+        <View className="mx-3 my-3 py-2 rounded-4x ">
 
-          <Text className="text-xs uppercase font-semibold px-xl text-secondary/80 ">Quick Actions</Text>
+          <Text className="text-xs uppercase font-semibold px-xl text-secondary/80 mb-2 ">Quick Actions</Text>
           <FadeInView type="up" delay={100} duration={450}>
             <View className="flex-row items-center justify-evenly py-2 pb-0 z-40">
 
@@ -574,6 +630,14 @@ const Hero = ({ travellingTrip, ongoingTrip: propOngoingTrip, onOpenCreateTripMo
             </View>
           </FadeInView>
         </View>
+      )}
+
+      {ongoingTrip && (
+        <DestinationsBottomSheet
+          visible={showDestinationsSheet}
+          travel={travelPlan?.travel || ongoingTrip}
+          onClose={() => setShowDestinationsSheet(false)}
+        />
       )}
 
     </View>

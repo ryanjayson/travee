@@ -211,9 +211,13 @@ describe("OnboardingModal", () => {
     });
 
     it("navigates through steps and validates nickname on step 4", async () => {
-      const { getByText, getByPlaceholderText, getByLabelText, queryByText } = render(
-        <OnboardingModal visible={true} onClose={mockOnClose} />
-      );
+      const {
+        getByText,
+        getByPlaceholderText,
+        getByLabelText,
+        getByTestId,
+        queryByText,
+      } = render(<OnboardingModal visible={true} onClose={mockOnClose} />);
 
       await waitFor(() => {
         expect(getByText("Get Started")).toBeTruthy();
@@ -232,6 +236,7 @@ describe("OnboardingModal", () => {
 
       // 3. Privacy -> 4. Nickname
       expect(getByText("Choose your nickname")).toBeTruthy();
+      expect(getByTestId("nickname-step-background")).toBeTruthy();
 
       // Next is disabled when nickname is empty
       const nextBtn = getByText("Next");

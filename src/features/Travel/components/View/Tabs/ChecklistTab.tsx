@@ -461,14 +461,15 @@ const ChecklistTab = ({
                     >
                       <ActivityIcon
                         type={(activity.type ?? TripPlanType.activity) as TripPlanType}
-                        size={16}
+                        size={22}
+                        showIconOnly
                       />
                       <View
                         className={`flex-row items-center py-xl flex-1 
                           ${index < allActivities.length - 1 && index !== 1 ? "border-t-2 border-gray-200" : ""
                           }`}
                       >
-                        <Text className="text-lg  text-secondary flex-1 pr-2xl">
+                        <Text className="text-lg leading-5 text-secondary flex-1 pr-2xl">
                           {activity.title}
                         </Text>
                         <Text className="text-base  text-gray-400 mr-1 rounded-full">
